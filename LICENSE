@@ -1,0 +1,28 @@
+Copyright (c) 2026 Krunal Patel. All rights reserved.
+
+PROPRIETARY AND CONFIDENTIAL
+
+This repository and all of its contents — including documentation, scenarios,
+scripts, infrastructure-as-code, policy definitions, and any other materials
+(collectively, the "Work") — are the proprietary and confidential property of the
+copyright holder.
+
+No part of the Work may be copied, reproduced, modified, published, distributed,
+sublicensed, sold, or used to create derivative works, in whole or in part, by any
+means, without the prior express written permission of the copyright holder.
+
+Access to the Work does not grant any license or right to the Work except as
+explicitly agreed in a separate written commercial license or agreement signed by
+the copyright holder. Evaluation access, where granted, is for assessment only and
+confers no right of use in production.
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
+LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE WORK OR THE USE OR OTHER DEALINGS IN THE WORK.
+
+The scripts and policy definitions in this repository are provided as reference
+material to be reviewed and executed by the licensee within their own tenant.
+Always run with a dry-run / -WhatIf path first. The copyright holder is not
+responsible for any changes made to a licensee's environment.

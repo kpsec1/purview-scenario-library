@@ -1,0 +1,29 @@
+# Secrets & local config — never commit
+*.env
+.env
+*.secret
+*.key
+*.pfx
+*.pem
+appsettings.local.json
+config.local.*
+secrets/
+
+# Tenant-specific working files
+*.local.ps1
+tenant-*.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# Build / logs
+*.log
+out/
+dist/
+bin/
+obj/
