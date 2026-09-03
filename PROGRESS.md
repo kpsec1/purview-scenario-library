@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Cross-cutting (do first)
-- [ ] `docs/rbac-model.md` — roles & permissions across all modules
 - [ ] `docs/automation-surface.md` — Graph + PowerShell/EXO/S&C connection patterns, auth, module install
 - [ ] `docs/glossary.md` — canonical terms
 
@@ -52,6 +51,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## DONE
 - [x] repo scaffold — AGENTS.md, README, PROGRESS, LICENSE, .gitignore, CONTRIBUTING — 4a79558 — 2026-09-02
 - [x] `docs/licensing-matrix.md` — two-model (per-user + PAYG) licensing matrix, grounded in MS Learn — 2026-09-02
+- [x] `docs/rbac-model.md` — four-RBAC-system model (Entra, Purview role groups, Data Governance, Exchange Online) + admin units + PowerShell/Graph auth patterns, grounded in MS Learn — 2026-09-03
 
 ## Blocked / needs user
 - (none)
