@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Risk & Compliance
-- [ ] `scenarios/ediscovery/premium-legal-hold-and-export/`
 - [ ] `scenarios/audit/premium-audit-investigation/`
 - [ ] `scenarios/data-lifecycle-management/retention-labels-financial-records/`
 - [ ] `scenarios/records-management/regulatory-records-disposition/`
@@ -350,7 +349,51 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   users into Communication Compliance Analysts/Investigators/Admins) if a supported cmdlet path is
   confirmed — left as a portal prerequisite in this scenario.
 
+### Follow-ups discovered while building the eDiscovery premium-legal-hold-and-export scenario
+- [ ] `scenarios/ediscovery/review-set-commit-and-analytics/` — script the **addToReviewSet** commit
+  (run search → estimate → add results to a review set) and Premium **review/analytics** (tagging,
+  near-dup/email-threading) — the step between collection and export, documented as a prerequisite
+  and flagged VERIFY in `ediscovery/premium-legal-hold-and-export/README.md` §11 (its exact action
+  body wasn't exercised in this build).
+- [ ] `scenarios/ediscovery/noncustodial-data-sources-and-holds/` — the noncustodial-data-source path
+  (`ediscoveryNoncustodialDataSource`) for holding/collecting shared mailboxes, sites, and Teams not
+  tied to a custodian; a natural companion to the custodian-based flow.
+- [ ] VERIFY (pilot tenant, before production reliance): the **addToReviewSet** action body; binding
+  **specific custodian sources** into a legalHold/search via `@odata.bind` (vs. the broad
+  preservation hold + `allCaseCustodians` scope this scenario uses); and the E3 **export PAYG**
+  billing model — all flagged in `ediscovery/premium-legal-hold-and-export/README.md` §11.
+- [ ] Consider a `scenarios/ediscovery/standard-content-search-scc/` variant using the classic
+  Security & Compliance PowerShell surface (`New-ComplianceCase`/`New-ComplianceSearch`/
+  `New-ComplianceSearchAction`) for tenants on eDiscovery Standard, noted as the alternative surface
+  in this scenario's `design.md` §3.
+
 ## DONE
+- [x] `scenarios/ediscovery/premium-legal-hold-and-export/` — third Risk & Compliance scenario
+  (eDiscovery Premium), and the first in this repo built on the **Microsoft Graph eDiscovery API**
+  (v1.0 `security` namespace, surface 3): full README (12-section skeleton), design.md, deploy/
+  (`New-EdiscoveryHoldAndCollect.ps1` — idempotent/parameterized Graph automation via
+  `Invoke-MgGraphRequest` that reconciles a whole matter from a JSON config: case
+  (`POST /security/cases/ediscoveryCases`), custodians + mailbox/site userSources, a **legal hold**
+  (`isEnabled=true`, preserve-everything default), and a **collection search** (KQL `contentQuery`,
+  `dataSourceScopes=allCaseCustodians`); get-then-create by natural key with `@odata.nextLink`
+  paging; **real `-WhatIf`** via `$PSCmdlet.ShouldProcess` (unlike S&C PowerShell); opt-in `-Export`
+  against a review set (`POST .../reviewSets/{id}/export` with `outputName`/`exportOptions`/
+  `exportStructure`); `ConfirmImpact=High`; `Remove-EdiscoveryHoldAndCollect.ps1` — staged **release**
+  (PATCH hold `isEnabled=false`) then optional `-Delete` of hold + search, never deleting collected
+  content/exports/case/custodians; `deploy/config/legal-hold-case.sample.json`), validate/
+  (`Test-EdiscoveryHoldAndCollect.ps1` — read-only GETs for case existence/status, each custodian +
+  source + `holdStatus`, hold `isEnabled`, and search scope), four-lens reviews.md (Red Team Fix
+  round resolved — spoliation guardrails (High confirm, opt-in delete/export, release-not-delete
+  default, preserve-everything default), export-data-handling, least-privilege read/write scopes;
+  Blue Team Fix round resolved — hold-status detection, async honesty, idempotency proof; CISO Fix
+  round resolved — defensibility/audit foregrounded; Product Owner Fix round resolved — Graph over
+  classic S&C surface, addToReviewSet gap flagged VERIFY) — grounded in Microsoft Learn (eDiscovery
+  API overview + licensing/auth tiers, and the create bodies for ediscoveryCase / custodians /
+  userSources / searches / legalHold and the reviewSet export action, all v1.0 `security` namespace;
+  edisc-permissions roles) — the addToReviewSet commit prerequisite, `@odata.bind` per-source
+  binding, and E3 export-PAYG billing recorded as explicit VERIFY items rather than fabricated, per
+  `AGENTS.md` §4 — 2026-09-03
+
 - [x] `scenarios/communication-compliance/harassment-and-code-of-conduct/` — second Risk & Compliance
   scenario (Communication Compliance): full README (12-section skeleton), design.md, deploy/
   (`New-CodeOfConductPolicy.ps1` — SCC PowerShell (surface 1) deploying the **scriptable subset** of a

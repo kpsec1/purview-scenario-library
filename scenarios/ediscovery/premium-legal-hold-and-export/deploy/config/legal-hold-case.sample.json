@@ -1,0 +1,33 @@
+{
+  "_comment": "Config for deploy/New-EdiscoveryHoldAndCollect.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -WhatIf. Drives the eDiscovery (Premium) case workflow via the Microsoft Graph eDiscovery API (v1.0 security namespace): create the case, add custodians and their mailbox/site sources, place a legal hold, and create a collection search. Export is a separate, opt-in step (-Export) against an existing review set - see README.md Sections 5 and 11.",
+  "caseName": "Contoso Investigation 2026-014",
+  "description": "Regulatory request - preserve and collect custodian communications for the 2026-014 matter.",
+  "externalId": "2026-014",
+  "custodians": [
+    { "email": "adele.vance@contoso.example", "includeSite": true },
+    { "email": "megan.bowen@contoso.example", "includeSite": false }
+  ],
+  "_custodiansNote": "Each custodian's primary SMTP address. includeSite=true also adds the custodian's OneDrive/SharePoint site source (includedSources 'site') in addition to their mailbox. Custodians must be real, licensed users in the tenant.",
+  "legalHold": {
+    "name": "2026-014 Preservation Hold",
+    "description": "Preserve all custodian content for the duration of the 2026-014 matter.",
+    "contentQuery": "",
+    "_contentQueryNote": "KQL. Empty = hold ALL content for the referenced sources (a preservation-in-place hold). Narrow ONLY with legal sign-off - an over-narrow hold risks spoliation. See design.md."
+  },
+  "search": {
+    "name": "2026-014 Collection",
+    "description": "Collect custodian content responsive to the 2026-014 matter.",
+    "contentQuery": "subject:\"Project Falcon\" OR \"wire transfer\"",
+    "dataSourceScopes": "allCaseCustodians",
+    "_scopeNote": "allCaseCustodians scopes the search to every custodian added to this case (simplest, grounded). Other values: none, allTenantMailboxes, allTenantSites, allCaseNoncustodialDataSources."
+  },
+  "export": {
+    "outputName": "2026-014 Export",
+    "description": "Export of the reviewed, responsive set for the 2026-014 matter.",
+    "exportOptions": "originalFiles,tags",
+    "exportStructure": "pst",
+    "_exportNote": "Export runs only with -Export and -ReviewSetId (a review set with content committed to it). exportOptions bitwise: originalFiles,text,pdfReplacement,tags(,splitSource,includeFolderAndPath,friendlyName,condensePaths). exportStructure: none|pst|msg ('directory' is deprecated). Committing search results into a review set (addToReviewSet) is a prerequisite - see README.md Section 11 VERIFY."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-03"
+}
