@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Data Security (highest sales value — front-load)
-- [ ] `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`
 - [ ] `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/`
 
 ### Data Governance
@@ -105,12 +104,59 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   unchanged resignation CSV on a subsequent scheduled run is a safe no-op or creates a duplicate
   signal — undocumented by Microsoft as of this build (flagged inline in the script's `.NOTES`
   and `README.md` §11).
-- `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` (already next in the TODO order
-  above) is now unblocked as the natural follow-on to this fragment — it consumes this policy's
-  risk-level output — and also closes the split-PAN evasion gap flagged against
-  `scenarios/dlp/pci-teams-exfil-block/` (see that scenario's earlier follow-up entry below).
+### Follow-ups discovered while building the Adaptive Protection dynamic-risk-DLP scenario
+- [ ] `scenarios/dlp/endpoint-dlp-usb-block-adaptive-protection/` (or fold into a future Endpoint
+  DLP hardening pass) — script the **Devices** half of Adaptive Protection (risk-based
+  clipboard/USB/print/network-share/restricted-app restrictions via `-SharedByIRMUserRisk` +
+  `-EndpointDlpRestrictions`), deferred from `dynamic-risk-dlp-enforcement` because
+  `-EndpointDlpRestrictions`'s exact `Setting`/`Value` strings already carry an open VERIFY from
+  `scenarios/dlp/endpoint-dlp-usb-block/` — needs that VERIFY closed first (ideally via a pilot
+  tenant) rather than compounding a second unverified use of the same parameter. Also requires
+  either Advanced classification scanning and protection enabled, or an explicit File Type
+  condition, per Microsoft's documented Devices-policy prerequisite.
+- [ ] `scenarios/adaptive-protection/conditional-access-insider-risk-block/` — script/document
+  the Conditional Access "Insider risk" condition integration (Microsoft Entra admin center,
+  requires **Microsoft Entra ID P2**), deferred from `dynamic-risk-dlp-enforcement` because it's
+  a different admin surface (Entra, not Purview/EXO) with its own license prerequisite this
+  scenario's DLP-only design doesn't otherwise require. Still a Microsoft-labeled **preview**
+  integration as of this build — re-check GA status before scoping.
+- [ ] Consider a cross-cutting or Data Lifecycle Management-module scenario covering the
+  120-day deleted-content preservation policy Adaptive Protection can auto-create for
+  Elevated-risk users — deferred from `dynamic-risk-dlp-enforcement` as a separate opt-in with
+  its own retention-policy implications, better scoped alongside this library's future Data
+  Lifecycle Management module scenarios (still TODO below) than bundled into the DLP scenario.
+- VERIFY (pilot tenant, before a customer relies on it in production): whether representing the
+  portal's compound "Content is shared from Microsoft 365 with people outside my organization"
+  condition using `-AccessScope NotInOrganization` alone (this scenario's and
+  `pci-teams-exfil-block`'s shared pattern) is a byte-for-byte match to the portal-rendered rule,
+  or whether a separate `-ContentIsShared` boolean condition is also required — flagged inline in
+  `dynamic-risk-dlp-enforcement/deploy/New-AdaptiveProtectionDlpPolicy.ps1`'s `.NOTES` and
+  `README.md` §11.
 
 ## DONE
+- [x] `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` — full README (12-section
+  skeleton), design.md, deploy/ (`New-AdaptiveProtectionDlpPolicy.ps1` — idempotent/parameterized
+  Security & Compliance PowerShell deploying a two-rule Exchange+Teams DLP policy keyed on the
+  `-SharedByIRMUserRisk` condition, Elevated=block/Moderate+Minor=audit, cert app-only, `-WhatIf`
+  throughout, mirrors Microsoft's own documented Quick Setup rule values via the custom-setup
+  path; `Remove-AdaptiveProtectionDlpPolicy.ps1` — disable/purge rollback; a portal-configuration
+  reference manifest for the non-scriptable Adaptive Protection enablement/insider-risk-level
+  steps), validate/ script (automated policy/rule/condition checks plus a manual checklist for
+  the portal-only pieces), four-lens reviews.md (Red Team Fix round resolved — removed a
+  policy-tip wording that would have tipped off a flagged insider mid-investigation, and
+  sharpened the Known Limitations section to name the Endpoint-DLP/Conditional-Access/DLM bypass
+  gap explicitly rather than as a scoping footnote; Blue Team clarification — manual DLP-to-IRM-
+  alert correlation documented in the runbook; CISO Fix round resolved — added a
+  feeder-policy-baseline-first recommendation and an HR/Legal-coordination note before broad
+  enforcement rollout; Product Owner Fix round resolved — removed an unverified `-ContentIsShared`
+  condition in favor of this library's already-grounded `-AccessScope`-only pattern, added
+  "(preview)" labels for the Conditional Access/Data Lifecycle Management integrations) —
+  grounded in Microsoft Learn (Adaptive Protection overview/configuration/permissions/36-hour
+  propagation delay, the documented Quick-Setup DLP rule values for Teams+Exchange this scenario
+  reproduces, the Adaptive-Protection-guide's recommended insider-risk-level definitions, and
+  independently confirming `New-/Set-DlpComplianceRule -SharedByIRMUserRisk` and its three fixed
+  risk-level GUIDs on both cmdlets' own parameter references) — 2026-09-03
+
 - [x] `scenarios/insider-risk/departing-employee-data-theft/` — full README (12-section
   skeleton), design.md, deploy/ (`Send-HrTerminationRecord.ps1` — parameterized/idempotent HR
   resignation-CSV upload via the documented HR-connector ingestion webhook, chunked at the

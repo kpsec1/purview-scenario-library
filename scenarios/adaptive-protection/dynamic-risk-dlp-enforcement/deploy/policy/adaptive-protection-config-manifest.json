@@ -1,0 +1,52 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Adaptive Protection's enable toggle and insider risk level (Elevated/Moderate/Minor) threshold definitions have no documented PowerShell or Graph write API as of this writing - only the DOWNSTREAM DLP rule condition (-SharedByIRMUserRisk) is scriptable, and that is what deploy/New-AdaptiveProtectionDlpPolicy.ps1 automates. No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal steps in README.md §5, so the deployed configuration can be diffed against intent during review.",
+  "adaptiveProtection": {
+    "setupPath": "Custom setup (not Quick Setup) - see README.md §2 and design.md §6 for why",
+    "feederInsiderRiskPolicy": "scenarios/insider-risk/departing-employee-data-theft (this library), OR Microsoft's built-in 'Data leaks' policy template, OR a buyer-authored equivalent - not created by this scenario",
+    "enabled": "Set to On only after Steps 1-4 in README.md §5 are complete - see design.md §5 for the up-to-36-hour propagation delay after enabling"
+  },
+  "insiderRiskLevels": {
+    "elevated": {
+      "recommendedDefinition": "Confirmed alert of any severity for a user (Microsoft's own minimize-false-positives recommendation - insider-risk-management-adaptive-protection-guide)",
+      "guid": "FCB9FA93-6269-4ACF-A756-832E79B36A2A",
+      "note": "GUID is the value New-DlpComplianceRule -SharedByIRMUserRisk expects - fixed and Microsoft-documented, not tenant-specific."
+    },
+    "moderate": {
+      "recommendedDefinition": "High severity alert generated for a user",
+      "guid": "797C4446-5C73-484F-8E58-0CCA08D6DF6C"
+    },
+    "minor": {
+      "recommendedDefinition": "Low or medium severity alert generated for a user",
+      "guid": "75A4318B-94A2-4323-BA42-2CA6DB29AAFE"
+    },
+    "pastActivityDetectionWindowDays": 7,
+    "riskLevelTimeframeDays": 7,
+    "note": "Values above are Microsoft's own 'minimize false positives and disruptions' recommended configuration (insider-risk-management-adaptive-protection-guide), not this scenario's invention. VERIFY these still match Microsoft's current recommended defaults at deploy time, and adjust per README.md §8 tuning guidance based on observed alert volume."
+  },
+  "dlpPolicy": {
+    "name": "Adaptive Protection - Teams and Exchange DLP (Custom)",
+    "deployedBy": "deploy/New-AdaptiveProtectionDlpPolicy.ps1",
+    "locations": ["Exchange Online", "Microsoft Teams"],
+    "rules": [
+      {
+        "name": "AdaptiveProtection-Block-Elevated",
+        "condition": "SharedByIRMUserRisk = Elevated AND AccessScope = NotInOrganization (shared with people outside the organization)",
+        "action": "Block",
+        "initialMode": "TestWithNotifications (simulation) - matches Microsoft's own Quick Setup default"
+      },
+      {
+        "name": "AdaptiveProtection-Audit-ModerateMinor",
+        "condition": "SharedByIRMUserRisk = Moderate OR Minor AND AccessScope = NotInOrganization (shared with people outside the organization)",
+        "action": "Audit only (no block)",
+        "initialMode": "TestWithNotifications (simulation)"
+      }
+    ]
+  },
+  "outOfScopeThisFragment": [
+    "Endpoint DLP (Devices) Adaptive Protection rules - see design.md §7 and PROGRESS.md follow-up",
+    "Conditional Access 'Insider risk' condition policy - requires Microsoft Entra ID P2, see design.md §7",
+    "Data Lifecycle Management 120-day deleted-content preservation policy for Elevated-risk users - see design.md §7"
+  ],
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-03"
+}
