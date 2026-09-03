@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Data Governance
-- [ ] `scenarios/unified-catalog/curate-business-glossary/`
 - [ ] `scenarios/data-quality/rules-and-scorecards/`
 - [ ] `scenarios/data-lineage/end-to-end-lineage-validation/`
 - [ ] `scenarios/data-estate-insights/classification-coverage-report/`
@@ -190,7 +189,64 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Copilot licensing tiers) as its own row/footnote — currently only cited inline in
   `copilot-sensitive-data-exposure/README.md` §3, not surfaced in the cross-cutting matrix.
 
+### Follow-ups discovered while building the Unified Catalog business-glossary scenario
+- [ ] `scenarios/unified-catalog/link-glossary-terms-to-data-products/` — link this scenario's
+  (or any) glossary terms to data products/assets/columns via the `Terms - Add Related Entity`
+  and Data Products operation groups, deferred as a non-goal in `curate-business-glossary/
+  design.md` §7 because it requires a Data Products scenario (and Data Map-scanned assets) to
+  already exist to link against — natural follow-up once `scenarios/data-map/
+  scan-azure-sql-and-classify/` output has a data product to attach to.
+- [ ] Extend `docs/automation-surface.md` §4's Unified Catalog REST routing-table row (currently
+  "evolving surface — VERIFY exact endpoint names per release") with the confirmed exact
+  operation groups/paths grounded in `curate-business-glossary` (`Terms` and `Business Domain`
+  operation groups, `POST/PUT/DELETE/GET /datagovernance/catalog/terms(|/{id})`,
+  `.../businessdomains(|/{id})`, `.../terms/{id}/relationships`, API version
+  `2026-03-20-preview`) — closes that cross-cutting doc's open VERIFY for this one surface.
+- [ ] VERIFY (pilot tenant, before production reliance): the Unified Catalog `Terms - Query`
+  `nameKeyword` filter's exact match semantics (substring/prefix/tokenized) are undocumented;
+  `curate-business-glossary`'s idempotency design always re-checks for an exact client-side name
+  match rather than trusting the filter, but a domain with more than one page of name-matching
+  terms could in principle need pagination the deploy script doesn't yet implement — flagged
+  inline in `README.md` §11 and the deploy script's `.NOTES`.
+- [ ] VERIFY (pilot tenant): the Unified Catalog `Business Domain - Create`/`Update` REST
+  reference marks `systemData`/`thumbnail`/`domains`/`managedAttributes` as required request-body
+  fields in a way that contradicts Microsoft's own worked examples and ordinary REST semantics;
+  `curate-business-glossary`'s deploy script sends a minimal practical body instead and flags this
+  discrepancy rather than fabricating placeholder values for those fields — confirm the minimal
+  body is accepted (or find the correct minimal shape) against a pilot tenant.
+- [ ] Consider a `scenarios/unified-catalog/governance-domain-hierarchy/` (or fold into a future
+  Unified Catalog pass) covering multi-domain parent/child governance hierarchies, custom
+  attribute groups, and data estate mappings to Data Map collections — explicitly out of scope in
+  `curate-business-glossary/design.md` §6–7, which models a single standalone domain.
+
 ## DONE
+- [x] `scenarios/unified-catalog/curate-business-glossary/` — first Unified Catalog-module
+  scenario: full README (12-section skeleton), design.md (idempotency design against a
+  name-less-unique API, the CSV-bulk-import-can't-update rationale for using REST instead,
+  UPN-to-Entra-object-ID owner resolution design), deploy/ (`New-BusinessGlossary.ps1` —
+  idempotent/parameterized Unified Catalog REST automation (surface 4) plus a Microsoft Graph
+  call (surface 3) to resolve owner/expert UPNs to Entra object IDs; resolves-or-creates a
+  governance domain, upserts a small parent/child term hierarchy with acronyms/resources/related-
+  term links from a declarative JSON file, `-Publish` gate, manual `$PSCmdlet.ShouldProcess()`
+  `-WhatIf` throughout with an explicit `-ReadOnly` bypass for the read-only Query Terms lookup so
+  dry-run create-vs-update detection stays accurate; `Remove-BusinessGlossary.ps1` — unpublish
+  (reversible, reuses the server's own current fields via GET so it can't clobber a portal-made
+  edit) and `-Purge` (permanent delete) rollback; a JSON glossary definition example modeling
+  Microsoft's own CAF-recommended Customer/Revenue-style term set), validate/ script (read-only
+  content/hierarchy/relationship/publish-status checks), four-lens reviews.md (Red Team Fix round
+  resolved — added `User.Read.All` blast-radius compensating controls and stale/departed-owner
+  review guidance; Blue Team Fix round resolved — added `systemData` attribution and scheduled-
+  validation drift-detection guidance; CISO Pass; Product Owner Fix round resolved — sharpened
+  preview-API-surface prominence) — grounded in Microsoft Learn via the Microsoft Learn MCP tool
+  (Unified Catalog glossary-terms/governance-domains/roles-permissions/billing/CAF-baseline
+  guidance pages, and the Purview Unified Catalog REST API's Terms and Business Domain operation
+  groups directly fetched at API version `2026-03-20-preview` — Create/Update/Delete/Get/List/
+  Query/AddRelatedEntity/ListRelatedEntities for Terms, Create/Update/Delete/Enumerate for
+  Business Domain — plus the Microsoft identity platform client-credentials flow and Graph
+  `Get a user`/`User.Read.All` reference for the owner-resolution design) — two REST-schema
+  discrepancies recorded as explicit VERIFY items rather than resolved by guessing, per `AGENTS.md`
+  §4 — 2026-09-03
+
 - [x] `scenarios/data-map/scan-azure-sql-and-classify/` — first Data Governance-module scenario:
   full README (12-section skeleton), design.md, deploy/ (`New-AzureSqlDataMapScan.ps1` —
   idempotent/parameterized Purview Data Map REST automation (surface 4), registers an

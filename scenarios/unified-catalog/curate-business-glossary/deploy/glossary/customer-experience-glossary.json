@@ -1,0 +1,53 @@
+{
+  "domain": {
+    "name": "Customer Experience",
+    "description": "Business concepts and data products owned by the Customer Experience organization: customer identity, engagement, and satisfaction metrics.",
+    "type": "FunctionalUnit"
+  },
+  "terms": [
+    {
+      "name": "Customer",
+      "description": "An individual or organization that has purchased, or is contractually entitled to purchase, a product or service from the company. Excludes prospects and internal test accounts.",
+      "owners": ["jordan.steward@contoso.com"],
+      "experts": [],
+      "acronyms": [],
+      "resources": [
+        { "name": "Customer master data standard", "url": "https://contoso.sharepoint.com/sites/DataGovernance/customer-master-data-standard" }
+      ],
+      "parent": null,
+      "relatedTerms": []
+    },
+    {
+      "name": "Customer ID",
+      "description": "The system-of-record surrogate key that uniquely identifies a Customer across all downstream systems. Assigned once at first purchase and never reused, even after account closure.",
+      "owners": ["jordan.steward@contoso.com"],
+      "experts": ["alex.masterdata@contoso.com"],
+      "acronyms": ["CustID"],
+      "resources": [],
+      "parent": "Customer",
+      "relatedTerms": []
+    },
+    {
+      "name": "Customer Lifetime Value",
+      "description": "The projected net revenue attributable to a Customer's entire relationship with the company, discounted to present value. Recalculated monthly by the Finance analytics pipeline.",
+      "owners": ["jordan.steward@contoso.com"],
+      "experts": ["priya.finance@contoso.com"],
+      "acronyms": ["CLV"],
+      "resources": [],
+      "parent": "Customer",
+      "relatedTerms": ["Net Promoter Score"]
+    },
+    {
+      "name": "Net Promoter Score",
+      "description": "A customer-loyalty metric derived from the standard 0-10 'how likely are you to recommend us' survey question, scored as %Promoters minus %Detractors. Tracked at the account and product-line level.",
+      "owners": ["jordan.steward@contoso.com"],
+      "experts": [],
+      "acronyms": ["NPS"],
+      "resources": [
+        { "name": "NPS survey methodology", "url": "https://contoso.sharepoint.com/sites/CustomerExperience/nps-methodology" }
+      ],
+      "parent": null,
+      "relatedTerms": []
+    }
+  ]
+}
