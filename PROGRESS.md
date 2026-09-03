@@ -16,9 +16,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## TODO (ordered)
 
-### Cross-cutting (do first)
-- [ ] `docs/glossary.md` — canonical terms
-
 ### Data Security (highest sales value — front-load)
 - [ ] `scenarios/dlp/pci-teams-exfil-block/` — TEMPLATE scenario, full quality (others copy this)
 - [ ] `scenarios/information-protection/auto-label-confidential-sharepoint/`
@@ -52,6 +49,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [x] `docs/licensing-matrix.md` — two-model (per-user + PAYG) licensing matrix, grounded in MS Learn — 2026-09-02
 - [x] `docs/rbac-model.md` — four-RBAC-system model (Entra, Purview role groups, Data Governance, Exchange Online) + admin units + PowerShell/Graph auth patterns, grounded in MS Learn — 2026-09-03
 - [x] `docs/automation-surface.md` — four automation surfaces (EXO/S&C PowerShell, Graph, Data Map REST), module install, app-only auth setup, task-routing table, throttling/CI-CD patterns, grounded in MS Learn — 2026-09-03
+- [x] `docs/glossary.md` — canonical A-Z term list spanning all 14 modules (module-tagged, cross-referencing licensing-matrix.md and rbac-model.md), grounded in MS Learn (incl. the official Purview data-governance and Compliance Manager glossaries) — 2026-09-03
 
 ## Blocked / needs user
 - (none)
