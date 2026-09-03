@@ -1,0 +1,51 @@
+{
+  "$comment": "Reference/documentation copy of the policy this scenario's deploy script creates via New-DlpCompliancePolicy / New-DlpComplianceRule. This file is NOT consumed by the deploy script (Security & Compliance PowerShell has no native 'apply this JSON' cmdlet for DLP policies outside AdvancedRule bodies) - it exists so the shape of the policy is reviewable in a diff without reading PowerShell. VERIFY: the exact EndpointDlpRestrictions Value strings ('Block', 'Audit') shown here are not enumerated in Microsoft's canonical New-/Set-DlpComplianceRule parameter reference - see deploy/New-EndpointDlpUsbBlockPolicy.ps1 .NOTES for sourcing and the pilot-tenant verification step in README.md §7.",
+  "policyName": "Endpoint DLP - Block USB Removable Media Exfiltration",
+  "locations": {
+    "endpointDlpLocation": "All"
+  },
+  "mode": "TestWithNotifications",
+  "rules": [
+    {
+      "name": "USB-Block-Sensitive-AllUsers",
+      "priority": 0,
+      "conditions": {
+        "exceptIfFromMemberOf": "<ITCustodiansGroupEmail>",
+        "contentContainsSensitiveInformation": [
+          { "name": "U.S. Social Security Number (SSN)" },
+          { "name": "Credit Card Number" }
+        ]
+      },
+      "actions": {
+        "endpointDlpRestrictions": [
+          { "setting": "RemovableMedia", "value": "Block" }
+        ],
+        "notifyUser": ["LastModifier", "<AdminNotificationEmail>"],
+        "generateAlert": ["<AdminNotificationEmail>"],
+        "generateIncidentReport": ["<AdminNotificationEmail>"],
+        "reportSeverityLevel": "High"
+      },
+      "stopPolicyProcessing": true
+    },
+    {
+      "name": "USB-Audit-ITDataCustodians",
+      "priority": 1,
+      "conditions": {
+        "fromMemberOf": "<ITCustodiansGroupEmail>",
+        "contentContainsSensitiveInformation": [
+          { "name": "U.S. Social Security Number (SSN)" },
+          { "name": "Credit Card Number" }
+        ]
+      },
+      "actions": {
+        "endpointDlpRestrictions": [
+          { "setting": "RemovableMedia", "value": "Audit" }
+        ],
+        "generateAlert": ["<AdminNotificationEmail>"],
+        "generateIncidentReport": ["<AdminNotificationEmail>"],
+        "reportSeverityLevel": "Low"
+      },
+      "stopPolicyProcessing": false
+    }
+  ]
+}

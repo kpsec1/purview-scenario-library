@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Data Security (highest sales value — front-load)
-- [ ] `scenarios/dlp/endpoint-dlp-usb-block/`
 - [ ] `scenarios/insider-risk/departing-employee-data-theft/`
 - [ ] `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`
 - [ ] `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/`
@@ -51,6 +50,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] `scenarios/compliance-manager/pci-dss-assessment/` — Compliance Manager PCI DSS v4.0
   premium-template assessment scenario referenced from `scenarios/dlp/pci-teams-exfil-block/README.md`
   §2 as the assessment-side companion to this technical control.
+
+### Follow-ups discovered while building the Endpoint DLP USB-block scenario
+- [ ] `scenarios/dlp/removable-usb-device-groups-allowlist/` (or fold into a future Endpoint DLP
+  hardening pass) — script/document the **Removable USB device groups** portal feature
+  (`Set-PolicyConfig -DlpRemovableMediaGroups`) to allow specific IT-issued encrypted backup
+  drives by device identity, complementing the group-based (user) exception in
+  `scenarios/dlp/endpoint-dlp-usb-block/`. Flagged as out of scope there because the per-rule
+  PowerShell syntax for referencing an authorization group inside `-EndpointDlpRestrictions`
+  is not documented anywhere found during that scenario's build — needs a fresh grounding pass.
+- [ ] Consider a companion `scenarios/dlp/defender-device-control-usb-allowlist/` (Microsoft
+  Defender for Endpoint device control, not Purview DLP) — `endpoint-dlp-usb-block/README.md`
+  §11 notes Endpoint DLP is content-aware but not device-identity-aware, and a buyer wanting "no
+  unapproved USB devices, period" needs device control in addition, not instead.
+- [ ] Verify (against a pilot tenant or an official Microsoft Learn source, not just the Tech
+  Community blog cited in `scenarios/dlp/endpoint-dlp-usb-block/README.md` §11) the exact
+  `-EndpointDlpRestrictions` `Setting`/`Value` strings this scenario's deploy script uses
+  (`RemovableMedia` / `Block` / `Audit`) — flagged as an explicit VERIFY in that scenario because
+  Microsoft's canonical `New-DlpComplianceRule`/`Set-DlpComplianceRule` reference documents the
+  parameter only as an opaque hashtable array with no enumerated values, and
+  techcommunity.microsoft.com was unreachable (network egress blocked) in this build environment
+  to quote the walkthrough verbatim.
 
 ### Follow-ups discovered while building the Information Protection auto-labeling scenario
 - [ ] Extend `docs/automation-surface.md` with a fifth automation surface: **SharePoint Online
@@ -90,6 +110,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   override-behavior tables, New-/Set-/Remove-AutoSensitivityLabelPolicy and
   -AutoSensitivityLabelRule reference, DLP policy reference condition-group OR/AND semantics,
   Set-SPOTenant EnableAIPIntegration) — 2026-09-03
+
+- [x] `scenarios/dlp/endpoint-dlp-usb-block/` — full README (12-section skeleton with an
+  explicit VERIFY callout on `EndpointDlpRestrictions` Setting/Value strings), design.md,
+  idempotent/parameterized deploy + rollback PowerShell (Security & Compliance PowerShell,
+  `EndpointDlpLocation`/`EndpointDlpRestrictions`, group-based IT Data Custodians audit-only
+  exception mirroring the Card Ops pattern, cert app-only, `-WhatIf` throughout), validate script
+  (explicit device-onboarding/policy-sync caveat), four-lens reviews.md (Red/Blue Fix rounds
+  resolved; CISO Pass; Product Owner Fix round resolved) — grounded in MS Learn (Endpoint DLP
+  licensing/service description, device onboarding overview and permissions, DLP policy reference
+  device-restriction action semantics, New-/Set-/Remove-DlpCompliancePolicy/Rule reference,
+  reuses the SSN + Credit Card Number SIT pair from `auto-label-confidential-sharepoint`) plus a
+  Microsoft Security Blog Tech Community PowerShell walkthrough (not independently fetchable in
+  this environment — network egress to techcommunity.microsoft.com blocked — corroborated via two
+  independent search-tool summaries and tagged VERIFY for pilot-tenant confirmation) — 2026-09-03
 
 ## Blocked / needs user
 - (none)
