@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Data Security (highest sales value — front-load)
-- [ ] `scenarios/dlp/pci-teams-exfil-block/` — TEMPLATE scenario, full quality (others copy this)
 - [ ] `scenarios/information-protection/auto-label-confidential-sharepoint/`
 - [ ] `scenarios/dlp/endpoint-dlp-usb-block/`
 - [ ] `scenarios/insider-risk/departing-employee-data-theft/`
@@ -44,12 +43,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 > (lifecycle, deployment posture, regulatory driver, failure/abuse, scale). Add those fragments
 > here as they're scoped.
 
+### Follow-ups discovered while building the DLP template scenario
+- [ ] `scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/` (or fold into Adaptive
+  Protection) — cross-message/behavioral correlation to close the split-PAN evasion gap flagged
+  in `reviews.md` (Red Team) for the Teams template scenario; depends on
+  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` or
+  `scenarios/insider-risk/departing-employee-data-theft/` landing first.
+- [ ] `scenarios/compliance-manager/pci-dss-assessment/` — Compliance Manager PCI DSS v4.0
+  premium-template assessment scenario referenced from `scenarios/dlp/pci-teams-exfil-block/README.md`
+  §2 as the assessment-side companion to this technical control.
+
 ## DONE
 - [x] repo scaffold — AGENTS.md, README, PROGRESS, LICENSE, .gitignore, CONTRIBUTING — 4a79558 — 2026-09-02
 - [x] `docs/licensing-matrix.md` — two-model (per-user + PAYG) licensing matrix, grounded in MS Learn — 2026-09-02
 - [x] `docs/rbac-model.md` — four-RBAC-system model (Entra, Purview role groups, Data Governance, Exchange Online) + admin units + PowerShell/Graph auth patterns, grounded in MS Learn — 2026-09-03
 - [x] `docs/automation-surface.md` — four automation surfaces (EXO/S&C PowerShell, Graph, Data Map REST), module install, app-only auth setup, task-routing table, throttling/CI-CD patterns, grounded in MS Learn — 2026-09-03
 - [x] `docs/glossary.md` — canonical A-Z term list spanning all 14 modules (module-tagged, cross-referencing licensing-matrix.md and rbac-model.md), grounded in MS Learn (incl. the official Purview data-governance and Compliance Manager glossaries) — 2026-09-03
+- [x] `scenarios/dlp/pci-teams-exfil-block/` — TEMPLATE scenario: full README (12-section skeleton), design.md, idempotent/parameterized deploy + rollback PowerShell (Security & Compliance PowerShell, cert app-only pattern, -WhatIf throughout), validate script, four-lens reviews.md (Red/Blue Fix rounds resolved; CISO Pass; Product Owner Fix round resolved) — grounded in MS Learn (DLP-for-Teams scoping/licensing, New-/Set-/Remove-DlpCompliancePolicy/Rule reference, Credit Card Number SIT, PCI DSS v4.0.1 Requirement 4.2) — 2026-09-03
 
 ## Blocked / needs user
 - (none)

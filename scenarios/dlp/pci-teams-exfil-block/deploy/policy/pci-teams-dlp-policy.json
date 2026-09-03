@@ -1,0 +1,59 @@
+{
+  "$comment": "Reference/documentation copy of the policy this scenario's deploy script creates via New-DlpCompliancePolicy / New-DlpComplianceRule. This file is NOT consumed by the deploy script (Security & Compliance PowerShell has no native 'apply this JSON' cmdlet for DLP policies outside AdvancedRule bodies) - it exists so the shape of the policy is reviewable in a diff without reading PowerShell, and so it can be pasted into an AdvancedRule if a future revision needs the JSON advanced-rule form documented at https://learn.microsoft.com/purview/sit-create-a-custom-sensitive-information-type-in-scc-powershell.",
+  "policyName": "PCI DSS - Teams Card Data Exfiltration Block",
+  "locations": {
+    "teamsLocation": "All"
+  },
+  "mode": "TestWithNotifications",
+  "rules": [
+    {
+      "name": "PCI-CardOps-Override-External",
+      "priority": 0,
+      "conditions": {
+        "fromMemberOf": "<CardOpsGroupEmail>",
+        "accessScope": "NotInOrganization",
+        "contentContainsSensitiveInformation": [{ "name": "Credit Card Number" }]
+      },
+      "actions": {
+        "blockAccess": true,
+        "notifyAllowOverride": ["WithJustification"],
+        "notifyUser": ["LastModifier", "<AdminNotificationEmail>"],
+        "generateAlert": ["<AdminNotificationEmail>"],
+        "generateIncidentReport": ["<AdminNotificationEmail>"],
+        "reportSeverityLevel": "High"
+      },
+      "stopPolicyProcessing": true
+    },
+    {
+      "name": "PCI-Block-External-AllUsers",
+      "priority": 1,
+      "conditions": {
+        "exceptIfFromMemberOf": "<CardOpsGroupEmail>",
+        "accessScope": "NotInOrganization",
+        "contentContainsSensitiveInformation": [{ "name": "Credit Card Number" }]
+      },
+      "actions": {
+        "blockAccess": true,
+        "notifyUser": ["LastModifier", "<AdminNotificationEmail>"],
+        "generateAlert": ["<AdminNotificationEmail>"],
+        "generateIncidentReport": ["<AdminNotificationEmail>"],
+        "reportSeverityLevel": "High"
+      },
+      "stopPolicyProcessing": true
+    },
+    {
+      "name": "PCI-Audit-Internal-AllUsers",
+      "priority": 2,
+      "conditions": {
+        "contentContainsSensitiveInformation": [{ "name": "Credit Card Number" }]
+      },
+      "actions": {
+        "blockAccess": false,
+        "generateAlert": ["<AdminNotificationEmail>"],
+        "generateIncidentReport": ["<AdminNotificationEmail>"],
+        "reportSeverityLevel": "Low"
+      },
+      "stopPolicyProcessing": false
+    }
+  ]
+}
