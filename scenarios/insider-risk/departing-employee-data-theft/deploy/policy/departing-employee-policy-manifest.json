@@ -1,0 +1,58 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Insider Risk Management has no documented PowerShell or Graph write API for policy authoring as of this writing (docs/automation-surface.md §6). No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal steps in README.md §5, so the deployed policy can be diffed against intent during review instead of relying on institutional memory of what was clicked.",
+  "policyName": "Departing Employee Data Theft",
+  "policyTemplate": "Data theft by departing users",
+  "scope": {
+    "users": "All users (org-wide)",
+    "priorityUserGroup": null,
+    "priorityUserGroupNote": "Not assigned by default - see README.md §8 for when/how to add one (e.g. Finance, Engineering-with-source-access, Executives)."
+  },
+  "triggeringEvents": [
+    {
+      "type": "HR connector - employee resignation",
+      "source": "HR connector job configured per README.md §5 Prerequisites; fed by deploy/Send-HrTerminationRecord.ps1",
+      "fields": ["UserPrincipalName", "ResignationDate", "LastWorkingDate"]
+    },
+    {
+      "type": "User account deleted from Microsoft Entra ID",
+      "source": "Built-in Entra signal - enable this option explicitly in the policy workflow as a fallback trigger",
+      "note": "Do not rely on this as the primary trigger - it fires at account deletion, near the END of the risk window. See design.md §6."
+    }
+  ],
+  "contentPriorities": {
+    "sensitivityLabels": "VERIFY: map to the tenant's actual confidential/highly-confidential label names at deploy time - not hard-coded here",
+    "sensitiveInfoTypes": []
+  },
+  "indicators": {
+    "officeIndicators": [
+      "Downloading content from SharePoint",
+      "Syncing content from SharePoint",
+      "Downloading content from OneDrive",
+      "Syncing content from OneDrive",
+      "Sharing SharePoint files with people outside the organization",
+      "Sharing SharePoint folders with people outside the organization",
+      "Sharing file links with people outside the organization in a Teams chat"
+    ],
+    "deviceIndicators": [
+      "Creating or copying files to USB",
+      "Using a browser to upload files to the web",
+      "Printing files",
+      "Creating or transferring files to a network share"
+    ],
+    "cloudIndicators": [
+      "Box", "Dropbox", "Google Drive", "Amazon S3", "Azure"
+    ],
+    "note": "Device indicators require device onboarding (see scenarios/dlp/endpoint-dlp-usb-block/ for the same onboarding prerequisite). Cloud indicators for non-M365 destinations bill as Data Security processing units under PAYG - see docs/licensing-matrix.md §2 and README.md §10."
+  },
+  "detectionOptions": {
+    "sequenceDetection": true,
+    "cumulativeExfiltrationDetection": true,
+    "note": "Apply Microsoft-provided default thresholds on first deployment (README.md §5 step 9); do not hand-tune thresholds until at least one full activation-window cycle of baseline data exists (README.md §8)."
+  },
+  "alertReview": {
+    "pseudonymizeUserNames": true,
+    "note": "Repo default - do not disable pseudonymization without an explicit, documented privacy/legal decision. See reviews.md, CISO lens."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-03"
+}

@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Data Security (highest sales value — front-load)
-- [ ] `scenarios/insider-risk/departing-employee-data-theft/`
 - [ ] `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`
 - [ ] `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/`
 
@@ -90,7 +89,48 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Card Number starter set is U.S.-centric and should not be presented as GDPR-complete personal-
   data coverage for an EU/UK-only tenant without swapping in the relevant regional SITs.
 
+### Follow-ups discovered while building the Insider Risk Management departing-employee scenario
+- [ ] Consider scripting the HR-connector Entra app registration itself (Microsoft Graph
+  `New-MgApplication`/`New-MgServicePrincipal`/app-password creation) instead of leaving it a
+  manual portal prerequisite (`scenarios/insider-risk/departing-employee-data-theft/README.md`
+  §5 step 2) — deferred in this build because no Graph-cmdlet quickstart specific to this
+  HR-connector auth flow was independently grounded, and fabricating the exact parameter set
+  risked violating `AGENTS.md` §4's no-invented-cmdlets rule. Worth a dedicated, narrowly-scoped
+  follow-up fragment once grounded.
+- [ ] `scenarios/insider-risk/security-policy-violations-by-departing-users/` — the related but
+  distinct IRM template requiring Microsoft Defender for Endpoint integration, explicitly called
+  out as a non-goal in `departing-employee-data-theft/design.md` §7.
+- [ ] VERIFY (pilot tenant, before any customer relies on the daily-schedule pattern in
+  `departing-employee-data-theft/deploy/Send-HrTerminationRecord.ps1`): whether re-uploading an
+  unchanged resignation CSV on a subsequent scheduled run is a safe no-op or creates a duplicate
+  signal — undocumented by Microsoft as of this build (flagged inline in the script's `.NOTES`
+  and `README.md` §11).
+- `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` (already next in the TODO order
+  above) is now unblocked as the natural follow-on to this fragment — it consumes this policy's
+  risk-level output — and also closes the split-PAN evasion gap flagged against
+  `scenarios/dlp/pci-teams-exfil-block/` (see that scenario's earlier follow-up entry below).
+
 ## DONE
+- [x] `scenarios/insider-risk/departing-employee-data-theft/` — full README (12-section
+  skeleton), design.md, deploy/ (`Send-HrTerminationRecord.ps1` — parameterized/idempotent HR
+  resignation-CSV upload via the documented HR-connector ingestion webhook, chunked at the
+  500-row limit, SecureString secret handling, `-WhatIf`; `Export-InsiderRiskAlerts.ps1` —
+  read-only Graph Security API alert pull with a correctly-grounded client-side
+  `detectionSource` filter after discovering `serviceSource` has no IRM enum member; a portal-
+  configuration reference manifest, explicitly labeled as non-executable since IRM policy
+  authoring has no PowerShell/Graph write API), validate/ script (automated Graph-permission +
+  CSV-schema checks plus an explicit manual-verification checklist for the portal-only pieces),
+  four-lens reviews.md (Red Team Fix round resolved — 90-day retrospective-lookback boundary and
+  HR-connector app-registration scoping/rotation; Blue Team Fix round resolved — alert-export
+  dedup/cursor caveat; CISO Fix round resolved — HR-process-dependency visibility gap; Product
+  Owner Pass) — grounded in Microsoft Learn (policy templates and triggering-event prerequisites,
+  HR connector CSV schema/webhook/auth flow, priority user groups, role groups and Data Connector
+  Admin inclusion, Graph security API alert/detectionSource/serviceSource resource definitions,
+  SecurityAlert.Read.All permission, insider-risk-to-Defender-portal integration path) plus two
+  PowerShell correctness bugs caught and fixed during a syntax self-review (a single-chunk-CSV
+  array-unwrapping bug, and a backslash-vs-backtick string-escaping bug) — 2026-09-03
+
+
 - [x] repo scaffold — AGENTS.md, README, PROGRESS, LICENSE, .gitignore, CONTRIBUTING — 4a79558 — 2026-09-02
 - [x] `docs/licensing-matrix.md` — two-model (per-user + PAYG) licensing matrix, grounded in MS Learn — 2026-09-02
 - [x] `docs/rbac-model.md` — four-RBAC-system model (Entra, Purview role groups, Data Governance, Exchange Online) + admin units + PowerShell/Graph auth patterns, grounded in MS Learn — 2026-09-03
