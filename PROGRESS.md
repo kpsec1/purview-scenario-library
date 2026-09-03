@@ -16,9 +16,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## TODO (ordered)
 
-### Data Governance
-- [ ] `scenarios/data-estate-insights/classification-coverage-report/`
-
 ### Risk & Compliance
 - [ ] `scenarios/compliance-manager/assess-against-iso27001/`
 - [ ] `scenarios/communication-compliance/harassment-and-code-of-conduct/`
@@ -272,7 +269,79 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   "governed data asset" (Data Quality rules, future access-policy scenarios) assumes one already
   exists. Worth prioritizing given how many follow-ups now depend on it.
 
+### Follow-ups discovered while building the Data Estate Insights classification-coverage-report scenario
+- [ ] `scenarios/data-estate-insights/sensitivity-label-coverage-report/` (or fold into a future
+  Data Estate Insights hardening pass) — extend `classification-coverage-report`'s exact pattern
+  (paginated `Discovery - Query`, client-side tally, replace-by-`RunId` trend log) to the `label`
+  field on the same `SearchResultValue` schema, reproducing the native "Labeling insights" report's
+  KPIs the same way this fragment reproduces "Classification insights" — explicitly scoped out of
+  `classification-coverage-report/design.md` §7.
+- [ ] `scenarios/data-estate-insights/glossary-curation-coverage-report/` — the native "Glossary
+  insights"/"Data stewardship" dashboards (term-to-asset attachment rates, active-user counts) use
+  different underlying data than `Discovery - Query`'s per-asset `classification`/`label` fields and
+  would need a different REST primitive (likely the Unified Catalog Terms operation group this
+  repo's `scenarios/unified-catalog/curate-business-glossary/` already grounds) — explicitly scoped
+  out of `classification-coverage-report/design.md` §7 as a different data source, not a copy-paste
+  extension of this fragment's pattern.
+- [ ] VERIFY (pilot tenant, before production reliance): `classification-coverage-report/deploy/
+  Export-ClassificationCoverageReport.ps1`'s `Get-FullBreakdown` warns (but does not fail) when the
+  number of records actually paged via `continuationToken` doesn't match the response's own
+  `@search.count` — Microsoft's Discovery - Query REST reference doesn't document whether this
+  mismatch is expected (e.g. due to near-real-time index changes mid-page-through) or a sign of a
+  client-side pagination bug. Confirm against a pilot tenant with a large, stable (non-changing)
+  asset population before treating a persistent mismatch as benign.
+- [ ] Note for a future Data Lineage follow-up: this build's `Discovery_Query_Collection` worked
+  example response (Microsoft's own REST reference page for Discovery - Query) shows a real
+  `azure_sql_table` `qualifiedName` value —
+  `mssql://exampleserver.database.windows.net/examplesqldb/examplepath/exampledata1` — which
+  directly bears on the open VERIFY in `scenarios/data-lineage/end-to-end-lineage-validation/
+  README.md` §11 ("the exact qualifiedName string format Purview assigns to an azure_sql_table
+  asset"). Not applied retroactively to that already-DONE fragment in this build (out of scope for
+  this turn), but the next pass on that scenario (or a dedicated Data Map/Data Lineage grounding
+  fragment) should confirm this `mssql://` scheme against a pilot tenant and, if confirmed, update
+  that scenario's README/design.md to close the VERIFY instead of requiring manual portal copy.
+
 ## DONE
+- [x] `scenarios/data-estate-insights/classification-coverage-report/` — first Data Estate
+  Insights-module scenario: full README (12-section skeleton), design.md, deploy/
+  (`Export-ClassificationCoverageReport.ps1` — idempotent/parameterized Purview Data Map Discovery
+  REST automation (surface 4, API version `2023-09-01`) that reproduces the native "Classic
+  classifications" report's headline KPIs — total/classified/unclassified asset counts and a full
+  classification-value histogram, per object type — via two modes: `-Mode Full` (paginated,
+  `continuationToken`, page size 1000, tallies each record's `classification[]` array client-side
+  since no "has any classification" filter is documented) and `-Mode Facets` (a single faceted query,
+  cheaper but top-N-truncated and double-counting, mirroring the native "Top classifications" chart's
+  own behavior); requires only the **Data Reader** role — deliberately narrower than the native
+  report's own Data-Curator-only "Export to CSV" gate; idempotent via replace-by-`-RunId` in a
+  trend-log CSV rather than a create/skip check, since this scenario creates no Purview object to
+  check existence against; `$PSCmdlet.ShouldProcess()`-gated file writes so `-WhatIf` reports
+  computed KPIs without touching disk), validate/ script (`Test-ClassificationCoverageReport.ps1` —
+  read-only file-integrity checks (schema, no duplicate RunId+ObjectType rows, per-row arithmetic)
+  runnable with no tenant credentials, plus an optional live-reconciliation check against current
+  `@search.count`), rollback.md (the first in this repo describing a scenario with **no Purview
+  object** to roll back — decommissioning is stopping the schedule, removing the Data Reader role
+  assignment, and deciding the fate of already-produced report files), four-lens reviews.md (Red Team
+  Fix round resolved — flagged the trend-log/breakdown files themselves as a sensitive artifact
+  requiring the same protection as the classifications they summarize, and the `-Mode Facets`
+  top-N-truncation as a silent-gap risk; Blue Team Fix round resolved — warning-stream capture
+  guidance for unattended runs, and severity-mapping clarity between file-integrity `[FAIL]` and
+  live-reconciliation `[WARN]`; CISO Pass; Product Owner Fix round resolved — tightened the
+  "Unclassified assets" KPI citation to the specific classic-assets-report page and its exact quoted
+  definition) — grounded in Microsoft Learn via the Microsoft Learn MCP tool (the Data Estate
+  Insights application overview, classic classifications/assets reports, the Data Estate Insights
+  access-control page confirming Data Reader can view but not export while only Data Curator can,
+  the "Disable Data Estate Insights" page's weekly-refresh/no-separate-billing notes, the Data
+  governance glossary, the data-plane API authentication tutorial, and the Discovery - Query REST
+  reference directly fetched at API version `2023-09-01` — request/response shape, `@search.count`
+  semantics, `continuationToken` pagination, facets, and worked filter examples including the
+  documented `objectType`/`collectionId`/exact-value-`classification` filter shapes) plus a Microsoft
+  Q&A thread corroborating (not as primary evidence) that no broader classification-existence filter
+  is exposed — one design choice (computing classified/unclassified by client-side pagination rather
+  than an invented filter) recorded and justified rather than guessed, per `AGENTS.md` §4; also
+  caught and fixed a citation-numbering bug during a post-draft self-review (four `design.md`
+  cross-references pointed at the wrong `README.md` reference number) and a scoping bug (an unused,
+  fully-redundant `Get-TotalCount` helper function) — 2026-09-03
+
 - [x] `scenarios/data-lineage/end-to-end-lineage-validation/` — first Data Lineage-module
   scenario: full README (12-section skeleton), design.md, deploy/ (`New-CustomLineageRelationship.ps1`
   — idempotent/parameterized Purview Data Map/Atlas v2 REST automation (surface 4, API version
