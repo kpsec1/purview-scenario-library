@@ -1,0 +1,33 @@
+{
+  "_comment": "Config for deploy/New-CodeOfConductPolicy.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. This drives the SCRIPTABLE SUBSET of a Communication Compliance code-of-conduct policy: the supervisory-review policy shell, its reviewers, and a keyword/phrase (lexicon) rule scoped to reviewees + direction with a sampling rate. The TRAINABLE CLASSIFIERS that do the heavy lifting for harassment detection (Targeted harassment, Threat, Discrimination) are NOT settable through the documented cmdlet surface - add them in the portal per README.md Sections 5 and 11, using deploy/policy/inappropriate-text-portal-reference.json as the source of truth for those settings.",
+  "policyName": "Code of Conduct - Inappropriate Text",
+  "enabled": true,
+  "reviewers": [
+    "hr-conduct-reviewer@contoso.example"
+  ],
+  "_reviewersNote": "Every reviewer MUST already be a member of the 'Communication Compliance Analysts' or 'Communication Compliance Investigators' role group AND have an Exchange Online mailbox, or policy creation fails (README.md Section 3). Reviewers are notified by email when assigned.",
+  "reviewees": [
+    "all-staff@contoso.example"
+  ],
+  "_revieweesNote": "The scoped users/groups whose communications are supervised. Use Microsoft 365 Groups, distribution lists, Viva Engage communities, or Teams channels. Org-wide ('all users') scoping is a portal choice - the scriptable rule requires at least one explicit reviewee target here.",
+  "directions": [
+    "Inbound",
+    "Outbound",
+    "Internal"
+  ],
+  "samplingRate": 100,
+  "_samplingNote": "Percent of matching communications surfaced for review. 100 = review every match (recommended for a conduct policy). Lower it only for high-volume regulatory-sampling scenarios.",
+  "keywordLexicon": [
+    "code of conduct violation",
+    "shut up",
+    "you people",
+    "get lost",
+    "PLACEHOLDER-add-your-organizations-terms"
+  ],
+  "_lexiconNote": "ILLUSTRATIVE, INTENTIONALLY MILD placeholder terms. A real code-of-conduct lexicon is customer-owned, reviewed by HR/Legal, and typically maintained as a keyword dictionary. This keyword rule is a COMPLEMENT to - not a replacement for - the trainable classifiers (Targeted harassment/Threat/Discrimination) added in the portal, which detect intent and context that a static word list cannot. Each entry is matched as a whole word or phrase (exact match); phrases with spaces are matched as phrases. Avoid enumerating slurs in source control - reference a maintained dictionary instead where possible.",
+  "userReportingWorkloads": [],
+  "_userReportingNote": "Optional. Workloads for user-reported-message routing (e.g. Teams). Leave empty unless you use the user-reporting feature; values are a portal/VERIFY item for this preview-adjacent parameter.",
+  "preservationPeriodInDays": null,
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-03"
+}

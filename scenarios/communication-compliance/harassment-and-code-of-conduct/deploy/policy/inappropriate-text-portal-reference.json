@@ -1,0 +1,39 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft states PowerShell isn't supported for creating and managing Communication Compliance policies, and the trainable-classifier conditions central to harassment detection are not exposed in the documented SupervisoryReview cmdlet surface (docs/automation-surface.md; README.md Section 11). No script reads or applies this file - it is a structured, versioned source of truth for the person completing the portal steps in README.md Section 5, so the deployed policy can be diffed against intent during review instead of relying on memory of what was clicked. Mirrors the 'Detect inappropriate text' policy template.",
+  "policyName": "Code of Conduct - Inappropriate Text",
+  "policyTemplate": "Detect inappropriate text",
+  "trainableClassifiers": [
+    "Targeted harassment",
+    "Threat",
+    "Discrimination"
+  ],
+  "_classifierNote": "These are the built-in Microsoft trainable classifiers the 'Detect inappropriate text' template enables. Optionally add the LLM-based content-safety classifiers (Hate, Sexual, Violence, Self-harm) for Teams/Viva Engage/Copilot - preview, and they add a Severity column to alerts (README.md Section 8).",
+  "locations": [
+    "Exchange Online",
+    "Microsoft Teams",
+    "Viva Engage"
+  ],
+  "directions": [
+    "Inbound",
+    "Outbound",
+    "Internal"
+  ],
+  "reviewPercentage": 100,
+  "scopedUsers": {
+    "include": ["all-staff@contoso.example"],
+    "exclude": [],
+    "note": "Groups (M365 Groups, DLs, Viva Engage communities, Teams channels). Consider excluding service/announcement accounts to cut noise."
+  },
+  "reviewers": ["hr-conduct-reviewer@contoso.example"],
+  "conditions": {
+    "filterEmailBlasts": true,
+    "filterEmailBlastsNote": "Recommended ON - trainable classifiers are known to over-detect bulk sender/newsletter content (README.md Section 8).",
+    "keywordDictionary": "Optionally attach the same code-of-conduct lexicon the scriptable rule uses (deploy/config/code-of-conduct.sample.json) as a custom keyword dictionary, so classifier and keyword detection run in one policy."
+  },
+  "privacy": {
+    "pseudonymizeUserNames": true,
+    "note": "Repo default - keep pseudonymization on unless HR/Legal make an explicit, documented decision otherwise (reviews.md, CISO lens). Usernames are pseudonymized by default in Communication Compliance."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-03"
+}
