@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Risk & Compliance
-- [ ] `scenarios/audit/premium-audit-investigation/`
 - [ ] `scenarios/data-lifecycle-management/retention-labels-financial-records/`
 - [ ] `scenarios/records-management/regulatory-records-disposition/`
 - [ ] `scenarios/information-barriers/segregate-trading-and-research/`
@@ -367,7 +366,52 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `New-ComplianceSearchAction`) for tenants on eDiscovery Standard, noted as the alternative surface
   in this scenario's `design.md` §3.
 
+### Follow-ups discovered while building the Audit premium-audit-investigation scenario
+- [ ] `scenarios/audit/retention-policy-management/` — script **audit log retention policies** (a
+  Premium feature: create/manage custom retention durations per record type/user via SCC PowerShell
+  `New-/Set-UnifiedAuditLogRetentionPolicy`), the configuration counterpart to this read-only
+  investigation scenario.
+- [ ] `scenarios/audit/streaming-to-sentinel-or-management-api/` — continuous audit streaming via the
+  Office 365 Management Activity API (or a Sentinel connector) for real-time detection, contrasted
+  with this on-demand investigation in `audit/premium-audit-investigation/design.md` §7.
+- [ ] VERIFY (pilot tenant): the exact `auditLogQueryStatus` terminal values (the runner polls
+  defensively and flags this in `audit/premium-audit-investigation/README.md` §11), and the current
+  crucial-events list / operation names for the compromise preset.
+- [ ] Consider an **incident-response (mutating) companion** scenario — disable account, revoke
+  sessions, remove malicious inbox rules — the deliberate response workflow this read-only
+  investigation explicitly scopes out (`audit/premium-audit-investigation/design.md` §7).
+
 ## DONE
+- [x] `scenarios/audit/premium-audit-investigation/` — fourth Risk & Compliance scenario (Audit
+  Premium), a **read-only forensic investigation** built on the **Microsoft Graph Audit Search API**
+  (v1.0 `security` namespace, surface 3): full README (12-section skeleton), design.md, deploy/
+  (`Invoke-AuditInvestigation.ps1` — an async investigation runner via `Invoke-MgGraphRequest`:
+  `POST /security/auditLog/queries` to create the search job from a JSON config (target UPNs, time
+  window via `lookbackDays` or explicit ISO dates, a crucial-events `operationFilters` preset,
+  optional record-type/keyword/IP filters), polls `GET .../queries/{id}` until a terminal status
+  (defensive running-set exclusion + `succeeded`-like check, bounded `-PollTimeoutMinutes`),
+  retrieves `GET .../queries/{id}/records` with `@odata.nextLink` paging, and exports CSV (key
+  fields) + JSON (full `auditData`) with a top-operations summary; `-WhatIf` previews the query body
+  without creating the job; read-only — no tenant mutation; `deploy/config/
+  audit-investigation.sample.json` — an account-compromise crucial-events preset (MailItemsAccessed
+  [Premium], Send/SendAs, New-/Set-InboxRule, Add-MailboxPermission, FileDownloaded,
+  AnonymousLinkCreated, UserLoggedIn/UserLoginFailed, role/user changes)), validate/
+  (`Test-AuditInvestigation.ps1` — Graph connectivity + `AuditLogsQuery*` scope + config validation
+  + a live 1-hour probe query proving API/permission/audit availability), rollback.md (read-only:
+  no tenant state to undo — focuses on securing/disposing the exported evidence and the 30-day
+  auto-retained job), four-lens reviews.md (Red Team Fix round resolved — export-as-evidence
+  handling, least-privilege service-scoped permissions, read-only/no-tamper posture, ingestion-lag
+  false-negative warning; Blue Team Fix round resolved — async polling + paging, triage
+  summary/runbook, live readiness probe; CISO Fix round resolved — defensibility/breach-clock
+  foregrounded; Product Owner Fix round resolved — Graph async API over classic
+  Search-UnifiedAuditLog, status-enum VERIFY) — grounded in Microsoft Learn (auditing solutions
+  overview + Standard-vs-Premium capability comparison + service description for crucial events and
+  retention tiers, the Audit Search Graph API create/get/list-records references incl. body filters
+  and the recordType enum and AuditLogsQuery permission set, audit-search ingestion-latency/job
+  limits, and the classic Search-UnifiedAuditLog caps) — the `auditLogQueryStatus` terminal values
+  and current crucial-events list recorded as explicit VERIFY items rather than fabricated, per
+  `AGENTS.md` §4 — 2026-09-03
+
 - [x] `scenarios/ediscovery/premium-legal-hold-and-export/` — third Risk & Compliance scenario
   (eDiscovery Premium), and the first in this repo built on the **Microsoft Graph eDiscovery API**
   (v1.0 `security` namespace, surface 3): full README (12-section skeleton), design.md, deploy/
