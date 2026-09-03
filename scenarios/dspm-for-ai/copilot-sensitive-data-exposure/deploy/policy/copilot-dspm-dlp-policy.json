@@ -1,0 +1,47 @@
+{
+  "$comment": "Reference/documentation copy of the policy this scenario's deploy script creates via New-DlpCompliancePolicy / New-DlpComplianceRule. Not consumed by the deploy script - exists so the shape of the policy is reviewable in a diff without reading PowerShell. See deploy/New-CopilotSensitiveDataProtectionPolicy.ps1 for the executable form and citations.",
+  "policyName": "Copilot DLP - Sensitive Data Exposure Protection",
+  "locations": {
+    "workload": "Applications",
+    "location": "470f2276-e011-4e9d-a6ec-20768be3a4b0",
+    "locationDisplayName": "Microsoft 365 Copilot and Copilot Chat",
+    "inclusions": [{ "type": "Tenant", "identity": "All" }]
+  },
+  "enforcementPlanes": ["CopilotExperiences"],
+  "mode": "TestWithNotifications",
+  "rules": [
+    {
+      "name": "Copilot-Exclude-Labeled-Content",
+      "priority": 0,
+      "conditions": {
+        "advancedRule": {
+          "note": "Sensitivity-label condition - no simple named parameter exists for this condition on the Copilot location; see New-DlpCompliancePolicy reference Example 4.",
+          "labels": ["<Confidential label GUID>", "<Highly Confidential label GUID>"]
+        }
+      },
+      "actions": {
+        "restrictAccess": [{ "setting": "ExcludeContentProcessing", "value": "Block" }]
+      },
+      "stopPolicyProcessing": false
+    },
+    {
+      "name": "Copilot-Restrict-WebGrounding-SensitivePrompts",
+      "priority": 1,
+      "conditions": {
+        "contentContainsSensitiveInformation": [
+          { "name": "U.S. Social Security Number (SSN)", "mincount": "1" },
+          { "name": "Credit Card Number", "mincount": "1" }
+        ]
+      },
+      "actions": {
+        "restrictWebGrounding": true
+      },
+      "stopPolicyProcessing": false
+    }
+  ],
+  "notInScope": [
+    "Prevent Copilot from processing content > Processing prompts (full response block on SIT match) - preview, no published PowerShell worked example as of this build, portal-only. See README.md §5.",
+    "Block external email from being processed (preview) - different condition type, out of scope per design.md §7.",
+    "Third-party generative AI site DLP (Edge/Chrome/Firefox) - different policy location/enforcement plane, out of scope per design.md §7."
+  ]
+}

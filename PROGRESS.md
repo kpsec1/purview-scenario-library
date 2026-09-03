@@ -16,9 +16,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## TODO (ordered)
 
-### Data Security (highest sales value — front-load)
-- [ ] `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/`
-
 ### Data Governance
 - [ ] `scenarios/data-map/scan-azure-sql-and-classify/`
 - [ ] `scenarios/unified-catalog/curate-business-glossary/`
@@ -133,7 +130,57 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `dynamic-risk-dlp-enforcement/deploy/New-AdaptiveProtectionDlpPolicy.ps1`'s `.NOTES` and
   `README.md` §11.
 
+### Follow-ups discovered while building the DSPM for AI Copilot sensitive-data-exposure scenario
+- [ ] VERIFY (pilot tenant): whether a `{"Type":"Group","Identity":"..."}` `Inclusions` entry in
+  the Copilot-location `-Locations` JSON works for `New-DlpCompliancePolicy`/`New-DlpComplianceRule`
+  the same way a group inclusion is documented for the *collection*-policy cmdlets
+  (`New-/Set-FeatureConfiguration`) — needed before this repo can promise a group-scoped pilot
+  rollout of `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` instead of tenant-wide
+  `TestWithNotifications` simulation as the only pre-enforcement pilot mechanism. Flagged inline in
+  that scenario's `README.md` §11 and `reviews.md` (Red Team).
+- [ ] `scenarios/dspm-for-ai/copilot-prompt-full-block/` (or fold into a future DSPM-for-AI pass) —
+  script the "Prevent Copilot from processing content > Processing prompts" action (full response
+  block on a sensitive-information-type match in the prompt itself), deferred from
+  `copilot-sensitive-data-exposure` because it is a preview feature with no published Microsoft
+  PowerShell worked example as of this build (only the label-exclusion and web-grounding-
+  restriction actions have one) — needs a fresh grounding pass once Microsoft publishes an example
+  or the feature reaches GA.
+- [ ] `scenarios/dspm-for-ai/third-party-ai-site-adaptive-block/` — the Adaptive-Protection-driven,
+  risk-based DLP policies for **third-party** generative AI sites accessed via a browser
+  (`DSPM for AI - Block sensitive info from AI sites`, `DSPM for AI - Block elevated risk users
+  from submitting prompts to AI apps in Microsoft Edge`), explicitly called out as a non-goal in
+  `copilot-sensitive-data-exposure/design.md` §7 — a different policy location/enforcement plane
+  from the first-party Microsoft 365 Copilot location that scenario covers, and a natural extension
+  of `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s existing pattern.
+- [ ] Consider updating `docs/licensing-matrix.md` to add the DLP-for-Copilot licensing-tier split
+  (label-exclusion rule requires E5-tier; prompt-safeguard/web-grounding rule is available at all
+  Copilot licensing tiers) as its own row/footnote — currently only cited inline in
+  `copilot-sensitive-data-exposure/README.md` §3, not surfaced in the cross-cutting matrix.
+
 ## DONE
+- [x] `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` — full README (12-section skeleton),
+  design.md, deploy/ (`New-CopilotSensitiveDataProtectionPolicy.ps1` — idempotent/parameterized
+  Security & Compliance PowerShell deploying a two-rule DLP policy on the Microsoft 365 Copilot and
+  Copilot Chat location: Rule 0 excludes Confidential/Highly Confidential-labeled content from
+  Copilot processing via the `-AdvancedRule`/`-RestrictAccess ExcludeContentProcessing` pattern
+  reproduced from Microsoft's own `New-DlpCompliancePolicy` reference Example 4, Rule 1 restricts
+  external web-search grounding for SSN/Credit-Card-Number-bearing prompts via `-RestrictWebGrounding`;
+  cert app-only, `-WhatIf` throughout; `Remove-CopilotSensitiveDataProtectionPolicy.ps1` —
+  disable/purge rollback; a policy JSON reference manifest), validate/ script (automated
+  policy/rule/alert-wiring checks), four-lens reviews.md (Red Team Fix round resolved — added an
+  explicit VERIFY + follow-up on unconfirmed group-scoped pilot rollout rather than implying it
+  works; Blue Team Fix round resolved — added missing `GenerateAlert` checks to the validate
+  script; CISO Fix round resolved — added an explicit remediation-ownership note so the DLP policy
+  isn't mistakenly reported as "oversharing solved"; Product Owner Pass, with the grounding-strength
+  distinction between the two rules recorded) — grounded in Microsoft Learn (DSPM for AI classic
+  overview and permissions, the DLP-for-Microsoft-365-Copilot-and-Copilot-Chat location's full
+  conditions/actions table and licensing tiers, the exact Copilot location GUID and
+  `-AdvancedRule`/`-RestrictAccess`/`-RestrictWebGrounding` PowerShell patterns from
+  `New-DlpCompliancePolicy`/`New-DlpComplianceRule`'s own published examples, and DSPM for AI's
+  one-click-policy catalog) — deliberately declined to script the preview-only "Processing prompts"
+  full-block action for lack of a published PowerShell example (flagged VERIFY/follow-up instead)
+  — 2026-09-03
+
 - [x] `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` — full README (12-section
   skeleton), design.md, deploy/ (`New-AdaptiveProtectionDlpPolicy.ps1` — idempotent/parameterized
   Security & Compliance PowerShell deploying a two-rule Exchange+Teams DLP policy keyed on the
