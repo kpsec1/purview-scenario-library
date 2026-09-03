@@ -1,0 +1,27 @@
+{
+  "originAssetTypeName": "azure_sql_table",
+  "originAssetQualifiedName": "<REPLACE - copy from customerdb.dbo.Customers asset's Overview page in the Purview portal>",
+  "originAssetDisplayName": "customerdb.dbo.Customers",
+  "customLineageLinks": [
+    {
+      "description": "Nightly customer risk-scoring extract. A custom Python job (Azure Functions timer trigger, not Azure Data Factory or any other Purview-lineage-integrated processing system) reads customerdb.dbo.Customers and writes an aggregated risk score per customer into analyticsdb.dbo.CustomerRiskSummary. Purview never sees this hop automatically - see README.md Section 2/11.",
+      "relationshipType": "direct_lineage_dataset_dataset",
+      "upstreamTypeName": "azure_sql_table",
+      "upstreamQualifiedName": "<REPLACE - copy from customerdb.dbo.Customers asset's Overview page in the Purview portal>",
+      "upstreamDisplayName": "customerdb.dbo.Customers",
+      "downstreamTypeName": "azure_sql_table",
+      "downstreamQualifiedName": "<REPLACE - copy from analyticsdb.dbo.CustomerRiskSummary asset's Overview page in the Purview portal>",
+      "downstreamDisplayName": "analyticsdb.dbo.CustomerRiskSummary",
+      "columnMapping": [
+        { "Source": "CustomerId", "Sink": "CustomerId" }
+      ]
+    }
+  ],
+  "expectedDownstreamChain": [
+    {
+      "qualifiedName": "<REPLACE - copy from analyticsdb.dbo.CustomerRiskSummary asset's Overview page in the Purview portal>",
+      "displayName": "analyticsdb.dbo.CustomerRiskSummary",
+      "typeName": "azure_sql_table"
+    }
+  ]
+}

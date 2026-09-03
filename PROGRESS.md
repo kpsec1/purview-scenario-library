@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Data Governance
-- [ ] `scenarios/data-lineage/end-to-end-lineage-validation/`
 - [ ] `scenarios/data-estate-insights/classification-coverage-report/`
 
 ### Risk & Compliance
@@ -218,6 +217,37 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   attribute groups, and data estate mappings to Data Map collections — explicitly out of scope in
   `curate-business-glossary/design.md` §6–7, which models a single standalone domain.
 
+### Follow-ups discovered while building the Data Lineage end-to-end-lineage-validation scenario
+- [ ] `scenarios/data-lineage/custom-process-lineage/` (or fold into a future Data Lineage
+  hardening pass) — script the richer DataSet -> Process -> DataSet lineage shape (a custom
+  Process-typed entity representing the transform itself, not just a direct dataset-to-dataset
+  edge), once a REST-documented body for creating a *custom* Process entity type is independently
+  grounded — deferred from `end-to-end-lineage-validation` because this build's grounding pass only
+  confirmed the `direct_lineage_dataset_dataset` shape via Microsoft's own worked example; see that
+  scenario's `README.md` §11 and `design.md` §1/§7.
+- [ ] Generalize `scenarios/data-lineage/end-to-end-lineage-validation/validate/
+  Test-EndToEndLineage.ps1`'s column-mapping check ("Check 2") to match each `customLineageLinks`
+  entry against its own declared upstream node rather than always the origin asset — needed before
+  that scenario's definition file can correctly model a multi-hop chain with a custom link further
+  downstream than the origin's immediate output. Currently correct only for the shipped
+  single-hop example; flagged inline in the script and in `design.md` §7.
+- [ ] VERIFY (pilot tenant): the exact qualifiedName string format Purview assigns to an
+  `azure_sql_table` asset (e.g. whether it follows an `mssql://...` scheme) — not found during this
+  build's grounding pass; `end-to-end-lineage-validation`'s definition file currently requires the
+  operator to copy the value from the portal rather than having either script construct it. Closing
+  this would let a future scenario auto-resolve qualifiedNames instead of requiring manual copy.
+- [ ] VERIFY (pilot tenant): whether `Relationship - Create` rejects, no-ops, or duplicates a
+  second POST of an identical relationship — this build's grounding pass confirmed the operation's
+  request/response shape directly from Microsoft's REST reference but not this specific behavior;
+  `end-to-end-lineage-validation`'s own existence-check design makes its idempotency independent of
+  the answer, but a production integration bypassing that check should confirm it first.
+- [ ] Extend `docs/automation-surface.md` §4's routing table with a row for Data Map lineage
+  (`entity/bulk`, `relationship`, `lineage/uniqueAttribute/type/{typeName}` — surface 4,
+  `datamap/api/atlas/v2/...`, API version `2023-09-01`) — not added in this build to keep the
+  fragment scoped to one scenario; `scan-azure-sql-and-classify`'s and
+  `curate-business-glossary`'s own automation-surface.md follow-ups set the same precedent of
+  tracking doc extensions separately rather than bundling them into a scenario fragment.
+
 ### Follow-ups discovered while building the Data Quality rules-and-scorecards scenario
 - [ ] `scenarios/data-quality/connection-and-scorecard-alerts/` (or fold into a future Data Quality
   hardening pass) — script the DQ data-source connection (`Create Data Source`) and score-threshold
@@ -243,6 +273,44 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   exists. Worth prioritizing given how many follow-ups now depend on it.
 
 ## DONE
+- [x] `scenarios/data-lineage/end-to-end-lineage-validation/` — first Data Lineage-module
+  scenario: full README (12-section skeleton), design.md, deploy/ (`New-CustomLineageRelationship.ps1`
+  — idempotent/parameterized Purview Data Map/Atlas v2 REST automation (surface 4, API version
+  `2023-09-01`) that creates a `direct_lineage_dataset_dataset` custom lineage relationship (with a
+  JSON-encoded `columnMapping` attribute) between two already-scanned `azure_sql_table` assets to
+  close a gap left by a non-auto-lineage-integrated custom transform job, existence-checked via
+  `Lineage - Get By Unique Attribute` before every `Relationship - Create` POST so idempotency
+  doesn't depend on that operation's unconfirmed duplicate-POST behavior; manual
+  `$PSCmdlet.ShouldProcess()` `-WhatIf` throughout; `Remove-CustomLineageRelationship.ps1` —
+  looks up each relationship's GUID via the same lineage call and deletes it via the (directly
+  confirmed) `Relationship - Delete` operation; a JSON lineage-definition file continuing this
+  repo's Customer/customerdb narrative), validate/ script (`Test-EndToEndLineage.ps1` — the
+  "end-to-end" half of the scenario's name: walks the full reachable lineage graph from an origin
+  asset via a breadth-first traversal of the `Lineage - Get By Unique Attribute` response and
+  proves every asset in an independently-declared expected chain is both present *and* connected
+  by a walkable path, not merely co-listed; read-only, Data Reader role), rollback.md, four-lens
+  reviews.md (Red Team Fix round resolved — documented the Data Curator role's collection-wide
+  blast radius, and added an explicit "custom lineage is asserted, not verified" evidentiary-
+  honesty note for any compliance narrative built on this graph; Blue Team Fix round resolved —
+  sharpened the ambiguous "asset not found" failure mode to name `-MaxDepth` as a possible cause
+  alongside a deleted link or stale qualifiedName, and documented the column-mapping check's
+  single-hop-from-origin scope assumption as a tracked limitation rather than a silent gap; CISO
+  Pass; Product Owner Fix round resolved — clarified that the "classic Data Catalog" citations
+  ground lineage *concepts* only, while the REST surface this scenario calls is the current,
+  non-deprecated Data Map/Atlas API also read by Unified Catalog's own Lineage tab) — grounded in
+  Microsoft Learn via the Microsoft Learn MCP tool (the current, non-legacy "Create and get lineage
+  relationships using the REST API" tutorial and its worked Bulk Create/Create Relationship/Get
+  Lineage examples; the classic Data Catalog lineage overview/user-guide articles for concepts and
+  the auto-lineage-integrated-systems table; the Cloud Adoption Framework's explicit "close gaps
+  manually where required" recommendation; the `data-gov-api-custom-types` tutorial confirming the
+  `azure_sql_table` type name; the `data-gov-api-rest-data-plane` tutorial confirming Data
+  Curator/Data Reader as the Catalog Data plane roles; and four REST operations — Relationship -
+  Create, Relationship - Delete, Lineage - Get, Lineage - Get By Unique Attribute — all directly
+  fetched from their own canonical REST reference pages at a consistent API version `2023-09-01`,
+  a stronger grounding bar than this repo's average scenario) — two items recorded as explicit
+  VERIFY rather than resolved by guessing (the exact `azure_sql_table` qualifiedName string format;
+  `Relationship - Create`'s duplicate-POST behavior), per `AGENTS.md` §4 — 2026-09-03
+
 - [x] `scenarios/data-quality/rules-and-scorecards/` — first Data Quality-module scenario: full
   README (12-section skeleton, Public Preview callout up front per Product Owner fix), design.md
   (declarative JSON rule definitions, idempotency design independent of Create Rules' unconfirmed
