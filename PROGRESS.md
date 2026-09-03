@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Risk & Compliance
-- [ ] `scenarios/compliance-manager/assess-against-iso27001/`
 - [ ] `scenarios/communication-compliance/harassment-and-code-of-conduct/`
 - [ ] `scenarios/ediscovery/premium-legal-hold-and-export/`
 - [ ] `scenarios/audit/premium-audit-investigation/`
@@ -301,7 +300,89 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   fragment) should confirm this `mssql://` scheme against a pilot tenant and, if confirmed, update
   that scenario's README/design.md to close the VERIFY instead of requiring manual portal copy.
 
+### Follow-ups discovered while building the Compliance Manager ISO 27001 assessment scenario
+- [ ] `scenarios/compliance-manager/entra-privileged-role-monitoring/` (or fold into a future
+  cross-cutting RBAC-hardening pass) — script monitoring of Entra directory role-assignment changes
+  for Global Administrator/Compliance Administrator/Compliance Data Administrator/Security
+  Administrator, the four Entra roles that grant implicit Compliance Manager Administration-
+  equivalent access invisibly to `assess-against-iso27001`'s audit-trail script (flagged as a Red
+  Team finding in that scenario's `reviews.md` and `README.md` §11) — via Microsoft Graph's Entra
+  directory audit log / `auditLogs/directoryAudits`, not the Compliance-Manager-specific
+  `Search-UnifiedAuditLog` operations this scenario already covers.
+- [ ] VERIFY (pilot tenant, before production reliance): the internal JSON shape of the `AuditData`
+  payload for `ComplianceManagerRolesChange`/`ComplianceManagerAutomationLevelChange`/
+  `ComplianceManagerAutomationChange` audit records — not published in Microsoft's
+  `audit-log-activities` reference. `assess-against-iso27001/deploy/
+  Export-ComplianceManagerAuditTrail.ps1`'s `Get-BestEffortTargetObjectId` function assumes an
+  `ObjectId` property *might* exist inside that JSON (best-effort, non-blocking) but does not rely
+  on it for correctness — the script's real de-duplication key hashes the full raw payload instead.
+  Confirming the actual shape would let a future revision surface richer, grounded columns (e.g.
+  which specific improvement action or role was changed) instead of the current opaque JSON blob.
+- [ ] Re-check whether Compliance Manager has added an ISO/IEC 27001:2022 premium template (the
+  version organizations now actually certify against) — only the :2013 template was found during
+  this build's grounding pass (`assess-against-iso27001/README.md` §11, tagged VERIFY). If a :2022
+  template exists, add a sibling scenario or update this one rather than leaving :2013 as the only
+  documented path.
+- [ ] `scenarios/compliance-manager/pci-dss-assessment/` (already tracked above, under the DLP
+  PCI Teams follow-ups) — once built, cross-link it into `assess-against-iso27001`'s manifest
+  `recommendedDeploymentOrder`/group-sharing guidance as a sibling assessment in the same
+  `Security & Compliance Assessments` group.
+- [ ] Once Compliance Manager's **Export actions** Excel file has been inspected against a real
+  tenant, ground the "Action Update" tab's exact column schema and revisit the non-goal recorded in
+  `assess-against-iso27001/design.md` §7 — a schema-accurate generator script would be a genuine,
+  higher-value addition to this scenario that this build deliberately declined to fabricate.
+
 ## DONE
+- [x] `scenarios/compliance-manager/assess-against-iso27001/` — first Risk & Compliance-module
+  scenario, and the first scenario in this repo built against a Purview surface with **no write
+  API**: full README (12-section skeleton, explicit up-front note on why this scenario's shape
+  differs from every prior one), design.md (grounds the no-write-API finding across three
+  independently-fetched Microsoft Learn articles plus this repo's own `docs/automation-surface.md`
+  routing-table gap, explains why a dedicated assessment beats extending the default Data
+  Protection Baseline, and documents the built-in-automation evidence-feed mechanism without
+  fabricating Microsoft's proprietary per-control mapping), deploy/ (a reference-only, explicitly
+  non-executable `iso27001-assessment-manifest.json` for the portal-driven assessment-creation
+  runbook — the same pattern `scenarios/insider-risk/departing-employee-data-theft/` already
+  established for another no-write-API Purview surface — plus the one genuinely scriptable piece:
+  `Export-ComplianceManagerAuditTrail.ps1`, idempotent/parameterized Exchange Online PowerShell
+  automation (surface 1) that pulls the exactly three Compliance-Manager-specific operations
+  Microsoft's audit log documents (`ComplianceManagerRolesChange`,
+  `ComplianceManagerAutomationLevelChange`, `ComplianceManagerAutomationChange`), merging into a
+  rolling CSV de-duplicated by a composite key that deliberately avoids assuming an unconfirmed
+  flat `ObjectId` output property exists — instead hashing the full `AuditData` JSON payload —
+  with a best-effort, non-authoritative `ObjectId` extraction surfaced only as a display column;
+  `$PSCmdlet.ShouldProcess()`-gated file writes so `-WhatIf` still runs the read-only query and
+  reports would-be merge counts), validate/ script (`Test-ComplianceManagerAuditTrail.ps1` —
+  automated CSV schema/de-duplication/operation-value/sort-order checks needing no tenant
+  connection, plus a manual verification checklist for the assessment's existence/scope/group/role
+  assignments, none of which have a read API either), rollback.md (the first in this repo to
+  separate a portal-only object's rollback — staged scope-down/access-revocation/deletion, all
+  manual — from a scripted artifact's rollback — schedule + role removal — as two independent
+  procedures), four-lens reviews.md (Red Team Fix round resolved — flagged that the audit-trail
+  script is blind to Compliance Manager access granted implicitly via the Global Administrator/
+  Compliance Administrator/Compliance Data Administrator/Security Administrator Entra roles, none
+  of which trigger a `ComplianceManagerRolesChange` event, and that the native Reports page's
+  6-month history isn't durably preserved by this scenario — both closed with documented
+  operational mitigations rather than fabricated code fixes; Blue Team clarifications — confirmed
+  the manual-checklist and alert-routing scope boundaries match this repo's own established
+  precedent in `departing-employee-data-theft`/`pci-teams-exfil-block`; CISO Pass; Product Owner
+  Fix round resolved — independently re-confirmed the no-write-API finding, flagged a VERIFY on
+  ISO 27001:2013-vs-2022 template currency, and confirmed Compliance Manager role-name/role-group
+  naming accuracy) — grounded in Microsoft Learn via the Microsoft Learn MCP tool
+  (`compliance-manager-assessments`, `compliance-manager-update-actions`,
+  `compliance-manager-setup`, `compliance-manager-improvement-actions`,
+  `compliance-manager-regulations`/`-regulations-list`, `compliance-manager-faq`, the ISO 27001
+  regulatory-offering page, `audit-log-activities`'s Compliance Manager activities table,
+  `Search-UnifiedAuditLog`'s own reference page plus two independent worked-example pages, and
+  `audit-log-retention-policies` for the 180-day/1-year/10-year retention tiers) — three real bugs
+  caught and fixed during a post-draft self-review before this fragment was finalized: an
+  unconfirmed flat `ObjectId` property assumed on `Search-UnifiedAuditLog` output (replaced with a
+  hash-of-`AuditData` composite-key component plus a clearly-labeled best-effort display column), a
+  process-randomized `[string]::GetHashCode()`-style hash that would have silently broken
+  cross-run de-duplication (replaced with `MD5.ComputeHash`), and a single-object-vs-array paging
+  loop that could misbehave when a page returned exactly one record (fixed by wrapping in `@()`
+  before checking `.Count`) — 2026-09-03
+
 - [x] `scenarios/data-estate-insights/classification-coverage-report/` — first Data Estate
   Insights-module scenario: full README (12-section skeleton), design.md, deploy/
   (`Export-ClassificationCoverageReport.ps1` — idempotent/parameterized Purview Data Map Discovery

@@ -1,0 +1,41 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Compliance Manager has no documented REST, Graph, or PowerShell write API for assessment creation, control mapping, or improvement-action status/evidence updates as of this writing (docs/automation-surface.md has no routing-table row for Compliance Manager; see design.md Section 2). No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal wizard in README.md Section 5, so the deployed assessment can be diffed against intent during review instead of relying on institutional memory of what was clicked. This follows the identical precedent set by scenarios/insider-risk/departing-employee-data-theft/deploy/policy/departing-employee-policy-manifest.json for another portal-only Purview surface.",
+  "regulation": "ISO/IEC 27001:2013",
+  "regulationTier": "Premium template - counts against the tenant's purchased or A5/E5/G5 3-free-premium-template allotment. See README.md Section 3.",
+  "assessmentName": "ISO/IEC 27001:2013 - Microsoft 365 Estate",
+  "assessmentNameNote": "Assessment names must be unique tenant-wide (Microsoft Learn: compliance-manager-assessments). Confirm before creating - like a DLP policy name elsewhere in this repo, it cannot be changed by renaming after creation without deleting and recreating.",
+  "group": {
+    "strategy": "createNew",
+    "name": "Security & Compliance Assessments",
+    "note": "Groups can't be deleted and an assessment's group can't be changed after creation (README.md Section 12) - decide this before clicking through the wizard. If the tenant already runs other Compliance Manager assessments (e.g. a future scenarios/compliance-manager/pci-dss-assessment/), consider whether they belong in this same group so their improvement actions can be shared per Microsoft's documented group-sharing behavior."
+  },
+  "servicesInScope": [
+    "Microsoft 365"
+  ],
+  "servicesInScopeNote": "Multicloud (AWS/GCP/Azure via Defender for Cloud) scoping is explicitly out of scope for this scenario - see design.md Section 7. A buyer with a multicloud estate can add services later by editing the assessment.",
+  "roleAssignments": {
+    "note": "Assign the narrowest Compliance Manager role that does the job, per README.md Section 3's role table. Do not default everyone assessing this template to Administration.",
+    "recommendedStarter": [
+      { "role": "Compliance Manager Administration", "assignTo": "The person creating and owning this assessment (1-2 people, not the whole security team)" },
+      { "role": "Compliance Manager Assessor", "assignTo": "Control owners across IT/Security/HR/Legal who will test and update improvement actions but should not create new assessments" },
+      { "role": "Compliance Manager Reader", "assignTo": "Auditors, GRC analysts, and leadership who need visibility without edit rights" }
+    ]
+  },
+  "recommendedDeploymentOrder": [
+    "scenarios/dlp/pci-teams-exfil-block/ (if Teams/chat exfiltration is in the estate's threat model)",
+    "scenarios/information-protection/auto-label-confidential-sharepoint/",
+    "scenarios/dlp/endpoint-dlp-usb-block/",
+    "scenarios/insider-risk/departing-employee-data-theft/",
+    "THEN create this assessment - built-in automation (design.md Section 6) picks up signals from controls already in place, reducing the manual-testing backlog a Contributor/Assessor faces on day one."
+  ],
+  "auditMonitoring": {
+    "operations": [
+      "ComplianceManagerRolesChange",
+      "ComplianceManagerAutomationLevelChange",
+      "ComplianceManagerAutomationChange"
+    ],
+    "note": "The only three Compliance-Manager-specific operations documented in Microsoft's audit-log-activities reference as of this build (design.md Section 4). Monitored on a recurring schedule by deploy/Export-ComplianceManagerAuditTrail.ps1 - see README.md Section 5."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-03"
+}
