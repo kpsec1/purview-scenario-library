@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Risk & Compliance
-- [ ] `scenarios/data-lifecycle-management/retention-labels-financial-records/`
 - [ ] `scenarios/records-management/regulatory-records-disposition/`
 - [ ] `scenarios/information-barriers/segregate-trading-and-research/`
 
@@ -381,7 +380,48 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   sessions, remove malicious inbox rules — the deliberate response workflow this read-only
   investigation explicitly scopes out (`audit/premium-audit-investigation/design.md` §7).
 
+### Follow-ups discovered while building the DLM retention-labels-financial-records scenario
+- [ ] `scenarios/data-lifecycle-management/event-based-retention-and-disposition/` — event-based
+  retention (`New-ComplianceTag -EventType`), `KeepAndDelete` with disposition review
+  (`-ReviewerEmail`, multi-stage), and the disposition workflow — powerful RM features layered on the
+  same cmdlets, non-goals of this starter (`design.md` §7). Overlaps the records-management starter.
+- [ ] `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` — a **publish**
+  label policy (`New-RetentionComplianceRule -PublishComplianceTag`) so users can manually apply the
+  financial-records label, complementing this scenario's auto-apply.
+- [ ] `scenarios/data-lifecycle-management/adaptive-scope-retention/` — auto-apply/retention scoped by
+  an **adaptive scope** (attribute-driven) instead of static locations, for large/dynamic estates
+  (noted as out of scope here).
+- [ ] Consider **file plan descriptors** (`-FilePlanProperty`: categories, citations, authorities,
+  provisions) for a formal records file plan, and bulk label/policy creation via the documented CSV
+  script (`bulk-create-publish-labels-using-powershell`).
+
 ## DONE
+- [x] `scenarios/data-lifecycle-management/retention-labels-financial-records/` — fifth Risk &
+  Compliance scenario (Data Lifecycle / Records Management): full README (12-section skeleton),
+  design.md, deploy/ (`New-FinancialRecordsRetention.ps1` — SCC PowerShell (surface 1) that creates a
+  **regulatory record** retention label (`New-ComplianceTag -Regulatory $true -RetentionAction Keep
+  -RetentionDuration 2555 -RetentionType CreationAgeInDays` — SEC 17a-4-style WORM immutability, a
+  PowerShell-only capability the portal hides), an **auto-apply** label policy
+  (`New-RetentionCompliancePolicy` with finance SharePoint location), and the rule binding them
+  (`New-RetentionComplianceRule -ApplyComplianceTag -ContentMatchQuery`); **create-or-report**
+  idempotency via Get-* (never silently mutates high-consequence retention objects); custom `-DryRun`
+  (S&C `-WhatIf` non-functional); loud irreversibility warnings; `Remove-FinancialRecordsRetention.ps1`
+  — staged disable → `-Delete` policy/rule, and `-TryRemoveLabel` that reports the expected refusal for
+  a regulatory record in use rather than forcing it; `deploy/config/
+  financial-records-retention.sample.json`), validate/ (`Test-FinancialRecordsRetention.ps1` —
+  read-only Get-* checks of label action/duration/record flags, policy enabled + locations +
+  distribution status, and the rule's applied label), four-lens reviews.md (Red Team Fix round
+  resolved — over-scoping guardrails (dry-run, narrow query, lab-test + Records/Legal sign-off),
+  least-restrictive-control ladder, create-or-report + no force-release of records; Blue Team Fix round
+  resolved — working `-DryRun`, auto-apply latency/RetryDistribution/DistributionStatus, validate
+  pre-flight; CISO Fix round resolved — irreversibility as a governance gate; Product Owner Fix round
+  resolved — PowerShell-only regulatory records + the retention-strength ladder documented) — grounded
+  in Microsoft Learn (New-ComplianceTag / New-RetentionCompliancePolicy / New-RetentionComplianceRule
+  references incl. -Regulatory/-IsRecordLabel/-RetentionAction/-RetentionType/-ApplyComplianceTag,
+  records-management immutability semantics, auto-apply latency/limits, retention cmdlets overview) —
+  a deliberately conservative scenario given regulatory records are irreversible; no invented cmdlets,
+  per `AGENTS.md` §4 — 2026-09-03
+
 - [x] `scenarios/audit/premium-audit-investigation/` — fourth Risk & Compliance scenario (Audit
   Premium), a **read-only forensic investigation** built on the **Microsoft Graph Audit Search API**
   (v1.0 `security` namespace, surface 3): full README (12-section skeleton), design.md, deploy/

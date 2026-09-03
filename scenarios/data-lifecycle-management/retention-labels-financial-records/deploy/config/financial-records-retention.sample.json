@@ -1,0 +1,29 @@
+{
+  "_comment": "Config for deploy/New-FinancialRecordsRetention.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Creates a REGULATORY RECORD retention label for financial records (SEC 17a-4-style WORM immutability) and an auto-apply label policy that stamps it onto content in the finance locations. Read README.md Sections 2 and 11 before deploying - a regulatory record label is IRREVERSIBLE once applied.",
+  "label": {
+    "name": "Financial Records - 7yr Regulatory",
+    "comment": "Broker-dealer financial books-and-records retained 7 years, first 2 years accessible, as a non-rewriteable/non-erasable regulatory record (SEC 17a-4(b)/(f)).",
+    "retentionAction": "Keep",
+    "retentionDurationDays": 2555,
+    "retentionType": "CreationAgeInDays",
+    "regulatory": true,
+    "isRecordLabel": true,
+    "reviewerEmail": [],
+    "_labelNote": "retentionAction: Keep | Delete | KeepAndDelete. retentionDurationDays: integer days (2555 ~= 7 years) or the string 'Unlimited'. retentionType: when the clock starts - CreationAgeInDays | ModificationAgeInDays | TaggedAgeInDays | EventAgeInDays. regulatory=true makes it a REGULATORY RECORD (strongest immutability: cannot be removed, relabeled, unlocked, or its retention shortened; content cannot be edited/deleted) - this option is only creatable in PowerShell, not the portal by default (README.md Section 5). isRecordLabel is implied by regulatory but kept explicit."
+  },
+  "policy": {
+    "name": "Auto-apply Financial Records - Finance sites",
+    "comment": "Auto-applies the Financial Records regulatory label to finance content.",
+    "enabled": true,
+    "sharePointLocation": ["https://contoso.sharepoint.com/sites/finance"],
+    "exchangeLocation": [],
+    "oneDriveLocation": [],
+    "_policyNote": "At least one location is required. Use adaptive scopes for large/dynamic estates (out of scope here - see README.md Section 11). Static-scope SharePoint site URL(s) shown."
+  },
+  "rule": {
+    "contentMatchQuery": "SensitiveType:\"Credit Card Number\" OR \"invoice\" OR \"general ledger\" OR \"trial balance\"",
+    "_ruleNote": "KQL for auto-apply matching (-ContentMatchQuery). Narrow this to your real financial-record signals - an over-broad query stamps an IRREVERSIBLE regulatory label onto non-records. Alternatively match sensitive information types via a -ContentContainsSensitiveInformation hashtable (not shown; see New-RetentionComplianceRule reference). Auto-apply can take up to 7 days to take effect."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-03"
+}
