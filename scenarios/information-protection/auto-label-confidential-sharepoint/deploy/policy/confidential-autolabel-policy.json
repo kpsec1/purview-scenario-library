@@ -1,0 +1,40 @@
+{
+  "$comment": "Reference/documentation copy of the policy this scenario's deploy script creates via New-AutoSensitivityLabelPolicy / New-AutoSensitivityLabelRule. This file is NOT consumed by the deploy script (Security & Compliance PowerShell has no native 'apply this JSON' cmdlet for auto-labeling policies outside AdvancedRule bodies) - it exists so the shape of the policy is reviewable in a diff without reading PowerShell.",
+  "policyName": "Confidentiality - Auto-Label PII in SharePoint and OneDrive",
+  "applySensitivityLabel": "<LabelName>",
+  "locations": {
+    "sharePointLocation": "All",
+    "sharePointLocationException": ["<ExcludedSharePointSiteUrl>"],
+    "oneDriveLocation": "All"
+  },
+  "mode": "TestWithNotifications",
+  "overwriteLabel": true,
+  "rules": [
+    {
+      "name": "AutoLabel-Confidential-PII-SharePoint",
+      "workload": "SharePoint",
+      "conditions": {
+        "contentContainsSensitiveInformation": {
+          "operator": "Or",
+          "sensitiveTypes": [
+            { "name": "U.S. Social Security Number (SSN)", "mincount": 1 },
+            { "name": "Credit Card Number", "mincount": 1 }
+          ]
+        }
+      }
+    },
+    {
+      "name": "AutoLabel-Confidential-PII-OneDrive",
+      "workload": "OneDriveForBusiness",
+      "conditions": {
+        "contentContainsSensitiveInformation": {
+          "operator": "Or",
+          "sensitiveTypes": [
+            { "name": "U.S. Social Security Number (SSN)", "mincount": 1 },
+            { "name": "Credit Card Number", "mincount": 1 }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Data Security (highest sales value — front-load)
-- [ ] `scenarios/information-protection/auto-label-confidential-sharepoint/`
 - [ ] `scenarios/dlp/endpoint-dlp-usb-block/`
 - [ ] `scenarios/insider-risk/departing-employee-data-theft/`
 - [ ] `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`
@@ -53,6 +52,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   premium-template assessment scenario referenced from `scenarios/dlp/pci-teams-exfil-block/README.md`
   §2 as the assessment-side companion to this technical control.
 
+### Follow-ups discovered while building the Information Protection auto-labeling scenario
+- [ ] Extend `docs/automation-surface.md` with a fifth automation surface: **SharePoint Online
+  Management Shell** (`Connect-SPOService` / `Microsoft.Online.SharePoint.PowerShell`). Needed for
+  `Set-SPOTenant -EnableAIPIntegration`, `-EnableSensitivityLabelforPDF`, and
+  `-EnableSensitivityLabelForVideoFiles` — none of the four currently-documented surfaces (EXO,
+  S&C PowerShell, Graph, Data Map REST) cover it, and `scenarios/information-protection/
+  auto-label-confidential-sharepoint/` had to flag this as a manual/undocumented prerequisite
+  rather than automate it.
+- [ ] `scenarios/information-protection/auto-label-confidential-exchange/` — Exchange-location
+  companion to `auto-label-confidential-sharepoint` using the same policy family
+  (`New-AutoSensitivityLabelPolicy -ExchangeLocation`), extending coverage to email per the
+  non-goal noted in that scenario's `design.md` §7.
+- [ ] Consider a `scenarios/information-protection/` sub-scenario (or a cross-cutting note) on
+  **localizing sensitive information type selection by data-residency/jurisdiction** — flagged as
+  a Red Team/CISO finding in `auto-label-confidential-sharepoint/reviews.md`: the SSN + Credit
+  Card Number starter set is U.S.-centric and should not be presented as GDPR-complete personal-
+  data coverage for an EU/UK-only tenant without swapping in the relevant regional SITs.
+
 ## DONE
 - [x] repo scaffold — AGENTS.md, README, PROGRESS, LICENSE, .gitignore, CONTRIBUTING — 4a79558 — 2026-09-02
 - [x] `docs/licensing-matrix.md` — two-model (per-user + PAYG) licensing matrix, grounded in MS Learn — 2026-09-02
@@ -60,6 +77,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [x] `docs/automation-surface.md` — four automation surfaces (EXO/S&C PowerShell, Graph, Data Map REST), module install, app-only auth setup, task-routing table, throttling/CI-CD patterns, grounded in MS Learn — 2026-09-03
 - [x] `docs/glossary.md` — canonical A-Z term list spanning all 14 modules (module-tagged, cross-referencing licensing-matrix.md and rbac-model.md), grounded in MS Learn (incl. the official Purview data-governance and Compliance Manager glossaries) — 2026-09-03
 - [x] `scenarios/dlp/pci-teams-exfil-block/` — TEMPLATE scenario: full README (12-section skeleton), design.md, idempotent/parameterized deploy + rollback PowerShell (Security & Compliance PowerShell, cert app-only pattern, -WhatIf throughout), validate script, four-lens reviews.md (Red/Blue Fix rounds resolved; CISO Pass; Product Owner Fix round resolved) — grounded in MS Learn (DLP-for-Teams scoping/licensing, New-/Set-/Remove-DlpCompliancePolicy/Rule reference, Credit Card Number SIT, PCI DSS v4.0.1 Requirement 4.2) — 2026-09-03
+
+- [x] `scenarios/information-protection/auto-label-confidential-sharepoint/` — TEMPLATE-pattern
+  scenario: full README (12-section skeleton with a scope note on U.S.-centric SIT coverage),
+  design.md, idempotent/parameterized deploy + rollback PowerShell (Security & Compliance
+  PowerShell, two rules — one per workload per the `-Workload` cmdlet constraint, cert app-only
+  pattern, `-WhatIf` throughout), validate script (explicit config-vs-match-validation caveat),
+  four-lens reviews.md (Red Team Fix round resolved — manual-label-first bypass, exclusion-list
+  blind spot, and scan-cadence detection gap documented as residual risks; Blue Team Fix round
+  resolved; CISO Pass; Product Owner Fix round resolved — added the `EnableSensitivityLabelforPDF`
+  prerequisite) — grounded in MS Learn (apply-sensitivity-label-automatically prerequisites and
+  override-behavior tables, New-/Set-/Remove-AutoSensitivityLabelPolicy and
+  -AutoSensitivityLabelRule reference, DLP policy reference condition-group OR/AND semantics,
+  Set-SPOTenant EnableAIPIntegration) — 2026-09-03
 
 ## Blocked / needs user
 - (none)
