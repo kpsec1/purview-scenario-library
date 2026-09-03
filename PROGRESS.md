@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Data Governance
-- [ ] `scenarios/data-quality/rules-and-scorecards/`
 - [ ] `scenarios/data-lineage/end-to-end-lineage-validation/`
 - [ ] `scenarios/data-estate-insights/classification-coverage-report/`
 
@@ -219,7 +218,60 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   attribute groups, and data estate mappings to Data Map collections — explicitly out of scope in
   `curate-business-glossary/design.md` §6–7, which models a single standalone domain.
 
+### Follow-ups discovered while building the Data Quality rules-and-scorecards scenario
+- [ ] `scenarios/data-quality/connection-and-scorecard-alerts/` (or fold into a future Data Quality
+  hardening pass) — script the DQ data-source connection (`Create Data Source`) and score-threshold
+  alerts (`Get Alerts`/`Update Alert`), both deferred from `rules-and-scorecards` because
+  `Create Data Source`'s `computeId` field has no documented provisioning endpoint this build could
+  find, and the Alerts operations weren't independently fetched/grounded in this build — see that
+  scenario's `README.md` §11.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the Data Quality Schedule object's
+  trigger `type` values beyond the confirmed `RunOnce` shape — a `Recurrence` type with frequency/
+  interval fields almost certainly exists (the portal's own Scheduled scans wizard supports daily/
+  weekly/monthly recurrence) but wasn't found in this build's REST reference fetch. Needed before
+  `rules-and-scorecards` (or a follow-up) can script an ongoing scan cadence instead of a one-time
+  `RunOnce` schedule.
+- [ ] VERIFY (pilot tenant): the exact mechanism by which a `TypeMatch` (Data type match) rule's
+  `typeProperties` specifies the target type a column is checked against — the confirmed REST
+  `TypeProperties` schema has no field name for it despite Microsoft's conceptual documentation
+  describing the behavior. Flagged inline in `rules-and-scorecards/deploy/
+  New-DataQualityRulesAndSchedule.ps1`'s `.NOTES` and `README.md` §11.
+- [ ] A Unified Catalog **data products** scenario (create/manage a data product, add data assets to
+  it) is a shared, still-unbuilt dependency both `curate-business-glossary`'s and
+  `rules-and-scorecards`' non-goals point to — every module scenario that targets an existing
+  "governed data asset" (Data Quality rules, future access-policy scenarios) assumes one already
+  exists. Worth prioritizing given how many follow-ups now depend on it.
+
 ## DONE
+- [x] `scenarios/data-quality/rules-and-scorecards/` — first Data Quality-module scenario: full
+  README (12-section skeleton, Public Preview callout up front per Product Owner fix), design.md
+  (declarative JSON rule definitions, idempotency design independent of Create Rules' unconfirmed
+  create-vs-replace semantics, type-agnostic typeProperties pass-through so no rule-type shape is
+  fabricated), deploy/ (`New-DataQualityRulesAndSchedule.ps1` — idempotent/parameterized Purview
+  Data Quality REST automation (surface 4, API version `2026-01-12-preview`) that reconciles five
+  rules (NotNull/Unique/TypeMatch/Duplicate/CustomTruth, deliberately omitting the Azure-SQL-
+  unsupported Freshness rule) against an already-governed "Customer" data asset shared with
+  `scan-azure-sql-and-classify`/`curate-business-glossary`'s narrative, plus a one-time (`RunOnce`)
+  scan schedule; `-RuleStatus Draft`/`-CreateSchedule:$false` review-first path; manual
+  `$PSCmdlet.ShouldProcess()` `-WhatIf` throughout; `Remove-DataQualityRulesAndSchedule.ps1` —
+  staged schedule-only vs. schedule+rules rollback; a JSON rules definition file), validate/ script
+  (rule/status/schedule/score checks with a sharpened ambiguous-failure-mode warning), four-lens
+  reviews.md (Red Team Fix round resolved — documented the Data Quality Steward role's domain-wide
+  blast radius, a Draft-status "quality theater" drift risk, and the example custom rule's weak
+  regex; Blue Team Fix round resolved — made portal alert configuration an explicit go-live gate and
+  recommended wiring the validate script into a recurring pipeline check; CISO Fix round resolved —
+  funding conditionality made explicit via the Blue Team fix; Product Owner Fix round resolved —
+  sharpened Public Preview prominence to the README's opening section) — grounded in Microsoft Learn
+  via the Microsoft Learn MCP tool (Data Quality overview/rules/scan/scores/alerts/roles-permissions
+  articles, the incremental-scan cost rationale, and the Purview Data Quality REST API's Create
+  Rules/Get Rules/Create Schedule/Get Schedule/Get Asset Scores For Asset DQ/Create Data Source/
+  Delete Rule/Delete Schedule operations directly fetched at API version `2026-01-12-preview`) — four
+  gaps (TypeMatch's target-type field, Create Rules' create-vs-replace semantics, the Schedule
+  object's recurring-trigger shape, and the unfetched Alerts operations) recorded as explicit VERIFY
+  items rather than resolved by guessing, per `AGENTS.md` §4; also caught and fixed two real bugs
+  during a post-draft self-review (a missing `api-version` query parameter on two "list existing
+  rules" GET calls that would have 400'd against the live API) — 2026-09-03
+
 - [x] `scenarios/unified-catalog/curate-business-glossary/` — first Unified Catalog-module
   scenario: full README (12-section skeleton), design.md (idempotency design against a
   name-less-unique API, the CSV-bulk-import-can't-update rationale for using REST instead,

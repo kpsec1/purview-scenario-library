@@ -1,0 +1,62 @@
+{
+  "_comment": "Example values below. businessDomainId/dataProductId/dataAssetId must be replaced with the real GUIDs of a governance domain, data product, and data asset that already exist in Unified Catalog (see README.md Section 3 - this scenario does not create them). This example targets the 'Customer' data asset used elsewhere in this repo: the Azure SQL customerdb.dbo.Customers table registered by scenarios/data-map/scan-azure-sql-and-classify/ and modeled as a glossary term in scenarios/unified-catalog/curate-business-glossary/, inside the same 'Customer Experience' governance domain.",
+  "businessDomainId": "76be16f9-5cb3-4839-83d6-4e3829a8ab0c",
+  "dataProductId": "2a1d2087-09e2-4ecf-817d-1f5bfcbc31bf",
+  "dataAssetId": "fadb55b6-aa10-47d5-82c4-5e2723ba7869",
+  "assetDisplayName": "Customer (customerdb.dbo.Customers)",
+  "rules": [
+    {
+      "name": "Emptyblank_fields_CustomerId",
+      "description": "CustomerId must never be null or blank - it is the primary key every downstream system joins on.",
+      "type": "NotNull",
+      "dimension": "Completeness",
+      "typeProperties": {
+        "column": { "type": "Column", "value": "CustomerId" }
+      }
+    },
+    {
+      "name": "Unique_values_CustomerId",
+      "description": "CustomerId must be unique - a duplicate primary key indicates an upstream ingestion or key-generation defect.",
+      "type": "Unique",
+      "dimension": "Uniqueness",
+      "typeProperties": {
+        "column": { "type": "Column", "value": "CustomerId" }
+      }
+    },
+    {
+      "name": "Data_type_match_SignupDate",
+      "description": "SignupDate must be a valid date - a value the scan engine cannot cast to the expected type is treated as a miscast row for scoring. See README.md Section 11 (VERIFY) for how the target type itself is selected via this rule's typeProperties.",
+      "type": "TypeMatch",
+      "dimension": "Conformity",
+      "typeProperties": {
+        "column": { "type": "Column", "value": "SignupDate" }
+      }
+    },
+    {
+      "name": "Duplicate_rows_FirstName_LastName_Email",
+      "description": "The combination of FirstName, LastName, and Email should be unique per row - catches the same person entered as two different CustomerId records (a common MDM defect this rule is designed to surface, distinct from the CustomerId-uniqueness rule above).",
+      "type": "Duplicate",
+      "dimension": "Accuracy",
+      "typeProperties": {
+        "columns": [
+          { "type": "Column", "value": "FirstName" },
+          { "type": "Column", "value": "LastName" },
+          { "type": "Column", "value": "Email" }
+        ]
+      }
+    },
+    {
+      "name": "Custom_Email_format_valid",
+      "description": "Email must match a basic local-part@domain shape. A stricter production regex should be substituted per the organization's actual email-validation standard - this is a starter pattern, not an RFC 5322-complete validator.",
+      "type": "CustomTruth",
+      "dimension": "Accuracy",
+      "typeProperties": {
+        "condition": "regexMatch(toString(Email), '^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$')",
+        "emptyCriteria": "Email IS NULL",
+        "columns": [
+          { "type": "Column", "value": "Email" }
+        ]
+      }
+    }
+  ]
+}
