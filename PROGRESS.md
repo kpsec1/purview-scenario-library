@@ -17,7 +17,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Data Governance
-- [ ] `scenarios/data-map/scan-azure-sql-and-classify/`
 - [ ] `scenarios/unified-catalog/curate-business-glossary/`
 - [ ] `scenarios/data-quality/rules-and-scorecards/`
 - [ ] `scenarios/data-lineage/end-to-end-lineage-validation/`
@@ -130,6 +129,40 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `dynamic-risk-dlp-enforcement/deploy/New-AdaptiveProtectionDlpPolicy.ps1`'s `.NOTES` and
   `README.md` §11.
 
+### Follow-ups discovered while building the Data Map Azure SQL scan-and-classify scenario
+- [ ] VERIFY (pilot tenant or the Purview OpenAPI spec, before production use): the exact REST
+  request body shapes for the **Data Sources - Create Or Update**, **Triggers - Create Or
+  Replace**, and **Scan Result - Run Scan** operations used by
+  `scenarios/data-map/scan-azure-sql-and-classify/deploy/New-AzureSqlDataMapScan.ps1`. Their
+  canonical Microsoft Learn REST reference pages returned fetch errors in this build environment;
+  the shapes used are reconstructed from the confirmed sibling **Scans - Create Or Replace**
+  endpoint (direct-fetched, API version `2023-09-01`), the official
+  `@azure-rest/purview-scanning` JS SDK type definitions, and the `Az.Purview` PowerShell module's
+  parameter signatures — three converging but indirect sources. Flagged inline in that scenario's
+  `README.md` §11 and the deploy script's `.NOTES`.
+- [ ] `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/` (or fold into a future Data
+  Map hardening pass) — script a **custom, PII-only scan rule set** (excluding all system
+  classifications except U.S. Social Security Number and Credit Card Number) once the "Scan
+  Rulesets - Create Or Update" REST body is independently grounded, or by wrapping the `Az.Purview`
+  PowerShell module's `New-AzPurviewAzureSqlDatabaseScanRulesetObject
+  -ExcludedSystemClassification` cmdlet directly instead of raw REST. Deferred from
+  `scan-azure-sql-and-classify` because the exact REST JSON shape wasn't confirmed during that
+  build — see its `README.md` §11 VERIFY.
+- [ ] Consider scripting **credential-object creation** (Key Vault-backed, for the
+  `AzureSqlDatabaseCredential` scan kind — SQL authentication or service principal) once a
+  documented REST endpoint for it is found; deferred from `scan-azure-sql-and-classify` because no
+  such endpoint was located during that build (Microsoft's own docs show credential creation only
+  via the portal UI). Needed for any buyer whose target SQL Server can't use SAMI (e.g. reachable
+  only via a self-hosted integration runtime, which doesn't support managed-identity auth).
+- [ ] Sibling Data Map scan scenarios for **Azure SQL Managed Instance**, **Azure Synapse
+  Analytics** (dedicated + serverless SQL pools), and **on-premises SQL Server** (via self-hosted
+  IR) — each has its own registration/authentication nuances Microsoft documents separately;
+  explicitly called out as a non-goal in `scan-azure-sql-and-classify/design.md` §7.
+- [ ] `scenarios/data-map/scan-azure-sql-and-classify/` also assumes downstream scenarios will
+  consume its classification output — once `scenarios/data-estate-insights/
+  classification-coverage-report/` (already TODO below) is built, cross-link it back into this
+  scenario's §8 "Downstream use" note.
+
 ### Follow-ups discovered while building the DSPM for AI Copilot sensitive-data-exposure scenario
 - [ ] VERIFY (pilot tenant): whether a `{"Type":"Group","Identity":"..."}` `Inclusions` entry in
   the Copilot-location `-Locations` JSON works for `New-DlpCompliancePolicy`/`New-DlpComplianceRule`
@@ -158,6 +191,35 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `copilot-sensitive-data-exposure/README.md` §3, not surfaced in the cross-cutting matrix.
 
 ## DONE
+- [x] `scenarios/data-map/scan-azure-sql-and-classify/` — first Data Governance-module scenario:
+  full README (12-section skeleton), design.md, deploy/ (`New-AzureSqlDataMapScan.ps1` —
+  idempotent/parameterized Purview Data Map REST automation (surface 4), registers an
+  `AzureSqlDatabase` data source and an `AzureSqlDatabaseMsi` (SAMI-authenticated, credential-free)
+  scan against Microsoft's system default scan rule set, with optional recurring trigger and
+  `-RunNow`, manual `$PSCmdlet.ShouldProcess()`-wrapped `-WhatIf` throughout since
+  `Invoke-RestMethod` has no native ShouldProcess integration; `Remove-AzureSqlDataMapScan.ps1` —
+  staged trigger/scan/data-source removal, idempotent on 404; a JSON reference manifest of the
+  three REST bodies), validate/ script (read-only config + scan-history check), four-lens
+  reviews.md (Red Team Fix round resolved — narrowed the recommended Azure IAM `Reader` scope to
+  the SQL Server resource itself instead of resource group/subscription, and flagged the broad
+  "Allow Azure services" firewall toggle's tradeoff explicitly; Blue Team Fix round resolved —
+  added a four-step incident-response runbook for non-`Succeeded` scan runs and hardened the
+  validate script's ambiguous-failure-mode warning; CISO Fix round resolved — added an explicit
+  Azure Cost Management budget/alert recommendation given PAYG's uncapped cost-growth model;
+  Product Owner Fix round resolved — dropped an unverified custom "PII-only" scan-rule-set default
+  in favor of Microsoft's confirmed system default rule set, which already includes the SSN/Credit
+  Card Number pair this repo standardizes on) — grounded in Microsoft Learn (Azure SQL Database
+  registration/firewall/authentication-options/scan-setup walkthrough and its four supported
+  authentication methods' exact T-SQL grants, the Scans - Create Or Replace REST reference
+  directly fetched at API version `2023-09-01` with its full `AzureSqlDatabaseMsiScanProperties`
+  schema, the Data Map data-plane API-authentication tutorial's service-principal/role-assignment/
+  token-acquisition flow, scan run monitoring and 90-day history retention, scan rule set and
+  classification-best-practices guidance) plus the `@azure-rest/purview-scanning` JS SDK's type
+  definitions and the `Az.Purview` PowerShell module's confirmed cmdlet/parameter surface as
+  corroborating (not primary) sources for the three REST operations whose own canonical reference
+  pages could not be fetched in this build environment — those three gaps recorded as explicit
+  VERIFY items rather than fabricated, per `AGENTS.md` §4 — 2026-09-03
+
 - [x] `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` — full README (12-section skeleton),
   design.md, deploy/ (`New-CopilotSensitiveDataProtectionPolicy.ps1` — idempotent/parameterized
   Security & Compliance PowerShell deploying a two-rule DLP policy on the Microsoft 365 Copilot and

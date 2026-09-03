@@ -1,0 +1,47 @@
+{
+  "$comment": "Reference/documentation copy of the three REST request bodies deploy/New-AzureSqlDataMapScan.ps1 sends. This file is NOT consumed by the deploy script - it exists so the exact shape sent to the Purview Data Map REST API is reviewable in a diff without reading PowerShell. See README.md Section 11 for the VERIFY status of the dataSource and trigger bodies (the scan body's shape is confirmed against Microsoft's own REST reference, API version 2023-09-01).",
+  "dataSource": {
+    "$comment": "PUT {endpoint}/scan/datasources/{DataSourceName}?api-version=2023-09-01",
+    "kind": "AzureSqlDatabase",
+    "properties": {
+      "serverEndpoint": "<SqlServerName>.database.windows.net",
+      "resourceName": "<SqlServerName>",
+      "resourceGroup": "<ResourceGroupName>",
+      "subscriptionId": "<SubscriptionId>",
+      "location": "<Location>",
+      "collection": {
+        "referenceName": "<CollectionReferenceName>",
+        "type": "CollectionReference"
+      }
+    }
+  },
+  "scan": {
+    "$comment": "PUT {endpoint}/scan/datasources/{DataSourceName}/scans/{ScanName}?api-version=2023-09-01 - kind AzureSqlDatabaseMsi authenticates as the Purview account's own system-assigned managed identity; no credential object required.",
+    "kind": "AzureSqlDatabaseMsi",
+    "properties": {
+      "databaseName": "<DatabaseName>",
+      "serverEndpoint": "<SqlServerName>.database.windows.net",
+      "collection": {
+        "referenceName": "<CollectionReferenceName>",
+        "type": "CollectionReference"
+      },
+      "scanRulesetName": "AzureSqlDatabase",
+      "scanRulesetType": "System"
+    }
+  },
+  "trigger": {
+    "$comment": "PUT {endpoint}/scan/datasources/{DataSourceName}/scans/{ScanName}/triggers/default?api-version=2023-09-01 - only sent when -RecurrenceFrequency is supplied. Trigger resource name is always 'default' (one trigger per scan).",
+    "properties": {
+      "scanLevel": "Incremental",
+      "recurrence": {
+        "frequency": "Week",
+        "interval": 1,
+        "startTime": "<RecurrenceStartTime, ISO 8601>"
+      }
+    }
+  },
+  "runScan": {
+    "$comment": "PUT {endpoint}/scan/datasources/{DataSourceName}/scans/{ScanName}/runs/{new-guid}?api-version=2023-09-01&scanLevel=Full - only sent when -RunNow is supplied. No request body.",
+    "scanLevel": "Full"
+  }
+}
