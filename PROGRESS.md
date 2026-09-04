@@ -380,12 +380,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `Create Data Source`/`computeId`-provisioning gap (above) is a separate, still-open item.
 
 ### Follow-ups discovered while building the Data Estate Insights classification-coverage-report scenario
-- [ ] `scenarios/data-estate-insights/sensitivity-label-coverage-report/` (or fold into a future
-  Data Estate Insights hardening pass) — extend `classification-coverage-report`'s exact pattern
-  (paginated `Discovery - Query`, client-side tally, replace-by-`RunId` trend log) to the `label`
-  field on the same `SearchResultValue` schema, reproducing the native "Labeling insights" report's
-  KPIs the same way this fragment reproduces "Classification insights" — explicitly scoped out of
-  `classification-coverage-report/design.md` §7.
+- [x] `scenarios/data-estate-insights/sensitivity-label-coverage-report/` — extends
+  `classification-coverage-report`'s exact pattern (paginated `Discovery - Query`, client-side tally,
+  replace-by-`RunId` trend log) to the `label` field on the same `SearchResultValue` schema — **built**
+  (see DONE below).
 - [ ] `scenarios/data-estate-insights/glossary-curation-coverage-report/` — the native "Glossary
   insights"/"Data stewardship" dashboards (term-to-asset attachment rates, active-user counts) use
   different underlying data than `Discovery - Query`'s per-asset `classification`/`label` fields and
@@ -567,7 +565,65 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   repo's existing precedent of not automating rare, high-privilege, one-time setup steps that sit
   outside the automation identity's own Purview/Azure IAM role scope (see `design.md` §8).
 
+### Follow-ups discovered while building the Data Estate Insights sensitivity-label-coverage-report scenario
+- [ ] `scenarios/data-estate-insights/sensitivity-label-coverage-report/` — add a source-type-support
+  check to `deploy/Export-SensitivityLabelCoverageReport.ps1`/`validate/
+  Test-SensitivityLabelCoverageReport.ps1` that flags when a scoped `-CollectionId`/`-ObjectTypes`
+  combination is outside Microsoft's documented Data Map sensitivity-label source-type list (Azure
+  Blob Storage, ADLS Gen1/Gen2, SQL Server, Azure SQL Database, Azure SQL Managed Instance, Amazon S3,
+  Amazon RDS (preview), Power BI), so a `0% labeled` reading for an unsupported source type isn't
+  mistaken for a real governance gap — deferred from that scenario's build (flagged as a Red Team/Blue
+  Team finding in `reviews.md`, and as a non-goal in `design.md` §7) because this build did not
+  independently re-verify that supported-source list is complete/current enough to hard-code as a
+  validation rule; needs a fresh grounding pass specifically on that list before encoding it.
+- [ ] Once Microsoft's "Extend sensitivity labels to Data Map" capability reaches GA (it is Public
+  Preview as of this build — `sensitivity-label-coverage-report/README.md` §3/§11), re-verify the
+  `label` field/facet semantics on Discovery - Query still hold and drop the preview callout.
+- [ ] Consider a `scenarios/information-protection/` or cross-cutting follow-up scripting the "extend
+  sensitivity labels to Data Map" enablement itself (turning on the capability, scoping a label to
+  "Files & other data assets") — left as a manual portal prerequisite in
+  `sensitivity-label-coverage-report/README.md` §5 step 1/`design.md` §7, since this scenario only
+  reads labels already applied, consistent with `classification-coverage-report`'s own non-goal of not
+  building the scan it reports on.
+
 ## DONE
+- [x] `scenarios/data-estate-insights/sensitivity-label-coverage-report/` — ninth **follow-up
+  expansion** fragment (Data Estate Insights), closing the item logged during the
+  `classification-coverage-report` build: extend that scenario's exact pattern (paginated Discovery -
+  Query, client-side tally, replace-by-`RunId` trend log) to the `label` field on the same
+  `SearchResultValue` schema. Full README (12-section skeleton, Public Preview callout up front per
+  this repo's established pattern for the upstream "extend sensitivity labels to Data Map" preview
+  dependency), design.md (five design goals mirroring the sibling scenario's own, plus a fifth,
+  label-specific consideration — labels surfaced through this extension are metadata-only, not
+  enforced protection), deploy/ (`Export-SensitivityLabelCoverageReport.ps1` — idempotent/
+  parameterized Purview Data Map Discovery - Query REST automation (surface 4, API version
+  `2023-09-01`, independently re-confirmed via direct fetch for this build) applying the sibling
+  scenario's already-reviewed client-side-tally design to the `label` field/facet instead of
+  `classification`; `-Mode Full`/`-Mode Facets`, replace-by-`RunId` trend log, manual
+  `$PSCmdlet.ShouldProcess()` `-WhatIf`), validate/ script (identical file-integrity + optional
+  live-reconciliation check structure, `label`-specific column names), four-lens reviews.md (Red Team
+  Fix round resolved — found and flagged a genuine new risk the sibling scenario didn't have: a
+  `0% labeled` reading is ambiguous between "unprotected" and "source type doesn't support Data Map
+  labeling at all," closed via README/design additions rather than a guessed validation rule; Blue
+  Team Fix round resolved — operability guidance for the same ambiguity, a self-contained incident-
+  response runbook, and explicit file-naming non-collision with the sibling scenario; CISO Fix round
+  resolved — the review's most consequential finding: sensitivity labels surfaced via this Data Map
+  extension are metadata-only per Microsoft's own FAQ (no encryption, no content marking, no DLP), so
+  a high `PercentLabeled` must never be presented as "this data is protected" — added as an explicit
+  callout in README §2/§11 and design.md §1 before this scenario's output could be handed to a board
+  without risk of a false-assurance narrative; Product Owner Fix round resolved — corrected the native
+  report's name from `PROGRESS.md`'s own loose paraphrase ("Labeling insights") to Microsoft's actual
+  current name, "Classic sensitivity labels" report) — grounded in Microsoft Learn via the Microsoft
+  Learn MCP tool (a direct fetch of the Discovery - Query REST reference confirming the `label`
+  response field (`string[]`) and the `label` facet as one of exactly four documented facets, and
+  confirming no worked exact-value `label` filter example exists (only `classification` does);
+  Understand the classic sensitivity labels report in Unified Catalog; Understand the classic assets
+  report; Access control in Data Estate Insights within Microsoft Purview; Learn about sensitivity
+  labels in Data Map (preview) and its FAQ, including the licensing-tier list and the metadata-only/
+  no-encryption/no-DLP confirmations; Understand the Microsoft Purview Data Estate Insights
+  application) — one gap (the source-type-support check) recorded as a follow-up rather than resolved
+  by guessing, per `AGENTS.md` §4 — 2026-09-04
+
 - [x] `scenarios/insider-risk/irm-case-escalation-to-ediscovery/` — eighth **follow-up expansion**
   fragment (Insider Risk Management / eDiscovery), closing the item logged during the
   `premium-legal-hold-and-export` build: "once `scenarios/insider-risk/` has a scenario producing
