@@ -683,8 +683,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this rule's block) can be reached from activity unrelated to card data, strengthening the
   incident-response runbook to confirm the actual triggering indicator; (3) added an explicit
   VERIFY that no single Microsoft-published example validates this exact end-to-end composition,
-  even though every individual piece is independently grounded. Commit: (recorded on push, see
-  next commit).
+  even though every individual piece is independently grounded. Commit: `fd42f22` — 2026-09-04.
 - [x] **`scenarios/ediscovery/roster-to-hold-locations/`** — thirteenth full scenario fragment
   (eDiscovery), closing the hand-off `teams-group-hold-resolution/design.md` §7 explicitly deferred:
   "Once a human uses `-ResolveMembers`'s roster output to decide individual members also need
