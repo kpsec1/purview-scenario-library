@@ -1,0 +1,42 @@
+{
+  "_comment": "Config for deploy/Invoke-AuditInvestigation.ps1. Author-only reference data. Drives a read-only forensic audit-log investigation via the Microsoft Graph Audit Search API (async /security/auditLog/queries). This searches and EXPORTS audit records - it never changes tenant state. Tune the target user(s), time window, and the crucial-event operations to the incident you're investigating.",
+  "displayName": "Investigation - possible account compromise (jdoe)",
+  "lookbackDays": 30,
+  "_dateNote": "Provide lookbackDays (relative) OR explicit filterStartDateTime/filterEndDateTime (ISO 8601 UTC). Explicit dates win if both are present. Audit (Standard) retains 180 days; Audit (Premium) up to 1 year (10 years with the add-on). MailItemsAccessed is a Premium 'crucial event'.",
+  "filterStartDateTime": null,
+  "filterEndDateTime": null,
+  "userPrincipalNameFilters": [
+    "jdoe@contoso.example"
+  ],
+  "operationFilters": [
+    "MailItemsAccessed",
+    "Send",
+    "SendAs",
+    "SendOnBehalf",
+    "New-InboxRule",
+    "Set-InboxRule",
+    "UpdateInboxRules",
+    "Add-MailboxPermission",
+    "FileDownloaded",
+    "FileSyncDownloadedFull",
+    "AnonymousLinkCreated",
+    "SharingInvitationCreated",
+    "UserLoggedIn",
+    "UserLoginFailed",
+    "Add member to role.",
+    "Update user."
+  ],
+  "_operationsNote": "A 'crucial events' preset for account-compromise triage: mailbox access/exfil (MailItemsAccessed - Premium), sending/impersonation, malicious inbox rules and delegate grants, file download/oversharing, sign-in success/failure, and privilege/identity changes. Trim to what the incident needs - broad operation sets over long windows return large result sets.",
+  "recordTypeFilters": [],
+  "_recordTypeNote": "Optional workload filter (e.g. exchangeItem, sharePointFileOperation, azureActiveDirectory). Leave empty to search across all record types matching the operations. See README.md Section 6 for the enum.",
+  "keywordFilter": "",
+  "ipAddressFilters": [],
+  "export": {
+    "outDir": "./out",
+    "formats": ["csv", "json"],
+    "_exportNote": "Exported records can contain sensitive content and PII - treat the output directory as evidence: restrict access, store per your IR data-handling policy, and delete when the matter closes (see rollback.md)."
+  },
+  "pollTimeoutMinutes": 30,
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-03"
+}

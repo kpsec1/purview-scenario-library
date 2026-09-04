@@ -1,0 +1,21 @@
+{
+  "_comment": "Config for deploy/New-GraphRetentionEvent.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script and confirmed (or run without -WhatIf). Automates event-based retention via the Microsoft Graph records-management APIs: ensures a retention EVENT TYPE exists, and (only when gated) fires a retention EVENT that STARTS an irreversible retention clock for matching event-based-labeled content. This is the automation complement to the PowerShell scenario ../../regulatory-records-disposition/. Read README.md Sections 2 and 11 first.",
+
+  "eventType": {
+    "displayName": "Contract Expiration",
+    "description": "Triggers the retention clock for contract records when a contract expires. Referenced by an event-based retention label (retentionTrigger = dateOfEvent)."
+  },
+
+  "event": {
+    "fire": false,
+    "displayName": "Contract 4815 expired",
+    "description": "Illustrative trigger event. fire=false by default so the deploy does NOT start a live retention clock. Set fire=true (and pass -FireEvent) only for a real, dated event from your business system.",
+    "eventTriggerDateTime": "2026-09-04T00:00:00Z",
+    "eventQuery": [
+      {
+        "queryType": "files",
+        "query": "ComplianceAssetID:4815"
+      }
+    ]
+  }
+}

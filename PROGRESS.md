@@ -17,10 +17,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Risk & Compliance
-- [ ] `scenarios/audit/premium-audit-investigation/`
-- [ ] `scenarios/data-lifecycle-management/retention-labels-financial-records/`
-- [ ] `scenarios/records-management/regulatory-records-disposition/`
-- [ ] `scenarios/information-barriers/segregate-trading-and-research/`
+- (none — every module now has a starter scenario; remaining work is the follow-up expansion backlog below)
 
 > After the starter scenario per module lands, expand each module across the AGENTS.md §3 axes
 > (lifecycle, deployment posture, regulatory driver, failure/abuse, scale). Add those fragments
@@ -397,7 +394,196 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the underlying Title VII statute and *Faragher*/*Ellerth* case law instead, but this area is
   actively moving and should be re-verified before every future sale referencing it.
 
+### Follow-ups discovered while building the Audit premium-audit-investigation scenario
+- [ ] `scenarios/audit/retention-policy-management/` — script **audit log retention policies** (a
+  Premium feature: create/manage custom retention durations per record type/user via SCC PowerShell
+  `New-/Set-UnifiedAuditLogRetentionPolicy`), the configuration counterpart to this read-only
+  investigation scenario.
+- [ ] `scenarios/audit/streaming-to-sentinel-or-management-api/` — continuous audit streaming via the
+  Office 365 Management Activity API (or a Sentinel connector) for real-time detection, contrasted
+  with this on-demand investigation in `audit/premium-audit-investigation/design.md` §7.
+- [ ] VERIFY (pilot tenant): the exact `auditLogQueryStatus` terminal values (the runner polls
+  defensively and flags this in `audit/premium-audit-investigation/README.md` §11), and the current
+  crucial-events list / operation names for the compromise preset.
+- [ ] Consider an **incident-response (mutating) companion** scenario — disable account, revoke
+  sessions, remove malicious inbox rules — the deliberate response workflow this read-only
+  investigation explicitly scopes out (`audit/premium-audit-investigation/design.md` §7).
+
+### Follow-ups discovered while building the DLM retention-labels-financial-records scenario
+- [ ] `scenarios/data-lifecycle-management/event-based-retention-and-disposition/` — event-based
+  retention (`New-ComplianceTag -EventType`), `KeepAndDelete` with disposition review
+  (`-ReviewerEmail`, multi-stage), and the disposition workflow — powerful RM features layered on the
+  same cmdlets, non-goals of this starter (`design.md` §7). Overlaps the records-management starter.
+- [ ] `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` — a **publish**
+  label policy (`New-RetentionComplianceRule -PublishComplianceTag`) so users can manually apply the
+  financial-records label, complementing this scenario's auto-apply.
+- [ ] `scenarios/data-lifecycle-management/adaptive-scope-retention/` — auto-apply/retention scoped by
+  an **adaptive scope** (attribute-driven) instead of static locations, for large/dynamic estates
+  (noted as out of scope here).
+- [ ] Consider **file plan descriptors** (`-FilePlanProperty`: categories, citations, authorities,
+  provisions) for a formal records file plan, and bulk label/policy creation via the documented CSV
+  script (`bulk-create-publish-labels-using-powershell`).
+
+### Follow-ups discovered while building the Information Barriers segregate-trading-and-research scenario
+- [ ] `scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/` — enable IB
+  for SharePoint/OneDrive (`Set-SPOTenant`) and associate segments to sites, the file-level half beyond
+  the Teams wall (noted as an extension in this scenario's `design.md` §6 / `README.md` §11).
+- [ ] `scenarios/information-barriers/allow-list-and-control-room-exceptions/` — model allow-list
+  topologies (`-SegmentsAllowed`) and a control-room/compliance segment that must see both sides, the
+  exception pattern real deployments need (non-goal here).
+- [ ] Consider a multi-segment-mode migration note/scenario (Legacy → SingleSegment/MultiSegment) and
+  address-book-policy / GAL segmentation as companions.
+
+### Follow-ups discovered while building the Records Management regulatory-records-disposition scenario
+- [ ] `scenarios/records-management/file-plan-bulk-import/` — bulk create a full file plan (retention
+  schedule with citations, departments, authorities across many record classes) via the documented CSV
+  import, the multi-class complement to this single representative class (non-goal here).
+- [ ] `scenarios/records-management/multi-stage-disposition-review/` — model a multi-stage disposition
+  panel (up to 5 stages / 10 reviewers each) using `-MultiStageReviewProperty` /
+  `-ComplianceTagForNextStage`, for sign-off chains where one approver isn't enough (noted as a non-goal
+  in this scenario's `design.md` §7).
+- [x] `scenarios/records-management/graph-event-automation/` — **built** (see DONE): fire retention
+  events from a business system via the Microsoft Graph records-management APIs
+  (`retentionEvent`/`retentionEventType`, the modern path since the REST event API was deprecated), the
+  automation complement to the PowerShell `New-ComplianceRetentionEvent` scenario (surface 2/3).
+- [ ] `scenarios/records-management/disposition-proof-export/` — export proof-of-disposition and the
+  disposition views for audit (Records Management → Disposition filter/export), closing the evidence
+  loop this scenario's §7 references.
+- [ ] Consider an adaptive-scope variant of the publish policy for large/dynamic estates (a cross-module
+  follow-up shared with the DLM scenarios), and a records-vs-regulatory decision note linking this
+  scenario with the DLM `retention-labels-financial-records` sibling.
+
 ## DONE
+- [x] `scenarios/records-management/graph-event-automation/` — first **follow-up expansion** fragment
+  (Records Management, Microsoft Graph surface 2/3), the automation complement to the PowerShell
+  regulatory-records-disposition scenario: full README (12-section skeleton), design.md, deploy/
+  (`New-GraphRetentionEvent.ps1` — `Invoke-MgGraphRequest` against the v1.0 records-management API that
+  ensures a retention **event type** exists via GET/POST `/security/triggerTypes/retentionEventTypes`
+  (create-or-report by displayName, `@odata.nextLink` paging) and — **double-gated** behind `-FireEvent`
+  **and** config `event.fire=true`, always through `$PSCmdlet.ShouldProcess` (real `-WhatIf`) — fires a
+  retention **event** via POST `/security/triggers/retentionEvents` (`eventQuery` files/messages +
+  AssetID/keywords, `eventTriggerDateTime`, `retentionEventType@odata.bind`), reporting Graph-native
+  `eventStatus`/`eventPropagationResults`; `Remove-GraphRetentionEvent.ps1` — deletes matching event
+  records and, with `-DeleteEventType`, the event type, with the loud note that deleting an event does
+  NOT stop retention already started; `deploy/config/graph-event-automation.sample.json` — Contract
+  Expiration event type + asset-ID-scoped event with `fire=false`), validate/
+  (`Test-GraphRetentionEvent.ps1` — read-only GET checks of the event type + report of fired events and
+  per-workload propagation), four-lens reviews.md (Red Team Fix round resolved — scoped events,
+  double-gated + ShouldProcess fire, high-privilege app identity, deletion-isn't-undo; Blue Team Fix
+  round resolved — per-workload propagation reporting, nextLink paging, real `-WhatIf`; CISO Fix round
+  resolved — auditable automated triggering; Product Owner Fix round resolved — doc quirks
+  (`@odata.bind` singular/plural, `eventQuery`/`eventQueries`) flagged) — grounded in Microsoft Learn
+  (records-management API overview, create retentionEvent/retentionEventType, eventQuery, permission
+  `RecordsManagement.ReadWrite.All`, typed cmdlets `New-MgSecurityTriggerTypeRetentionEventType` /
+  `New-MgSecurityTriggerRetentionEvent` verified); uses Microsoft's supported path (REST event API
+  deprecated), a fired event is treated as irreversible. (2026-09-04)
+- [x] `scenarios/records-management/regulatory-records-disposition/` — seventh Risk & Compliance
+  scenario (Records Management), a genuinely distinct records-management lifecycle vs. the DLM sibling:
+  full README (12-section skeleton), design.md, deploy/ (`New-RecordsDisposition.ps1` — SCC PowerShell
+  (surface 1) that builds the *event-anchored* disposition lifecycle: `New-ComplianceRetentionEventType`
+  → `New-ComplianceTag -RetentionType EventAgeInDays -RetentionAction KeepAndDelete -EventType
+  -ReviewerEmail -IsRecordLabel` (event-based record label ending in a **disposition review**, not
+  auto-delete) → `New-RetentionCompliancePolicy` + `New-RetentionComplianceRule -PublishComplianceTag`
+  (**publish**, not auto-apply) → **gated** `New-ComplianceRetentionEvent` created only with
+  `-TriggerEvent` **and** config `event.create=true` because a triggered event is irreversible;
+  create-or-report idempotency via Get-*; custom `-DryRun` (S&C `-WhatIf` non-functional); loud
+  warnings on the two irreversible edges (triggered event can't be cancelled; applied record label
+  can't be deleted) and on un-scoped events / missing reviewer; `Remove-RecordsDisposition.ps1` —
+  disable publish policy by default, `-Delete` removes policy/rule and *attempts* (reports, never
+  forces via `-ForceDeletion`) label + event-type removal; `deploy/config/records-disposition.sample.json`
+  — Contract Expiration event type + event-based record label + publish policy + asset-ID-scoped event
+  with `create=false`), validate/ (`Test-RecordsDisposition.ps1` — read-only Get-* checks of event
+  type, label action/type/event-binding/record-flag/reviewer, publish policy enabled + locations, rule
+  `PublishComplianceTag`, and an informational report of already-triggered events), four-lens reviews.md
+  (Red Team Fix round resolved — asset-ID-scoped events, gated irreversible trigger, reviewer-required
+  disposition, governed teardown; Blue Team Fix round resolved — event-triggered reporting, separate
+  Disposition Management RBAC, working `-DryRun`; CISO Fix round resolved — examiner-grade schedule
+  reproducibility; Product Owner Fix round resolved — limits/latency/immutability documented) — grounded
+  in Microsoft Learn (event-driven-retention, disposition, New-ComplianceTag/-ComplianceRetentionEventType/
+  -ComplianceRetentionEvent with Get/Remove `-Identity` verified, `-PublishComplianceTag`); this
+  **completes a starter scenario for every Purview module** — remaining work is the follow-up expansion
+  backlog above. (2026-09-04)
+- [x] `scenarios/information-barriers/segregate-trading-and-research/` — sixth Risk & Compliance
+  scenario (Information Barriers), and the last remaining Risk & Compliance **starter** (every module
+  now has a starter scenario): full README (12-section skeleton), design.md, deploy/
+  (`New-TradingResearchBarrier.ps1` — SCC PowerShell (surface 1) that builds an ethical wall:
+  `New-OrganizationSegment` per side from an Entra attribute filter + two one-way
+  `New-InformationBarrierPolicy -SegmentsBlocked` policies created **-State Inactive**, and — only with
+  `-Activate` — `Set-InformationBarrierPolicy -State Active` + `Start-InformationBarrierPoliciesApplication`;
+  safe-by-default (staged inactive, no user impact until explicit activation); create-or-report
+  idempotency via Get-*; custom `-DryRun` (S&C `-WhatIf` non-functional); loud live-communication-impact
+  warnings; `Remove-TradingResearchBarrier.ps1` — staged deactivate → `-Apply` to lift the wall →
+  `-Delete` policies + segments, with the deactivation-needs-application trap called out;
+  `deploy/config/trading-research-barrier.sample.json` — Trading/Research segments + both block pairs),
+  validate/ (`Test-TradingResearchBarrier.ps1` — read-only Get-* checks of both segments, both block
+  policies + assignment + Active state (`-RequireActive`), and application status), four-lens reviews.md
+  (Red Team Fix round resolved — both-direction + mutually-exclusive-segment wall, safe-by-default
+  activation + no-collateral test, app-only/non-IB edges, governed deletion; Blue Team Fix round
+  resolved — application-status detection + `-RequireActive`, deactivation-needs-apply trap, working
+  `-DryRun`; CISO Fix round resolved — examiner-grade reproducibility; Product Owner Fix round resolved
+  — IB modes/timings documented) — grounded in Microsoft Learn (Get started with Information Barriers:
+  segments/block-policies/apply + one-policy-per-segment + two-one-way-policies pattern, multi-segment
+  IB modes and limits, New-OrganizationSegment / New-InformationBarrierPolicy /
+  Start-InformationBarrierPoliciesApplication references, IB attributes, SharePoint IB enablement + 24h
+  propagation, Teams block behavior, troubleshooting) — no invented cmdlets; activation's
+  live-communication impact treated as a first-class safety constraint, per `AGENTS.md` §4 — 2026-09-03
+
+- [x] `scenarios/data-lifecycle-management/retention-labels-financial-records/` — fifth Risk &
+  Compliance scenario (Data Lifecycle / Records Management): full README (12-section skeleton),
+  design.md, deploy/ (`New-FinancialRecordsRetention.ps1` — SCC PowerShell (surface 1) that creates a
+  **regulatory record** retention label (`New-ComplianceTag -Regulatory $true -RetentionAction Keep
+  -RetentionDuration 2555 -RetentionType CreationAgeInDays` — SEC 17a-4-style WORM immutability, a
+  PowerShell-only capability the portal hides), an **auto-apply** label policy
+  (`New-RetentionCompliancePolicy` with finance SharePoint location), and the rule binding them
+  (`New-RetentionComplianceRule -ApplyComplianceTag -ContentMatchQuery`); **create-or-report**
+  idempotency via Get-* (never silently mutates high-consequence retention objects); custom `-DryRun`
+  (S&C `-WhatIf` non-functional); loud irreversibility warnings; `Remove-FinancialRecordsRetention.ps1`
+  — staged disable → `-Delete` policy/rule, and `-TryRemoveLabel` that reports the expected refusal for
+  a regulatory record in use rather than forcing it; `deploy/config/
+  financial-records-retention.sample.json`), validate/ (`Test-FinancialRecordsRetention.ps1` —
+  read-only Get-* checks of label action/duration/record flags, policy enabled + locations +
+  distribution status, and the rule's applied label), four-lens reviews.md (Red Team Fix round
+  resolved — over-scoping guardrails (dry-run, narrow query, lab-test + Records/Legal sign-off),
+  least-restrictive-control ladder, create-or-report + no force-release of records; Blue Team Fix round
+  resolved — working `-DryRun`, auto-apply latency/RetryDistribution/DistributionStatus, validate
+  pre-flight; CISO Fix round resolved — irreversibility as a governance gate; Product Owner Fix round
+  resolved — PowerShell-only regulatory records + the retention-strength ladder documented) — grounded
+  in Microsoft Learn (New-ComplianceTag / New-RetentionCompliancePolicy / New-RetentionComplianceRule
+  references incl. -Regulatory/-IsRecordLabel/-RetentionAction/-RetentionType/-ApplyComplianceTag,
+  records-management immutability semantics, auto-apply latency/limits, retention cmdlets overview) —
+  a deliberately conservative scenario given regulatory records are irreversible; no invented cmdlets,
+  per `AGENTS.md` §4 — 2026-09-03
+
+- [x] `scenarios/audit/premium-audit-investigation/` — fourth Risk & Compliance scenario (Audit
+  Premium), a **read-only forensic investigation** built on the **Microsoft Graph Audit Search API**
+  (v1.0 `security` namespace, surface 3): full README (12-section skeleton), design.md, deploy/
+  (`Invoke-AuditInvestigation.ps1` — an async investigation runner via `Invoke-MgGraphRequest`:
+  `POST /security/auditLog/queries` to create the search job from a JSON config (target UPNs, time
+  window via `lookbackDays` or explicit ISO dates, a crucial-events `operationFilters` preset,
+  optional record-type/keyword/IP filters), polls `GET .../queries/{id}` until a terminal status
+  (defensive running-set exclusion + `succeeded`-like check, bounded `-PollTimeoutMinutes`),
+  retrieves `GET .../queries/{id}/records` with `@odata.nextLink` paging, and exports CSV (key
+  fields) + JSON (full `auditData`) with a top-operations summary; `-WhatIf` previews the query body
+  without creating the job; read-only — no tenant mutation; `deploy/config/
+  audit-investigation.sample.json` — an account-compromise crucial-events preset (MailItemsAccessed
+  [Premium], Send/SendAs, New-/Set-InboxRule, Add-MailboxPermission, FileDownloaded,
+  AnonymousLinkCreated, UserLoggedIn/UserLoginFailed, role/user changes)), validate/
+  (`Test-AuditInvestigation.ps1` — Graph connectivity + `AuditLogsQuery*` scope + config validation
+  + a live 1-hour probe query proving API/permission/audit availability), rollback.md (read-only:
+  no tenant state to undo — focuses on securing/disposing the exported evidence and the 30-day
+  auto-retained job), four-lens reviews.md (Red Team Fix round resolved — export-as-evidence
+  handling, least-privilege service-scoped permissions, read-only/no-tamper posture, ingestion-lag
+  false-negative warning; Blue Team Fix round resolved — async polling + paging, triage
+  summary/runbook, live readiness probe; CISO Fix round resolved — defensibility/breach-clock
+  foregrounded; Product Owner Fix round resolved — Graph async API over classic
+  Search-UnifiedAuditLog, status-enum VERIFY) — grounded in Microsoft Learn (auditing solutions
+  overview + Standard-vs-Premium capability comparison + service description for crucial events and
+  retention tiers, the Audit Search Graph API create/get/list-records references incl. body filters
+  and the recordType enum and AuditLogsQuery permission set, audit-search ingestion-latency/job
+  limits, and the classic Search-UnifiedAuditLog caps) — the `auditLogQueryStatus` terminal values
+  and current crucial-events list recorded as explicit VERIFY items rather than fabricated, per
+  `AGENTS.md` §4 — 2026-09-03
+
 - [x] `scenarios/ediscovery/premium-legal-hold-and-export/` — first eDiscovery-module scenario,
   and the first Risk & Compliance scenario in this repo built against a Purview surface with a
   **rich, fully app-only-supported write API** (the opposite grounding challenge from
