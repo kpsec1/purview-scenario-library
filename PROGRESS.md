@@ -43,13 +43,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   everywhere else — neither is confirmed for the current, non-legacy experience this scenario
   targets. Flagged inline in `deploy/Export-EdiscoveryAuditTrail.ps1`'s `.NOTES`,
   `README.md` §8, and `design.md` §8 rather than resolved by guessing, per `AGENTS.md` §4.
-- [ ] `scenarios/ediscovery/legal-hold-notifications/` — the Premium custodian-communication
-  workflow (initial notice, reminders, escalations, acknowledgment tracking), explicitly called
-  out as a non-goal in `premium-legal-hold-and-export/design.md` §7 because no documented Graph
-  write API was found during this build's grounding pass; README.md §11 flags the absence of a
-  documented notification workflow as a real gap in the preservation narrative this scenario alone
-  provides, not a cosmetic omission — worth a dedicated fragment once (or if) Microsoft publishes
-  an API for it, or as a portal-driven-only companion scenario otherwise.
+- [x] `scenarios/ediscovery/legal-hold-notifications/` — **investigated, not built** (see DONE
+  below): the Premium custodian-communication workflow this item originally scoped was
+  **permanently retired by Microsoft on August 31, 2025** and isn't available in the current
+  eDiscovery experience — not merely unautomatable. `premium-legal-hold-and-export/README.md` §11
+  and `design.md` §7 corrected in place instead of a companion scenario being built on the original
+  (now-superseded) assumption.
 - [ ] VERIFY (pilot tenant, before production reliance): whether the custodian `userSource`
   `includedSources` property accepts the combined string `"mailbox, site"` (Microsoft's own worked
   *beta*-namespace example) on the current *v1.0* `POST .../custodians/{id}/userSources` endpoint,
@@ -550,6 +549,43 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   outside the automation identity's own Purview/Azure IAM role scope (see `design.md` §8).
 
 ## DONE
+- [x] **Investigate `scenarios/ediscovery/legal-hold-notifications/` — closed without building a
+  scenario** — seventh **follow-up expansion** fragment (eDiscovery), a correctness correction
+  rather than a new scenario. The original follow-up (logged during the
+  `premium-legal-hold-and-export` build) assumed the Premium custodian-communication workflow
+  (initial notice, reminders, escalations, acknowledgment tracking) was a live, portal-driven-only
+  Purview feature with no Graph write API — the same shape as several other no-write-API surfaces
+  this library already documents (Communication Compliance, Compliance Manager). Re-grounding for
+  this fragment found something different: Microsoft's current, non-legacy-banner "Manage hold
+  notifications" page states in an `Important` callout that legal hold custodian communications
+  were **permanently retired on August 31, 2025** and aren't available in the new eDiscovery
+  experience. The two walkthrough pages this follow-up would otherwise have built a portal runbook
+  from ("Create a legal hold notice," "Work with communications in eDiscovery (Premium)") both
+  carry the classic-experience/21Vianet-China-only caution banner rather than current guidance — a
+  detail easy to miss if only the feature-comparison table on the legacy `ediscovery` overview page
+  is checked, since the *current* `edisc-permissions` RBAC page still lists a "Communication" role
+  for eDiscovery Manager/Administrator (stale documentation debt, not evidence the feature survived
+  — the explicit retirement callout on the more specific, current "Manage hold notifications" page
+  is the higher-confidence source and the one this correction relies on). No companion scenario was
+  built, since there is no current-experience feature left to document or automate. Instead:
+  corrected `premium-legal-hold-and-export/README.md` §11 (replaced the "portal-driven, no API"
+  characterization with the retirement finding, the concrete consequence that
+  `ediscoveryCustodian.acknowledgedDateTime`/`releasedDateTime` should be expected to stay null in
+  the current experience rather than read as a live signal, and a recommendation to treat
+  notice-and-acknowledgment as an external, non-Purview process until Microsoft ships a
+  replacement) and its `.NOTES`-equivalent §12 reference list (added reference 28);
+  `design.md` §7's non-goal bullet and References (added R12); a short follow-up four-lens review
+  round in `reviews.md` (Red Team/Blue Team/CISO/Product Owner all Pass, no Fix/Fail) confirming the
+  correction is itself sound rather than a new unverified claim. Grounded via the Microsoft Learn
+  MCP tool (`ediscovery-manage-hold-notifications`'s retirement callout — the decisive source;
+  `ediscovery-create-hold-notification` and `ediscovery-managing-custodian-communications` for the
+  now-legacy workflow's own shape, both banner-flagged; the current, non-legacy `edisc` feature-
+  comparison table, which has no "legal hold notifications" row at all, corroborating the
+  retirement; the current, non-legacy `edisc-permissions` RBAC table, whose still-present
+  "Communication" role was deliberately *not* treated as evidence to the contrary). No code written
+  — there was nothing left to script once the underlying feature was confirmed retired, and writing
+  a scenario anyway would have violated `AGENTS.md` §4's no-fabrication rule by presenting a dead
+  feature as current guidance — 2026-09-04
 - [x] **Backport: corrected Run Scan / List Scan History REST shapes into
   `scenarios/data-map/scan-azure-sql-and-classify/`** — sixth **follow-up expansion** fragment
   (Data Map, Data Governance), a correctness fix rather than a new scenario, per the item the

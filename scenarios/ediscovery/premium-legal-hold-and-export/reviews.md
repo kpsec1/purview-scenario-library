@@ -200,3 +200,38 @@ addition itself, not a full re-review of the whole scenario:
   silently treated as applicable to the modern experience this scenario automates.
 
 No Fix/Fail from this round. `PROGRESS.md` carries the one open pilot-tenant VERIFY forward.
+
+---
+
+## Follow-up round — legal-hold-notifications finding corrected (no companion scenario built)
+
+`PROGRESS.md` tracked a follow-up to build `scenarios/ediscovery/legal-hold-notifications/` as a
+companion scenario for the Premium custodian-communication workflow this scenario's own README.md
+§11 flagged as a real gap. Re-grounding that follow-up found the workflow was **permanently
+retired by Microsoft on August 31, 2025** and isn't available in the current eDiscovery experience
+— not merely unautomatable. No companion scenario was built; instead README.md §11 and design.md
+§7 were corrected in place. A short four-lens pass on the correction itself, not a full re-review:
+
+- **🔴 Red Team — Pass.** The correction closes a worse risk than the one it replaces: a companion
+  scenario built on the original assumption would have walked a buyer through Microsoft Learn pages
+  for a feature that no longer exists in their tenant, or shipped a script polling
+  `acknowledgedDateTime` as if it were a live signal when nothing in the current experience can set
+  it. Both would have been confidently wrong rather than honestly incomplete. The corrected text
+  instead tells the operator the acknowledgment field is expected to stay null and points them at an
+  external process.
+- **🔵 Blue Team — Pass.** `validate/Test-EdiscoveryPremiumCaseSetup.ps1` already doesn't check
+  `acknowledgedDateTime` — confirmed as the right call now, not a coincidence, and the updated
+  README.md §11 explains why rather than leaving the omission unexplained.
+- **🎩 CISO — Pass.** The corrected text is more useful to a buyer than the original follow-up
+  would have produced: instead of a scenario documenting a dead portal feature, they get a direct
+  instruction to treat notice-and-acknowledgment as an external process today, which is the
+  actionable fact a legal/compliance stakeholder needs for their preservation narrative.
+- **🟦 Microsoft Product Owner — Pass.** The retirement is grounded against Microsoft's own current
+  (non-legacy-banner) "Manage hold notifications" page, which states it in an `Important` callout —
+  a more direct and current source than the classic-experience caution banner this build initially
+  expected to rely on. The stale "Communication" RBAC role still listed on the current, non-banner
+  "Assign permissions in eDiscovery" page was noticed but correctly not treated as evidence the
+  feature is still live — the retirement page is the more specific and more recent source.
+
+No Fix/Fail from this round. `PROGRESS.md`'s legal-hold-notifications follow-up is closed as
+"investigated, not built" rather than carried forward or silently dropped.

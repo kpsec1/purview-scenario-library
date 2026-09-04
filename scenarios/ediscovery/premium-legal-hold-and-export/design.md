@@ -102,9 +102,15 @@ failure this script should misreport.
   location-scoped hold scenario (regulatory sweep, departmental shared mailbox) is a natural,
   separately scoped follow-up, not a variant of this fragment.
 - **Legal hold notifications** (the Premium custodian-communication workflow — initial notice,
-  reminders, escalations, acknowledgment tracking) — portal-driven, no documented Graph write API
-  found during this build's grounding pass. README.md §11 flags this as a real gap in the
-  preservation narrative this scenario alone provides, not a cosmetic omission.
+  reminders, escalations, acknowledgment tracking) — a follow-up fragment was tracked in
+  `PROGRESS.md` to build this as a companion scenario, on the assumption (common to several other
+  no-write-API Purview surfaces this library documents) that the gap was "portal-driven, no Graph
+  write API." Re-grounding for that follow-up found something different and more final: Microsoft's
+  current "Manage hold notifications" page states outright that legal hold custodian communications
+  were **permanently retired on August 31, 2025** and aren't available in the new eDiscovery
+  experience — not merely unautomatable, but gone. No companion scenario was built as a result; see
+  README.md §11 for what that means for a preservation narrative and `PROGRESS.md` for the closed
+  follow-up record.
 - **Review-set analytics** (near-duplicate detection, themes, email threading, predictive coding,
   attorney-client privilege detection, redaction/PDF conversion) — this scenario stops at
   "collect, commit, export," which is the right depth for a template scenario; a large,
@@ -160,3 +166,4 @@ used custodian holds is itself informative), it just doesn't claim more than it'
 - R9. Audit log activities — eDiscovery activity reference (`Operation` names/descriptions for case and hold-policy lifecycle events, no legacy-experience caution banner) — <https://learn.microsoft.com/purview/audit-log-activities#ediscovery-activities>
 - R10. Manage holds in eDiscovery (Premium) — "custodian hold policy" claim; classic-experience/21Vianet-China-only caution banner — <https://learn.microsoft.com/purview/ediscovery-managing-holds>
 - R11. View custodian audit activity — per-custodian audit search UI; classic-experience/21Vianet-China-only caution banner — <https://learn.microsoft.com/purview/ediscovery-view-custodian-activity>
+- R12. Manage hold notifications (current, non-legacy page — the permanent-retirement `Important` callout that closed the legal-hold-notifications follow-up in §7 above) — <https://learn.microsoft.com/purview/ediscovery-manage-hold-notifications>
