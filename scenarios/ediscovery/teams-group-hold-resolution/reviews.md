@@ -184,3 +184,20 @@ No Fix/Fail items from this lens.
 All Fix items from this round are resolved in the current state of `deploy/`, `validate/`,
 `README.md`, and `design.md`. No Fail items were raised. This fragment meets the definition of done
 in `AGENTS.md` §9.
+
+---
+
+## Follow-up round — 2026-09-04: re-grounding the group-expansion member-cap discrepancy
+
+**Trigger:** the item #4 finding above (the 100-vs-1,000-member figures) flagged this as a
+`PROGRESS.md` follow-up for the sibling scenario to resolve. That follow-up has now run.
+
+**🔴 Red Team / 🔵 Blue Team / 🎩 CISO / 🟦 Microsoft Product Owner — all Pass, no Fix/Fail.**
+Direct re-fetch of both Microsoft Learn pages confirmed both are current, non-legacy articles —
+correcting this scenario's own README.md §11 wording, which had described the >1,000-member figure
+as coming from an "older" page. `README.md` §11 was rewritten to present both figures side by side
+with the conservative (100-member) figure named as the planning threshold for a human using this
+scenario's `-ResolveMembers` roster output, and a new reference ([[10]](#references)) added for the
+>1,000-member error page. This scenario's own default output remains unaffected either way (§11
+already established neither cap applies to it) — no lens found a new gap. The cross-scenario VERIFY
+itself stays open pending pilot-tenant confirmation, per `AGENTS.md` §4.

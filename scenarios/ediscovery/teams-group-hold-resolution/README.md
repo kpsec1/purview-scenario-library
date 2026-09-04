@@ -195,19 +195,24 @@ or metered cost.
   userSource per group, its own mailbox, regardless of member count), but directly relevant if the
   `-ResolveMembers` roster is later used to add individual members by hand: members added to the
   group after that point wouldn't be covered without re-resolving and re-adding [[3]](#references).
-- **VERIFY (cross-reference against `location-scoped-legal-hold`'s own open VERIFY):** Microsoft's
-  current "Create holds in eDiscovery" page states that expanding **any** supported group type as a
-  hold data source (distribution list, mail-enabled security group, Microsoft 365 group, Microsoft
-  Teams group, Viva Engage group) in the portal's hold-creation flow is "limited to a maximum of 100
-  members" [[3]](#references) — a smaller, more specific, and more recently fetched figure than the
-  ">1,000 members" cap `location-scoped-legal-hold/design.md` §3 cites from the older "Manage hold
-  status errors" reference page for its own distribution-list `userSource` VERIFY. Whether these
-  describe the same underlying limit (and if so, which figure is current) is not resolved in this
-  build — recorded in `PROGRESS.md` as a follow-up to reconcile both scenarios' citations rather
-  than guessed here. This scenario's own default output is not itself subject to either cap (one
-  userSource per group — its own mailbox, never a per-member expansion); the cap would only matter
-  to a human choosing to add this script's `-ResolveMembers` roster entries as individual
-  userSources.
+- **Re-grounded (2026-09-04), not reconciled — cross-referenced against
+  `location-scoped-legal-hold`'s own VERIFY:** Microsoft's current "Create holds in eDiscovery"
+  page states that expanding **any** supported group type as a hold data source (distribution
+  list, mail-enabled security group, Microsoft 365 group, Microsoft Teams group, Viva Engage
+  group) in the portal's own interactive data-source picker is "limited to a maximum of 100
+  members" [[3]](#references) — a smaller, more specific figure than the ">1,000 email addresses"
+  **"Distribution group has too many members"** hold-application error the current "Manage holds
+  in eDiscovery" page documents [[10]](#references). Re-fetching both pages directly confirmed
+  neither is a stale/superseded reference — both are current, non-legacy articles, and the
+  >1,000 figure lives in a still-current table on the second page, not an older separate page as
+  originally suspected. Microsoft's text does not state whether the two figures describe the same
+  limit surfaced at two different UI moments (the portal member-picker vs. a post-apply error) or
+  two independent limits on two different code paths, so this remains an open VERIFY rather than a
+  guess at which is authoritative (full analysis: `location-scoped-legal-hold/design.md` §3). This
+  scenario's own default output is not itself subject to either cap (one userSource per group —
+  its own mailbox, never a per-member expansion); the discrepancy would only matter to a human
+  choosing to add this script's `-ResolveMembers` roster entries as individual userSources, where
+  **100 members** is the conservative planning threshold to apply.
 - **VERIFY:** no canonical Microsoft Learn page states an exact SLA for `SharePointSiteUrl`
   appearing on `Get-UnifiedGroup` after a Microsoft 365 group/Team is created — see the deploy
   script's `.NOTES` for the (non-canonical) community-reported range and the confirmed
@@ -234,7 +239,11 @@ or metered cost.
 7. Groups page in the Microsoft 365 admin center — <https://go.microsoft.com/fwlink/p/?linkid=2052855>
 8. Microsoft 365 Group behaviors and provisioning options (`resourceBehaviorOptions.ProvisionSiteOnDemand`) — <https://learn.microsoft.com/graph/group-set-options>
 9. `scenarios/ediscovery/location-scoped-legal-hold/` — the sibling scenario this fragment feeds; see its own README §12 for the full `ediscoveryHoldPolicy` v1.0 REST citation set (case/hold/userSource/siteSource create, retry, delete) not repeated here.
+10. Manage holds in eDiscovery — "Manage hold status errors" ("Distribution group has too many members," >1,000 addresses; current page, re-fetched 2026-09-04) — <https://learn.microsoft.com/purview/edisc-hold-manage#manage-hold-status-errors>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing deployment —
-> Purview's Graph eDiscovery surface has moved namespaces within the product's own history, and the
-> 100-member vs. >1,000-member group-expansion figures (§11) should be reconciled first.
+> Purview's Graph eDiscovery surface has moved namespaces within the product's own history. The
+> 100-member vs. >1,000-member group-expansion figures (§11) were re-grounded on 2026-09-04 and
+> found to be two distinct, current, unreconciled figures — not a stale-vs-current pair — so treat
+> the smaller (100-member) figure as the conservative planning threshold until a pilot tenant
+> confirms otherwise.

@@ -177,9 +177,13 @@ reference page for every endpoint it calls.
 - **The hold policy's `errors` collection** — should be empty in steady state; any non-empty
   value is a `FAIL` in `validate/Test-EdiscoveryLocationHold.ps1` and maps to a documented,
   actionable cause (§12).
-- **Distribution-list size drift toward the 1,000-member expansion cap** — if this scenario's
+- **Distribution-list size drift toward the group-expansion cap(s)** — if this scenario's
   `userSources[]` includes a distribution list rather than individually resolved mailboxes (§11),
-  list growth over time is a real risk to watch, not a one-time concern at deploy.
+  list growth over time is a real risk to watch, not a one-time concern at deploy. Treat **100
+  members** (the more conservative, "every supported group type" figure Microsoft documents for
+  the portal's own expansion picker) as the review trigger, not the larger >1,000-address figure
+  documented for the hold-application error — see §11 for why the two aren't confirmed to be the
+  same limit.
 
 **Review cadence:** re-run `validate/Test-EdiscoveryLocationHold.ps1` on every active
 location-scoped hold at least weekly for the life of the matter, mirroring the sibling scenario's
@@ -226,6 +230,24 @@ every mailbox it expands to at hold time needs the qualifying entitlement.
   reference, but the v1.0, non-beta endpoint this scenario actually calls does not itself
   document group-mailbox support (`design.md` §3). If unconfirmed for your tenant, resolve and
   list individual member mailboxes instead.
+- **Two different, current Microsoft Learn pages document two different group-expansion member
+  caps, and neither is confirmed to govern this scenario's own REST-API code path (`design.md`
+  §3, re-grounded 2026-09-04):** "Create holds in eDiscovery" documents the **portal's own
+  interactive data-source picker** as limited to **100 members**, for "every supported group
+  type" (distribution list, mail-enabled security group, Microsoft 365 group, Microsoft Teams
+  group, Viva Engage group) [[2]](#references); "Manage holds in eDiscovery" documents a
+  **"Distribution group has too many members" hold-application error** at **more than 1,000
+  email addresses**, specific to distribution groups [[6]](#references). Both pages are current
+  (not legacy/superseded — re-fetched directly, not stale). Microsoft does not state whether
+  these describe the same limit surfaced at two different moments (portal member-picker vs.
+  post-apply error) or two genuinely independent limits on two different code paths, and this
+  scenario's script uses neither the portal picker nor is confirmed to hit the same expansion
+  logic the >1,000 error describes — it calls the `ediscoveryHoldPolicy` REST `userSources`
+  endpoint directly. Treat **100 members** as the conservative planning threshold (§8); watch for
+  the **"Distribution group has too many members"** string specifically in the policy's `errors`
+  collection as the one hard failure mode Microsoft documents by name. VERIFY against a pilot
+  tenant, at both thresholds, which (if either) applies to this REST-driven path before relying
+  on server-side DL expansion for a list near either size.
 - **`siteSource` find-or-create/validate matching is by parsed URL slug vs. returned site title,
   not a direct URL comparison** — neither the `List siteSources` nor `Create siteSource` v1.0
   reference exposes the source's `webUrl` on the response object. This is a real, disclosed weak

@@ -132,18 +132,21 @@
     SharePointSiteUrl becoming populated on Get-UnifiedGroup after group creation -- re-run this
     script rather than treating one blank result as a permanent failure.
 
-    VERIFY (cross-reference against scenarios/ediscovery/location-scoped-legal-hold/'s own open
-    VERIFY): Microsoft's current "Create holds in eDiscovery" page states group-as-data-source
-    expansion (any supported group type, including Microsoft 365 groups) is "limited to a maximum
-    of 100 members" in the portal's own hold-creation flow -- a smaller, more specific, and more
-    recently fetched figure than the ">1,000 members" cap the sibling scenario's design.md Section 3
-    cites from the older "Manage hold status errors" reference page for its own distribution-list
-    userSource VERIFY. This script's own output (one userSource per group -- the group's own
+    Re-grounded 2026-09-04 (cross-referenced against scenarios/ediscovery/location-scoped-legal-hold/'s
+    own VERIFY, full analysis in that scenario's design.md Section 3): Microsoft's current "Create
+    holds in eDiscovery" page states group-as-data-source expansion (any supported group type,
+    including Microsoft 365 groups) is "limited to a maximum of 100 members" in the portal's own
+    interactive data-source picker -- a smaller, more specific figure than the ">1,000 email
+    addresses" "Distribution group has too many members" hold-application error the current "Manage
+    holds in eDiscovery" page documents. Direct re-fetch of both pages confirmed neither is a stale
+    or superseded reference; Microsoft's text doesn't state whether the two figures describe the same
+    limit surfaced at two different pipeline steps (portal picker vs. post-apply error) or two
+    independent limits. This script's own output (one userSource per group -- the group's own
     mailbox, never an expansion of individual members) is not itself subject to either cap; the cap
     only matters if a human, using this script's -ResolveMembers roster output, chooses to add
-    individual members as their own userSources. Recorded in PROGRESS.md as a follow-up to
-    reconcile the two figures rather than resolved by guessing which page is current, per
-    AGENTS.md Section 4.
+    individual members as their own userSources -- treat 100 members as the conservative planning
+    threshold there. Kept as an open, dual-cited VERIFY rather than resolved by guessing which
+    figure governs, per AGENTS.md Section 4.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(

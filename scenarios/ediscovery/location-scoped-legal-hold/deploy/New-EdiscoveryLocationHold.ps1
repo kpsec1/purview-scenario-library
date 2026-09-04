@@ -97,9 +97,13 @@
     reference does separately document a "Distribution group has too many members" error for a
     group above 1,000 addresses, which only makes sense if a distribution list's own SMTP address
     is an accepted -- and server-side expanded -- userSource.email value; this script accepts a
-    DL email in userSources[] on that basis, but confirm the expansion behavior (and the exact
-    1,000-address cutoff) against a pilot tenant before pointing this at a distribution list you
-    haven't already tested, per README.md section 11.
+    DL email in userSources[] on that basis, but confirm the expansion behavior against a pilot
+    tenant before pointing this at a distribution list you haven't already tested, per README.md
+    section 11. Note two DIFFERENT current Microsoft Learn pages document two different
+    group-expansion member caps -- 100 members (portal data-source picker, "Create holds in
+    eDiscovery") vs. >1,000 addresses (hold-application error, "Manage holds in eDiscovery") --
+    and neither is confirmed to be the limit this REST-driven userSources path actually hits;
+    treat 100 as the conservative planning threshold and confirm both against a pilot tenant.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(

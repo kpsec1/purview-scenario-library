@@ -99,16 +99,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   resolving a Microsoft Teams/Microsoft 365 Group's own mailbox + SharePoint site
   (`Get-UnifiedGroup`/`Get-UnifiedGroupLinks` in Exchange Online PowerShell) into the userSource/
   siteSource pair `location-scoped-legal-hold`'s scripts already accept.
-- [ ] Reconcile the group-expansion member-cap discrepancy this build surfaced: Microsoft's current
-  "Create holds in eDiscovery" page states the portal hold-creation flow's own group-as-data-source
-  expansion (any supported group type) is "limited to a maximum of 100 members," a smaller, more
-  specific, and more recently fetched figure than the ">1,000 members" cap
-  `location-scoped-legal-hold/design.md` §3 cites (from the older "Manage hold status errors"
-  reference page) for its own distribution-list `userSource` VERIFY. Determine whether these
-  describe the same underlying limit and, if so, correct `location-scoped-legal-hold/README.md` §11
-  and `design.md` §3 to the current figure — flagged as an open VERIFY in both that scenario and
-  `teams-group-hold-resolution/README.md` §11 rather than resolved by guessing which page is
-  authoritative, per `AGENTS.md` §4.
+- [x] Reconcile the group-expansion member-cap discrepancy this build surfaced — **investigated and
+  re-grounded, not merged into one figure** (see DONE below): both the 100-member and >1,000-member
+  pages are current, non-legacy Microsoft Learn articles (the ">1,000" figure is not from an older
+  page as originally suspected); Microsoft never states they're the same limit, so both scenarios now
+  cite both figures explicitly and treat 100 as the conservative planning threshold, with the
+  cross-code-path question kept as an open pilot-tenant VERIFY per `AGENTS.md` §4.
 - [ ] `scenarios/ediscovery/roster-to-hold-locations/` (or fold into a future eDiscovery pass) —
   script the hand-off `teams-group-hold-resolution/design.md` §7 left manual: reading that
   scenario's `-ResolveMembers` roster CSV and appending the chosen members' mailbox addresses as
@@ -631,6 +627,41 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   sibling Data Map scenarios already carry).
 
 ## DONE
+- [x] **Reconcile the eDiscovery group-expansion member-cap discrepancy (100 vs. >1,000 members)**
+  — twelfth **follow-up expansion** fragment (eDiscovery), a correctness/grounding correction rather
+  than a new scenario, closing the item logged during the `teams-group-hold-resolution` build:
+  "Microsoft's current 'Create holds in eDiscovery' page states... 100 members... a smaller... figure
+  than the '>1,000 members' cap `location-scoped-legal-hold/design.md` §3 cites (from the older
+  'Manage hold status errors' reference page)... Determine whether these describe the same underlying
+  limit." Re-fetching both pages directly (`edisc-hold-create` and `edisc-hold-manage`) found the
+  original premise wrong in one respect: the ">1,000" figure is **not** from an older or separate
+  page — it lives in a still-current table ("Manage hold status errors") on the same, current, non-
+  legacy "Manage holds in eDiscovery" article. Both figures are live simultaneously. Read literally,
+  they describe two different pipeline moments: the **100-member** figure is the portal's own
+  interactive data-source picker (checkbox enumeration of group members), documented for "every
+  supported group type"; the **>1,000-member** figure is a **hold-application/retry** error
+  ("Distribution group has too many members") surfaced on the Hold policy Details tab after a hold is
+  applied, documented specifically for distribution groups. Microsoft's text never cross-references
+  the two or states they're the same limit measured twice — so this was **not** resolved by picking
+  one as "the current figure" (neither superseded the other). Instead: `location-scoped-legal-hold/
+  design.md` §3 was rewritten with the full re-grounded analysis and a new reference (R11, the
+  `edisc-hold-create` "Create a hold" section); `README.md` §8 and §11 now cite both figures
+  side-by-side, name **100 members** as the conservative KPI/planning threshold (the smaller number,
+  tied to "every supported group type"), and keep the >1,000-member error string as the specific
+  documented failure condition to watch for by name; the deploy script's `.NOTES` and the sample
+  `location-hold-definition.json`'s inline comment were updated to match.
+  `teams-group-hold-resolution/README.md` §11/§12, `design.md` §6, and `deploy/
+  Resolve-TeamsGroupHoldLocations.ps1`'s `.NOTES` were updated in step, including a new reference
+  ([[10]], the "Manage hold status errors" page) that scenario's citation list was previously missing.
+  Both scenarios' `reviews.md` got a short follow-up four-lens round (all four lenses Pass, no
+  Fix/Fail — a precision improvement to already-disclosed content, not a new capability or risk
+  surface). The underlying question — which limit, if either, governs this scenario's own
+  REST-driven `userSources` expansion path (neither the portal picker nor confirmed to be the same
+  code path as the documented error) — remains an explicit, open pilot-tenant VERIFY in both
+  scenarios rather than resolved by guessing, per `AGENTS.md` §4. Grounded via the Microsoft Learn
+  MCP tool (direct fetch of `purview/edisc-hold-create` and `purview/edisc-hold-manage`,
+  2026-09-04) — no cmdlet, endpoint, or product behavior was fabricated to close this gap. —
+  2026-09-04
 - [x] **Investigate and correct: automatic Power Automate/webhook trigger for IRM case escalation**
   — eleventh **follow-up expansion** fragment (Insider Risk Management / eDiscovery), a correctness
   correction rather than a new scenario, closing the item logged during the original

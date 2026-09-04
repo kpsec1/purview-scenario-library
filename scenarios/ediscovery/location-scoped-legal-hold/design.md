@@ -46,11 +46,10 @@ Microsoft's own documentation point at (a):
 
 - The **beta**, custodian-context `userSource` reference explicitly documents `email` as "SMTP
   address of the user **or the SMTP address of the group mailbox**" [[R4]](#references-design).
-- Microsoft's **"Manage hold status errors"** reference (v1.0-era, general guidance, not
-  namespace-scoped) documents a **"Distribution group has too many members"** error — "more than
-  1,000 email addresses can't be expanded and placed on hold" — which only makes sense if a
-  distribution list's own address is an accepted, server-expanded input somewhere in the hold
-  pipeline [[R5]](#references-design).
+- Microsoft's **"Manage hold status errors"** table documents a **"Distribution group has too many
+  members"** error — "more than 1,000 email addresses can't be expanded and placed on hold" —
+  which only makes sense if a distribution list's own address is an accepted, server-expanded
+  input somewhere in the hold pipeline [[R5]](#references-design).
 
 The v1.0, non-beta "Create userSource" reference for the `ediscoveryHoldPolicy` context (the one
 this scenario's script actually calls) does **not** explicitly repeat the "or group mailbox"
@@ -59,11 +58,40 @@ language — it documents `email` only as "SMTP address of the user." This scena
 `userSources[]` on the strength of the two corroborating references above, but this is recorded as
 an explicit `README.md` §11 VERIFY rather than presented as v1.0-confirmed, per `AGENTS.md` §4 —
 the same "beta worked example + indirect corroboration, not a direct v1.0 confirmation" pattern
-the sibling scenario already used for its own `includedSources` combined-string VERIFY. A buyer
-who already knows a distribution list is near or over 1,000 members should resolve and list
-individual member mailboxes instead of relying on server-side expansion, both to avoid the
-documented cap and because this script doesn't detect or report a partial-expansion failure beyond
-surfacing the policy's own `errors` collection.
+the sibling scenario already used for its own `includedSources` combined-string VERIFY.
+
+**The 100-member vs. >1,000-member cap discrepancy, re-grounded and not reconciled.** A later
+build (`teams-group-hold-resolution/README.md` §11) surfaced a second, smaller figure: "Create
+holds in eDiscovery" states the **portal's** own interactive data-source picker — "all current
+members of the distribution group are listed [with a checkbox]... Distribution list expansion is
+limited to a maximum of 100 members. If a distribution list contains more than 100 members, the
+expansion might fail" — for "every supported group type — distribution list, mail-enabled
+security group, Microsoft 365 group, Microsoft Teams group, and Viva Engage group"
+[[R12]](#references-design). Re-fetching both pages directly (2026-09-04) confirms neither is
+stale or superseded: both are the current, non-legacy "Create holds in eDiscovery" and "Manage
+holds in eDiscovery" articles, and the >1,000-member figure lives in the latter's still-current
+"Manage hold status errors" table, not an older page as originally suspected when this VERIFY was
+first logged. Microsoft's text does not cross-reference the two figures or state they're the same
+limit measured two ways. Read literally, they describe two different steps of the pipeline: the
+**100-member** figure is the portal's own member-**enumeration/checkbox-picker** UI, scoped to
+"every supported group type"; the **>1,000-member** figure is a **hold-application/retry** error
+surfaced on the **Hold policy Details** tab after a hold is applied, scoped to "distribution
+group" specifically. Nothing in either page states whether the picker's 100-member ceiling and the
+application-time 1,000-address error are the same underlying limit reported at two different UI
+moments, or two independent limits on two different code paths — and this scenario's own script
+never goes through the portal picker at all (it calls the v1.0 `ediscoveryHoldPolicy` REST
+`userSources` endpoint directly), so neither figure is confirmed to govern *this* code path
+either. Per `AGENTS.md` §4, this is recorded as an open VERIFY rather than resolved by picking
+whichever page reads as more authoritative: `README.md` §11 and §8 now cite **both** figures
+side by side, treat **100 members** as the conservative planning/KPI threshold (it is the smaller
+number and the one Microsoft ties to "every supported group type," which covers the
+Teams/Microsoft 365 Group population `teams-group-hold-resolution` also produces), and keep the
+>1,000-member error string as the specific, documented condition the validate script's `errors`
+check should recognize by name. A buyer who already knows a distribution list is near either
+threshold should resolve and list individual member mailboxes instead of relying on server-side
+expansion, both to stay clear of whichever cap actually applies and because this script doesn't
+detect or report a partial-expansion failure beyond surfacing the policy's own `errors`
+collection.
 
 ## 4. No v1.0 enable/disable — the real API gap this scenario is built around
 
@@ -151,10 +179,11 @@ than conclusive.
 - R2. Create userSource (v1.0, `ediscoveryHoldPolicy` context — `includedSources` "Only mailbox is applicable for user sources") — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-post-usersources?view=graph-rest-1.0>
 - R3. siteSource resource type (v1.0 — `displayName` is the site's title; `site` relationship) — <https://learn.microsoft.com/graph/api/resources/security-sitesource?view=graph-rest-1.0>
 - R4. Create legalHold userSource (beta, custodian/legalHold context — "SMTP address of the user or the SMTP address of the group mailbox") — <https://learn.microsoft.com/graph/api/ediscovery-legalhold-post-usersources?view=graph-rest-beta>
-- R5. Manage holds in eDiscovery — "Manage hold status errors" (Distribution group has too many members, >1,000 addresses) — <https://learn.microsoft.com/purview/edisc-hold-manage#manage-hold-status-errors>
+- R5. Manage holds in eDiscovery — "Manage hold status errors" (Distribution group has too many members, >1,000 addresses; current page, re-fetched 2026-09-04) — <https://learn.microsoft.com/purview/edisc-hold-manage#manage-hold-status-errors>
 - R6. Manage holds in eDiscovery — "Turn off a hold policy" / "Turn on a hold policy" (portal actions, independent of delete) — <https://learn.microsoft.com/purview/edisc-hold-manage#turn-off-a-hold-policy>
 - R7. ediscoveryHoldPolicy: enablePolicy (beta only) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-enablepolicy?view=graph-rest-beta>
 - R8. ediscoveryHoldPolicy: disablePolicy (beta only) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-disablepolicy?view=graph-rest-beta>
 - R9. ediscoveryHoldPolicy resource type (v1.0 — documented method list has no enable/disable action) — <https://learn.microsoft.com/graph/api/resources/security-ediscoveryholdpolicy?view=graph-rest-1.0>
 - R10. Manage holds in eDiscovery — "Place a hold on Microsoft Teams and Microsoft 365 groups" (`Get-UnifiedGroup`/`Get-UnifiedGroupLinks`) — <https://learn.microsoft.com/purview/edisc-hold-manage#place-a-hold-on-microsoft-teams-and-microsoft-365-groups>
 - R11. Manage holds in eDiscovery — "Edit a hold policy" (data sources, condition filters, KeyQL filters as separate, richer portal concepts) — <https://learn.microsoft.com/purview/edisc-hold-manage#edit-a-hold-policy>
+- R12. Create holds in eDiscovery — "Create a hold" (portal data-source picker: distribution list expansion "limited to a maximum of 100 members," applies to every supported group type; current page, re-fetched 2026-09-04) — <https://learn.microsoft.com/purview/edisc-hold-create#create-a-hold>

@@ -90,8 +90,11 @@ option once enough scenarios share this exact pattern, but is out of scope for a
   `userSource.email` value (with its own open VERIFY on server-side member expansion) rather than
   something this scenario's `Get-UnifiedGroup`-based lookup applies to.
 - **Reconciling the 100-member vs. >1,000-member group-expansion-cap discrepancy** (README.md §11)
-  — recorded as a `PROGRESS.md` follow-up, not resolved by guessing which Microsoft Learn page is
-  current.
+  — re-grounded 2026-09-04 (`location-scoped-legal-hold/design.md` §3): both figures come from
+  current, non-legacy Microsoft Learn pages describing two different pipeline steps (the portal's
+  interactive picker vs. a post-apply hold error), and Microsoft doesn't state whether they're the
+  same limit. Not resolved to a single figure — kept as an open, dual-cited VERIFY rather than
+  guessed.
 
 ## 7. Downstream follow-up this fragment sets up
 

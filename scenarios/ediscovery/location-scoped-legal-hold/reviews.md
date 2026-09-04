@@ -172,3 +172,22 @@ No Fix/Fail items from this lens.
 All Fix items from this round are resolved in the current state of `deploy/`, `validate/`,
 `README.md`, and `design.md`. No Fail items were raised. This fragment meets the definition of
 done in `AGENTS.md` §9.
+
+---
+
+## Follow-up round — 2026-09-04: re-grounding the group-expansion member-cap discrepancy
+
+**Trigger:** a `PROGRESS.md` follow-up item asking whether the "100 members" figure (`edisc-hold-create`)
+and the ">1,000 members" figure (`edisc-hold-manage`) this scenario's `README.md` §11/`design.md` §3
+separately cited describe the same underlying group-expansion limit.
+
+**🔴 Red Team / 🔵 Blue Team / 🎩 CISO / 🟦 Microsoft Product Owner — all Pass, no Fix/Fail.**
+Both pages were re-fetched directly (not from memory) and are confirmed current, non-legacy
+articles — the ">1,000" figure is not from an older superseded page, correcting the original VERIFY's
+premise. Microsoft's own text never states the two figures are the same limit; `design.md` §3 was
+rewritten to present both explicitly, adopt the smaller (100-member) figure as the conservative
+KPI/planning threshold, and keep the >1,000-member "Distribution group has too many members" string
+as the specific documented error condition to watch for. This is a correctness/precision improvement
+to already-disclosed content, not a new capability or a new risk surface — no lens found a gap this
+change introduces. The underlying VERIFY (which limit, if either, governs this scenario's own
+REST-driven `userSources` path) remains open pending pilot-tenant confirmation, per `AGENTS.md` §4.

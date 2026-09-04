@@ -12,7 +12,7 @@
   },
   "userSources": [
     { "email": "payments-team@contoso.com", "note": "Shared departmental mailbox -- no single owning custodian." },
-    { "email": "payments-compliance-dl@contoso.com", "note": "Mail-enabled distribution list. Microsoft's own hold-error reference documents a 'Distribution group has too many members' condition above 1,000 addresses, implying the service expands a DL's own SMTP address into its member mailboxes -- VERIFY per README.md section 11 before relying on this for a DL near that size; for a DL you already know is large, resolve and list individual member emails here instead." }
+    { "email": "payments-compliance-dl@contoso.com", "note": "Mail-enabled distribution list. Microsoft's own hold-error reference documents a 'Distribution group has too many members' condition above 1,000 addresses, implying the service expands a DL's own SMTP address into its member mailboxes -- but a separate current page caps the portal's own group-expansion picker at 100 members for any supported group type, and neither figure is confirmed to be the limit this REST-driven path hits -- VERIFY per README.md section 11 before relying on this for a DL near either size; for a DL you already know is large, resolve and list individual member emails here instead." }
   ],
   "siteSources": [
     { "site": "https://contoso.sharepoint.com/sites/PaymentsTeam" }
