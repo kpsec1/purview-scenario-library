@@ -678,7 +678,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   that changes no capability or risk surface). No code changed: there is still no v1.0 path to a
   reversible on/off toggle, so `Remove-EdiscoveryLocationHold.ps1`'s two-stage (delete-source /
   delete-policy) rollback design stands unmodified. Re-open this item again only if a future pass
-  finds either action listed under `?view=graph-rest-1.0`. Commit: `<pending>`. Date: 2026-09-04.
+  finds either action listed under `?view=graph-rest-1.0`. Commit: `9eb87a6`. Date: 2026-09-04.
 - [x] **`scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/`** — behavioral
   compensating control for the split/obfuscated-PAN evasion gap `pci-teams-exfil-block/reviews.md`
   (Red Team) flagged and deliberately left open. Grounding pass found and had to design around a
