@@ -125,7 +125,10 @@ failure this script should misreport.
 - **Insider Risk Management case escalation** — eDiscovery (Premium) supports being the
   *destination* of an escalated IRM case [[R8]](#references-design); wiring that integration is a
   natural follow-up once `scenarios/insider-risk/` has a scenario that produces an escalatable
-  case, not something this fragment builds standalone.
+  case, not something this fragment builds standalone. **Built** as
+  `scenarios/insider-risk/irm-case-escalation-to-ediscovery/`, which reuses this scenario's
+  custodian/hold pattern unmodified and picks up exactly where the manual "Escalate for
+  investigation" portal click leaves off.
 
 ## 8. Audit trail script — grounding and the custodian-vs-hold-policy caveat
 

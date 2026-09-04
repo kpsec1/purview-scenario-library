@@ -266,7 +266,9 @@ roles without a second policy.
    case.
 3. **Escalate if warranted** — assign the alert/case to an Investigator; Insider Risk
    Management cases can escalate directly to eDiscovery (Premium) for legal hold and further
-   investigation if the pattern indicates genuine misappropriation.
+   investigation if the pattern indicates genuine misappropriation. See
+   `scenarios/insider-risk/irm-case-escalation-to-ediscovery/` for the scripted follow-through
+   (provenance linkage + custodian/hold reconciliation) once that portal escalation step is done.
 4. **Coordinate with HR/Legal/IT offboarding** — this policy is a detection control, not an
    offboarding-automation control; a true-positive finding should trigger the org's standard
    incident and (if the person hasn't yet departed) accelerated access-revocation process.

@@ -23,6 +23,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 > (lifecycle, deployment posture, regulatory driver, failure/abuse, scale). Add those fragments
 > here as they're scoped.
 
+### Follow-ups discovered while building the IRM case-escalation-to-eDiscovery scenario
+- [ ] Consider a Power Automate flow (or Graph webhook-driven trigger, if Microsoft ever exposes
+  IRM case-escalation as an event) that automatically runs `deploy/
+  Confirm-EdiscoveryEscalationLink.ps1` right after an investigator completes the portal
+  "Escalate for investigation" step, closing the "someone has to remember to run this" gap named
+  in `irm-case-escalation-to-ediscovery/README.md` §8 — deferred because IRM's own case-action
+  toolbar **Automate** option (Power Automate flows) wasn't independently grounded in this build
+  beyond the bullet list Microsoft's `insider-risk-management-cases` reference names; a dedicated
+  grounding pass on the specific flow templates/connectors available would be needed first.
+- [ ] VERIFY (pilot tenant): the exact format of the "Case ID" the Insider Risk Management Cases
+  dashboard displays (numeric, GUID, or another scheme) — not documented by Microsoft beyond "The
+  ID of the case." `irm-case-escalation-to-ediscovery`'s naming convention and scripts treat it as
+  an opaque string throughout; confirming the format could enable format validation instead.
+- [ ] VERIFY (pilot tenant): whether the portal's "Escalate for investigation" flow automatically
+  adds the flagged user as a custodian with a hold applied, or leaves the new case empty — not
+  documented either way by Microsoft. `irm-case-escalation-to-ediscovery/deploy/
+  Confirm-EdiscoveryEscalationLink.ps1` doesn't assume an answer (design.md §3 explains why
+  unconditional reconciliation is safe regardless), but confirming this would let the scenario's
+  docs state the actual portal behavior instead of "unknown."
+
 ### Follow-ups discovered while building the eDiscovery Premium legal-hold-and-export scenario
 - [x] Ground the exact `RecordType`/`Operations` values for eDiscovery hold-apply/hold-release/
   case-close/case-delete events in `Search-UnifiedAuditLog`, then add a dedicated
@@ -55,10 +75,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   whose own v1.0 worked example shows only a single value (`"mailbox"`) — flagged inline in
   `premium-legal-hold-and-export/README.md` §11 and `deploy/New-EdiscoveryPremiumLegalHold.ps1`'s
   `.NOTES` rather than resolved by guessing a JSON-array shape neither reference confirms.
-- [ ] Once `scenarios/insider-risk/` has a scenario producing an escalatable Insider Risk
+- [x] Once `scenarios/insider-risk/` has a scenario producing an escalatable Insider Risk
   Management case, wire the documented IRM-case → eDiscovery (Premium) case escalation integration
-  — explicitly scoped out of `premium-legal-hold-and-export/design.md` §7 as a follow-up dependent
-  on that not-yet-built scenario.
+  — **built** as `scenarios/insider-risk/irm-case-escalation-to-ediscovery/` (see DONE below).
 
 ### Follow-ups discovered while building the eDiscovery location-scoped-legal-hold scenario
 - [ ] VERIFY (pilot tenant, before pointing this at a distribution list you haven't already
@@ -549,6 +568,49 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   outside the automation identity's own Purview/Azure IAM role scope (see `design.md` §8).
 
 ## DONE
+- [x] `scenarios/insider-risk/irm-case-escalation-to-ediscovery/` — eighth **follow-up expansion**
+  fragment (Insider Risk Management / eDiscovery), closing the item logged during the
+  `premium-legal-hold-and-export` build: "once `scenarios/insider-risk/` has a scenario producing
+  an escalatable IRM case [it now does — `departing-employee-data-theft`], wire the documented
+  IRM-case → eDiscovery (Premium) case escalation integration." Full README (12-section skeleton),
+  design.md (grounds why the escalation trigger itself has no Graph/PowerShell API — portal-only,
+  same shape as several other no-write-API Purview surfaces this library documents — and why the
+  `ediscoveryCase` resource's `description` field, its only free-text property, is the correct,
+  non-fabricated place to stamp a provenance link back to the source IRM case/alerts, since the
+  resource has no source/origin field of any kind), deploy/
+  (`Confirm-EdiscoveryEscalationLink.ps1` — idempotent/parameterized Microsoft Graph automation
+  (surface 3) that finds the already-escalated eDiscoveryCase by a documented naming convention
+  (`IRM-<Case ID>-<UPN local part>`, this repo's own convention, not Microsoft's), best-effort
+  resolves declared IRM alert IDs via `Get-MgSecurityAlertV2 -AlertId` for a human-readable
+  record, stamps a delimited, idempotent provenance block onto the case description via
+  `Update-MgSecurityCaseEdiscoveryCase`, and unconditionally reconciles the flagged user as a
+  custodian with a mailbox+OneDrive hold using the identical find-or-create/`applyHold` pattern as
+  the sibling `premium-legal-hold-and-export` scenario (duplicated, not dot-sourced, per this
+  repo's self-contained-deploy-tree convention); `Remove-EdiscoveryEscalationLink.ps1` — staged
+  rollback (strip the provenance block → optionally release the hold, counsel-gated, identical to
+  the sibling scenario's own gate) that never closes/deletes the case itself, deferring to the
+  sibling scenario's own rollback script for that; a JSON escalation-link definition file), validate/
+  (`Test-EdiscoveryEscalationLink.ps1` — read-only PASS/WARN/FAIL checks of case existence,
+  provenance-block presence *and* content match against the definition file, custodian/userSource/
+  hold state, and best-effort alert resolution), four-lens reviews.md (Red Team Fix round resolved
+  — found and fixed a real idempotency gap during review: the initial draft treated "a provenance
+  block already exists" as "done," which would have silently left a *different* escalation's
+  provenance stamped on a case whose name was accidentally reused; fixed by comparing the existing
+  block's IRM case ID/user against the current run before skipping, throwing on a mismatch unless
+  a new `-Force` switch is passed, and even then appending rather than overwriting so no prior
+  provenance record is ever destroyed; Blue Team Fix round resolved — added an explicit
+  escalation-to-automation trigger gap callout (README §8) and severity discipline to the validate
+  script's alert-resolution check; CISO Pass; Product Owner Fix round resolved — reworded several
+  passages that had implied a stronger native Microsoft linkage than is actually documented) —
+  grounded in Microsoft Learn via the Microsoft Learn MCP tool (`insider-risk-management-cases`'s
+  full "Escalate for investigation" portal walkthrough and system-generated-note behavior, the
+  `ediscovery` legacy-solutions page's IRM-integration summary, the `ediscoveryCase` resource type
+  and its Update operation directly fetched to confirm `description` is the only writable
+  free-text field and that no source/origin field exists, and `Get-MgSecurityAlertV2`'s PowerShell
+  reference directly fetched to confirm the `-AlertId` get-by-ID parameter set before using it) —
+  three items recorded as explicit VERIFY rather than resolved by guessing (the IRM "Case ID"
+  dashboard field's exact format; whether the portal escalation flow auto-provisions a
+  custodian/hold; alert-metadata staleness after re-triage), per `AGENTS.md` §4 — 2026-09-04
 - [x] **Investigate `scenarios/ediscovery/legal-hold-notifications/` — closed without building a
   scenario** — seventh **follow-up expansion** fragment (eDiscovery), a correctness correction
   rather than a new scenario. The original follow-up (logged during the

@@ -1,0 +1,13 @@
+{
+  "irmCase": {
+    "caseId": "IRM-2026-0143",
+    "userPrincipalName": "jordan.reyes@contoso.com",
+    "alertIds": [
+      "00000000-0000-0000-0000-000000000001",
+      "00000000-0000-0000-0000-000000000002"
+    ]
+  },
+  "ediscoveryCase": {
+    "displayName": "IRM-2026-0143-jordan.reyes"
+  }
+}
