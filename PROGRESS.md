@@ -210,12 +210,11 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `copilot-sensitive-data-exposure/README.md` §3, not surfaced in the cross-cutting matrix.
 
 ### Follow-ups discovered while building the Unified Catalog business-glossary scenario
-- [ ] `scenarios/unified-catalog/link-glossary-terms-to-data-products/` — link this scenario's
-  (or any) glossary terms to data products/assets/columns via the `Terms - Add Related Entity`
-  and Data Products operation groups, deferred as a non-goal in `curate-business-glossary/
-  design.md` §7 because it requires a Data Products scenario (and Data Map-scanned assets) to
-  already exist to link against — natural follow-up once `scenarios/data-map/
-  scan-azure-sql-and-classify/` output has a data product to attach to.
+- [x] `scenarios/unified-catalog/link-glossary-terms-to-data-products/` — **superseded by**
+  `scenarios/unified-catalog/manage-data-products/` (see DONE below), which creates a data
+  product, wraps a `scan-azure-sql-and-classify`-scanned asset as a Unified Catalog data asset,
+  and links both that asset and this scenario's `Customer`/`Customer ID` terms to it via the
+  `Data Products - Create Relationship` operation.
 - [ ] Extend `docs/automation-surface.md` §4's Unified Catalog REST routing-table row (currently
   "evolving surface — VERIFY exact endpoint names per release") with the confirmed exact
   operation groups/paths grounded in `curate-business-glossary` (`Terms` and `Business Domain`
@@ -238,6 +237,41 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Unified Catalog pass) covering multi-domain parent/child governance hierarchies, custom
   attribute groups, and data estate mappings to Data Map collections — explicitly out of scope in
   `curate-business-glossary/design.md` §6–7, which models a single standalone domain.
+
+### Follow-ups discovered while building the Unified Catalog manage-data-products scenario
+- [ ] VERIFY (pilot tenant or the Swagger spec linked from the Unified Catalog API overview page):
+  the exact `Data Products - Create Relationship` request body per `entityType` — the REST
+  reference's only worked example (`entityType=CRITICALDATACOLUMN`) includes an `assetId` field
+  this scenario's `DATAASSET`/`TERM` calls omit. Flagged inline in `manage-data-products/README.md`
+  §11, `design.md` §3, and `deploy/New-DataProduct.ps1`'s `.NOTES` rather than resolved by
+  guessing. Closing this would also let `scenarios/unified-catalog/link-glossary-terms-to-data-
+  products/`-style critical-data-element/column linking be added with confidence.
+- [ ] VERIFY (pilot tenant): whether the Unified Catalog `Data Products - Update` REST operation
+  enforces the portal's "must configure a data access policy before Publish" business rule
+  server-side, or whether that is a portal-UX-only guardrail this scenario's direct `PUT` call
+  bypasses — flagged as a Red Team/CISO finding in `manage-data-products/reviews.md` and as a
+  gating prerequisite in `README.md` §3, with a `Write-Warning` as the interim compensating
+  control. No REST operation for configuring a data product access policy itself was found during
+  this build's grounding pass (`design.md` §5) — that stays a portal-only manual step.
+- [ ] `scenarios/unified-catalog/manage-critical-data-elements/` — script the `Critical Data
+  Elements` operation group (create a CDE, map asset columns to it, the auto-linking-to-data-
+  products behavior Microsoft documents) — explicitly out of scope in `manage-data-products/
+  design.md` §6, which links only `DATAASSET` and `TERM` entity types.
+- [ ] `scenarios/unified-catalog/manage-okrs/` — script the `Okr`/`Key Result` operation groups and
+  link them to data products, closing the last `EntityCategory` gap `manage-data-products/design.md`
+  §6 leaves open (OKR linking).
+- [ ] Extend `docs/automation-surface.md` §4's Unified Catalog REST routing-table row with the
+  confirmed `Data Products` and `Data Assets` operation groups/paths grounded in
+  `manage-data-products` (`POST/PUT/DELETE/GET /datagovernance/catalog/dataProducts(|/{id})`,
+  `.../dataProducts/{id}/relationships`, `.../dataAssets(|/{id})`, `.../dataAssets/query`, API
+  version `2026-03-20-preview`) — same pattern `curate-business-glossary`'s and
+  `end-to-end-lineage-validation`'s own automation-surface.md follow-ups already established of
+  tracking doc extensions separately rather than bundling them into a scenario fragment.
+- [ ] Once `scenarios/compliance-manager/` or a future access-governance scenario needs it,
+  consider scripting **data product access policy** configuration if Microsoft publishes a REST
+  surface for it — confirmed not to exist as of this build (`manage-data-products/design.md` §5);
+  the REST API's own `Policies` operation group is a different feature (the RBAC authorization-
+  policy engine), not the consumer-facing access-request workflow.
 
 ### Follow-ups discovered while building the Data Lineage end-to-end-lineage-validation scenario
 - [ ] `scenarios/data-lineage/custom-process-lineage/` (or fold into a future Data Lineage
@@ -288,11 +322,11 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `TypeProperties` schema has no field name for it despite Microsoft's conceptual documentation
   describing the behavior. Flagged inline in `rules-and-scorecards/deploy/
   New-DataQualityRulesAndSchedule.ps1`'s `.NOTES` and `README.md` §11.
-- [ ] A Unified Catalog **data products** scenario (create/manage a data product, add data assets to
+- [x] A Unified Catalog **data products** scenario (create/manage a data product, add data assets to
   it) is a shared, still-unbuilt dependency both `curate-business-glossary`'s and
-  `rules-and-scorecards`' non-goals point to — every module scenario that targets an existing
-  "governed data asset" (Data Quality rules, future access-policy scenarios) assumes one already
-  exists. Worth prioritizing given how many follow-ups now depend on it.
+  `rules-and-scorecards`' non-goals point to — **built** as
+  `scenarios/unified-catalog/manage-data-products/` (see DONE below). `rules-and-scorecards`'s own
+  `Create Data Source`/`computeId`-provisioning gap (above) is a separate, still-open item.
 
 ### Follow-ups discovered while building the Data Estate Insights classification-coverage-report scenario
 - [ ] `scenarios/data-estate-insights/sensitivity-label-coverage-report/` (or fold into a future
@@ -454,6 +488,51 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scenario with the DLM `retention-labels-financial-records` sibling.
 
 ## DONE
+- [x] `scenarios/unified-catalog/manage-data-products/` — second **follow-up expansion** fragment
+  (Unified Catalog, Data Governance), closing the shared "Data Products scenario doesn't exist yet"
+  dependency both `curate-business-glossary`'s and `data-quality/rules-and-scorecards`'s non-goals
+  pointed to: full README (12-section skeleton), design.md (grounds the choice of the newly-added
+  2026-03-20-preview `Data Assets` operation group over the raw Data Map/Atlas entity API, and the
+  distinction between the REST API's `Policies` operation group — the RBAC authorization-policy
+  engine — and the portal's unrelated "data product access policy" feature), deploy/
+  (`New-DataProduct.ps1` — idempotent/parameterized Purview Unified Catalog REST automation
+  (surface 4) plus a Microsoft Graph owner-resolution call (surface 3, reusing
+  `curate-business-glossary`'s UPN→Entra-object-ID pattern) that create-or-updates a "Customer
+  Master Data" data product in an existing governance domain, wraps the `scan-azure-sql-and-
+  classify`-scanned `customerdb.dbo.Customers` Data Map asset as a Unified Catalog data asset
+  (`POST dataAssets` with `source.assetId`, idempotent via the `sourceAssetIds` Query filter), and
+  links both that asset and the `Customer`/`Customer ID` glossary terms to the product via `Data
+  Products - Create Relationship`, list-before-create idempotent; `-Publish` gate with a loud
+  pre-publish warning naming the portal-only data-product-access-policy prerequisite Microsoft's
+  own docs require before Publish; `Remove-DataProduct.ps1` — staged unpublish (default) →
+  `-RemoveLinks` (delete both relationships, never the shared asset wrapper or terms) →
+  `-Purge` (delete the data product; `-DeleteDataAssetWrapper` opt-in and explicitly unchecked
+  against orphaning another product's link); `deploy/config/
+  customer-master-data-product.sample.json`), validate/ (`Test-DataProduct.ps1` — read-only checks
+  of the product's fields/status, the data asset wrapper (reporting its Data-Map-sourced
+  classifications as a live cross-check into `scan-azure-sql-and-classify`'s own output), and both
+  relationships), four-lens reviews.md (Red Team Fix round resolved — publish-gate-bypass risk
+  elevated to a loud warning + README gating prerequisite, orphan-wrapper-deletion risk confirmed
+  unfixable in tooling and documented instead, domain-scoped-role risk inherited by reference from
+  `curate-business-glossary`; Blue Team Fix round resolved — classification-report and
+  access-request-backlog scope boundaries clarified as portal-only, not scripting gaps; CISO Fix
+  round resolved — PAYG cost-activation contrast stated locally in §10, access-governance narrative
+  sharpened, publish-gate VERIFY promoted to a tracked finding; Product Owner Fix round resolved —
+  closed a near-miss conflation of the REST `Policies` group with the portal's access-policy
+  feature before it shipped, documented the portal-vs-REST `type` enum label mismatch, independently
+  confirmed the newer Data Assets surface and the bulk-import-avoidance reasoning) — grounded in
+  Microsoft Learn via the Microsoft Learn MCP tool (Unified Catalog API overview + release notes
+  confirming Data Assets/Data Columns as newly added in `2026-03-20-preview`; the Data Products and
+  Data Assets REST operation groups directly fetched — Create/Update/Delete/Get/List/Query/Create
+  Relationship/List Relationships/Delete Relationship for both, plus Data Assets' `sourceAssetIds`
+  Query filter; Create and manage data products, incl. the exact Publish-gating prerequisite
+  quote; Manage data product access policies; Master data management in Microsoft Purview's
+  five-step register→create→link→curate flow this scenario automates; Data governance roles and
+  permissions for Data Product Owner; data governance billing + FAQ for the per-governed-asset PAYG
+  trigger; the `Policies - List` operation's own worked example, directly inspected to rule out
+  conflating it with the portal's access-policy feature) — the Create Relationship body-shape
+  ambiguity and the publish-gate server-side-enforcement question both recorded as explicit VERIFY
+  items rather than resolved by guessing, per `AGENTS.md` §4. (2026-09-04)
 - [x] `scenarios/records-management/graph-event-automation/` — first **follow-up expansion** fragment
   (Records Management, Microsoft Graph surface 2/3), the automation complement to the PowerShell
   regulatory-records-disposition scenario: full README (12-section skeleton), design.md, deploy/

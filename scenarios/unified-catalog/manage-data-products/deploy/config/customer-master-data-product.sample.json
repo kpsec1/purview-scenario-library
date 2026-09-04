@@ -1,0 +1,20 @@
+{
+  "domain": {
+    "name": "Customer Experience",
+    "note": "Must match the governance domain created by scenarios/unified-catalog/curate-business-glossary/ - this scenario resolves it by name and does not create a domain of its own."
+  },
+  "dataProduct": {
+    "name": "Customer Master Data",
+    "description": "The single governed source for core customer identity attributes (name, contact details, customer ID) as scanned and classified from the Contoso Retail customer database. Consumers requesting this data product get the one table this organization has designated as authoritative for 'who is a customer', rather than picking one of several similarly-named tables by guesswork.",
+    "type": "Master",
+    "businessUse": "Authoritative source for customer identity in downstream analytics, CRM sync, and regulatory reporting. Use this instead of querying customerdb.dbo.Customers directly so access, lineage, and data-quality scoring are tracked at the data-product level.",
+    "updateFrequency": "Daily",
+    "audience": ["DataAnalyst", "BusinessAnalyst", "DataEngineer"],
+    "owners": ["data-governance-lead@contoso.com"]
+  },
+  "dataAsset": {
+    "dataMapAssetId": "00000000-0000-0000-0000-000000000000",
+    "note": "REPLACE with the real Microsoft Purview Data Map asset GUID for customerdb.dbo.Customers (Azure SQL table registered and scanned by scenarios/data-map/scan-azure-sql-and-classify/). Copy it from the asset's Overview page in the Purview portal (or GET .../datamap/api/atlas/v2/entity/uniqueAttribute/type/azure_sql_table?attr:qualifiedName=... - see README.md Section 11) after that scenario's scan has run at least once. This script does not scan or discover assets itself."
+  },
+  "relatedTerms": ["Customer", "Customer ID"]
+}
