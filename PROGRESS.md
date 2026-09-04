@@ -778,7 +778,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   persisted to logs/pipeline output (Red Team, resolved via explicit warnings in both the script and
   README), and a compromised shared SHIR host's blast radius extends to every data source wired to it
   (Red Team/CISO, resolved via a README §8 recommendation to dedicate separate SHIR hosts per
-  sensitivity tier) — 2026-09-04
+  sensitivity tier) — `dc5488a` — 2026-09-04
 
 - [x] **`scenarios/information-protection/auto-label-confidential-exchange/`** — Exchange-location
   companion to `scenarios/information-protection/auto-label-confidential-sharepoint/`, closing the
