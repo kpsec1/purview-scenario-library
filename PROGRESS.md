@@ -539,10 +539,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ### Follow-ups discovered while building the Data Map Azure SQL Managed Instance scenario
 - [x] **Backport two corrected REST shapes into `scenarios/data-map/scan-azure-sql-and-classify/`.**
   — **built**, see DONE below.
-- [ ] `scenarios/data-map/scan-azure-synapse-and-classify/` — the next explicitly-flagged sibling in
+- [x] `scenarios/data-map/scan-azure-synapse-and-classify/` — the next explicitly-flagged sibling in
   `scan-azure-sql-and-classify/design.md` §7's original list (Azure Synapse Analytics dedicated +
-  serverless SQL pools), following this fragment's same pattern: reuse the proven object model,
-  document only the genuine `kind`/auth/network differences Microsoft's own docs describe.
+  serverless SQL pools) — **built** (see DONE below): reuses the proven object model, documents the
+  genuine `kind`/auth/network differences Microsoft's own docs describe (registration per workspace
+  with two optional SQL endpoints, a three-part serverless enumeration-authentication story, the
+  distinct system scan rule set `AzureSynapseSQL`).
 - [ ] `scenarios/data-map/scan-on-premises-sql-server-and-classify/` — the third sibling (on-premises
   SQL Server via self-hosted integration runtime), deferred from both this fragment and the original
   sibling scenario's non-goals — a materially different registration/auth story (no managed identity
@@ -586,7 +588,65 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   reads labels already applied, consistent with `classification-coverage-report`'s own non-goal of not
   building the scan it reports on.
 
+### Follow-ups discovered while building the Data Map Azure Synapse Analytics scenario
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn/SDK grounding pass): the exact JSON shape of the
+  `AzureSynapseWorkspaceMsiScan` object's optional `resourceTypes` property (seen only as an opaque
+  `-ResourceType` parameter on the Az.Purview PowerShell module's `New-AzPurviewAzureSynapseWorkspaceMsiScanObject`
+  cmdlet, with no worked example of its value) — `scan-azure-synapse-and-classify/deploy/
+  New-AzureSynapseDataMapScan.ps1` omits the property entirely rather than guess a shape that could
+  silently mis-scope the scan between dedicated and serverless pools. Flagged inline in the deploy
+  script's `.NOTES`, `README.md` §6/§11, and `design.md` §5/§7.
+- [ ] `scenarios/data-map/bulk-grant-synapse-serverless-access/` (or fold into a future Data Map
+  hardening pass) — script to bulk-apply the per-serverless-database `CREATE LOGIN`/`CREATE USER`/
+  `db_datareader` grants across every database in a workspace (e.g. iterating `sys.databases` via
+  `Invoke-Sqlcmd`), closing the CISO-flagged per-database prerequisite-cost scaling noted in
+  `scan-azure-synapse-and-classify/README.md` §3 and `reviews.md`.
+- [ ] `scenarios/data-map/verify-synapse-serverless-enumeration-grants/` (or combine with the Managed
+  Instance sibling's already-tracked `verify-purview-entra-graph-prerequisites/` follow-up into one
+  broader SQL/Graph-permissioned checker) — a SQL-permissioned checker script confirming the serverless
+  `CREATE LOGIN` and `db_datareader` grants exist per database, deferred from `scan-azure-synapse-and-
+  classify/validate/Test-AzureSynapseDataMapScan.ps1` because that script's own auth surface (the
+  Purview Data Map data-plane token) has no reason to also hold a SQL connection to the serverless
+  endpoint — flagged as a Blue Team finding in that scenario's `reviews.md`.
+- [ ] Consider scripting the **REST API + SQL Auth fallback** for a Synapse workspace whose "Allow
+  Azure services and resources to access this workspace" firewall control cannot be enabled — deferred
+  from `scan-azure-synapse-and-classify/design.md` §8 as a materially different auth/credential story
+  (a Key Vault-backed SQL credential object, the same open portal-only credential-object gap both
+  sibling Data Map scenarios already carry).
+
 ## DONE
+- [x] `scenarios/data-map/scan-azure-synapse-and-classify/` — third scenario in this repo's
+  Azure-SQL-family Data Map series (after `scan-azure-sql-and-classify` and
+  `scan-azure-sql-managed-instance-and-classify`), closing the explicitly-flagged sibling item from
+  the Managed Instance scenario's own follow-up backlog. Registers an Azure Synapse Analytics
+  **workspace** (not a single database) as a Purview Data Map source, with the dedicated and/or
+  serverless SQL pool endpoints as two optional properties on one `AzureSynapseWorkspace` data source
+  object, and configures an `AzureSynapseWorkspaceMsi` SAMI-authenticated scan against it using the
+  system default `AzureSynapseSQL` scan rule set. Full README (12-section skeleton, an up-front callout
+  distinguishing this workspace-based data source from Microsoft's separate, older standalone
+  "dedicated SQL pool (formerly SQL DW)" source), design.md (a `design.md` §4 diff table against both
+  sibling scenarios covering the three-part serverless enumeration-authentication story, the
+  firewall-or-SQL-Auth-fallback distinction, and the portal's single "SQL Database" scan Type), deploy/
+  (`New-AzureSynapseDataMapScan.ps1` / `Remove-AzureSynapseDataMapScan.ps1` — idempotent, parameterized,
+  `-WhatIf` throughout, reusing the generic Data Sources/Scans/Triggers/Scan Result REST call shapes the
+  Managed Instance sibling scenario already confirmed by direct fetch, with Synapse-specific `kind`/body
+  properties independently confirmed via the Az.Purview PowerShell module's own worked examples),
+  validate/ script, four-lens reviews.md (Red Team Fix round resolved — Storage Blob Data Reader
+  over-scoping risk and the silent external-table coverage gap; Blue Team Fix round resolved — the
+  serverless-enumeration-login validate-script gap explained rather than left silent; CISO Fix round
+  resolved — per-database prerequisite cost scales with workspace database count, unlike either sibling
+  scenario's fixed one-time cost; Product Owner Fix round resolved — distinguished this scenario's
+  workspace-based data source from Microsoft's separate, older standalone dedicated-SQL-pool source) —
+  grounded in Microsoft Learn (`register-scan-synapse-workspace`'s full registration/scan/permissions
+  workflow, fetched via a verified byte-for-byte mirror after direct `learn.microsoft.com` fetches
+  returned `EGRESS_BLOCKED` throughout this build; the Az.Purview PowerShell module's
+  `New-AzPurviewAzureSynapseWorkspaceDataSourceObject`/`-MsiScanObject` cmdlet references, fetched via
+  GitHub raw source, for the `kind` and property names; `register-scan-azure-synapse-analytics` and
+  `data-governance-private-endpoints-managed-virtual-network` for the two Product Owner/limitations
+  citations). One property (the scan object's optional `resourceTypes`) could not be independently
+  confirmed to an exact JSON shape and is deliberately omitted rather than guessed — flagged as an
+  explicit VERIFY in `README.md` §11 and `design.md` §5, with three new follow-ups recorded below
+  rather than resolved by guessing, per `AGENTS.md` §4 — 2026-09-04
 - [x] `scenarios/data-estate-insights/sensitivity-label-coverage-report/` — ninth **follow-up
   expansion** fragment (Data Estate Insights), closing the item logged during the
   `classification-coverage-report` build: extend that scenario's exact pattern (paginated Discovery -

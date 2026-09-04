@@ -1,0 +1,46 @@
+{
+  "$comment": "Reference/documentation copy of the REST request bodies deploy/New-AzureSynapseDataMapScan.ps1 sends. This file is NOT consumed by the deploy script - it exists so the exact shape sent to the Purview Data Map REST API is reviewable in a diff without reading PowerShell. dataSource/scan kind names and property names confirmed via the Az.Purview PowerShell module's own worked examples (New-AzPurviewAzureSynapseWorkspaceDataSourceObject / New-AzPurviewAzureSynapseWorkspaceMsiScanObject) - see README.md Section 11 and design.md Section 5 for the full grounding method, including the one field (resourceTypes) deliberately omitted rather than guessed.",
+  "dataSource": {
+    "$comment": "PUT {endpoint}/scan/datasources/{DataSourceName}?api-version=2023-09-01 - kind AzureSynapseWorkspace. ONE data source object per WORKSPACE (not per pool) - dedicatedSqlEndpoint and serverlessSqlEndpoint are both optional properties on the same object; supply at least one.",
+    "kind": "AzureSynapseWorkspace",
+    "properties": {
+      "dedicatedSqlEndpoint": "<WorkspaceName>.sql.azuresynapse.net",
+      "serverlessSqlEndpoint": "<WorkspaceName>-ondemand.sql.azuresynapse.net",
+      "resourceName": "<WorkspaceName>",
+      "resourceGroup": "<ResourceGroupName>",
+      "subscriptionId": "<SubscriptionId>",
+      "location": "<Location>",
+      "collection": {
+        "referenceName": "<CollectionReferenceName>",
+        "type": "CollectionReference"
+      }
+    }
+  },
+  "scan": {
+    "$comment": "PUT {endpoint}/scan/datasources/{DataSourceName}/scans/{ScanName}?api-version=2023-09-01 - kind AzureSynapseWorkspaceMsi authenticates as the Purview account's own system-assigned managed identity; no credential object required. scanRulesetName's system default for this source type is 'AzureSynapseSQL'. The optional 'resourceTypes' property (seen on the Az.Purview PowerShell object model as -ResourceType) is deliberately NOT included here - its exact JSON shape was not independently confirmed during this build, and the Purview portal's own scan wizard exposes only a single 'SQL Database' Type for this source with no dedicated/serverless split to encode. See README.md Section 11 (VERIFY).",
+    "kind": "AzureSynapseWorkspaceMsi",
+    "properties": {
+      "collection": {
+        "referenceName": "<CollectionReferenceName>",
+        "type": "CollectionReference"
+      },
+      "scanRulesetName": "AzureSynapseSQL",
+      "scanRulesetType": "System"
+    }
+  },
+  "trigger": {
+    "$comment": "PUT {endpoint}/scan/datasources/{DataSourceName}/scans/{ScanName}/triggers/default?api-version=2023-09-01 - only sent when -RecurrenceFrequency is supplied. Generic shape, unchanged from both sibling scenarios (Trigger resource name is always 'default').",
+    "properties": {
+      "scanLevel": "Incremental",
+      "recurrence": {
+        "frequency": "Week",
+        "interval": 1,
+        "startTime": "<RecurrenceStartTime, ISO 8601>"
+      }
+    }
+  },
+  "runScan": {
+    "$comment": "POST {endpoint}/scan/datasources/{DataSourceName}/scans/{ScanName}:run?runId={new-guid}&scanLevel=Full&api-version=2023-09-01 - only sent when -RunNow is supplied. No request body. Generic action-style POST shape, unchanged from both sibling scenarios.",
+    "scanLevel": "Full"
+  }
+}
