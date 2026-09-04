@@ -1,0 +1,15 @@
+{
+  "_comment": "Config for deploy/New-TradingResearchBarrier.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Defines information-barrier SEGMENTS from Microsoft Entra attributes and BLOCK policies that build an ethical wall between the Trading desk and Research. Policies are created INACTIVE; activation + application (which affects live Teams/SharePoint/OneDrive communication) happens only with -Activate. Read README.md Sections 2, 5, and 11 first.",
+  "segments": [
+    { "name": "Trading", "userGroupFilter": "Department -eq 'Trading'" },
+    { "name": "Research", "userGroupFilter": "Department -eq 'Research'" }
+  ],
+  "_segmentsNote": "One segment per side of the wall, defined by an Entra attribute (Department here). Confirm the attribute is populated for all in-scope users and that no user belongs to both sides (a user in both Trading and Research breaks the wall). Supported attributes: Department, MemberOf, and others - see README.md reference 6. Segments/policies do nothing until applied.",
+  "blockPairs": [
+    { "assignedSegment": "Trading", "blocks": "Research" },
+    { "assignedSegment": "Research", "blocks": "Trading" }
+  ],
+  "_blockPairsNote": "A full two-way wall needs BOTH one-way block policies (Trading->Research AND Research->Trading) - a single policy blocks one direction only. Each policy is named '<assigned>-block-<blocks>'. Microsoft recommends Block policies for most scenarios. Rule: never assign more than one policy to the same segment.",
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-03"
+}

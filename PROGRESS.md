@@ -18,7 +18,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ### Risk & Compliance
 - [ ] `scenarios/records-management/regulatory-records-disposition/`
-- [ ] `scenarios/information-barriers/segregate-trading-and-research/`
 
 > After the starter scenario per module lands, expand each module across the AGENTS.md §3 axes
 > (lifecycle, deployment posture, regulatory driver, failure/abuse, scale). Add those fragments
@@ -395,7 +394,42 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   provisions) for a formal records file plan, and bulk label/policy creation via the documented CSV
   script (`bulk-create-publish-labels-using-powershell`).
 
+### Follow-ups discovered while building the Information Barriers segregate-trading-and-research scenario
+- [ ] `scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/` — enable IB
+  for SharePoint/OneDrive (`Set-SPOTenant`) and associate segments to sites, the file-level half beyond
+  the Teams wall (noted as an extension in this scenario's `design.md` §6 / `README.md` §11).
+- [ ] `scenarios/information-barriers/allow-list-and-control-room-exceptions/` — model allow-list
+  topologies (`-SegmentsAllowed`) and a control-room/compliance segment that must see both sides, the
+  exception pattern real deployments need (non-goal here).
+- [ ] Consider a multi-segment-mode migration note/scenario (Legacy → SingleSegment/MultiSegment) and
+  address-book-policy / GAL segmentation as companions.
+
 ## DONE
+- [x] `scenarios/information-barriers/segregate-trading-and-research/` — sixth Risk & Compliance
+  scenario (Information Barriers), and the last remaining Risk & Compliance **starter** (every module
+  now has a starter scenario): full README (12-section skeleton), design.md, deploy/
+  (`New-TradingResearchBarrier.ps1` — SCC PowerShell (surface 1) that builds an ethical wall:
+  `New-OrganizationSegment` per side from an Entra attribute filter + two one-way
+  `New-InformationBarrierPolicy -SegmentsBlocked` policies created **-State Inactive**, and — only with
+  `-Activate` — `Set-InformationBarrierPolicy -State Active` + `Start-InformationBarrierPoliciesApplication`;
+  safe-by-default (staged inactive, no user impact until explicit activation); create-or-report
+  idempotency via Get-*; custom `-DryRun` (S&C `-WhatIf` non-functional); loud live-communication-impact
+  warnings; `Remove-TradingResearchBarrier.ps1` — staged deactivate → `-Apply` to lift the wall →
+  `-Delete` policies + segments, with the deactivation-needs-application trap called out;
+  `deploy/config/trading-research-barrier.sample.json` — Trading/Research segments + both block pairs),
+  validate/ (`Test-TradingResearchBarrier.ps1` — read-only Get-* checks of both segments, both block
+  policies + assignment + Active state (`-RequireActive`), and application status), four-lens reviews.md
+  (Red Team Fix round resolved — both-direction + mutually-exclusive-segment wall, safe-by-default
+  activation + no-collateral test, app-only/non-IB edges, governed deletion; Blue Team Fix round
+  resolved — application-status detection + `-RequireActive`, deactivation-needs-apply trap, working
+  `-DryRun`; CISO Fix round resolved — examiner-grade reproducibility; Product Owner Fix round resolved
+  — IB modes/timings documented) — grounded in Microsoft Learn (Get started with Information Barriers:
+  segments/block-policies/apply + one-policy-per-segment + two-one-way-policies pattern, multi-segment
+  IB modes and limits, New-OrganizationSegment / New-InformationBarrierPolicy /
+  Start-InformationBarrierPoliciesApplication references, IB attributes, SharePoint IB enablement + 24h
+  propagation, Teams block behavior, troubleshooting) — no invented cmdlets; activation's
+  live-communication impact treated as a first-class safety constraint, per `AGENTS.md` §4 — 2026-09-03
+
 - [x] `scenarios/data-lifecycle-management/retention-labels-financial-records/` — fifth Risk &
   Compliance scenario (Data Lifecycle / Records Management): full README (12-section skeleton),
   design.md, deploy/ (`New-FinancialRecordsRetention.ps1` — SCC PowerShell (surface 1) that creates a
