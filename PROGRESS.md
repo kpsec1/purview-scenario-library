@@ -722,8 +722,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   independently fetched from the live Microsoft Learn reference pages, not recalled from memory or
   copied from the flagging scenario's unverified note (Pass). Closed the two cross-references in
   `scenarios/information-protection/auto-label-confidential-sharepoint/README.md` §3/§11 and
-  `design.md` §5 that had called this out as an uncataloged surface. Commit: pending (recorded in
-  the next commit). Date: 2026-09-04.
+  `design.md` §5 that had called this out as an uncataloged surface. Commit: `9350bc7`.
+  Date: 2026-09-04.
 - [x] **`scenarios/compliance-manager/pci-dss-assessment/`** — Compliance Manager PCI DSS v4.0
   premium-template assessment scenario, the assessment-side companion to `scenarios/dlp/
   pci-teams-exfil-block/` referenced from that scenario's `README.md` §2 (now updated in place from
