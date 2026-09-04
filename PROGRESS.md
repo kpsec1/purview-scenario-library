@@ -513,10 +513,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   actively moving and should be re-verified before every future sale referencing it.
 
 ### Follow-ups discovered while building the Audit premium-audit-investigation scenario
-- [ ] `scenarios/audit/retention-policy-management/` — script **audit log retention policies** (a
+- [x] `scenarios/audit/retention-policy-management/` — script **audit log retention policies** (a
   Premium feature: create/manage custom retention durations per record type/user via SCC PowerShell
   `New-/Set-UnifiedAuditLogRetentionPolicy`), the configuration counterpart to this read-only
-  investigation scenario.
+  investigation scenario — **built** (see DONE below).
 - [ ] `scenarios/audit/streaming-to-sentinel-or-management-api/` — continuous audit streaming via the
   Office 365 Management Activity API (or a Sentinel connector) for real-time detection, contrasted
   with this on-demand investigation in `audit/premium-audit-investigation/design.md` §7.
@@ -526,6 +526,78 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] Consider an **incident-response (mutating) companion** scenario — disable account, revoke
   sessions, remove malicious inbox rules — the deliberate response workflow this read-only
   investigation explicitly scopes out (`audit/premium-audit-investigation/design.md` §7).
+
+### Follow-ups discovered while building the Audit retention-policy-management scenario
+- [ ] Backport the **Organization Configuration vs. Audit Manager** role distinction into
+  `docs/rbac-model.md`'s existing Audit row (currently "Audit Reader (View-Only Audit Logs) →
+  Audit Manager (configure + search + export)", which doesn't mention retention-policy management
+  at all). Confirmed this build: creating/editing audit log retention policies requires the
+  **Organization Configuration** role (per `audit-log-retention-policies`), which is included by
+  default in the **Compliance Data Administrator** Purview role group — a *different* grant from
+  the Audit Manager role group `rbac-model.md` already documents for search/export configuration.
+  Deferred from `retention-policy-management/README.md` §3/§11 (which carries the finding inline)
+  to avoid re-opening the cross-cutting doc mid-fragment, consistent with this repo's established
+  precedent (e.g. the `auto-label-confidential-exchange` role-prerequisite backport, still open
+  above).
+- [ ] VERIFY (pilot tenant): the retroactive-vs-forward-only behavior of editing a live retention
+  policy's `RetentionDuration` — Microsoft's own `audit-log-retention-policies` page states both
+  that a change "changes the expiration time of the audit data after updating" and, in the same
+  paragraph, that such changes "don't update any previously committed items," without reconciling
+  the two. `retention-policy-management/README.md` §11 and `design.md` §6 flag this rather than
+  asserting either reading — resolving it would let a future revision give concrete guidance on
+  whether shortening a policy is safe to use for cost/noise control without risking early
+  expiry of records a buyer still needs.
+- [ ] VERIFY (pilot tenant): whether passing `$null` to `-RecordTypes`/`-Operations` on
+  `Set-UnifiedAuditLogRetentionPolicy` clears a previously-set value, the same way Microsoft's own
+  worked example confirms for `-UserIds`. `retention-policy-management/deploy/
+  New-AuditRetentionPolicy.ps1` extrapolates the same convention to all three MultiValuedProperty
+  parameters by analogy (flagged inline in its `.NOTES` and `README.md` §11) rather than assuming
+  it's confirmed.
+- [ ] Once Microsoft documents a REST/Graph surface for `UnifiedAuditLogRetentionPolicy` objects
+  (none was found during this build's grounding pass — Security & Compliance PowerShell is
+  currently the only automation surface), reconsider whether `retention-policy-management` should
+  add a Graph-based path alongside the PowerShell one, consistent with how other Purview objects
+  in this library are moving toward Graph coverage.
+
+### Re-verification pass on the DLP `removable-usb-device-groups-allowlist` follow-up (endpoint-dlp-usb-block)
+- Ran a fresh grounding pass on this open item (below, under "Follow-ups discovered while building
+  the Endpoint DLP USB-block scenario") before picking a different fragment for this turn — **still
+  blocked**, but with two genuine improvements to record:
+  1. **Upgraded, not just re-confirmed:** `endpoint-dlp-usb-block/README.md` §11's existing VERIFY
+     for `-EndpointDlpRestrictions` `Setting='RemovableMedia'`/`Value='Block'`/`'Audit'` was
+     previously sourced only from a Tech Community blog walkthrough. This build independently
+     re-confirmed the exact same `Setting`/`Value` hashtable shape directly from Microsoft's
+     **official** `New-DlpComplianceRule` reference page (fetched in full), which also reveals two
+     additional valid `-Value` strings beyond Block/Audit: **`Ignore`** and **`Warn`** — `Warn`
+     plausibly maps to the portal's "Block with override" option that `endpoint-dlp-usb-block/
+     design.md` §6 previously declined to use for exactly this reason (no confirmed enum value).
+     Filed below as a task to backport this stronger citation and re-evaluate the `Warn` mapping —
+     not done in this turn to keep this fragment scoped to `retention-policy-management` alone.
+  2. **Confirmed the tenant-wide group-*creation* cmdlets exist, but their body shape is still
+     genuinely undocumented.** `Set-PolicyConfig -DlpRemovableMediaGroups`/`-DlpPrinterGroups`
+     (both typed `PswsHashtable`) are real, current parameters — confirmed via the official
+     `Set-PolicyConfig` reference page. However, both parameters' description sections are
+     Microsoft-side placeholder stubs ("`{{ Fill ... Description }}`") with **no example hashtable
+     shape**, confirmed empty even in the raw GitHub Markdown source
+     (`MicrosoftDocs/office-docs-powershell/.../Set-PolicyConfig.md`) — ruling out a rendering
+     artifact. Separately, the *per-rule* group-reference key inside a `New-DlpComplianceRule`
+     `-EndpointDlpRestrictions` entry (the mechanism behind the portal's "Choose different
+     removable storage restrictions" per-rule override) has no documented key name anywhere in the
+     official `New-DlpComplianceRule` reference either. **This item remains blocked** on the same
+     core gap it already carried — Microsoft has not published either shape as of this build.
+- [ ] Backport the official-source confirmation of `EndpointDlpRestrictions` `Setting`/`Value`
+  strings (including the newly-found `Ignore`/`Warn` values) into
+  `endpoint-dlp-usb-block/README.md` §11 and `deploy/New-EndpointDlpUsbBlockPolicy.ps1`'s
+  `.NOTES`, upgrading the citation from the Tech Community blog to the official
+  `New-DlpComplianceRule` reference page, and re-evaluate whether `Warn` should replace `Audit` as
+  the IT Data Custodians exception action per `design.md` §6's own stated reasoning (deferred from
+  this turn to keep the `retention-policy-management` fragment scoped).
+- [ ] Periodically re-check whether Microsoft has filled in the `Set-PolicyConfig`
+  `-DlpRemovableMediaGroups`/`-DlpPrinterGroups` reference page's placeholder description sections
+  (currently literal `{{ Fill ... Description }}` stub text) or published a worked example — this
+  is the blocking gap for `scenarios/dlp/removable-usb-device-groups-allowlist/` (below). Since the
+  page itself is an acknowledged stub (not just sparse), it is a reasonable candidate for Microsoft
+  to complete in a future documentation pass, unlike a gap where no reference page exists at all.
 
 ### Follow-ups discovered while building the DLM retention-labels-financial-records scenario
 - [ ] `scenarios/data-lifecycle-management/event-based-retention-and-disposition/` — event-based
@@ -737,6 +809,71 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **`scenarios/audit/retention-policy-management/`** — the configuration counterpart to
+  `scenarios/audit/premium-audit-investigation/`: creates and reconciles custom Microsoft Purview
+  **audit log retention policies** (`New-`/`Set-`/`Get-`/`Remove-UnifiedAuditLogRetentionPolicy`,
+  Security & Compliance PowerShell) as a version-controlled, idempotently-applied set, closing the
+  gap where Audit (Premium)'s automatic one-year default only covers Entra ID/Exchange/OneDrive/
+  SharePoint (Teams and every other workload fall back to 180 days unless a custom policy extends
+  them). Full deliverable per `AGENTS.md` §4: `README.md` (12-section skeleton), `design.md`,
+  `deploy/New-AuditRetentionPolicy.ps1` (idempotent get-or-create-or-update reconciliation over a
+  JSON policy-set config, `-WhatIf` throughout, full pre-flight validation before any write),
+  `deploy/Remove-AuditRetentionPolicy.ps1`, `deploy/config/audit-retention-policies.sample.json`
+  (three entries directly adapted from Microsoft's own worked examples), `validate/
+  Test-AuditRetentionPolicy.ps1`, `rollback.md`, `reviews.md` (four-lens, all Fix items resolved,
+  no Fail).
+
+  Key grounding, all fetched via the Microsoft Learn MCP tool this run (available and used,
+  despite the run's own initial task instructions stating it would not be) directly against the
+  official `New-`/`Set-`/`Remove-`/`Get-UnifiedAuditLogRetentionPolicy` reference pages and
+  "Manage audit log retention policies": (1) the PowerShell `-RetentionDuration` enum
+  (`ThreeMonths`/`SixMonths`/`NineMonths`/`TwelveMonths`/`TenYears`) is narrower than the portal's
+  nine-option duration picker (also offers `7 Days`/`30 Days`/`3 Years`/`5 Years`/`7 Years`) — a
+  real, sourced cmdlet-vs-portal gap confirmed by directly comparing two official pages against
+  each other, not a guess; the deploy script rejects any config entry requesting a portal-only
+  duration rather than silently misbehaving; (2) audit log retention policies have **no
+  enable/disable/simulation mode** — unlike this library's DLP/DLM scenarios, the only lifecycle
+  actions are create/edit/delete, so `rollback.md` treats deletion as the sole "off" switch;
+  (3) two hard tenant-wide constraints — a **50-policy cap** and **globally-unique Priority**
+  (1–10000) across every policy in the org, not just a script's own config — are enforced
+  pre-flight against a live `Get-UnifiedAuditLogRetentionPolicy` snapshot before any write is
+  attempted, so a single invalid or colliding config entry stops the whole run rather than
+  partially applying it; (4) creating/editing retention policies requires the **Organization
+  Configuration** role, confirmed (via the `scc-permissions` role-groups reference) to be included
+  by default in the **Compliance Data Administrator** Purview role group — a distinct grant from
+  the **Audit Manager** role group `docs/rbac-model.md`'s existing Audit row already documents for
+  search/export, filed as a backport follow-up rather than silently assumed already covered;
+  (5) a policy authored via PowerShell for a `RecordTypes`/`Operations` combination the portal's
+  own creation wizard doesn't offer becomes portal **view-and-delete-only** — a genuine
+  operational trap for a buyer who scripts a policy and later expects portal-based tuning,
+  documented explicitly in `README.md` §8/§11.
+
+  Two items intentionally left as explicit VERIFY rather than resolved by guessing, per
+  `AGENTS.md` §4: whether editing a live policy's `RetentionDuration` retroactively affects
+  already-committed records' expiration (Microsoft's own conceptual page states this both ways in
+  the same paragraph without reconciling them — flagged in `README.md` §11/`design.md` §6, with
+  Red Team framing it as the specific mechanism a buyer must understand before using retention
+  *shortening* for cost/noise control); and whether `$null`-clearing a `Set-` call's
+  `-RecordTypes`/`-Operations` (extrapolated by this script from Microsoft's own worked
+  `-UserIds $null` example) behaves identically for those two parameters. Four-lens review raised
+  and resolved three Red Team findings around misuse-of-shortening framing, role-assignment
+  governance boundaries, and a priority-collision denial-of-service risk — all addressed via
+  explicit documentation/scoping rather than an invented technical mitigation Microsoft's own
+  priority model doesn't provide. New follow-ups filed above under "Follow-ups discovered while
+  building the Audit retention-policy-management scenario."
+
+  This turn also ran a fresh grounding pass on the still-open
+  `scenarios/dlp/removable-usb-device-groups-allowlist/` item (below) before picking this
+  fragment instead — confirmed the tenant-wide `Set-PolicyConfig -DlpRemovableMediaGroups`/
+  `-DlpPrinterGroups` cmdlet parameters genuinely exist (official reference), but both remain
+  Microsoft-side documentation stubs with no example hashtable shape, confirmed empty even in the
+  raw GitHub Markdown source — and the separate per-rule group-reference key inside
+  `-EndpointDlpRestrictions` has no documented key name anywhere in the official
+  `New-DlpComplianceRule` reference. That item **remains blocked** on the same core gap; two new
+  follow-ups filed above capture the incidental discovery of official-source confirmation for
+  `endpoint-dlp-usb-block`'s own `EndpointDlpRestrictions` `Setting`/`Value` strings (plus two
+  previously-unknown valid values, `Ignore`/`Warn`) made during that same re-grounding pass.
+  Commit: `<pending>`. Date: 2026-09-04.
 - [x] **`scenarios/data-map/scan-on-premises-sql-server-and-classify/`** — the third and final
   explicitly-flagged sibling of `scenarios/data-map/scan-azure-sql-and-classify/` (alongside the
   already-built Managed Instance and Azure Synapse Analytics siblings), covering the one Data Map
