@@ -163,3 +163,36 @@ No remaining Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`,
 `deploy/New-AzureSqlDataMapScan.ps1`, and `validate/Test-AzureSqlDataMapScan.ps1`. No Fail items
 were raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Follow-up review — Run Scan / List Scan History REST shape correction (2026-09-04)
+
+A targeted four-lens pass on the backported correction (not a full re-review of the scenario):
+the sibling `scan-azure-sql-managed-instance-and-classify` build independently direct-fetched the
+canonical **Scan Result - Run Scan** and **Scan Result - List Scan History** REST reference pages
+this scenario's own build could not reach, and found both of this scenario's reconstructed shapes
+were wrong (§11 VERIFY previously covered this — see `README.md` for the corrected text).
+
+- **🔴 Red Team — Pass.** No new attack surface: the corrected call still authenticates with the
+  same bearer token and least-privilege role as every other call in this script; a wrong endpoint
+  shape was a reliability defect, not an exploitable one. Confirms the fix doesn't silently swallow
+  a scan-run failure any differently than before.
+- **🔵 Blue Team — Pass (closes a prior finding for real).** The original review's Blue Team fix
+  (validate script's catch block naming the "VERIFY status" on scan-history failure, item 2 above)
+  was a mitigation for an *unconfirmed* shape. With the shape now confirmed and corrected, the
+  script's primary path reads the real nested fields directly — the catch-block fallback becomes a
+  true "transient/permission error" handler rather than a mask for a shape guess. Text describing it
+  updated in `validate/Test-AzureSqlDataMapScan.ps1`'s catch message accordingly.
+- **🎩 CISO — Pass.** No cost or licensing impact. Slightly higher confidence in the classification
+  coverage evidence this scenario produces for every downstream Data Security control, since
+  `-RunNow`'s scan-trigger call and the validate script's asset counts it reports on are now
+  grounded rather than best-effort.
+- **🟦 Microsoft Product Owner — Pass.** `AGENTS.md` §4 says ground every product fact; this
+  correction is exactly that discipline applied retroactively once better grounding became
+  available elsewhere in the repo, rather than leaving a known-wrong shape shipped indefinitely.
+  Two narrower VERIFY items remain open (Data Sources/Triggers body shapes for the `AzureSqlDatabase`
+  kind specifically, and the two unrelated custom-rule-set/credential-object gaps) — not resolved by
+  this pass, and not claimed to be.
+
+No Fix/Fail from this follow-up pass.

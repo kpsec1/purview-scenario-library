@@ -89,7 +89,7 @@ sequenceDiagram
         API-->>Script: 200/201 trigger
     end
     opt -RunNow supplied
-        Script->>API: PUT .../scans/{name}/runs/{new-guid}?scanLevel=Full
+        Script->>API: POST .../scans/{name}:run?runId={new-guid}&scanLevel=Full
         API-->>Script: 202 Accepted (scanResultId)
     end
     Note over API,SQL: Asynchronously, the scan service authenticates<br/>to SQL as the Purview SAMI and extracts/classifies
@@ -100,10 +100,15 @@ sequenceDiagram
 
 Every `PUT` in this sequence is a create-or-replace call at the same API version (`2023-09-01`
 for the Scans object, confirmed by direct fetch of Microsoft's REST reference; the sibling
-Data Sources/Triggers/Run-Scan calls use the same version by inference — see `README.md` §11
-VERIFY). Object creation and the scan *run* are two separate steps: creating the scan object does
-not execute a scan by itself — either a trigger fires it on schedule, or `-RunNow` invokes it
-immediately, matching the portal's own "Save" vs. "Save and run" distinction.
+Data Sources/Triggers calls use the same version by inference — see `README.md` §11 VERIFY). The
+`-RunNow` call is deliberately not a `PUT`: **Scan Result - Run Scan** is an action-style
+`POST .../scans/{name}:run?runId={guid}&scanLevel={level}` (colon-suffixed, `runId` as a query
+parameter) — confirmed by direct fetch during the Azure SQL Managed Instance sibling scenario's
+build and backported here 2026-09-04, correcting this script's original unconfirmed resource-style
+`PUT .../runs/{runId}` assumption. Object creation and the scan *run* are two separate steps:
+creating the scan object does not execute a scan by itself — either a trigger fires it on
+schedule, or `-RunNow` invokes it immediately, matching the portal's own "Save" vs. "Save and run"
+distinction.
 
 ## 6. Key decisions
 

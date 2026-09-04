@@ -183,7 +183,7 @@ acquisition follows `docs/automation-surface.md` §3's client-credentials patter
 | Scan rule set (narrower, PII-only) | A **custom** rule set built from the system default with unwanted classifications excluded | Supported by the product (portal, and the `Az.Purview` module's `New-AzPurviewAzureSqlDatabaseScanRulesetObject -ExcludedSystemClassification`) — this scenario's script does not create one programmatically; see §11 VERIFY |
 | Scan level | `Full` (first run) → `Incremental` (subsequent scheduled runs) | Customizable per-source scan levels (L1/L2/L3) are supported for Azure SQL Database specifically [[7]](#references) |
 | Recurring trigger | Optional; `RecurrenceFrequency`/`RecurrenceInterval` parameters | Trigger resource name is always `default` — one trigger per scan [[8]](#references) |
-| API version pinned by this script | `2023-09-01` | Confirmed current for the Scans object; see §11 VERIFY for the sibling Data Sources/Triggers/Run-Scan endpoints |
+| API version pinned by this script | `2023-09-01` | Confirmed current for the Scans object and (as of 2026-09-04) the Run Scan/List Scan History operations; see §11 VERIFY for the sibling Data Sources/Triggers endpoints |
 
 Full cmdlet/REST-body grounding: `deploy/New-AzureSqlDataMapScan.ps1` inline comments and its
 `.NOTES` block cite the exact Microsoft Learn reference pages.
@@ -315,21 +315,36 @@ data source registration.
   `db_datareader`, no public-access-disabled Purview accounts) — this scenario does not enable
   lineage extraction by default; see the source documentation before turning it on
   [[1]](#references).
-- **VERIFY — Data Sources / Triggers / Run-Scan REST body shapes.** This build's grounding for the
+- **RESOLVED (2026-09-04) — Run Scan / List Scan History REST shapes were corrected, not just
+  verified.** The sibling `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` build
+  independently direct-fetched the canonical **Scan Result - Run Scan** and **Scan Result - List
+  Scan History** REST reference pages this scenario's own build could not reach, and found both of
+  this scenario's original reconstructed shapes were wrong: Run Scan is an action-style
+  `POST {endpoint}/scan/datasources/{ds}/scans/{scan}:run?runId={guid}&scanLevel={level}&
+  api-version=...` (this script previously sent an unconfirmed resource-style
+  `PUT .../runs/{runId}`), and List Scan History's per-run asset counts are nested at
+  `discoveryExecutionDetails.statistics.assets.discovered`/`.classified` (this script's validate
+  companion previously read unconfirmed flat `.assetsDiscovered`/`.assetsClassified` properties).
+  Both `deploy/New-AzureSqlDataMapScan.ps1` and `validate/Test-AzureSqlDataMapScan.ps1` have been
+  corrected to the confirmed shapes — see reference 17 below and each script's `.NOTES`.
+- **VERIFY — Data Sources / Triggers REST body shapes.** This build's grounding for the
   **Scans - Create Or Replace** endpoint (URI, API version `2023-09-01`, and the
   `AzureSqlDatabaseMsiScanProperties`/`AzureSqlDatabaseCredentialScanProperties` body schema) comes
   from a direct fetch of Microsoft's own REST reference page. The sibling **Data Sources - Create
-  Or Update**, **Triggers - Create Or Replace**, and **Scan Result - Run Scan** reference pages
-  returned fetch errors in this build environment; the request shapes this scenario's script uses
-  for those three calls are reconstructed from the matching path pattern on the Scans endpoint,
-  the official `@azure-rest/purview-scanning` JS SDK type definitions (which mirror the REST wire
-  format — `AzureSqlDatabaseProperties`/`AzureDataSourceProperties` confirming `serverEndpoint`,
+  Or Update** and **Triggers - Create Or Replace** reference pages returned fetch errors in this
+  build environment; the request shapes this scenario's script uses for those two calls are
+  reconstructed from the matching path pattern on the Scans endpoint, the official
+  `@azure-rest/purview-scanning` JS SDK type definitions (which mirror the REST wire format —
+  `AzureSqlDatabaseProperties`/`AzureDataSourceProperties` confirming `serverEndpoint`,
   `resourceName`, `resourceGroup`, `subscriptionId`, `location`, `collection`), and the `Az.Purview`
-  PowerShell module's parameter signatures (`New-AzPurviewDataSource`, `New-AzPurviewTrigger`,
-  `Start-AzPurviewScanResultScan`) — three independent sources converging on the same shape, but
-  none of them a direct fetch of the canonical REST reference for those three operations
-  specifically. Confirm against a pilot tenant or the OpenAPI spec before production use; flagged
-  inline in the deploy script's `.NOTES`.
+  PowerShell module's parameter signatures (`New-AzPurviewDataSource`, `New-AzPurviewTrigger`) —
+  three independent sources converging on the same shape, but none of them a direct fetch of the
+  canonical REST reference for those two operations specifically. The Managed Instance sibling
+  scenario's build independently direct-fetched both and confirmed the reconstructed shapes were
+  correct for its own `AzureSqlDatabaseManagedInstance` source (design.md §5) — strong corroborating
+  evidence, but not yet a direct fetch of these two operations' pages for this exact
+  `AzureSqlDatabase` source kind. Confirm against a pilot tenant or the OpenAPI spec before
+  production use; flagged inline in the deploy script's `.NOTES`.
 - **VERIFY — custom scan rule set REST creation.** This scenario ships Microsoft's system default
   scan rule set rather than a narrower, PII-only custom rule set. The product supports a custom
   rule set that excludes specific system classifications (confirmed via the `Az.Purview` module's
@@ -362,7 +377,10 @@ data source registration.
 14. Az.Purview PowerShell module reference (`New-AzPurviewDataSource`, `New-AzPurviewScan`, `Remove-AzPurviewDataSource`, `Remove-AzPurviewScan`, `Start-AzPurviewScanResultScan`) — <https://learn.microsoft.com/powershell/module/az.purview/>
 15. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary — Data Source Administrator, Data Curator, Data Reader, Collection Admin) — <https://learn.microsoft.com/purview/data-gov-classic-permissions>
 16. New-AzPurviewAzureSqlDatabaseScanRulesetObject (Az.Purview PowerShell module — confirms the exclusion-based custom scan rule set model via `-ExcludedSystemClassification`) — <https://learn.microsoft.com/powershell/module/az.purview/new-azpurviewazuresqldatabasescanrulesetobject>
+17. Scan Result - Run Scan and Scan Result - List Scan History REST API references (confirmed the action-style `POST .../:run?runId=...` shape and the nested `discoveryExecutionDetails.statistics.assets` shape; direct-fetched during the Azure SQL Managed Instance sibling scenario's build and backported here 2026-09-04) — <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-result/run-scan> and <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-result/list-scan-history>
 
 > Re-verify all links, API versions, and REST body shapes against current Microsoft Learn before a
 > customer-facing deployment — the Data Map REST surface is explicitly called out by Microsoft as
-> evolving, and the three VERIFY items in §11 should be closed against a pilot tenant first.
+> evolving. Two VERIFY items remain open in §11 (Data Sources/Triggers body shapes; the two other
+> items on custom scan-rule-set and credential-object REST creation) and should be closed against a
+> pilot tenant first.

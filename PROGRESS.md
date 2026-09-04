@@ -521,18 +521,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scenario with the DLM `retention-labels-financial-records` sibling.
 
 ### Follow-ups discovered while building the Data Map Azure SQL Managed Instance scenario
-- [ ] **Backport two corrected REST shapes into `scenarios/data-map/scan-azure-sql-and-classify/`.**
-  This build independently re-fetched the canonical Microsoft Learn REST reference pages that
-  scenario's own build could not reach (Data Sources, Triggers, Scan Result) and found two real
-  discrepancies from what that scenario's scripts assume: (1) **Scan Result - Run Scan** is an
-  action-style `POST {endpoint}/scan/datasources/{ds}/scans/{scan}:run?runId={guid}&scanLevel=
-  {level}&api-version=...`, not the resource-style `PUT .../runs/{runId}` that scenario's
-  `New-AzureSqlDataMapScan.ps1` sends; (2) **Scan Result - List Scan History**'s per-run asset
-  counts are nested at `discoveryExecutionDetails.statistics.assets.discovered`/`.classified`, not
-  the flat `.assetsDiscovered`/`.assetsClassified` properties that scenario's
-  `Test-AzureSqlDataMapScan.ps1` reads. Both are recorded in this new scenario's `design.md` §5 and
-  `README.md` §11; the sibling scenario's own scripts should be corrected to match rather than left
-  shipping an unconfirmed (and now known-incorrect) shape.
+- [x] **Backport two corrected REST shapes into `scenarios/data-map/scan-azure-sql-and-classify/`.**
+  — **built**, see DONE below.
 - [ ] `scenarios/data-map/scan-azure-synapse-and-classify/` — the next explicitly-flagged sibling in
   `scan-azure-sql-and-classify/design.md` §7's original list (Azure Synapse Analytics dedicated +
   serverless SQL pools), following this fragment's same pattern: reuse the proven object model,
@@ -560,6 +550,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   outside the automation identity's own Purview/Azure IAM role scope (see `design.md` §8).
 
 ## DONE
+- [x] **Backport: corrected Run Scan / List Scan History REST shapes into
+  `scenarios/data-map/scan-azure-sql-and-classify/`** — sixth **follow-up expansion** fragment
+  (Data Map, Data Governance), a correctness fix rather than a new scenario, per the item the
+  `scan-azure-sql-managed-instance-and-classify` build logged: that sibling build independently
+  direct-fetched the canonical Microsoft Learn **Scan Result - Run Scan** and **Scan Result - List
+  Scan History** REST reference pages this scenario's own build could not reach, and found both of
+  this scenario's reconstructed shapes were genuinely wrong, not just unverified. Corrected both:
+  (1) `deploy/New-AzureSqlDataMapScan.ps1`'s `-RunNow` path now sends the confirmed action-style
+  `POST {endpoint}/scan/datasources/{ds}/scans/{scan}:run?runId={guid}&scanLevel={level}&
+  api-version=...` instead of the unconfirmed resource-style `PUT .../runs/{runId}` it previously
+  sent (verb changed from `Put` to `Post`, URI changed to the colon-suffixed action form); (2)
+  `validate/Test-AzureSqlDataMapScan.ps1`'s scan-history check now reads the confirmed nested
+  `discoveryExecutionDetails.statistics.assets.discovered`/`.classified` fields instead of the
+  unconfirmed flat `.assetsDiscovered`/`.assetsClassified` properties it previously read. Updated
+  `design.md` (§5 sequence diagram + prose narrowing the still-open VERIFY to Data Sources/Triggers
+  only), `README.md` (§6 config-reference row, §11 — replaced the three-way Data
+  Sources/Triggers/Run-Scan VERIFY with a RESOLVED entry for the two corrected shapes plus a
+  narrower two-item VERIFY for Data Sources/Triggers alone, §12 added reference 17, footer VERIFY
+  count corrected from three to two), and `reviews.md` (a targeted four-lens follow-up pass on the
+  correction itself — Red Team/Blue Team/CISO/Product Owner all Pass, no Fix/Fail, explicitly
+  noting the Blue Team's original review-round mitigation for the *unconfirmed* shape now becomes a
+  true error-handler rather than a shape-guess mask). No code executed against a live tenant
+  (author-only reference code per `AGENTS.md` §5); both scripts hand-verified line-by-line against
+  the sibling scenario's independently-confirmed shapes rather than executed, since `pwsh` is not
+  available in this build environment. Two narrower VERIFY items remain open on this scenario (Data
+  Sources/Triggers body shapes for the `AzureSqlDatabase` kind; the unrelated custom-scan-rule-set
+  and credential-object REST-creation gaps, unchanged) — not resolved by this fragment and not
+  claimed to be, per `AGENTS.md` §4 — 2026-09-04
 - [x] `scenarios/ediscovery/premium-legal-hold-and-export/deploy/Export-EdiscoveryAuditTrail.ps1`
   — fifth **follow-up expansion** fragment (eDiscovery), closing the item that scenario's `README.md`
   §8/`reviews.md` (Red Team finding 1) tracked from its original build: no independent audit trail

@@ -125,17 +125,27 @@
     full scan.
 
 .NOTES
-    VERIFY before production use (see README.md Section 11 for full detail): the exact REST body
-    shapes for the Data Sources, Triggers, and Scan Result Run Scan endpoints were reconstructed
-    from the confirmed Scans - Create Or Replace endpoint's path pattern and API version, the
-    official @azure-rest/purview-scanning JS SDK type definitions, and the Az.Purview PowerShell
-    module's parameter signatures - not from a direct fetch of each operation's own canonical REST
-    reference page, which returned fetch errors in this build environment. Confirm against a pilot
+    VERIFY before production use (see README.md Section 11 for full detail): the Data Sources and
+    Triggers REST body shapes were reconstructed from the confirmed Scans - Create Or Replace
+    endpoint's path pattern and API version, the official @azure-rest/purview-scanning JS SDK type
+    definitions, and the Az.Purview PowerShell module's parameter signatures - their own canonical
+    REST reference pages returned fetch errors in this build's environment. Confirm against a pilot
     tenant or the OpenAPI spec before relying on this in production.
+
+    CORRECTED (2026-09-04, backported from scenarios/data-map/scan-azure-sql-managed-instance-and-
+    classify/, whose build independently direct-fetched the canonical Scan Result reference pages
+    this scenario's original build could not reach): Scan Result - Run Scan is an action-style
+    `POST {endpoint}/scan/datasources/{ds}/scans/{scan}:run?runId={guid}&scanLevel={level}&
+    api-version=...` (colon-suffixed action, runId as a query parameter) - this script previously
+    sent an unconfirmed resource-style `PUT .../runs/{runId}`, now corrected below. See
+    validate/Test-AzureSqlDataMapScan.ps1 for the matching List Scan History correction.
 
     Sources (Microsoft Learn, verify before production use):
     - Scans - Create Or Replace (API version 2023-09-01, confirmed body schema):
       https://learn.microsoft.com/rest/api/purview/scanningdataplane/scans/create-or-replace
+    - Scan Result - Run Scan (confirmed the POST .../:run?runId=... shape, direct-fetched during the
+      Azure SQL Managed Instance sibling scenario's build):
+      https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-result/run-scan
     - Discover and govern Azure SQL Database (registration, SAMI authentication, T-SQL grants):
       https://learn.microsoft.com/purview/register-scan-azure-sql-database
     - Tutorial: Authenticate for Microsoft Purview data-plane APIs (token acquisition, roles):
@@ -330,13 +340,15 @@ if ($RecurrenceFrequency) {
 # --- Step 4 (optional): run the scan immediately ---
 if ($RunNow) {
     $runId = [guid]::NewGuid().ToString()
-    $runUri = "$endpoint/scan/datasources/$DataSourceName/scans/$ScanName/runs/$runId?api-version=$ApiVersion&scanLevel=$ScanLevel"
+    # Confirmed shape (README.md reference 5): action-style POST with a colon suffix and runId as a
+    # query parameter - NOT a resource-style PUT to .../runs/{runId}. Corrected 2026-09-04; see .NOTES.
+    $runUri = "$endpoint/scan/datasources/$DataSourceName/scans/${ScanName}:run?runId=$runId&scanLevel=$ScanLevel&api-version=$ApiVersion"
     if ($PSCmdlet.ShouldProcess("Scan '$ScanName'", "Start immediate $ScanLevel run (runId $runId)")) {
-        Invoke-RestMethod -Method Put -Uri $runUri -Headers @{ Authorization = "Bearer $token" } | Out-Null
+        Invoke-RestMethod -Method Post -Uri $runUri -Headers @{ Authorization = "Bearer $token" } | Out-Null
         Write-Host "Scan run started (runId: $runId). Poll validate/Test-AzureSqlDataMapScan.ps1 for status - a first full scan of a nontrivial database can take from minutes to hours." -ForegroundColor Cyan
     }
     else {
-        Write-Verbose "WhatIf: would PUT $runUri to start an immediate $ScanLevel run."
+        Write-Verbose "WhatIf: would POST $runUri to start an immediate $ScanLevel run."
     }
 }
 

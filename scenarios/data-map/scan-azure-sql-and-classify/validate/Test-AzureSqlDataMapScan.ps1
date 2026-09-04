@@ -44,6 +44,17 @@
 .EXAMPLE
     ./Test-AzureSqlDataMapScan.ps1 -PurviewAccountName 'contoso-purview' -TenantId $TenantId `
         -AppId $AppId -ClientSecret $ClientSecret -DataSourceName 'sql-contoso-prod-customerdb'
+
+.NOTES
+    CORRECTED (2026-09-04, backported from scenarios/data-map/scan-azure-sql-managed-instance-and-
+    classify/, whose build independently direct-fetched the canonical Scan Result - List Scan
+    History REST reference page this scenario's original build could not reach): each run record's
+    asset counts are nested at `discoveryExecutionDetails.statistics.assets.discovered`/`.classified`
+    - this script previously read unconfirmed flat `.assetsDiscovered`/`.assetsClassified`
+    properties, now corrected below.
+
+    Source: Scan Result - List Scan History (confirmed the nested discoveryExecutionDetails.statistics
+    shape): https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-result/list-scan-history
 #>
 [CmdletBinding()]
 param(
@@ -177,7 +188,11 @@ if ($scan) {
         if ($latestRun) {
             Test-Check -Description "Most recent scan run status is Succeeded (last run: $($latestRun.startTime), status: $($latestRun.status))" `
                 -Condition ($latestRun.status -eq 'Succeeded') -Warn
-            Write-Host "    Assets discovered: $($latestRun.assetsDiscovered)  |  Assets classified: $($latestRun.assetsClassified)" -ForegroundColor Cyan
+            # Confirmed shape (README.md reference, corrected 2026-09-04 - see .NOTES): nested under
+            # discoveryExecutionDetails.statistics.assets, not flat .assetsDiscovered/.assetsClassified.
+            $discovered = $latestRun.discoveryExecutionDetails.statistics.assets.discovered
+            $classified = $latestRun.discoveryExecutionDetails.statistics.assets.classified
+            Write-Host "    Assets discovered: $discovered  |  Assets classified: $classified" -ForegroundColor Cyan
         }
         else {
             Test-Check -Description "At least one scan run has completed (none found - run New-AzureSqlDataMapScan.ps1 with -RunNow, or wait for the recurring trigger)" `
@@ -185,7 +200,7 @@ if ($scan) {
         }
     }
     catch {
-        Write-Host "  [WARN] Could not retrieve scan run history - the exact list-history endpoint shape is unconfirmed for this build (see README.md Section 11 VERIFY). Check scan run status manually in the Purview portal (Data Map > Data sources > $DataSourceName > Recent scans)." -ForegroundColor Yellow
+        Write-Host "  [WARN] Could not retrieve scan run history. Check scan run status manually in the Purview portal (Data Map > Data sources > $DataSourceName > Recent scans)." -ForegroundColor Yellow
     }
 }
 
