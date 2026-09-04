@@ -1,0 +1,40 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Every field below is a portal-only configuration step (README.md Section 5, design.md Section 5) - no script in this scenario's deploy/ folder reads or applies this file. It is a structured, versioned source of truth for the person completing the portal steps, so the deployed configuration can be diffed against intent during review. Only deploy/New-PciElevatedRiskTeamsBlock.ps1 (the DLP rule) is scripted.",
+  "communicationComplianceIndicator": {
+    "path": "Purview portal > Insider Risk Management > Settings > Policy indicators > Communication Compliance indicators (preview) > Detect messages matching specific trainable classifiers (preview) > Create policy",
+    "sitsToSelect": ["Credit Card Number"],
+    "note": "This is the ONLY documented path that extends Insider Risk Management coverage to Microsoft Teams messages for this scenario. The 'Data loss prevention (DLP) alerts' indicator explicitly does NOT support Microsoft Teams as a workload - see design.md Section 3. Enabling this creates or resumes a Communication Compliance policy named 'Insider risk SIT indicator <timestamp>' that monitors Exchange Online, Microsoft Teams, Microsoft Viva Engage, and Microsoft 365 Copilot/Copilot Chat for the selected SITs.",
+    "coversTeams": true,
+    "sourceCaveat": "This indicator is still per-message SIT pattern matching under the hood - it has the SAME split-content blind spot as Part 1's own DLP rule for a truly, perfectly split PAN. Its value here is as one more input to Cumulative Exfiltration Detection (below), not as a content-correlation fix."
+  },
+  "feederInsiderRiskPolicy": {
+    "name": "IRM-PCI-Card-Data-Drip-Exfiltration (buyer names as appropriate)",
+    "template": "Data leaks",
+    "scope": "Same user population as scenarios/dlp/pci-teams-exfil-block (Card Operations, Finance, and/or all users depending on tenant sizing) - not limited to departing users, unlike scenarios/insider-risk/departing-employee-data-theft",
+    "triggeringEvent": "User performs an exfiltration activity (built-in Office exfiltration indicators) - NOT a DLP-policy-match trigger, because the DLP-alert trigger only supports Exchange Online/SharePoint Online/OneDrive for Business workloads and would silently exclude Teams (design.md Section 6)",
+    "policyIndicators": [
+      "Communication Compliance indicator: Credit Card Number SIT detected in a message",
+      "Built-in Office exfiltration indicators (defaults) - e.g. sending email with attachments to recipients outside the organization, downloading content from Teams/SharePoint/OneDrive"
+    ],
+    "cumulativeExfiltrationDetection": "ON (default for the Data leaks template) - the specific ML-based feature Microsoft documents for detecting exfiltration activity that 'exceed[s] the normal amount performed by users in your organization... over multiple exfiltration activity types', including gradual/slow-drip patterns",
+    "sequenceDetection": "Enabled with default sequences - optional, not the primary mechanism this fragment relies on",
+    "priorityContent": "Sensitive information types: Credit Card Number (increases risk score for any activity involving it)",
+    "evaluationCadence": "Cumulative exfiltration detection is evaluated ~daily, not real-time - see README.md Section 11"
+  },
+  "adaptiveProtectionScope": {
+    "action": "Add the new IRM-PCI-Card-Data-Drip-Exfiltration policy to Adaptive Protection's feeder-policy scope, in addition to (not instead of) any existing feeder policy such as scenarios/insider-risk/departing-employee-data-theft",
+    "path": "Purview portal > Insider Risk Management > Adaptive protection > Insider risk levels",
+    "note": "Insider risk levels are tenant-wide, computed from every feeder policy in scope - see scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/README.md Section 11, an already-documented constraint this fragment inherits rather than re-derives."
+  },
+  "dlpRule": {
+    "name": "PCI-ElevatedRisk-Block-AllExternal",
+    "deployedBy": "deploy/New-PciElevatedRiskTeamsBlock.ps1",
+    "addedToPolicy": "PCI DSS - Teams Card Data Exfiltration Block (scenarios/dlp/pci-teams-exfil-block)",
+    "priority": 0,
+    "condition": "SharedByIRMUserRisk = Elevated AND AccessScope = NotInOrganization (no content/SIT condition)",
+    "action": "Block, no override (even for Card Ops group members)"
+  },
+  "residualGap": "This configuration does NOT detect or block the first message of a perfectly-executed split-PAN attempt - no Microsoft capability performs cross-message content reconstruction as of this writing. See README.md Section 11 and design.md Section 1.",
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-04"
+}

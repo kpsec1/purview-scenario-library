@@ -118,11 +118,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   of only delete-one-source/delete-everything.
 
 ### Follow-ups discovered while building the DLP template scenario
-- [ ] `scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/` (or fold into Adaptive
-  Protection) — cross-message/behavioral correlation to close the split-PAN evasion gap flagged
-  in `reviews.md` (Red Team) for the Teams template scenario; depends on
-  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` or
-  `scenarios/insider-risk/departing-employee-data-theft/` landing first.
+- [x] `scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/` — **built** (see DONE
+  below): a behavioral compensating control (not a full fix — no Microsoft capability performs
+  cross-message content reconstruction) for the split-PAN evasion gap flagged in `reviews.md`
+  (Red Team) for the Teams template scenario. Wires a dedicated Insider Risk Management "Data
+  leaks" policy + the Communication Compliance SIT-in-messages indicator (the *only* documented
+  path that extends IRM coverage to Microsoft Teams — Teams DLP alerts are explicitly excluded
+  from IRM's own DLP-alerts trigger, confirmed during this build's grounding pass) + Cumulative
+  Exfiltration Detection into Adaptive Protection, which drives a new priority-0
+  `-SharedByIRMUserRisk` rule added to Part 1's own named DLP policy that hard-blocks all further
+  external Teams sharing from an Elevated-risk sender, no override. Explicitly documented residual
+  gap: zero detectable signal against a maximally disciplined single-digit-per-message attacker
+  who generates no other exfiltration-type activity — see that scenario's `README.md` §11.
 - [ ] `scenarios/compliance-manager/pci-dss-assessment/` — Compliance Manager PCI DSS v4.0
   premium-template assessment scenario referenced from `scenarios/dlp/pci-teams-exfil-block/README.md`
   §2 as the assessment-side companion to this technical control.
@@ -626,7 +633,58 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (a Key Vault-backed SQL credential object, the same open portal-only credential-object gap both
   sibling Data Map scenarios already carry).
 
+### Follow-ups discovered while building the PCI Teams Part 2 (drip-exfiltration) scenario
+- [ ] VERIFY (pilot tenant): run the full end-to-end composition this fragment designs but does
+  not independently confirm against a live tenant — Communication Compliance SIT indicator →
+  feeder IRM "Data leaks" policy → Cumulative Exfiltration Detection → Adaptive Protection →
+  `PCI-ElevatedRisk-Block-AllExternal` rule — per `design.md` §6b. Every individual piece is
+  grounded; the combination as a working end-to-end chain is not yet pilot-confirmed.
+- [ ] Once Microsoft documents a faster-than-daily Cumulative Exfiltration Detection evaluation
+  cadence, or a lower-latency Adaptive Protection propagation path, revisit the "one to two days"
+  exposure-window estimate in `pci-teams-exfil-block-part2-obfuscation-mitigation/README.md` §11
+  and its KPI in §8.
+- [ ] Consider generalizing this fragment's pattern — a new, narrowly-scoped
+  `-SharedByIRMUserRisk` rule added directly to a scenario's *own* named DLP policy (rather than
+  routing through `dynamic-risk-dlp-enforcement`'s general-purpose Exchange+Teams policy) — as a
+  reusable template for other content-pattern-based DLP scenarios in this library that want an
+  Adaptive-Protection behavioral compensating control for the same per-message blind spot (e.g. a
+  future Communication Compliance or DSPM-for-AI scenario facing the same split-content evasion
+  shape).
+- [ ] `scenarios/communication-compliance/` — the Communication Compliance policy this fragment's
+  Step 2 creates via the Insider Risk Management "Create policy" shortcut is a real, named
+  Communication Compliance policy (auto-named `Insider risk SIT indicator <timestamp>`) that
+  currently has no dedicated audit-trail/export script pointed at it, unlike
+  `scenarios/communication-compliance/harassment-and-code-of-conduct/deploy/
+  Export-CommunicationComplianceAuditTrail.ps1`. Consider whether that existing script generalizes
+  to cover this auto-created policy too, once a buyer actually deploys this fragment.
+
 ## DONE
+- [x] **`scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/`** — behavioral
+  compensating control for the split/obfuscated-PAN evasion gap `pci-teams-exfil-block/reviews.md`
+  (Red Team) flagged and deliberately left open. Grounding pass found and had to design around a
+  material constraint: Microsoft Teams DLP policy matches are explicitly **not** a supported
+  workload for Insider Risk Management's "High Severity DLP Alert" indicator ("This is by
+  design" — only Exchange Online/SharePoint Online/OneDrive for Business are supported), so the
+  originally-assumed "wire the Teams DLP rule as an IRM trigger" approach was discarded once
+  confirmed and rebuilt around the one path that *does* cover Teams: the Communication Compliance
+  "detect messages matching SITs" indicator integration (Credit Card Number), feeding a dedicated
+  IRM "Data leaks" policy with Cumulative Exfiltration Detection enabled, driving Adaptive
+  Protection's already-grounded `-SharedByIRMUserRisk` condition on a new priority-0 rule added to
+  Part 1's own named DLP policy — hard-blocks all further external Teams sharing from an
+  Elevated-risk sender, no override even for Card Ops members. Ships `README.md`, `design.md`,
+  `deploy/New-PciElevatedRiskTeamsBlock.ps1` (idempotent, dry-run, explicitly re-prioritizes Part
+  1's three rules rather than relying on undocumented auto-shift behavior),
+  `deploy/Remove-PciElevatedRiskTeamsBlock.ps1`, `deploy/policy/
+  irm-drip-exfiltration-config-manifest.json` (portal-only prerequisite checklist),
+  `validate/Test-PciElevatedRiskTeamsBlock.ps1`, `rollback.md`, `reviews.md`. Four-lens review
+  surfaced and resolved three real findings: (1) explicitly documented the control's actual
+  bound — zero detectable signal against a maximally disciplined single-digit-per-message
+  attacker who generates no other exfiltration-type activity; (2) flagged that Elevated risk (and
+  this rule's block) can be reached from activity unrelated to card data, strengthening the
+  incident-response runbook to confirm the actual triggering indicator; (3) added an explicit
+  VERIFY that no single Microsoft-published example validates this exact end-to-end composition,
+  even though every individual piece is independently grounded. Commit: (recorded on push, see
+  next commit).
 - [x] **`scenarios/ediscovery/roster-to-hold-locations/`** — thirteenth full scenario fragment
   (eDiscovery), closing the hand-off `teams-group-hold-resolution/design.md` §7 explicitly deferred:
   "Once a human uses `-ResolveMembers`'s roster output to decide individual members also need
