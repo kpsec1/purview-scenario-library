@@ -191,3 +191,27 @@ as the specific documented error condition to watch for. This is a correctness/p
 to already-disclosed content, not a new capability or a new risk surface — no lens found a gap this
 change introduces. The underlying VERIFY (which limit, if either, governs this scenario's own
 REST-driven `userSources` path) remains open pending pilot-tenant confirmation, per `AGENTS.md` §4.
+
+---
+
+## Follow-up round — 2026-09-04: re-checking `enablePolicy`/`disablePolicy` beta-to-v1.0 promotion
+
+**Trigger:** a `PROGRESS.md` follow-up item asking to periodically re-check whether
+`ediscoveryHoldPolicy: enablePolicy`/`disablePolicy` — beta-only as of this scenario's original
+build (`design.md` §4) — have since been promoted to v1.0, which would let
+`Remove-EdiscoveryLocationHold.ps1` gain a reversible "pause" rollback stage instead of only
+delete-one-source/delete-everything.
+
+**🔴 Red Team / 🔵 Blue Team / 🎩 CISO / 🟦 Microsoft Product Owner — all Pass, no Fix/Fail.**
+Two independent, freshly re-fetched sources confirm no promotion has occurred: (1) the v1.0
+`ediscoveryHoldPolicy` resource page's own method table still lists no enable/disable action; (2)
+a targeted search for `ediscoveryHoldPolicy enablePolicy disablePolicy v1.0` returns exclusively
+`?view=graph-rest-beta` result pages, each carrying the standard beta-instability banner. A third
+check went further than the original VERIFY strictly required — re-confirming the v1.0 Update
+operation's documented property set (`contentQuery`/`description` only) to rule out `isEnabled`
+being PATCH-settable as an undocumented workaround. It isn't. No lens found anything to fix:
+the scenario's existing disclosure (`README.md` §9/§11, `design.md` §4) was already correct and
+required no correction, only a re-verification timestamp and the two new supporting citations
+(`design.md` R9/R9b). No code changed — there is still no v1.0 path to a reversible pause. Re-open
+this item again only if a future grounding pass finds either action listed under
+`?view=graph-rest-1.0`.

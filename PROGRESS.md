@@ -111,11 +111,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the selected members' mailbox addresses as new `userSources[]` entries in a
   `location-hold-definition.json`-shaped file, with an optional `-AddToHold` stage that reconciles
   them directly onto a live hold policy.
-- [ ] Re-check whether `ediscoveryHoldPolicy: enablePolicy`/`disablePolicy` have been promoted from
-  beta to v1.0 — as of this build they exist only in `/beta` (`location-scoped-legal-hold/
-  design.md` §4), which is why that scenario's `Remove-EdiscoveryLocationHold.ps1` has no
-  reversible "pause" stage. If promoted, add a reversible disable/re-enable rollback stage instead
-  of only delete-one-source/delete-everything.
+- [x] Re-check whether `ediscoveryHoldPolicy: enablePolicy`/`disablePolicy` have been promoted from
+  beta to v1.0 — **re-verified, not promoted** (see DONE below). Re-open this item again in a future
+  pass if Microsoft ever lists either action under `?view=graph-rest-1.0`.
 
 ### Follow-ups discovered while building the DLP template scenario
 - [x] `scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/` — **built** (see DONE
@@ -659,6 +657,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   to cover this auto-created policy too, once a buyer actually deploys this fragment.
 
 ## DONE
+- [x] **Re-check `ediscoveryHoldPolicy: enablePolicy`/`disablePolicy` beta-to-v1.0 promotion status
+  (`scenarios/ediscovery/location-scoped-legal-hold/`)** — a correctness re-verification fragment,
+  not a new scenario, closing the periodic-recheck item logged when this scenario was originally
+  built: as of that build, `enablePolicy`/`disablePolicy` existed only in the Graph `/beta`
+  namespace, which is why `Remove-EdiscoveryLocationHold.ps1` has no reversible "pause" rollback
+  stage (only delete-one-source or delete-the-whole-policy). Re-grounded via the Microsoft Learn
+  MCP tool (available this run, contrary to this run's own initial assumption): a fresh direct
+  fetch of the v1.0 `ediscoveryHoldPolicy` resource page's method table still lists no enable/
+  disable action (List/Create/Get/Update/Delete/`retryPolicy`/site sources/user sources only); a
+  search for `ediscoveryHoldPolicy enablePolicy disablePolicy v1.0` returns only
+  `?view=graph-rest-beta` pages, each still carrying the standard beta-instability banner; the v1.0
+  Update operation's documented property set is still `contentQuery`/`description` only, ruling out
+  a PATCH-based `isEnabled` workaround as an alternate v1.0 path. **No promotion has occurred** —
+  the scenario's existing "no reversible pause on v1.0" disclosure was already correct and required
+  no functional/code correction, only a re-verification timestamp and two new supporting citations.
+  Updated `design.md` §4 (re-verification paragraph + new reference R9b), `README.md` §11/§12
+  (re-verified-2026-09-04 callouts), and `reviews.md` (a short follow-up four-lens round — all four
+  lenses Pass, no Fix/Fail, consistent with this library's established pattern for a confirmation
+  that changes no capability or risk surface). No code changed: there is still no v1.0 path to a
+  reversible on/off toggle, so `Remove-EdiscoveryLocationHold.ps1`'s two-stage (delete-source /
+  delete-policy) rollback design stands unmodified. Re-open this item again only if a future pass
+  finds either action listed under `?view=graph-rest-1.0`. Commit: `<pending>`. Date: 2026-09-04.
 - [x] **`scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/`** — behavioral
   compensating control for the split/obfuscated-PAN evasion gap `pci-teams-exfil-block/reviews.md`
   (Red Team) flagged and deliberately left open. Grounding pass found and had to design around a

@@ -218,10 +218,12 @@ every mailbox it expands to at hold time needs the qualifying entitlement.
 ## 11. Known limitations & gotchas
 
 - **No v1.0 "turn off and keep for later."** `enablePolicy`/`disablePolicy` exist only in the
-  beta Graph namespace (`design.md` §4). This scenario's `Remove-EdiscoveryLocationHold.ps1` can
-  only release individual locations or delete the whole policy — both are Microsoft-documented as
-  potentially causing **permanent deletion of content currently being preserved**, not a
-  reversible pause.
+  beta Graph namespace (`design.md` §4) — **re-verified 2026-09-04, still beta-only**; no
+  promotion has occurred, and the v1.0 Update operation still exposes only `contentQuery`/
+  `description` (`isEnabled` is not PATCH-settable either). This scenario's
+  `Remove-EdiscoveryLocationHold.ps1` can only release individual locations or delete the whole
+  policy — both are Microsoft-documented as potentially causing **permanent deletion of content
+  currently being preserved**, not a reversible pause.
 - **VERIFY (pilot tenant, before pointing this at a distribution list you haven't already
   tested):** whether a distribution list's own SMTP address is accepted as a `userSource.email`
   value on the v1.0 `ediscoveryHoldPolicy` endpoint and expanded server-side to member mailboxes.
@@ -284,7 +286,7 @@ every mailbox it expands to at hold time needs the qualifying entitlement.
 12. Create siteSource (v1.0, `ediscoveryHoldPolicy` context) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-post-sitesources?view=graph-rest-1.0>
 13. Delete userSource / Delete siteSource (v1.0, `ediscoveryHoldPolicy` context) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-delete-usersources?view=graph-rest-1.0>, <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-delete-sitesources?view=graph-rest-1.0>
 14. ediscoveryHoldPolicy: retryPolicy (v1.0) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-retrypolicy?view=graph-rest-1.0>
-15. ediscoveryHoldPolicy: enablePolicy / disablePolicy (beta only) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-enablepolicy?view=graph-rest-beta>, <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-disablepolicy?view=graph-rest-beta>
+15. ediscoveryHoldPolicy: enablePolicy / disablePolicy (beta only; re-verified still beta-only 2026-09-04) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-enablepolicy?view=graph-rest-beta>, <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-disablepolicy?view=graph-rest-beta>
 16. Create legalHold userSource (beta, custodian/legalHold context — group-mailbox email support) — <https://learn.microsoft.com/graph/api/ediscovery-legalhold-post-usersources?view=graph-rest-beta>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing deployment —

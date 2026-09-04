@@ -112,6 +112,22 @@ the beta action anyway — a customer who genuinely needs a reversible on/off to
 policy should be told that capability is beta-only today, not sold a v1.0 automation that quietly
 depends on it.
 
+**Re-verified 2026-09-04, promotion status unchanged.** A `PROGRESS.md` follow-up asked to
+periodically re-check whether `enablePolicy`/`disablePolicy` have since been promoted to v1.0. A
+fresh direct fetch of the v1.0 `ediscoveryHoldPolicy` resource page's method table
+[[R9]](#references-design) still lists only List/Create/Get/Update/Delete/`retryPolicy`/site
+sources/user sources — no enable or disable action. A follow-up search for
+`ediscoveryHoldPolicy enablePolicy disablePolicy v1.0` returns exclusively
+`?view=graph-rest-beta`-namespaced result pages, each still carrying the standard "APIs under the
+`/beta` version ... are subject to change" banner. The v1.0 Update reference
+[[R9b]](#references-design) was also re-checked as the one remaining candidate workaround (a PATCH
+that sets `isEnabled` directly instead of calling a dedicated action) — its documented updatable
+property set is still exactly `contentQuery`/`description` only; `isEnabled` is not
+PATCH-settable on v1.0 either. No promotion has occurred and no alternate v1.0 path to a
+reversible pause exists. This finding was already correctly disclosed before this re-check
+(`README.md` §9/§11, this section, above) and required no correction — recorded here, and in
+`reviews.md`, as a closed re-verification rather than a new architectural finding.
+
 ## 5. Idempotency design
 
 | Object | Lookup key | Why this key |
@@ -183,7 +199,8 @@ than conclusive.
 - R6. Manage holds in eDiscovery — "Turn off a hold policy" / "Turn on a hold policy" (portal actions, independent of delete) — <https://learn.microsoft.com/purview/edisc-hold-manage#turn-off-a-hold-policy>
 - R7. ediscoveryHoldPolicy: enablePolicy (beta only) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-enablepolicy?view=graph-rest-beta>
 - R8. ediscoveryHoldPolicy: disablePolicy (beta only) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-disablepolicy?view=graph-rest-beta>
-- R9. ediscoveryHoldPolicy resource type (v1.0 — documented method list has no enable/disable action) — <https://learn.microsoft.com/graph/api/resources/security-ediscoveryholdpolicy?view=graph-rest-1.0>
+- R9. ediscoveryHoldPolicy resource type (v1.0 — documented method list has no enable/disable action; re-fetched 2026-09-04, unchanged) — <https://learn.microsoft.com/graph/api/resources/security-ediscoveryholdpolicy?view=graph-rest-1.0>
+- R9b. Update ediscoveryHoldPolicy (v1.0 — updatable properties are `contentQuery`/`description` only; `isEnabled` is not PATCH-settable; re-checked 2026-09-04) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-update?view=graph-rest-1.0>
 - R10. Manage holds in eDiscovery — "Place a hold on Microsoft Teams and Microsoft 365 groups" (`Get-UnifiedGroup`/`Get-UnifiedGroupLinks`) — <https://learn.microsoft.com/purview/edisc-hold-manage#place-a-hold-on-microsoft-teams-and-microsoft-365-groups>
 - R11. Manage holds in eDiscovery — "Edit a hold policy" (data sources, condition filters, KeyQL filters as separate, richer portal concepts) — <https://learn.microsoft.com/purview/edisc-hold-manage#edit-a-hold-policy>
 - R12. Create holds in eDiscovery — "Create a hold" (portal data-source picker: distribution list expansion "limited to a maximum of 100 members," applies to every supported group type; current page, re-fetched 2026-09-04) — <https://learn.microsoft.com/purview/edisc-hold-create#create-a-hold>
