@@ -1,0 +1,58 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Compliance Manager has no documented REST, Graph, or PowerShell write API for assessment creation, control mapping, or improvement-action status/evidence updates as of this writing (docs/automation-surface.md has no routing-table row for Compliance Manager; see design.md Section 2 - identical grounding to scenarios/compliance-manager/assess-against-iso27001/). No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal wizard in README.md Section 5, so the deployed assessment can be diffed against intent during review instead of relying on institutional memory of what was clicked.",
+  "regulation": "PCI DSS v4.0",
+  "regulationTier": "Premium template - counts against the tenant's purchased or A5/E5/G5 3-free-premium-template allotment. See README.md Section 3.",
+  "regulationVersionNote": "Compliance Manager's regulation catalog lists TWO separate PCI DSS premium templates: 'PCI DSS v3.2.1' and 'PCI DSS v4.0'. PCI DSS v3.2.1 was retired industry-wide by the PCI Security Standards Council; v4.0 (and its v4.0.1 revision) is the current mandatory standard. Select 'PCI DSS v4.0' only - do not consume a second premium-template slot on the retired v3.2.1 template. See README.md Section 11.",
+  "assessmentName": "PCI DSS v4.0 - Microsoft 365 Estate",
+  "assessmentNameNote": "Assessment names must be unique tenant-wide (Microsoft Learn: compliance-manager-assessments). Cannot be changed after creation without deleting and recreating.",
+  "group": {
+    "strategy": "joinExistingIfPresent",
+    "name": "Security & Compliance Assessments",
+    "note": "If scenarios/compliance-manager/assess-against-iso27001/ (or any other Compliance Manager assessment) is already deployed in this tenant using this same group name, ADD this PCI DSS assessment to that existing group rather than creating a new one. If this is the tenant's first Compliance Manager assessment, create a new group with this name so future assessments join it. See design.md Section 6 for exactly what group membership does and does not buy you - the benefit is narrower than 'shared credit for every control.'",
+    "groupingRule": "Microsoft documents that a group can contain multiple assessments for the SAME product only if each one is for a DIFFERENT regulation (compliance-manager-assessments, 'Groups for assessments') - PCI DSS v4.0 + ISO/IEC 27001:2013 in one group is an explicitly supported combination, not an edge case."
+  },
+  "servicesInScope": [
+    "Microsoft 365"
+  ],
+  "servicesInScopeNote": "Multicloud (AWS/GCP/Azure via Defender for Cloud) scoping is out of scope for this scenario, matching scenarios/compliance-manager/assess-against-iso27001/design.md Section 7's identical non-goal and this library's tenant-only scope (AGENTS.md Section 5).",
+  "roleAssignments": {
+    "note": "Identical role model to every other Compliance Manager assessment in this library - assign the narrowest role that does the job. See README.md Section 3.",
+    "recommendedStarter": [
+      { "role": "Compliance Manager Administration", "assignTo": "The person creating and owning this assessment (1-2 people, not the whole security team)" },
+      { "role": "Compliance Manager Assessor", "assignTo": "Control owners across IT/Security/Legal/Finance (PCI scope commonly spans all four) who will test and update improvement actions but should not create new assessments" },
+      { "role": "Compliance Manager Reader", "assignTo": "Internal auditors, the QSA/ISA if one has been engaged, and leadership who need visibility without edit rights" }
+    ]
+  },
+  "recommendedDeploymentOrder": [
+    "scenarios/dlp/pci-teams-exfil-block/ (PAN over Teams/chat - PCI DSS Requirement 4)",
+    "scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/ (closes the split-PAN drip-exfiltration gap - also Requirement 4)",
+    "scenarios/information-protection/auto-label-confidential-sharepoint/ (labels/encrypts stored cardholder-data documents - Requirement 3)",
+    "scenarios/dlp/endpoint-dlp-usb-block/ (blocks cardholder data leaving on removable media - Requirement 9)",
+    "scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/ (risk-based access enforcement - Requirement 7)",
+    "scenarios/insider-risk/departing-employee-data-theft/ (personnel/insider-threat monitoring - Requirement 12)",
+    "scenarios/audit/premium-audit-investigation/ (log review and investigation capability - Requirement 10)",
+    "THEN create this assessment - built-in automation (design.md Section 4) picks up signals from controls already in place, reducing the manual-testing backlog a Contributor/Assessor faces on day one."
+  ],
+  "controlCrosswalk": {
+    "_comment": "This is THIS LIBRARY'S OWN correlation of its scenarios to PCI DSS v4.0's 6 control goals - it is NOT a reproduction of Microsoft's proprietary per-improvement-action automation mapping (which isn't published in a form this scenario can fetch and cite - see design.md Section 4, same constraint scenarios/compliance-manager/assess-against-iso27001/design.md Section 6 documents for ISO 27001). Use it to decide deployment order and to brief a QSA/ISA on what this tenant's Microsoft 365 controls contribute - do not present it to an assessor as Microsoft's own control mapping.",
+    "goals": [
+      { "goal": 1, "title": "Build and Maintain a Secure Network and Systems", "requirements": "1-2", "coverage": "Out of scope for this Microsoft 365/Purview-only library - network segmentation and secure configuration are an Azure network security / Defender for Cloud concern. See the Azure Policy PCI DSS v4.0 built-in initiative (README.md Section 12) for that surface." },
+      { "goal": 2, "title": "Protect Account Data", "requirements": "3-4", "coverage": "scenarios/dlp/pci-teams-exfil-block/, .../pci-teams-exfil-block-part2-obfuscation-mitigation/ (Req 4 - PAN in transit over messaging), scenarios/information-protection/auto-label-confidential-sharepoint/ (Req 3 - PAN at rest)" },
+      { "goal": 3, "title": "Maintain a Vulnerability Management Program", "requirements": "5-6", "coverage": "Out of scope - anti-malware and secure software development are a Defender for Endpoint / Defender for Cloud concern, not a Purview one." },
+      { "goal": 4, "title": "Implement Strong Access Control Measures", "requirements": "7-9", "coverage": "scenarios/dlp/endpoint-dlp-usb-block/ (Req 9 - removable media), scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/ (Req 7 - risk-based access restriction). Req 8 (identify/authenticate access) is an Entra ID concern - see docs/rbac-model.md." },
+      { "goal": 5, "title": "Regularly Monitor and Test Networks", "requirements": "10-11", "coverage": "scenarios/audit/premium-audit-investigation/ (Req 10 - logging/log review). Req 11 (penetration testing/vulnerability scanning) is out of scope for this library." },
+      { "goal": 6, "title": "Maintain an Information Security Policy", "requirements": "12", "coverage": "scenarios/insider-risk/departing-employee-data-theft/ (personnel security), this assessment itself (Req 12.4 - formally managing PCI DSS compliance as an ongoing program)." }
+    ]
+  },
+  "auditMonitoring": {
+    "operations": [
+      "ComplianceManagerRolesChange",
+      "ComplianceManagerAutomationLevelChange",
+      "ComplianceManagerAutomationChange"
+    ],
+    "note": "These 3 operations are TENANT-WIDE Compliance Manager events, not scoped to a single assessment. This scenario deliberately REUSES scenarios/compliance-manager/assess-against-iso27001/deploy/Export-ComplianceManagerAuditTrail.ps1 and its validate/ counterpart rather than shipping a second, functionally-identical copy - run ONE instance against a shared CSV path if both scenarios are deployed in the same tenant. See design.md Section 2 and README.md Section 5."
+  },
+  "notAValidPciDssSubmission": "A Compliance Manager assessment - however complete - is an internal tracking and evidence tool. It is NOT a PCI DSS Self-Assessment Questionnaire (SAQ) and NOT a QSA-conducted Report on Compliance (RoC); it does not itself satisfy an acquirer's or card network's PCI DSS validation requirement. See README.md Section 2/Section 11.",
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-04"
+}

@@ -128,9 +128,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   external Teams sharing from an Elevated-risk sender, no override. Explicitly documented residual
   gap: zero detectable signal against a maximally disciplined single-digit-per-message attacker
   who generates no other exfiltration-type activity — see that scenario's `README.md` §11.
-- [ ] `scenarios/compliance-manager/pci-dss-assessment/` — Compliance Manager PCI DSS v4.0
-  premium-template assessment scenario referenced from `scenarios/dlp/pci-teams-exfil-block/README.md`
-  §2 as the assessment-side companion to this technical control.
+- [x] `scenarios/compliance-manager/pci-dss-assessment/` — **built** (see DONE below): Compliance
+  Manager PCI DSS v4.0 premium-template assessment scenario referenced from
+  `scenarios/dlp/pci-teams-exfil-block/README.md` §2 as the assessment-side companion to this
+  technical control (that README updated in place to point at the real path instead of "planned").
 
 ### Follow-ups discovered while building the Endpoint DLP USB-block scenario
 - [ ] `scenarios/dlp/removable-usb-device-groups-allowlist/` (or fold into a future Endpoint DLP
@@ -444,15 +445,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   on it for correctness — the script's real de-duplication key hashes the full raw payload instead.
   Confirming the actual shape would let a future revision surface richer, grounded columns (e.g.
   which specific improvement action or role was changed) instead of the current opaque JSON blob.
-- [ ] Re-check whether Compliance Manager has added an ISO/IEC 27001:2022 premium template (the
-  version organizations now actually certify against) — only the :2013 template was found during
-  this build's grounding pass (`assess-against-iso27001/README.md` §11, tagged VERIFY). If a :2022
-  template exists, add a sibling scenario or update this one rather than leaving :2013 as the only
-  documented path.
-- [ ] `scenarios/compliance-manager/pci-dss-assessment/` (already tracked above, under the DLP
-  PCI Teams follow-ups) — once built, cross-link it into `assess-against-iso27001`'s manifest
-  `recommendedDeploymentOrder`/group-sharing guidance as a sibling assessment in the same
-  `Security & Compliance Assessments` group.
+- [ ] **ISO/IEC 27001:2022 premium template is now confirmed to exist** — found while grounding the
+  `pci-dss-assessment` sibling scenario: Compliance Manager's current `compliance-manager-
+  regulations-list` premium-regulations catalog lists both "ISO/IEC 27001:2013" and "ISO/IEC
+  27001:2022" as separate templates (2022 is the edition organizations now actually certify
+  against). `assess-against-iso27001/README.md` §11's original VERIFY ("only :2013 was found") is
+  now out of date. Update that scenario's `README.md`/`design.md` to acknowledge the :2022 template
+  exists and either switch the recommended template to it or explicitly justify staying on :2013 —
+  not done in this turn to keep this fragment scoped to `pci-dss-assessment` alone.
+- [x] `scenarios/compliance-manager/pci-dss-assessment/` (already tracked above, under the DLP
+  PCI Teams follow-ups) — **built** (see DONE below), and cross-linked back into
+  `assess-against-iso27001`'s manifest as a sibling assessment in the same `Security & Compliance
+  Assessments` group. That manifest's group note was also corrected in place: Microsoft's group
+  behavior only shares **nontechnical** improvement actions within a group — technical actions
+  already sync tenant-wide regardless of group — a distinction the original note didn't draw.
 - [ ] Once Compliance Manager's **Export actions** Excel file has been inspected against a real
   tenant, ground the "Action Update" tab's exact column schema and revisit the non-goal recorded in
   `assess-against-iso27001/design.md` §7 — a schema-accurate generator script would be a genuine,
@@ -656,7 +662,63 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Export-CommunicationComplianceAuditTrail.ps1`. Consider whether that existing script generalizes
   to cover this auto-created policy too, once a buyer actually deploys this fragment.
 
+### Follow-ups discovered while building the Compliance Manager PCI DSS v4.0 assessment scenario
+- [ ] Update `scenarios/compliance-manager/assess-against-iso27001/` for the now-confirmed
+  ISO/IEC 27001:2022 premium template (tracked above, under the ISO 27001 assessment follow-ups) —
+  deliberately not done in this turn to keep this fragment scoped to `pci-dss-assessment` alone.
+- [ ] VERIFY (pilot tenant): the PCI DSS Requirement 12.4 formal-compliance-program review-cadence
+  obligation was deliberately left unspecified/parameterized rather than hard-coded in this
+  scenario's tooling (no specific interval is asserted) — see `pci-dss-assessment/README.md` §8/§11.
+  If a future build needs a concrete default cadence for a specific merchant/service-provider level,
+  ground it against the official PCI DSS v4.0.1 standard (not this library's own inference) before
+  adding it.
+- [ ] VERIFY (pilot tenant): the technical-vs-nontechnical improvement-action group-sharing
+  distinction this scenario's `design.md` §6 documents (grounded from Microsoft's
+  `compliance-manager-assessments` "Groups for assessments" reference) is stated correctly, but the
+  scenario's own "Group-sharing functional test" (`README.md` §7 item 4) has not been run against a
+  live tenant during this build. Confirm before telling a customer the group-placement decision is
+  paying off in practice.
+- [ ] Consider whether Compliance Manager's PCI DSS v3.2.1 template has been fully removed from new
+  tenants' regulation catalogs (vs. still selectable but flagged legacy) — this build confirmed both
+  v3.2.1 and v4.0 are currently listed side by side in the public `compliance-manager-regulations-
+  list` documentation, but a pilot-tenant check would confirm what the live **Regulations** page
+  actually offers today.
+- [ ] `scenarios/compliance-manager/soc2-assessment/` or a similar SOC 2 Type II premium-template
+  scenario — SOC 2 is a common companion ask alongside PCI DSS for a SaaS/fintech buyer and is
+  already listed as a Compliance Manager premium template (`compliance-manager-regulations-list`);
+  not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
+
 ## DONE
+- [x] **`scenarios/compliance-manager/pci-dss-assessment/`** — Compliance Manager PCI DSS v4.0
+  premium-template assessment scenario, the assessment-side companion to `scenarios/dlp/
+  pci-teams-exfil-block/` referenced from that scenario's `README.md` §2 (now updated in place from
+  "planned" to the real path). Full deliverable per `AGENTS.md` §4: `README.md`, `design.md`,
+  `deploy/policy/pci-dss-assessment-manifest.json`, `deploy/Export-ComplianceManagerAuditTrail.ps1`,
+  `validate/Test-ComplianceManagerAuditTrail.ps1`, `rollback.md`, `reviews.md` (four-lens, all Fix
+  items resolved, no Fail). Key grounding/design decisions: (1) Compliance Manager's regulation
+  catalog lists PCI DSS v4.0 and a retired PCI DSS v3.2.1 as two separate premium templates —
+  documented prominently so a buyer doesn't burn a license slot on the wrong one; (2) the
+  audit-trail script is **deliberately reused, not duplicated**, from `assess-against-iso27001/
+  deploy/Export-ComplianceManagerAuditTrail.ps1` — its 3 monitored operations
+  (`ComplianceManagerRolesChange`/`ComplianceManagerAutomationLevelChange`/
+  `ComplianceManagerAutomationChange`) are tenant-wide, not assessment-scoped, so a second copy
+  would be pure duplication; (3) a control crosswalk (`deploy/policy/pci-dss-assessment-manifest.
+  json`'s `controlCrosswalk`) maps PCI DSS v4.0's 6 goals to this library's own PCI-relevant
+  scenarios, explicitly labeled as this library's own correlation, not Microsoft's published
+  mapping; (4) group-placement guidance corrects an easy misreading of Microsoft's own
+  documentation — **technical** improvement actions already sync tenant-wide regardless of group,
+  while only **nontechnical** ones sync within a shared group, which is the actual, narrower
+  benefit of joining `assess-against-iso27001`'s group (that scenario's own manifest note was
+  corrected in place to stop overclaiming); (5) prominently states, in `README.md` §2 (not buried
+  in limitations), that this assessment is not a substitute for a PCI DSS SAQ or QSA Report on
+  Compliance. Grounded via the Microsoft Learn MCP tool (available this run) against
+  `offering-pci-dss`, `compliance-manager-regulations-list`, `compliance-manager-assessments`
+  (including its precise "Groups for assessments" technical-vs-nontechnical sync rule), and
+  `compliance-manager-improvement-actions`. New follow-ups (ISO/IEC 27001:2022 template now
+  confirmed to exist; PCI DSS Requirement 12.4 cadence left unspecified rather than guessed; the
+  group-sharing behavior not yet pilot-confirmed; a possible SOC 2 sibling scenario) filed above
+  under "Follow-ups discovered while building the Compliance Manager PCI DSS v4.0 assessment
+  scenario" and in the ISO 27001 section. Commit: `PENDING`. Date: 2026-09-04.
 - [x] **Re-check `ediscoveryHoldPolicy: enablePolicy`/`disablePolicy` beta-to-v1.0 promotion status
   (`scenarios/ediscovery/location-scoped-legal-hold/`)** — a correctness re-verification fragment,
   not a new scenario, closing the periodic-recheck item logged when this scenario was originally

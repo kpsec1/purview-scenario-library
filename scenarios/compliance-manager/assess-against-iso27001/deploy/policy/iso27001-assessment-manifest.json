@@ -7,7 +7,7 @@
   "group": {
     "strategy": "createNew",
     "name": "Security & Compliance Assessments",
-    "note": "Groups can't be deleted and an assessment's group can't be changed after creation (README.md Section 12) - decide this before clicking through the wizard. If the tenant already runs other Compliance Manager assessments (e.g. a future scenarios/compliance-manager/pci-dss-assessment/), consider whether they belong in this same group so their improvement actions can be shared per Microsoft's documented group-sharing behavior."
+    "note": "Groups can't be deleted and an assessment's group can't be changed after creation (README.md Section 12) - decide this before clicking through the wizard. If the tenant also runs scenarios/compliance-manager/pci-dss-assessment/ (or any other Compliance Manager assessment), consider adding it to this same group - but only NONTECHNICAL improvement actions (documentation/operational) sync within a shared group; TECHNICAL improvement actions already sync tenant-wide regardless of group. See pci-dss-assessment/design.md Section 6 for the precise, Microsoft-documented distinction (this note was corrected during that scenario's build to stop implying broader sharing than the product actually provides)."
   },
   "servicesInScope": [
     "Microsoft 365"

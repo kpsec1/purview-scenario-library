@@ -35,8 +35,9 @@ Two secondary drivers this control also supports:
 
 Microsoft Purview Compliance Manager ships a **premium PCI DSS v4.0 assessment template**
 (`assessment templates` page in Compliance Manager) that can track this control as an improvement
-action alongside the technical implementation — see `scenarios/compliance-manager/` (planned,
-`PROGRESS.md`) for the assessment-side companion scenario [[7]](#references).
+action alongside the technical implementation — see `scenarios/compliance-manager/
+pci-dss-assessment/` for the assessment-side companion scenario, which also cross-references this
+control in its own control crosswalk [[7]](#references).
 
 ## 3. Prerequisites
 
