@@ -718,7 +718,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   confirmed to exist; PCI DSS Requirement 12.4 cadence left unspecified rather than guessed; the
   group-sharing behavior not yet pilot-confirmed; a possible SOC 2 sibling scenario) filed above
   under "Follow-ups discovered while building the Compliance Manager PCI DSS v4.0 assessment
-  scenario" and in the ISO 27001 section. Commit: `PENDING`. Date: 2026-09-04.
+  scenario" and in the ISO 27001 section. Commit: `7104997`. Date: 2026-09-04.
 - [x] **Re-check `ediscoveryHoldPolicy: enablePolicy`/`disablePolicy` beta-to-v1.0 promotion status
   (`scenarios/ediscovery/location-scoped-legal-hold/`)** — a correctness re-verification fragment,
   not a new scenario, closing the periodic-recheck item logged when this scenario was originally
