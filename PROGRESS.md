@@ -93,12 +93,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Microsoft adds one, replace `location-scoped-legal-hold/deploy/New-EdiscoveryLocationHold.ps1`'s
   and `validate/Test-EdiscoveryLocationHold.ps1`'s URL-slug-vs-title matching (the disclosed weak
   point in `design.md` §6) with a direct comparison instead.
-- [ ] `scenarios/ediscovery/teams-group-hold-resolution/` (or fold into a future eDiscovery pass)
-  — script resolving a Microsoft Teams/Microsoft 365 Group's own mailbox + SharePoint site
+- [x] `scenarios/ediscovery/teams-group-hold-resolution/` — **built** (see DONE below): script
+  resolving a Microsoft Teams/Microsoft 365 Group's own mailbox + SharePoint site
   (`Get-UnifiedGroup`/`Get-UnifiedGroupLinks` in Exchange Online PowerShell) into the userSource/
-  siteSource pair `location-scoped-legal-hold`'s scripts already accept — deferred from that
-  scenario's `design.md` §8 because the lookup itself (which group/site to resolve from a Team
-  name) is a distinct, separately scoped concern.
+  siteSource pair `location-scoped-legal-hold`'s scripts already accept.
+- [ ] Reconcile the group-expansion member-cap discrepancy this build surfaced: Microsoft's current
+  "Create holds in eDiscovery" page states the portal hold-creation flow's own group-as-data-source
+  expansion (any supported group type) is "limited to a maximum of 100 members," a smaller, more
+  specific, and more recently fetched figure than the ">1,000 members" cap
+  `location-scoped-legal-hold/design.md` §3 cites (from the older "Manage hold status errors"
+  reference page) for its own distribution-list `userSource` VERIFY. Determine whether these
+  describe the same underlying limit and, if so, correct `location-scoped-legal-hold/README.md` §11
+  and `design.md` §3 to the current figure — flagged as an open VERIFY in both that scenario and
+  `teams-group-hold-resolution/README.md` §11 rather than resolved by guessing which page is
+  authoritative, per `AGENTS.md` §4.
+- [ ] `scenarios/ediscovery/roster-to-hold-locations/` (or fold into a future eDiscovery pass) —
+  script the hand-off `teams-group-hold-resolution/design.md` §7 left manual: reading that
+  scenario's `-ResolveMembers` roster CSV and appending the chosen members' mailbox addresses as
+  new `userSources[]` entries in a `location-hold-definition.json`, once a human has decided
+  individual member preservation (not just the group's own mailbox/site) is actually needed for a
+  matter.
 - [ ] Re-check whether `ediscoveryHoldPolicy: enablePolicy`/`disablePolicy` have been promoted from
   beta to v1.0 — as of this build they exist only in `/beta` (`location-scoped-legal-hold/
   design.md` §4), which is why that scenario's `Remove-EdiscoveryLocationHold.ps1` has no
@@ -615,6 +629,50 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   sibling Data Map scenarios already carry).
 
 ## DONE
+- [x] `scenarios/ediscovery/teams-group-hold-resolution/` — tenth **follow-up expansion** fragment
+  (eDiscovery), closing the item logged during the `location-scoped-legal-hold` build: "resolving
+  *which* group/site pair to use from a Team name is a distinct, separately scoped lookup this
+  fragment doesn't automate." Full README (12-section skeleton), design.md (grounds the surface
+  split — Exchange Online PowerShell for resolution, Microsoft Graph only for the optional
+  reconciliation stage — against this library's existing EXO-primary-script precedent rather than
+  the Graph-only sibling scenario's pattern; explicit non-goals for member expansion, private
+  channels, and DL resolution), deploy/ (`Resolve-TeamsGroupHoldLocations.ps1` — Stage 1 always
+  runs: idempotent/parameterized `Get-UnifiedGroup`/`Get-UnifiedGroupLinks` resolution (Exchange
+  Online PowerShell, surface 1; caller must already be connected, matching
+  `premium-legal-hold-and-export/deploy/Export-EdiscoveryAuditTrail.ps1`'s convention) writing a
+  `userSources[]`/`siteSources[]` JSON fragment in the exact shape
+  `location-scoped-legal-hold/deploy/policy/location-hold-definition.json` uses, plus an optional
+  member-roster CSV (informational only, never auto-added to a hold); Stage 2 (`-AddToHold`,
+  opt-in) self-connects to Microsoft Graph (surface 3) and idempotently reconciles each resolved
+  location onto an existing hold policy, duplicating (not dot-sourcing) the sibling scenario's own
+  `Confirm-UserSource`/`Confirm-SiteSource` find-or-create logic, `$PSCmdlet.ShouldProcess()`-gated
+  throughout for a true `-WhatIf`), validate/ (`Test-TeamsGroupHoldLocations.ps1` — read-only
+  group-drift check always, plus an optional hold-reconciliation check scoped to just this
+  scenario's own resolved groups), rollback.md (Stage 1: delete two local files, no tenant effect;
+  Stage 2: defers entirely to the sibling scenario's own `Remove-EdiscoveryLocationHold.ps1` rather
+  than duplicating a second removal implementation), four-lens reviews.md (Red Team Fix round
+  resolved — a missing-SharePoint-site rollup warning so the gap is visible without reading
+  interleaved per-group output, a `deploy/out/` default output directory instead of the tracked
+  `deploy/config/` to keep a real run's resolved values and the PII-bearing member roster out of
+  git history, and a real `Set-StrictMode`-under-optional-JSON-property bug caught and fixed during
+  review (`$groupDef.resolveMembers` would have thrown for any config that omitted the documented-
+  optional key) — two further items confirmed already correctly scoped, not changed; Blue Team Fix
+  round resolved — same code changes as the Red Team detectability findings; CISO Pass — the
+  asymmetric over-preserve/under-preserve risk reasoning for why this scenario needs no removal-side
+  counsel gate of its own; Product Owner Pass — confirmed leaner Graph module dependency than the
+  sibling scenario (no typed `Microsoft.Graph.Security` cmdlet needed for attach-only reconciliation
+  against an already-existing case/hold), confirmed the EXO/Graph connection-pattern split is
+  deliberate and documented rather than an unexplained inconsistency) — grounded in Microsoft Learn
+  via the Microsoft Learn MCP tool (`Get-UnifiedGroup`/`Get-UnifiedGroupLinks` Exchange PowerShell
+  reference pages for exact syntax/role requirements; "Create holds in eDiscovery" direct-fetched in
+  full for the "Preserve content in Microsoft Teams"/"Microsoft 365 groups" worked example, the
+  group-membership point-in-time-snapshot behavior, and the 100-member group-expansion cap; "Manage
+  holds in eDiscovery" for the hold-management-context restatement of the same Teams/group guidance;
+  "Microsoft 365 Group behaviors and provisioning options" for the confirmed `ProvisionSiteOnDemand`
+  site-provisioning-deferral option) — two items recorded as explicit VERIFY rather than resolved by
+  guessing (no canonical SLA for `SharePointSiteUrl` populating after group creation; the 100-vs-
+  >1,000-member cap discrepancy against the sibling scenario's own citation, logged above as a new
+  follow-up to reconcile), per `AGENTS.md` §4 — 2026-09-04
 - [x] `scenarios/data-map/scan-azure-synapse-and-classify/` — third scenario in this repo's
   Azure-SQL-family Data Map series (after `scan-azure-sql-and-classify` and
   `scan-azure-sql-managed-instance-and-classify`), closing the explicitly-flagged sibling item from

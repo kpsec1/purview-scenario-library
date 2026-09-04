@@ -1,0 +1,12 @@
+{
+  "groups": [
+    {
+      "identity": "Payments Team",
+      "resolveMembers": true
+    },
+    {
+      "identity": "seniorleadershipteam@contoso.onmicrosoft.com",
+      "resolveMembers": false
+    }
+  ]
+}
