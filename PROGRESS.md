@@ -513,10 +513,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   actively moving and should be re-verified before every future sale referencing it.
 
 ### Follow-ups discovered while building the Audit premium-audit-investigation scenario
-- [ ] `scenarios/audit/retention-policy-management/` — script **audit log retention policies** (a
-  Premium feature: create/manage custom retention durations per record type/user via SCC PowerShell
-  `New-/Set-UnifiedAuditLogRetentionPolicy`), the configuration counterpart to this read-only
-  investigation scenario.
+- [x] `scenarios/audit/retention-policy-management/` — **built** (see DONE): custom **audit log
+  retention policies** (a Premium feature: create/manage retention durations per record type/user via
+  SCC PowerShell `New-/Set-UnifiedAuditLogRetentionPolicy`), the configuration counterpart to this
+  read-only investigation scenario.
 - [ ] `scenarios/audit/streaming-to-sentinel-or-management-api/` — continuous audit streaming via the
   Office 365 Management Activity API (or a Sentinel connector) for real-time detection, contrasted
   with this on-demand investigation in `audit/premium-audit-investigation/design.md` §7.
@@ -737,6 +737,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] `scenarios/audit/retention-policy-management/` — follow-up expansion (Audit, S&C PowerShell
+  surface 1): configuration counterpart to the read-only `premium-audit-investigation` starter. README
+  (12-section), design, rollback, four-lens reviews; deploy/ (`New-AuditRetentionPolicy.ps1`
+  create-or-report by Name via `New-UnifiedAuditLogRetentionPolicy`, mandatory `-Priority`/
+  `-RetentionDuration` enum + record-type/operation/user scope, custom `-DryRun`;
+  `Remove-AuditRetentionPolicy.ps1` with `-Force`→`-ForceDeletion`, reverts scope to the built-in
+  default), config, validate/ (read-only `Get-`-by-Name duration/priority checks). Grounded in Microsoft
+  Learn; portal-vs-cmdlet duration-enum discrepancy carried as an explicit VERIFY (`AGENTS.md` §4);
+  50-policy cap / unmodifiable-default / 10-year-add-on / Organization Configuration role documented.
+  (2026-09-04)
 - [x] **`scenarios/data-map/scan-on-premises-sql-server-and-classify/`** — the third and final
   explicitly-flagged sibling of `scenarios/data-map/scan-azure-sql-and-classify/` (alongside the
   already-built Managed Instance and Azure Synapse Analytics siblings), covering the one Data Map

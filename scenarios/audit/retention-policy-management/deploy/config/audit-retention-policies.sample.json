@@ -1,0 +1,24 @@
+{
+  "_comment": "Config for deploy/New-AuditRetentionPolicy.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Defines Microsoft Purview Audit (Premium) audit-log retention policies: how long audit records are kept, scoped by record type / operation / user, with a priority. Placeholder values are illustrative - set them to your real obligations before deploying. Read README.md Sections 2 and 11 first (10-year retention needs the add-on; the default policy can't be modified; max 50 policies/org).",
+
+  "policies": [
+    {
+      "name": "Retain Exchange admin audit 10 years",
+      "description": "Long-retention for privileged Exchange admin operations for regulatory investigations.",
+      "priority": 100,
+      "retentionDuration": "TenYears",
+      "recordTypes": [ "ExchangeAdmin" ],
+      "operations": [],
+      "userIds": []
+    },
+    {
+      "name": "Retain Entra sign-in audit 1 year",
+      "description": "Keep Microsoft Entra (Azure AD) sign-in/audit records for 12 months.",
+      "priority": 200,
+      "retentionDuration": "TwelveMonths",
+      "recordTypes": [ "AzureActiveDirectory" ],
+      "operations": [],
+      "userIds": []
+    }
+  ]
+}
