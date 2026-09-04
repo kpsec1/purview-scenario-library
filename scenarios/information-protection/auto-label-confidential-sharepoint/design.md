@@ -108,8 +108,8 @@ with no error surfaced anywhere obvious.
   prerequisite dependency (same pattern as the Card Operations security group in
   `scenarios/dlp/pci-teams-exfil-block/design.md` §6), not a deployed artifact.
 - This scenario does not cover Exchange (email) auto-labeling, even though the same policy family
-  supports it — scoped to SharePoint/OneDrive at-rest content per the scenario's title. An
-  Exchange companion rule is a natural, low-effort follow-up (tracked in `PROGRESS.md`).
+  supports it — scoped to SharePoint/OneDrive at-rest content per the scenario's title. Built as
+  `scenarios/information-protection/auto-label-confidential-exchange/` (closed 2026-09-04).
 - This scenario does not configure the one-time `EnableAIPIntegration` tenant toggle — it is a
   manual/portal prerequisite documented in `README.md` §3, not something this scenario's
   idempotent deploy script re-asserts on every run (it's a tenant-wide setting unrelated to this

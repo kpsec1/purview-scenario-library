@@ -158,10 +158,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [x] Extend `docs/automation-surface.md` with a fifth automation surface: **SharePoint Online
   Management Shell** (`Connect-SPOService` / `Microsoft.Online.SharePoint.PowerShell`) — **built**
   (see DONE below).
-- [ ] `scenarios/information-protection/auto-label-confidential-exchange/` — Exchange-location
-  companion to `auto-label-confidential-sharepoint` using the same policy family
-  (`New-AutoSensitivityLabelPolicy -ExchangeLocation`), extending coverage to email per the
-  non-goal noted in that scenario's `design.md` §7.
+- [x] `scenarios/information-protection/auto-label-confidential-exchange/` — Exchange-location
+  companion to `auto-label-confidential-sharepoint` — **built** (see DONE below).
+- [ ] Backport the newly-discovered "turning on a policy requires Compliance Administrator or
+  Compliance Data Administrator, not just Information Protection Admin" prerequisite into
+  `scenarios/information-protection/auto-label-confidential-sharepoint/README.md` §3 — it applies
+  there too but wasn't called out when that (already-DONE) fragment was originally built. Deferred
+  from `auto-label-confidential-exchange` to avoid re-opening a finished fragment for a doc-only
+  addition; see that new scenario's `reviews.md` (Product Owner lens) for the full citation.
+- [ ] `scenarios/information-protection/auto-label-confidential-exchange-dlp-pairing/` (or fold
+  into a future Exchange DLP scenario) — a content-based Exchange DLP rule (not label-conditioned)
+  that blocks or forces encryption on outbound SSN/Credit-Card-Number mail to external recipients,
+  closing the Red-Team-flagged gap in `auto-label-confidential-exchange/README.md` §11: by default,
+  a message matching this scenario's conditions is labeled Confidential but sent to an external
+  recipient **in cleartext** unless `-ExternalMailRightsManagementOwner` is separately configured.
+- [ ] VERIFY (pilot tenant): whether a PDF attachment on a message that an Exchange auto-labeling
+  policy encrypts (via the applied label) ends up protected as part of the overall encrypted
+  message envelope, or left effectively in the clear alongside a protected email body — Microsoft's
+  documentation confirms this behavior for unencrypted Office (Word/PowerPoint/Excel) attachments
+  specifically but doesn't state the PDF case with the same confidence. Flagged inline in
+  `auto-label-confidential-exchange/README.md` §11 rather than resolved by guessing.
 - [ ] Consider a `scenarios/information-protection/` sub-scenario (or a cross-cutting note) on
   **localizing sensitive information type selection by data-residency/jurisdiction** — flagged as
   a Red Team/CISO finding in `auto-label-confidential-sharepoint/reviews.md`: the SSN + Credit
@@ -685,6 +701,57 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **`scenarios/information-protection/auto-label-confidential-exchange/`** — Exchange-location
+  companion to `scenarios/information-protection/auto-label-confidential-sharepoint/`, closing the
+  non-goal that scenario's `design.md` §7 explicitly deferred ("this scenario does not cover
+  Exchange (email) auto-labeling, even though the same policy family supports it"). Full
+  deliverable per `AGENTS.md` §4: `README.md` (12-section skeleton), `design.md`,
+  `deploy/New-ConfidentialAutoLabelExchangePolicy.ps1` (idempotent, parameterized, `-WhatIf`
+  throughout, one rule for the single `Exchange` workload — no multi-rule split needed, unlike the
+  sibling scenario's SharePoint+OneDrive pair), `deploy/Remove-ConfidentialAutoLabelExchangePolicy.ps1`,
+  `validate/Test-ConfidentialAutoLabelExchangePolicy.ps1`, `rollback.md`, `reviews.md` (four-lens,
+  all Fix items resolved, no Fail). Reuses the same `Confidential` label and the same SSN/Credit
+  Card Number SIT pair as the sibling scenario — same classification pattern, new location, not a
+  new pattern.
+
+  Key grounding/design findings, all confirmed via the Microsoft Learn MCP tool (available this
+  run) against `apply-sensitivity-label-automatically` (direct-fetched in full), the
+  `New-AutoSensitivityLabelPolicy`/`New-AutoSensitivityLabelRule` parameter references, and
+  `auto-label-insights-tab`: (1) Exchange auto-labeling evaluates mail **in transit**, not at
+  rest in mailboxes — no backlog coverage, and simulation only sees live traffic sent/received
+  during the simulation run, a materially different model from the sibling scenario's ongoing
+  backlog scan; (2) there is **no `-ExchangeLocationException` parameter** — confirmed by fetching
+  the complete `New-AutoSensitivityLabelPolicy` parameter syntax — so this scenario's exclusion
+  mechanism is `-ExchangeSenderException` (sender-based, asymmetric: protects only the excluded
+  mailbox's outbound mail) rather than a location-URL exclusion like the sibling scenario's;
+  (3) Exchange has **no "Labeled items" dashboard or policy-level Insights enforcement metrics** —
+  Activity Explorer (60–90 minute delay, doesn't identify which policy/rule applied a label) is
+  the only documented verification path, and this scenario's `README.md` §7/§8 and `validate/`
+  script are built around that constraint rather than assuming SharePoint/OneDrive-equivalent
+  observability; (4) the target label's required scope is **Emails**, not "Files & other data
+  assets"; (5) encryption permission-model and external-recipient defaults differ materially from
+  the sibling scenario (Assign-permissions-now is not required for Exchange-only policies;
+  external-recipient mail is labeled but **not encrypted by default** unless
+  `-ExternalMailRightsManagementOwner` is configured); (6) turning a policy on (not just
+  authoring/simulating it) requires **Compliance Administrator or Compliance Data Administrator**,
+  a role-split finding that also applies to the sibling scenario but wasn't previously documented
+  there (backport filed as a new follow-up rather than reopening that finished fragment).
+
+  Four-lens review caught and fixed two genuine Red Team findings the initial draft underplayed as
+  neutral configuration differences rather than real risks: the sender-based exclusion is a
+  standing, control-free exfiltration path if the excluded mailbox is ever compromised or
+  repurposed (not just an under-protection nuance for the custodian), and the external-recipient
+  encryption default leaves SSN/card-number content in **cleartext** on exactly the direction of
+  travel (data leaving the tenant) that matters most for breach-notification exposure — both
+  rewritten in `README.md` §11 as explicit risks with concrete mitigations (monitor the exclusion
+  list; configure `-ExternalMailRightsManagementOwner` or pair with a content-based DLP rule for
+  external send) rather than left as passive documentation. A third finding — an overconfident
+  claim about PDF attachments being left unprotected by label-driven encryption — was softened to
+  an explicit VERIFY rather than asserting unconfirmed behavior, per `AGENTS.md` §4. Both new
+  Red Team findings and the PDF VERIFY are filed as new `PROGRESS.md` follow-ups (a companion
+  content-based Exchange DLP scenario, and the PDF-encryption pilot-tenant verification) rather
+  than resolved by guessing or scope-expanding this fragment. Commit: (recorded below).
+  Date: 2026-09-04.
 - [x] **Extend `docs/automation-surface.md` with a fifth automation surface: SharePoint Online
   Management Shell** — a scoped cross-cutting-doc fragment (not a new scenario), closing the item
   logged during the `auto-label-confidential-sharepoint` build: `Set-SPOTenant

@@ -290,8 +290,11 @@ to permanently delete the policy and its rules.
   [[7]](#references).
 - **This scenario does not cover Exchange (email).** `New-AutoSensitivityLabelPolicy` supports an
   Exchange location and rule in the same policy family, but this scenario is scoped to
-  SharePoint/OneDrive at-rest content per its title; an Exchange companion rule is a natural
-  follow-up (tracked in `PROGRESS.md`).
+  SharePoint/OneDrive at-rest content per its title. The Exchange companion is now built as
+  `scenarios/information-protection/auto-label-confidential-exchange/` (closed 2026-09-04) — a
+  separate policy object, not an additional rule on this scenario's own policy, because Exchange
+  auto-labeling has materially different location, exclusion, and encryption semantics (see that
+  scenario's `design.md`).
 - **Two rules, one per workload, is a scripting necessity, not a design choice.**
   `New-AutoSensitivityLabelRule -Workload` accepts exactly one workload value per call
   [[3]](#references); the portal's "Common rules" experience creates the equivalent multi-workload
