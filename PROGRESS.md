@@ -24,12 +24,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 > here as they're scoped.
 
 ### Follow-ups discovered while building the eDiscovery Premium legal-hold-and-export scenario
-- [ ] `scenarios/ediscovery/location-scoped-legal-hold/` (or similar) — script the
-  `ediscoveryHoldPolicy` (`POST .../legalHolds`) path (siteSources/userSources, optional
-  contentQuery) for a hold organized around a *location* rather than a named custodian (a shared
-  departmental mailbox, a regulatory-sweep distribution list) — explicitly out of scope in
-  `premium-legal-hold-and-export/design.md` §3/§7, which covers only the custodian+`applyHold`
-  path.
 - [ ] Ground the exact `RecordType`/`Operations` values for eDiscovery hold-apply/hold-release/
   case-close/case-delete events in `Search-UnifiedAuditLog`, then add a dedicated
   `Export-EdiscoveryAuditTrail.ps1` to `premium-legal-hold-and-export/deploy/` — flagged as a Red
@@ -53,6 +47,32 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Management case, wire the documented IRM-case → eDiscovery (Premium) case escalation integration
   — explicitly scoped out of `premium-legal-hold-and-export/design.md` §7 as a follow-up dependent
   on that not-yet-built scenario.
+
+### Follow-ups discovered while building the eDiscovery location-scoped-legal-hold scenario
+- [ ] VERIFY (pilot tenant, before pointing this at a distribution list you haven't already
+  tested): whether a distribution list's own SMTP address is accepted as a `userSource.email`
+  value on the v1.0 `ediscoveryHoldPolicy` endpoint and expanded server-side to member mailboxes.
+  Corroborated by Microsoft's beta custodian-context userSource reference ("or the SMTP address of
+  the group mailbox") and by the "Distribution group has too many members" (>1,000) error
+  reference, but the v1.0, non-beta endpoint this scenario actually calls documents `email` only
+  as "SMTP address of the user" — flagged inline in `location-scoped-legal-hold/README.md` §11,
+  `design.md` §3, and `deploy/New-EdiscoveryLocationHold.ps1`'s `.NOTES`.
+- [ ] VERIFY (pilot tenant): whether the `siteSource` list/create v1.0 response ever exposes a
+  stable, directly comparable URL (rather than only `displayName`, the site's title) — if
+  Microsoft adds one, replace `location-scoped-legal-hold/deploy/New-EdiscoveryLocationHold.ps1`'s
+  and `validate/Test-EdiscoveryLocationHold.ps1`'s URL-slug-vs-title matching (the disclosed weak
+  point in `design.md` §6) with a direct comparison instead.
+- [ ] `scenarios/ediscovery/teams-group-hold-resolution/` (or fold into a future eDiscovery pass)
+  — script resolving a Microsoft Teams/Microsoft 365 Group's own mailbox + SharePoint site
+  (`Get-UnifiedGroup`/`Get-UnifiedGroupLinks` in Exchange Online PowerShell) into the userSource/
+  siteSource pair `location-scoped-legal-hold`'s scripts already accept — deferred from that
+  scenario's `design.md` §8 because the lookup itself (which group/site to resolve from a Team
+  name) is a distinct, separately scoped concern.
+- [ ] Re-check whether `ediscoveryHoldPolicy: enablePolicy`/`disablePolicy` have been promoted from
+  beta to v1.0 — as of this build they exist only in `/beta` (`location-scoped-legal-hold/
+  design.md` §4), which is why that scenario's `Remove-EdiscoveryLocationHold.ps1` has no
+  reversible "pause" stage. If promoted, add a reversible disable/re-enable rollback stage instead
+  of only delete-one-source/delete-everything.
 
 ### Follow-ups discovered while building the DLP template scenario
 - [ ] `scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/` (or fold into Adaptive
@@ -488,6 +508,61 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scenario with the DLM `retention-labels-financial-records` sibling.
 
 ## DONE
+- [x] `scenarios/ediscovery/location-scoped-legal-hold/` — third **follow-up expansion** fragment
+  (eDiscovery), closing the item `premium-legal-hold-and-export/design.md` §3/§7 explicitly scoped
+  out: the `ediscoveryHoldPolicy` (`POST .../legalHolds`) path for a hold organized around a
+  *location* (a shared departmental mailbox, a regulatory-sweep distribution list, a SharePoint
+  site) rather than a named custodian. Full README (12-section skeleton), design.md (grounds why
+  this is a genuinely separate v1.0 object model — narrower `userSource` shape (`mailbox`-only,
+  siteSources split out as their own collection, unlike the custodian shape's combined `"mailbox,
+  site"` string), the distribution-list-expansion evidence trail (a beta reference documenting
+  group-mailbox support + the "Distribution group has too many members" >1,000 error, vs. the v1.0
+  endpoint's own narrower "SMTP address of the user" wording), and the headline finding that
+  `enablePolicy`/`disablePolicy` exist only in the beta namespace — v1.0 has no reversible
+  "turn off and keep for later," only delete-one-source or delete-the-whole-policy, both
+  Microsoft-documented as capable of **permanently deleting content currently being preserved**),
+  deploy/ (`New-EdiscoveryLocationHold.ps1` — reuses the sibling scenario's typed
+  `New-MgSecurityCaseEdiscoveryCase` cmdlet for the case, then `Invoke-MgGraphRequest` against the
+  v1.0 REST endpoints directly for the hold policy/userSources/siteSources/retryPolicy, since no
+  v1.0 typed cmdlet exists for any of them (only `Microsoft.Graph.Beta.Security` has one); a
+  hand-rolled `$PSCmdlet.ShouldProcess()` gate around every write for a true `-WhatIf`; an optional
+  `-Retry` that calls `retryPolicy` only when the policy reports errors or an unhealthy source; an
+  optional `-WaitForApplied` poll switch (added during Blue Team review to mirror the sibling
+  scenario's `-WaitForHold`); a loud `Write-Warning` when `contentQuery` is left blank (added
+  during Red Team review — an unfiltered hold on every location's content); `Remove-
+  EdiscoveryLocationHold.ps1` — release one or more named userSources/siteSources, or `-DeleteHold`
+  for the entire policy, both paths carrying Microsoft's own permanent-deletion warning quoted
+  verbatim rather than softened; `deploy/policy/location-hold-definition.json` — a Payments-team
+  shared mailbox + compliance distribution list + SharePoint site, `contentQuery` scoped to a CID
+  date range), validate/ (`Test-EdiscoveryLocationHold.ps1` — read-only checks of the case, hold
+  policy, every declared userSource/siteSource's `holdStatus`, the policy's own `errors`
+  collection, and a `WARN` on a blank `contentQuery`), rollback.md (the two-stage release-one/
+  delete-all procedure with the counsel-confirmation gate promoted to a `README.md` §3 gating
+  prerequisite from the outset, applying the precedent the sibling scenario's own CISO review round
+  established), four-lens reviews.md (Red Team Fix round resolved — sharpened the
+  distribution-list-expansion VERIFY with a concrete pilot-tenant verification step rather than a
+  generic caveat, added the blank-`contentQuery` warning, confirmed the `siteSource`
+  title-matching weak point never risks holding the *wrong* site's content, only an idempotency
+  false-positive/negative on this scenario's own bookkeeping; Blue Team Fix round resolved — added
+  `-WaitForApplied` and the blank-`contentQuery` `WARN`, confirmed `retryPolicy`'s
+  restamp-everything behavior was already correctly disclosed as a deliberate, human-triggered
+  action; CISO Pass — confirmed the counsel-confirmation gate and the higher-stakes
+  no-reversible-pause framing were both already applied proactively in the initial draft; Product
+  Owner Pass — independently re-confirmed the beta-only enable/disable finding via direct fetches
+  of the v1.0 resource/update references and both beta action pages, and called out the
+  `mailbox`-only `userSource` finding as *more* directly grounded than the sibling scenario's own
+  open VERIFY on the same property family) — grounded in Microsoft Learn via the Microsoft Learn
+  MCP tool (`ediscoveryHoldPolicy` v1.0 resource/create/update/delete/retryPolicy references;
+  `userSource`/`siteSource` v1.0 resource + create + delete references for the `legalHolds`
+  context specifically, distinct from the custodian-context ones the sibling scenario cites; the
+  beta `enablePolicy`/`disablePolicy` action pages confirming no v1.0 equivalent exists; the beta
+  custodian-context `userSource` create reference for the group-mailbox-email corroboration; and
+  "Manage holds in eDiscovery" for the portal-side hold-policy-states, retry/turn-off/delete
+  procedures with their permanent-deletion warnings quoted verbatim, the full "Manage hold status
+  errors" table, and the Teams/Microsoft 365 Group hold-placement guidance) — two real gaps
+  (distribution-list expansion on the exact v1.0 endpoint; `siteSource` URL-vs-title matching)
+  recorded as explicit VERIFY items rather than resolved by guessing, per `AGENTS.md` §4.
+  (2026-09-04)
 - [x] `scenarios/unified-catalog/manage-data-products/` — second **follow-up expansion** fragment
   (Unified Catalog, Data Governance), closing the shared "Data Products scenario doesn't exist yet"
   dependency both `curate-business-glossary`'s and `data-quality/rules-and-scorecards`'s non-goals

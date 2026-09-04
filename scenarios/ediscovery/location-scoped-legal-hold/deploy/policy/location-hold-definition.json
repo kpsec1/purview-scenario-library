@@ -1,0 +1,20 @@
+{
+  "_comment": "Reference definition for the eDiscovery location-scoped legal hold scenario. Consumed by New-EdiscoveryLocationHold.ps1 and Remove-EdiscoveryLocationHold.ps1 via -DefinitionPath. Author-only reference for the buyer's own tenant -- replace every value below before use. No secrets belong in this file.",
+  "case": {
+    "displayName": "CONTOSO-REG-2026-009",
+    "description": "Regulatory sweep -- FTC civil investigative demand covering the Payments team's shared inbox and site, plus a compliance distribution list. Outside counsel: Example & Example LLP.",
+    "externalId": "2026-009"
+  },
+  "hold": {
+    "displayName": "CONTOSO-REG-2026-009 - Payments team location hold",
+    "description": "Location-scoped hold covering the shared Payments mailbox/site and the payments-compliance-dl distribution list, per the CID date range. Not tied to a named custodian -- see design.md section 3.",
+    "contentQuery": "(chargeback OR refund OR \"card present\" OR interchange) AND date>=2025-06-01"
+  },
+  "userSources": [
+    { "email": "payments-team@contoso.com", "note": "Shared departmental mailbox -- no single owning custodian." },
+    { "email": "payments-compliance-dl@contoso.com", "note": "Mail-enabled distribution list. Microsoft's own hold-error reference documents a 'Distribution group has too many members' condition above 1,000 addresses, implying the service expands a DL's own SMTP address into its member mailboxes -- VERIFY per README.md section 11 before relying on this for a DL near that size; for a DL you already know is large, resolve and list individual member emails here instead." }
+  ],
+  "siteSources": [
+    { "site": "https://contoso.sharepoint.com/sites/PaymentsTeam" }
+  ]
+}
