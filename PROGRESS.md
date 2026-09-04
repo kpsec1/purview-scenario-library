@@ -327,24 +327,41 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `assess-against-iso27001/design.md` §7 — a schema-accurate generator script would be a genuine,
   higher-value addition to this scenario that this build deliberately declined to fabricate.
 
-### Follow-ups discovered while building the Communication Compliance harassment/code-of-conduct scenario
-- [ ] `scenarios/communication-compliance/regulatory-supervision-finra-sec/` — the regulated-industry
-  sibling using the same supervisory-review engine with the **regulatory-compliance** template
-  (money laundering, regulatory collusion, stock manipulation, unauthorized disclosure classifiers)
-  and percentage sampling for broker/trader communications; a natural companion to the conduct policy.
-- [ ] `scenarios/communication-compliance/copilot-interaction-supervision/` — supervise Microsoft 365
-  Copilot / Copilot Chat and Enterprise AI app interactions (Prompt Shields, protected-material
-  classifiers), a newer Communication Compliance location, distinct from the human-to-human channels
-  this scenario covers.
-- [ ] VERIFY (pilot tenant, before production reliance): whether a portal-created Communication
-  Compliance policy is fully equivalent to a `SupervisoryReviewPolicyV2` created via SCC PowerShell;
-  whether `-ContentSources` on the rule sets locations (Exchange/Teams/Viva Engage); and whether
-  `-AdvancedRule` can express trainable classifiers — all flagged in
-  `communication-compliance/harassment-and-code-of-conduct/README.md` §11 (Microsoft states
-  PowerShell isn't supported for CC policy management; classifiers are portal-only in this build).
-- [ ] Consider scripting **Communication Compliance role-group membership** provisioning (assigning
-  users into Communication Compliance Analysts/Investigators/Admins) if a supported cmdlet path is
-  confirmed — left as a portal prerequisite in this scenario.
+### Follow-ups discovered while building the Communication Compliance harassment-and-code-of-conduct scenario
+- [ ] `scenarios/communication-compliance/financial-regulatory-supervision/` (or similar) — the
+  FINRA/SEC-oriented "Regulatory compliance" policy template (Customer complaints, Gifts &
+  entertainment, Money laundering, Regulatory collusion, Stock manipulation, Unauthorized
+  disclosure classifiers) — a different regulatory driver (broker-dealer supervision) from
+  `harassment-and-code-of-conduct`'s HR/code-of-conduct focus; explicitly called out as a non-goal
+  in that scenario's `design.md` §7.
+- [ ] Consider a `scenarios/insider-risk/` or `scenarios/adaptive-protection/` follow-up wiring the
+  documented Communication Compliance → Insider Risk Management integration (the auto-created
+  "Insider risk trigger" policy using the Threat/Harassment/Discrimination classifiers) — deferred
+  from `harassment-and-code-of-conduct/design.md` §6 as a separate, deliberate opt-in rather than
+  bundled into a standalone Communication Compliance policy.
+- [ ] `scenarios/dspm-for-ai/` or `scenarios/communication-compliance/` — the "Detect Microsoft 365
+  Copilot and Microsoft 365 Copilot Chat interactions" policy template (Prompt Shields/Protected
+  material classifiers) and the preview LLM-based content-safety classifiers (Hate/Sexual/Violence/
+  Self-harm, Teams/Viva Engage/Copilot-only) — both explicitly out of scope in
+  `harassment-and-code-of-conduct/design.md` §4/§7 since this scenario's Exchange-inclusive scope
+  needs the trainable-classifier family for full location coverage; the content-safety classifiers
+  are candidates for a higher-accuracy, Teams/Viva-Engage-specific follow-up.
+- [ ] VERIFY (portal, at deploy time, before a customer-facing deployment): the exact current-UI
+  label for the "Harassment"/"Targeted harassment" trainable classifier — Microsoft's own docs use
+  both names for what reads as the same classifier across different pages
+  (`harassment-and-code-of-conduct/README.md` §11, `design.md` §4). Not resolved by guessing in
+  this build per `AGENTS.md` §4.
+- [ ] VERIFY (employment counsel, jurisdiction-by-jurisdiction): monitoring-notice/consent
+  obligations for the Investigator-role full-content-visibility design in
+  `harassment-and-code-of-conduct` — flagged as a gating prerequisite in that scenario's `README.md`
+  §3/§11 (CISO lens finding in `reviews.md`) but is a legal determination outside this repo's
+  grounding scope, not something this build can resolve.
+- [ ] Re-check the EEOC's sub-regulatory harassment-guidance status before any customer-facing use
+  of `harassment-and-code-of-conduct`'s regulatory-driver narrative (`README.md` §2/§11) — the 2024
+  EEOC Enforcement Guidance on Harassment in the Workplace was rescinded by a 2–1 Commission vote on
+  January 23, 2026, mid-way through this build's own grounding pass; the scenario's driver rests on
+  the underlying Title VII statute and *Faragher*/*Ellerth* case law instead, but this area is
+  actively moving and should be re-verified before every future sale referencing it.
 
 ### Follow-ups discovered while building the eDiscovery premium-legal-hold-and-export scenario
 - [ ] `scenarios/ediscovery/review-set-commit-and-analytics/` — script the **addToReviewSet** commit
@@ -580,36 +597,56 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   binding, and E3 export-PAYG billing recorded as explicit VERIFY items rather than fabricated, per
   `AGENTS.md` §4 — 2026-09-03
 
-- [x] `scenarios/communication-compliance/harassment-and-code-of-conduct/` — second Risk & Compliance
-  scenario (Communication Compliance): full README (12-section skeleton), design.md, deploy/
-  (`New-CodeOfConductPolicy.ps1` — SCC PowerShell (surface 1) deploying the **scriptable subset** of a
-  code-of-conduct communication-supervision policy via `New-/Set-/Get-SupervisoryReviewPolicyV2` +
-  `New-/Set-/Get-SupervisoryReviewRule`: policy shell + reviewers + a keyword-lexicon rule whose
-  `-Condition` is built from reviewees/directions/keywords in Microsoft's documented filter grammar,
-  scoped with a sampling rate; idempotent get-then-Set/New; a custom **`-DryRun`** because `-WhatIf`
-  is non-functional in S&C PowerShell; a placeholder-lexicon guard; `Remove-CodeOfConductPolicy.ps1` —
-  staged disable (`Set -Enabled $false`) then optional `-Delete`; `deploy/config/
-  code-of-conduct.sample.json` — the keyword/reviewer/scope config (intentionally mild placeholder
-  lexicon); `deploy/policy/inappropriate-text-portal-reference.json` — a **non-executable portal
-  reference manifest** for the "Detect inappropriate text" template's Targeted-harassment/Threat/
-  Discrimination classifiers + locations, since Microsoft states PowerShell isn't supported for CC
-  policy management and the classifiers aren't exposed in the cmdlet surface — mirrors the IRM
-  scenario's portal-manifest precedent), validate/ (`Test-CodeOfConductPolicy.ps1` — read-only
-  `Get-SupervisoryReview*` checks for policy existence/enabled/reviewers/rule/sampling, plus an
-  explicit manual checklist for the portal-only classifier/location/pseudonymization pieces),
-  four-lens reviews.md (Red Team Fix round resolved — keyword-only evasion closed via the two-part
-  classifier+keyword control and a no-placeholder guard, reviewer/privacy scope and unlicensed-user
-  gap documented, no fabricated classifier params; Blue Team Fix round resolved — custom `-DryRun`,
-  false-positive tuning/KPIs, validate covers the portal half via checklist; CISO Fix round resolved —
-  privacy-by-design foregrounded; Product Owner Fix round resolved — portal documented as the primary
-  supported surface, scripted subset scoped honestly) — grounded in Microsoft Learn (Communication
-  Compliance policies/templates/classifiers + the explicit "PowerShell isn't supported for CC policy
-  management" note, plan/permissions — six role groups, Analyst-vs-Investigator content boundary,
-  licensing (Purview Suite / O365 E5 / E3+Advanced Compliance), case study, and the full
-  New-/Set-/Get-/Remove-SupervisoryReviewPolicyV2 + New-/Set-/Get-SupervisoryReviewRule cmdlet
-  references incl. the `-Condition` grammar and the "-WhatIf doesn't work in S&C PowerShell" note) —
-  portal-vs-PowerShell equivalence, `-ContentSources` locations, and `-AdvancedRule` classifiers
-  recorded as explicit VERIFY items rather than fabricated, per `AGENTS.md` §4 — 2026-09-03
+- [x] `scenarios/communication-compliance/harassment-and-code-of-conduct/` — first Communication
+  Compliance-module scenario, and the second scenario in this repo (after
+  `scenarios/compliance-manager/assess-against-iso27001/`) built against a Purview surface with
+  **no write API** — Microsoft's own docs state "PowerShell isn't supported for creating and
+  managing Communication Compliance policies" verbatim on two independently-fetched pages: full
+  README (12-section skeleton, an up-front scope note explaining why this scenario's shape differs
+  from the DLP/Information Protection scenarios, a promoted gating prerequisite for
+  employment-counsel monitoring-notice review), design.md (grounds the no-write-API finding across
+  two independently-fetched Microsoft Learn pages plus the legacy `New-SupervisoryReviewPolicyV2`
+  cmdlet's continued-but-unsupported presence in the module reference, explains the Investigators-
+  vs-Analysts reviewer-role choice, and documents why a custom keyword dictionary was scoped to
+  evasion/concealment phrases rather than duplicating classifier-covered profanity/slurs), deploy/
+  (a reference-only, explicitly non-executable `communication-compliance-policy-manifest.json` for
+  the portal-driven policy-creation runbook — the same pattern `assess-against-iso27001` and
+  `departing-employee-data-theft` already established for other no-write-API Purview surfaces —
+  plus a genuinely uploadable `code-of-conduct-evasion-phrases.txt` custom keyword dictionary, and
+  the one genuinely scriptable piece: `Export-CommunicationComplianceAuditTrail.ps1`, idempotent/
+  parameterized Exchange Online PowerShell automation (surface 1) that runs three separate
+  `Search-UnifiedAuditLog` queries mirroring Microsoft's own three distinct worked-example
+  RecordType/Operations shapes — `SupervisionRuleMatch` alone, `RecordType Discovery` +
+  `SupervisionPolicyCreated`/`Updated`/`Deleted`, and `RecordType AeD` + `SupervisoryReviewTag` —
+  rather than guessing a single unified query covers all five operation values, merging into a
+  rolling CSV de-duplicated by a composite key hashing the full `AuditData` JSON payload;
+  `$PSCmdlet.ShouldProcess()`-gated file writes so `-WhatIf` still runs the read-only queries and
+  reports would-be merge counts), validate/ script (`Test-CommunicationComplianceAuditTrail.ps1` —
+  automated CSV schema/de-duplication/category/operation/sort-order checks needing no tenant
+  connection, plus a manual verification checklist for the policy's existence/scope/classifiers/
+  reviewers/anonymization/notice-template/storage-limit health, none of which have a read API
+  either), rollback.md (staged pause → revoke access → delete for the portal-only policy, a
+  dedicated note on the separate, non-deletable User-reported messages system policy, and the
+  audit-trail script's independent schedule/CSV/role rollback), four-lens reviews.md (Red Team Fix
+  round resolved — flagged that publishing a real tenant's exact keyword-dictionary contents
+  undermines it, distinguished the non-transcribed-Teams-meeting gap from the general off-platform
+  limitation, and elevated storage-limit auto-deactivation to an actively-monitored KPI rather than
+  a background fact; Blue Team Fix round resolved — added an explicit phased-pilot-before-All-users
+  rollout recommendation; CISO Fix round resolved — promoted the monitoring-notice/consent VERIFY
+  item from a Known Limitations footnote to a gating README §3 prerequisite; Product Owner Fix round
+  resolved — re-confirmed the Harassment/Targeted-harassment naming inconsistency, the correct
+  exclusion of preview content-safety classifiers for Exchange coverage, and the correct exclusion of
+  custom trainable classifiers, which Communication Compliance doesn't support) — grounded in
+  Microsoft Learn via the Microsoft Learn MCP tool (communication-compliance-solution-overview,
+  -policies, -plan, -configure, -permissions, -investigate-remediate, -siem, -reports-audits,
+  -alerts-best-practices, audit-log-activities' Communication compliance activities table,
+  Search-UnifiedAuditLog and New-SupervisoryReviewPolicyV2 reference pages, and the Microsoft
+  Purview service description's Communications Compliance licensing table) plus WebSearch grounding
+  for the regulatory driver (Title VII/*Faragher*/*Ellerth* case-law framework, and — caught mid-
+  build — the EEOC's January 23, 2026 rescission of its 2024 sub-regulatory harassment guidance,
+  which changed this scenario's citation from "current EEOC guidance" to "rescinded guidance;
+  statute and case law still stand," tagged VERIFY per `AGENTS.md` §4 rather than left stale) —
+  2026-09-04
 
 - [x] `scenarios/compliance-manager/assess-against-iso27001/` — first Risk & Compliance-module
   scenario, and the first scenario in this repo built against a Purview surface with **no write

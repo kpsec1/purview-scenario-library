@@ -1,8 +1,8 @@
-# Four-Lens Review — Harassment & Code-of-Conduct Detection
+# Four-Lens Review — Communication Compliance: Workplace Harassment & Code of Conduct
 
-Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round of
-findings below; all **Fix** items were applied before this file was finalized (see "Resolution" under
-each). No **Fail** items were raised.
+Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One
+round of findings below; all **Fix** items were applied to the scenario before this file was
+finalized (see "Resolution" under each). No **Fail** items were raised.
 
 ---
 
@@ -10,31 +10,36 @@ each). No **Fail** items were raised.
 
 **Verdict: Fix (resolved)**
 
-1. **Keyword-only detection is trivially evaded.** A code-of-conduct control that relied on a static
-   lexicon alone is defeated by spelling variants, spacing, emoji, or paraphrase — and worse, it
-   creates false assurance ("we have a harassment policy") while missing most real harassment, which
-   is contextual.
-   - **Resolution:** The scenario is explicitly a **two-part** control — the trainable classifiers
-     (Targeted harassment/Threat/Discrimination) carry contextual detection and the keyword rule only
-     *complements* them. `README.md` §1/§11 and `design.md` §3 state plainly that the script alone is
-     not the full control and that classifiers are mandatory (portal-configured). The sample lexicon
-     is labeled illustrative and the deploy script refuses to run with placeholder-only terms.
-2. **Over-broad reviewer access / privacy abuse.** An investigator with content access across all
-   staff is itself a risk (snooping, retaliation), and disabling pseudonymization would turn a conduct
-   control into surveillance.
-   - **Resolution:** The script only *assigns* reviewers who already hold the Analyst/Investigator
-     role (it never elevates), never disables pseudonymization, and never grants content access;
-     `design.md` §6 documents the Analyst-vs-Investigator content boundary and admin-unit scoping, and
-     `README.md`/manifest keep pseudonymization on by default with disabling flagged as an explicit
-     HR/Legal decision.
-3. **Supervising unlicensed users is a silent gap.** If scoped users lack the required license, they
-   simply aren't covered — a false sense of coverage.
-   - **Resolution:** `README.md` §3/§11 state the per-scoped-user licensing requirement explicitly and
-     tell the operator to confirm seat coverage for the whole reviewee group, not just admins.
-4. **Fabricated automation risk.** The temptation to script the classifiers via the undocumented
-   `-AdvancedRule` parameter would have shipped a guessed, likely-wrong payload.
-   - **Resolution:** Not done — classifiers are left portal-only with an explicit VERIFY, honoring
-     `AGENTS.md` §4. Flagged as the key design decision rather than papered over.
+1. **Publishing the exact custom keyword dictionary undermines it.** A keyword-based condition only
+   works while its exact contents stay unknown to the people it's meant to catch. The original
+   draft shipped `code-of-conduct-evasion-phrases.txt` with no caveat about treating a real
+   deployment's dictionary as sensitive.
+   - **Resolution:** Added an explicit `README.md` §11 limitation instructing the buyer to treat a
+     real tenant's deployed dictionary (especially once extended) as sensitive, not for broad
+     internal/external publication — distinct from this repo's own reference copy, which is
+     published deliberately for transparency.
+2. **Non-transcribed Teams meetings (audio/video) are a distinct, narrower gap than "off-platform"
+   harassment**, and the original draft's Known Limitations conflated the two. A harasser using
+   Teams meeting audio rather than chat is invisible to this control unless transcription is
+   enabled and Teams is an in-scope location — worth calling out on its own, since a buyer reading
+   only the general "off-platform" bullet could reasonably (and wrongly) assume Teams meetings are
+   covered because "Teams" is a selected location.
+   - **Resolution:** Added a separate `README.md` §11 bullet distinguishing this gap from the
+     general off-platform limitation.
+3. **Storage-limit auto-deactivation is a silent-failure attack surface** — not an intentional
+   bypass technique, but a real path to the same outcome (the control silently stops working) that
+   a red-teamer probing for detection gaps would specifically look for. The original draft
+   mentioned the storage limit as a fact but didn't frame it as an operational risk requiring active
+   monitoring.
+   - **Resolution:** Elevated to an explicit KPI in `README.md` §8 ("Storage-limit indicator") and a
+     named limitation in §11, both stating plainly that notification emails go only to the
+     Communication Compliance/Communication Compliance Admins role groups and that "no alerts"
+     cannot be assumed to mean "no problems" without active monitoring.
+4. **Evasive typing / adversarial input** — already correctly flagged in the original draft as a
+   documented Microsoft limitation ("basic" coverage, not solved); no further change needed.
+5. **Off-platform harassment (personal devices, in-person)** — already correctly flagged in the
+   original draft as a fundamental scope boundary of any M365-native control; no further change
+   needed.
 
 No remaining Fix/Fail after resolution.
 
@@ -44,24 +49,28 @@ No remaining Fix/Fail after resolution.
 
 **Verdict: Fix (resolved)**
 
-1. **No working dry-run.** The obvious `-WhatIf` doesn't work in Security & Compliance PowerShell, so a
-   naive script would offer a dry-run that silently does nothing useful (or worse, executes).
-   - **Resolution:** The deploy/remove scripts implement a custom **`-DryRun`** that prints every
-     mutating cmdlet and invokes none, with the `-WhatIf` limitation documented inline and in
-     `README.md` §5/§11.
-2. **False-positive flood from classifiers.** Harassment/threat classifiers over-detect bulk/newsletter
-   mail, which can bury real alerts and burn out reviewers.
-   - **Resolution:** `README.md` §8 makes **Filter email blasts** the first tuning lever, tracks
-     false-positive rate and the *Report as Misclassified* feedback loop as KPIs, and calls out
-     reviewer-time as the real operating cost so scope/sampling are tuned deliberately.
-3. **Validation can't see the classifier half.** A validate script that only checked the cmdlet-visible
-   objects could report "all good" while the classifiers were never added in the portal.
-   - **Resolution:** `validate/Test-CodeOfConductPolicy.ps1` hard-checks the scriptable half **and**
-     prints an explicit manual checklist for the portal-only items (classifiers, locations, filter,
-     reviewer role membership, pseudonymization), so "green" never implies the classifier half is done.
+1. **All-users + 100% review percentage risks day-one alert-fatigue for a first-time deployment,**
+   with no explicit guidance on how to validate signal-to-noise before going tenant-wide. The
+   original draft correctly cited Microsoft's own alert-volume-reduction levers (sentiment,
+   combine-classifiers, lower review %) but only as reactive tuning *after* a volume problem
+   surfaces, not as a proactive rollout strategy.
+   - **Resolution:** Added an explicit phased-pilot recommendation to `README.md` §8 — scope to
+     **Select users** (one business unit) for 2–4 weeks before expanding to **All users** — framed
+     as a deliberate, time-boxed, documented exception to the target end state (§3/§6), not a
+     contradiction of Microsoft's own all-users guidance.
+2. **Incident-response runbook correctly distinguishes Threat-classifier urgency from routine
+   Profanity/Discrimination triage** — already present in the original draft (`README.md` §8, step
+   1); confirmed this meets the bar for an operable, severity-differentiated response process.
+3. **SIEM integration scoped correctly** — the scenario documents the native Sentinel/
+   `OfficeActivity` integration path and the audit-trail CSV as SIEM-ingestible, without overclaiming
+   a built Sentinel workbook as delivered — matches this repo's established scope boundary
+   (`scenarios/dlp/pci-teams-exfil-block/`); no change needed.
+4. **Cross-policy resolution (preview) awareness** — already flagged in the original draft
+   (`README.md` §8) so reviewers don't misread an auto-resolved cross-policy match count as
+   independently-reviewed volume; no change needed.
 
-No remaining Fail. Operability includes a native reviewer/case workflow plus a scriptable gate for the
-keyword/workflow half.
+No remaining Fail. Detection, logging, the runbook, and the phased-rollout addition meet the bar
+for an operable control.
 
 ---
 
@@ -69,26 +78,35 @@ keyword/workflow half.
 
 **Verdict: Fix (resolved)**
 
-1. **Surveillance / works-council risk.** A communication-monitoring control that isn't visibly
-   privacy-preserving is a legal and cultural liability (especially under EU works-council regimes).
-   - **Resolution:** `README.md` §2/§7/§11 and `design.md` §6 foreground privacy-by-design
-     (pseudonymization default, role separation, admin-unit scoping) as the controls that make the
-     program defensible; disabling pseudonymization is framed as an explicit, documented HR/Legal
-     decision.
-2. **Risk reduction vs. cost:** proportionate. The licensing is per-scoped-user and the dominant
-   operating cost is reviewer time; both are called out with tuning guidance so the program is
-   sustainable rather than a queue nobody works.
-3. **Board narrative:** defensible and specific — "we detect harassment and conduct violations across
-   Teams/Exchange/Viva Engage with ML classifiers plus our own lexicon, route matches to trained
-   reviewers under role-based access with pseudonymized identities, and keep an auditable
-   investigation trail." Supports anti-harassment obligations and regulated-industry supervision.
-4. **Change-management impact:** meaningful (this monitors employee communications) — mitigated by
-   staged rollout, draft/tuning via `-DryRun`, reviewer training, and a clean disable/delete off-ramp
-   in `rollback.md`.
-5. **Would I fund this?** Yes — clear obligation coverage, privacy controls that keep it defensible,
-   bounded cost, and honest scoping of what's automated vs. portal-managed.
+1. **Employee-monitoring notice/consent obligations were flagged only as a Known Limitations
+   VERIFY item, with no corresponding operational prerequisite forcing the conversation before
+   go-live.** A legal exposure this material — reading employee message content across a
+   potentially global user population — needs to be a gating prerequisite a deployment team sees
+   in §3, not something discoverable only by reading all the way to §11.
+   - **Resolution:** Added an explicit prerequisite row to `README.md` §3: employment-counsel review
+     of monitoring-notice/consent obligations and an updated, communicated acceptable-use/
+     monitoring policy, cross-referenced to the existing §11 VERIFY for the legal-determination
+     boundary this scenario's technical grounding correctly declines to cross.
+2. **Risk reduction vs. cost is clear and proportionate.** The control maps to a real, if currently
+   contested, regulatory/legal driver (Title VII + *Faragher*/*Ellerth* "reasonable care" doctrine,
+   §2) that doesn't depend on the rescinded 2024 EEOC sub-regulatory guidance surviving; licensing
+   cost is bounded to E5-tier uplift with no PAYG component (§10).
+3. **Board-level narrative is honest, not overclaiming.** "We monitor our own communication
+   channels for harassment and code-of-conduct violations, route them to a role-separated HR/Legal
+   review process with privacy safeguards, and can show a documented response history" is
+   defensible — and the scenario is explicit that this is detective, not preventive (§11), and that
+   off-platform conduct remains entirely outside its visibility. That honesty is exactly what a
+   board/audit committee needs, not a claim of complete coverage.
+4. **The EEOC guidance-rescission finding (§2) is correctly treated as a currency risk to manage,
+   not a reason to abandon the control** — the underlying statutory and case-law basis is
+   independent of that sub-regulatory guidance's status, and the scenario says so explicitly rather
+   than either ignoring the rescission or overreacting to it.
+5. **Would I fund this?** Yes, conditional on the monitoring-notice prerequisite (now gating, per
+   the fix above) actually being completed before go-live — a compliance control that itself
+   creates undisclosed monitoring liability is a net-negative trade a CISO should not accept
+   silently.
 
-No remaining Fix/Fail after resolution.
+No remaining Fail after resolution.
 
 ---
 
@@ -96,26 +114,36 @@ No remaining Fix/Fail after resolution.
 
 **Verdict: Fix (resolved)**
 
-1. **Respecting the PowerShell support boundary.** Microsoft states PowerShell isn't supported for CC
-   policy management; presenting a script as the primary/complete method would contradict product
-   guidance.
-   - **Resolution:** The **portal is documented as the primary, supported surface** for the classifier
-     half; the `SupervisoryReview` cmdlets (real, documented, and the engine underneath CC) are used
-     only for the keyword/workflow subset, with an explicit VERIFY on portal-vs-PowerShell equivalence
-     (`README.md` §11, `design.md` §3/§4).
-2. **Correct, current cmdlets and template.** All six cmdlets used
-   (`New-/Set-/Get-/Remove-SupervisoryReviewPolicyV2`, `New-/Set-/Get-SupervisoryReviewRule`) and the
-   `-Condition` grammar are reproduced from their own reference pages; the "Detect inappropriate text"
-   template and its Targeted harassment/Threat/Discrimination classifiers match the current policy
-   templates table.
-3. **No deprecated path.** Uses the V2 supervisory-review cmdlets (not the retired V1 supervision
-   surface) and the current Communication Compliance solution, not legacy Supervision.
-4. **Accurate licensing and roles.** Purview Suite / O365 E5 / E3+Advanced Compliance for scoped
-   users, and the six role groups with the Analyst-vs-Investigator content boundary, are stated per
-   the plan/permissions docs.
-5. **Not reinventing a native capability.** The scenario uses the native engine and the native portal;
-   it adds value only where the product leaves a gap (as-code keyword/workflow deployment + a diffable
-   record of the portal config), and points at native alerts/remediation rather than rebuilding them.
+1. **Classifier naming inconsistency ("Harassment" vs. "Targeted harassment") across Microsoft's
+   own documentation was present in the source material this build grounded against** —
+   `trainable-classifiers-definitions` and the primary classifier table use "Harassment," while the
+   policy-template summary table and the Alerts-page Filters documentation use "Targeted
+   harassment" for what reads as the same underlying classifier. Shipping this without flagging it
+   risks a buyer thinking this scenario picked the wrong classifier name when the portal UI shows
+   the other label.
+   - **Resolution:** Already caught and documented inline during drafting — `README.md` §6/§11 and
+     `design.md` §4 both explicitly flag the inconsistency and instruct verifying the current
+     portal-UI label at deploy time, rather than silently picking one name and hoping it matches.
+     Re-confirmed correct on review; no further change needed.
+2. **Correctly declined to use the preview content-safety (LLM-based) classifiers as the primary
+   detection mechanism**, since they don't cover Exchange Online (Teams/Viva Engage/Copilot only)
+   and this scenario's location scope explicitly includes email — `design.md` §4 gives the right
+   reasoning, not just a preference.
+3. **Correctly declined to build a custom trainable classifier** — Communication Compliance
+   explicitly doesn't support them; using the fixed classifier catalog plus a keyword dictionary is
+   the only available condition surface, and the scenario says so rather than implying a custom-
+   classifier option was simply skipped.
+4. **No-write-API claim double-sourced and accurately quoted** — `design.md` §2 cites the identical
+   "PowerShell isn't supported..." statement from two independent, currently-published Microsoft
+   Learn pages rather than a single source, and correctly notes the legacy
+   `New-SupervisoryReviewPolicyV2` cmdlet's continued presence in the module reference without
+   treating it as a supported alternative path.
+5. **Licensing citation accuracy** — checked against `docs/licensing-matrix.md`'s existing
+   Communication Compliance row (E5/Suite/E5-add-on, PAYG scoped to non-M365 AI data only) and the
+   Microsoft Purview service description; consistent, no discrepancy found.
+6. **Reviewer role-group naming matches `docs/rbac-model.md`'s existing Communication Compliance
+   row** (Viewers → Analysts → Investigators → Administrators → Communication Compliance all-in-one)
+   exactly — no invented role name.
 
 No remaining Fail after resolution.
 
@@ -125,14 +153,12 @@ No remaining Fail after resolution.
 
 | Lens | Initial verdict | Findings | Resolution |
 |---|---|---|---|
-| 🔴 Red Team | Fix | 4 (keyword-only evasion → two-part control + no-placeholder guard; reviewer/privacy scope; unlicensed-user gap; no fabricated classifier params) | Closed |
-| 🔵 Blue Team | Fix | 3 (custom `-DryRun` for the non-functional `-WhatIf`; false-positive tuning + KPIs; validate covers portal half via checklist) | Closed |
-| 🎩 CISO | Fix | 1 closed (privacy-by-design foregrounded); Pass on cost/narrative/change-mgmt | Closed |
-| 🟦 Microsoft Product Owner | Fix | 1 closed (portal as primary supported surface; scripted subset scoped honestly); 4 confirmed correct | Closed |
+| 🔴 Red Team | Fix | 5 (3 closed with new guidance, 2 already correctly covered) | Closed |
+| 🔵 Blue Team | Fix | 4 (1 closed with a phased-pilot recommendation, 3 already correctly scoped) | Closed |
+| 🎩 CISO | Fix | 5 (1 closed by promoting a VERIFY item to a gating prerequisite, 4 confirmed sound) | Closed |
+| 🟦 Microsoft Product Owner | Fix | 6 (1 re-confirmed already correctly flagged, 5 confirmed correct) | Closed |
 
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`,
-`deploy/New-CodeOfConductPolicy.ps1`, `deploy/Remove-CodeOfConductPolicy.ps1`,
-`deploy/config/code-of-conduct.sample.json`, `deploy/policy/inappropriate-text-portal-reference.json`,
-and `validate/Test-CodeOfConductPolicy.ps1`. No Fail items were raised. This fragment meets the
-definition of done in `AGENTS.md` §9, with the portal-managed classifier half and preview-adjacent
-parameter behavior recorded as explicit VERIFYs (not fabricated) per `AGENTS.md` §4.
+`deploy/Export-CommunicationComplianceAuditTrail.ps1`, and
+`deploy/policy/communication-compliance-policy-manifest.json`. No Fail items were raised. This
+fragment meets the definition of done in `AGENTS.md` §9.

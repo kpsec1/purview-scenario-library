@@ -1,58 +1,72 @@
-# Communication Compliance — Harassment & Code-of-Conduct Detection
+# Communication Compliance — Workplace Harassment & Code of Conduct
+
+> **Scope note (read before implementation):** Microsoft Purview Communication Compliance has **no
+> documented PowerShell, Graph, or REST write API** for policy creation or management — Microsoft's
+> own docs state this explicitly (§2 below, `design.md` §2). Sections 5–6 below therefore describe
+> a precise **portal runbook** for the policy itself, backed by a structured reference manifest, and
+> a genuinely scriptable **audit-trail export** for the one piece of this solution that *is*
+> reachable through a documented API. This is the same shape this repo already established for
+> Compliance Manager (`scenarios/compliance-manager/assess-against-iso27001/`) and Insider Risk
+> Management policy authoring (`scenarios/insider-risk/departing-employee-data-theft/`) — not a
+> shortcut for this scenario.
 
 ## 1. Scenario summary
 
-Stands up a Microsoft Purview **Communication Compliance** policy that detects workplace harassment
-and code-of-conduct violations across **Exchange Online, Microsoft Teams, and Viva Engage**, using
-the built-in **Targeted harassment / Threat / Discrimination** trainable classifiers (the "Detect
-inappropriate text" template) plus an organization-owned **keyword lexicon**, routed to named
-reviewers for triage and remediation. Because Microsoft supports **only the portal** for creating and
-managing Communication Compliance policies, this scenario is a deliberate **two-part deployment**: the
-classifier + location half is configured in the portal (captured as a versioned reference manifest),
-and the **scriptable half** — the supervisory-review policy shell, reviewers, and the keyword rule
-(reviewees, direction, sampling) — is deployed with the Security & Compliance PowerShell
-`SupervisoryReview` cmdlets.
+Deploys a Microsoft Purview Communication Compliance policy that detects potentially harassing,
+discriminatory, threatening, or profane language across Exchange Online email, Microsoft Teams
+chat/channel messages, and Viva Engage conversations, routes matches to a role-scoped HR/Legal
+review workflow with full message-content access, and layers a scriptable, idempotent audit-trail
+export on top for drift detection and retention beyond Communication Compliance's native reporting
+window.
 
-**Who it's for:** an HR/Legal/compliance team standing up harassment and conduct supervision who wants
-the workflow and keyword-lexicon half managed as reviewable, re-runnable code, and the
-machine-learning half configured through Microsoft's supported portal surface — with a single
-source-of-truth manifest tying the two halves together.
+**Who it's for:** an enterprise HR/Legal/Compliance function that wants to move from a purely
+reactive (complaint-driven) posture on workplace harassment and code-of-conduct violations to
+proactive detection across its Microsoft 365 communication channels, with a review process that is
+itself privacy-respecting, role-separated, and defensible.
 
 ## 2. Business/regulatory driver
 
-Detecting and acting on workplace harassment is a core obligation under employment law and internal
-codes of conduct, and increasingly under regulatory regimes for regulated industries (SEC/FINRA
-supervision of communications). Microsoft's own case study frames Communication Compliance precisely
-this way: an organization updating its corporate policy "for reducing workplace harassment" builds a
-policy to detect potentially inappropriate messages across Teams, Viva Engage, and Exchange
-[[5]](#references). Communication Compliance is built **privacy-by-design** — usernames are
-pseudonymized by default, reviewers are opted in by an admin, role-based access is enforced, and audit
-logs are kept — so the control can meet its detection goal without turning into blanket surveillance
-[[6]](#references).
+**Title VII of the Civil Rights Act of 1964** (42 U.S.C. § 2000e-2) prohibits harassment based on
+race, color, religion, sex, or national origin that is severe or pervasive enough to create a
+hostile work environment. Under the Supreme Court's *Faragher v. City of Boca Raton* and
+*Burlington Industries v. Ellerth* framework, an employer facing a hostile-work-environment claim
+involving a supervisor can raise an affirmative defense only by showing it **exercised reasonable
+care to prevent and promptly correct** harassing behavior. Detective monitoring of the channels
+where harassment actually happens today — email, Teams, and enterprise social — is direct evidence
+of that "reasonable care" element, not just a compliance nicety.
 
-This scenario supports:
-- **Anti-harassment / hostile-work-environment obligations** — a documented, auditable detection and
-  reviewer-triage workflow is evidence of a good-faith program, not just a written policy.
-- **Regulated-industry supervision** (SEC Rule 17a-4 / FINRA 3110 supervisory review of
-  communications) — the same supervisory-review engine underlies both conduct and financial
-  supervision.
-- **Privacy/works-council balance (GDPR, EU works councils)** — pseudonymization-by-default and
-  role-scoped investigator access are the controls that make communication monitoring defensible.
+> **VERIFY at deploy time — currency note:** the EEOC's April 2024 sub-regulatory *Enforcement
+> Guidance on Harassment in the Workplace* (which explicitly discussed virtual/remote-work
+> harassment) was **rescinded by a 2–1 EEOC Commission vote on January 23, 2026**
+> [[15]](#references). This scenario's regulatory driver rests on the underlying Title VII statute
+> and the *Faragher*/*Ellerth* case-law framework above, neither of which depends on that
+> sub-regulatory guidance's status — but do not cite the rescinded 2024 guidance itself as current
+> authority in a customer-facing compliance narrative. Confirm the EEOC's current sub-regulatory
+> guidance position before referencing anything beyond the statute and case law directly.
+
+Two secondary drivers this control also supports:
+- **General code-of-conduct enforcement** — profanity and hostile language that doesn't rise to a
+  legally protected-characteristic-based harassment claim is still a professionalism and culture
+  problem most organizations' own internal conduct policies separately prohibit.
+- **Evidentiary readiness** — Communication Compliance's built-in audit trail and this scenario's
+  exported history give HR/Legal a documented record of detection and response if a harassment
+  claim is ever litigated or investigated by a regulator.
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`.
-Automation surface: `docs/automation-surface.md` (surface 1 — Security & Compliance PowerShell).
-Summary for this scenario:
+Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for this scenario:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| License for scoped (supervised) users | **Microsoft Purview Suite** (ex-M365 E5 Compliance), **O365 E5**, or **O365 E3 + Advanced Compliance add-on** | Every user *covered by* the policy needs one of these — not just admins [[1]](#references) |
-| Role to create/manage the policy | **Communication Compliance Admins** (or **Communication Compliance**, or Compliance Administrator / Organization Management) | Makes Communication Compliance visible in the portal and authorizes policy config [[2]](#references) |
-| Reviewer role | **Communication Compliance Analysts** (metadata only) or **Communication Compliance Investigators** (message content + remediation) | Reviewers must be in one of these **and** named in the policy **and** have an Exchange Online mailbox [[3]](#references) |
-| Reviewer of last resort | Keep ≥1 user in **Communication Compliance** / **Communication Compliance Admins** | Avoid a "zero administrator" lockout [[2]](#references) |
-| Automation identity (scriptable half) | App registration connected via **Connect-IPPSSession** (certificate app-only preferred) with a policy-management role | Security & Compliance PowerShell — `docs/automation-surface.md` §3 |
-| Scoping (optional) | **Administrative units** to scope investigators by region/department | Restricted admins see only their admin unit's users; can't combine with adaptive scopes in CC [[3]](#references) |
+| Communication Compliance license (users in scope) | **Microsoft Purview Suite** (formerly Microsoft 365 E5 Compliance), **Office 365 E5/A5/G5**, **Microsoft 365 E5/A5/G5**, or **Office 365 E3 + the Advanced Compliance add-on** | See `docs/licensing-matrix.md`'s Communication Compliance row; confirm current SKU names against the Product Terms before a sales commitment [[7]](#references) |
+| Policy authoring role | **Communication Compliance** or **Communication Compliance Admins** role group | See §5 — policy authoring is portal-only; these role groups also grant the **Communication Compliance** left-nav item itself [[6]](#references) |
+| Reviewer role (this scenario) | **Communication Compliance Investigators** (full message content) — not Analysts (metadata only) | See `design.md` §5 for why Investigators is the deliberate choice for a credible HR investigation. Cross-ref `docs/rbac-model.md` §4 |
+| Reviewer mailbox | Reviewers must have a mailbox **hosted on Exchange Online** | Required by the policy-creation workflow itself [[3]](#references) |
+| Audit log | Enabled (default for most tenants) | Communication Compliance alerts and remediation history depend on it — confirm via `Search-UnifiedAuditLog` or the audit log search settings before creating the policy [[3]](#references) |
+| Automation identity (audit-trail script only) | App registration or account holding **Exchange.ManageAsApp** plus the **View-Only Audit Logs** (or **Audit Logs**) Exchange Online role | `Search-UnifiedAuditLog` requires an **Exchange Online** RBAC role — a Purview-only role is explicitly documented as insufficient. See `docs/rbac-model.md` §6 and `docs/automation-surface.md` §3 |
+| Viva Engage native mode (only if Viva Engage is in scope) | Tenant's Viva Engage network in **Native Mode** | Required for Communication Compliance to check Viva Engage private messages/community conversations [[4]](#references) |
+| Dependency (not deployed by this scenario) | Named HR/Legal stakeholders to populate as reviewers | This scenario does not create or manage user accounts — see `deploy/policy/communication-compliance-policy-manifest.json`'s `reviewers.placeholderMembers` |
+| Dependency (not deployed by this scenario) | Employment-counsel review of monitoring-notice/consent obligations, and an updated acceptable-use/monitoring policy communicated to staff | Reading employee message content (§5, Investigators role) can trigger jurisdiction-specific employee-monitoring notice or consent requirements this scenario's technical grounding cannot determine on the buyer's behalf — see §11 VERIFY |
 
 > Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) and the
 > Product Terms before a sales commitment — SKU names change.
@@ -61,195 +75,353 @@ Summary for this scenario:
 
 ```mermaid
 flowchart TD
-    subgraph Portal["Portal half (Microsoft-supported for CC)"]
-        Tmpl["'Detect inappropriate text' template<br/>Targeted harassment · Threat · Discrimination"]
-        Loc["Locations: Exchange · Teams · Viva Engage"]
-        Man[["deploy/policy/<br/>inappropriate-text-portal-reference.json<br/>(versioned source of truth)"]]
-    end
-    subgraph Script["Scriptable half (SCC PowerShell)"]
-        Cfg[["deploy/config/code-of-conduct.sample.json"]]
-        New["New-CodeOfConductPolicy.ps1"]
-        Pol[SupervisoryReviewPolicyV2<br/>+ reviewers]
-        Rule["SupervisoryReviewRule<br/>Condition = reviewees AND direction AND keyword lexicon<br/>+ sampling rate"]
-    end
-
-    Comms[("Communications:<br/>Exchange · Teams · Viva Engage")] --> Detect{Policy match?}
-    Tmpl --> Detect
-    Rule --> Detect
-    Man -. informs .-> Tmpl
-    Man -. informs .-> Loc
-    Cfg --> New --> Pol --> Rule
-    Detect -- match --> Alert[Alerts / cases]
-    Alert --> Reviewer[Reviewers:<br/>Analysts / Investigators]
-    Reviewer --> Remediate[Escalate · notify · remove Teams message]
+    A[Compliance/HR admin completes<br/>portal runbook - Section 5] --> B["Workplace Harassment & Code of<br/>Conduct policy - Exchange/Teams/<br/>Viva Engage, 4 classifiers + dictionary"]
+    U[Employee self-reports a Teams/<br/>Viva Engage message] --> V[User-reported messages<br/>policy - reviewers reassigned<br/>to HR/Legal]
+    B --> C{Message matches<br/>a condition?}
+    C -- Yes --> D[Alert generated<br/>up to 24h depending on content type]
+    V --> D
+    D --> E["HR/Legal Investigators review<br/>content, sentiment, classifiers"]
+    E --> F["Remediation: Resolve / Tag as /<br/>Notify / Escalate / Remove message"]
+    F --> G["Unified audit log:<br/>SupervisoryReviewTag"]
+    B -.policy created/edited.-> H["Unified audit log:<br/>SupervisionPolicyCreated/Updated/Deleted"]
+    C -.match logged.-> I["Unified audit log:<br/>SupervisionRuleMatch"]
+    G --> J["deploy/Export-CommunicationComplianceAuditTrail.ps1<br/>3 queries, surface 1"]
+    H --> J
+    I --> J
+    J --> K[Rolling audit-trail CSV]
+    K --> L[validate/Test-CommunicationComplianceAuditTrail.ps1]
 ```
 
-The classifier + location half and the keyword + workflow half both feed the same policy match →
-alert → reviewer pipeline. The reference manifest keeps the portal-configured half diffable in source
-control even though it isn't script-applied. Full rationale: `design.md`.
+Communication Compliance has no write API (`design.md` §2), so the policy itself is created and
+operated entirely through the Purview portal. The one scripted piece — the audit-trail export —
+runs independently on its own schedule, reading (never writing) the unified audit log.
 
 ## 5. Step-by-step implementation
 
-### Portal path (required for the classifier half; Microsoft's supported surface)
+### Portal path — creating the policy (there is no script path for this part; see §2/`design.md` §2)
 
-1. Confirm licensing (§3) and assign roles: put admins in **Communication Compliance Admins**, and
-   reviewers in **Communication Compliance Analysts/Investigators** (Purview portal → **Settings →
-   Roles and groups**) [[2]](#references)[[3]](#references).
-2. In the [Microsoft Purview portal](https://purview.microsoft.com) → **Communication Compliance →
-   Policies → Create policy →** template **"Detect inappropriate text"** [[4]](#references).
-3. Name it to match the manifest (`Code of Conduct - Inappropriate Text`). Assign **reviewers**.
-4. **Locations:** Exchange Online, Microsoft Teams, Viva Engage. **Direction:** Inbound, Outbound,
-   Internal. **Review percentage:** 100% [[4]](#references).
-5. Confirm the template's classifiers (**Targeted harassment, Threat, Discrimination**); optionally
-   add the LLM content-safety classifiers (**Hate/Sexual/Violence/Self-harm**, preview, Teams/Viva
-   Engage) which add a **Severity** column to alerts [[4]](#references). Enable **Filter email
-   blasts** to cut bulk-sender false positives [[4]](#references).
-6. Keep **user-name pseudonymization** on (global setting, default) [[6]](#references).
-7. Record any deviations from `deploy/policy/inappropriate-text-portal-reference.json` back into that
-   file so intent stays diffable.
+0. **(Optional, one-time, tenant-wide)** If the tenant has [eDiscovery compliance
+   boundaries](https://learn.microsoft.com/purview/ediscovery-set-up-compliance-boundaries)
+   configured, run this once (Security & Compliance PowerShell) so Investigators/Admins can access
+   the policy's scoped review mailbox — skip if the tenant has no compliance boundaries:
+   ```powershell
+   Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
+   New-ComplianceSecurityFilter -FilterName "CC_mailbox" `
+       -Users <HR/Legal reviewer + admin aliases> `
+       -Filters "Mailbox_Name -like 'SupervisoryReview{*}'" -Action All
+   ```
+   [[5]](#references)
+1. Before starting, review `deploy/policy/communication-compliance-policy-manifest.json` — the
+   recommended policy name, locations, classifiers, and reviewers. **Policy names cannot be changed
+   after creation** [[3]](#references) — confirm before proceeding.
+2. Confirm audit logging is on (§3) and permissions are assigned: at minimum, one person in
+   **Communication Compliance Admins** (or **Communication Compliance**) to create the policy, and
+   named HR/Legal stakeholders assigned to **Communication Compliance Investigators**
+   [[6]](#references).
+3. Sign in to the [Microsoft Purview portal](https://purview.microsoft.com) → **Communication
+   Compliance** → **Policies** → **Create policy** → **Custom policy** (not a template — this
+   scenario's classifier + custom-dictionary combination needs the custom-policy path)
+   [[3]](#references).
+4. **Name and describe your policy**: `Workplace Harassment and Code of Conduct - All Users`
+   (from the manifest) → **Next**.
+5. **Choose users and reviewers**:
+   - Users in scope: **All users** (Microsoft's own planning guidance: "most organizations should
+     include all users in Communication Compliance policies optimized for harassment or
+     discrimination detection" [[2]](#references)).
+   - Reviewers: add the named HR/Legal stakeholders from the manifest's
+     `reviewers.placeholderMembers` (replaced with real accounts). Each reviewer receives an
+     automatic email notifying them of the assignment [[3]](#references) → **Next**.
+6. **Choose locations to detect communications**: select **Exchange**, **Teams**, and **Viva
+   Engage** (per the manifest's `locations`) → **Next**.
+7. **Choose conditions and review percentage**:
+   - Communication direction: **Inbound**, **Outbound**, and **Internal** (all three).
+   - Conditions: add the **Discrimination**, **Harassment** (may display as "Targeted harassment" —
+     §11), **Profanity**, and **Threat** trainable classifiers as OR conditions, plus **Message/
+     Attachment contains any of these words** using a custom keyword dictionary imported from
+     `deploy/policy/code-of-conduct-evasion-phrases.txt` [[8]](#references).
+   - Enable **Use OCR to extract text from images** (catches screenshotted harassing content)
+     [[3]](#references).
+   - Review percentage: **100%**.
+   - Leave **Filter out messages from email blasting services** checked (default) [[3]](#references)
+     → **Next**.
+8. **Review and finish** → **Create policy**. Allow up to ~1 hour for text content and up to 24
+   hours for attachments/OCR before the policy begins detecting [[3]](#references).
+9. **Reassign the User-reported messages policy's reviewers.** This system policy is auto-created
+   by the tenant's Communication Compliance license (up to 30 days after purchase) and its default
+   reviewers/creator fall back to the **Communication Compliance Admins** role group or, if empty,
+   a **randomly selected Global Administrator** [[3]](#references). Go to **Communication
+   Compliance** → **Policies** → **User-reported messages** → **Edit**, and assign the same
+   HR/Legal reviewers as step 5. This lets employees self-report inappropriate Teams/Viva Engage
+   messages directly — Microsoft's own guidance: "Admins should immediately assign custom
+   reviewers to this policy" [[3]](#references).
+10. **Enable username anonymization.** **Settings** (top-right) → **Communication Compliance** →
+    **Privacy** tab → check **Show anonymized versions of usernames** → **Save**
+    [[3]](#references). This is a tenant-wide setting, not per-policy.
+11. **Create a notice template.** **Settings** → **Communication Compliance** → **Notice
+    templates** tab → **Create notice template** — used by reviewers when the **Notify**
+    remediation action is the appropriate response to a lower-severity match [[3]](#references).
 
-### Script path (the scriptable half: policy shell, reviewers, keyword rule)
+### Script path — the audit-trail export (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# Connect first (certificate app-only preferred - see docs/automation-surface.md §3)
-Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
+# 1. Connect (certificate app-only — see docs/automation-surface.md §3). The connecting identity
+#    needs Exchange.ManageAsApp PLUS the View-Only Audit Logs Exchange Online role (docs/rbac-model.md §6).
+Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
-# 1. Dry run — prints the policy, reviewers, and the exact keyword-rule Condition; changes nothing
-./deploy/New-CodeOfConductPolicy.ps1 -ConfigPath ./deploy/config/code-of-conduct.json -DryRun
+# 2. Dry run — queries the last 7 days across all 3 categories, reports what would be merged, writes nothing
+./deploy/Export-CommunicationComplianceAuditTrail.ps1 -OutputCsvPath './out/cc-audit-trail.csv' -WhatIf
 
-# 2. Deploy the scriptable half (reconciles policy + keyword rule to the config)
-./deploy/New-CodeOfConductPolicy.ps1 -ConfigPath ./deploy/config/code-of-conduct.json
+# 3. First real run — a one-time backfill covering the full default retention window
+./deploy/Export-CommunicationComplianceAuditTrail.ps1 `
+    -StartDate (Get-Date).AddDays(-180) -EndDate (Get-Date) `
+    -OutputCsvPath './out/cc-audit-trail.csv'
 
-# 3. Validate (and print the portal-classifier manual checklist)
-./validate/Test-CodeOfConductPolicy.ps1 -ConfigPath ./deploy/config/code-of-conduct.json
+# 4. Recurring run (schedule daily or weekly — overlapping windows are safe, see design.md §8)
+./deploy/Export-CommunicationComplianceAuditTrail.ps1 -OutputCsvPath './out/cc-audit-trail.csv'
+
+# 5. Validate
+./validate/Test-CommunicationComplianceAuditTrail.ps1 -AuditTrailCsvPath './out/cc-audit-trail.csv'
 ```
 
-The script uses the **Security & Compliance PowerShell** `SupervisoryReview` cmdlets (surface 1). It
-implements its own `-DryRun` because **`-WhatIf` is non-functional in Security & Compliance
-PowerShell** [[7]](#references).
+The audit-trail script uses Exchange Online PowerShell's `Search-UnifiedAuditLog` — automation
+surface 1 per `docs/automation-surface.md` §1, because Communication Compliance has no surface of
+its own for anything, including its own audit footprint (`design.md` §2 and §4).
 
 ## 6. Configuration reference
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Policy template (portal) | **Detect inappropriate text** | Threat, Discrimination, Targeted harassment classifiers; Exchange/Teams/Viva Engage; 100% review [[4]](#references) |
-| Policy cmdlet | `New-`/`Set-`/`Get-`/`Remove-SupervisoryReviewPolicyV2` | Params used: `-Name`/`-Identity`, `-Reviewers`, `-Enabled` [[8]](#references) |
-| Rule cmdlet | `New-`/`Set-`/`Get-SupervisoryReviewRule` | Params used: `-Name`, `-Policy`, `-Condition`, `-SamplingRate` [[9]](#references) |
-| Rule `-Condition` syntax | `((Reviewee:…) -OR …) -AND ((Direction:Inbound) -OR …) -AND ((word) -OR (phrase))`, wrapped in outer parens | Reviewees, directions, and keyword/phrase matches; phrases inserted bare — per Microsoft's documented syntax [[9]](#references) |
-| Reviewers | Must be in Analysts/Investigators role group + EXO mailbox | Enforced by the service; validated in the manual checklist [[3]](#references) |
-| Sampling rate | `100` | Review every match (recommended for conduct) [[9]](#references) |
-| Dry-run mechanism | Custom `-DryRun` (not `-WhatIf`) | `-WhatIf` doesn't work in S&C PowerShell [[7]](#references) |
-| Privacy | Pseudonymize user names (default, portal global setting) | Keep on unless HR/Legal decide otherwise [[6]](#references) |
+| Policy type | Custom policy (not a template) | Needed to combine classifiers with a custom keyword dictionary in one policy — `design.md` §8 |
+| Locations | Exchange Online, Microsoft Teams, Viva Engage | Matches the built-in "Detect inappropriate text" template's location set |
+| Direction | Inbound, Outbound, Internal | Full coverage |
+| Users in scope | All users | Microsoft's own planning guidance for harassment/discrimination policies [[2]](#references) |
+| Trainable classifiers | Discrimination, Harassment ("Targeted harassment"), Profanity, Threat | `design.md` §4 for selection rationale |
+| Custom keyword dictionary | `deploy/policy/code-of-conduct-evasion-phrases.txt` | Evasion/concealment phrases only — not a slur/profanity duplicate list, `design.md` §4 |
+| OCR | Enabled | Screenshotted harassing content |
+| Review percentage | 100% | A documented, revisitable alert-volume lever — §8 |
+| Filter email blasts | On (default) | Reduces newsletter/spam false positives |
+| Reviewer role | Communication Compliance Investigators | Full content access — `design.md` §5 |
+| Username anonymization | On (tenant-wide setting) | Settings > Communication Compliance > Privacy |
+| User-reported messages reviewers | Reassigned to the same HR/Legal reviewers | Default falls back to Communication Compliance Admins/Global Admin — step 9 |
+| Audit-trail script query categories | `PolicyMatch` (`SupervisionRuleMatch`), `PolicyUpdate` (`RecordType Discovery` + 3 operations), `ReviewTag` (`RecordType AeD` + `SupervisoryReviewTag`) | `design.md` §4/§8 — 3 separate calls, matching Microsoft's own worked examples |
+| Audit-trail script idempotency | Merge + de-duplicate by `(CreationDate, Operations, UserIds, hash(AuditData))` | Rolling-history pattern, same as `assess-against-iso27001`'s audit-trail script |
 
-Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`; the portal half is captured
-in `deploy/policy/inappropriate-text-portal-reference.json`.
+Full cmdlet parameter grounding: `deploy/Export-CommunicationComplianceAuditTrail.ps1`'s inline
+comments and its `.NOTES` block cite the exact Microsoft Learn reference pages.
 
 ## 7. Validation / how to prove it works
 
-1. **Automated (scriptable half)** — `./validate/Test-CodeOfConductPolicy.ps1` confirms the policy
-   exists, is enabled, has ≥1 reviewer, and that its keyword rule exists with a Condition and sampling
-   rate; exits non-zero on failure.
-2. **Manual checklist (classifier half)** — the validate script prints the portal-only items to
-   confirm (classifiers added, locations selected, filter-email-blasts on, reviewer role membership,
-   pseudonymization on) — these aren't readable via cmdlet, so they're verified in the portal against
-   the reference manifest.
-3. **Detection test (safe)** — from a scoped test user, send a Teams message and an email containing
-   an unambiguous conduct-violation test phrase (and one of your lexicon terms); confirm within the
-   review SLA that an **alert** appears under **Communication Compliance → Alerts/Policies**, visible
-   to the assigned reviewer role only [[10]](#references).
-4. **Remediation-path test** — as an **Investigator**, confirm you can open the message, see the
-   **Conversation** context, and take a remediation action (escalate / notify / remove Teams
-   message); as an **Analyst**, confirm you see metadata but not the actions gated to Investigators
-   [[3]](#references)[[10]](#references).
-5. **Privacy test** — confirm alerts show **pseudonymized** usernames to reviewers by default
-   [[6]](#references).
+1. **Automated file-integrity check** — `./validate/Test-CommunicationComplianceAuditTrail.ps1
+   -AuditTrailCsvPath './out/cc-audit-trail.csv'` confirms the CSV's schema, no duplicate
+   composite-key rows, valid Category/Operation values, and sorted timestamps; exits non-zero on
+   any hard failure (safe for a CI-style pre-flight).
+2. **Manual verification checklist** — the same script prints a checklist (policy exists, correct
+   locations/classifiers/reviewers, User-reported messages reviewers reassigned, anonymization and
+   notice template configured, storage limit healthy) because none of these have a read API to
+   check programmatically (`design.md` §2).
+3. **Functional test (policy match)** — from a test account, send a Teams chat message or email
+   containing test profanity-classifier-triggering language (do not use real slurs or threats for
+   testing — Microsoft's **Test conditions (preview)** feature on the policy's Conditions page lets
+   you test sample text against the configured classifiers before or after policy creation without
+   sending a live message [[3]](#references)). Wait up to 1 hour (text) or 24 hours (attachments),
+   then confirm an alert appears in **Communication Compliance** → **Alerts** for an HR/Legal
+   Investigator.
+4. **Functional test (user-reported message)** — from a test Teams account, use **Report this
+   message** on a test chat message. Confirm the reassigned HR/Legal reviewers (not the default
+   fallback) see it in the **User-reported messages** policy's alert queue.
+5. **Evidence for HR/Legal or an auditor** — the native **Alerts** dashboard and **Reports** page
+   are Communication Compliance's primary evidence surfaces; this scenario's audit-trail CSV is a
+   **secondary**, complementary artifact proving who could edit the policy, when messages matched,
+   and when a reviewer took a remediation action — not a replacement for the native alert record
+   itself, which retains the actual message content.
+6. **Functional test (audit-trail script)** — in the Purview portal, edit the policy (e.g. toggle
+   OCR off then back on). Wait for audit-log ingestion, then re-run the deploy script with a
+   `-StartDate` covering that window. Expect: a new row with `Category = PolicyUpdate` and
+   `Operation = SupervisionPolicyUpdated`.
 
 ## 8. Operations & tuning
 
-**KPIs to watch:**
-- **Alert volume & false-positive rate** by classifier — harassment/threat classifiers can over-fire
-  on bulk/newsletter content; **Filter email blasts** is the first lever [[4]](#references). Track the
-  Investigator's *Report as Misclassified* submissions, which feed classifier improvement
-  [[6]](#references).
-- **Severity distribution** — if you enabled the LLM content-safety classifiers, sort/triage alerts by
-  the **Severity** column (severity ≥4 surfaces as an alert) [[4]](#references).
-- **Review backlog / time-to-triage** — the reviewer on-call metric; a 100% sampling conduct policy
-  can generate real volume, so staff the reviewer rota accordingly.
+**KPIs to watch (first 30 days):**
+- **Classifier match volume, per classifier.** Microsoft's own documented expected-volume table
+  (`design.md` §4) sets a rough baseline: Discrimination/Harassment/Threat are documented as
+  typically **Low** volume; Profanity as **Medium**. A Profanity volume far above that baseline in
+  a specific team or channel is worth investigating for a culture issue, not just tuning out as
+  noise.
+- **Review-tag volume and reviewer turnaround time** (`ReviewTag` category in the audit-trail CSV)
+  — a growing backlog of unaddressed alerts undermines the "promptly correct" element of the
+  *Faragher*/*Ellerth* affirmative defense (§2) as much as not detecting the harassment at all.
+- **`PolicyUpdate` event volume/content** — the audit-trail script's inline `Write-Warning` fires
+  on every detected policy change; review each against what was actually intended.
+- **Storage-limit indicator** — each policy has a hard **100 GB or 1,000,000-message** limit;
+  reaching it **auto-deactivates the policy with no in-band alert to anyone outside the
+  Communication Compliance/Communication Compliance Admins role groups** [[3]](#references). A
+  policy that silently stops protecting because nobody was watching the 80/90/95% notification
+  emails is a real, documented failure mode — see §11 and the Red Team finding in `reviews.md`.
 
-**Alerting & workflow:** matches generate alerts/cases for the assigned reviewers; there's no external
-alert stream to wire — triage happens in the Communication Compliance console. Investigator actions
-(escalate, notify sender, remove Teams message, run Power Automate flow) are the remediation surface
-[[3]](#references)[[10]](#references).
+**Alert-volume tuning (if 100% review percentage proves unsustainable):** Microsoft's own
+best-practices guidance recommends, in order: use **sentiment evaluation** to triage
+negative-sentiment messages first; **report false positives as misclassified** to improve future
+accuracy; **combine classifiers** (e.g. Threat + Profanity, or Harassment + Profanity) to raise the
+match threshold; and only then consider **lowering the review percentage** below 100%
+[[9]](#references). Lowering review percentage is the last lever, not the first, for a
+harassment-focused policy — a sampled 10% review means 90% of genuine matches go unreviewed.
 
-**Incident runbook (a real harassment alert):** (1) Investigator opens the alert, reviews the message
-+ conversation context; (2) escalates to HR/Legal via the built-in escalate action or a Power Automate
-flow; (3) for an active-harm message, remove the Teams message and notify; (4) record the disposition
-(resolved/escalated) — the modification history exports to CSV for the case file [[2]](#references).
+**Consider a phased pilot before "All users."** Microsoft's own planning guidance recommends
+scoping harassment/discrimination policies to all users (§3, §6), and this scenario follows that
+recommendation as its target end state — but a tenant deploying this for the first time, with no
+existing baseline for its own Profanity-classifier volume, should weigh a 2–4 week pilot scoped to
+**Select users** (one business unit) before expanding to **All users**, so HR/Legal can validate
+signal-to-noise and staff the review workload realistically before it's tenant-wide. Record this as
+a deliberate, time-boxed exception in `deploy/policy/communication-compliance-policy-manifest.json`
+if taken — don't let a "temporary" pilot scope quietly become the permanent one.
 
-**Review cadence:** review the keyword lexicon and classifier set quarterly with HR/Legal; keep the
-reference manifest and config file in sync with the deployed policy (a `-DryRun` deploy flags keyword
-drift). Role-group changes take up to 30 minutes to apply [[2]](#references).
+**Cross-policy resolution (preview):** on by default — resolving a match in this policy
+auto-resolves the same underlying message match in any other policy where it was also detected.
+Understand this setting before assuming every "Resolved" count in a report represents an
+independently reviewed decision [[6]](#references).
+
+**Review cadence:** daily triage of new alerts is the practical minimum for a harassment-focused
+policy given the "promptly correct" legal standard (§2); weekly review of the **Reports** page
+trends; monthly review of classifier-volume baselines against Microsoft's documented expectations;
+immediately upon any audit-trail `PolicyUpdate` or storage-limit-approaching warning.
+
+**Incident-response runbook (alert triage):**
+1. **Triage by classifier and sentiment.** A **Threat** classifier match is a different urgency
+   tier than a **Profanity** match — treat a Threat match as a potential physical-safety concern
+   requiring immediate escalation to Security/Legal (and, per the organization's own policy,
+   potentially law enforcement), not a routine HR queue item.
+2. **Examine message details** — sender, recipient, sentiment evaluation, and (if OCR-matched) the
+   extracted image text — before deciding a remediation action [[6]](#references).
+3. **Remediate**: **Resolve** (including "misclassified" if the match was a false positive —
+   improves future classifier accuracy), **Tag as** Compliant/Noncompliant/Questionable, **Notify**
+   (using the notice template from §5 step 11), or **Escalate**/**Escalate for investigation** for
+   HR/Legal case management, per Microsoft's documented remediation-action set [[6]](#references).
+4. **For a Teams message requiring removal**, use the **Remove message** remediation action
+   (Investigators only) [[6]](#references) — note the documented limitation that a message sent
+   *before* the reporting user joined the chat cannot be removed via Teams message remediation
+   [[3]](#references).
+5. **Document** — every remediation action is captured in the unified audit log as a
+   `SupervisoryReviewTag` event and merged into this scenario's audit-trail CSV; do not delete rows
+   from it.
 
 ## 9. Rollback / decommission
 
-See `rollback.md`. Quick reference: `./deploy/Remove-CodeOfConductPolicy.ps1` **disables** the policy
-(reversible); add `-Delete` to remove it. Disabling stops detection while preserving the policy, rule,
-and captured review history.
+See `rollback.md` for the full staged procedure (pause → revoke access → delete, handled
+independently from the audit-trail script's own rollback). Quick reference: use **Pause policy**
+in the portal for a reversible stop; **Delete** only when permanently retiring the control — Delete
+**permanently removes all captured messages, attachments, and alerts** [[3]](#references).
 
 ## 10. Cost & licensing notes
 
-- **Per-user entitlement, not PAYG.** Communication Compliance is an **M365/Purview per-user
-  entitlement** feature — every *supervised* user needs Purview Suite / O365 E5 / E3+Advanced
-  Compliance (§3) — contrast with this library's Data Governance scenarios, which bill PAYG. Confirm
-  seat coverage for the *scoped* population, not just admins [[1]](#references).
-- **No Azure consumption meter** for the policy itself; cost is licensing + reviewer staff time.
-- **Cost governance:** the real operating cost is **reviewer time**. A 100% sampling org-wide conduct
-  policy without email-blast filtering can flood the queue — tune scope, filtering, and (for
-  regulatory sampling) the sampling rate to keep reviewer load sustainable.
+- **No PAYG component for this scenario.** Communication Compliance's pay-as-you-go billing tier
+  applies to detecting risky interactions in **non-Microsoft-365 generative AI applications**
+  (third-party AI apps, Microsoft Copilot Studio, Security Copilot) — this scenario's scope
+  (Exchange/Teams/Viva Engage) has **no PAYG billing requirement** [[7]](#references). Cost is the
+  marginal cost of moving any currently-lower-tier users who need harassment/code-of-conduct
+  monitoring up to a qualifying E5-tier license or the Advanced Compliance add-on (§3).
+- **No additional Azure subscription required.**
+- **Sizing note:** given Microsoft's own "include all users" recommendation (§8), this control
+  typically pushes toward tenant-wide E5-tier licensing rather than a narrow subset, unlike some of
+  this library's other scenarios that can be scoped to a specific team.
 
 ## 11. Known limitations & gotchas
 
-- **PowerShell isn't Microsoft-supported for CC policy management.** Microsoft explicitly directs CC
-  policy creation/management to the portal [[2]](#references). This scenario uses the
-  `SupervisoryReview` cmdlets (which are real, documented, and underlie CC) for the **keyword +
-  workflow subset only**, and configures the classifiers in the portal. **VERIFY** that a
-  portal-created CC policy and a `SupervisoryReviewPolicyV2` created here are fully equivalent in your
-  tenant before standardizing on the script path.
-- **Trainable classifiers are not exposed in the cmdlet surface.** `New-SupervisoryReviewRule` has no
-  documented classifier parameter (the `-AdvancedRule` parameter is undocumented) — Targeted
-  harassment/Threat/Discrimination are **portal-only** here. Do not present the script alone as the
-  full harassment control [[9]](#references).
-- **Locations may not be settable via cmdlet.** Exchange/Teams/Viva Engage selection isn't a
-  documented policy/rule parameter; `-ContentSources` is undocumented. Treat location selection as
-  portal — **VERIFY** [[9]](#references).
-- **`-WhatIf` is non-functional** in Security & Compliance PowerShell [[7]](#references); this
-  scenario ships a custom `-DryRun` instead.
-- **Keyword lexicons are blunt.** A static word list produces false positives/negatives and can't read
-  intent — it complements, never replaces, the classifiers. Keep slurs out of source control; prefer a
-  maintained keyword dictionary. The sample lexicon is intentionally mild placeholder content.
-- **Licensing covers the scoped population.** Supervising users who lack the required license is a
-  compliance gap — confirm seat coverage for everyone in the reviewee group [[1]](#references).
-- **Privacy is a policy decision.** Pseudonymization-by-default and role-scoped investigators are what
-  make this defensible; disabling pseudonymization is an explicit HR/Legal/works-council decision, not
-  a default to flip [[6]](#references).
-- **Role changes lag ~30 minutes** [[2]](#references); reviewers need EXO mailboxes and policy
-  assignment before they see anything [[3]](#references).
+- **This scenario cannot script policy creation, condition tuning, or reviewer assignment.** This
+  is not a scoping shortcut — no such API exists as of this writing (`design.md` §2). Every DLP/
+  Information Protection scenario in this library ships a `New-*`/`Set-*` deploy script; this one
+  cannot, and says so rather than fabricating one.
+- **This is a detective, not a preventive, control.** Unlike `scenarios/dlp/pci-teams-exfil-block/`,
+  this scenario cannot block a harassing message before delivery — the recipient(s) already saw it
+  before a reviewer ever triages the alert. Pair with clear internal reporting channels and manager
+  training as complementary, non-technical controls.
+- **Classifier naming inconsistency across Microsoft's own docs.** Some Microsoft Learn pages and
+  the classifier-definitions reference use "Harassment"; others (the policy-template table, the
+  Alerts-page Filters UI) use "Targeted harassment" for what appears to be the same underlying
+  classifier. This scenario standardizes on "Harassment" per the dedicated classifier-definitions
+  page but flags this explicitly rather than asserting certainty — **VERIFY** the exact label shown
+  in the tenant's current portal UI at deploy time.
+- **Off-platform harassment is invisible to this control.** Communication Compliance only sees
+  Microsoft 365-native and configured third-party-connector channels — personal phones, SMS,
+  personal social media, and in-person conduct are entirely outside its visibility. This control is
+  one input to an HR program, not the program itself.
+- **Teams meetings (audio/video) are not covered unless transcription is used.** Communication
+  Compliance analyzes **text** — a harassing comment made verbally in a Teams meeting is only
+  detectable if the meeting was transcribed and Teams is selected as an in-scope location; a
+  non-transcribed voice/video meeting is entirely outside this control's visibility, distinct from
+  (and narrower than) the general "off-platform" gap above.
+- **Treat the exact custom keyword dictionary contents as sensitive, not public.** This repo ships
+  `deploy/policy/code-of-conduct-evasion-phrases.txt` openly for transparency and reference, but a
+  real tenant's deployed dictionary — especially once extended with organization-specific terms —
+  should not be broadly published internally or externally: publishing the exact phrase list a
+  monitoring control looks for materially helps a bad-faith actor evade it, undermining the
+  keyword-dictionary condition's entire purpose (`design.md` §4).
+- **Trainable classifiers have a minimum word-count requirement** that varies by content language
+  [[8]](#references) — a very short, one- or two-word harassing Teams message may not trigger a
+  classifier match. The custom keyword dictionary (§4) partially mitigates this for known phrases
+  but cannot cover every short-form case.
+- **"Limited support for evasive typing"** is Microsoft's own documented limitation — letter/number
+  substitution and similar adversarial-input evasion has "basic" coverage today, with improvements
+  documented as an ongoing roadmap item, not a solved problem [[1]](#references).
+- **Storage-limit auto-deactivation (§8) is a silent failure mode.** A policy that reaches its 100
+  GB / 1,000,000-message limit stops generating alerts entirely, with notification emails going
+  only to the Communication Compliance/Communication Compliance Admins role groups — a policy could
+  be dark for weeks before anyone outside that group notices no alerts have arrived. Monitor this
+  actively (§8), don't assume "no alerts" means "no problems."
+- **Detection latency is not real-time.** Email/Teams/Viva Engage body content: up to 1 hour;
+  attachments and OCR: up to 24 hours; policies created before July 31, 2022 (not applicable to a
+  new deployment, but relevant if inheriting an existing tenant's older policy): up to 24 hours for
+  everything [[3]](#references).
+- **VERIFY (jurisdiction-specific, outside this build's grounding scope):** many jurisdictions have
+  employee-monitoring notice or consent requirements that may apply to reviewing message content
+  under this scenario's Investigator-role design. Confirm applicable notice/consent obligations
+  with employment counsel for every jurisdiction the in-scope user population spans before go-live
+  — this is a legal determination this scenario's technical grounding cannot make on the buyer's
+  behalf.
+- **EEOC guidance currency (§2):** confirm the current status of federal and any applicable state
+  harassment sub-regulatory guidance before finalizing a customer-facing regulatory-driver
+  narrative — this area moved materially between this scenario's grounding pass and its publication
+  (the 2024 EEOC guidance's January 2026 rescission) and can move again.
 
 ## 12. References
 
-1. Plan for Communication Compliance — licensing (Purview Suite / O365 E5 / E3+Advanced Compliance), reviewers, scoped users — <https://learn.microsoft.com/purview/communication-compliance-plan>
-2. Assign permissions in Communication Compliance (six role groups; admin gate; 30-minute propagation; zero-admin warning) — <https://learn.microsoft.com/purview/communication-compliance-permissions>
-3. Assign permissions / Investigate & remediate (Analysts vs. Investigators; reviewer EXO mailbox + policy assignment; admin units) — <https://learn.microsoft.com/purview/communication-compliance-permissions> and <https://learn.microsoft.com/purview/communication-compliance-investigate-remediate>
-4. Create and manage Communication Compliance policies (templates incl. "Detect inappropriate text"; classifiers; content-safety LLM classifiers; filter email blasts; PowerShell-not-supported note) — <https://learn.microsoft.com/purview/communication-compliance-policies>
-5. Case study — Contoso configures a policy to identify potentially inappropriate text (Teams/Viva Engage/Exchange harassment) — <https://learn.microsoft.com/purview/communication-compliance-case-study>
-6. Communication Compliance overview / system capabilities (privacy-by-design, pseudonymization, classifiers + keyword matching, Report as Misclassified) — <https://learn.microsoft.com/purview/communication-compliance-solution-overview>
-7. New-SupervisoryReviewRule ("The WhatIf switch doesn't work in Security & Compliance PowerShell"; `-Condition` syntax) — <https://learn.microsoft.com/powershell/module/exchangepowershell/new-supervisoryreviewrule>
-8. New-/Set-/Get-/Remove-SupervisoryReviewPolicyV2 (SCC PowerShell) — <https://learn.microsoft.com/powershell/module/exchangepowershell/new-supervisoryreviewpolicyv2>
-9. New-/Set-/Get-SupervisoryReviewRule (SCC PowerShell; `-Condition`, `-SamplingRate`, `-ContentSources`, `-AdvancedRule`) — <https://learn.microsoft.com/powershell/module/exchangepowershell/new-supervisoryreviewrule>
-10. Investigate and remediate Communication Compliance alerts (reviewer actions, Conversation tab) — <https://learn.microsoft.com/purview/communication-compliance-investigate-remediate>
-11. Get started with Communication Compliance (create policy; locations; conditions; classifiers) — <https://learn.microsoft.com/purview/communication-compliance-configure>
+1. Learn about Communication Compliance (limitations table — evasive typing, 12 languages, feedback
+   loop) — <https://learn.microsoft.com/purview/communication-compliance-solution-overview>
+2. Plan for Communication Compliance (all-users recommendation for harassment/discrimination
+   policies, adaptive scopes, licensing note) — <https://learn.microsoft.com/purview/communication-compliance-plan>
+3. Create and manage Communication Compliance policies (policy templates, PowerShell-not-supported
+   statement, User-reported messages policy defaults, OCR, storage limits, pause/copy, condition
+   builder, alert policy defaults) — <https://learn.microsoft.com/purview/communication-compliance-policies>
+4. Get started with Communication Compliance (step-by-step policy workflow, Viva Engage Native Mode
+   requirement, compliance boundaries, notice templates/anonymization, test policy) — <https://learn.microsoft.com/purview/communication-compliance-configure>
+5. (see reference 4) Step 6 — Update compliance boundaries for Communication Compliance policies
+   (`New-ComplianceSecurityFilter`)
+6. Investigate and remediate Communication Compliance alerts (Analysts vs. Investigators
+   permissions, remediation actions, sentiment evaluation, cross-policy resolution, Power Automate) — <https://learn.microsoft.com/purview/communication-compliance-investigate-remediate>
+7. Microsoft Purview service description — Communications Compliance (licensing table, PAYG scope
+   for non-M365 AI data) — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-communications-compliance>
+8. Create and manage Communication Compliance policies — trainable classifier table and volume
+   guidance (Discrimination/Harassment/Profanity/Threat descriptions, custom classifiers not
+   supported, word-count requirement) — <https://learn.microsoft.com/purview/communication-compliance-policies#use-microsoft-provided-trainable-classifiers> and <https://learn.microsoft.com/purview/communication-compliance-alerts-best-practices>
+9. Best practices for managing the volume of alerts in Communication Compliance (sentiment
+   evaluation, combine classifiers, review percentage, content-safety classifiers Teams/Viva
+   Engage/Copilot-only scope) — <https://learn.microsoft.com/purview/communication-compliance-alerts-best-practices>
+10. Create and manage Communication Compliance policies — Integrate with Insider Risk Management
+    (Insider risk trigger policy, Threat/Harassment/Discrimination classifiers) — <https://learn.microsoft.com/purview/communication-compliance-policies#integrate-communication-compliance-with-microsoft-purview-insider-risk-management>
+11. Use Communication Compliance with SIEM solutions (SupervisionRuleMatch, ComplianceSupervisionExchange, Sentinel/OfficeActivity integration) — <https://learn.microsoft.com/purview/communication-compliance-siem>
+12. Create and manage Communication Compliance policies — explicit "PowerShell isn't supported"
+    statement — <https://learn.microsoft.com/purview/communication-compliance-policies#create-and-manage-policies>
+13. Get started with Communication Compliance — explicit "PowerShell isn't supported" restatement — <https://learn.microsoft.com/purview/communication-compliance-configure#notes-and-tips-on-creating-communication-compliance-policies>
+14. New-SupervisoryReviewPolicyV2 reference (legacy cmdlet name, not the current supported policy-
+    authoring path — see `design.md` §2) — <https://learn.microsoft.com/powershell/module/exchangepowershell/new-supervisoryreviewpolicyv2>
+15. U.S. EEOC — EEOC Commission Votes to Rescind 2024 Harassment Guidance (January 23, 2026) — <https://www.eeoc.gov/newsroom/eeoc-commission-votes-rescind-2024-harassment-guidance>
+16. Search-UnifiedAuditLog reference — <https://learn.microsoft.com/powershell/module/exchangepowershell/search-unifiedauditlog>
+17. Manage audit log retention policies (180-day Standard default, 1-year E5 default for Entra/
+    Exchange/OneDrive/SharePoint, up to 10 years with Audit Premium retention policies) — <https://learn.microsoft.com/purview/audit-log-retention-policies>
+18. Audit log activities — Communication compliance activities table — <https://learn.microsoft.com/purview/audit-log-activities#communication-compliance-activities>
+19. Use Communication Compliance reports and audits (Export policy updates/review activities,
+    Discovery/AeD RecordType worked examples, `Get-SupervisoryReviewPolicyV2` mailbox-size check) — <https://learn.microsoft.com/purview/communication-compliance-reports-audits>
 
-> Re-verify licensing, role names, cmdlet parameters, and the portal-vs-PowerShell support boundary
-> against current Microsoft Learn before a customer-facing deployment. The classifier half of this
-> control is portal-managed by Microsoft's own guidance; the script path covers the keyword/workflow
-> subset only.
+> Re-verify all links, the licensing model, and the regulatory-driver currency note (§2, §11)
+> against current Microsoft Learn and EEOC guidance before a customer-facing assessment or sale —
+> both product behavior and the applicable regulatory guidance landscape change over time, and this
+> build already caught one material change (the January 2026 EEOC guidance rescission) mid-research.

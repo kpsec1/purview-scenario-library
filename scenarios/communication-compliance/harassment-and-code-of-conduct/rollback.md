@@ -1,63 +1,104 @@
-# Rollback — Harassment & Code-of-Conduct Detection
+# Rollback — Communication Compliance: Workplace Harassment & Code of Conduct
 
-## Recommended sequence
+This scenario has two independent things to roll back: the **policy itself** (portal-only, no
+script touches it) and the **audit-trail export** (this scenario's one scripted artifact). Handle
+them separately.
 
-A Communication Compliance policy detects and captures communications for reviewer triage; rolling it
-back stops detection but should be staged so you don't lose captured review history or the portal-side
-classifier configuration prematurely.
+## Rolling back the policy (portal-only — no script)
 
-### Stage 1 — Disable the policy (reversible, seconds)
+There is no `Remove-*` script for this scenario's `deploy/` folder, because there is no script
+that creates the policy in the first place (`design.md` §2). Pausing, scoping down, or deleting the
+policy is a portal action:
 
-```powershell
-Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
-./deploy/Remove-CodeOfConductPolicy.ps1 -ConfigPath ./deploy/config/code-of-conduct.json
-```
+### Stage 1 — Pause the policy (reversible, up to 24 hours to take effect)
 
-Sets the policy `-Enabled $false` (via `Set-SupervisoryReviewPolicyV2`). Detection stops; the policy,
-its keyword rule, its reviewers, the portal-configured classifiers, and all captured review history
-remain. Reversible — re-run `New-CodeOfConductPolicy.ps1` (or add a user in the portal) to re-enable.
-Use this for a change freeze, a tuning pause, or while reworking the lexicon/classifier set.
+From **Communication Compliance** → **Policies**, select the policy → **Pause policy** → confirm.
+Alert generation stops, but **existing alerts and captured messages remain available** for ongoing
+investigations and reviews [[1]](#references). Use this stage for testing, troubleshooting a
+false-positive spike, or a temporary business exception that doesn't warrant deleting the control.
+Resume with **Resume policy** — also up to 24 hours to take effect.
 
-### Stage 2 — Delete the policy (not reversible)
+### Stage 2 — Revoke reviewer/admin access (reversible)
 
-```powershell
-Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
-./deploy/Remove-CodeOfConductPolicy.ps1 -ConfigPath ./deploy/config/code-of-conduct.json -Delete
-```
+Remove HR/Legal stakeholders from **Communication Compliance Investigators** and, separately, any
+narrower policy-specific reviewer assignment made in step 5 of `README.md` §5. Does not affect the
+policy's captured data or other policies' reviewer access.
 
-Removes the policy (`Remove-SupervisoryReviewPolicyV2`), which also removes its rule and the
-portal-configured classifier settings attached to it. Re-establishing the control means re-running the
-**full two-part deployment** (script the keyword/workflow half, re-add classifiers + locations in the
-portal). Only do this when the policy is being permanently retired.
+### Stage 3 — Delete the policy (not reversible)
 
-Both stages support `-DryRun` to preview the exact cmdlet without touching the tenant (there is no
-working `-WhatIf` in Security & Compliance PowerShell — see `README.md` §11).
+From **Communication Compliance** → **Policies**, select the policy → **Delete**. Microsoft's own
+guidance:
+
+- **This is permanent.** Deleting the policy **permanently deletes all messages, associated
+  attachments, and message alerts** it captured [[1]](#references). Re-creating the policy means
+  running the full portal runbook in `README.md` §5 again from scratch.
+- If the deactivation reason was the **storage/message limit** being reached (README.md §8/§11)
+  rather than a deliberate decommission, consider **copying the policy** first (Communication
+  Compliance's own **Copy policy** action) to maintain detection continuity before deleting the
+  deactivated one [[1]](#references).
+- **Export any needed evidence first.** There is no equivalent to Compliance Manager's "Export an
+  assessment report" for the captured message content itself — the alert/message data lives only
+  inside the policy until it's deleted. If an active HR/Legal investigation depends on a specific
+  alert, ensure the relevant evidence has been separately preserved (e.g. via an eDiscovery hold or
+  case) before deleting the policy that contains it.
+
+### The User-reported messages policy is separate and cannot be deleted
+
+The **User-reported messages** system policy (`README.md` §5, step 9) is auto-created by the
+tenant's Communication Compliance license and is not a policy this scenario created — it cannot be
+deleted, and "you can only modify the assigned reviewers for the policy... You can't edit all other
+policy properties" [[2]](#references). The only rollback action available for it is reverting its
+reviewers back to the default (Communication Compliance Admins/Global Admin fallback) if HR/Legal
+should no longer receive user-reported Teams/Viva Engage messages — not recommended, since that
+reverts to Microsoft's own documented weaker default (§9 of `README.md`).
+
+## Rolling back the audit-trail export (scripted)
+
+`deploy/Export-CommunicationComplianceAuditTrail.ps1` has no "undo" in the usual sense — it only
+reads from the unified audit log and writes to a local CSV file. Decommissioning this piece means:
+
+1. **Stop the schedule.** If the script was wired into a scheduled task/pipeline (`README.md` §8),
+   disable or delete that schedule. The script itself has no persistent server-side state to
+   disable — there is nothing in the tenant to turn off.
+2. **Decide the fate of the CSV file.** The rolling audit-trail CSV records who changed the policy,
+   when messages matched it, and when a reviewer took a remediation action — treat it with the
+   same retention discipline as any other HR/compliance-relevant audit evidence rather than
+   deleting it casually. If it must be deleted, do so deliberately and document why.
+3. **Revoke the automation identity's role**, if one was dedicated to this script. The script needs
+   only the **View-Only Audit Logs** (or **Audit Logs**) Exchange Online role (`README.md` §3) —
+   remove that role assignment from the app registration's service principal or the interactive
+   account used to run it.
 
 ## What rollback does **not** undo
 
-- **Captured review items / alerts / cases and their audit history.** Disabling or deleting the policy
-  does not purge the communications already captured and surfaced for review, nor the alert/case
-  records and their modification history — those follow their own retention and remain for
-  investigation/audit. Export the modification history to CSV first if you need a record before a
-  delete (`README.md` §8).
-- **Reviewer role-group membership.** The Analyst/Investigator/Admin role assignments granted to
-  reviewers are not touched — remove them separately in the portal (Settings → Roles and groups) if
-  decommissioning the people, not just the policy. Keep ≥1 Communication Compliance / Admins member to
-  avoid a zero-administrator lockout.
-- **The keyword dictionary / lexicon**, if you attached one as a shared custom keyword dictionary in
-  the portal (rather than inline in the rule Condition) — that dictionary object is tenant-level and
-  outlives this policy.
-- **Global privacy/pseudonymization settings** — those are tenant-wide Communication Compliance
-  settings, not part of this policy, and are unaffected.
+- **Audit log records already generated.** `SupervisionRuleMatch`/`SupervisionPolicyCreated`/
+  `SupervisionPolicyUpdated`/`SupervisionPolicyDeleted`/`SupervisoryReviewTag` events already
+  logged by Microsoft 365 are retained per the tenant's audit retention policy (`README.md` §11)
+  regardless of whether this scenario's export script keeps running.
+- **Remediation actions already taken** (a message already resolved, tagged, or removed from
+  Teams) — those actions are permanent regardless of the policy's later pause/deletion.
+- **An HR/Legal investigation or case already opened** based on an alert this policy generated —
+  that case's own record-keeping and process govern independently of this scenario's technical
+  control.
 
 ## Verification after rollback
 
 ```powershell
-Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
-./validate/Test-CodeOfConductPolicy.ps1 -ConfigPath ./deploy/config/code-of-conduct.json
+# Confirm the audit-trail CSV stopped growing (no new rows after the schedule was disabled):
+Import-Csv './out/cc-audit-trail.csv' | Sort-Object CreationDate -Descending | Select-Object -First 1
+
+# Confirm the automation identity no longer holds the audit-search role (run as a Global/Compliance
+# Administrator, from Exchange Online PowerShell):
+Get-RoleGroupMember -Identity 'View-Only Organization Management' | Where-Object { $_.Name -eq '<service principal display name>' }
 ```
 
-After **Stage 1**, expect the "Policy is enabled" check to report `[WARN]` (disabled is a valid state,
-not a hard failure) while existence/reviewer/rule checks still `[PASS]`. After **Stage 2**, expect the
-"Policy exists" check to `[FAIL]` — confirming the policy (and its rule) are gone. Confirm in the
-portal that the policy no longer appears under **Communication Compliance → Policies**.
+For the policy itself, the only verification is in the portal: confirm its status shows **Paused**
+(Stage 1) or that it no longer appears on the **Policies** page (Stage 3). There is no PowerShell
+or Graph equivalent (`design.md` §2).
+
+## References
+
+1. Create and manage Communication Compliance policies — Pause a policy, Copy a policy, storage
+   limit deletion warning — <https://learn.microsoft.com/purview/communication-compliance-policies>
+2. Create and manage Communication Compliance policies — User-reported messages policy (reviewer-
+   only editability) — <https://learn.microsoft.com/purview/communication-compliance-policies#user-reported-messages-policy>
