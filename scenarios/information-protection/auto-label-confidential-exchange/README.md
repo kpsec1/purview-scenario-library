@@ -306,8 +306,10 @@ reference: `./deploy/Remove-ConfidentialAutoLabelExchangePolicy.ps1` disables (r
   GDPR/CCPA drivers in §2. This is a genuine Red Team/CISO finding from this scenario's four-lens
   review (`reviews.md`), not a minor configuration nuance: a buyer whose primary concern is
   external data loss (not just internal classification hygiene) should configure
-  `-ExternalMailRightsManagementOwner` deliberately, or pair this scenario with a
-  content-based Exchange DLP rule that blocks/encrypts external send on the same SIT conditions —
+  `-ExternalMailRightsManagementOwner` deliberately, or pair this scenario with
+  `scenarios/dlp/exchange-pii-exfil-block/` — a content-based Exchange DLP policy, built
+  specifically to close this gap, that blocks or forces encryption on outbound SSN/Credit-Card-
+  Number mail to external recipients regardless of whether this auto-labeling policy has run —
   the same "don't rely on the label alone for real-time protection" pattern already established for
   the sibling scenario (§11 there) and for `scenarios/dlp/pci-teams-exfil-block/`. Unencrypted
   Office (Word/PowerPoint/Excel) attachments on a matching, encryption-applying message are

@@ -166,12 +166,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   there too but wasn't called out when that (already-DONE) fragment was originally built. Deferred
   from `auto-label-confidential-exchange` to avoid re-opening a finished fragment for a doc-only
   addition; see that new scenario's `reviews.md` (Product Owner lens) for the full citation.
-- [ ] `scenarios/information-protection/auto-label-confidential-exchange-dlp-pairing/` (or fold
-  into a future Exchange DLP scenario) — a content-based Exchange DLP rule (not label-conditioned)
-  that blocks or forces encryption on outbound SSN/Credit-Card-Number mail to external recipients,
-  closing the Red-Team-flagged gap in `auto-label-confidential-exchange/README.md` §11: by default,
-  a message matching this scenario's conditions is labeled Confidential but sent to an external
-  recipient **in cleartext** unless `-ExternalMailRightsManagementOwner` is separately configured.
+- [x] Content-based Exchange DLP rule (not label-conditioned) that blocks or forces encryption on
+  outbound SSN/Credit-Card-Number mail to external recipients, closing the Red-Team-flagged gap in
+  `auto-label-confidential-exchange/README.md` §11 — **built** (see DONE below) as
+  `scenarios/dlp/exchange-pii-exfil-block/`, not under `information-protection/` as originally
+  sketched here: the finished scenario is purely content-based DLP with no dependency on the
+  auto-labeling scenario's label (`design.md` §3 explains why), so it belongs alongside this
+  library's other DLP scenarios (`pci-teams-exfil-block`, `endpoint-dlp-usb-block`) by module
+  taxonomy (`AGENTS.md` §2) rather than under Information Protection. Cross-linked back into
+  `auto-label-confidential-exchange/README.md` §11 in place of the "planned" note.
 - [ ] VERIFY (pilot tenant): whether a PDF attachment on a message that an Exchange auto-labeling
   policy encrypts (via the applied label) ends up protected as part of the overall encrypted
   message envelope, or left effectively in the clear alongside a protected email body — Microsoft's
@@ -183,6 +186,37 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   a Red Team/CISO finding in `auto-label-confidential-sharepoint/reviews.md`: the SSN + Credit
   Card Number starter set is U.S.-centric and should not be presented as GDPR-complete personal-
   data coverage for an EU/UK-only tenant without swapping in the relevant regional SITs.
+
+### Follow-ups discovered while building the Exchange PII exfiltration block (DLP) scenario
+- [ ] VERIFY (pilot tenant): the exact `Name` value `Get-RMSTemplate` returns for the auto-created
+  **Encrypt-Only** RMS template in a real tenant — Microsoft's documentation confirms the template
+  exists automatically once Message Encryption is active but never publishes a canonical, byte-
+  exact string. `exchange-pii-exfil-block/deploy/New-ExchangePiiDlpPolicy.ps1` checks for it at
+  runtime rather than assuming (fails clearly, listing available templates, if no match), but a
+  first Encrypt-mode deploy in a new tenant should confirm the default `-EncryptTemplateName
+  'Encrypt-Only'` actually matches before scripting around it unattended. Flagged inline in
+  `README.md` §11 and the deploy script's `.NOTES`.
+- [ ] VERIFY (pilot tenant, before production reliance): run the full functional test suite in
+  `exchange-pii-exfil-block/README.md` §7 to confirm `-AccessScope NotInOrganization` combined with
+  `BlockAccess`/`EncryptRMSTemplate` behaves as designed for the SSN/Credit Card Number SIT pair —
+  every individual parameter is grounded from official Microsoft Learn references, but no worked
+  example combines them for this exact case, the same class of gap already flagged (and still open)
+  for `pci-teams-exfil-block`'s own `BlockAccess`/Teams combination.
+- [ ] `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion/` (or fold into a future
+  DLP hardening pass) — a separate, low-severity audit rule scoped to `FromMemberOf` the same
+  `-ExceptionGroupEmail` group, active only when `-Action Encrypt`, to close the Red-Team-flagged
+  gap in `exchange-pii-exfil-block/README.md` §11: in Encrypt mode the exception group is silently
+  excluded from the encrypt rule (`ExceptIfFromMemberOf`) with no override concept for a
+  non-halting action, so a member's matching external mail currently leaves the tenant in
+  cleartext with zero alert, incident report, or override record. Deferred from this build to keep
+  the fragment scoped to the base scenario (`AGENTS.md` §6); the compensating-control shape is
+  already sketched in `exchange-pii-exfil-block/README.md` §11 and `design.md` §6.
+- [ ] Once `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s pattern is extended to
+  new content-pattern-based DLP scenarios (already tracked as a follow-up under the PCI Teams Part
+  2 section above), consider adding the same risk-based `-SharedByIRMUserRisk` compensating-control
+  rule to `exchange-pii-exfil-block`'s own named policy — the same split-content/behavioral blind
+  spot `pci-teams-exfil-block-part2-obfuscation-mitigation` addresses for Teams applies equally to
+  Exchange (SSN/PAN fragments split across separate emails to the same or different recipients).
 
 ### Follow-ups discovered while building the Insider Risk Management departing-employee scenario
 - [ ] Consider scripting the HR-connector Entra app registration itself (Microsoft Graph
@@ -809,6 +843,47 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **`scenarios/dlp/exchange-pii-exfil-block/`** — a content-based (not label-conditioned)
+  Microsoft Purview DLP policy that blocks or forces encryption on outbound Exchange Online email
+  containing SSN/Credit Card Number addressed to external recipients, closing the Red-Team-flagged
+  gap in `scenarios/information-protection/auto-label-confidential-exchange/README.md` §11 (that
+  scenario's auto-labeling policy leaves external mail in cleartext by default). Full deliverable
+  per `AGENTS.md` §4: `README.md` (12-section skeleton), `design.md` (including a new §3a
+  justifying a named custom policy over Microsoft's overlapping built-in **U.S. Patriot Act**
+  template), `deploy/New-ExchangePiiDlpPolicy.ps1` (idempotent, `-Action Block`/`Encrypt` mode
+  switch, optional business-exception group with a logged block-with-justification override in
+  Block mode, `-WhatIf` throughout, a runtime `Get-RMSTemplate` pre-flight check before Encrypt
+  mode rather than trusting a hardcoded template name), `deploy/Remove-ExchangePiiDlpPolicy.ps1`,
+  `validate/Test-ExchangePiiDlpPolicy.ps1`, `rollback.md`, `reviews.md` (four-lens, all Fix items
+  resolved, no Fail — including two genuine Red Team findings: Encrypt mode's exception-group path
+  is a silent, unlogged bypass rather than Block mode's logged override, and the default
+  Encrypt-Only RMS template doesn't restrict what a legitimate recipient does after decrypting).
+  Cross-linked back into `auto-label-confidential-exchange/README.md` §11 in place of the earlier
+  "pair this scenario with a content-based Exchange DLP rule" placeholder note. Deployed under
+  `scenarios/dlp/` rather than `scenarios/information-protection/` as this backlog item originally
+  sketched — see the corresponding (now-closed) TODO entry above for why.
+
+  Grounded via the Microsoft Learn MCP tool this run (available and used, despite the run's own
+  initial task instructions stating it would not be), fetched directly against official reference
+  pages: `New-`/`Set-`/`Remove-DlpComplianceRule` and `New-`/`Set-DlpCompliancePolicy` (confirmed
+  `AccessScope`'s `InOrganization`/`NotInOrganization` values apply generically, not just to
+  SharePoint/OneDrive/Teams; confirmed `EncryptRMSTemplate`/`RemoveRMSTemplate`/`BlockAccess`
+  parameter shapes with a worked `BlockAccess` example for an SSN rule), `Get-RMSTemplate`
+  reference, the "Data loss prevention Exchange conditions and actions reference" and "Data Loss
+  Prevention policy reference" conceptual pages (confirmed the Exchange action table, halting vs.
+  non-halting behavior, and the "Block only people outside your organization" bifurcation
+  behavior), the Exchange "Bifurcation" reference page (per-recipient forking, independent DLP
+  rule/incident-report evaluation per fork — directly grounds `design.md` §5), the Message
+  Encryption FAQ and Microsoft Purview service description (confirmed `-Action Encrypt` needs no
+  license beyond base E3/E5, a genuine cost advantage over this library's E5-only DLP scenarios),
+  "How to disable the Encrypt-Only feature in Outlook" (confirms Encrypt-Only is a real ad-hoc
+  template with no forward/print restriction), and "What the DLP policy templates include"
+  (confirmed the built-in **U.S. Patriot Act** and **U.S. PII Data** templates' exact conditions/
+  actions, grounding `design.md` §3a). One genuine gap flagged rather than resolved by guessing:
+  Get-RMSTemplate's exact `Name` value for the auto-created Encrypt-Only template isn't published
+  as a canonical string — the deploy script checks for it at runtime instead of assuming (see
+  `README.md` §11 VERIFY).
+  Commit: `<pending>`. Date: 2026-09-04.
 - [x] **`scenarios/audit/retention-policy-management/`** — the configuration counterpart to
   `scenarios/audit/premium-audit-investigation/`: creates and reconciles custom Microsoft Purview
   **audit log retention policies** (`New-`/`Set-`/`Get-`/`Remove-UnifiedAuditLogRetentionPolicy`,
