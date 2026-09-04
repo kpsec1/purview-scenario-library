@@ -1,0 +1,68 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Communication Compliance has no documented REST, Graph, or PowerShell write API for policy creation or management as of this writing - Microsoft's own communication-compliance-policies and communication-compliance-configure articles both state explicitly: 'PowerShell isn't supported for creating and managing Communication Compliance policies. To create and manage these policies, use the policy management controls in the Communication Compliance solution.' (docs/automation-surface.md has no routing-table row for Communication Compliance for the same reason.) No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal wizard in README.md Section 5, so the deployed policy can be diffed against intent during review instead of relying on institutional memory of what was clicked. This follows the identical precedent set by scenarios/insider-risk/departing-employee-data-theft/deploy/policy/departing-employee-policy-manifest.json and scenarios/compliance-manager/assess-against-iso27001/deploy/policy/iso27001-assessment-manifest.json for other portal-only Purview surfaces.",
+  "policyType": "custom",
+  "policyName": "Workplace Harassment and Code of Conduct - All Users",
+  "policyNameNote": "Policy names cannot be changed after creation (Microsoft Learn: communication-compliance-policies). Confirm before creating.",
+  "locations": [
+    "Exchange Online",
+    "Microsoft Teams",
+    "Viva Engage"
+  ],
+  "locationsNote": "Matches the built-in 'Detect inappropriate text' template's location set exactly, but built as a custom policy (not from the template) so the classifier set and custom keyword dictionary below can be combined - see design.md Section 3. Third-party sources (e.g. Instant Bloomberg) require a connector configured separately and are out of scope here.",
+  "direction": [
+    "Inbound",
+    "Outbound",
+    "Internal"
+  ],
+  "usersInScope": {
+    "option": "allUsers",
+    "note": "Microsoft's own planning guidance recommends including all users for policies optimized for harassment or discrimination detection (communication-compliance-plan). Do not scope this to a subset unless the tenant has a documented reason (e.g. a phased pilot rollout - see README.md Section 8)."
+  },
+  "excludedUsersAndGroups": [],
+  "reviewers": {
+    "roleGroup": "Communication Compliance Investigators",
+    "note": "Investigators (not Analysts) because HR/Legal need full message content access, not metadata-only, to credibly assess a harassment complaint (README.md Section 3, docs/rbac-model.md Section 4). Populate with named HR and Legal stakeholders per README.md Section 5 step 3 - do not leave this at the auto-assigned Communication Compliance Admins/Global Admin fallback (see userReportedMessagesPolicy below for why that fallback matters).",
+    "placeholderMembers": [
+      "hr-compliance-lead@contoso.example",
+      "employment-legal-counsel@contoso.example"
+    ]
+  },
+  "conditions": {
+    "trainableClassifiers": [
+      { "name": "Discrimination", "expectedVolume": "Low" },
+      { "name": "Harassment", "expectedVolume": "Low", "note": "Microsoft's UI and some docs pages label this classifier 'Targeted harassment' - see README.md Section 11 for the documented naming inconsistency. Same underlying classifier." },
+      { "name": "Profanity", "expectedVolume": "Medium" },
+      { "name": "Threat", "expectedVolume": "Low" }
+    ],
+    "customKeywordDictionary": {
+      "file": "code-of-conduct-evasion-phrases.txt",
+      "purpose": "Catches organization-specific concealment/evasion phrasing the trainable classifiers are not designed to detect (e.g. 'don't tell HR', 'off the record') - NOT a duplicate slur/profanity list, since the Profanity/Harassment/Discrimination classifiers already cover that ground more robustly than a static keyword list could. See design.md Section 4."
+    },
+    "conditionCombination": "OR (Content matches any of these classifiers) OR (Message/Attachment contains any of these words, from the custom keyword dictionary)"
+  },
+  "reviewPercentage": 100,
+  "reviewPercentageNote": "Microsoft's planning guidance recommends 100% for policies where catching every match matters (communication-compliance-plan). Lowering this is a documented alert-volume lever (README.md Section 8) - do not lower it silently without recording the decision here.",
+  "filterEmailBlasts": true,
+  "ocrEnabled": true,
+  "ocrNote": "Catches screenshotted harassing content (memes, chat screenshots) shared as an image attachment - Communication Compliance's own built-in OCR, not the separate OCR (preview) setting used by DLP/IRM (see README.md Section 11).",
+  "privacySettings": {
+    "usernamePseudonymization": true,
+    "note": "Settings > Communication Compliance > Privacy tab > 'Show anonymized versions of usernames' - portal-only, tenant-wide setting, not per-policy. Enable before Investigators begin triage so identity is revealed only when a case genuinely requires it (README.md Section 11, reviews.md CISO lens)."
+  },
+  "noticeTemplate": {
+    "create": true,
+    "name": "Code of Conduct Reminder Notice",
+    "note": "Settings > Communication Compliance > Notice templates. Used by Investigators when the 'Notify' remediation action is the appropriate response to a lower-severity match (README.md Section 8)."
+  },
+  "userReportedMessagesPolicy": {
+    "action": "reassignReviewers",
+    "note": "This system policy is auto-created by the tenant's Communication Compliance license (up to 30 days after purchase) and its initial reviewers/creator default to the Communication Compliance Admins role group or, if that group is empty, a randomly selected Global Administrator (Microsoft Learn: communication-compliance-policies, 'User-reported messages policy'). Microsoft's own guidance is to immediately assign custom reviewers such as HR/Legal instead of leaving this default in place. Reassign to the same reviewers as policyName above.",
+    "supportedChannels": ["Microsoft Teams (chat/channel messages)", "Viva Engage (conversations, preview)"]
+  },
+  "complianceBoundaryStep": {
+    "required": false,
+    "note": "Only needed if the tenant has eDiscovery compliance boundaries configured (README.md Section 5, Step 0). If so, run New-ComplianceSecurityFilter once (per-tenant, not per-policy) to grant Investigators/Admins access to the SupervisoryReview{*} scoped mailboxes - see Microsoft Learn: communication-compliance-configure#step-6-optional-update-compliance-boundaries-for-communication-compliance-policies."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-04"
+}
