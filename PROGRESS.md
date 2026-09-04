@@ -24,12 +24,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 > here as they're scoped.
 
 ### Follow-ups discovered while building the eDiscovery Premium legal-hold-and-export scenario
-- [ ] Ground the exact `RecordType`/`Operations` values for eDiscovery hold-apply/hold-release/
+- [x] Ground the exact `RecordType`/`Operations` values for eDiscovery hold-apply/hold-release/
   case-close/case-delete events in `Search-UnifiedAuditLog`, then add a dedicated
-  `Export-EdiscoveryAuditTrail.ps1` to `premium-legal-hold-and-export/deploy/` — flagged as a Red
-  Team finding in that scenario's `reviews.md`: none of the scenario's own Graph objects retain a
-  full actor/history trail for who released a hold or closed/deleted a case, and this build
-  deliberately did not fabricate the audit RecordType/Operations values to close the gap.
+  `Export-EdiscoveryAuditTrail.ps1` to `premium-legal-hold-and-export/deploy/` — **built** (see
+  DONE below): `RecordType Discovery` with `CaseAdded`/`CaseUpdated`/`CaseClosed`/`CaseReopened`/
+  `CaseRemoved` (case lifecycle) and `HoldCreated`/`HoldUpdated`/`HoldRemoved`/
+  `HoldRetryDistributionSync` (hold-**policy** lifecycle), both grounded verbatim against
+  Microsoft's "Audit log activities" eDiscovery reference. One genuine gap carried forward rather
+  than resolved by guessing — see the new VERIFY item immediately below.
+- [ ] VERIFY (pilot tenant): whether the `HoldCreated`/`HoldUpdated`/`HoldRemoved`/
+  `HoldRetryDistributionSync` operations `Export-EdiscoveryAuditTrail.ps1` queries (confirmed for
+  the case-level `ediscoveryHoldPolicy` object) also fire for `premium-legal-hold-and-export`'s own
+  custodian-scoped `ediscoveryCustodian: applyHold`/`release` calls — a different object model. One
+  Microsoft Learn page claims custodian holds are internally modeled as a "custodian hold policy"
+  (suggesting yes); the only page describing a dedicated per-custodian audit search UI, and that
+  "custodian hold policy" page itself, both carry a caution banner limiting them to organizations
+  hosted by 21Vianet (China) after the classic eDiscovery experience's August 2025 retirement
+  everywhere else — neither is confirmed for the current, non-legacy experience this scenario
+  targets. Flagged inline in `deploy/Export-EdiscoveryAuditTrail.ps1`'s `.NOTES`,
+  `README.md` §8, and `design.md` §8 rather than resolved by guessing, per `AGENTS.md` §4.
 - [ ] `scenarios/ediscovery/legal-hold-notifications/` — the Premium custodian-communication
   workflow (initial notice, reminders, escalations, acknowledgment tracking), explicitly called
   out as a non-goal in `premium-legal-hold-and-export/design.md` §7 because no documented Graph
@@ -547,6 +560,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   outside the automation identity's own Purview/Azure IAM role scope (see `design.md` §8).
 
 ## DONE
+- [x] `scenarios/ediscovery/premium-legal-hold-and-export/deploy/Export-EdiscoveryAuditTrail.ps1`
+  — fifth **follow-up expansion** fragment (eDiscovery), closing the item that scenario's `README.md`
+  §8/`reviews.md` (Red Team finding 1) tracked from its original build: no independent audit trail
+  for who released a hold or closed/deleted a case. Grounded (Microsoft Learn MCP tool + WebSearch)
+  the exact `RecordType`/`Operations` values rather than fabricating them: `RecordType Discovery`
+  with two confirmed `Operation` sets from Microsoft's own "Audit log activities" eDiscovery
+  reference — case lifecycle (`CaseAdded`/`CaseUpdated`/`CaseClosed`/`CaseReopened`/`CaseRemoved`)
+  and hold-**policy** lifecycle (`HoldCreated`/`HoldUpdated`/`HoldRemoved`/
+  `HoldRetryDistributionSync`). Added `deploy/Export-EdiscoveryAuditTrail.ps1` (idempotent,
+  parameterized Exchange Online PowerShell automation, surface 1 — rolling CSV merge de-duplicated
+  by a composite key hashing the full `AuditData` JSON payload, same mechanism as
+  `scenarios/compliance-manager/assess-against-iso27001/`'s and
+  `scenarios/communication-compliance/harassment-and-code-of-conduct/`'s own audit-trail scripts;
+  optional `-CaseName` client-side filter parsed from each record's `AuditData` JSON to scope a
+  tenant-wide trail to one matter; `$PSCmdlet.ShouldProcess()`-gated file writes so `-WhatIf` still
+  runs the read-only queries; `Write-Warning` on `CaseRemoved`/`HoldRemoved` rows) and
+  `validate/Test-EdiscoveryAuditTrail.ps1` (automated CSV schema/de-duplication/operation-value/
+  sort-order checks needing no tenant connection). Updated `README.md` §5 (script-path step 7), §6
+  (configuration reference row), §8 (rewrote the "Audit visibility" subsection from "not grounded,
+  tracked as a follow-up" to the grounded design plus the one genuine remaining gap), and §12
+  (three new citations); `design.md` (new §8, plus three new `R9`–`R11` references) and `reviews.md`
+  (a follow-up four-lens pass on the addition itself: Red Team/Blue Team/CISO/Product Owner all
+  Pass, no Fix/Fail) and `rollback.md` (audit-log-entries note updated to name the new script).
+  **One real gap deliberately not resolved by guessing** — whether those hold-policy `Operation`
+  values also cover this scenario's own custodian-scoped `applyHold`/`release` calls (a different
+  object from the case-level `ediscoveryHoldPolicy` the operations are documented against) is
+  unconfirmed for the current, non-legacy eDiscovery experience: the one Microsoft Learn page
+  describing per-custodian audit search, and the page claiming custodian holds are internally
+  modeled as a "custodian hold policy," both carry a caution banner limiting them to organizations
+  hosted by 21Vianet (China) after the classic experience's August 2025 retirement everywhere else
+  — recorded as an explicit pilot-tenant VERIFY in this file (above), the script's own `.NOTES`,
+  `README.md` §8, and `design.md` §8, per `AGENTS.md` §4 — 2026-09-04
 - [x] `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` — fourth **follow-up
   expansion** fragment (Data Map, Data Governance), closing one of the three sibling-scan-scenario
   items `scan-azure-sql-and-classify/design.md` §7 explicitly scoped out (Azure SQL Managed

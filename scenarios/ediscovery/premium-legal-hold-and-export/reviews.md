@@ -169,3 +169,34 @@ No Fix/Fail items from this lens.
 
 All Fix items from this round are resolved in the current state of `README.md` and `design.md`.
 No Fail items were raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Follow-up round — `deploy/Export-EdiscoveryAuditTrail.ps1` added
+
+Added to close Red Team finding 1, above ("no independent audit trail for who released a hold or
+closed/deleted a case"), per the follow-up tracked in `PROGRESS.md`. A short four-lens pass on the
+addition itself, not a full re-review of the whole scenario:
+
+- **🔴 Red Team — Pass.** The finding is genuinely narrowed: case-lifecycle events
+  (create/update/close/reopen/delete) are now independently, tamper-evidently visible via
+  `Search-UnifiedAuditLog`, confirmed against Microsoft's own eDiscovery audit reference. Residual
+  gap, disclosed rather than silently assumed closed: whether the hold-policy `Operation` values
+  also capture this scenario's own custodian-scoped `applyHold`/`release` calls is unconfirmed for
+  the current experience (design.md §8) — the script's `.NOTES` and README.md §8 both say so
+  explicitly, and `PROGRESS.md` carries a pilot-tenant VERIFY rather than a fabricated "yes."
+- **🔵 Blue Team — Pass.** Same rolling-CSV, composite-key de-duplication mechanism this repo's two
+  other no-independent-audit-trail scenarios already use; `-CaseName` lets an operator scope the
+  tenant-wide trail to one matter, which those two sibling scripts don't need (they have no
+  multi-case concept). `Write-Warning` on `CaseRemoved`/`HoldRemoved` rows gives an operator a
+  same-run signal rather than requiring them to grep the CSV by hand.
+- **🎩 CISO — Pass.** Directly answers the spoliation-defensibility gap §2/§8 already frame as the
+  scenario's highest-stakes risk, without overclaiming coverage the grounding doesn't support — the
+  custodian-vs-hold-policy caveat is surfaced up front (README.md §8), not buried in a footnote.
+- **🟦 Microsoft Product Owner — Pass.** `RecordType Discovery` and all nine `Operation` values are
+  quoted directly from Microsoft's own "Audit log activities" reference page, not inferred by
+  analogy; the classic-experience/21Vianet-China-only caution banners on the two corroborating
+  pages (`ediscovery-managing-holds`, `ediscovery-view-custodian-activity`) are surfaced rather than
+  silently treated as applicable to the modern experience this scenario automates.
+
+No Fix/Fail from this round. `PROGRESS.md` carries the one open pilot-tenant VERIFY forward.

@@ -79,9 +79,12 @@ this stage over Stage 3.
 - **Review-set content in Microsoft-managed Azure Storage**, once a review set exists, is not
   automatically deleted by releasing a custodian's hold or even closing the case — only by
   explicitly deleting the review set (portal) or the case itself (Stage 4).
-- **Audit log entries.** Every hold-apply, hold-release, case-close, and case-delete action is
-  itself an audited event in the Microsoft 365 unified audit log, independent of the case's own
-  lifecycle — rollback of the *control* does not roll back the *record that it existed*.
+- **Audit log entries.** Every case-close and case-delete action, and every hold-**policy**
+  create/update/remove/retry action, is itself an audited event in the Microsoft 365 unified audit
+  log, independent of the case's own lifecycle — rollback of the *control* does not roll back the
+  *record that it existed*. Run `deploy/Export-EdiscoveryAuditTrail.ps1` before and after each
+  rollback stage to capture the actor/timestamp for the record (README.md §8 has the open caveat on
+  whether this scenario's own custodian-scoped release calls specifically are covered).
 
 ## Verification after rollback
 

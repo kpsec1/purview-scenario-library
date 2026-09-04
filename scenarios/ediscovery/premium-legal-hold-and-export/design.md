@@ -93,6 +93,8 @@ failure this script should misreport.
 | `deploy/Remove-EdiscoveryPremiumLegalHold.ps1` | Staged rollback: release hold → close case → delete case | Each stage gated by an explicit switch; `-DeleteCase` implies `-CloseCase` |
 | `deploy/policy/ediscovery-case-definition.json` | Declarative case/custodian/search/reviewSet/export definition | Single source of truth all four scripts read, so a re-run against the same file is a true no-op once the target state is reached |
 | `validate/Test-EdiscoveryPremiumCaseSetup.ps1` | Read-only proof the case/custodians/hold/search/review-set/export state matches the definition file | `eDiscovery.Read.All` only; never calls a mutating endpoint |
+| `deploy/Export-EdiscoveryAuditTrail.ps1` | Independent case-lifecycle/hold-policy-lifecycle audit trail via `Search-UnifiedAuditLog` (automation surface 1, not Graph) — closes the Red Team finding in `reviews.md` that this scenario's own Graph objects carry no actor/history trail | Rolling CSV merge, de-duplicated by a composite key hashing `AuditData`, identical mechanism to `scenarios/compliance-manager/assess-against-iso27001/`'s and `scenarios/communication-compliance/harassment-and-code-of-conduct/`'s own audit-trail scripts |
+| `validate/Test-EdiscoveryAuditTrail.ps1` | Read-only CSV schema/de-duplication/operation-value/sort-order checks for the audit trail file | Needs no tenant connection; never calls a mutating endpoint |
 
 ## 7. Non-goals (explicitly out of scope for this fragment)
 
@@ -119,6 +121,32 @@ failure this script should misreport.
   natural follow-up once `scenarios/insider-risk/` has a scenario that produces an escalatable
   case, not something this fragment builds standalone.
 
+## 8. Audit trail script — grounding and the custodian-vs-hold-policy caveat
+
+`deploy/Export-EdiscoveryAuditTrail.ps1` (added as a follow-up fragment; see `PROGRESS.md`) queries
+`Search-UnifiedAuditLog -RecordType Discovery` for two categories confirmed verbatim against
+Microsoft's "Audit log activities" eDiscovery reference [[R9]](#references-design): case lifecycle
+(`CaseAdded`/`CaseUpdated`/`CaseClosed`/`CaseReopened`/`CaseRemoved`) and hold-**policy** lifecycle
+(`HoldCreated`/`HoldUpdated`/`HoldRemoved`/`HoldRetryDistributionSync`). The reference page itself
+carries no legacy-experience caution banner and is the same page this repo's
+`scenarios/ediscovery/location-scoped-legal-hold/` scenario's design already cites for its own
+`ediscoveryHoldPolicy` object — so the hold-policy category is confidently grounded for *that*
+object model.
+
+What it does **not** resolve: whether those same four hold-policy `Operation` values also fire for
+*this* scenario's own `ediscoveryCustodian: applyHold`/`release` calls (§3's custodian-scoped hold
+mechanism, a different object from `ediscoveryHoldPolicy`). One Microsoft Learn page states that a
+custodian hold is "automatically added to a custodian hold policy" internally
+[[R10]](#references-design), which would suggest yes — but that page, and the only page describing
+a dedicated per-custodian audit search UI [[R11]](#references-design), both carry Microsoft's
+caution banner limiting them to organizations hosted by 21Vianet (China) after the classic
+eDiscovery experience's retirement everywhere else on August 31, 2025. Neither is confirmed to
+describe the current, non-legacy experience this scenario's own deploy scripts target. Rather than
+assume either direction, this was recorded as an explicit VERIFY (pilot tenant) in `PROGRESS.md`
+and in the script's own `.NOTES`, per `AGENTS.md` §4 — the script still queries the hold-policy
+category (the best-documented signal available; a zero-row result for a tenant that has only ever
+used custodian holds is itself informative), it just doesn't claim more than it's confirmed.
+
 ## References {#references-design}
 
 - R1. Assign permissions in eDiscovery — app-only auth unsupported statement and remediation guidance — <https://learn.microsoft.com/purview/edisc-permissions#configure-app-only-authentication-for-ediscovery-powershell>
@@ -129,3 +157,6 @@ failure this script should misreport.
 - R6. New-MgSecurityCaseEdiscoveryCaseReviewSet reference (`displayName` unique, 64-character limit) — <https://learn.microsoft.com/powershell/module/microsoft.graph.security/new-mgsecuritycaseediscoverycasereviewset?view=graph-powershell-1.0>
 - R7. ediscoveryReviewSet: addToReviewSet / export actions (202 Accepted + Location header) — <https://learn.microsoft.com/graph/api/security-ediscoveryreviewset-addtoreviewset?view=graph-rest-1.0>, <https://learn.microsoft.com/graph/api/security-ediscoveryreviewset-export?view=graph-rest-1.0>
 - R8. Microsoft Purview eDiscovery legacy solutions — Insider Risk Management case escalation to eDiscovery (Premium) — <https://learn.microsoft.com/purview/ediscovery#comparison-of-key-capabilities>
+- R9. Audit log activities — eDiscovery activity reference (`Operation` names/descriptions for case and hold-policy lifecycle events, no legacy-experience caution banner) — <https://learn.microsoft.com/purview/audit-log-activities#ediscovery-activities>
+- R10. Manage holds in eDiscovery (Premium) — "custodian hold policy" claim; classic-experience/21Vianet-China-only caution banner — <https://learn.microsoft.com/purview/ediscovery-managing-holds>
+- R11. View custodian audit activity — per-custodian audit search UI; classic-experience/21Vianet-China-only caution banner — <https://learn.microsoft.com/purview/ediscovery-view-custodian-activity>

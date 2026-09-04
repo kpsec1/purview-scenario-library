@@ -153,6 +153,13 @@ assuming synchronous completion, per `docs/automation-surface.md` §5.
 ./validate/Test-EdiscoveryPremiumCaseSetup.ps1 `
     -DefinitionPath ./deploy/policy/ediscovery-case-definition.json `
     -CaseId $caseId -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
+
+# 7. Audit trail (independent of the Graph objects above; run on a recurring schedule per Section 8
+#    "Audit visibility" — Exchange Online PowerShell, not Graph, so connect separately).
+Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDomain
+./deploy/Export-EdiscoveryAuditTrail.ps1 `
+    -CaseName 'CONTOSO-LIT-2026-014' -OutputCsvPath ./deploy/out/edisc-audit-trail.csv
+./validate/Test-EdiscoveryAuditTrail.ps1 -AuditTrailCsvPath ./deploy/out/edisc-audit-trail.csv
 ```
 
 All three deploy scripts use Microsoft Graph (`Microsoft.Graph.Security` module,
@@ -176,6 +183,7 @@ design [[8]](#references).
 | Export | `Export-MgSecurityCaseEdiscoveryCaseReviewSet` | `outputName`, `exportOptions = 'originalFiles,tags'`, `exportStructure = 'pst'` |
 | Release hold | `Invoke-MgGraphRequest POST .../custodians/{id}/release` | — |
 | Close/delete case | `Update-MgSecurityCaseEdiscoveryCase -Status closed`, `Remove-MgSecurityCaseEdiscoveryCase` | — |
+| Audit trail (read-only) | `Search-UnifiedAuditLog -RecordType Discovery -Operations ...` | `CaseAdded`/`CaseUpdated`/`CaseClosed`/`CaseReopened`/`CaseRemoved`; `HoldCreated`/`HoldUpdated`/`HoldRemoved`/`HoldRetryDistributionSync` — see §8 and `deploy/Export-EdiscoveryAuditTrail.ps1` |
 
 `caseOperationStatus` values used by the poll loops in both `New-Ediscovery*.ps1` scripts:
 `notStarted`, `submissionFailed`, `running`, `succeeded`, `partiallySucceeded`, `failed`,
@@ -233,19 +241,32 @@ active is a preservation failure, not a cosmetic drift.
 scenario's own objects retain a full history of *who* released a hold or closed/deleted a case
 beyond the single `lastModifiedBy`/`closedBy` snapshot on the case itself — an actor with
 eDiscovery Administrator access who quietly releases a custodian's hold and later re-applies it
-leaves no trace in the objects this scenario's scripts read. Route eDiscovery admin actions
-through the Microsoft 365 unified audit log (`Search-UnifiedAuditLog`, automation surface 1 per
-`docs/automation-surface.md`) for independent, tamper-evident visibility, the same pattern this
-library's other no-write-API scenarios use for their audit trail
+leaves no trace in the objects this scenario's scripts read. `deploy/Export-EdiscoveryAuditTrail.ps1`
+routes around this by pulling case-lifecycle events (`CaseAdded`/`CaseUpdated`/`CaseClosed`/
+`CaseReopened`/`CaseRemoved`) and hold-policy-lifecycle events (`HoldCreated`/`HoldUpdated`/
+`HoldRemoved`/`HoldRetryDistributionSync`) from the Microsoft 365 unified audit log
+(`Search-UnifiedAuditLog`, automation surface 1, `RecordType Discovery`) into a rolling,
+de-duplicated CSV — the same pattern this library's other no-independent-audit-trail scenarios use
 (`scenarios/compliance-manager/assess-against-iso27001/`,
-`scenarios/communication-compliance/harassment-and-code-of-conduct/`) — the exact `RecordType`/
-`Operations` values for eDiscovery hold-apply/release/case-close/delete events were not
-independently confirmed during this build and should be grounded before scripting a dedicated
-export, rather than guessed by analogy; tracked as a follow-up in `PROGRESS.md`. Until that export
-exists, treat the case's own `Get-MgSecurityCaseEdiscoveryCase`/
-`Get-MgSecurityCaseEdiscoveryCaseCustodian` snapshots from
-`validate/Test-EdiscoveryPremiumCaseSetup.ps1`'s scheduled runs as the lightweight, point-in-time
-substitute — sufficient to catch a status regression, not sufficient to attribute who caused it.
+`scenarios/communication-compliance/harassment-and-code-of-conduct/`), both `Operation` sets
+confirmed verbatim against Microsoft's own "Audit log activities" eDiscovery reference rather than
+guessed by analogy [[25]](#references). **One real gap remains, disclosed rather than papered
+over:** those four hold-policy `Operation` values are documented against the case-level
+`ediscoveryHoldPolicy` object (the "Hold policies" tab, and this repo's sibling
+`scenarios/ediscovery/location-scoped-legal-hold/` scenario) — whether they also fire for *this*
+scenario's own custodian-scoped `ediscoveryCustodian: applyHold`/`release` calls is not confirmed
+for the current, non-legacy eDiscovery experience; the one Microsoft Learn page describing
+per-custodian audit search carries a caution banner limiting it to organizations hosted by
+21Vianet (China) after the classic experience's August 2025 retirement everywhere else
+[[26]](#references)[[27]](#references). See the script's own `.DESCRIPTION`/`.NOTES` for the full
+reasoning and the pilot-tenant VERIFY step tracked in `PROGRESS.md`. Until that VERIFY closes,
+treat a `HoldPolicyLifecycle` row in this scenario's audit trail as strong evidence *some*
+eDiscovery hold changed, and cross-check its `CaseName`/`ObjectName` columns against this case
+before assuming it's this scenario's own custodian hold rather than an unrelated
+`ediscoveryHoldPolicy` action in a different matter. Run it weekly alongside
+`validate/Test-EdiscoveryPremiumCaseSetup.ps1` per this section's Review cadence, and pair it with
+the case's own `Get-MgSecurityCaseEdiscoveryCase`/`Get-MgSecurityCaseEdiscoveryCaseCustodian`
+snapshots for the point-in-time status those scripts already report.
 
 **Operational dependency this scenario does not close:** whether the *right* custodians were
 identified for a given matter is a legal-judgment call this scenario's automation cannot make —
@@ -352,6 +373,9 @@ destructive stages, each requiring an explicit switch.
 22. ediscoveryCustodian resource type (Apply hold / Release / Activate methods) — <https://learn.microsoft.com/graph/api/resources/security-ediscoverycustodian?view=graph-rest-1.0>
 23. Create custodian userSource (v1.0 REST reference, `includedSources` values) — <https://learn.microsoft.com/graph/api/security-ediscoverycustodian-post-usersources?view=graph-rest-1.0>
 24. Use the Microsoft Purview eDiscovery API (v1.0 object/cmdlet overview) — <https://learn.microsoft.com/graph/api/resources/security-ediscovery-apioverview?view=graph-rest-1.0>
+25. Audit log activities — eDiscovery activity reference (the exact `Operation` names/descriptions `deploy/Export-EdiscoveryAuditTrail.ps1`'s two query categories are built from verbatim) — <https://learn.microsoft.com/purview/audit-log-activities#ediscovery-activities>
+26. Manage holds in eDiscovery (Premium) — the "custodian hold policy" claim; carries Microsoft's classic-eDiscovery-experience/21Vianet-China-only caution banner — <https://learn.microsoft.com/purview/ediscovery-managing-holds>
+27. View custodian audit activity — the one per-custodian audit UI Microsoft documents; also carries the classic-experience/21Vianet-China-only caution banner — <https://learn.microsoft.com/purview/ediscovery-view-custodian-activity>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing deployment —
 > Purview's Graph eDiscovery surface has moved from the `microsoft.graph.ediscovery` namespace to
