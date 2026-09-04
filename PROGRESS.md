@@ -883,7 +883,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Get-RMSTemplate's exact `Name` value for the auto-created Encrypt-Only template isn't published
   as a canonical string — the deploy script checks for it at runtime instead of assuming (see
   `README.md` §11 VERIFY).
-  Commit: `<pending>`. Date: 2026-09-04.
+  Commit: `899c984`. Date: 2026-09-04.
 - [x] **`scenarios/audit/retention-policy-management/`** — the configuration counterpart to
   `scenarios/audit/premium-audit-investigation/`: creates and reconciles custom Microsoft Purview
   **audit log retention policies** (`New-`/`Set-`/`Get-`/`Remove-UnifiedAuditLogRetentionPolicy`,
