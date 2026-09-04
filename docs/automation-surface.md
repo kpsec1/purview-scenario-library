@@ -7,14 +7,14 @@
 >
 > **Verify before you script against production.** Module versions, cmdlet support, and API
 > surfaces change frequently. This is a practitioner's summary grounded in Microsoft Learn,
-> current as of **2026-09-03**. Sources are linked at the bottom; re-check them before building
+> current as of **2026-09-04**. Sources are linked at the bottom; re-check them before building
 > a production pipeline.
 
 ---
 
-## 1. Four automation surfaces, not one (read this first)
+## 1. Five automation surfaces, not one (read this first)
 
-Purview automation spans **four distinct connection surfaces**, layered on top of the four RBAC
+Purview automation spans **five distinct connection surfaces**, layered on top of the four RBAC
 systems in `rbac-model.md` §1. Picking the wrong one is the second most common cause of "why
 doesn't this cmdlet exist" tickets (the first is RBAC — see `rbac-model.md`).
 
@@ -24,13 +24,23 @@ doesn't this cmdlet exist" tickets (the first is RBAC — see `rbac-model.md`).
 | **2** | **Security & Compliance PowerShell** | Same `ExchangeOnlineManagement` module, `Connect-IPPSSession` (different endpoint) | DLP policies/rules, retention (DLM) policies & labels, sensitivity labels & auto-labeling policies, IRM policy config (partial), Communication Compliance, Records Management, some eDiscovery cmdlets |
 | **3** | **Microsoft Graph** | `Microsoft.Graph` PowerShell SDK (`Connect-MgGraph`) or raw REST (`https://graph.microsoft.com`) | eDiscovery cases/holds/review-sets (`Microsoft.Graph.Security` namespace), Teams DLP real-time evaluation & export, Audit Search Graph API, subject rights requests, DSPM-for-AI protection-scope/process-content APIs, Entra administrative units |
 | **4** | **Microsoft Purview Data Map / Data Governance REST API** | `https://{account}.purview.azure.com` (data-plane) + `https://api.purview-service.microsoft.com` (audit) | Data Map scans, sources, collections; Unified Catalog governance domains, data products, glossary; Data Map history/audit query |
+| **5** | **SharePoint Online Management Shell** | `Microsoft.Online.SharePoint.PowerShell` module, `Connect-SPOService` (a separate tenant-admin endpoint from surfaces 1/2 and from site-level SharePoint/PnP automation) | Tenant-wide SharePoint/OneDrive **prerequisite toggles** that gate Information Protection scenarios — enabling sensitivity-label processing (`Set-SPOTenant -EnableAIPIntegration`), and the PDF/video (MP4) file-type extensions to that support |
 
 > **Rule of thumb for picking a surface:** if the task is a **policy that ships as a
 > Security & Compliance object** (DLP, retention, labels, IRM, records, comms compliance) →
 > surface 2. If it's **case-based work with review sets/analytics** (eDiscovery Premium) or
 > **Teams message-level DLP** or **subject rights/protection-scope APIs** → surface 3
-> (Graph). If it's **Data Map/Unified Catalog metadata** → surface 4. Mail-flow rules and
+> (Graph). If it's **Data Map/Unified Catalog metadata** → surface 4. If it's a **SharePoint/
+> OneDrive tenant-level setting** (not a Purview policy object at all — it lives in the SharePoint
+> admin center's own tenant configuration) → surface 5. Mail-flow rules and
 > `Search-UnifiedAuditLog` are the two tasks that only exist on surface 1.
+>
+> **Surface 5 is a narrow, single-purpose surface in this library.** Unlike surfaces 1–4, it
+> isn't used to author Purview policy objects — it only flips tenant-wide SharePoint/OneDrive
+> switches that several Information Protection scenarios require as a one-time prerequisite
+> before a sensitivity-label auto-labeling policy on those locations can take effect (see
+> `scenarios/information-protection/auto-label-confidential-sharepoint/README.md` §5, which
+> flagged this as a manual/undocumented prerequisite before this surface was grounded here).
 
 ---
 
@@ -42,6 +52,7 @@ doesn't this cmdlet exist" tickets (the first is RBAC — see `rbac-model.md`).
 | **Microsoft.Graph** PowerShell SDK (surface 3) | `Install-Module Microsoft.Graph.Authentication -Scope CurrentUser` plus only the specific sub-modules a script needs (e.g. `Microsoft.Graph.Security`, `Microsoft.Graph.Identity.Governance`) | **Do not run `Install-Module Microsoft.Graph`** for automation — it pulls 47+ sub-modules. Install `Microsoft.Graph.Authentication` (installed automatically as a dependency of any sub-module) plus only what's used. PowerShell 7+ recommended on all platforms; Windows PowerShell 5.1 needs .NET Framework 4.7.2+ and `RemoteSigned` (or less restrictive) execution policy. Pin to `v1.0` cmdlets/module (`Microsoft.Graph.*`) — avoid `Microsoft.Graph.Beta.*` in shipped automation; beta endpoints can change without notice. |
 | **MSAL.PS** (surface 3, for the separate eDiscovery export-download token) | `Install-Module MSAL.PS -Scope CurrentUser` | Only needed for `Get-MSALToken` when downloading eDiscovery Premium export packages via the Purview eDiscovery API, which is authenticated separately from Graph. |
 | Purview Data Map / Data Governance REST (surface 4) | No module — plain REST via `Invoke-RestMethod`/`Invoke-WebRequest`, or the Azure SDKs (`azure-purview-*` packages) if scripting outside PowerShell | Token obtained via OAuth2 client-credentials grant against `login.microsoftonline.com`, resource `https://purview.azure.net`. |
+| **Microsoft.Online.SharePoint.PowerShell** (surface 5) | `Install-Module -Name Microsoft.Online.SharePoint.PowerShell -Scope CurrentUser` | From PowerShell Gallery (or the standalone MSI installer). **This module is Windows PowerShell 5.1-native** — running it from a PowerShell 7 console requires `Import-Module Microsoft.Online.SharePoint.PowerShell -UseWindowsPowerShell`, which starts a Windows PowerShell 5.1 compatibility-layer process under the hood. That compatibility layer is Windows-only, so **unlike surfaces 1 and 3, surface 5 has no officially documented cross-platform (Linux/macOS) path** — see §6 for the CI/CD implication. The `-EnableSensitivityLabelforPDF` parameter specifically requires module version 16.0.24211.12000 or later. |
 
 **Version pinning:** every script in this library's `deploy/`/`validate/` folders declares
 `#Requires -Modules @{ ModuleName='ExchangeOnlineManagement'; ModuleVersion='X.Y.Z' }` (or the
@@ -55,10 +66,10 @@ script behavior.
 
 | Pattern | Surfaces | When to use |
 |---|---|---|
-| **Interactive delegated (modern auth, MFA)** | 1, 2, 3 | Admin running a script by hand at a keyboard. `Connect-ExchangeOnline -UserPrincipalName <admin>`, `Connect-IPPSSession -UserPrincipalName <admin>`, `Connect-MgGraph` (device code / browser). Never used inside this library's `deploy/`/`validate/` scripts — those assume unattended execution. |
-| **App-only, certificate-based (CBA)** | 1, 2, 3 | **The default pattern for every script in this library.** An Entra app registration authenticates with an X.509 certificate — no password/secret to leak, no interactive prompt, and no dependency on a specific admin's account surviving. Certificate can live in the local cert store (`-CertificateThumbprint`) or be resolved at run time from Key Vault as an in-memory `X509Certificate2` object (`-Certificate`) — never write the private key to disk in a pipeline. |
-| **App-only, client secret** | 3 (Graph SDK `-ClientSecretCredential`), REST (surface 4) | Acceptable when certificate management isn't available (e.g. quick POC), but the secret must come from a vault/pipeline secret store at run time — **never hard-coded or committed**. Prefer certificate or managed identity for anything that ships to a buyer's tenant. |
-| **Managed identity** | 1 (via `Connect-ExchangeOnline -ManagedIdentity -Organization <tenant>.onmicrosoft.com`, from Azure Automation/Functions/VMs with a system- or user-assigned identity), 3 (`Connect-MgGraph -Identity`) | Best option when the automation itself runs inside Azure (Azure Automation runbook, Azure Function, Azure VM) — no credential material to manage at all. Not usable for scripts that run on a buyer's own workstation outside Azure. |
+| **Interactive delegated (modern auth, MFA)** | 1, 2, 3, 5 | Admin running a script by hand at a keyboard. `Connect-ExchangeOnline -UserPrincipalName <admin>`, `Connect-IPPSSession -UserPrincipalName <admin>`, `Connect-MgGraph` (device code / browser), `Connect-SPOService -Url <admin-center-URL>` (prompts for credentials/MFA). Never used inside this library's `deploy/`/`validate/` scripts — those assume unattended execution. |
+| **App-only, certificate-based (CBA)** | 1, 2, 3, 5 | **The default pattern for every script in this library.** An Entra app registration authenticates with an X.509 certificate — no password/secret to leak, no interactive prompt, and no dependency on a specific admin's account surviving. Certificate can live in the local cert store (`-CertificateThumbprint`) or be resolved at run time from Key Vault as an in-memory `X509Certificate2` object (`-Certificate`) — never write the private key to disk in a pipeline. Surface 5's `Connect-SPOService` takes the same three certificate parameters (`-Certificate`/`-CertificateThumbprint`/`-CertificatePath` + `-CertificatePassword`) alongside `-ClientId`/`-TenantId`. |
+| **App-only, client secret** | 3 (Graph SDK `-ClientSecretCredential`), REST (surface 4) | Acceptable when certificate management isn't available (e.g. quick POC), but the secret must come from a vault/pipeline secret store at run time — **never hard-coded or committed**. Prefer certificate or managed identity for anything that ships to a buyer's tenant. **Not available on surface 5** — `Connect-SPOService`'s app-only parameter set is certificate-only (no client-secret parameter), and Microsoft's SharePoint app-only guidance states plainly that certificates are the only supported app-only credential for SharePoint Online. |
+| **Managed identity** | 1 (via `Connect-ExchangeOnline -ManagedIdentity -Organization <tenant>.onmicrosoft.com`, from Azure Automation/Functions/VMs with a system- or user-assigned identity), 3 (`Connect-MgGraph -Identity`), 5 (`Connect-SPOService -Url <admin-center-URL> -ManagedIdentity`, with `-ManagedIdentityType`/`-ManagedIdentityClientId` for a user-assigned identity) | Best option when the automation itself runs inside Azure (Azure Automation runbook, Azure Function, Azure VM) — no credential material to manage at all. Not usable for scripts that run on a buyer's own workstation outside Azure. |
 
 ### App-only setup — the four steps common to every surface
 
@@ -73,6 +84,14 @@ script behavior.
      (e.g. `eDiscovery.Read.All`/`eDiscovery.ReadWrite.All`, `SecurityEvents.Read.All`,
      `AuditLogsQuery.Read.All` — VERIFY the exact permission name per Graph resource used, since
      Purview's Graph surface adds new scoped permissions over time).
+   - Surface 5 (`Connect-SPOService`): **VERIFY** — Microsoft's official `Connect-SPOService`
+     reference documents the certificate/`-ClientId`/`-TenantId` connection parameters but does
+     not separately enumerate a named Entra **API permission** for this specific tenant-admin
+     cmdlet surface (as distinct from site-level SharePoint/PnP CSOM automation, which documents
+     the SharePoint resource's `Sites.FullControl.All` **Application** permission). Until that's
+     confirmed, treat step 4's Entra-role grant below as the controlling access check for surface
+     5, consistent with `Connect-SPOService`'s own documented requirement that the caller "must be
+     a SharePoint Administrator or SharePoint Embedded Administrator."
 3. **Generate an X.509 certificate** (self-signed is fine for CBA — Microsoft's guidance treats
    this like generating a password) and attach the public key to the app registration. **CNG
    certificates are not supported for Exchange/S&C app-only auth** — use a CSP key provider.
@@ -87,6 +106,11 @@ script behavior.
      (Data Curator, Data Source Administrator, Collection Admin, Policy Author — see
      `rbac-model.md` §5) on the target collection, from **Role assignments** on that collection.
      Only a Collection Admin can grant these.
+   - Surface 5: assign the app's service principal the **SharePoint Administrator** (or
+     **SharePoint Embedded Administrator**) **Entra directory role** — `Connect-SPOService`
+     enforces this role check directly (not a Purview/Exchange role group), mirroring how
+     surfaces 1/2 assign a built-in Entra role to the service principal as the simpler
+     alternative to a custom role group.
 
 > **eDiscovery is the one documented exception.** App-only authentication for **eDiscovery
 > cmdlets in Security & Compliance PowerShell** is explicitly called out by Microsoft as
@@ -130,6 +154,15 @@ $body = @{
 }
 $token = Invoke-RestMethod -Method Post `
   -Uri "https://login.microsoftonline.com/$TenantId/oauth2/token" -Body $body
+
+# Surface 5 — SharePoint Online Management Shell, app-only, certificate thumbprint
+# (module is Windows PowerShell 5.1-native — on PowerShell 7 run
+# Import-Module Microsoft.Online.SharePoint.PowerShell -UseWindowsPowerShell first; see §6)
+Connect-SPOService -Url "https://$TenantName-admin.sharepoint.com" `
+  -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
+
+# Surface 5 — Managed identity (Azure Automation / Functions / a VM with a system-assigned identity)
+Connect-SPOService -Url "https://$TenantName-admin.sharepoint.com" -ManagedIdentity
 ```
 
 ---
@@ -157,6 +190,9 @@ $token = Invoke-RestMethod -Method Post `
 | Data Map history / audit query | 4 (REST, separate audit endpoint) | `POST https://api.purview-service.microsoft.com/datamap/api/audit/query` |
 | Unified Catalog — governance domains, data products, glossary | 4 (REST) | Purview Data Governance REST API (evolving surface — **VERIFY** exact endpoint names per release) |
 | Administrative units (scoping RBAC) | 3 (Graph) or Entra admin center | `New-MgDirectoryAdministrativeUnit`, `Add-MgDirectoryAdministrativeUnitMember` |
+| Enable sensitivity-label processing for SharePoint/OneDrive files (Information Protection prerequisite) | 5 | `Set-SPOTenant -EnableAIPIntegration $true` (also enables Loop component/page labeling; needs a separate step for OneNote) |
+| Enable sensitivity labels for uploaded/labeled PDF files in SharePoint/OneDrive | 5 | `Set-SPOTenant -EnableSensitivityLabelforPDF $true` (module ≥ 16.0.24211.12000) |
+| Enable sensitivity labels for MP4 video files in SharePoint/OneDrive | 5 | `Set-SPOTenant -EnableSensitivityLabelForVideoFiles $true` (manual-apply only — MP4 doesn't support auto-labeling or default-label inheritance) |
 
 ---
 
@@ -195,6 +231,13 @@ objects (mailboxes, users, cases, assets) follows these patterns:
 - **Purview Data Map / Data Governance REST (surface 4):** scan and collection operations are
   asynchronous (create/update returns immediately; poll the returned operation/run status) —
   scripts poll with backoff rather than assuming synchronous completion.
+- **SharePoint Online Management Shell (surface 5):** not a bulk-iteration surface in this
+  library — every current use is a single tenant-wide `Set-SPOTenant` toggle, not a per-object
+  loop, so the batching/pacing patterns above don't apply. Microsoft's own guidance notes tenant
+  configuration changes on this surface take about 15 minutes to propagate — scripts and their
+  paired `validate/` checks should account for that delay (e.g. a retry/poll loop against
+  `(Get-SPOTenant).<Property>`) rather than asserting the new value immediately after `Set-SPOTenant`
+  returns.
 
 ---
 
@@ -216,11 +259,19 @@ objects (mailboxes, users, cases, assets) follows these patterns:
   against a real tenant.
 - **Azure-hosted runners** (Azure Automation runbooks, Azure Functions, Azure DevOps
   self-hosted agents on an Azure VM) should use a **managed identity** instead of a
-  certificate/secret entirely, where the surface supports it (surfaces 1 and 3) — this removes
-  the credential-rotation problem altogether.
+  certificate/secret entirely, where the surface supports it (surfaces 1, 3, and 5) — this
+  removes the credential-rotation problem altogether.
 - **GitHub Actions / non-Azure runners** authenticate with the certificate-based app-only pattern
   above, with the certificate stored as a base64-encoded encrypted secret and materialized to an
   in-memory `X509Certificate2` at the start of the job — never written to the runner's disk.
+- **Surface 5 needs a Windows runner (or a Windows-based Azure Automation/Function worker).**
+  `Microsoft.Online.SharePoint.PowerShell` is a Windows PowerShell 5.1-native module; running it
+  under PowerShell 7 requires the `-UseWindowsPowerShell` compatibility layer, which itself only
+  runs on Windows. Unlike surfaces 1 and 3 — both officially supported on Linux/macOS PowerShell 7
+  runners — **this repo has found no officially documented cross-platform path for surface 5**.
+  A GitHub Actions workflow or Azure DevOps pipeline that includes a surface-5 step must pin a
+  `windows-latest` (or self-hosted Windows) runner for that step, even if every other step in the
+  same pipeline runs on Linux.
 
 ---
 
@@ -229,7 +280,7 @@ objects (mailboxes, users, cases, assets) follows these patterns:
 Each scenario's `deploy/` and `validate/` scripts, and the README's **Step-by-step
 implementation** section, must state:
 
-1. Which of the **four automation surfaces** (§1) the scenario's code uses, and why (e.g. "Graph,
+1. Which of the **five automation surfaces** (§1) the scenario's code uses, and why (e.g. "Graph,
    because eDiscovery Premium app-only auth on S&C PowerShell is unsupported").
 2. The **exact module(s) and minimum version** required, matching the script's `#Requires` line.
 3. The **authentication pattern** used (§3) — certificate app-only is the default; call out any
@@ -262,6 +313,10 @@ implementation** section, must state:
 - Microsoft Graph throttling guidance — <https://learn.microsoft.com/graph/throttling>
 - Paging Microsoft Graph data — <https://learn.microsoft.com/graph/paging>
 - Why use a Microsoft Graph SDK (built-in retry/backoff behavior) — <https://learn.microsoft.com/microsoft-cloud/dev/dev-proxy/concepts/why-use-microsoft-graph-sdk>
+- Enable sensitivity labels for files in SharePoint and OneDrive (`Set-SPOTenant -EnableAIPIntegration`/`-EnableSensitivityLabelforPDF`/`-EnableSensitivityLabelForVideoFiles`, module version requirements, ~15-minute propagation) — <https://learn.microsoft.com/purview/sensitivity-labels-sharepoint-onedrive-files>
+- Connect-SPOService reference (app-only certificate parameter set, managed-identity parameter set, "must be a SharePoint Administrator" requirement) — <https://learn.microsoft.com/powershell/module/microsoft.online.sharepoint.powershell/connect-sposervice>
+- Get started with SharePoint Online Management Shell (module install, and the `-UseWindowsPowerShell` requirement to run it from a PowerShell 7 console) — <https://learn.microsoft.com/powershell/sharepoint/sharepoint-online/connect-sharepoint-online>
+- Granting access via Entra ID Application Permissions for SharePoint Online (certificate-only app-only model; the SharePoint resource's `Sites.FullControl.All` Application permission for site-level CSOM/PnP automation — a different, more specific gap than the `Connect-SPOService` tenant-admin surface itself, see §3) — <https://learn.microsoft.com/sharepoint/dev/solution-guidance/security-apponly-azuread>
 
 > **Disclaimer:** cmdlet names, supported-platform matrices, and Graph permission names change as
 > Purview and the Graph PowerShell SDK ship updates. Validate every cmdlet and endpoint against

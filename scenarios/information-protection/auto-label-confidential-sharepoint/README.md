@@ -54,7 +54,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Role to author/edit auto-labeling policies | **Information Protection Admin** role group (create/edit/delete labels, DLP policies, classifiers; manage auto-labeling simulation) | `docs/rbac-model.md` §3 |
 | Automation identity | App registration with **Exchange.ManageAsApp**, granted the Information Protection Admin role group | Certificate-based app-only auth — `docs/automation-surface.md` §3 |
 | Dependency (not deployed by this scenario) | A published sensitivity label named **Confidential** (parameterizable), with label scope including **Files & other data assets**, and **not** a parent label (parent labels — those with sublabels — cannot be applied to content and the policy will silently label nothing if one is selected) | Label authoring is a separate scenario/prerequisite; see `docs/rbac-model.md` for the label-creation permission and Known Limitations §11 below |
-| Tenant configuration: sensitivity labels enabled for Office files in SharePoint/OneDrive | `Set-SPOTenant -EnableAIPIntegration $true` (or the Purview portal one-click banner) | **Requires the SharePoint Online Management Shell** (`Connect-SPOService`) — a fifth automation surface not yet cataloged in `docs/automation-surface.md`; see §11 below. Without this, files can be scanned but never actually labeled, with no error surfaced in the portal [[2]](#references) |
+| Tenant configuration: sensitivity labels enabled for Office files in SharePoint/OneDrive | `Set-SPOTenant -EnableAIPIntegration $true` (or the Purview portal one-click banner) | **Requires the SharePoint Online Management Shell** (`Connect-SPOService`) — automation surface 5, `docs/automation-surface.md` §1/§3; see §11 below. Without this, files can be scanned but never actually labeled, with no error surfaced in the portal [[2]](#references) |
 | Tenant configuration: unified audit logging on | Audit log search enabled | Required for the auto-labeling policy's **simulation mode** to have results to show [[2]](#references) |
 | Tenant configuration (recommended): PDF support | `Set-SPOTenant -EnableSensitivityLabelforPDF $true` | **Off by default.** Without it, PDFs are not labeled by this (or any) auto-labeling policy even if they match a rule's conditions — a common source of "why wasn't this PDF labeled" confusion. Turning it on can materially increase daily labeled-file volume against the 100,000-files/day limit in §11 [[8]](#references) |
 | Region availability | Auto-labeling available in tenant's region | If **Auto-labeling policies** isn't visible under Information Protection > Policies, the tenant is in a region blocked by an Azure backend dependency [[2]](#references) |
@@ -255,14 +255,17 @@ to permanently delete the policy and its rules.
 
 ## 11. Known limitations & gotchas
 
-- **SharePoint Online Management Shell is a fifth automation surface not yet cataloged in
-  `docs/automation-surface.md`.** `Set-SPOTenant -EnableAIPIntegration` and the
+- **SharePoint Online Management Shell (automation surface 5) is now cataloged in
+  `docs/automation-surface.md` §1–§7** (closed 2026-09-04; this scenario's original build had
+  flagged it as an uncataloged fifth surface). `Set-SPOTenant -EnableAIPIntegration` and the
   `EnableSensitivityLabelforPDF` / `EnableSensitivityLabelForVideoFiles` toggles run over
-  `Connect-SPOService` (the `Microsoft.Online.SharePoint.PowerShell` module), which is distinct
-  from all four surfaces `automation-surface.md` currently documents. This scenario's deploy
-  script does **not** automate that one-time tenant toggle — it's a manual/portal prerequisite
-  step (§3) run once per tenant, not a repeatable per-scenario action. Follow-up: extend
-  `docs/automation-surface.md` with this fifth surface (tracked in `PROGRESS.md`).
+  `Connect-SPOService` (the `Microsoft.Online.SharePoint.PowerShell` module) — a Windows
+  PowerShell 5.1-native module with no documented cross-platform path (`automation-surface.md`
+  §2/§6). This scenario's deploy script still does **not** automate that one-time tenant
+  toggle — it remains a manual/portal prerequisite step (§3) run once per tenant, not a
+  repeatable per-scenario action, and app-only certificate/managed-identity automation of it (per
+  the now-documented surface 5 pattern) is a candidate follow-up if a buyer wants it scripted
+  rather than run by hand.
 - **Auto-labeling is not instantaneous.** Content is evaluated on an ongoing scan cadence, not the
   instant a file is saved; budget for a delay between upload and label appearing, and don't test
   immediately after a deploy or policy change.

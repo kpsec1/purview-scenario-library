@@ -83,9 +83,9 @@ budgeted for explicitly in `README.md` §11 (do not test immediately after a cha
 **Important dependency carried into `README.md` §3 and §11:** the label-appearing pipeline for
 SharePoint/OneDrive requires `EnableAIPIntegration = $true` at the SharePoint tenant level
 (`Set-SPOTenant`), which is a *separate* one-time tenant configuration step outside the
-auto-labeling policy itself, run over the SharePoint Online Management Shell — a connection
-surface this library's `docs/automation-surface.md` does not yet document (flagged as a follow-up
-in `PROGRESS.md`). If that toggle is off, or gets reset by unrelated SharePoint administration,
+auto-labeling policy itself, run over the SharePoint Online Management Shell — automation surface
+5, now documented in `docs/automation-surface.md` §1/§2/§3/§6 (closed 2026-09-04). If that toggle
+is off, or gets reset by unrelated SharePoint administration,
 this policy runs and reports success in its own dashboard while never actually labeling anything,
 with no error surfaced anywhere obvious.
 

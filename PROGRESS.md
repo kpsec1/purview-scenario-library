@@ -155,13 +155,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   to quote the walkthrough verbatim.
 
 ### Follow-ups discovered while building the Information Protection auto-labeling scenario
-- [ ] Extend `docs/automation-surface.md` with a fifth automation surface: **SharePoint Online
-  Management Shell** (`Connect-SPOService` / `Microsoft.Online.SharePoint.PowerShell`). Needed for
-  `Set-SPOTenant -EnableAIPIntegration`, `-EnableSensitivityLabelforPDF`, and
-  `-EnableSensitivityLabelForVideoFiles` — none of the four currently-documented surfaces (EXO,
-  S&C PowerShell, Graph, Data Map REST) cover it, and `scenarios/information-protection/
-  auto-label-confidential-sharepoint/` had to flag this as a manual/undocumented prerequisite
-  rather than automate it.
+- [x] Extend `docs/automation-surface.md` with a fifth automation surface: **SharePoint Online
+  Management Shell** (`Connect-SPOService` / `Microsoft.Online.SharePoint.PowerShell`) — **built**
+  (see DONE below).
 - [ ] `scenarios/information-protection/auto-label-confidential-exchange/` — Exchange-location
   companion to `auto-label-confidential-sharepoint` using the same policy family
   (`New-AutoSensitivityLabelPolicy -ExchangeLocation`), extending coverage to email per the
@@ -689,6 +685,45 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **Extend `docs/automation-surface.md` with a fifth automation surface: SharePoint Online
+  Management Shell** — a scoped cross-cutting-doc fragment (not a new scenario), closing the item
+  logged during the `auto-label-confidential-sharepoint` build: `Set-SPOTenant
+  -EnableAIPIntegration`/`-EnableSensitivityLabelforPDF`/`-EnableSensitivityLabelForVideoFiles`
+  (the tenant-wide prerequisite toggles that gate SharePoint/OneDrive sensitivity-label
+  auto-labeling) run over `Connect-SPOService`/`Microsoft.Online.SharePoint.PowerShell`, a
+  connection surface distinct from the four the doc already covered. Grounded via the Microsoft
+  Learn MCP tool (available this run) directly against the `Connect-SPOService` reference (full
+  parameter-set fetch: confirmed certificate app-only — `-ClientId`/`-TenantId`/`-Certificate`/
+  `-CertificateThumbprint`/`-CertificatePath`/`-CertificatePassword` — **and** a managed-identity
+  parameter set — `-ManagedIdentity`/`-ManagedIdentityType`/`-ManagedIdentityClientId` — plus the
+  documented "must be a SharePoint Administrator or SharePoint Embedded Administrator" requirement),
+  the "Enable sensitivity labels for files in SharePoint and OneDrive" reference (exact cmdlet/
+  parameter names and the PDF parameter's minimum module version 16.0.24211.12000), and "Get started
+  with SharePoint Online Management Shell" (module install, and the material finding that the
+  module is Windows PowerShell 5.1-native — running it under PowerShell 7 requires
+  `-UseWindowsPowerShell`, a Windows-only compatibility layer, so **surface 5 has no documented
+  cross-platform CI/CD path**, unlike surfaces 1 and 3). Updated `docs/automation-surface.md` §1
+  (five-surface table + rule-of-thumb), §2 (module install row), §3 (auth-pattern table + app-only
+  setup steps + connection examples), §4 (routing-table rows for the three `Set-SPOTenant`
+  toggles), §5 (propagation-delay note instead of a batching pattern), §6 (Windows-runner CI/CD
+  requirement — the most consequential new fact for a buyer planning automation), §7, and Sources.
+  One genuine gap **not** resolved by guessing, per `AGENTS.md` §4: Microsoft's official
+  `Connect-SPOService` reference doesn't separately name an Entra **API permission** for this
+  tenant-admin surface (as distinct from the SharePoint resource's documented `Sites.FullControl.All`
+  for site-level CSOM/PnP automation) — flagged inline as VERIFY in §3, with the documented
+  SharePoint Administrator Entra-role requirement recorded as the controlling access check in the
+  meantime. Four-lens self-review (no dedicated `reviews.md` — this is a doc fragment, not a
+  scenario folder, consistent with this repo's precedent for cross-cutting-doc-only fragments):
+  Red Team — no new attack surface, the pattern reinforces cert-only/managed-identity auth, no
+  secrets introduced (Pass); Blue Team — n/a for a reference doc beyond the added propagation-delay
+  operational note, which is itself actionable guidance for `validate/` scripts (Pass); CISO — the
+  Windows-runner CI/CD constraint is genuinely decision-relevant for a buyer scoping a pipeline
+  around this surface, not filler (Pass); Product Owner — every cmdlet/parameter name was
+  independently fetched from the live Microsoft Learn reference pages, not recalled from memory or
+  copied from the flagging scenario's unverified note (Pass). Closed the two cross-references in
+  `scenarios/information-protection/auto-label-confidential-sharepoint/README.md` §3/§11 and
+  `design.md` §5 that had called this out as an uncataloged surface. Commit: pending (recorded in
+  the next commit). Date: 2026-09-04.
 - [x] **`scenarios/compliance-manager/pci-dss-assessment/`** — Compliance Manager PCI DSS v4.0
   premium-template assessment scenario, the assessment-side companion to `scenarios/dlp/
   pci-teams-exfil-block/` referenced from that scenario's `README.md` §2 (now updated in place from
