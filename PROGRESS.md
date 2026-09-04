@@ -412,10 +412,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   panel (up to 5 stages / 10 reviewers each) using `-MultiStageReviewProperty` /
   `-ComplianceTagForNextStage`, for sign-off chains where one approver isn't enough (noted as a non-goal
   in this scenario's `design.md` §7).
-- [ ] `scenarios/records-management/graph-event-automation/` — fire retention events from a business
-  system via the Microsoft Graph records-management APIs (`retentionEvent`/`retentionEventType`, the
-  modern path since the REST event API was deprecated), the automation complement to the PowerShell
-  `New-ComplianceRetentionEvent` used here (surface 2/3).
+- [x] `scenarios/records-management/graph-event-automation/` — **built** (see DONE): fire retention
+  events from a business system via the Microsoft Graph records-management APIs
+  (`retentionEvent`/`retentionEventType`, the modern path since the REST event API was deprecated), the
+  automation complement to the PowerShell `New-ComplianceRetentionEvent` scenario (surface 2/3).
 - [ ] `scenarios/records-management/disposition-proof-export/` — export proof-of-disposition and the
   disposition views for audit (Records Management → Disposition filter/export), closing the evidence
   loop this scenario's §7 references.
@@ -424,6 +424,29 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scenario with the DLM `retention-labels-financial-records` sibling.
 
 ## DONE
+- [x] `scenarios/records-management/graph-event-automation/` — first **follow-up expansion** fragment
+  (Records Management, Microsoft Graph surface 2/3), the automation complement to the PowerShell
+  regulatory-records-disposition scenario: full README (12-section skeleton), design.md, deploy/
+  (`New-GraphRetentionEvent.ps1` — `Invoke-MgGraphRequest` against the v1.0 records-management API that
+  ensures a retention **event type** exists via GET/POST `/security/triggerTypes/retentionEventTypes`
+  (create-or-report by displayName, `@odata.nextLink` paging) and — **double-gated** behind `-FireEvent`
+  **and** config `event.fire=true`, always through `$PSCmdlet.ShouldProcess` (real `-WhatIf`) — fires a
+  retention **event** via POST `/security/triggers/retentionEvents` (`eventQuery` files/messages +
+  AssetID/keywords, `eventTriggerDateTime`, `retentionEventType@odata.bind`), reporting Graph-native
+  `eventStatus`/`eventPropagationResults`; `Remove-GraphRetentionEvent.ps1` — deletes matching event
+  records and, with `-DeleteEventType`, the event type, with the loud note that deleting an event does
+  NOT stop retention already started; `deploy/config/graph-event-automation.sample.json` — Contract
+  Expiration event type + asset-ID-scoped event with `fire=false`), validate/
+  (`Test-GraphRetentionEvent.ps1` — read-only GET checks of the event type + report of fired events and
+  per-workload propagation), four-lens reviews.md (Red Team Fix round resolved — scoped events,
+  double-gated + ShouldProcess fire, high-privilege app identity, deletion-isn't-undo; Blue Team Fix
+  round resolved — per-workload propagation reporting, nextLink paging, real `-WhatIf`; CISO Fix round
+  resolved — auditable automated triggering; Product Owner Fix round resolved — doc quirks
+  (`@odata.bind` singular/plural, `eventQuery`/`eventQueries`) flagged) — grounded in Microsoft Learn
+  (records-management API overview, create retentionEvent/retentionEventType, eventQuery, permission
+  `RecordsManagement.ReadWrite.All`, typed cmdlets `New-MgSecurityTriggerTypeRetentionEventType` /
+  `New-MgSecurityTriggerRetentionEvent` verified); uses Microsoft's supported path (REST event API
+  deprecated), a fired event is treated as irreversible. (2026-09-04)
 - [x] `scenarios/records-management/regulatory-records-disposition/` — seventh Risk & Compliance
   scenario (Records Management), a genuinely distinct records-management lifecycle vs. the DLM sibling:
   full README (12-section skeleton), design.md, deploy/ (`New-RecordsDisposition.ps1` — SCC PowerShell
