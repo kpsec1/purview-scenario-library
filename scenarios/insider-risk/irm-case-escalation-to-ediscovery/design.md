@@ -93,6 +93,9 @@ pattern), applied here to resolve a genuine unknown rather than a confirmed fact
 - **Triggering the escalation itself.** No Graph/PowerShell write API exists for it — see §1. A
   human with Insider Risk Management Investigator/Analyst access must complete the portal step
   first; this scenario begins after that click.
+- **A genuinely automatic, event-driven trigger for `Confirm-EdiscoveryEscalationLink.ps1` upon
+  escalation.** See §5 — neither Power Automate's IRM triggers nor the IRM audit log offer one as
+  currently documented; a scheduled poll (README.md §8) is the only unattended option today.
 - **Resolving, assigning, or otherwise acting on the source Insider Risk Management case.** IRM
   case management (as opposed to read-only alert export) has no documented Graph/PowerShell write
   API — the same finding `scenarios/insider-risk/departing-employee-data-theft/design.md` §6
@@ -114,6 +117,39 @@ pattern), applied here to resolve a genuine unknown rather than a confirmed fact
   establishes or a human manually cross-referencing case-creation timestamps against IRM case
   escalation notes — a follow-up worth tracking only if Microsoft ships a linking field.
 
+## 5. Why "wire this to run automatically on escalation" stays unresolved, not guessed
+
+README.md §8 originally described this scenario's "next step" as a scheduled poll *or* "a Power
+Automate flow triggered on escalation" — implying the two were equally automatic. A follow-up
+grounding pass on this fragment found that characterization wrong and corrected it:
+
+- Microsoft's own custom-flow documentation for Insider Risk Management states its case-scoped
+  trigger is something "you can select … from the Insider Risk Management Cases dashboard"
+  [[R6]](#references-design) and that running it is a three-step manual action — "Select **Automate**
+  on the case action toolbar," "Choose the Power Automate flow to run," "select **Run flow**"
+  [[R2]](#references-design) — not a subscription that fires when a case is escalated. Of the five
+  documented Purview-connector actions available to a custom IRM flow (Get alert/case/user/
+  alerts-for-case, Add case note [[R6]](#references-design)), none is a trigger *or* action tied to
+  escalation specifically, and none can invoke an external script — a custom flow would need a
+  generic, non-Purview action (HTTP/webhook, Azure Automation, Functions) added on top, which is
+  ordinary Power Automate capability but is flagged in Microsoft's own licensing note as potentially
+  requiring **more Power Automate licenses** than the recommended templates need
+  [[R6]](#references-design).
+- The **Insider Risk Management audit log** — a plausible alternative "poll for the escalation event
+  instead of polling the case itself" mechanism — is explicitly documented as "independent" of the
+  Microsoft 365 unified audit log this library's other audit-trail scripts query via
+  `Search-UnifiedAuditLog`, and is viewable/exportable only through the Purview portal, with no
+  Graph/REST endpoint of its own found during this pass [[R7]](#references-design).
+
+Neither path is a Microsoft-documented, automatable, event-driven trigger. Rather than build a
+custom Power Automate flow whose value (skipping a tool-switch, not skipping a manual click) doesn't
+match the "no human has to remember anything" bar this scenario's own KPI (README.md §8) sets, or
+guess at an undocumented IRM-audit-log API, this fragment corrects the record (README.md §8/§11,
+this section) and leaves genuine event-driven automation as an explicit non-goal (§4) pending either
+a documented IRM-audit-log query API or a true escalation-triggered Power Automate trigger from
+Microsoft — tracked in `PROGRESS.md` as a re-check item rather than resolved by guessing, per
+`AGENTS.md` §4.
+
 ## References {#references-design}
 
 - R1. Microsoft Purview eDiscovery legacy solutions — "Integration with Insider Risk Management" (escalation opens a new eDiscovery (Premium) case) — <https://learn.microsoft.com/purview/ediscovery#comparison-of-key-capabilities>
@@ -121,3 +157,5 @@ pattern), applied here to resolve a genuine unknown rather than a confirmed fact
 - R3. Get-MgSecurityAlertV2 (PowerShell reference — `-AlertId` "Get" parameter set) — <https://learn.microsoft.com/powershell/module/microsoft.graph.security/get-mgsecurityalertv2?view=graph-powershell-1.0>
 - R4. ediscoveryCase resource type (full property/relationship list — no source/origin field) — <https://learn.microsoft.com/graph/api/resources/security-ediscoverycase?view=graph-rest-1.0>
 - R5. Update ediscoveryCase (PATCH `.../ediscoveryCases/{id}` — `description`/`displayName`/`externalId` are the only writable fields) — <https://learn.microsoft.com/graph/api/security-ediscoverycase-update?view=graph-rest-1.0>
+- R6. Automate Insider Risk Management actions with Microsoft Power Automate flows — custom-flow triggers/actions, manual "Run flow" invocation, and the premium-connector licensing caveat — <https://learn.microsoft.com/purview/insider-risk-management-settings-power-automate>
+- R7. Review activities with the Insider Risk Management audit log — "isn't associated with the Microsoft 365 audit log," portal view/CSV export only — <https://learn.microsoft.com/purview/insider-risk-management-audit-log>

@@ -165,11 +165,39 @@ surface and auth pattern as `scenarios/ediscovery/premium-legal-hold-and-export/
 
 **KPIs to watch:**
 - **Time from escalation to a reconciled hold.** The whole value of this scenario is closing the
-  window between "investigator clicks Escalate" and "custodian is actually on hold" — wire
-  `Confirm-EdiscoveryEscalationLink.ps1` into whatever process picks up new IRM escalations (a
-  scheduled poll of the Cases dashboard by a human, or a Power Automate flow triggered on
-  escalation, per the sibling case-action toolbar's own **Automate** option [[3]](#references)) so
-  this isn't a manual, easy-to-forget follow-up step.
+  window between "investigator clicks Escalate" and "custodian is actually on hold." Two mitigations
+  are available today, **neither of which is a true automatic trigger** — grounded and corrected in
+  this build after an earlier draft of this section implied otherwise:
+  1. **A scheduled poll** — run `Confirm-EdiscoveryEscalationLink.ps1` on a recurring schedule (e.g.
+     hourly) against every definition file for cases the team expects to be escalated soon. This is
+     the only option that needs no human to remember anything after the portal click, at the cost of
+     up-to-one-interval latency.
+  2. **A manually-run Power Automate flow, invoked from the same toolbar the investigator just used
+     to escalate** — the case action toolbar's **Automate** control [[3]](#references) supports a
+     *custom* flow using the "For a selected Insider Risk Management case" trigger
+     [[10]](#references); an investigator who has just escalated can select **Automate** → the flow
+     → **Run flow** [[10]](#references) as their very next click, one tool-switch cheaper than
+     opening a PowerShell session. **This is still a manually-invoked action, not an event-driven
+     one** — Microsoft's own custom-flow documentation describes the trigger as something "you can
+     select … from the Insider Risk Management Cases dashboard" [[10]](#references), not something
+     that fires automatically when a case is escalated. None of the five documented Microsoft
+     Purview-connector actions available to a custom flow (Get IRM alert/case/user/alerts-for-case,
+     Add IRM case note [[10]](#references)) can call this scenario's script directly either — doing
+     so requires adding a generic, non-Purview action (an HTTP request to a webhook, or an Azure
+     Automation/Functions connector) to the custom flow, which is ordinary Power Automate capability
+     but may require a **premium connector license** beyond what the recommended IRM templates need
+     [[10]](#references) — VERIFY (pilot tenant) before assuming zero incremental Power Automate
+     cost for this specific integration.
+  A genuinely automatic trigger would need either an event-driven Power Automate trigger for
+  escalation (not documented as of this build) or a queryable API for case-escalation activity. The
+  dedicated **Insider Risk Management audit log** does record case actions, but Microsoft states it
+  "isn't associated with the Microsoft 365 audit log" — it's "independent," viewable and
+  CSV-exportable only from the Purview portal, with no documented Graph/REST endpoint of its own
+  [[11]](#references); `Search-UnifiedAuditLog` (the mechanism this library's other audit-trail
+  scripts, e.g. `scenarios/ediscovery/premium-legal-hold-and-export/deploy/
+  Export-EdiscoveryAuditTrail.ps1`, already use) does not cover this workload. Until one of those two
+  gaps closes, option 1 (scheduled poll) is the only way to guarantee this scenario always runs
+  without depending on a human's memory.
 - **Provenance-block mismatch rate** — `validate/Test-EdiscoveryEscalationLink.ps1`'s FAIL for "block
   present but doesn't match the definition file" signals either a re-used case name across two
   different escalations (a naming-convention violation, §5 step 2) or a stale definition file —
@@ -239,6 +267,13 @@ processing units; eDiscovery Export API's PAYG metering).
 - **This scenario does not resolve, close, or otherwise act on the source Insider Risk Management
   case.** IRM case management has no documented Graph/PowerShell write API — same finding
   `scenarios/insider-risk/departing-employee-data-theft/design.md` §6 already recorded.
+- **There is no automatic, event-driven way to fire `Confirm-EdiscoveryEscalationLink.ps1` the
+  instant a case is escalated.** Grounded in this build (§8): the Power Automate "For a selected
+  Insider Risk Management case" trigger is manually selected by a human from the Cases dashboard,
+  not fired by the escalation event itself [[10]](#references); the separate Insider Risk
+  Management audit log that does record case actions has no documented Graph/REST query endpoint of
+  its own and isn't covered by `Search-UnifiedAuditLog` [[11]](#references). A scheduled poll of
+  this script (§8) is therefore the only way to guarantee it always runs unattended.
 
 ## 12. References
 
@@ -251,5 +286,7 @@ processing units; eDiscovery Export API's PAYG metering).
 7. Learn about Insider Risk Management — workflow overview, eDiscovery (Premium) escalation step — <https://learn.microsoft.com/purview/insider-risk-management#workflow>
 8. scenarios/ediscovery/premium-legal-hold-and-export/README.md — the sibling scenario this one is additive on top of (custodian/hold pattern, licensing, search/review-set/export continuation) — `scenarios/ediscovery/premium-legal-hold-and-export/README.md`
 9. scenarios/insider-risk/departing-employee-data-theft/README.md — an example IRM policy producing escalatable cases, and its own Graph alert-export pattern reused here — `scenarios/insider-risk/departing-employee-data-theft/README.md`
+10. Automate Insider Risk Management actions with Microsoft Power Automate flows — confirms the "For a selected Insider Risk Management case" custom-flow trigger is manually selected from the Cases dashboard (not event-driven), the five Purview-connector actions available to a custom flow, and the premium-connector licensing caveat for custom flows beyond the recommended templates — <https://learn.microsoft.com/purview/insider-risk-management-settings-power-automate>
+11. Review activities with the Insider Risk Management audit log — confirms the IRM audit log is independent of the Microsoft 365 unified audit log, with no documented Graph/REST query endpoint (portal view + CSV export only) — <https://learn.microsoft.com/purview/insider-risk-management-audit-log>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing deployment.

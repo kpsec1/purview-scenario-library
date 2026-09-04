@@ -24,14 +24,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 > here as they're scoped.
 
 ### Follow-ups discovered while building the IRM case-escalation-to-eDiscovery scenario
-- [ ] Consider a Power Automate flow (or Graph webhook-driven trigger, if Microsoft ever exposes
-  IRM case-escalation as an event) that automatically runs `deploy/
-  Confirm-EdiscoveryEscalationLink.ps1` right after an investigator completes the portal
-  "Escalate for investigation" step, closing the "someone has to remember to run this" gap named
-  in `irm-case-escalation-to-ediscovery/README.md` §8 — deferred because IRM's own case-action
-  toolbar **Automate** option (Power Automate flows) wasn't independently grounded in this build
-  beyond the bullet list Microsoft's `insider-risk-management-cases` reference names; a dedicated
-  grounding pass on the specific flow templates/connectors available would be needed first.
+- [x] Consider a Power Automate flow (or Graph webhook-driven trigger...) that automatically runs
+  `Confirm-EdiscoveryEscalationLink.ps1` right after escalation — **grounded and closed, not built**
+  (see DONE below): the dedicated grounding pass this item asked for found no automatic/event-driven
+  trigger exists. Power Automate's IRM case trigger is manually selected/run from the same dashboard
+  toolbar (not fired by the escalation event), none of its five documented connector actions can
+  invoke an external script, and the separate Insider Risk Management audit log that does record
+  escalations has no documented Graph/REST query API (`Search-UnifiedAuditLog` doesn't cover it
+  either). `irm-case-escalation-to-ediscovery/README.md` §8/§11 and `design.md` §4/§5 corrected in
+  place; a scheduled poll remains the only unattended option. Re-open this item if Microsoft ever
+  ships either a documented event-driven IRM trigger or a Graph/REST endpoint for the IRM audit log.
 - [ ] VERIFY (pilot tenant): the exact format of the "Case ID" the Insider Risk Management Cases
   dashboard displays (numeric, GUID, or another scheme) — not documented by Microsoft beyond "The
   ID of the case." `irm-case-escalation-to-ediscovery`'s naming convention and scripts treat it as
@@ -629,6 +631,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   sibling Data Map scenarios already carry).
 
 ## DONE
+- [x] **Investigate and correct: automatic Power Automate/webhook trigger for IRM case escalation**
+  — eleventh **follow-up expansion** fragment (Insider Risk Management / eDiscovery), a correctness
+  correction rather than a new scenario, closing the item logged during the original
+  `irm-case-escalation-to-ediscovery` build ("consider a Power Automate flow … that automatically
+  runs `Confirm-EdiscoveryEscalationLink.ps1` right after an investigator completes … 'Escalate for
+  investigation' … deferred because [it] wasn't independently grounded"). Grounding this pass found
+  the original README.md §8 wording ("a Power Automate flow triggered on escalation") overstated
+  what Microsoft documents: the custom-flow "For a selected Insider Risk Management case" trigger is
+  manually selected and run from the same Cases-dashboard **Automate** toolbar the investigator just
+  used to escalate — not an event-driven subscription — and none of the five documented Purview-
+  connector actions available to a custom IRM flow (Get alert/case/user/alerts-for-case, Add case
+  note) can invoke an external script; doing so would need a generic, non-Purview HTTP/Azure-
+  Automation action on top, which Microsoft's own docs flag as potentially needing extra Power
+  Automate licensing. The other plausible automation path — polling the dedicated **Insider Risk
+  Management audit log** instead of the case itself — was also checked and is not available either:
+  Microsoft states that log "isn't associated with the Microsoft 365 audit log," is portal-view/CSV-
+  export only, and has no documented Graph/REST endpoint (`Search-UnifiedAuditLog` doesn't cover it).
+  Corrected `irm-case-escalation-to-ediscovery/README.md` §8 (rewrote the KPI bullet to present the
+  scheduled poll as the only unattended option and the Power Automate path as a manually-invoked,
+  one-click convenience rather than automatic, with the premium-connector licensing caveat), §11 (new
+  Known Limitations bullet), and §12 (two new citations); `design.md` (new §5 documenting the
+  finding, a new §4 non-goal, two new references); `reviews.md` (a follow-up four-lens round — Red
+  Team/Blue Team/CISO/Product Owner all Pass, no Fix/Fail — confirming the correction itself is
+  sound). No code changed — there was nothing to build once the "automatic trigger" premise the
+  original item was scoped around didn't hold up under grounding; writing a Power Automate flow
+  anyway would have shipped a control that doesn't do what its name implies, which is exactly the
+  failure mode this correction exists to prevent. Grounded via the Microsoft Learn MCP tool
+  (`insider-risk-management-cases#case-actions` for the toolbar-invocation walkthrough;
+  `insider-risk-management-settings-power-automate` for the custom-flow trigger/action/licensing
+  detail; `insider-risk-management-audit-log` for the IRM audit log's independence from the unified
+  audit log and its portal-only access) — per `AGENTS.md` §4, no cmdlet, endpoint, or product
+  behavior was fabricated to fill the gap this item originally left open. — 2026-09-04
 - [x] `scenarios/ediscovery/teams-group-hold-resolution/` — tenth **follow-up expansion** fragment
   (eDiscovery), closing the item logged during the `location-scoped-legal-hold` build: "resolving
   *which* group/site pair to use from a Team name is a distinct, separately scoped lookup this

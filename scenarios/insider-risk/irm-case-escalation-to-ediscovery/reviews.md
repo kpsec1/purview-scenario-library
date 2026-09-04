@@ -145,3 +145,68 @@ No remaining Fix/Fail after resolution.
    `PROGRESS.md`) called for.
 
 No remaining Fix/Fail after resolution.
+
+---
+
+## Follow-up review round — correcting the "automatic Power Automate trigger" claim in README.md §8
+
+Triggered by a `PROGRESS.md` follow-up item ("consider a Power Automate flow … that automatically
+runs `Confirm-EdiscoveryEscalationLink.ps1` right after an investigator completes the portal
+'Escalate for investigation' step … deferred because [it] wasn't independently grounded"). This pass
+grounded it and found the original README.md §8 wording ("a Power Automate flow triggered on
+escalation") overstated what Microsoft documents — see design.md §5 for the full finding. Scope:
+README.md §8/§11/§12, design.md §4/§5. No code changed (nothing to build once the "automatic
+trigger" premise didn't hold up).
+
+### 🔴 Red Team
+
+**Verdict: Pass**
+
+- The corrected wording removes a real operational risk the original draft would have created: a
+  buyer reading "Power Automate flow triggered on escalation" as a genuine automatic-trigger option
+  could have skipped implementing the scheduled poll entirely, leaving cases un-reconciled
+  indefinitely whenever the investigator forgot the manual "Automate → Run flow" click too. The
+  correction makes explicit that the scheduled poll is the only unattended option today.
+- No new bypass surface introduced — this is a documentation-only correction with no code change.
+
+### 🔵 Blue Team
+
+**Verdict: Pass**
+
+- The corrected §8 now gives an operator two honestly-labeled options with their real trade-offs
+  (poll latency vs. one-fewer-click manual convenience) instead of one option that silently doesn't
+  do what its name implies. That's a strict improvement for whoever has to actually decide which to
+  operate.
+- Confirmed the premium-connector licensing caveat (design.md §5, R6) is worth surfacing now rather
+  than being discovered mid-rollout by whoever tries to add an HTTP action to a custom flow.
+
+### 🎩 CISO
+
+**Verdict: Pass**
+
+- No cost or risk-posture change from this correction — it doesn't add or remove a control, it
+  corrects the operating instructions for one that already exists (the scheduled-poll path was
+  already documented as an option, just not correctly distinguished from the Power Automate path).
+- The corrected narrative is, if anything, a *more* defensible one for an audit committee: "we run
+  a scheduled reconciliation job, because Microsoft doesn't offer an automatic trigger for this
+  event" is a straightforward, honest control description, rather than one that would have
+  overstated automation coverage if scrutinized by an outside auditor asking how the control
+  actually fires.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Pass**
+
+- Independently re-confirmed via the Microsoft Learn MCP tool that both cited pages state manual
+  invocation ("you can select … from the Insider Risk Management Cases dashboard"; "Select
+  **Automate** on the case action toolbar … select **Run flow**") rather than an automatic
+  subscription — the correction is grounded, not a guess in the other direction.
+- Confirmed the five documented Purview-connector actions for a custom IRM flow (Get alert/case/
+  user/alerts-for-case, Add case note) contain no action capable of invoking an external script or
+  webhook directly — the "add a generic HTTP/Azure Automation action" framing in design.md §5 is the
+  correct characterization of what a buyer would actually need to build, not an oversimplification.
+- Confirmed the Insider Risk Management audit log's "independent of the Microsoft 365 audit log"
+  statement is current (not a legacy/retired-feature caveat like some other findings this library has
+  corrected) — it's an active, if API-less, feature.
+
+No remaining Fix/Fail after resolution.
