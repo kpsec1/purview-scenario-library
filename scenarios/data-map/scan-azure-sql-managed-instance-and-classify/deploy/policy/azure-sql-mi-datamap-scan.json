@@ -1,0 +1,47 @@
+{
+  "$comment": "Reference/documentation copy of the REST request bodies deploy/New-AzureSqlManagedInstanceDataMapScan.ps1 sends. This file is NOT consumed by the deploy script - it exists so the exact shape sent to the Purview Data Map REST API is reviewable in a diff without reading PowerShell. All four bodies below are confirmed against Microsoft's own canonical REST reference (API version 2023-09-01) - see README.md Section 11 and the deploy script's .NOTES for the two shapes that turned out to differ from the sibling scan-azure-sql-and-classify scenario's own (unconfirmed-at-the-time) assumptions.",
+  "dataSource": {
+    "$comment": "PUT {endpoint}/scan/datasources/{DataSourceName}?api-version=2023-09-01 - kind AzureSqlDatabaseManagedInstance (a distinct enum member from AzureSqlDatabase). serverEndpoint uses the literal 'tcp:<fqdn>,<port>' form, not a bare hostname.",
+    "kind": "AzureSqlDatabaseManagedInstance",
+    "properties": {
+      "serverEndpoint": "tcp:<InstanceName>.public.<dns-zone>.database.windows.net,<Port>",
+      "resourceName": "<InstanceName>",
+      "resourceGroup": "<ResourceGroupName>",
+      "subscriptionId": "<SubscriptionId>",
+      "location": "<Location>",
+      "collection": {
+        "referenceName": "<CollectionReferenceName>",
+        "type": "CollectionReference"
+      }
+    }
+  },
+  "scan": {
+    "$comment": "PUT {endpoint}/scan/datasources/{DataSourceName}/scans/{ScanName}?api-version=2023-09-01 - kind AzureSqlDatabaseManagedInstanceMsi authenticates as the Purview account's own system-assigned managed identity; no credential object required. scanRulesetName's system default for this source type is 'AzureSqlDatabaseManagedInstance', not 'AzureSqlDatabase'.",
+    "kind": "AzureSqlDatabaseManagedInstanceMsi",
+    "properties": {
+      "databaseName": "<DatabaseName>",
+      "serverEndpoint": "tcp:<InstanceName>.public.<dns-zone>.database.windows.net,<Port>",
+      "collection": {
+        "referenceName": "<CollectionReferenceName>",
+        "type": "CollectionReference"
+      },
+      "scanRulesetName": "AzureSqlDatabaseManagedInstance",
+      "scanRulesetType": "System"
+    }
+  },
+  "trigger": {
+    "$comment": "PUT {endpoint}/scan/datasources/{DataSourceName}/scans/{ScanName}/triggers/default?api-version=2023-09-01 - only sent when -RecurrenceFrequency is supplied. Trigger resource name is always 'default' (one trigger per scan). Confirmed against Microsoft's own worked Triggers - Create Or Replace example.",
+    "properties": {
+      "scanLevel": "Incremental",
+      "recurrence": {
+        "frequency": "Week",
+        "interval": 1,
+        "startTime": "<RecurrenceStartTime, ISO 8601>"
+      }
+    }
+  },
+  "runScan": {
+    "$comment": "POST {endpoint}/scan/datasources/{DataSourceName}/scans/{ScanName}:run?runId={new-guid}&scanLevel=Full&api-version=2023-09-01 - only sent when -RunNow is supplied. No request body. Action-style POST with a colon suffix and runId as a query parameter - confirmed against Microsoft's own Scan Result - Run Scan reference, which differs from the resource-style 'PUT .../runs/{runId}' the sibling scan-azure-sql-and-classify scenario's script sends.",
+    "scanLevel": "Full"
+  }
+}

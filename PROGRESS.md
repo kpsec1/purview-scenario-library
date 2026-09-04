@@ -507,7 +507,97 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   follow-up shared with the DLM scenarios), and a records-vs-regulatory decision note linking this
   scenario with the DLM `retention-labels-financial-records` sibling.
 
+### Follow-ups discovered while building the Data Map Azure SQL Managed Instance scenario
+- [ ] **Backport two corrected REST shapes into `scenarios/data-map/scan-azure-sql-and-classify/`.**
+  This build independently re-fetched the canonical Microsoft Learn REST reference pages that
+  scenario's own build could not reach (Data Sources, Triggers, Scan Result) and found two real
+  discrepancies from what that scenario's scripts assume: (1) **Scan Result - Run Scan** is an
+  action-style `POST {endpoint}/scan/datasources/{ds}/scans/{scan}:run?runId={guid}&scanLevel=
+  {level}&api-version=...`, not the resource-style `PUT .../runs/{runId}` that scenario's
+  `New-AzureSqlDataMapScan.ps1` sends; (2) **Scan Result - List Scan History**'s per-run asset
+  counts are nested at `discoveryExecutionDetails.statistics.assets.discovered`/`.classified`, not
+  the flat `.assetsDiscovered`/`.assetsClassified` properties that scenario's
+  `Test-AzureSqlDataMapScan.ps1` reads. Both are recorded in this new scenario's `design.md` §5 and
+  `README.md` §11; the sibling scenario's own scripts should be corrected to match rather than left
+  shipping an unconfirmed (and now known-incorrect) shape.
+- [ ] `scenarios/data-map/scan-azure-synapse-and-classify/` — the next explicitly-flagged sibling in
+  `scan-azure-sql-and-classify/design.md` §7's original list (Azure Synapse Analytics dedicated +
+  serverless SQL pools), following this fragment's same pattern: reuse the proven object model,
+  document only the genuine `kind`/auth/network differences Microsoft's own docs describe.
+- [ ] `scenarios/data-map/scan-on-premises-sql-server-and-classify/` — the third sibling (on-premises
+  SQL Server via self-hosted integration runtime), deferred from both this fragment and the original
+  sibling scenario's non-goals — a materially different registration/auth story (no managed identity
+  path at all; self-hosted IR is mandatory) worth its own careful grounding pass.
+- [ ] `scenarios/data-map/verify-purview-entra-graph-prerequisites/` (or fold into a future Data Map
+  hardening pass) — a Microsoft Graph-permissioned checker script confirming Directory Readers (or
+  equivalent fine-grained Graph permission) membership for every Managed-Instance-backed Purview
+  data source's managed identity, deferred from this scenario's `validate/
+  Test-AzureSqlManagedInstanceDataMapScan.ps1` because that script's own auth surface (the Purview
+  Data Map data-plane token) has no reason to also hold Graph directory-read permissions — flagged
+  as a Blue Team finding in this scenario's `reviews.md`.
+- [ ] VERIFY (pilot tenant): the exact TCP port a newly registered managed instance's public endpoint
+  listens on. This scenario defaults `-Port` to `3342` (Microsoft's own worked *registration*
+  example), but the actual port depends on the instance's connection-policy configuration
+  (Redirect vs. Proxy) — flagged inline in `README.md` §11 and the deploy script's parameter help.
+- [ ] Consider scripting `Set-AzSqlInstanceActiveDirectoryAdministrator` and the Directory Readers
+  Microsoft Graph role-assignment step (the PowerShell pattern Microsoft publishes for it) instead
+  of leaving both as manual portal/PowerShell prerequisites (`README.md` §5 steps 2–3) — deferred in
+  this build to keep the fragment scoped to the Data Map REST surface itself, consistent with this
+  repo's existing precedent of not automating rare, high-privilege, one-time setup steps that sit
+  outside the automation identity's own Purview/Azure IAM role scope (see `design.md` §8).
+
 ## DONE
+- [x] `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` — fourth **follow-up
+  expansion** fragment (Data Map, Data Governance), closing one of the three sibling-scan-scenario
+  items `scan-azure-sql-and-classify/design.md` §7 explicitly scoped out (Azure SQL Managed
+  Instance, Azure Synapse Analytics, on-premises SQL Server): full README (12-section skeleton,
+  every delta from the sibling scenario's prerequisites/config/architecture called out explicitly
+  rather than silently re-derived), design.md (§3 grounds why this is a separate scenario rather
+  than a `-SourceKind` flag on the sibling script; §4 is a single source-of-truth diff table; §5
+  documents this build's own grounding-quality improvement over the sibling — direct fetches of all
+  four canonical REST reference pages succeeded where three of the sibling's four failed at build
+  time, surfacing two real, previously-unconfirmed shape corrections), deploy/
+  (`New-AzureSqlManagedInstanceDataMapScan.ps1` — idempotent/parameterized Purview Data Map REST
+  automation (surface 4) reusing the sibling's create-or-replace pattern for the
+  `AzureSqlDatabaseManagedInstance` data source and `AzureSqlDatabaseManagedInstanceMsi`
+  SAMI-authenticated scan (distinct `kind` values, a `tcp:<fqdn>,<port>` server-endpoint format, and
+  a different system scan-rule-set name from the sibling scenario), optional recurring trigger,
+  `-WhatIf` throughout; `Remove-AzureSqlManagedInstanceDataMapScan.ps1` — staged trigger/scan/
+  data-source removal mirroring the sibling's rollback shape; `deploy/policy/
+  azure-sql-mi-datamap-scan.json` — reference copy of all four REST bodies, each body's `$comment`
+  flagging where its shape came from a direct fetch this build performed itself), validate/
+  (`Test-AzureSqlManagedInstanceDataMapScan.ps1` — read-only config + scan-history check reading the
+  corrected nested asset-count fields), rollback.md (the sibling's three-stage procedure plus a
+  fourth, Managed-Instance-specific stage for the tenant-wide Directory Readers role grant, framed as
+  a deliberately-manual, Privileged-Role-Administrator-gated step outside this scenario's own
+  automation), four-lens reviews.md (Red Team Fix round resolved — the public endpoint's larger
+  network exposure than the sibling's firewall toggle made explicit with a private-endpoint
+  recommendation, and a Directory Readers membership-drift monitoring gap closed; Blue Team Fix
+  round resolved — explained why Directory Readers membership isn't part of the automated validate
+  script (a different auth surface than the rest of the script needs) rather than leaving it an
+  unexplained gap, and added two Managed-Instance-specific incident-response causes; CISO Fix round
+  resolved — the Privileged-Role-Administrator cross-team coordination cost made explicit as a
+  distinct adoption-friction dimension from the sibling scenario's own three same-team
+  prerequisites; Product Owner Fix round resolved — separated the registration `-Port` parameter
+  from the NSG network-path port requirement, citing Microsoft's October 2025 Redirect-becomes-
+  default-inside-Azure connection-policy change) — grounded in Microsoft Learn via the Microsoft
+  Learn MCP tool (register-scan-azure-sql-managed-instance's full register/scan/prerequisites
+  sections including the public-endpoint and Directory-Readers requirements; the Entra
+  authentication configuration guide's Managed-Instance-specific admin/Directory-Readers/contained-
+  user sections, `CREATE USER ... FROM EXTERNAL PROVIDER` syntax quoted directly; the Azure SQL
+  Managed Instance connection-types and connectivity-architecture articles for the October 2025
+  Redirect-default change and the Proxy/Redirect NSG port tables; the data-source-readiness-
+  checklist article's AzureSQLMI-specific network/RBAC checklist; and — the headline grounding
+  improvement over the sibling scenario — direct fetches of all four canonical REST reference pages
+  (Data Sources - Create Or Replace, Scans - Create Or Replace, Triggers - Create Or Replace, Scan
+  Result - Run Scan / List Scan History) at API version `2023-09-01`, which the sibling scenario's
+  own build could not reach for three of the four and had reconstructed from SDK/PowerShell
+  signatures instead — two of those reconstructed shapes turned out to not match the confirmed
+  contract (Run Scan's action-style POST; List Scan History's nested asset-count fields), corrected
+  here and logged as a backport follow-up rather than silently repeated) — two items recorded as
+  explicit VERIFY rather than resolved by guessing (the default public-endpoint port; the
+  `AzureSqlDatabaseManagedInstanceCredential` credential-object REST creation gap, carried over
+  unchanged from the sibling scenario), per `AGENTS.md` §4 — 2026-09-04
 - [x] `scenarios/ediscovery/location-scoped-legal-hold/` — third **follow-up expansion** fragment
   (eDiscovery), closing the item `premium-legal-hold-and-export/design.md` §3/§7 explicitly scoped
   out: the `ediscoveryHoldPolicy` (`POST .../legalHolds`) path for a hold organized around a
