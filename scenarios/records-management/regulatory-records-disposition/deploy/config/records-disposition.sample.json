@@ -1,0 +1,41 @@
+{
+  "_comment": "Config for deploy/New-RecordsDisposition.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Builds an event-based records-disposition lifecycle: an event TYPE, a record retention label whose clock starts on that event (KeepAndDelete + disposition review), a PUBLISH policy that makes the label selectable, and an optional trigger EVENT. Placeholder values below are illustrative - set them to your real records schedule and reviewers, validated by Records/Legal, before deploying. Read README.md Sections 2 and 11 first - a triggered event and an applied record label are IRREVERSIBLE.",
+
+  "eventType": {
+    "name": "Contract Expiration",
+    "comment": "Triggers the retention clock for contract records when a contract expires. Created via New-ComplianceRetentionEventType."
+  },
+
+  "label": {
+    "name": "Contract Records - 7yr after expiry",
+    "comment": "Record label for contract records. Retention starts on a Contract Expiration event; disposed via disposition review after 7 years.",
+    "retentionAction": "KeepAndDelete",
+    "retentionDurationDays": 2555,
+    "retentionType": "EventAgeInDays",
+    "isRecordLabel": true,
+    "reviewerEmail": [
+      "records-managers@contoso.com"
+    ],
+    "autoApprovalPeriodDays": null
+  },
+
+  "policy": {
+    "name": "Publish - Contract Records",
+    "comment": "Publishes the contract-records label so it can be applied (manually or via default library label) in the target locations.",
+    "enabled": true,
+    "sharePointLocation": [
+      "https://contoso.sharepoint.com/sites/Contracts"
+    ],
+    "exchangeLocation": [],
+    "oneDriveLocation": []
+  },
+
+  "event": {
+    "create": false,
+    "name": "Contract 4815 expired",
+    "comment": "Illustrative trigger event. create=false by default so deploy does NOT start a live retention clock. Set create=true (or run with -TriggerEvent) only for a real, dated event.",
+    "eventDateTime": "2026-09-04T00:00:00Z",
+    "sharePointAssetIdQuery": "ComplianceAssetID:4815",
+    "exchangeAssetIdQuery": ""
+  }
+}

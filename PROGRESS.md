@@ -17,7 +17,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## TODO (ordered)
 
 ### Risk & Compliance
-- [ ] `scenarios/records-management/regulatory-records-disposition/`
+- (none — every module now has a starter scenario; remaining work is the follow-up expansion backlog below)
 
 > After the starter scenario per module lands, expand each module across the AGENTS.md §3 axes
 > (lifecycle, deployment posture, regulatory driver, failure/abuse, scale). Add those fragments
@@ -404,7 +404,52 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] Consider a multi-segment-mode migration note/scenario (Legacy → SingleSegment/MultiSegment) and
   address-book-policy / GAL segmentation as companions.
 
+### Follow-ups discovered while building the Records Management regulatory-records-disposition scenario
+- [ ] `scenarios/records-management/file-plan-bulk-import/` — bulk create a full file plan (retention
+  schedule with citations, departments, authorities across many record classes) via the documented CSV
+  import, the multi-class complement to this single representative class (non-goal here).
+- [ ] `scenarios/records-management/multi-stage-disposition-review/` — model a multi-stage disposition
+  panel (up to 5 stages / 10 reviewers each) using `-MultiStageReviewProperty` /
+  `-ComplianceTagForNextStage`, for sign-off chains where one approver isn't enough (noted as a non-goal
+  in this scenario's `design.md` §7).
+- [ ] `scenarios/records-management/graph-event-automation/` — fire retention events from a business
+  system via the Microsoft Graph records-management APIs (`retentionEvent`/`retentionEventType`, the
+  modern path since the REST event API was deprecated), the automation complement to the PowerShell
+  `New-ComplianceRetentionEvent` used here (surface 2/3).
+- [ ] `scenarios/records-management/disposition-proof-export/` — export proof-of-disposition and the
+  disposition views for audit (Records Management → Disposition filter/export), closing the evidence
+  loop this scenario's §7 references.
+- [ ] Consider an adaptive-scope variant of the publish policy for large/dynamic estates (a cross-module
+  follow-up shared with the DLM scenarios), and a records-vs-regulatory decision note linking this
+  scenario with the DLM `retention-labels-financial-records` sibling.
+
 ## DONE
+- [x] `scenarios/records-management/regulatory-records-disposition/` — seventh Risk & Compliance
+  scenario (Records Management), a genuinely distinct records-management lifecycle vs. the DLM sibling:
+  full README (12-section skeleton), design.md, deploy/ (`New-RecordsDisposition.ps1` — SCC PowerShell
+  (surface 1) that builds the *event-anchored* disposition lifecycle: `New-ComplianceRetentionEventType`
+  → `New-ComplianceTag -RetentionType EventAgeInDays -RetentionAction KeepAndDelete -EventType
+  -ReviewerEmail -IsRecordLabel` (event-based record label ending in a **disposition review**, not
+  auto-delete) → `New-RetentionCompliancePolicy` + `New-RetentionComplianceRule -PublishComplianceTag`
+  (**publish**, not auto-apply) → **gated** `New-ComplianceRetentionEvent` created only with
+  `-TriggerEvent` **and** config `event.create=true` because a triggered event is irreversible;
+  create-or-report idempotency via Get-*; custom `-DryRun` (S&C `-WhatIf` non-functional); loud
+  warnings on the two irreversible edges (triggered event can't be cancelled; applied record label
+  can't be deleted) and on un-scoped events / missing reviewer; `Remove-RecordsDisposition.ps1` —
+  disable publish policy by default, `-Delete` removes policy/rule and *attempts* (reports, never
+  forces via `-ForceDeletion`) label + event-type removal; `deploy/config/records-disposition.sample.json`
+  — Contract Expiration event type + event-based record label + publish policy + asset-ID-scoped event
+  with `create=false`), validate/ (`Test-RecordsDisposition.ps1` — read-only Get-* checks of event
+  type, label action/type/event-binding/record-flag/reviewer, publish policy enabled + locations, rule
+  `PublishComplianceTag`, and an informational report of already-triggered events), four-lens reviews.md
+  (Red Team Fix round resolved — asset-ID-scoped events, gated irreversible trigger, reviewer-required
+  disposition, governed teardown; Blue Team Fix round resolved — event-triggered reporting, separate
+  Disposition Management RBAC, working `-DryRun`; CISO Fix round resolved — examiner-grade schedule
+  reproducibility; Product Owner Fix round resolved — limits/latency/immutability documented) — grounded
+  in Microsoft Learn (event-driven-retention, disposition, New-ComplianceTag/-ComplianceRetentionEventType/
+  -ComplianceRetentionEvent with Get/Remove `-Identity` verified, `-PublishComplianceTag`); this
+  **completes a starter scenario for every Purview module** — remaining work is the follow-up expansion
+  backlog above. (2026-09-04)
 - [x] `scenarios/information-barriers/segregate-trading-and-research/` — sixth Risk & Compliance
   scenario (Information Barriers), and the last remaining Risk & Compliance **starter** (every module
   now has a starter scenario): full README (12-section skeleton), design.md, deploy/
