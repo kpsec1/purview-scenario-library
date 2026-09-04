@@ -1,242 +1,359 @@
-# eDiscovery (Premium) — Legal Hold, Collection & Export
+# eDiscovery (Premium) — Legal Hold, Collection, Review, and Export
 
 ## 1. Scenario summary
 
-Stands up a Microsoft Purview **eDiscovery (Premium)** matter as code via the **Microsoft Graph
-eDiscovery API** (v1.0 `security` namespace): create the case, add **custodians** and their mailbox
-and OneDrive/SharePoint data sources, place a **legal hold** (preservation-in-place), create a
-**collection search** (KQL) scoped to the case custodians, and — as an opt-in step — **export** a
-review set for production to counsel or a regulator. The whole matter is driven by a version-
-controlled JSON file so a legal-hold/collection workflow is repeatable, reviewable, and auditable
-instead of hand-clicked per matter.
+Builds a Microsoft Purview eDiscovery (Premium) case end to end: create the case, add custodians
+and place a legal hold on their Exchange mailboxes and OneDrive sites, run a scoped search,
+commit the results to a review set, and export a production package for outside counsel — all
+via app-only Microsoft Graph automation, with a portal walkthrough alongside each scripted step.
 
-**Who it's for:** a legal/compliance/eDiscovery team that responds to litigation, regulatory
-requests, or internal investigations and wants the repetitive, high-stakes case-setup steps
-(preservation + collection + export) automated with an auditable definition, while keeping the
-legally-sensitive judgment calls (scope of hold, when to release) explicit.
+**Who it's for:** a legal/compliance team (or an MSSP acting on their behalf) that needs a
+repeatable, auditable way to stand up litigation holds and productions across many matters,
+instead of hand-clicking through the Purview portal for every new case — while keeping every
+irreversible action (releasing a hold, closing or deleting a case) as a deliberate, separately
+gated step.
 
 ## 2. Business/regulatory driver
 
-Legal hold and defensible collection are legal obligations, not conveniences: once litigation is
-reasonably anticipated, an organization has a **duty to preserve** relevant ESI, and failure to do
-so (spoliation) carries sanctions under the U.S. Federal Rules of Civil Procedure (FRCP Rule 37(e))
-and equivalents. Regulators (SEC, FINRA, DOJ) issue document requests with hard deadlines. Microsoft
-positions the eDiscovery APIs precisely for this: to "automate repetitive tasks and integrate with
-existing eDiscovery tools to build repeatable workflows that industry regulations might require"
-[[1]](#references). Automating the case → custodian → hold → collect → export chain:
-- **reduces spoliation risk** — preservation is applied consistently and promptly, with an auditable
-  record of who was held and when;
-- **meets production deadlines** — collection and export are reproducible and fast;
-- **is defensible** — the same definition file produces the same scoped hold and collection every
-  time, which is exactly the reproducibility opposing counsel and regulators probe.
+A legal hold obligation arises the moment litigation is reasonably anticipated — under the
+U.S. Federal Rules of Civil Procedure (FRCP Rule 37(e)) and the common-law duty to preserve
+recognized across most jurisdictions, failing to suspend routine deletion of potentially relevant
+electronically stored information (ESI) once that duty attaches can result in spoliation
+sanctions, adverse-inference instructions, or an adverse judgment. Regulatory investigations
+(SEC, FTC, DOJ civil investigative demands) and internal investigations (HR, whistleblower,
+audit-committee referrals) carry the same preservation obligation even before a lawsuit is filed.
 
-The legally significant decisions — the **scope** of the preservation hold and **when to release**
-it — are kept explicit in this scenario (safe defaults, `-WhatIf`, and Legal sign-off), because those
-are judgment calls, not automation defaults.
+eDiscovery (Premium) is Microsoft's purpose-built control for this obligation inside Microsoft
+365: it lets a legal team place a preservation hold on specific custodians' content the moment a
+matter opens, independent of whatever retention/deletion policies would otherwise apply to that
+content [[1]](#references), and produces a documented chain from hold → collection → review →
+export that supports a defensible preservation and production narrative. This scenario is the
+technical control a legal/compliance team stands up the moment a matter is opened — not a
+one-time configuration, but a repeatable pattern run once per matter.
 
 ## 3. Prerequisites
 
-Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. Automation surface:
-`docs/automation-surface.md` (surface 3 — Microsoft Graph). Summary for this scenario:
+Full licensing and role detail: `docs/licensing-matrix.md` and `docs/rbac-model.md`. Summary for
+this scenario:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Licensing | **E3** for cases/searches/holds (delegated auth); **E5 / Purview Suite** for premium features (review sets, tagging, analytics), app-only auth, and export | On E3, **export requires pay-as-you-go billing**; app-only + review-set export are E5/Premium [[1]](#references) |
-| Role to manage cases | **eDiscovery Manager** (own cases) or **eDiscovery Administrator** (all cases) | Microsoft Purview role groups; also Compliance Administrator / Organization Management [[2]](#references) |
-| Graph permission | **eDiscovery.ReadWrite.All** (write); **eDiscovery.Read.All** (validate) | Delegated (work/school) or Application. App-only requires E5 and the app-auth setup [[1]](#references) |
-| Auth (this scenario) | `Connect-MgGraph -Scopes 'eDiscovery.ReadWrite.All'` (delegated), or app-only certificate | Microsoft Graph PowerShell SDK — `docs/automation-surface.md` §3 |
-| Custodians | Real, licensed users with mailboxes/OneDrive | Custodian sources reference their mailbox and (optionally) site |
-| Export destination | Review set with content committed (addToReviewSet) | Export runs against a review set — see §5 and §11 |
+| eDiscovery (Premium) features | **Microsoft 365 / Office 365 E5**, **Microsoft Purview Suite**, or the **Microsoft 365 E5 eDiscovery and Audit** add-on, for both the custodians being held **and** the administrator running searches/review sets/analytics | E3 alone gives eDiscovery (Standard) — cases, holds, search, export — but not custodian management, review sets, tagging, or analytics [[2]](#references)[[13]](#references) |
+| Premium features enabled for new cases | Tenant-level **eDiscovery (Premium)** toggle under **Settings → eDiscovery → General**, and confirm it's on for this specific case under **Case settings** | Enabled by default for tenants with premium access, but can be turned off per case after creation — verify before running the deploy scripts against a case created by someone else [[3]](#references)[[4]](#references) |
+| Role to author cases/custodians/holds via Graph app-only | **eDiscovery Manager** role group (least-privileged; scoped to cases the app-registration service principal is a member of) or **eDiscovery Administrator** (org-wide case visibility) | See `docs/rbac-model.md` §4. The **Custodian** role (data-source management) is only available to eDiscovery Manager members [[5]](#references) |
+| Automation identity (case/custodian/search/review-set/export authoring) | Entra app registration, certificate-based app-only auth, granted **`eDiscovery.ReadWrite.All`** application permission and registered as an eDiscovery Manager (or Administrator) service principal | **App-only auth for eDiscovery cmdlets in Security & Compliance PowerShell is explicitly unsupported by Microsoft** — this is the one Purview module where Graph, not S&C PowerShell, is the only supported app-only path. See §5 and `docs/automation-surface.md` §3 [[6]](#references)[[7]](#references) |
+| Automation identity (export **package download**) | The same app registration additionally granted **`eDiscovery.Download.Read`** application permission against the first-party **MicrosoftPurviewEDiscovery** service principal | A *separate* API from Graph, with its own token and its own permission grant — see §5 step 6 and `deploy/Get-EdiscoveryExportPackage.ps1` [[8]](#references) |
+| Licensing on every held custodian | E3/E5 (Standard hold rights) plus, for the hold capabilities this scenario uses (custodian-scoped hold via Graph), E5-tier or the eDiscovery & Audit add-on. **Frontline (F1/F3) users cannot be the target of a hold.** | Confirm before adding a custodian — an unlicensed target isn't a supported configuration, not merely a soft warning [[9]](#references) |
+| Shared mailbox custodians (if any) | **Exchange Online Plan 2**, or **Plan 1 + Exchange Online Archiving add-on** | Same licensing rule as placing a hold directly in Exchange [[13]](#references) |
+| Dependency (not deployed by this scenario) | The matter's outside-counsel engagement, a defined preservation date range, and a keyword/date scope agreed with counsel | Drives `deploy/policy/ediscovery-case-definition.json`'s `search.contentQuery` — this scenario doesn't decide what to preserve/collect, it executes what legal has already scoped |
+| **Gating prerequisite for any hold release (`Remove-EdiscoveryPremiumLegalHold.ps1`)** | Written confirmation from counsel that the preservation duty for the affected custodian(s)/matter has actually lapsed | Releasing a hold before the duty ends can itself be a spoliation event — this is a legal determination no script in this scenario can make; see `rollback.md` |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) and the
-> Product Terms before a sales commitment — SKU names and the E3 export-billing model change.
+> Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms
+> before a sales commitment — SKU names change.
 
 ## 4. Architecture
 
 ```mermaid
 flowchart TD
-    Cfg[["deploy/config/legal-hold-case.sample.json<br/>(case · custodians · hold · search · export)"]]
-    New["New-EdiscoveryHoldAndCollect.ps1<br/>(Microsoft Graph, eDiscovery.ReadWrite.All)"]
+    A[New-EdiscoveryPremiumLegalHold.ps1] -->|find-or-create| B[eDiscoveryCase]
+    A -->|find-or-create + applyHold| C[Custodian 1<br/>mailbox + OneDrive userSource]
+    A -->|find-or-create + applyHold| D[Custodian 2<br/>mailbox + OneDrive userSource]
+    C -.hold status.-> H{{Hold report /<br/>portal Hold policies tab}}
+    D -.hold status.-> H
 
-    subgraph Case["eDiscovery (Premium) case  (/security/cases/ediscoveryCases)"]
-        Cust["Custodians<br/>+ userSources (mailbox / site)"]
-        Hold["Legal hold<br/>isEnabled = true (preservation)"]
-        Search["Collection search<br/>KQL, dataSourceScopes"]
-        RS[("Review set")]
+    B --> E[New-EdiscoverySearchReviewSetExport.ps1]
+    E -->|find-or-create| F[eDiscoverySearch<br/>KQL query, allCaseCustodians]
+    F -->|addToReviewSet<br/>async caseOperation| G[eDiscoveryReviewSet<br/>Azure Storage, case-scoped]
+    G -->|export<br/>async caseOperation| I[ediscoveryExportOperation<br/>exportFileMetadata]
+
+    I --> J[Get-EdiscoveryExportPackage.ps1]
+    J -->|separate token,<br/>separate API| K[(Downloaded PST/native files<br/>+ load file + report)]
+
+    subgraph Auth["Two separate credentials, same app registration"]
+        direction LR
+        L["Microsoft Graph token<br/>eDiscovery.ReadWrite.All"]
+        M["Purview eDiscovery API token<br/>eDiscovery.Download.Read<br/>(MSAL.PS, separate scope)"]
     end
-
-    M365[("Custodian data:<br/>Exchange · OneDrive · SharePoint · Teams")]
-
-    Cfg --> New
-    New -- "POST case" --> Case
-    New -- "POST custodians + userSources" --> Cust
-    New -- "POST legalHolds" --> Hold
-    New -- "POST searches" --> Search
-    Cust -.-> M365
-    Hold -- preserves --> M365
-    Search -- collects --> M365
-    Search -. addToReviewSet (portal / follow-on) .-> RS
-    RS -- "POST reviewSets/{id}/export (-Export)" --> Out[["Export → download / Azure blob"]]
+    A -.uses.-> L
+    E -.uses.-> L
+    J -.uses.-> M
 ```
 
-The definition file is the source of truth; the deploy script reconciles the case and its objects to
-it (idempotent get-then-create by natural key). Preservation (hold) and collection (search) are
-separate objects: the **hold** freezes content in place; the **search** collects a copy for review.
-Export runs from a **review set** once collected content is committed to it. Full rationale:
-`design.md`.
+All authoring (case, custodian, userSource, hold, search, review set, export *request*) goes
+through Microsoft Graph, `microsoft.graph.security` namespace — the only supported app-only path
+for eDiscovery (Premium) automation. Downloading the resulting export **package** goes through a
+second, separate Microsoft Purview eDiscovery API with its own token, per Microsoft's documented
+two-API design (§5, `deploy/Get-EdiscoveryExportPackage.ps1`). `addToReviewSet` and `export` are
+both long-running, asynchronous `caseOperation`s — the deploy scripts poll them rather than
+assuming synchronous completion, per `docs/automation-surface.md` §5.
 
 ## 5. Step-by-step implementation
 
-### Portal path (for a first manual walkthrough / to validate intent)
+### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
-1. In the [Microsoft Purview portal](https://purview.microsoft.com) → **eDiscovery** → **Create
-   case** [[2]](#references).
-2. **Data sources / Custodians** → add custodians by email; include their mailbox and OneDrive/
-   SharePoint sources.
-3. **Holds** → create a hold over the custodians (leave the query empty to preserve everything, or
-   scope with KQL **only** with legal sign-off) [[3]](#references).
-4. **Collections / Searches** → create a search with a KQL query, scoped to the case custodians;
-   run it and review the statistics.
-5. **Review sets** → add the search results to a review set (commit), review/tag, then **Export**
-   [[1]](#references).
+1. **Confirm Premium is available**: Purview portal → **Settings** → **eDiscovery** →
+   **General** → confirm the **eDiscovery (Premium)** toggle is on for new cases [[4]](#references).
+2. **Create the case**: eDiscovery solution card → **Cases** → **Create case** → name and
+   description → **Create**. On **Case settings**, confirm the **Premium features** toggle for
+   this specific case is on [[3]](#references).
+3. **Add custodians**: in the case, **Data sources** (or the **Custodians** tab) → **Add
+   custodian** → enter the SMTP address → confirm **mailbox** and **OneDrive** as included
+   sources → **Place custodian on hold** [[10]](#references).
+4. **Create a search**: **Searches** tab → **New search** → scope to **All case custodians** →
+   enter the KQL query agreed with counsel → **Run query**, then **View estimated statistics**
+   before collecting.
+5. **Add to a review set**: from the search, **Add to review set** → **new review set**, name
+   it, choose **Add all search results** (or configure sampling) [[11]](#references).
+6. **Register the download API app** (one-time, per tenant, before your first export
+   download): register/confirm the **MicrosoftPurviewEDiscovery** first-party service principal
+   exists (`New-MgServicePrincipal -BodyParameter @{ AppId = 'b26e684c-5068-4120-a679-64a5d2c909d9' }`
+   if not already present), then on your automation app registration → **API permissions** →
+   **Add a permission** → **APIs my organization uses** → **MicrosoftPurviewEDiscovery** →
+   **Application permissions** → **`eDiscovery.Download.Read`** → **Grant admin consent**
+   [[8]](#references).
+7. **Export**: in the review set, **Action** → **Export** → name the export, choose export
+   options (original files, tags) and structure (PST) → **Export**. Track progress under
+   **Process manager**; retrieve the download link from the export's **Copy support information**
+   or via the Graph operation as in §6 below [[11]](#references)[[12]](#references).
 
-### Script path (idempotent, parameterized, real `-WhatIf`)
+### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# Connect (delegated - signed-in user needs the eDiscovery Manager/Administrator Purview role)
-Connect-MgGraph -Scopes 'eDiscovery.ReadWrite.All'
+# 1. Connect (app-only, certificate — see docs/automation-surface.md §3). All three deploy
+#    scripts below share this connection if you Connect-MgGraph once first, or connect
+#    per-invocation using the -AppId/-TenantId/-CertificateThumbprint parameters shown.
 
-# 1. Dry run — shows the case, custodians, hold, and search that would be created; changes nothing
-./deploy/New-EdiscoveryHoldAndCollect.ps1 -ConfigPath ./deploy/config/legal-hold-case.json -WhatIf
+# 2. Dry run — reports every case/custodian/hold action this run would take, makes none.
+./deploy/New-EdiscoveryPremiumLegalHold.ps1 `
+    -DefinitionPath ./deploy/policy/ediscovery-case-definition.json `
+    -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint -WhatIf
 
-# 2. Deploy: create/reconcile case + custodians + hold + collection search
-./deploy/New-EdiscoveryHoldAndCollect.ps1 -ConfigPath ./deploy/config/legal-hold-case.json
+# 3. Create the case, add custodians, apply hold.
+./deploy/New-EdiscoveryPremiumLegalHold.ps1 `
+    -DefinitionPath ./deploy/policy/ediscovery-case-definition.json `
+    -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
+# Note the case id printed at the end (or look it up via
+# Get-MgSecurityCaseEdiscoveryCase | Where-Object DisplayName -eq '<name>').
 
-# 3. Validate
-./validate/Test-EdiscoveryHoldAndCollect.ps1 -ConfigPath ./deploy/config/legal-hold-case.json
+# 4. Search, commit to review set, export. Stop short of export with -SkipExport to let a
+#    reviewer tag/cull first.
+./deploy/New-EdiscoverySearchReviewSetExport.ps1 `
+    -DefinitionPath ./deploy/policy/ediscovery-case-definition.json `
+    -CaseId $caseId `
+    -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
-# 4. (After running the search and committing results to a review set - see §11) Export
-./deploy/New-EdiscoveryHoldAndCollect.ps1 -ConfigPath ./deploy/config/legal-hold-case.json `
-    -Export -ReviewSetId '273f11a1-17aa-419c-981d-ff10d33e420f'
+# 5. Download the export package (requires the eDiscovery.Download.Read permission from §5
+#    step 6, above).
+./deploy/Get-EdiscoveryExportPackage.ps1 `
+    -CaseId $caseId -ExportOperationId $exportOpId `
+    -OutputDirectory ./exports/CONTOSO-LIT-2026-014-export1 `
+    -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
+
+# 6. Validate.
+./validate/Test-EdiscoveryPremiumCaseSetup.ps1 `
+    -DefinitionPath ./deploy/policy/ediscovery-case-definition.json `
+    -CaseId $caseId -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 ```
 
-The scripts use the **Microsoft Graph eDiscovery API** (v1.0 `security` namespace) via the Microsoft
-Graph PowerShell SDK (`Invoke-MgGraphRequest`) — automation surface 3 per
-`docs/automation-surface.md`. Real `-WhatIf` is supported (unlike Security & Compliance PowerShell).
+All three deploy scripts use Microsoft Graph (`Microsoft.Graph.Security` module,
+`microsoft.graph.security` namespace) — automation surface 3 per `docs/automation-surface.md` §1,
+because app-only authentication for eDiscovery cmdlets in Security & Compliance PowerShell is
+explicitly unsupported [[6]](#references). The download script additionally uses a separate,
+non-Graph Purview eDiscovery API authenticated via `MSAL.PS`, per Microsoft's documented two-API
+design [[8]](#references).
 
 ## 6. Configuration reference
 
-| Setting | Value this scenario uses | Notes |
+| Object | Cmdlet | Key fields (from `deploy/policy/ediscovery-case-definition.json`) |
 |---|---|---|
-| Base path | `/security/cases/ediscoveryCases` | v1.0 security namespace [[1]](#references) |
-| Create case | `POST .../ediscoveryCases` | Body `{displayName, description, externalId}` [[4]](#references) |
-| Add custodian | `POST .../{caseId}/custodians` | Body `{email}` [[5]](#references) |
-| Add custodian source | `POST .../custodians/{id}/userSources` | Body `{email, includedSources: mailbox\|site}` [[6]](#references) |
-| Legal hold | `POST .../{caseId}/legalHolds` | Body `{displayName, description, contentQuery, isEnabled}`; `isEnabled=true` = preservation active [[1]](#references) |
-| Collection search | `POST .../{caseId}/searches` | Body `{displayName, description, contentQuery (KQL), dataSourceScopes}` [[7]](#references) |
-| Search scope | `allCaseCustodians` | Also: `none`, `allTenantMailboxes`, `allTenantSites`, `allCaseNoncustodialDataSources` [[7]](#references) |
-| Export | `POST .../reviewSets/{id}/export` | Body `{outputName, description, exportOptions, exportStructure}`; returns `202` + `Location` (async op) [[8]](#references) |
-| exportOptions | `originalFiles,tags` | Bitwise: `originalFiles,text,pdfReplacement,tags,splitSource,includeFolderAndPath,friendlyName,condensePaths`; summary + load files always included [[8]](#references) |
-| exportStructure | `pst` | `none\|pst\|msg` (`directory` deprecated) [[8]](#references) |
+| Case | `New-MgSecurityCaseEdiscoveryCase` | `displayName`, `description`, `externalId` |
+| Custodian | `New-MgSecurityCaseEdiscoveryCaseCustodian` | `email` |
+| Custodian userSource | `New-MgSecurityCaseEdiscoveryCaseCustodianUserSource` | `email`, `includedSources = 'mailbox, site'` |
+| Hold | `Add-MgSecurityCaseEdiscoveryCaseCustodianHold` | (no body — targets one custodian per call) |
+| Search | `New-MgSecurityCaseEdiscoveryCaseSearch` | `displayName`, `contentQuery` (KQL), `dataSourceScopes = 'allCaseCustodians'` |
+| Review set | `New-MgSecurityCaseEdiscoveryCaseReviewSet` | `displayName` |
+| Add to review set | `Add-MgSecurityCaseEdiscoveryCaseReviewSetToReviewSet` | `search.id`, `itemsToInclude = 'searchHits'`, `additionalDataOptions = 'linkedFiles'` |
+| Export | `Export-MgSecurityCaseEdiscoveryCaseReviewSet` | `outputName`, `exportOptions = 'originalFiles,tags'`, `exportStructure = 'pst'` |
+| Release hold | `Invoke-MgGraphRequest POST .../custodians/{id}/release` | — |
+| Close/delete case | `Update-MgSecurityCaseEdiscoveryCase -Status closed`, `Remove-MgSecurityCaseEdiscoveryCase` | — |
 
-Exact bodies and Microsoft Learn sources are cited in each script's `.NOTES`.
+`caseOperationStatus` values used by the poll loops in both `New-Ediscovery*.ps1` scripts:
+`notStarted`, `submissionFailed`, `running`, `succeeded`, `partiallySucceeded`, `failed`,
+`unknownFutureValue` — the exact v1.0 enum, not carried over from beta [[14]](#references).
+
+Full parameter grounding: each script's `.NOTES` block cites the exact Microsoft Learn REST/
+PowerShell reference page for every cmdlet it calls.
 
 ## 7. Validation / how to prove it works
 
-1. **Automated** — `./validate/Test-EdiscoveryHoldAndCollect.ps1` confirms the case exists; each
-   configured custodian is present with ≥1 data source and reports its hold status; the legal hold
-   exists and is **enabled**; and the collection search exists with the expected scope. Exits
-   non-zero on failure.
-2. **Preservation evidence** — in the portal, the custodians show **hold status = applied** and the
-   hold is **On**; confirm a test item authored before the hold survives even if the custodian tries
-   to delete it (preservation-in-place) [[3]](#references).
-3. **Collection evidence** — run the search and confirm the statistics (item/location counts) are
-   non-zero and match expectations for the KQL query [[7]](#references).
-4. **Export evidence** — after committing results to a review set and running `-Export`, confirm the
-   export operation completes (portal **Exports** tab, or the case `operations`) and the package
-   contains the expected structure (`pst`/`msg`) and load files [[8]](#references).
-5. **Idempotency proof** — re-run the deploy unchanged; every object reports `exists` (not
-   `created`) and no duplicate case/custodian/hold/search appears.
+1. **Automated check** — `./validate/Test-EdiscoveryPremiumCaseSetup.ps1 -DefinitionPath ...
+   -CaseId $caseId ...` confirms the case, every custodian's hold status, userSources, the
+   search, and the review set; exits non-zero on any hard failure (safe for a CI-style
+   pre-flight or a scheduled drift check).
+2. **Hold propagation** — a freshly applied hold can take up to 24 hours to take effect
+   [[10]](#references); the validate script reports a not-yet-`success` `HoldStatus` as `WARN`,
+   not `FAIL`, in that window. Re-run after 24 hours and expect `PASS`.
+3. **Functional proof (portal)** — open the case's **Hold policies** (or, if the tenant has the
+   preview **hold report** enabled, **Settings → eDiscovery → Hold report**) and confirm the
+   custodian's mailbox and OneDrive site show as **On** with no location errors
+   [[15]](#references).
+4. **Search accuracy** — before collecting into a review set, run **View estimated statistics**
+   on the search (portal, or the `estimateStatistics` operation) and sanity-check the hit count
+   against what counsel expects for the date range/keywords — an estimate near zero usually means
+   a scoping mistake (wrong custodian, wrong date syntax), not an empty mailbox.
+5. **Export completeness** — after `Get-EdiscoveryExportPackage.ps1` finishes, confirm the
+   downloaded file count and combined size match the `exportFileMetadata` entries the operation
+   reported, and open the summary/load file the export always includes alongside the content
+   files [[16]](#references).
 
 ## 8. Operations & tuning
 
-**KPIs / signals to watch:**
-- **Custodian hold status** — every custodian in scope should read `applied`; a `pending`/error
-  status is a preservation gap to chase immediately (the validate script surfaces this).
-- **Collection statistics** — item and volume counts per search; a sudden drop after a query change
-  can mean an over-narrowed collection (defensibility risk).
-- **Export operation status** — exports are async (`202` + operation); track them to completion and
-  record the export in the matter file.
+**KPIs to watch:**
+- **Custodian `HoldStatus`** — track for every custodian in every open matter; a status that
+  regresses from `success` to anything else after the initial propagation window is a signal
+  something (a mailbox move, a license change, a manual portal edit) disrupted the hold — treat
+  it as an incident, not routine drift, given the spoliation exposure in §2.
+- **Export age vs. the 30-day download window** — `validate/Test-EdiscoveryPremiumCaseSetup.ps1`
+  flags an export older than 30 days as `WARN` (content is very likely no longer downloadable by
+  then) [[17]](#references). Download every export you intend to keep well before that window
+  closes; there is no automatic renewal.
+- **Case/hold-policy counts against tenant limits** — 20,000 hold policies tenant-wide, 200 per
+  Premium case, 2,000 mailboxes and 2,000 sites per case hold [[18]](#references). A high-volume
+  MSSP/legal-ops practice running many concurrent matters should watch these, not just per-case
+  health.
+- **PAYG export storage cost** (if the tenant has activated Purview's pay-as-you-go billing) —
+  Export API usage is billed by exported data volume; case/search/hold operations themselves are
+  not billed [[19]](#references). See §10.
 
-**Runbook (new matter):** deploy hold + collection first (preserve fast), then iterate the KQL
-`contentQuery` with counsel, re-running the search until scope is agreed; commit to a review set,
-review/tag, then export. **Runbook (release):** only when Legal confirms the matter and any
-litigation-hold obligation is over — see §9.
+**Review cadence:** re-run `validate/Test-EdiscoveryPremiumCaseSetup.ps1` on every case with an
+active hold at least weekly for the life of the matter — a released hold that should still be
+active is a preservation failure, not a cosmetic drift.
 
-**Audit:** eDiscovery activities are captured in the Microsoft Purview audit log; keep the definition
-file under version control so the scoped hold/collection for each matter is reconstructable.
+**Audit visibility for hold-apply/hold-release/case-close/case-delete actions:** none of this
+scenario's own objects retain a full history of *who* released a hold or closed/deleted a case
+beyond the single `lastModifiedBy`/`closedBy` snapshot on the case itself — an actor with
+eDiscovery Administrator access who quietly releases a custodian's hold and later re-applies it
+leaves no trace in the objects this scenario's scripts read. Route eDiscovery admin actions
+through the Microsoft 365 unified audit log (`Search-UnifiedAuditLog`, automation surface 1 per
+`docs/automation-surface.md`) for independent, tamper-evident visibility, the same pattern this
+library's other no-write-API scenarios use for their audit trail
+(`scenarios/compliance-manager/assess-against-iso27001/`,
+`scenarios/communication-compliance/harassment-and-code-of-conduct/`) — the exact `RecordType`/
+`Operations` values for eDiscovery hold-apply/release/case-close/delete events were not
+independently confirmed during this build and should be grounded before scripting a dedicated
+export, rather than guessed by analogy; tracked as a follow-up in `PROGRESS.md`. Until that export
+exists, treat the case's own `Get-MgSecurityCaseEdiscoveryCase`/
+`Get-MgSecurityCaseEdiscoveryCaseCustodian` snapshots from
+`validate/Test-EdiscoveryPremiumCaseSetup.ps1`'s scheduled runs as the lightweight, point-in-time
+substitute — sufficient to catch a status regression, not sufficient to attribute who caused it.
+
+**Operational dependency this scenario does not close:** whether the *right* custodians were
+identified for a given matter is a legal-judgment call this scenario's automation cannot make —
+it only guarantees that whichever custodians are listed in `deploy/policy/
+ediscovery-case-definition.json` are reliably placed on hold. Getting the custodian list right is
+outside code's ability to verify.
 
 ## 9. Rollback / decommission
 
-See `rollback.md`. Quick reference: `./deploy/Remove-EdiscoveryHoldAndCollect.ps1` **releases**
-(disables) the legal hold — ending preservation — and, with `-Delete`, deletes the hold and search.
-It never deletes collected content, review sets, exports, custodians, or the case. **Release a legal
-hold only when Legal confirms the preservation obligation is over** — premature release can be
-spoliation.
+See `rollback.md` for the full staged procedure (release hold → close case → delete case). Quick
+reference: `./deploy/Remove-EdiscoveryPremiumLegalHold.ps1 -CaseId $caseId` releases every
+custodian currently on hold; add `-CloseCase` or `-DeleteCase` for the progressively more
+destructive stages, each requiring an explicit switch.
 
 ## 10. Cost & licensing notes
 
-- **Per-user entitlement (E3/E5), with a PAYG wrinkle on E3 export.** Cases/searches/holds work on
-  E3 (delegated); **premium features (review sets, tagging, analytics), app-only auth, and export**
-  require **E5/Purview Suite**, and **on E3, export bills pay-as-you-go** [[1]](#references). Confirm
-  the tier for the operations you automate.
-- **Storage/egress:** exports produce data that leaves the service (download or Azure blob) — factor
-  storage and handling of exported PII/privileged content into cost and security planning.
-- **Cost governance:** the dominant cost is reviewer/attorney time plus export storage; automation
-  reduces setup labor but does not change per-review economics. Scope collections tightly (with
-  counsel) to keep review volume — and cost — defensible.
+- **No PAYG component for hold/search/case management.** Creating cases, custodians, holds, and
+  searches — and running `estimateStatistics` — is included in the qualifying E5/Suite/add-on
+  license; only the **Export API's data volume** is metered under Purview's pay-as-you-go billing
+  model, if activated [[19]](#references).
+- **Licensing is per-custodian, not per-case.** A custodian who is a member of five concurrent
+  matters needs the qualifying license once, not five times — but every distinct individual
+  placed on hold anywhere in the tenant needs it.
+- **Sizing note:** unlike the DLP/DSPM scenarios in this library (which typically license a broad
+  population), eDiscovery (Premium) licensing tracks *litigation exposure*, not headcount — budget
+  for the population of employees realistically likely to become custodians (executives, the
+  function most often named in disputes, departing-employee cohorts), not the whole org.
 
 ## 11. Known limitations & gotchas
 
-- **Legal significance — this is not a routine automation.** Placing a hold and collecting content
-  are legally consequential. Always review with `-WhatIf` and with Legal before running for real; the
-  scripts default to safe behavior (no export unless `-Export`, no delete unless `-Delete`) and use
-  `ConfirmImpact = High`.
-- **VERIFY — committing to a review set (addToReviewSet) is a prerequisite for export and is not
-  scripted here.** The deploy creates the collection **search**; running it and committing results
-  into a **review set** (the `addToReviewSet` action) must be done in the portal or a follow-on
-  before `-Export` has anything to export. That action's exact body wasn't exercised in this build —
-  confirm it before automating end-to-end [[1]](#references).
-- **Hold scope is a legal decision.** The sample uses an **empty** `contentQuery` = preserve
-  everything for the sources (the defensible default). Narrowing a preservation hold with KQL risks
-  spoliation and must have legal sign-off — this is a judgment call, not a tuning knob (`design.md`).
-- **Legal hold ≠ retention hold.** eDiscovery legal holds preserve for litigation/investigation and
-  should not be conflated with Data Lifecycle Management retention (a different scenario/obligation)
-  [[1]](#references).
-- **Custodian source binding.** This scenario adds each custodian's mailbox (and optionally site) and
-  scopes the search with `allCaseCustodians`. Binding **specific** custodian sources into the legal
-  hold or search (via `@odata.bind`) is supported but not used here to keep the default simple —
-  extend with the documented source-binding pattern if you need per-source holds.
-- **Async operations.** Search runs, review-set commits, and exports are asynchronous (`202` +
-  operation); the deploy script starts the export but does not block on completion — poll the case
-  `operations` or the portal.
-- **App-only auth is E5-gated.** Delegated auth works on E3 for standard operations; app-only
-  (unattended) automation requires E5/Premium and the app-auth setup [[1]](#references).
-- **Illustrative custodians/queries.** The sample custodian emails, KQL, and matter name are
-  placeholders — replace with the real matter's custodians and counsel-approved query.
+- **This scenario's Graph app-only path cannot author `eDiscoveryHoldPolicy` (the case-level
+  "legal hold" object with `siteSources`/`userSources` and an optional `contentQuery`) — only
+  custodian-scoped holds via `applyHold`.** Both mechanisms exist in the v1.0 API and both are
+  called "legal hold" in Microsoft's own documentation, which can be confusing when reading
+  Microsoft Learn: `ediscoveryHoldPolicy` (`POST .../legalHolds`) is better suited to a
+  location-scoped hold not necessarily tied to a named "custodian" (for example, holding a
+  distribution-list-derived set of mailboxes for a regulatory sweep), while this scenario's
+  custodian+`applyHold` pattern is the natural fit when the matter is organized around named
+  individuals — the more common litigation-hold shape. A future companion scenario could cover
+  the `ediscoveryHoldPolicy` path for the location-scoped case (tracked in `PROGRESS.md`).
+- **Hold propagation can take up to 24 hours** — don't treat a non-`success` `HoldStatus`
+  immediately after `applyHold` as a failure [[10]](#references).
+- **Export packages must be downloaded within 30 days of the export completing**, even though the
+  export *operation record* is retained for the life of the case [[17]](#references). There is no
+  documented way to extend this window — re-run the export if it lapses.
+- **The `addToReviewSet`/export idempotency checks in `New-EdiscoverySearchReviewSetExport.ps1`
+  match on operation type + `outputName`/"any succeeded addToReviewSet in this case," not an
+  exact per-search/per-review-set key** — Microsoft's API doesn't expose a documented "does an
+  equivalent operation already exist" filter. Keep definition-file display names stable across
+  re-runs of the same matter's collection; see the script's own `.NOTES`.
+- **VERIFY (pilot tenant, before production reliance):** whether a custodian's `userSource`
+  `includedSources` value must be the exact string `"mailbox, site"` (as shown in Microsoft's own
+  worked beta example) or whether the v1.0 endpoint expects a JSON array / different delimiter —
+  the v1.0 REST reference for this specific endpoint documents the *possible values* (`mailbox`,
+  `site`) but its own worked example for `POST .../custodians/{id}/userSources` only shows a
+  single value (`"mailbox"`), not the combined form. `New-EdiscoveryPremiumLegalHold.ps1` uses the
+  combined-string form by analogy with the (deprecated, beta-namespace) sibling endpoint's worked
+  example rather than fabricating a JSON-array shape neither reference confirms.
+- **A custodian's `userSource` (mailbox + OneDrive) does not automatically cover Microsoft Teams
+  *channel* messages.** Teams 1:1/group chat is stored in the custodian's own mailbox and is
+  covered by the mailbox `userSource`, but channel messages live in the team's own mailbox/site,
+  not the individual custodian's — a matter where team/channel conversations are in scope needs
+  the relevant team added as a **non-custodial data source**
+  (`New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`, out of scope for this fragment) in
+  addition to the custodians this scenario holds, not instead of them.
+- **This scenario does not cover legal hold *notifications*** (the Premium workflow for
+  communicating a hold to custodians, tracking acknowledgment, and sending reminders/escalations)
+  — that's a separate, portal-driven Premium capability with no documented Graph write API found
+  during this build; a defensible preservation narrative in many jurisdictions expects a
+  documented custodian notification alongside the technical hold, so pair this scenario with the
+  portal-driven notification workflow, not as a substitute for it.
+- **Attorney-client privilege detection, near-duplicate/theme analytics, and predictive coding**
+  are Premium review-set capabilities this scenario doesn't configure or exercise — it stops at
+  "collect, commit to review set, export," which is sufficient for many straightforward matters
+  but not a substitute for the analytics workflow a large-scale review would use.
+- **Closing or deleting a case turns off every hold in it**, including custodians this scenario
+  didn't add — `Remove-EdiscoveryPremiumLegalHold.ps1` warns before `-CloseCase`/`-DeleteCase`,
+  but the responsibility to confirm every custodian's hold should actually end is the operator's,
+  not the script's [[20]](#references).
 
 ## 12. References
 
-1. Use the Microsoft Purview eDiscovery API (overview, object model, licensing/auth tiers, export billing) — <https://learn.microsoft.com/graph/api/resources/security-ediscovery-apioverview?view=graph-rest-1.0>
-2. Assign permissions in eDiscovery (eDiscovery Manager/Administrator roles) — <https://learn.microsoft.com/purview/edisc-permissions>
-3. Create/manage holds in eDiscovery — <https://learn.microsoft.com/purview/edisc-hold-create> and <https://learn.microsoft.com/purview/edisc-hold-manage>
-4. Create ediscoveryCase (`POST /security/cases/ediscoveryCases`) — <https://learn.microsoft.com/graph/api/security-casesroot-post-ediscoverycases?view=graph-rest-1.0>
-5. Create custodians (`POST .../custodians`, body `{email}`) — <https://learn.microsoft.com/graph/api/security-ediscoverycase-post-custodians?view=graph-rest-1.0>
-6. Create custodian userSource (`POST .../custodians/{id}/userSources`, `{email, includedSources}`) — <https://learn.microsoft.com/graph/api/security-ediscoverycustodian-post-usersources?view=graph-rest-1.0>
-7. Create searches (`POST .../searches`, `{displayName, contentQuery, dataSourceScopes}`) — <https://learn.microsoft.com/graph/api/security-ediscoverycase-post-searches?view=graph-rest-1.0>
-8. ediscoveryReviewSet: export (`POST .../reviewSets/{id}/export`, `{outputName, exportOptions, exportStructure}`) — <https://learn.microsoft.com/graph/api/security-ediscoveryreviewset-export?view=graph-rest-1.0>
-9. Set up app-only access for the eDiscovery API — <https://learn.microsoft.com/graph/security-ediscovery-appauthsetup>
+1. Create holds in eDiscovery (preserve independent of retention policies, up to 24-hour propagation) — <https://learn.microsoft.com/purview/edisc-hold-create>
+2. eDiscovery subscription comparison (Standard vs. Premium capability table) — <https://learn.microsoft.com/purview/ediscovery#comparison-of-key-capabilities>
+3. Learn about case settings in eDiscovery (per-case Premium features toggle) — <https://learn.microsoft.com/purview/edisc-settings-cases>
+4. Configure general settings in eDiscovery (tenant-level Premium default toggle) — <https://learn.microsoft.com/purview/edisc-settings-general>
+5. Assign permissions in eDiscovery (eDiscovery Manager/Administrator, Custodian role) — <https://learn.microsoft.com/purview/edisc-permissions>
+6. Assign permissions in eDiscovery — app-only auth for S&C PowerShell eDiscovery cmdlets is unsupported — <https://learn.microsoft.com/purview/edisc-permissions#configure-app-only-authentication-for-ediscovery-powershell>
+7. Set up app-only access for Microsoft Purview eDiscovery (Graph app-only setup, step by step) — <https://learn.microsoft.com/graph/security-ediscovery-appauthsetup>
+8. Use Microsoft Purview APIs for eDiscovery (two-API design, MicrosoftPurviewEDiscovery app registration, `eDiscovery.Download.Read`, MSAL.PS download scripts) — <https://learn.microsoft.com/purview/edisc-ref-api-guide>
+9. Create holds in eDiscovery (licensing requirement on every held user, Frontline exclusion) — <https://learn.microsoft.com/purview/edisc-hold-create>
+10. Create holds in eDiscovery (custodian mailbox/OneDrive/Teams/Groups hold scope, 24-hour propagation) — <https://learn.microsoft.com/purview/edisc-hold-create>
+11. Add search results to a review set in eDiscovery — <https://learn.microsoft.com/purview/edisc-search-add-to-review-set>
+12. Export items from a review set in eDiscovery (portal export flow, Process manager) — <https://learn.microsoft.com/purview/edisc-review-set-export>
+13. Microsoft Purview service description — eDiscovery licensing, shared-mailbox hold licensing parity with Exchange — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-ediscovery>
+14. caseOperation resource type (v1.0 `caseOperationStatus` enum) — <https://learn.microsoft.com/graph/api/resources/security-caseoperation?view=graph-rest-1.0>
+15. Use the hold report (preview) in eDiscovery — <https://learn.microsoft.com/purview/edisc-hold-report>
+16. Export items from a review set in eDiscovery (summary/load file always included) — <https://learn.microsoft.com/purview/edisc-review-set-export>
+17. Export items from a review set in eDiscovery (30-day download window, life-of-case retention of the operation record) — <https://learn.microsoft.com/purview/edisc-review-set-export>
+18. Limits in eDiscovery (hold policy and per-case mailbox/site limits) — <https://learn.microsoft.com/purview/edisc-ref-limits>
+19. Billing in eDiscovery (Graph API usage billing — only Export API is metered) — <https://learn.microsoft.com/purview/edisc-billing>
+20. Create and manage cases in eDiscovery (closing/deleting a case turns off all its holds) — <https://learn.microsoft.com/purview/edisc-cases-manage>
+21. ediscoveryCase resource type (v1.0 `caseStatus` enum: active/closing/closed/closedWithError) — <https://learn.microsoft.com/graph/api/resources/security-ediscoverycase?view=graph-rest-1.0>
+22. ediscoveryCustodian resource type (Apply hold / Release / Activate methods) — <https://learn.microsoft.com/graph/api/resources/security-ediscoverycustodian?view=graph-rest-1.0>
+23. Create custodian userSource (v1.0 REST reference, `includedSources` values) — <https://learn.microsoft.com/graph/api/security-ediscoverycustodian-post-usersources?view=graph-rest-1.0>
+24. Use the Microsoft Purview eDiscovery API (v1.0 object/cmdlet overview) — <https://learn.microsoft.com/graph/api/resources/security-ediscovery-apioverview?view=graph-rest-1.0>
 
-> Re-verify all links, API version, request/response shapes, and the licensing/auth tiers against
-> current Microsoft Learn before a customer-facing deployment. Legal hold and collection are
-> legally significant — automate the mechanics, keep the scoping and release decisions with Legal.
+> Re-verify all links against current Microsoft Learn before a customer-facing deployment —
+> Purview's Graph eDiscovery surface has moved from the `microsoft.graph.ediscovery` namespace to
+> `microsoft.graph.security` within the product's own history, and beta-to-v1.0 promotions can
+> change property/enum shapes without notice.

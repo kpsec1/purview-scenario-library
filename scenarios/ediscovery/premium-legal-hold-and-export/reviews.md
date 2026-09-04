@@ -1,8 +1,8 @@
-# Four-Lens Review — eDiscovery (Premium) Legal Hold, Collection & Export
+# Four-Lens Review — eDiscovery (Premium): Legal Hold, Collection, Review, and Export
 
-Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round of
-findings below; all **Fix** items were applied before this file was finalized. No **Fail** items were
-raised.
+Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One
+round of findings below; all **Fix** items were applied to the scenario before this file was
+finalized (see "Resolution" under each). No **Fail** items were raised.
 
 ---
 
@@ -10,28 +10,40 @@ raised.
 
 **Verdict: Fix (resolved)**
 
-1. **Automation that deletes evidence or releases a hold is a spoliation weapon.** A careless (or
-   malicious) run that disabled a hold or deleted a search/case could destroy preservation and expose
-   the org to sanctions — the highest-stakes failure mode in this whole library.
-   - **Resolution:** Both scripts use `ConfirmImpact = High`; deletion is opt-in (`-Delete`), export
-     is opt-in (`-Export`), and the remove script **releases** (disables) a hold rather than deleting
-     it by default and never deletes collected content/review sets/exports. `rollback.md` opens with a
-     legal warning; `README.md` §11 states hold release is a legal act. Case close + custodian release
-     are deliberately **not** scripted (portal, governed).
-2. **Over-narrow hold = under-preservation.** Letting an operator drop a KQL query into the hold could
-   silently preserve too little.
-   - **Resolution:** The sample hold `contentQuery` is **empty** (preserve everything) and documented
-     as the defensible default; narrowing is called out as a legal decision requiring sign-off
-     (`design.md` §6, `README.md` §11), not a tuning knob.
-3. **Exported data is sensitive by definition.** Exports contain the very PII/privileged content under
-   dispute and leave the service.
-   - **Resolution:** `README.md` §10/§11 flag export data-handling explicitly (download/Azure blob,
-     PII/privilege), and export is opt-in and E5/PAYG-gated — not automatic.
-4. **App-only automation over-privilege.** `eDiscovery.ReadWrite.All` app-only is a powerful,
-   tenant-wide grant.
-   - **Resolution:** Validation uses the read scope (`eDiscovery.Read.All`); the write scope is only
-     for deploy/remove; `README.md` §3 notes app-only is E5-gated and points at Microsoft's app-auth
-     setup, and delegated auth (scoped to the signed-in eDiscovery Manager's own cases) is the default.
+1. **No independent audit trail for who released a hold or closed/deleted a case.** The draft's
+   objects (case, custodian) only expose a single `lastModifiedBy`/`closedBy` snapshot property —
+   an eDiscovery Administrator with legitimate portal/Graph access could release a custodian's
+   hold, let deletion-eligible content age out under whatever retention policy otherwise applies,
+   and re-apply the hold later, leaving nothing in this scenario's own object model to flag the
+   gap. Given §2's spoliation-sanction stakes, an insider (or a compromised eDiscovery
+   Administrator account) with this capability and no independent monitoring is a real, not
+   theoretical, exposure.
+   - **Resolution:** Added an explicit "Audit visibility" subsection to `README.md` §8 naming the
+     gap directly, pointing at `Search-UnifiedAuditLog` (automation surface 1) as the correct
+     independent channel, and being honest that the exact `RecordType`/`Operations` values for
+     eDiscovery hold/case-lifecycle events weren't grounded in this build rather than guessed by
+     analogy to a different module's audit schema — tracked as a scoped follow-up in
+     `PROGRESS.md` rather than fabricated here.
+2. **Custodian hold coverage silently excludes Teams channel messages.** The original draft's
+   `userSource` (mailbox + OneDrive) description implied "the custodian's data" without
+   qualification; Teams *channel* messages are stored in the team's own mailbox/site, not the
+   individual custodian's, so a custodian on hold in this scenario's default configuration has no
+   preservation over channel conversations they participated in — a red-teamer (or, more
+   realistically, a custodian's own imprecise mental model of "I'm on hold, so I'm covered")
+   could treat channel content as unprotected when the matter's scope actually includes it.
+   - **Resolution:** Added an explicit bullet to `README.md` §11 naming the gap and the specific
+     remediation (`New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource` against the relevant
+     team, added alongside — not instead of — the custodian holds this scenario places).
+3. **`ediscoveryHoldPolicy` vs. custodian `applyHold` naming collision** — both are called "legal
+   hold" in Microsoft's own docs; a reader who assumes this scenario's custodian-scoped hold is
+   *the* legal hold mechanism could miss that a location-scoped hold (a shared departmental
+   mailbox, a distribution-list sweep with no single custodian owner) needs the other object
+   entirely, and wrongly conclude "custodian" coverage is complete for a matter that also needs
+   location-scoped preservation.
+   - **Not a new finding requiring a scenario change** — already correctly disclosed as a
+     dedicated Known Limitations bullet (`README.md` §11) and explained in full in `design.md`
+     §3, including why this scenario picked the custodian path and what the alternative covers.
+     Confirmed the existing text already resolves this rather than assuming a gap.
 
 No remaining Fix/Fail after resolution.
 
@@ -41,67 +53,108 @@ No remaining Fix/Fail after resolution.
 
 **Verdict: Fix (resolved)**
 
-1. **Preservation gaps must be detectable.** A custodian whose hold silently didn't apply is a real
-   risk; a validate script that only checked object existence would miss it.
-   - **Resolution:** `validate/Test-EdiscoveryHoldAndCollect.ps1` reports each custodian's
-     `holdStatus` and hard-checks that the legal hold `isEnabled` is true; §8 makes custodian hold
-     status and collection statistics operational KPIs.
-2. **Async operations look "done" too early.** Search runs and exports are asynchronous (`202` +
-   operation); a naive script could imply completion.
-   - **Resolution:** The deploy explicitly reports the export as async ("poll the case operations /
-     portal") and does not claim completion; `README.md` §7/§8 tell the operator to track the export
-     operation to completion.
-3. **Idempotency on a legal object matters.** Re-running must never create a second hold/case.
-   - **Resolution:** Get-then-create by natural key with `@odata.nextLink` paging; §7 includes an
-     idempotency proof (re-run shows `exists`, no duplicates).
+1. **No scheduled-monitoring guidance for `HoldStatus` regression.** The original draft's KPI
+   list named `HoldStatus` regression as something to "track" without saying how, unlike this
+   library's other scenarios that explicitly wire their validate script into a recurring check.
+   - **Resolution:** `README.md` §8's Review cadence already specified a weekly
+     `validate/Test-EdiscoveryPremiumCaseSetup.ps1` run for every case with an active hold before
+     this review round — confirmed the existing text already covers the "how," not just the
+     "what," so no further change needed here; the audit-trail fix above (Red Team finding 1)
+     adds the complementary piece (who), which was the real gap.
+2. **The validate script's export-age check (`ExportOperationId` parameter) is opt-in and easy to
+   forget to pass on a scheduled run**, silently skipping the one check most likely to catch a
+   soon-to-expire, not-yet-downloaded export before the 30-day window closes.
+   - **Resolution:** Confirmed this is a deliberate, disclosed design choice, not an oversight —
+     `Test-EdiscoveryPremiumCaseSetup.ps1`'s own doc comment states the export check is optional
+     because an export is "a point-in-time production, not an always-present piece of ongoing
+     case state." Added no code change; instead this finding is recorded here as an explicit
+     operational reminder: a scheduled validation job should pass every open export operation ID
+     it's tracking, not just the case ID, to get this check's benefit. Not silently assumed
+     covered.
+3. **`Wait-CaseOperation`'s timeout produces a `Write-Warning`, not a script failure, for a
+   long-running `addToReviewSet`/export** — a CI-style pipeline treating any warning as
+   non-blocking could report "success" for a collection that's actually still running, and move
+   on to a download step that finds nothing ready yet.
+   - **Resolution:** Confirmed as correct, disclosed behavior, not a defect — `design.md` §5
+     explains why a timeout is deliberately not an error (a large custodian population can
+     legitimately outlast a reasonable script timeout). `Get-EdiscoveryExportPackage.ps1`
+     independently checks the operation's `status` before downloading and warns (rather than
+     silently downloading a partial/absent file list) if it isn't `succeeded` — so the pipeline
+     risk is already mitigated at the point that matters (the download step), not just narrated.
+     No change made; noted here so the reasoning is visible in review rather than assumed.
 
-No remaining Fail.
+No remaining Fail. The scenario is operable and its residual gaps are disclosed, not silent.
 
 ---
 
 ## 🎩 CISO
 
-**Verdict: Fix (resolved)**
+**Verdict: Pass (with one Fix)**
 
-1. **Defensibility is the whole point.** Legal will ask how holds/collections were scoped and whether
-   the process is reproducible.
-   - **Resolution:** The definition file is the version-controlled, diffable record of each matter's
-     scope; `README.md` §2/§8 frame reproducibility as the defensibility argument and point at the
-     Purview audit log for the activity trail.
-2. **Risk reduction vs. cost:** strong. Automating setup cuts spoliation risk (fast, consistent
-   preservation) and labor, while the dominant cost (attorney review, export storage) is unchanged —
-   honestly stated in §10 rather than over-promised.
-3. **Board/GC narrative:** "we preserve and collect for every matter from a reviewed, reproducible
-   definition, with an auditable record, and keep hold-scope and release decisions with Legal" —
-   defensible and specific.
-4. **Change-management / segregation of duties:** the scenario respects the Legal-vs-IT boundary — IT
-   automates mechanics, Legal owns scope and release (surfaced throughout).
-5. **Would I fund this?** Yes — reduces a high-severity legal risk with bounded cost and clear
-   guardrails.
-
-No remaining Fix/Fail after resolution.
+1. **Releasing a hold is a legal, not technical, decision, and the original draft only surfaced
+   that in `rollback.md`, not as a gating prerequisite up front.** A team that reads only
+   `README.md` before running `Remove-EdiscoveryPremiumLegalHold.ps1` for the first time could
+   miss the spoliation-risk framing entirely if it's buried in a rollback doc they don't read
+   until they're already mid-rollback.
+   - **Resolution:** Added an explicit row to `README.md` §3's prerequisites table — "written
+     confirmation from counsel that the preservation duty has lapsed" — as a gating prerequisite
+     for any hold release, cross-referencing `rollback.md`, mirroring this library's established
+     precedent (`scenarios/communication-compliance/harassment-and-code-of-conduct/` promoting its
+     own legal-counsel gating item the same way).
+- **Risk reduction vs. cost:** proportionate and, unusually for this library, the cost driver
+  (E5/eDiscovery & Audit add-on licensing per custodian, scoped to litigation-exposed population
+  per §10) is more legally *mandatory* than most controls here — the alternative to this control
+  isn't "less protection," it's "manual, error-prone hold management with a much higher spoliation
+  risk," which is a materially different risk profile than most DLP/labeling scenarios in this
+  repo where the alternative is merely a less-automated version of the same control.
+- **Board-level narrative:** "we have a repeatable, auditable process for preserving and producing
+  data the moment a legal or regulatory matter opens, instead of ad hoc portal clicks with no
+  standard record" — clear, and honest about its boundaries (§11's limitations list, especially
+  the notification-workflow gap) rather than overclaiming full legal-hold-lifecycle coverage.
+- **Compliance mapping:** correctly scoped to FRCP Rule 37(e) / common-law preservation duty and
+  regulatory-investigation preservation obligations (§2) — does not overclaim a specific named
+  regulation the way a PCI/HIPAA-scoped control correctly can, because litigation-hold obligations
+  are cross-cutting rather than tied to one regulatory framework.
+- **Would I fund this?** Yes — for any org with recurring litigation/investigation exposure
+  (which is most enterprises above a certain size), the alternative is manual portal work per
+  matter with no consistency guarantee across legal-ops staff, and the downside of getting this
+  wrong (sanctions, adverse inference) is severe enough that the automation's cost is easily
+  justified.
 
 ---
 
 ## 🟦 Microsoft Product Owner
 
-**Verdict: Fix (resolved)**
+**Verdict: Pass**
 
-1. **Right surface for the job.** Using the Graph eDiscovery API (Premium object model, working
-   `-WhatIf`, app-only auth) rather than the classic S&C PowerShell content-search path is aligned
-   with product direction; the classic path is noted as an alternative, not ignored (`design.md` §3).
-2. **Correct, current endpoints and bodies.** Case, custodian, userSource, legalHold, search, and
-   review-set export are reproduced from their v1.0 `security`-namespace reference pages (bodies,
-   enums like `dataSourceScopes` and `exportStructure`), not paraphrased.
-3. **Honest about the review-set commit gap.** `addToReviewSet` (prerequisite for export) is
-   documented and flagged VERIFY rather than fabricated — per `AGENTS.md` §4.
-4. **Accurate licensing/auth tiers.** E3 (delegated, standard ops, PAYG export) vs. E5/Premium
-   (review sets, app-only, export) is stated per the API overview, and legal hold vs. retention hold
-   is explicitly distinguished.
-5. **Not reinventing native capability.** Uses the native API and points at the portal for review/
-   export review steps; adds value only in reproducible, as-code matter setup.
+1. **The Graph-only, no-S&C-PowerShell design is correct and independently re-confirmed, not
+   assumed from `docs/automation-surface.md` alone.** This build directly fetched "Assign
+   permissions in eDiscovery"'s app-only-authentication section and confirmed the "unsupported"
+   status and Microsoft's own remediation guidance (migrate to Graph) verbatim, rather than
+   trusting the cross-cutting doc's prior summary as sufficient grounding for a whole scenario.
+2. **Cmdlet names are verified per-cmdlet against their own Microsoft Learn reference pages, not
+   inferred by naming-pattern analogy in every case** — the one place this build *did* rely on
+   pattern analogy (`New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`, README.md §11) was
+   independently confirmed to exist via a targeted search before being cited, rather than left as
+   an assumed-correct guess.
+3. **The two-API (Graph + separate Purview eDiscovery download API) design is correctly
+   represented as Microsoft's own architecture, not a workaround this scenario invented** —
+   `design.md` §2 and the architecture diagram (`README.md` §4) both make the split explicit, and
+   `deploy/Get-EdiscoveryExportPackage.ps1` is a parameterized, idempotent adaptation of
+   Microsoft's own published reference script rather than an independently reverse-engineered
+   flow, with the adaptation's changes disclosed in the script's own `.NOTES`.
+4. **v1.0 vs. beta namespace discipline is correct throughout.** Every cmdlet/REST reference cited
+   uses the `microsoft.graph.security` (v1.0) namespace, not `microsoft.graph.ediscovery` (beta,
+   explicitly marked deprecated by Microsoft in favor of `security`) or `Microsoft.Graph.Beta.*`
+   cmdlets — consistent with `docs/automation-surface.md` §2's guidance to pin to v1.0 in shipped
+   automation. The one deliberate exception (citing the beta `userSource` worked example for the
+   `includedSources` combined-string form, README.md §11) is explicitly flagged as a VERIFY rather
+   than silently presented as v1.0-confirmed.
+5. **Licensing citations match `docs/licensing-matrix.md`'s existing eDiscovery rows** (Standard =
+   E3, Premium = E5/Suite/add-on) with no new, uncross-checked claims introduced in this
+   scenario's own prerequisites table.
 
-No remaining Fail after resolution.
+No Fix/Fail items from this lens.
 
 ---
 
@@ -109,13 +162,10 @@ No remaining Fail after resolution.
 
 | Lens | Initial verdict | Findings | Resolution |
 |---|---|---|---|
-| 🔴 Red Team | Fix | 4 (spoliation guardrails; preserve-everything default; export-data handling; least-privilege auth) | Closed |
-| 🔵 Blue Team | Fix | 3 (hold-status detection; async honesty; idempotency proof) | Closed |
-| 🎩 CISO | Fix | 1 (defensibility/audit foregrounded); Pass on cost/narrative/SoD | Closed |
-| 🟦 Microsoft Product Owner | Fix | 1 (addToReviewSet gap flagged VERIFY); 4 confirmed correct | Closed |
+| 🔴 Red Team | Fix | 3 (2 closed with README/design additions, 1 confirmed already correctly disclosed) | Closed |
+| 🔵 Blue Team | Fix | 3 (1 confirmed already covered, 1 recorded as an operational reminder with no code change needed, 1 confirmed already mitigated at the right point) | Closed |
+| 🎩 CISO | Pass (1 Fix) | 1 closed with a README §3 prerequisites addition; overall verdict Pass | Closed |
+| 🟦 Microsoft Product Owner | Pass | 5 (all confirmed correct/well-grounded, no changes required) | — |
 
-All Fix items are resolved in the current state of `README.md`, `design.md`,
-`deploy/New-EdiscoveryHoldAndCollect.ps1`, `deploy/Remove-EdiscoveryHoldAndCollect.ps1`,
-`deploy/config/legal-hold-case.sample.json`, and `validate/Test-EdiscoveryHoldAndCollect.ps1`. No
-Fail items were raised. This fragment meets the definition of done in `AGENTS.md` §9, with the
-review-set-commit prerequisite recorded as an explicit VERIFY (not fabricated) per `AGENTS.md` §4.
+All Fix items from this round are resolved in the current state of `README.md` and `design.md`.
+No Fail items were raised. This fragment meets the definition of done in `AGENTS.md` §9.

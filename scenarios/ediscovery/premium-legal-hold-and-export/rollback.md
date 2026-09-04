@@ -1,64 +1,96 @@
-# Rollback — eDiscovery (Premium) Legal Hold, Collection & Export
+# Rollback — eDiscovery (Premium): Legal Hold, Collection, Review, and Export
 
-## ⚠️ Read first: releasing a legal hold is a legal act
-
-A legal hold preserves evidence for litigation or investigation. **Releasing it prematurely can be
-spoliation**, with real sanctions. Do not run any stage of this rollback until **Legal confirms** the
-preservation obligation for this matter is over. When in doubt, keep the hold.
+Releasing a hold or closing/deleting a case has real preservation consequences (§2 of README.md)
+— this document is staged, least-disruptive first, the same way this library's other rollback
+docs are, but the stakes here are higher than most: releasing a hold too early can itself be a
+spoliation event if the preservation duty hasn't actually lapsed. **Confirm with counsel that the
+duty to preserve has ended before running any stage below on a matter that involved actual
+litigation or a regulatory inquiry** — this is a legal determination, not one this scenario's
+scripts can make for you.
 
 ## Recommended sequence
 
-### Stage 1 — Release the legal hold (reversible in effect: re-deploy re-enables)
+### Stage 1 — Release specific custodians' holds (targeted, reversible)
 
 ```powershell
-Connect-MgGraph -Scopes 'eDiscovery.ReadWrite.All'
-./deploy/Remove-EdiscoveryHoldAndCollect.ps1 -ConfigPath ./deploy/config/legal-hold-case.json -WhatIf
-./deploy/Remove-EdiscoveryHoldAndCollect.ps1 -ConfigPath ./deploy/config/legal-hold-case.json
+./deploy/Remove-EdiscoveryPremiumLegalHold.ps1 -CaseId $caseId `
+    -CustodianEmail 'dana.chen@contoso.com' `
+    -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 ```
 
-Sets the legal hold `isEnabled = false` (PATCH) — preservation-in-place ends, but the hold object,
-the case, custodians, the collection search, and any collected/exported content all remain. Re-enable
-by re-running `New-EdiscoveryHoldAndCollect.ps1` (which recreates/enables the hold). Use `-WhatIf`
-first — this is the one rollback you most want to preview.
+Releases the hold on the named custodian(s) only — the case, its other custodians, review set,
+and exports are untouched. Reversible: re-run `deploy/New-EdiscoveryPremiumLegalHold.ps1` against
+the same definition file (or a definition file naming just that custodian) to re-apply the hold.
+Use this stage when one custodian's preservation obligation has ended (for example, they were
+dismissed from the matter) but the case itself is still active.
 
-### Stage 2 — Delete the hold and collection search
+### Stage 2 — Release every held custodian, keep the case (partial rollback)
 
 ```powershell
-Connect-MgGraph -Scopes 'eDiscovery.ReadWrite.All'
-./deploy/Remove-EdiscoveryHoldAndCollect.ps1 -ConfigPath ./deploy/config/legal-hold-case.json -Delete
+./deploy/Remove-EdiscoveryPremiumLegalHold.ps1 -CaseId $caseId `
+    -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 ```
 
-Releases the hold (Stage 1) and then **deletes** the legal hold and the collection search objects.
-Collected content, review sets, and exports are **not** deleted.
+Omitting `-CustodianEmail` releases every custodian currently on hold. The case, its search(es),
+review set(s), and any completed exports remain — this is the right stage when the matter has
+settled or concluded but the case record (searches run, review-set tagging decisions, export
+history) still has documented retention value for the org's own records.
 
-### Stage 3 — Release custodians and close the case (portal, governed)
+### Stage 3 — Close the case (all holds off, case record preserved)
 
-This scenario deliberately does **not** script releasing custodians or closing/deleting the case —
-those actions end a legal matter and should be performed deliberately, with Legal's confirmation, in
-the [Microsoft Purview portal](https://purview.microsoft.com):
-- **Release custodians** (removes their case-level hold) on the case's **Data sources / Custodians**
-  tab.
-- **Close** (and later delete, if retention policy allows) the case from the case settings.
+```powershell
+./deploy/Remove-EdiscoveryPremiumLegalHold.ps1 -CaseId $caseId -CloseCase `
+    -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
+```
+
+Closing turns off **every** hold in the case in one operation, including any custodian not passed
+via `-CustodianEmail` in an earlier Stage 1 run — the script emits an explicit warning before this
+runs. The case itself, its members, searches, review sets, and export history remain visible and
+can be reopened later (Purview portal → case **Actions** → **Reopen case**)
+[[reopen reference below]].
+
+### Stage 4 — Delete the case (not reversible)
+
+```powershell
+./deploy/Remove-EdiscoveryPremiumLegalHold.ps1 -CaseId $caseId -DeleteCase `
+    -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
+```
+
+`-DeleteCase` implies `-CloseCase`. Permanently removes the case and its holds/searches/review
+sets. There is no "undo" — re-establishing the matter means re-running
+`deploy/New-EdiscoveryPremiumLegalHold.ps1` / `deploy/New-EdiscoverySearchReviewSetExport.ps1`
+from scratch against a new case, referencing `deploy/policy/ediscovery-case-definition.json`
+again as the configuration source of truth. Confirm the org's records-retention policy for closed
+legal matters doesn't require keeping the case record (not just released holds) before choosing
+this stage over Stage 3.
 
 ## What rollback does **not** undo
 
-- **Collected content, review sets, and exports.** Anything already collected into a review set or
-  exported is preserved — rollback never deletes evidence or work product. Manage exported packages
-  (which may contain PII/privileged material) under your matter's data-handling rules.
-- **The case, custodians, and custodian source associations.** Left intact by the scripted stages;
-  handled in Stage 3 in the portal.
-- **Audit trail.** eDiscovery activity in the Microsoft Purview audit log is retained per its own
-  policy and is not affected.
-- **The definition file.** Keep it in version control as the record of how this matter was scoped,
-  even after the case is closed.
+- **Custodian mailbox/OneDrive content itself.** Releasing a hold removes *eDiscovery's*
+  preservation of that content — it does not delete anything, and it does not restore anything.
+  Whatever normal retention/deletion policy would otherwise apply to that mailbox or site (if
+  any) resumes governing it once the hold is gone.
+- **Downloaded export packages.** Files already downloaded via
+  `deploy/Get-EdiscoveryExportPackage.ps1` to local/pipeline storage are not touched by any stage
+  above — they are outside eDiscovery's control the moment they're downloaded, and their
+  retention/disposition (privileged production material, likely subject to its own legal-hold or
+  confidentiality obligations toward outside counsel) is the operator's responsibility, not this
+  scenario's.
+- **Review-set content in Microsoft-managed Azure Storage**, once a review set exists, is not
+  automatically deleted by releasing a custodian's hold or even closing the case — only by
+  explicitly deleting the review set (portal) or the case itself (Stage 4).
+- **Audit log entries.** Every hold-apply, hold-release, case-close, and case-delete action is
+  itself an audited event in the Microsoft 365 unified audit log, independent of the case's own
+  lifecycle — rollback of the *control* does not roll back the *record that it existed*.
 
 ## Verification after rollback
 
-```powershell
-Connect-MgGraph -Scopes 'eDiscovery.Read.All'
-./validate/Test-EdiscoveryHoldAndCollect.ps1 -ConfigPath ./deploy/config/legal-hold-case.json
-```
+Re-run `validate/Test-EdiscoveryPremiumCaseSetup.ps1` against the case (Stages 1–3) and confirm
+the expected custodians now show a `HoldStatus` other than `success` (the validate script's
+custodian check will report `FAIL` for a custodian still expected to be on hold, or simply won't
+find the case at all after Stage 4 — both are expected states post-rollback, not validate-script
+bugs). For Stage 3/4, also confirm in the Purview portal that the case's **Status** shows
+**Closed** (Stage 3) or that the case no longer appears in the **Cases** dashboard (Stage 4).
 
-After **Stage 1**, expect the "Legal hold is enabled" check to `[FAIL]` (hold released) while the
-case/custodian/search existence checks still `[PASS]`. After **Stage 2**, expect the hold and search
-existence checks to `[FAIL]`. Confirm custodian hold status and case state in the portal after Stage 3.
+Reference: Create and manage cases in eDiscovery (Reopen/Delete case, status transitions) —
+<https://learn.microsoft.com/purview/edisc-cases-manage>

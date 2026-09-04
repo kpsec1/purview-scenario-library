@@ -23,6 +23,37 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 > (lifecycle, deployment posture, regulatory driver, failure/abuse, scale). Add those fragments
 > here as they're scoped.
 
+### Follow-ups discovered while building the eDiscovery Premium legal-hold-and-export scenario
+- [ ] `scenarios/ediscovery/location-scoped-legal-hold/` (or similar) — script the
+  `ediscoveryHoldPolicy` (`POST .../legalHolds`) path (siteSources/userSources, optional
+  contentQuery) for a hold organized around a *location* rather than a named custodian (a shared
+  departmental mailbox, a regulatory-sweep distribution list) — explicitly out of scope in
+  `premium-legal-hold-and-export/design.md` §3/§7, which covers only the custodian+`applyHold`
+  path.
+- [ ] Ground the exact `RecordType`/`Operations` values for eDiscovery hold-apply/hold-release/
+  case-close/case-delete events in `Search-UnifiedAuditLog`, then add a dedicated
+  `Export-EdiscoveryAuditTrail.ps1` to `premium-legal-hold-and-export/deploy/` — flagged as a Red
+  Team finding in that scenario's `reviews.md`: none of the scenario's own Graph objects retain a
+  full actor/history trail for who released a hold or closed/deleted a case, and this build
+  deliberately did not fabricate the audit RecordType/Operations values to close the gap.
+- [ ] `scenarios/ediscovery/legal-hold-notifications/` — the Premium custodian-communication
+  workflow (initial notice, reminders, escalations, acknowledgment tracking), explicitly called
+  out as a non-goal in `premium-legal-hold-and-export/design.md` §7 because no documented Graph
+  write API was found during this build's grounding pass; README.md §11 flags the absence of a
+  documented notification workflow as a real gap in the preservation narrative this scenario alone
+  provides, not a cosmetic omission — worth a dedicated fragment once (or if) Microsoft publishes
+  an API for it, or as a portal-driven-only companion scenario otherwise.
+- [ ] VERIFY (pilot tenant, before production reliance): whether the custodian `userSource`
+  `includedSources` property accepts the combined string `"mailbox, site"` (Microsoft's own worked
+  *beta*-namespace example) on the current *v1.0* `POST .../custodians/{id}/userSources` endpoint,
+  whose own v1.0 worked example shows only a single value (`"mailbox"`) — flagged inline in
+  `premium-legal-hold-and-export/README.md` §11 and `deploy/New-EdiscoveryPremiumLegalHold.ps1`'s
+  `.NOTES` rather than resolved by guessing a JSON-array shape neither reference confirms.
+- [ ] Once `scenarios/insider-risk/` has a scenario producing an escalatable Insider Risk
+  Management case, wire the documented IRM-case → eDiscovery (Premium) case escalation integration
+  — explicitly scoped out of `premium-legal-hold-and-export/design.md` §7 as a follow-up dependent
+  on that not-yet-built scenario.
+
 ### Follow-ups discovered while building the DLP template scenario
 - [ ] `scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/` (or fold into Adaptive
   Protection) — cross-message/behavioral correlation to close the split-PAN evasion gap flagged
@@ -363,24 +394,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the underlying Title VII statute and *Faragher*/*Ellerth* case law instead, but this area is
   actively moving and should be re-verified before every future sale referencing it.
 
-### Follow-ups discovered while building the eDiscovery premium-legal-hold-and-export scenario
-- [ ] `scenarios/ediscovery/review-set-commit-and-analytics/` — script the **addToReviewSet** commit
-  (run search → estimate → add results to a review set) and Premium **review/analytics** (tagging,
-  near-dup/email-threading) — the step between collection and export, documented as a prerequisite
-  and flagged VERIFY in `ediscovery/premium-legal-hold-and-export/README.md` §11 (its exact action
-  body wasn't exercised in this build).
-- [ ] `scenarios/ediscovery/noncustodial-data-sources-and-holds/` — the noncustodial-data-source path
-  (`ediscoveryNoncustodialDataSource`) for holding/collecting shared mailboxes, sites, and Teams not
-  tied to a custodian; a natural companion to the custodian-based flow.
-- [ ] VERIFY (pilot tenant, before production reliance): the **addToReviewSet** action body; binding
-  **specific custodian sources** into a legalHold/search via `@odata.bind` (vs. the broad
-  preservation hold + `allCaseCustodians` scope this scenario uses); and the E3 **export PAYG**
-  billing model — all flagged in `ediscovery/premium-legal-hold-and-export/README.md` §11.
-- [ ] Consider a `scenarios/ediscovery/standard-content-search-scc/` variant using the classic
-  Security & Compliance PowerShell surface (`New-ComplianceCase`/`New-ComplianceSearch`/
-  `New-ComplianceSearchAction`) for tenants on eDiscovery Standard, noted as the alternative surface
-  in this scenario's `design.md` §3.
-
 ### Follow-ups discovered while building the Audit premium-audit-investigation scenario
 - [ ] `scenarios/audit/retention-policy-management/` — script **audit log retention policies** (a
   Premium feature: create/manage custom retention durations per record type/user via SCC PowerShell
@@ -571,31 +584,63 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   and current crucial-events list recorded as explicit VERIFY items rather than fabricated, per
   `AGENTS.md` §4 — 2026-09-03
 
-- [x] `scenarios/ediscovery/premium-legal-hold-and-export/` — third Risk & Compliance scenario
-  (eDiscovery Premium), and the first in this repo built on the **Microsoft Graph eDiscovery API**
-  (v1.0 `security` namespace, surface 3): full README (12-section skeleton), design.md, deploy/
-  (`New-EdiscoveryHoldAndCollect.ps1` — idempotent/parameterized Graph automation via
-  `Invoke-MgGraphRequest` that reconciles a whole matter from a JSON config: case
-  (`POST /security/cases/ediscoveryCases`), custodians + mailbox/site userSources, a **legal hold**
-  (`isEnabled=true`, preserve-everything default), and a **collection search** (KQL `contentQuery`,
-  `dataSourceScopes=allCaseCustodians`); get-then-create by natural key with `@odata.nextLink`
-  paging; **real `-WhatIf`** via `$PSCmdlet.ShouldProcess` (unlike S&C PowerShell); opt-in `-Export`
-  against a review set (`POST .../reviewSets/{id}/export` with `outputName`/`exportOptions`/
-  `exportStructure`); `ConfirmImpact=High`; `Remove-EdiscoveryHoldAndCollect.ps1` — staged **release**
-  (PATCH hold `isEnabled=false`) then optional `-Delete` of hold + search, never deleting collected
-  content/exports/case/custodians; `deploy/config/legal-hold-case.sample.json`), validate/
-  (`Test-EdiscoveryHoldAndCollect.ps1` — read-only GETs for case existence/status, each custodian +
-  source + `holdStatus`, hold `isEnabled`, and search scope), four-lens reviews.md (Red Team Fix
-  round resolved — spoliation guardrails (High confirm, opt-in delete/export, release-not-delete
-  default, preserve-everything default), export-data-handling, least-privilege read/write scopes;
-  Blue Team Fix round resolved — hold-status detection, async honesty, idempotency proof; CISO Fix
-  round resolved — defensibility/audit foregrounded; Product Owner Fix round resolved — Graph over
-  classic S&C surface, addToReviewSet gap flagged VERIFY) — grounded in Microsoft Learn (eDiscovery
-  API overview + licensing/auth tiers, and the create bodies for ediscoveryCase / custodians /
-  userSources / searches / legalHold and the reviewSet export action, all v1.0 `security` namespace;
-  edisc-permissions roles) — the addToReviewSet commit prerequisite, `@odata.bind` per-source
-  binding, and E3 export-PAYG billing recorded as explicit VERIFY items rather than fabricated, per
-  `AGENTS.md` §4 — 2026-09-03
+- [x] `scenarios/ediscovery/premium-legal-hold-and-export/` — first eDiscovery-module scenario,
+  and the first Risk & Compliance scenario in this repo built against a Purview surface with a
+  **rich, fully app-only-supported write API** (the opposite grounding challenge from
+  `assess-against-iso27001`/`harassment-and-code-of-conduct`, which had none): full README
+  (12-section skeleton; a promoted §3 gating prerequisite requiring counsel confirmation before
+  any hold release, added during the CISO review round), design.md (grounds the mandatory
+  Graph-not-S&C-PowerShell choice across Microsoft's own "app-only auth for eDiscovery cmdlets is
+  unsupported" statement, explains the two-separate-API authoring-vs-download architecture, and
+  documents the deliberate choice of custodian-scoped `applyHold` over the sibling
+  `ediscoveryHoldPolicy` location-scoped hold object), deploy/ (`New-EdiscoveryPremiumLegalHold.ps1`
+  — idempotent/parameterized Microsoft Graph automation (surface 3, `microsoft.graph.security`
+  v1.0 namespace) that finds-or-creates an eDiscovery (Premium) case, custodians, and their
+  mailbox+OneDrive userSources, then applies hold, using every Graph SDK cmdlet's native
+  `SupportsShouldProcess` for a true `-WhatIf` dry run rather than a hand-rolled one;
+  `New-EdiscoverySearchReviewSetExport.ps1` — finds-or-creates a case-custodian-scoped search,
+  commits it to a review set via the asynchronous `addToReviewSet` `caseOperation`, and starts an
+  export, polling both long-running operations against the exact v1.0 `caseOperationStatus` enum
+  rather than assuming synchronous completion or reusing beta-namespace casing;
+  `Get-EdiscoveryExportPackage.ps1` — a parameterized, idempotent (skip-if-already-downloaded)
+  adaptation of Microsoft's own published `DownloadExportUsingAppCert.ps1` reference script for
+  the *separate*, non-Graph Purview eDiscovery download API and its own `MSAL.PS` token;
+  `Remove-EdiscoveryPremiumLegalHold.ps1` — staged rollback (release named custodian(s) → close
+  case → delete case, each stage behind its own explicit switch) using the confirmed v1.0
+  `ediscoveryCustodian: release` action and `caseStatus` enum; a JSON case/custodian/search/
+  reviewSet/export definition file all four scripts share as the single source of truth), validate/
+  script (`Test-EdiscoveryPremiumCaseSetup.ps1` — read-only, `eDiscovery.Read.All`-only checks of
+  case/custodian/hold-status/userSource/search/review-set state, plus an opt-in export-age check
+  against the documented 30-day download window), rollback.md (four explicit stages from
+  targeted-custodian release through permanent case deletion, with an up-front warning that
+  releasing a hold before the preservation duty lapses can itself be a spoliation event), four-lens
+  reviews.md (Red Team Fix round resolved — added an audit-visibility subsection to README.md §8
+  naming the gap in per-actor hold-release/case-lifecycle history and pointing to
+  `Search-UnifiedAuditLog` as the correct channel rather than fabricating the exact eDiscovery
+  audit RecordType/Operations values, and flagged that a custodian's mailbox+OneDrive hold does
+  not cover Teams channel messages without an added non-custodial data source; Blue Team
+  clarifications — confirmed the weekly validate-script review cadence and the download-step's own
+  status check already mitigate the async-timeout risk raised; CISO Fix round resolved — promoted
+  the legal-counsel-confirmation-before-hold-release requirement from `rollback.md` alone to a
+  gating README §3 prerequisite; Product Owner Pass — independently re-confirmed the
+  Graph-not-S&C-PowerShell finding, verified the one cmdlet name inferred by naming-pattern analogy
+  (`New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`) actually exists before citing it, and
+  confirmed strict v1.0-vs-beta namespace discipline throughout) — grounded in Microsoft Learn via
+  the Microsoft Learn MCP tool (`edisc-hold-create`, `edisc-settings-cases`/`-general`,
+  `edisc-permissions` including its app-only-auth-unsupported section,
+  `edisc-ref-api-guide`/`security-ediscovery-appauthsetup` for the full two-API app-only setup
+  sequence and the published PowerShell download-script examples this repo's
+  `Get-EdiscoveryExportPackage.ps1` adapts, `edisc-cases-manage`, `edisc-search-add-to-review-set`,
+  `edisc-review-set-export` (including the official-not-just-community-sourced 30-day download-
+  window statement), `edisc-hold-report`, `edisc-ref-limits`, `edisc-billing`, `ediscovery`'s
+  Standard/Premium capability comparison, and eleven-plus REST/PowerShell reference pages directly
+  fetched at v1.0 — `ediscoveryCase`, `ediscoveryCustodian` (including its `applyHold`/`release`/
+  `activate` action set), `ediscoveryHoldPolicy`, `ediscoverySearch`, `ediscoveryReviewSet`
+  (`addToReviewSet`/`export`), `caseOperation` (confirming the exact `caseOperationStatus` enum
+  distinct from beta's casing/shape), and the `New-`/`Get-`/`Add-`/`Export-`/`Update-`/`Remove-`
+  `MgSecurityCaseEdiscoveryCase*` PowerShell cmdlet family) — one REST-shape ambiguity (the
+  `userSource.includedSources` combined-string form) recorded as an explicit VERIFY rather than
+  resolved by guessing, per `AGENTS.md` §4 — 2026-09-04
 
 - [x] `scenarios/communication-compliance/harassment-and-code-of-conduct/` — first Communication
   Compliance-module scenario, and the second scenario in this repo (after
