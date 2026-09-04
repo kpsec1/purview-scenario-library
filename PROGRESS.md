@@ -105,12 +105,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   page as originally suspected); Microsoft never states they're the same limit, so both scenarios now
   cite both figures explicitly and treat 100 as the conservative planning threshold, with the
   cross-code-path question kept as an open pilot-tenant VERIFY per `AGENTS.md` §4.
-- [ ] `scenarios/ediscovery/roster-to-hold-locations/` (or fold into a future eDiscovery pass) —
-  script the hand-off `teams-group-hold-resolution/design.md` §7 left manual: reading that
-  scenario's `-ResolveMembers` roster CSV and appending the chosen members' mailbox addresses as
-  new `userSources[]` entries in a `location-hold-definition.json`, once a human has decided
-  individual member preservation (not just the group's own mailbox/site) is actually needed for a
-  matter.
+- [x] `scenarios/ediscovery/roster-to-hold-locations/` — **built** (see DONE below): scripts the
+  hand-off `teams-group-hold-resolution/design.md` §7 left manual — reads that scenario's
+  `-ResolveMembers` roster CSV plus a human-authored `-SelectionPath` decision record, and appends
+  the selected members' mailbox addresses as new `userSources[]` entries in a
+  `location-hold-definition.json`-shaped file, with an optional `-AddToHold` stage that reconciles
+  them directly onto a live hold policy.
 - [ ] Re-check whether `ediscoveryHoldPolicy: enablePolicy`/`disablePolicy` have been promoted from
   beta to v1.0 — as of this build they exist only in `/beta` (`location-scoped-legal-hold/
   design.md` §4), which is why that scenario's `Remove-EdiscoveryLocationHold.ps1` has no
@@ -627,6 +627,29 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   sibling Data Map scenarios already carry).
 
 ## DONE
+- [x] **`scenarios/ediscovery/roster-to-hold-locations/`** — thirteenth full scenario fragment
+  (eDiscovery), closing the hand-off `teams-group-hold-resolution/design.md` §7 explicitly deferred:
+  "Once a human uses `-ResolveMembers`'s roster output to decide individual members also need
+  preservation, feeding those resolved mailbox addresses into the sibling scenario's own
+  `userSources[]` array is currently a manual step." Ships `deploy/
+  Merge-RosterIntoHoldDefinition.ps1` (reads a roster CSV + a human-authored `-SelectionPath`
+  decision record, cross-validates every selected email actually appears in the roster — a hard
+  error if not, never a silent skip — then appends new `userSources[]` entries to a
+  `location-hold-definition.json`-shaped file, with an optional `-AddToHold` stage reconciling
+  directly onto a live hold policy via the already-grounded `ediscoveryHoldPolicy` v1.0 Graph
+  endpoints), `validate/Test-RosterHoldDefinitionMerge.ps1`, `design.md`, `README.md`,
+  `rollback.md`, and `reviews.md`. Introduces no new Microsoft Learn citations — every product fact
+  it depends on was already grounded in `teams-group-hold-resolution` and `location-scoped-legal-
+  hold`'s own README §12 sections; this fragment is pure orchestration between the two. Four-lens
+  review caught and fixed two real correctness bugs before finalizing: (1) the initial draft's
+  `-AddToHold` stage only reconciled emails newly written to the definition file that run, silently
+  skipping reconciliation for a member merged into the file in an earlier run but never actually
+  applied to the live hold — fixed to reconcile every selected email via the same idempotent
+  find-or-create pattern; (2) a `Set-StrictMode -Version Latest` crash risk on a malformed selection
+  file missing the `selectedEmails` key entirely, present independently in both `deploy/` and
+  `validate/` — fixed with the same property-presence-check pattern
+  `teams-group-hold-resolution/reviews.md` had already established for an analogous gap. Commit:
+  (this fragment). Date: 2026-09-04.
 - [x] **Reconcile the eDiscovery group-expansion member-cap discrepancy (100 vs. >1,000 members)**
   — twelfth **follow-up expansion** fragment (eDiscovery), a correctness/grounding correction rather
   than a new scenario, closing the item logged during the `teams-group-hold-resolution` build:

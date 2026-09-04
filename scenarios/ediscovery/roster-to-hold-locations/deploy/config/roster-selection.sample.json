@@ -1,0 +1,8 @@
+{
+  "_comment": "Human-authored decision record for scenarios/ediscovery/roster-to-hold-locations/. Every email in selectedEmails must appear in the -RosterPath CSV's MemberPrimarySmtpAddress column (teams-group-hold-resolution's Resolve-TeamsGroupHoldLocations.ps1 -ResolveMembers output) -- Merge-RosterIntoHoldDefinition.ps1 fails fast on any that don't, rather than accepting an address it cannot verify against the roster. Author-only reference for the buyer's own tenant -- replace every value below before use. No secrets belong in this file.",
+  "reason": "CID 2026-009 (see location-scoped-legal-hold/deploy/policy/location-hold-definition.json) names two individually-identified custodians within the Payments Team roster as direct subjects of the inquiry -- outside counsel (Example & Example LLP) confirmed 2026-09-04 their individual mailboxes need preservation beyond the group mailbox/site already on hold.",
+  "selectedEmails": [
+    "alex.chen@contoso.com",
+    "jordan.patel@contoso.com"
+  ]
+}
