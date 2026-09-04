@@ -873,7 +873,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   follow-ups filed above capture the incidental discovery of official-source confirmation for
   `endpoint-dlp-usb-block`'s own `EndpointDlpRestrictions` `Setting`/`Value` strings (plus two
   previously-unknown valid values, `Ignore`/`Warn`) made during that same re-grounding pass.
-  Commit: `<pending>`. Date: 2026-09-04.
+  Commit: `2746a99`. Date: 2026-09-04.
 - [x] **`scenarios/data-map/scan-on-premises-sql-server-and-classify/`** — the third and final
   explicitly-flagged sibling of `scenarios/data-map/scan-azure-sql-and-classify/` (alongside the
   already-built Managed Instance and Azure Synapse Analytics siblings), covering the one Data Map
