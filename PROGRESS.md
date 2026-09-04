@@ -750,7 +750,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   an explicit VERIFY rather than asserting unconfirmed behavior, per `AGENTS.md` §4. Both new
   Red Team findings and the PDF VERIFY are filed as new `PROGRESS.md` follow-ups (a companion
   content-based Exchange DLP scenario, and the PDF-encryption pilot-tenant verification) rather
-  than resolved by guessing or scope-expanding this fragment. Commit: (recorded below).
+  than resolved by guessing or scope-expanding this fragment. Commit: `ed4ddd2`.
   Date: 2026-09-04.
 - [x] **Extend `docs/automation-surface.md` with a fifth automation surface: SharePoint Online
   Management Shell** — a scoped cross-cutting-doc fragment (not a new scenario), closing the item
