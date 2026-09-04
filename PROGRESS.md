@@ -156,10 +156,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   S&C PowerShell, Graph, Data Map REST) cover it, and `scenarios/information-protection/
   auto-label-confidential-sharepoint/` had to flag this as a manual/undocumented prerequisite
   rather than automate it.
-- [ ] `scenarios/information-protection/auto-label-confidential-exchange/` — Exchange-location
+- [x] `scenarios/information-protection/auto-label-confidential-exchange/` — Exchange-location
   companion to `auto-label-confidential-sharepoint` using the same policy family
   (`New-AutoSensitivityLabelPolicy -ExchangeLocation`), extending coverage to email per the
-  non-goal noted in that scenario's `design.md` §7.
+  non-goal noted in that scenario's `design.md` §7 — **built** (see DONE).
 - [ ] Consider a `scenarios/information-protection/` sub-scenario (or a cross-cutting note) on
   **localizing sensitive information type selection by data-residency/jurisdiction** — flagged as
   a Red Team/CISO finding in `auto-label-confidential-sharepoint/reviews.md`: the SSN + Credit
@@ -627,6 +627,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   sibling Data Map scenarios already carry).
 
 ## DONE
+- [x] **`scenarios/information-protection/auto-label-confidential-exchange/`** — 2026-09-04 — Exchange
+  (email) auto-labeling companion to the SharePoint/OneDrive sibling. Files: README.md (12 sections),
+  design.md, rollback.md, reviews.md (four-lens), deploy/config/auto-label-confidential-exchange.sample.json,
+  deploy/New-ConfidentialExchangeAutoLabelPolicy.ps1, deploy/Remove-ConfidentialExchangeAutoLabelPolicy.ps1,
+  validate/Test-ConfidentialExchangeAutoLabelPolicy.ps1. Cmdlets (surface 2): `New-AutoSensitivityLabelPolicy
+  -ExchangeLocation All -Mode -ApplySensitivityLabel -OverwriteLabel`, `New-AutoSensitivityLabelRule
+  -Workload Exchange -ContentContainsSensitiveInformation -ExceptIfRecipientDomainIs`. Genuinely distinct:
+  in-transit/service-side (not at-rest), one rule/one workload, NO `-ExchangeLocationException`, simulation
+  sees only mail flowing during the run, encryption via `-ExternalMailRightsManagementOwner`. One VERIFY:
+  exact value/semantics of `-ApplySensitivityLabelOverwriteWorkloads` (email-only override) — flagged, not
+  guessed. Custom `-DryRun` (S&C `-WhatIf` non-functional).
 - [x] **Reconcile the eDiscovery group-expansion member-cap discrepancy (100 vs. >1,000 members)**
   — twelfth **follow-up expansion** fragment (eDiscovery), a correctness/grounding correction rather
   than a new scenario, closing the item logged during the `teams-group-hold-resolution` build:

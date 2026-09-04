@@ -1,0 +1,28 @@
+{
+  "_comment": "Author-only reference data for deploy/New-ConfidentialExchangeAutoLabelPolicy.ps1 - NOT applied to any tenant unless passed to the deploy script WITHOUT -DryRun. Creates one Microsoft Purview auto-labeling policy scoped to the Exchange (email) location and one rule (Workload Exchange) that applies an existing 'Confidential' sensitivity label to email carrying regulated PII. Unlike the SharePoint/OneDrive sibling, Exchange auto-labeling evaluates mail IN TRANSIT (sent and received), service-side - not stored mailbox items. Read README.md Sections 3 and 11 before deploying. The label itself is a prerequisite this scenario does NOT create.",
+  "policy": {
+    "name": "Confidentiality - Auto-Label PII in Exchange Email",
+    "applySensitivityLabel": "Confidential",
+    "mode": "TestWithNotifications",
+    "exchangeLocation": ["All"],
+    "overwriteLabel": true,
+    "comment": "Auto-labels Exchange email containing SSN or Credit Card Number as Confidential. Deployed by scenarios/information-protection/auto-label-confidential-exchange. Owner: Information Protection team.",
+    "exchangeSenderMemberOf": [],
+    "exchangeSenderMemberOfException": [],
+    "externalMailRightsManagementOwner": "",
+    "applySensitivityLabelOverwriteWorkloads": "",
+    "_policyNote": "applySensitivityLabel: name (or GUID) of an EXISTING, published sensitivity label whose scope includes 'Emails' - and NOT a parent label (a parent labels nothing, silently). mode: Enable | TestWithNotifications | TestWithoutNotifications | Disable | PendingDeletion (confirmed accepted values). exchangeLocation: keep ['All'] - for Exchange this means all sender addresses and is the recommended value. There is NO -ExchangeLocationException on New-AutoSensitivityLabelPolicy (a genuine difference from SharePoint/OneDrive) - scope/exclude email via exchangeSenderMemberOf(Exception) below, or via the rule's recipient/sender-domain conditions. WARNING (documented): if you replace 'All' with specific senders (exchangeSenderMemberOf), email sent from OUTSIDE your organization becomes EXEMPT from the policy; if you keep 'All' but set exchangeSenderMemberOfException, email those excluded users SEND is exempt but not email they RECEIVE. overwriteLabel: allows overriding a lower-priority auto-applied label only; manual/higher-priority labels are never overridden. externalMailRightsManagementOwner: single user SMTP (owned by your org; not a group/shared mailbox/contact) - ONLY set when the label applies encryption AND you want to encrypt inbound external mail (README.md Section 11). applySensitivityLabelOverwriteWorkloads: the email-only override switch (VERIFY exact value/semantics - README.md Section 11); leave '' to omit.",
+    "supportedGroupTypes": "exchangeSenderMemberOf accepts mail-enabled security groups, distribution groups, and Microsoft 365 groups. Mail-DISABLED security groups and dynamic distribution groups are not supported as policy targets; nested-group expansion is limited. Membership changes propagate on the service's cadence (minutes to hours), not instantly."
+  },
+  "rule": {
+    "name": "AutoLabel-Confidential-PII-Exchange",
+    "sensitiveInformationTypes": [
+      { "name": "U.S. Social Security Number (SSN)", "mincount": 1 },
+      { "name": "Credit Card Number", "mincount": 1 }
+    ],
+    "exceptIfRecipientDomainIs": [],
+    "_ruleNote": "One rule, Workload=Exchange (email is a single workload - no per-workload rule split, unlike the SharePoint+OneDrive sibling's two rules). sensitiveInformationTypes: OR-combined (Any of these), mincount 1 each -> maps to -ContentContainsSensitiveInformation. exceptIfRecipientDomainIs: OPTIONAL email-specific exception (maps to -ExceptIfRecipientDomainIs) - list trusted internal/partner domains that should NOT trigger labeling (e.g. ['contoso.com'] to skip purely internal mail). Leave [] to label regardless of recipient. Exchange auto-labeling also checks attachment content against these conditions."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-04"
+}
