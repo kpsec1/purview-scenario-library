@@ -1,0 +1,27 @@
+{
+  "_comment": "Reference definition for the eDiscovery (Premium) legal-hold-and-export scenario. Consumed by New-EdiscoveryPremiumLegalHold.ps1 and New-EdiscoverySearchReviewSetExport.ps1 via -DefinitionPath. Author-only reference for the buyer's own tenant -- replace every value below before use. No secrets belong in this file.",
+  "case": {
+    "displayName": "CONTOSO-LIT-2026-014",
+    "description": "Wrongful-termination litigation -- Regional Sales team. Outside counsel: Example & Example LLP.",
+    "externalId": "2026-014"
+  },
+  "custodians": [
+    { "email": "dana.chen@contoso.com", "displayName": "Dana Chen (Regional Sales Director)" },
+    { "email": "miguel.ortiz@contoso.com", "displayName": "Miguel Ortiz (Sales Ops Manager)" }
+  ],
+  "search": {
+    "displayName": "CONTOSO-LIT-2026-014 - All custodian content",
+    "description": "All custodian mailbox/OneDrive content matching the case keyword set and date range, per the litigation hold notice date range agreed with outside counsel.",
+    "contentQuery": "(severance OR termination OR \"reduction in force\" OR RIF) AND date>=2025-01-01",
+    "dataSourceScopes": "allCaseCustodians"
+  },
+  "reviewSet": {
+    "displayName": "CONTOSO-LIT-2026-014 - Review Set 1"
+  },
+  "export": {
+    "outputName": "CONTOSO-LIT-2026-014 - Export 1 - outside counsel production",
+    "description": "First production export for outside counsel review",
+    "exportOptions": "originalFiles,tags",
+    "exportStructure": "pst"
+  }
+}
