@@ -648,8 +648,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   find-or-create pattern; (2) a `Set-StrictMode -Version Latest` crash risk on a malformed selection
   file missing the `selectedEmails` key entirely, present independently in both `deploy/` and
   `validate/` — fixed with the same property-presence-check pattern
-  `teams-group-hold-resolution/reviews.md` had already established for an analogous gap. Commit:
-  (this fragment). Date: 2026-09-04.
+  `teams-group-hold-resolution/reviews.md` had already established for an analogous gap.
+  Commit: `3ebfd4e`. Date: 2026-09-04.
 - [x] **Reconcile the eDiscovery group-expansion member-cap discrepancy (100 vs. >1,000 members)**
   — twelfth **follow-up expansion** fragment (eDiscovery), a correctness/grounding correction rather
   than a new scenario, closing the item logged during the `teams-group-hold-resolution` build:
