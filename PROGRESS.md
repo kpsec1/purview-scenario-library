@@ -580,10 +580,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   genuine `kind`/auth/network differences Microsoft's own docs describe (registration per workspace
   with two optional SQL endpoints, a three-part serverless enumeration-authentication story, the
   distinct system scan rule set `AzureSynapseSQL`).
-- [ ] `scenarios/data-map/scan-on-premises-sql-server-and-classify/` — the third sibling (on-premises
+- [x] `scenarios/data-map/scan-on-premises-sql-server-and-classify/` — the third sibling (on-premises
   SQL Server via self-hosted integration runtime), deferred from both this fragment and the original
   sibling scenario's non-goals — a materially different registration/auth story (no managed identity
-  path at all; self-hosted IR is mandatory) worth its own careful grounding pass.
+  path at all; self-hosted IR is mandatory) worth its own careful grounding pass — **built** (see
+  DONE below): also scripts the self-hosted integration runtime *resource* and its auth-key retrieval
+  via two directly-confirmed REST operations (`Integration Runtimes - Create Or Replace` and
+  `- Regenerate Auth Key`) — a first for this repo's Data Map scenarios, none of which had scripted
+  even that much of the portal-only credential/SHIR setup story before this build.
 - [ ] `scenarios/data-map/verify-purview-entra-graph-prerequisites/` (or fold into a future Data Map
   hardening pass) — a Microsoft Graph-permissioned checker script confirming Directory Readers (or
   equivalent fine-grained Graph permission) membership for every Managed-Instance-backed Purview
@@ -601,6 +605,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this build to keep the fragment scoped to the Data Map REST surface itself, consistent with this
   repo's existing precedent of not automating rare, high-privilege, one-time setup steps that sit
   outside the automation identity's own Purview/Azure IAM role scope (see `design.md` §8).
+
+### Follow-ups discovered while building the Data Map on-premises SQL Server scenario
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the literal system scan rule set name
+  for the `SqlServerDatabase` data source `kind` — this build inferred `'SqlServerDatabase'` from the
+  "system ruleset name == data source kind" pattern every prior Data Map sibling scenario confirmed
+  via its own worked example, but found only a distinct `SqlServerDatabaseSystemScanRuleset` SDK type
+  (confirming a system ruleset exists) rather than a worked example pairing the name with
+  `scanRulesetType: "System"`. Flagged inline in `scan-on-premises-sql-server-and-classify/README.md`
+  §11 and the deploy script's `.NOTES` rather than resolved by guessing.
+- [ ] VERIFY (pilot tenant): which `CredentialType` REST enum value corresponds to "Windows
+  Authentication" in the portal for the `SqlServerDatabaseCredential` scan kind — Microsoft's portal
+  documents Windows Authentication as a supported method for this source type, but the confirmed
+  enum (`AccountKey`/`ServicePrincipal`/`BasicAuth`/`SqlAuth`/`AmazonARN`/`ConsumerKeyAuth`/
+  `DelegatedAuth`/`ManagedIdentity`) has no value independently confirmed to map to it.
+  `scan-on-premises-sql-server-and-classify`'s deploy script offers `'BasicAuth'` as an unconfirmed
+  best-effort alternative to the confirmed `'SqlAuth'` default — see that scenario's `README.md` §11.
+- [ ] `scenarios/data-map/scan-on-premises-sql-server-and-classify-kubernetes-shir/` (or fold into a
+  future Data Map hardening pass) — the Kubernetes-based, containerized self-hosted *data* integration
+  runtime Microsoft documents as a separate, newer capability (SQL Server and Oracle only,
+  SQL-authentication-only) from the classic Windows-host SHIR `scan-on-premises-sql-server-and-
+  classify` scripts — explicitly out of scope there (`design.md` §8) as a materially different
+  deployment model.
+- [ ] Consider scripting Microsoft Graph-based monitoring of the self-hosted integration runtime's
+  auth-key rotation history or last-check-in time, closing part of the Blue-Team-flagged gap in
+  `scan-on-premises-sql-server-and-classify/reviews.md` that the Data Map REST API's Integration
+  Runtimes - Get operation returns the resource definition, not live node health — no such monitoring
+  endpoint was independently grounded during this build; would need a fresh grounding pass.
+- [ ] Once a documented REST endpoint for Purview credential-object creation is found (the same open
+  gap every Data Map sibling scenario in this repo already carries, most recently re-confirmed absent
+  by Microsoft's own disaster-recovery/migration best-practices article — "there's no API to extract
+  credentials"), revisit whether it can also *create* one, not just document/extract, and close this
+  gap across every Data Map scenario in this repo at once rather than scenario-by-scenario.
 
 ### Follow-ups discovered while building the Data Estate Insights sensitivity-label-coverage-report scenario
 - [ ] `scenarios/data-estate-insights/sensitivity-label-coverage-report/` — add a source-type-support
@@ -701,6 +737,49 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **`scenarios/data-map/scan-on-premises-sql-server-and-classify/`** — the third and final
+  explicitly-flagged sibling of `scenarios/data-map/scan-azure-sql-and-classify/` (alongside the
+  already-built Managed Instance and Azure Synapse Analytics siblings), covering the one Data Map
+  source `kind` in this list with no Azure resource behind it at all: on-premises SQL Server via a
+  mandatory self-hosted integration runtime (SHIR) and a stored SQL/Windows credential — no
+  managed-identity authentication path exists for this source type. Full deliverable per `AGENTS.md`
+  §4: `README.md` (12-section skeleton), `design.md`,
+  `deploy/New-OnPremisesSqlServerDataMapScan.ps1` (idempotent, parameterized, `-WhatIf` throughout),
+  `deploy/Remove-OnPremisesSqlServerDataMapScan.ps1`,
+  `validate/Test-OnPremisesSqlServerDataMapScan.ps1`, `rollback.md`, `reviews.md` (four-lens, all Fix
+  items resolved, no Fail).
+
+  Genuine improvement over all three Azure siblings, not just a fourth repetition of their pattern:
+  this build independently confirmed (by direct fetch of Microsoft's own canonical REST reference
+  pages) that the self-hosted integration runtime *resource* and its auth-key retrieval both have
+  documented REST operations (`Integration Runtimes - Create Or Replace` and `- Regenerate Auth Key`,
+  API version `2023-09-01`, both with full worked HTTP examples) — so this scenario's deploy script
+  scripts that provisioning step end-to-end via REST, something none of the three Azure sibling
+  scenarios managed to automate for their own portal-only credential/SHIR setup steps. Installing the
+  SHIR software on a host and pasting in the retrieved key remains a manual, physical step no REST
+  API can perform; the Purview credential-object creation step remains the one open gap this build
+  shares with every sibling (Microsoft's own disaster-recovery/migration best-practices article
+  independently corroborates "there's no API to extract credentials").
+
+  Key grounding, all confirmed via the Microsoft Learn MCP tool (available this run, contrary to this
+  run's own initial task instructions claiming it would not be) against direct fetches of
+  `register-scan-on-premises-sql-server`, the `Data Sources`/`Scans`/`Integration Runtimes` REST
+  reference pages (Create Or Replace + Regenerate Auth Key), the `ConnectedVia`/`CredentialReference`/
+  `CredentialType` shared REST definitions, the `New-AzPurviewSqlServerDatabaseDataSourceObject` and
+  `New-AzPurviewSqlServerDatabaseCredentialScanObject` Az.Purview worked PowerShell examples (which
+  independently corroborate the REST body shape end-to-end, including that no Azure resource fields
+  are populated for this source type), and Microsoft's own disaster-recovery/migration best-practices
+  article. Two items intentionally not resolved by guessing and flagged as explicit VERIFY instead,
+  per `AGENTS.md` §4: the literal system scan rule set name for `SqlServerDatabase` (no worked example
+  found pairing it with `scanRulesetType: "System"`, unlike every sibling's own confirmed name), and
+  which `CredentialType` enum value represents "Windows Authentication" in the portal (the enum has no
+  value independently confirmed for it). Four-lens review added two real findings beyond what any
+  sibling's review caught: the printed SHIR auth key is a live registration secret that must never be
+  persisted to logs/pipeline output (Red Team, resolved via explicit warnings in both the script and
+  README), and a compromised shared SHIR host's blast radius extends to every data source wired to it
+  (Red Team/CISO, resolved via a README §8 recommendation to dedicate separate SHIR hosts per
+  sensitivity tier) — 2026-09-04
+
 - [x] **`scenarios/information-protection/auto-label-confidential-exchange/`** — Exchange-location
   companion to `scenarios/information-protection/auto-label-confidential-sharepoint/`, closing the
   non-goal that scenario's `design.md` §7 explicitly deferred ("this scenario does not cover
