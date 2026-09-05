@@ -2225,7 +2225,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   official Data Loss Prevention policy reference — new grounding not previously cited by the parent
   scenario, now feeding this fragment's explicit-priority-computation design decision. No new
   cmdlets or parameters beyond what the parent scenario already grounded.
-  Commit: `<pending>`. Date: 2026-09-05.
+  Commit: `04191a9`. Date: 2026-09-05.
 
 ## Blocked / needs user
 - (none)
