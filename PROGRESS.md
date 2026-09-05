@@ -967,7 +967,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   reference), and whether `Set-DlpComplianceRule -Force` clears or leaves stale a `NotifyUser`/
   `NotifyPolicyTipCustomText` value when switching `-ITExceptionAction` from `Warn` back to
   `Audit` (undocumented either way). Grounded via the Microsoft Learn MCP tool (`microsoft_docs_fetch`
-  against both cmdlet reference pages, fetched in full this run). Commit: `PENDING`. Date: 2026-09-05.
+  against both cmdlet reference pages, fetched in full this run). Commit: `1321bcf`. Date: 2026-09-05.
 - [x] **Extend `docs/rbac-model.md` with a new §9: Microsoft Intune RBAC — a fifth system, for
   Intune-deployed scenarios** — a scoped cross-cutting-doc fragment (not a new scenario), closing
   the follow-up logged during the `defender-device-control-usb-allowlist` build: that scenario and
