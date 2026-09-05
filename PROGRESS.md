@@ -959,8 +959,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `Update-MgDeviceManagement`/`Get-MgDeviceManagementDeviceConfiguration` PowerShell reference
   pages (confirming `DeviceManagementConfiguration.ReadWrite.All` as the exact application
   permission, with its sibling `.Read.All` and the unrelated `DeviceManagementServiceConfig.*`/
-  `DeviceManagementApps.*` permission families correctly excluded). Commit: (recorded in the next
-  commit). Date: 2026-09-05.
+  `DeviceManagementApps.*` permission families correctly excluded). Commit: `9f30fb6`.
+  Date: 2026-09-05.
 - [x] **Extend `docs/licensing-matrix.md` with a new §7: Microsoft Defender for Endpoint + Intune
   (device-control scenarios)** — a scoped cross-cutting-doc fragment (not a new scenario), closing
   the follow-up logged during the `defender-device-control-usb-allowlist` build: that scenario and
