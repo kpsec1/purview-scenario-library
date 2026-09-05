@@ -174,12 +174,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   was found either confirming or excluding them for `WpdDevices` specifically. The new scenario
   states this as a genuinely open VERIFY in both directions rather than repeating the stronger,
   unsubstantiated exclusion claim — see its `README.md` §11.
-- [ ] Add a **Defender for Endpoint + Intune** licensing row/section to `docs/licensing-matrix.md`
-  — this is the first scenario in this library built on that product family rather than a Purview
-  policy object, and `defender-device-control-usb-allowlist/README.md` §3 currently carries its
-  own scoped prerequisites table rather than the cross-cutting matrix, consistent with this
-  repo's established precedent of tracking doc extensions separately rather than bundling them
-  into a scenario fragment.
+- [x] Add a **Defender for Endpoint + Intune** licensing row/section to `docs/licensing-matrix.md`
+  — **built** (see DONE below): new §7, cross-linked from `defender-device-control-usb-allowlist/
+  README.md` §3.
 - [ ] Cross-reference Intune RBAC (**Policy and Profile manager** role, and the
   `DeviceManagementConfiguration.ReadWrite.All` Graph application permission for app-only access)
   into `docs/rbac-model.md`, which currently only documents Purview/Exchange role groups and
@@ -923,6 +920,52 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **Extend `docs/licensing-matrix.md` with a new §7: Microsoft Defender for Endpoint + Intune
+  (device-control scenarios)** — a scoped cross-cutting-doc fragment (not a new scenario), closing
+  the follow-up logged during the `defender-device-control-usb-allowlist` build: that scenario and
+  its `-wpd-coverage` sibling are the first two fragments in this library licensed on Defender for
+  Endpoint + Intune rather than a Purview policy object, and the cross-cutting matrix didn't cover
+  that product family yet. Added a 5-row table (device control itself, the Intune policy-authoring
+  surface, the Intune-**enrollment**-vs-Defender-onboarding-only distinction, the anti-malware
+  client version gate, and the Windows-only platform scope) plus a CISO-facing cost note: because
+  Microsoft 365 E3 now bundles Defender for Endpoint **Plan 1** (which already includes device
+  control — Plan 2 is not required), a plain-E3 tenant with no Purview E5 add-on can deploy both
+  device-control scenarios today, a materially cheaper entry point than almost every other
+  DLP/IRM scenario in this library. Cross-linked back into
+  `defender-device-control-usb-allowlist/README.md` §3 in place of the "not yet covered" note.
+
+  Grounded via the Microsoft Learn MCP tool (available this run, contrary to this run's own
+  initial task instructions claiming it would not be), fetched/searched directly against: the
+  Microsoft Defender service description (confirms device control ships in Defender for Endpoint
+  **Plan 1**, alongside next-gen anti-malware/ASR/firewall/application control, and that Plan 1 is
+  bundled in Microsoft 365 E3/A3/G3 while Plan 2 is bundled in E5/A5/G5); "Device control in
+  Microsoft Defender for Endpoint" (the anti-malware client version gate — `4.18.2103.3`+ base,
+  `4.18.2107`+ for Windows Portable Device coverage — and the no-server-support statement);
+  "Manage endpoint security policies in Microsoft Defender for Endpoint" (the footnote confirming
+  device control policies deployed via Intune apply **only** to Intune-**enrolled** devices, not
+  to devices managed solely through Defender's agentless Security settings management — a genuine
+  deployment trap not previously called out this explicitly in either scenario's docs); "Manage
+  device security with endpoint security policies in Microsoft Intune" (Defender integration
+  prerequisites, confirming Defender for Endpoint P1-or-greater as the licensing floor for the
+  integration generally); and "Microsoft Intune licensing" (the three-plan structure — Plan 1 base
+  service, Plan 2 additive, Intune Suite additive — confirming device configuration profiles, the
+  mechanism both device-control scenarios deploy through, are core Plan 1 functionality with no
+  Plan 2/Suite dependency). One genuinely new finding surfaced during this grounding pass and
+  written into §7 rather than left implicit: the Intune-enrollment-vs-Defender-onboarding-only
+  distinction is a real, previously-undocumented-in-this-library deployment gotcha, not merely a
+  restatement of what `defender-device-control-usb-allowlist/README.md` §3 already said (that
+  table listed Intune enrollment as a prerequisite but didn't state what happens if it's skipped —
+  the policy silently doesn't apply). No VERIFY items needed — every fact in §7 came from an
+  official Microsoft Learn service-description or product-documentation page with an unambiguous
+  statement, not an inference. Four-lens self-review (no dedicated `reviews.md` — a doc fragment,
+  not a scenario folder, consistent with this repo's established precedent for cross-cutting-doc
+  fragments, e.g. the SharePoint Online Management Shell automation-surface addition): Red Team —
+  no new attack surface; the enrollment-vs-onboarding gotcha is itself a defensive finding, not a
+  risk introduced by this doc (Pass); Blue Team — n/a beyond the gotcha itself, which is actionable
+  operational guidance (Pass); CISO — the E3-covers-both-scenarios cost note is genuinely
+  decision-relevant, not filler (Pass); Product Owner — every claim traced to an official Microsoft
+  Learn page fetched this run, not recalled from memory or copied from the flagging scenario's own
+  unverified note (Pass). Commit: `<pending>`. Date: 2026-09-05.
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/`** — closes the
   confirmed Red Team finding in the parent `defender-device-control-usb-allowlist` scenario's own
   review: a device that enumerates as a **Windows Portable Device (WPD)** — most phones, tablets,

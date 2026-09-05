@@ -44,9 +44,9 @@ Two secondary drivers:
 ## 3. Prerequisites
 
 This is the first scenario in this library built on **Microsoft Defender for Endpoint device
-control + Microsoft Intune**, not a Purview policy object — `docs/licensing-matrix.md` does not
-yet cover this product family (tracked as a follow-up in `PROGRESS.md`). Prerequisites below are
-grounded directly against Microsoft Learn.
+control + Microsoft Intune**, not a Purview policy object — see `docs/licensing-matrix.md` §7 for
+the cross-cutting entitlement summary for this product family. Prerequisites below are grounded
+directly against Microsoft Learn.
 
 | Requirement | Minimum | Notes |
 |---|---|---|
@@ -59,9 +59,11 @@ grounded directly against Microsoft Learn.
 | Dependency (not deployed by this scenario) | An Entra ID group scoping the **pilot** set of Windows endpoints (device group recommended), and the physical **approved backup drives'** serial numbers or VID/PID values | Must exist/be known before running `deploy/New-DeviceControlUsbAllowlistPolicy.ps1` — see §5 |
 
 > Verify current entitlement names and the Product Terms before a sales commitment — SKU names
-> change, and this scenario's licensing story (Defender for Endpoint + Intune) is intentionally
-> kept separate from `docs/licensing-matrix.md`'s Purview-focused entitlement rows until that
-> cross-cutting doc is extended to cover this product family.
+> change. This scenario's licensing story (Defender for Endpoint + Intune) is intentionally kept
+> in its own table above rather than folded into `docs/licensing-matrix.md`'s Purview-module
+> table (§2), since it isn't a Purview policy object — see that doc's §7 for the cross-cutting
+> summary, including the CISO-relevant cost note that Microsoft 365 E3 alone (no Purview E5
+> add-on) already covers both this scenario and its WPD-coverage sibling.
 
 ## 4. Architecture
 

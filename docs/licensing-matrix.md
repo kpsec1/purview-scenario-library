@@ -6,7 +6,7 @@
 > **Verify before you quote a customer.** Licensing changes frequently. The Microsoft
 > **Product Terms** and the **Purview service description** are the only authoritative sources —
 > this matrix is a practitioner's summary grounded in Microsoft Learn, current as of
-> **2026-09-02**. Sources are linked at the bottom; re-check them before a sales commitment.
+> **2026-09-05**. Sources are linked at the bottom; re-check them before a sales commitment.
 
 ---
 
@@ -128,6 +128,37 @@ Each scenario README's **Prerequisites** section must state:
 
 ---
 
+## 7. Adjacent product family: Microsoft Defender for Endpoint + Intune (device-control scenarios)
+
+Two scenarios in this library — `scenarios/dlp/defender-device-control-usb-allowlist/` and its
+`-wpd-coverage/` sibling — are **not** built on a Purview policy object. They close a gap Endpoint
+DLP (content-aware only) can't: device-*identity* control on removable storage and Windows
+Portable Devices. That means their licensing sits outside the rest of this matrix, on **Microsoft
+Defender for Endpoint** + **Microsoft Intune** instead. Documented here rather than folded into
+the table in §2, which is scoped to Purview modules.
+
+| Requirement | Minimum entitlement | Notes |
+|---|---|---|
+| Device control (the capability itself) | **Microsoft Defender for Endpoint Plan 1** — standalone, or bundled in **Microsoft 365 E3/A3/G3** | Device control ships in P1: Microsoft's own Defender service description lists it alongside next-gen anti-malware, attack surface reduction, endpoint firewall, and application control as a **Plan 1** capability. **Plan 2 is not required** — a real cost advantage over the E5-gated Purview DLP/IRM scenarios elsewhere in this library. Plan 2 (bundled in Microsoft 365 E5/A5/G5, or standalone) is still worth having for EDR/automated investigation, but device control alone doesn't justify the upgrade. |
+| Policy authoring/deployment surface | **Microsoft Intune Plan 1** (the base plan) — bundled in Microsoft 365 E3/E5, or standalone | Both scenarios deploy via an Intune **Custom device configuration profile** (`windows10CustomConfiguration`, OMA-URI). Device configuration profiles are core Plan 1 functionality. Intune Plan 2 / Intune Suite add unrelated advanced capabilities (Remote Help, Advanced Analytics, Endpoint Privilege Management, Cloud PKI) that device control does not need. |
+| Device enrollment (not just Defender onboarding) | Devices must be **Intune-enrolled (MDM)**, in addition to being onboarded to Defender for Endpoint | A device onboarded to Defender for Endpoint but managed only through **Security settings management** (the agentless path for devices not enrolled in Intune) does **not** receive Intune-deployed device control policy — Microsoft's own device-control-vs-Intune capability table states this explicitly. This is a real deployment trap: "already onboarded to Defender" is not sufficient by itself. |
+| Anti-malware client version | `4.18.2103.3`+ (base removable-media/CD-ROM/printer control); `4.18.2107`+ for **Windows Portable Device** coverage (phones/cameras in MTP/PTP mode) | A software-version gate, not a license — included here because it blocks the same two scenarios and is easy to miss when only licensing is checked. |
+| Supported platform | Windows 10/11 client only | Device control is **not supported on Windows Server**. macOS device control uses a separate JSON/`mobileconfig` authoring path via Intune or Jamf, out of scope for these two Windows-only scenarios. |
+
+**Cost note for a CISO conversation:** because Microsoft 365 E3 now includes Defender for
+Endpoint Plan 1 outright, a customer already on plain E3 — with **no** Purview E5 add-on — can
+deploy both device-control scenarios today. That's a materially cheaper entry point than nearly
+every other DLP/IRM scenario in this library, which needs E5 or a matching add-on (§2). It's a
+useful low-cost first step to recommend before a customer commits to the E5-gated content-aware
+controls.
+
+> Intune RBAC (the **Policy and Profile manager** built-in role for human/portal access, and the
+> Microsoft Graph application permission `DeviceManagementConfiguration.ReadWrite.All` for this
+> library's app-only automation) is not yet cross-referenced in `docs/rbac-model.md` — tracked as
+> a separate follow-up in `PROGRESS.md`.
+
+---
+
 ## Sources (Microsoft Learn — re-verify before quoting)
 
 - Microsoft Purview service description — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description>
@@ -138,6 +169,11 @@ Each scenario README's **Prerequisites** section must state:
 - Sensitivity labels in Data Map (licensing FAQ) — <https://learn.microsoft.com/purview/data-map-sensitivity-labels-faq>
 - Purview pricing calculators — <https://azure.microsoft.com/pricing/details/purview/>
 - Microsoft Product Terms (authoritative) — <https://www.microsoft.com/licensing/terms/product/ForOnlineServices/EAEAS>
+- Microsoft Defender service description (Defender for Endpoint P1/P2 plan contents & bundling) — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-defender-service-description>
+- Device control in Microsoft Defender for Endpoint (prerequisites, anti-malware client versions) — <https://learn.microsoft.com/defender-endpoint/device-control-overview>
+- Manage device security with endpoint security policies in Intune (Defender integration prerequisites) — <https://learn.microsoft.com/intune/device-configuration/endpoint-security/manage-policies>
+- Manage endpoint security policies in Microsoft Defender for Endpoint (Intune-enrollment-only footnote for device control) — <https://learn.microsoft.com/defender-endpoint/endpoint-security-policies-configure>
+- Microsoft Intune licensing (Plan 1/Plan 2/Suite) — <https://learn.microsoft.com/intune/fundamentals/licensing>
 
 > **Disclaimer:** SKU names, tiers, and PAYG meters change. Nothing here is a licensing guarantee.
 > Validate every entitlement against Product Terms and the service description for the customer's
