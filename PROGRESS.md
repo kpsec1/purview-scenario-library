@@ -975,7 +975,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (`FriendlyNameId`) a spoofable identifier, not just a coarse one — mitigated by documented
   guidance (small, IT-managed approved population; non-default device names) rather than
   overclaimed as solved.
-  Date: 2026-09-05.
+  Commit: `54d1007`. Date: 2026-09-05.
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist/`** — a device-identity (not
   content-based) USB removable-storage control on **Microsoft Defender for Endpoint device
   control**, the companion this repo's `endpoint-dlp-usb-block/README.md` §11 flagged as needed
