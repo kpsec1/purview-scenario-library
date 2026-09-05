@@ -9,8 +9,11 @@
       0. USB-Block-Sensitive-AllUsers      - everyone except IT Data Custodians, blocks copy to
                                               removable USB media when content matches SSN or
                                               Credit Card Number.
-      1. USB-Audit-ITDataCustodians        - IT Data Custodians group only, audits (does not
-                                              block) the same copy activity for the same content.
+      1. USB-Audit-ITDataCustodians        - IT Data Custodians group only, restricts the same
+                                              copy activity with -ITExceptionAction (Audit by
+                                              default - the copy proceeds, logged only; or Warn -
+                                              a user-facing justification prompt, still not a hard
+                                              block) for the same content.
 
     Idempotent: if a policy with the same -PolicyName already exists, the script reports its
     current state and takes no action, rather than erroring or creating a duplicate. Re-run with
@@ -39,6 +42,16 @@
 .PARAMETER AdminNotificationEmail
     One or more admin/SOC mailbox addresses to receive incident reports and alerts.
 
+.PARAMETER ITExceptionAction
+    EndpointDlpRestrictions -Value applied to the IT Data Custodians rule (USB-Audit-
+    ITDataCustodians): 'Audit' (default) logs the copy and alerts at Low severity with no
+    user-facing prompt; 'Warn' additionally requires the user to acknowledge a policy-tip
+    justification prompt before the copy proceeds - still not a hard block. Both are officially
+    documented -Value strings for -EndpointDlpRestrictions (see .NOTES); this script defaults to
+    'Audit' to keep behavior unchanged from prior versions, and only requires -NotifyUser (added
+    automatically) when 'Warn' is selected, per Microsoft's own documented requirement that Block
+    or Warn values must be paired with -NotifyUser.
+
 .PARAMETER Mode
     DLP policy mode: Enable, Disable, TestWithNotifications, or TestWithoutNotifications
     (Set-DlpCompliancePolicy -Mode; Microsoft Learn: set-dlpcompliancepolicy). Defaults to
@@ -47,6 +60,11 @@
 .PARAMETER Force
     If the policy already exists, update its rules to match this script's definition instead of
     skipping. Rule updates go through Set-DlpComplianceRule -WhatIf when -WhatIf is passed.
+    Note: switching -ITExceptionAction from Warn back to Audit with -Force reconciles the
+    EndpointDlpRestrictions value, but Set-DlpComplianceRule is not documented to clear a
+    previously-set NotifyUser/NotifyPolicyTipCustomText left off this call - if you switch away
+    from Warn, confirm those properties on the live rule afterward (Get-DlpComplianceRule) rather
+    than assuming -Force fully reverts every Warn-only property.
 
 .PARAMETER WhatIf
     Standard PowerShell ShouldProcess dry-run. Reports every New-/Set-Dlp* call that would be made
@@ -72,23 +90,37 @@
 
     Deploys (or updates) the policy in full enforcement mode.
 
-.NOTES
-    VERIFY before enforcing in production: the exact PowerShell -Value strings accepted inside an
-    -EndpointDlpRestrictions hashtable are not enumerated in Microsoft's canonical
-    New-DlpComplianceRule / Set-DlpComplianceRule parameter reference (the parameter is documented
-    only as an opaque PswsHashtable[]). This script uses Setting = 'RemovableMedia' with
-    Value = 'Block' / 'Value' = 'Audit', grounded in the portal's "Audit or restrict activities on
-    devices" action naming (Microsoft Learn: dlp-policy-reference, dlp-configure-endpoint-settings)
-    and in a Microsoft Security Blog PowerShell walkthrough ("Creating Endpoint DLP Rules using
-    PowerShell - Part 1", Microsoft Tech Community) that shows this exact Setting/Value hashtable
-    shape for removable-media and print restrictions. Confirm both strings against a pilot tenant
-    (README.md §7, step 1) before relying on -Mode Enable in production - if a string is rejected,
-    the cmdlet throws at policy/rule creation time rather than silently no-opping.
+.EXAMPLE
+    ./New-EndpointDlpUsbBlockPolicy.ps1 -ITCustodiansGroupEmail 'it-custodians@contoso.com' `
+        -AdminNotificationEmail 'soc@contoso.com' -ITExceptionAction Warn -Mode Enable -Force
 
-    Sources (Microsoft Learn, verify before production use):
-    - New-DlpComplianceRule / Set-DlpComplianceRule -EndpointDlpRestrictions parameter (type only,
-      no enumerated values): https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule
-      https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancerule
+    Deploys with the IT Data Custodians path justification-gated (Warn) instead of silently
+    logged (Audit) - see .PARAMETER ITExceptionAction and README.md §11.
+
+.NOTES
+    EndpointDlpRestrictions Setting/Value strings are confirmed directly against Microsoft's
+    official New-DlpComplianceRule and Set-DlpComplianceRule cmdlet reference pages (identical text
+    on both, fetched and re-verified for this revision): "The available values for <Value> are:
+    Audit, Block, Ignore, or Warn," with worked examples including
+    @{"Setting"="RemovableMedia"; "Value"="Block";} - matching this script's Rule 0 exactly. The
+    same pages also confirm Setting names Print, CopyPaste, ScreenCapture, NetworkShare, and
+    UnallowedApps (not used by this scenario - see design.md §7). Both pages additionally state:
+    "When you use the values Block or Warn in this parameter, you also need to use the NotifyUser
+    parameter" - grouping Warn with the user-facing Block action rather than the silent Audit/
+    Ignore pair. This is strong, but not literal, evidence that Warn is the enum value behind the
+    portal's "Block with override" activity option; Microsoft's reference does not spell out that
+    exact portal-name mapping, so confirm the on-screen prompt behavior in a pilot tenant before
+    describing it to a customer as "Block with override" by name. Prior revisions of this script
+    sourced the Setting/Value shape only from the Microsoft Security Blog Tech Community
+    walkthrough listed below - that post is retained as a secondary, corroborating citation, not
+    the primary one.
+
+    Sources (Microsoft Learn):
+    - New-DlpComplianceRule -EndpointDlpRestrictions parameter (confirmed Setting names and Value
+      enum Audit/Block/Ignore/Warn, NotifyUser requirement for Block/Warn):
+      https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule
+    - Set-DlpComplianceRule -EndpointDlpRestrictions parameter (identical text, confirmed
+      independently): https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancerule
     - New-DlpCompliancePolicy -EndpointDlpLocation parameter: https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy
     - DLP policy reference (Audit/Block with override/Block/Allow/Off action semantics, "Copy to a
       removable device" activity): https://learn.microsoft.com/purview/dlp-policy-reference
@@ -97,7 +129,7 @@
     - Get started with Endpoint DLP: https://learn.microsoft.com/purview/endpoint-dlp-getting-started
     - Learn about Endpoint DLP: https://learn.microsoft.com/purview/endpoint-dlp-learn-about
     - Creating Endpoint DLP Rules using PowerShell - Part 1 (Microsoft Security Blog, Tech
-      Community - EndpointDlpRestrictions Setting/Value hashtable example):
+      Community - secondary/corroborating EndpointDlpRestrictions Setting/Value hashtable example):
       https://techcommunity.microsoft.com/blog/microsoft-security-blog/creating-endpoint-dlp-rules-using-powershell---part-1/4286999
     - U.S. Social Security Number (SSN) / Credit Card Number sensitive information types: same
       SITs as scenarios/information-protection/auto-label-confidential-sharepoint.
@@ -115,6 +147,10 @@ param(
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
     [string[]]$AdminNotificationEmail,
+
+    [Parameter()]
+    [ValidateSet('Audit', 'Warn')]
+    [string]$ITExceptionAction = 'Audit',
 
     [Parameter()]
     [ValidateSet('Enable', 'Disable', 'TestWithNotifications', 'TestWithoutNotifications')]
@@ -205,10 +241,16 @@ $rule1Params = @{
     Priority                             = 1
     FromMemberOf                         = $ITCustodiansGroupEmail
     ContentContainsSensitiveInformation  = $sensitiveContent
-    EndpointDlpRestrictions              = @(@{ Setting = 'RemovableMedia'; Value = 'Audit' })
+    EndpointDlpRestrictions              = @(@{ Setting = 'RemovableMedia'; Value = $ITExceptionAction })
     GenerateAlert                        = $AdminNotificationEmail
     GenerateIncidentReport               = $AdminNotificationEmail
     ReportSeverityLevel                  = 'Low'
+}
+if ($ITExceptionAction -eq 'Warn') {
+    # Microsoft Learn (New-/Set-DlpComplianceRule): "When you use the values Block or Warn in this
+    # parameter, you also need to use the NotifyUser parameter."
+    $rule1Params['NotifyUser'] = @('LastModifier') + $AdminNotificationEmail
+    $rule1Params['NotifyPolicyTipCustomText'] = 'This file contains a Social Security Number or credit card number. As a member of IT Data Custodians you may proceed, but this copy is logged and reviewed weekly - continue only for legitimate backup/imaging work.'
 }
 if (-not $rule1) {
     if ($PSCmdlet.ShouldProcess($ruleNameAudit, 'New-DlpComplianceRule')) {

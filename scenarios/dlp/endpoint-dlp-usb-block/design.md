@@ -102,7 +102,7 @@ already exists rather than creating it.
 | Sensitive content condition | Same SIT pair as `auto-label-confidential-sharepoint` (SSN, Credit Card Number; min count 1) | Keeps "what counts as sensitive" consistent across the two scenarios that together form one classify-then-control chain; avoids a buyer having two different, drifting definitions of "sensitive" for the same data. |
 | Restricted activity | **Copy to a removable device** only (`EndpointDlpRestrictions` Setting `RemovableMedia`) | Matches the scenario's stated scope (USB exfiltration). Print, clipboard, network share, Bluetooth, and RDP are separate `EndpointDlpRestrictions` activities this scenario deliberately leaves untouched — see `README.md` §7, non-goals. |
 | IT exception mechanism | `FromMemberOf` / `ExceptIfFromMemberOf` on a security group, not a device-based Removable USB device group allowlist | Consistent with the Card Ops precedent in `pci-teams-exfil-block` (auditable, survives staff turnover, no script edits on membership change) and avoids depending on the **Removable USB device groups** portal feature, whose device-registration workflow is inherently a manual, per-device portal task this deploy script cannot automate (`README.md` §11). |
-| IT exception action | **Audit**, not **Block with override** | The exact PowerShell `-Value` string for the portal's "Block with override" option on `EndpointDlpRestrictions` could not be independently confirmed against Microsoft Learn's canonical cmdlet reference (see `README.md` §11, VERIFY note) — this design deliberately avoids depending on an unverified enum string for the exception path and uses the well-attested `Audit` value instead, at the cost of the IT group's copies being watched rather than justification-gated. A buyer who confirms `BlockWithOverride`/`Warn` in a pilot tenant can tighten this rule accordingly. |
+| IT exception action | **Audit** by default; **Warn** available as an opt-in (`-ITExceptionAction`) | Microsoft's official `New-DlpComplianceRule`/`Set-DlpComplianceRule` reference now confirms the full `-Value` enum (`Audit`, `Block`, `Ignore`, `Warn`) and states that `Block` or `Warn` both require `-NotifyUser` — strong, though not literal, evidence `Warn` is the enum value behind the portal's "Block with override" option (`README.md` §11). This design keeps `Audit` as the default (no behavior change from the prior revision, and no interruption to the custodian team's legitimate workflow), but exposes `-ITExceptionAction Warn` for a buyer who wants that path justification-gated rather than silently logged. The prompt-text-vs-portal-name mapping is still a pilot-tenant VERIFY, not a hard block on shipping the option. |
 | Default policy mode | `TestWithNotifications` | Matches `AGENTS.md` §4 (dry-run path) and every prior scenario in this repo: nothing here enforces by default against a live tenant without an explicit, deliberate flag. |
 
 ## 7. Non-goals
@@ -113,7 +113,10 @@ already exists rather than creating it.
 - This scenario does not restrict **Print, clipboard, network share, Bluetooth, or RDP** file
   activities — only **copy to removable media**. A buyer wanting those covered too extends the
   `EndpointDlpRestrictions` array in `deploy/New-EndpointDlpUsbBlockPolicy.ps1` (each additional
-  activity is one more `@{Setting=...; Value=...}` hashtable in the same array).
+  activity is one more `@{Setting=...; Value=...}` hashtable in the same array), using Microsoft's
+  now-confirmed `Setting` names for four of them — `Print`, `CopyPaste`, `ScreenCapture`,
+  `NetworkShare` — plus `UnallowedApps`. Bluetooth and RDP `Setting` names remain unconfirmed
+  (`README.md` §11).
 - This scenario does not create or manage the `ITCustodiansGroupEmail` security group, or perform
   device onboarding — both are dependencies, not deployed artifacts (§5 above).
 - This scenario does not configure **Removable USB device groups** (per-physical-device

@@ -148,3 +148,32 @@ No remaining Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`, and
 `deploy/New-EndpointDlpUsbBlockPolicy.ps1`. No Fail items were raised. This fragment meets the
 definition of done in `AGENTS.md` §9.
+
+---
+
+## Addendum (2026-09-05) — `EndpointDlpRestrictions` grounding upgrade + `Warn` opt-in
+
+A follow-up fragment (tracked in `PROGRESS.md`) independently re-fetched Microsoft's official
+`New-DlpComplianceRule` and `Set-DlpComplianceRule` cmdlet reference pages in full (both were
+reachable this time; the original build could only reach a Tech Community blog for this shape).
+
+- 🟦 **Microsoft Product Owner** — original finding #1 ("`EndpointDlpRestrictions` `-Value`
+  strings are not confirmed against Microsoft's canonical cmdlet reference") is now **closed**,
+  not just tagged. Both official pages state identically: "The available values for `<Value>` are:
+  Audit, Block, Ignore, or Warn," with a worked example
+  `@{"Setting"="RemovableMedia"; "Value"="Block";}` matching Rule 0 exactly, plus confirmed
+  `Setting` names `Print`/`CopyPaste`/`ScreenCapture`/`RemovableMedia`/`NetworkShare`/
+  `UnallowedApps`. **Verdict: Pass.**
+- 🔴 **Red Team** (mini-check on the new `-ITExceptionAction Warn` opt-in) — does exposing `Warn`
+  introduce a new bypass? No: `Warn` is strictly not weaker than `Audit` — it adds a user-facing
+  justification prompt on top of the same alert/incident-report/audit trail, it does not remove
+  any existing detection, and the default stays `Audit` (no behavior change for an existing
+  deployment that upgrades this script). The one residual point worth naming: a custodian who
+  reflexively clicks through a `Warn` prompt gets no more real friction than silent `Audit`, so
+  `README.md` §8's existing **weekly** review of Rule 1 activity remains the load-bearing control
+  under either action — not a new gap, the same one already flagged in the original Red Team
+  round above. **Verdict: Pass, no change required.**
+
+No remaining Fix/Fail. This addendum does not reopen the original four-lens verdicts above; it
+records a grounding upgrade and one additive, opt-in, non-default capability reviewed against the
+same bar.

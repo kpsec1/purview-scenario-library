@@ -27,6 +27,12 @@
 .PARAMETER ITCustodiansGroupEmail
     Expected SMTP address of the IT Data Custodians group, to confirm rule scoping matches intent.
 
+.PARAMETER ExpectedITExceptionAction
+    The -ITExceptionAction value the policy was deployed with ('Audit' or 'Warn' - see
+    deploy/New-EndpointDlpUsbBlockPolicy.ps1). Defaults to 'Audit'. Both are officially documented
+    -EndpointDlpRestrictions -Value strings (Microsoft Learn: New-DlpComplianceRule /
+    Set-DlpComplianceRule).
+
 .EXAMPLE
     Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
     ./Test-EndpointDlpUsbBlockPolicy.ps1 -ITCustodiansGroupEmail 'it-custodians@contoso.com'
@@ -39,7 +45,11 @@ param(
 
     [Parameter(Mandatory)]
     [ValidatePattern('^[^@\s]+@[^@\s]+\.[^@\s]+$')]
-    [string]$ITCustodiansGroupEmail
+    [string]$ITCustodiansGroupEmail,
+
+    [Parameter()]
+    [ValidateSet('Audit', 'Warn')]
+    [string]$ExpectedITExceptionAction = 'Audit'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -105,8 +115,14 @@ if ($ruleAudit) {
         -Condition ($ruleAudit.FromMemberOf -contains $ITCustodiansGroupEmail)
     Test-Check -Description 'Audit rule restricts removable-media copy activity' `
         -Condition ($ruleAudit.EndpointDlpRestrictions -and ($ruleAudit.EndpointDlpRestrictions | Out-String) -match 'RemovableMedia')
+    Test-Check -Description "Audit rule restriction value matches -ExpectedITExceptionAction ('$ExpectedITExceptionAction'), not Block" `
+        -Condition (($ruleAudit.EndpointDlpRestrictions | Out-String) -match $ExpectedITExceptionAction -and ($ruleAudit.EndpointDlpRestrictions | Out-String) -notmatch 'Block')
     Test-Check -Description 'Audit rule still generates an alert for visibility' `
         -Condition ($null -ne $ruleAudit.GenerateAlert -and $ruleAudit.GenerateAlert.Count -gt 0)
+    if ($ExpectedITExceptionAction -eq 'Warn') {
+        Test-Check -Description 'Warn action has -NotifyUser configured (Microsoft Learn: Block/Warn require NotifyUser)' `
+            -Condition ($null -ne $ruleAudit.NotifyUser -and $ruleAudit.NotifyUser.Count -gt 0)
+    }
 }
 
 Write-Host "`n$(if ($script:failures -eq 0) { 'All hard checks passed.' } else { "$script:failures hard check(s) failed." })" `

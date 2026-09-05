@@ -141,6 +141,14 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
 # 5. Validate
 ./validate/Test-EndpointDlpUsbBlockPolicy.ps1 -ITCustodiansGroupEmail 'it-custodians@contoso.com'
+
+# Optional: justification-gate the IT Data Custodians path instead of silently logging it
+./deploy/New-EndpointDlpUsbBlockPolicy.ps1 `
+    -ITCustodiansGroupEmail 'it-custodians@contoso.com' `
+    -AdminNotificationEmail 'soc@contoso.com' `
+    -ITExceptionAction Warn -Mode Enable -Force
+./validate/Test-EndpointDlpUsbBlockPolicy.ps1 -ITCustodiansGroupEmail 'it-custodians@contoso.com' `
+    -ExpectedITExceptionAction Warn
 ```
 
 The deploy script uses Security & Compliance PowerShell (`New-DlpCompliancePolicy`,
@@ -155,7 +163,7 @@ be performed as in §5 step 1 above, once, before this policy has any effect.
 | Priority | 0 | 1 |
 | Sender scope | `ExceptIfFromMemberOf` = IT Data Custodians group | `FromMemberOf` = IT Data Custodians group |
 | Sensitive content | SSN OR Credit Card Number (min count 1 each) | SSN OR Credit Card Number (min count 1 each) |
-| `EndpointDlpRestrictions` | `@{Setting='RemovableMedia'; Value='Block'}` (VERIFY — see §11) | `@{Setting='RemovableMedia'; Value='Audit'}` (VERIFY — see §11) |
+| `EndpointDlpRestrictions` | `@{Setting='RemovableMedia'; Value='Block'}` — confirmed, see §11 | `@{Setting='RemovableMedia'; Value=$ITExceptionAction}` — `Audit` (default) or `Warn`, confirmed, see §11 |
 | `ReportSeverityLevel` | High | Low |
 | `GenerateAlert` / `GenerateIncidentReport` | Admin + SOC mailbox | Admin + SOC mailbox |
 | `StopPolicyProcessing` | `$true` | `$false` |
@@ -167,11 +175,11 @@ its `.NOTES` block cite the exact Microsoft Learn PowerShell reference pages.
 
 ## 7. Validation / how to prove it works
 
-1. **Pilot-tenant syntax confirmation (do this before §7.2–4 in any tenant)** — the exact
-   `-Value` strings inside `-EndpointDlpRestrictions` are not enumerated in Microsoft's canonical
-   cmdlet reference (see §11 VERIFY note). Run `deploy/New-EndpointDlpUsbBlockPolicy.ps1` once
-   against a non-production/pilot tenant and confirm it completes without a parameter-validation
-   error before relying on it elsewhere.
+1. **Pilot-tenant first deploy (do this before §7.2–4 in any tenant)** — the `-EndpointDlpRestrictions`
+   `Setting`/`Value` strings this script uses are confirmed against Microsoft's official cmdlet
+   reference (§11), but run `deploy/New-EndpointDlpUsbBlockPolicy.ps1` once against a
+   non-production/pilot tenant and confirm it completes without a parameter-validation error
+   before relying on it elsewhere, as a routine first-deploy sanity check.
 2. **Automated config check** — `./validate/Test-EndpointDlpUsbBlockPolicy.ps1
    -ITCustodiansGroupEmail 'it-custodians@contoso.com'` confirms the policy and both rules exist
    with the expected scoping, exits non-zero on any hard failure (safe for a CI-style pre-flight).
@@ -263,17 +271,33 @@ permanently delete the policy and its rules.
 
 ## 11. Known limitations & gotchas
 
-- **VERIFY — exact `EndpointDlpRestrictions` `-Value` strings.** Microsoft's canonical
-  `New-DlpComplianceRule` / `Set-DlpComplianceRule` parameter reference documents
-  `-EndpointDlpRestrictions` only as an opaque `PswsHashtable[]` with no enumerated values. This
-  scenario uses `Setting = 'RemovableMedia'` with `Value = 'Block'` / `'Audit'`, grounded in (a)
-  the portal's own action naming for the "Copy to a removable device" activity — Allow / Audit
-  only / Block with override / Block [[4]](#references), and (b) a Microsoft Security Blog
-  PowerShell walkthrough on Tech Community ("Creating Endpoint DLP Rules using PowerShell -
-  Part 1") that shows this exact `Setting`/`Value` hashtable shape for the `RemovableMedia` and
-  `Print` activities. Confirm both strings in a pilot tenant (§7, step 1) before production
-  reliance — an incorrect string causes the cmdlet to throw at creation time, not a silent
-  misconfiguration, so this fails safe.
+- **`EndpointDlpRestrictions` `Setting`/`Value` strings are confirmed against Microsoft's official
+  cmdlet reference.** Both the `New-DlpComplianceRule` and `Set-DlpComplianceRule` Learn reference
+  pages state directly: "The available values for `<Value>` are: Audit, Block, Ignore, or Warn,"
+  with a worked example `@{"Setting"="RemovableMedia"; "Value"="Block";}` matching this scenario's
+  Rule 0 exactly [[9]](#references)/[[10]](#references). The same pages confirm `Setting` names
+  beyond `RemovableMedia` — `Print`, `CopyPaste`, `ScreenCapture`, `NetworkShare`, and
+  `UnallowedApps` — none deployed by this scenario (see the non-restricted-activities bullet
+  below). The Microsoft Security Blog Tech Community walkthrough previously cited as the primary
+  source for this shape [[15]](#references) is retained only as a secondary, corroborating
+  citation now that the official reference confirms the same shape directly.
+- **`Warn` is a real, documented action, and is now available as an opt-in for the IT Data
+  Custodians exception.** Both Learn pages state: "When you use the values Block or Warn in this
+  parameter, you also need to use the NotifyUser parameter" — grouping `Warn` with the user-facing
+  `Block` action rather than the silent `Audit`/`Ignore` pair. That is strong, but not literal,
+  evidence that `Warn` is the enum value behind the portal's "Block with override" activity option
+  (a user-facing justification prompt, not a hard block) — Microsoft's reference does not spell
+  out that exact portal-name mapping. `deploy/New-EndpointDlpUsbBlockPolicy.ps1` now accepts
+  `-ITExceptionAction Audit|Warn` (default `Audit`, unchanged prior behavior); choosing `Warn`
+  justification-gates the IT Data Custodians path instead of silently logging it, at the cost of
+  interrupting that team's legitimate workflow with a prompt on every matching copy. VERIFY (pilot
+  tenant) the actual on-screen prompt behavior before describing it to a customer as "Block with
+  override" by name.
+- **Switching `-ITExceptionAction` from `Warn` back to `Audit` with `-Force` may leave stale
+  `NotifyUser`/`NotifyPolicyTipCustomText` values on the live rule.** `Set-DlpComplianceRule` is
+  not documented to clear a property simply because a later call omits it. Confirm those
+  properties with `Get-DlpComplianceRule` after switching away from `Warn` rather than assuming
+  `-Force` fully reverts every `Warn`-only property.
 - **Device onboarding is a separate, non-scripted prerequisite.** This scenario's deploy script
   authors the DLP policy only; it assumes devices are already onboarded (§3, §5 step 1). A policy
   deployed against un-onboarded devices has no effect and generates no error — always confirm
@@ -292,8 +316,12 @@ permanently delete the policy and its rules.
   matching entirely — this is an inherent limitation of content inspection, not a configuration
   gap this scenario can close.
 - **This scenario does not restrict Print, clipboard, network share, Bluetooth, or RDP.** Only
-  **copy to removable media** is restricted. `design.md` §7 documents how to extend the
-  `EndpointDlpRestrictions` array to cover those activities.
+  **copy to removable media** is restricted. Microsoft's official cmdlet reference now confirms
+  the exact `Setting` names for four of those activities — `Print`, `CopyPaste` (clipboard),
+  `ScreenCapture`, and `NetworkShare` — plus `UnallowedApps`; `design.md` §7 documents how to
+  extend the `EndpointDlpRestrictions` array with one more `@{Setting=...; Value=...}` hashtable
+  per activity using those confirmed names. Bluetooth and RDP restriction `Setting` names were not
+  found in that reference and remain unconfirmed.
 - **This scenario does not configure Removable USB device groups** (per-physical-device
   allowlisting of specific IT-issued encrypted backup drives, distinct from the group-based
   IT Data Custodians user exception this scenario does implement). That's a portal-only,
@@ -317,17 +345,21 @@ permanently delete the policy and its rules.
 6. Help protect files that Endpoint Data Loss Prevention doesn't scan — <https://learn.microsoft.com/purview/dlp-create-policy-files-edlp-doesnt-scan>
 7. Configure endpoint data loss prevention settings (Removable USB device groups, restricted-activity actions) — <https://learn.microsoft.com/purview/dlp-configure-endpoint-settings>
 8. New-DlpCompliancePolicy reference (EndpointDlpLocation, Mode) — <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy>
-9. New-DlpComplianceRule reference (EndpointDlpRestrictions, ContentContainsSensitiveInformation, FromMemberOf/ExceptIfFromMemberOf, StopPolicyProcessing, ReportSeverityLevel) — <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule>
-10. Set-DlpCompliancePolicy reference (Mode: Enable/Disable/TestWithNotifications/TestWithoutNotifications) — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancepolicy>
-11. Remove-DlpCompliancePolicy reference — <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancepolicy>
-12. Get started with Endpoint data loss prevention — <https://learn.microsoft.com/purview/endpoint-dlp-getting-started>
-13. Learn about Endpoint data loss prevention (local evaluation, file classification triggers) — <https://learn.microsoft.com/purview/endpoint-dlp-learn-about>
-14. Device control in Microsoft Defender for Endpoint (content-blind device-level USB control, complementary to Endpoint DLP) — <https://learn.microsoft.com/defender-endpoint/device-control-overview>
-15. Creating Endpoint DLP Rules using PowerShell - Part 1 (Microsoft Security Blog, Tech Community — EndpointDlpRestrictions Setting/Value hashtable example for RemovableMedia and Print) — <https://techcommunity.microsoft.com/blog/microsoft-security-blog/creating-endpoint-dlp-rules-using-powershell---part-1/4286999>
-16. Connect-IPPSSession reference (app-only certificate auth) — <https://learn.microsoft.com/powershell/module/exchangepowershell/connect-ippssession>
-17. U.S. Social Security Number (SSN) / Credit Card Number sensitive information types — reused from `scenarios/information-protection/auto-label-confidential-sharepoint/` (see that scenario's own references for SIT definition citations).
+9. New-DlpComplianceRule reference (EndpointDlpRestrictions — confirmed Setting names Print/CopyPaste/ScreenCapture/RemovableMedia/NetworkShare/UnallowedApps and Value enum Audit/Block/Ignore/Warn, plus the NotifyUser requirement for Block/Warn; also ContentContainsSensitiveInformation, FromMemberOf/ExceptIfFromMemberOf, StopPolicyProcessing, ReportSeverityLevel) — <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule>
+10. Set-DlpComplianceRule reference (EndpointDlpRestrictions — identical Setting/Value enumeration and NotifyUser requirement, confirmed independently) — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancerule>
+11. Set-DlpCompliancePolicy reference (Mode: Enable/Disable/TestWithNotifications/TestWithoutNotifications) — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancepolicy>
+12. Remove-DlpCompliancePolicy reference — <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancepolicy>
+13. Get started with Endpoint data loss prevention — <https://learn.microsoft.com/purview/endpoint-dlp-getting-started>
+14. Learn about Endpoint data loss prevention (local evaluation, file classification triggers) — <https://learn.microsoft.com/purview/endpoint-dlp-learn-about>
+15. Device control in Microsoft Defender for Endpoint (content-blind device-level USB control, complementary to Endpoint DLP) — <https://learn.microsoft.com/defender-endpoint/device-control-overview>
+16. Creating Endpoint DLP Rules using PowerShell - Part 1 (Microsoft Security Blog, Tech Community — secondary/corroborating EndpointDlpRestrictions Setting/Value hashtable example for RemovableMedia and Print, superseded as primary citation by items 9–10) — <https://techcommunity.microsoft.com/blog/microsoft-security-blog/creating-endpoint-dlp-rules-using-powershell---part-1/4286999>
+17. Connect-IPPSSession reference (app-only certificate auth) — <https://learn.microsoft.com/powershell/module/exchangepowershell/connect-ippssession>
+18. U.S. Social Security Number (SSN) / Credit Card Number sensitive information types — reused from `scenarios/information-protection/auto-label-confidential-sharepoint/` (see that scenario's own references for SIT definition citations).
 
-> Re-verify all links, and especially the item 15 walkthrough and the `EndpointDlpRestrictions`
-> Setting/Value strings, against current Microsoft Learn and a pilot tenant before a
-> customer-facing assessment or sale — both product behavior and community-blog content change
-> over time and are not covered by Microsoft's documentation SLA the way Learn reference pages are.
+> Re-verify all links against current Microsoft Learn and a pilot tenant before a customer-facing
+> assessment or sale. The `EndpointDlpRestrictions` `Setting`/`Value` shape is now grounded in
+> items 9–10 (official Microsoft Learn cmdlet reference pages, fetched and confirmed directly);
+> item 16's community walkthrough is kept only as a secondary, corroborating source. The `Warn`
+> value's mapping to the portal's "Block with override" option remains a well-corroborated
+> inference, not a literal Microsoft citation — confirm the on-screen behavior in a pilot tenant
+> before relying on that framing with a customer (§11).

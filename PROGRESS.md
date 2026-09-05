@@ -152,14 +152,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   §4). Genuine Red-Team finding resolved by documentation, not by scope creep: a device presenting
   as a Windows Portable Device (phones/cameras in MTP mode) is completely invisible to this
   control, tracked as a follow-up below rather than silently left undocumented.
-- [ ] Verify (against a pilot tenant or an official Microsoft Learn source, not just the Tech
+- [x] Verify (against a pilot tenant or an official Microsoft Learn source, not just the Tech
   Community blog cited in `scenarios/dlp/endpoint-dlp-usb-block/README.md` §11) the exact
   `-EndpointDlpRestrictions` `Setting`/`Value` strings this scenario's deploy script uses
-  (`RemovableMedia` / `Block` / `Audit`) — flagged as an explicit VERIFY in that scenario because
-  Microsoft's canonical `New-DlpComplianceRule`/`Set-DlpComplianceRule` reference documents the
-  parameter only as an opaque hashtable array with no enumerated values, and
-  techcommunity.microsoft.com was unreachable (network egress blocked) in this build environment
-  to quote the walkthrough verbatim.
+  (`RemovableMedia` / `Block` / `Audit`) — **grounded and closed** (see DONE below): both the
+  official `New-DlpComplianceRule` and `Set-DlpComplianceRule` Learn reference pages were fetched
+  in full this run and confirm the exact shape directly ("The available values for `<Value>` are:
+  Audit, Block, Ignore, or Warn," with a worked `RemovableMedia`/`Block` example), superseding the
+  Tech Community blog as the primary citation.
 
 ### Follow-ups discovered while building the Defender for Endpoint device control USB allowlist scenario
 - [x] `scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/` — extend
@@ -698,13 +698,31 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
      removable storage restrictions" per-rule override) has no documented key name anywhere in the
      official `New-DlpComplianceRule` reference either. **This item remains blocked** on the same
      core gap it already carried — Microsoft has not published either shape as of this build.
-- [ ] Backport the official-source confirmation of `EndpointDlpRestrictions` `Setting`/`Value`
+- [x] Backport the official-source confirmation of `EndpointDlpRestrictions` `Setting`/`Value`
   strings (including the newly-found `Ignore`/`Warn` values) into
   `endpoint-dlp-usb-block/README.md` §11 and `deploy/New-EndpointDlpUsbBlockPolicy.ps1`'s
   `.NOTES`, upgrading the citation from the Tech Community blog to the official
   `New-DlpComplianceRule` reference page, and re-evaluate whether `Warn` should replace `Audit` as
-  the IT Data Custodians exception action per `design.md` §6's own stated reasoning (deferred from
-  this turn to keep the `retention-policy-management` fragment scoped).
+  the IT Data Custodians exception action per `design.md` §6's own stated reasoning — **built**
+  (see DONE below): citation upgraded across `README.md` (§6, §11, §12), `design.md` (§6, §7),
+  `deploy/New-EndpointDlpUsbBlockPolicy.ps1` (`.NOTES` and a new `-ITExceptionAction` parameter),
+  `validate/Test-EndpointDlpUsbBlockPolicy.ps1`, and the reference policy JSON. Re-evaluation
+  outcome: `Audit` stays the **default** (no behavior change for an existing deployment), but
+  `Warn` is now a documented, one-flag opt-in (`-ITExceptionAction Warn`) for a buyer who wants the
+  IT Data Custodians path justification-gated instead of silently logged — not a forced switch,
+  since the `Warn`-to-portal's-"Block with override" mapping is corroborated, not literally
+  confirmed (see the new VERIFY below).
+- [ ] VERIFY (pilot tenant, before describing `-ITExceptionAction Warn` to a customer as "Block
+  with override" by name): whether the portal's "Block with override" `EndpointDlpRestrictions`
+  activity option is in fact the `Warn` enum value. Microsoft's official `New-DlpComplianceRule`/
+  `Set-DlpComplianceRule` reference confirms `Warn` exists and groups it with `Block` via a shared
+  `-NotifyUser` requirement, but never states the portal-name mapping explicitly — flagged inline
+  in `endpoint-dlp-usb-block/README.md` §11 and the deploy script's `.NOTES` rather than asserted.
+- [ ] VERIFY (pilot tenant, before relying on `-Force` to switch `endpoint-dlp-usb-block`'s
+  `-ITExceptionAction` from `Warn` back to `Audit`): whether `Set-DlpComplianceRule` clears a
+  previously-set `NotifyUser`/`NotifyPolicyTipCustomText` value when a later call omits it, or
+  leaves it stale on the live rule — undocumented by Microsoft either way. Flagged inline in
+  `README.md` §11 and the deploy script's `.PARAMETER Force`/`.NOTES`.
 - [ ] Periodically re-check whether Microsoft has filled in the `Set-PolicyConfig`
   `-DlpRemovableMediaGroups`/`-DlpPrinterGroups` reference page's placeholder description sections
   (currently literal `{{ Fill ... Description }}` stub text) or published a worked example — this
@@ -922,6 +940,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **Upgrade `scenarios/dlp/endpoint-dlp-usb-block/`'s `EndpointDlpRestrictions` grounding from
+  a Tech Community blog to Microsoft's official cmdlet reference, and add an `-ITExceptionAction`
+  opt-in** — a scoped sub-task (not a new scenario), closing the open VERIFY carried since that
+  scenario's initial build and the backport this run's own re-verification pass deferred. Fetched
+  both the `New-DlpComplianceRule` and `Set-DlpComplianceRule` Microsoft Learn reference pages in
+  full (both reachable this run) and confirmed, verbatim and identically on both pages: "The
+  available values for `<Value>` are: Audit, Block, Ignore, or Warn," with a worked example
+  `@{"Setting"="RemovableMedia"; "Value"="Block";}` matching this scenario's Rule 0 exactly, plus
+  confirmed `Setting` names `Print`/`CopyPaste`/`ScreenCapture`/`RemovableMedia`/`NetworkShare`/
+  `UnallowedApps`, and the requirement that `Block`/`Warn` values need `-NotifyUser`. Changes:
+  `README.md` (§6 config table, §11 limitations, §12 references — inserted `Set-DlpComplianceRule`
+  as its own citation, renumbering 10→18), `design.md` (§6 key-decisions row, §7 non-goals),
+  `deploy/New-EndpointDlpUsbBlockPolicy.ps1` (rewritten `.NOTES`; new `-ITExceptionAction`
+  `Audit`/`Warn` parameter, default `Audit` — no behavior change for an existing deployment; sets
+  `-NotifyUser`/`-NotifyPolicyTipCustomText` automatically only when `Warn` is chosen, per the
+  official `-NotifyUser` requirement), `validate/Test-EndpointDlpUsbBlockPolicy.ps1` (new
+  `-ExpectedITExceptionAction` parameter; checks the rule's restriction value matches it, not just
+  "not Block"; checks `NotifyUser` is set when `Warn` is expected), and the reference policy JSON's
+  `$comment`. Four-lens addendum in `reviews.md` (not a full re-review — an addendum to the
+  existing one): Product Owner's original finding #1 closed (Pass, was Fix); Red Team mini-check on
+  the new `Warn` option found no new bypass (Pass) since `Warn` is strictly not weaker than `Audit`
+  and the default is unchanged. Two new, narrower VERIFY items recorded above rather than resolved
+  by guessing: whether `Warn` is in fact the portal's "Block with override" option (grouped with
+  `Block` via the shared `-NotifyUser` requirement, but not stated by name in Microsoft's
+  reference), and whether `Set-DlpComplianceRule -Force` clears or leaves stale a `NotifyUser`/
+  `NotifyPolicyTipCustomText` value when switching `-ITExceptionAction` from `Warn` back to
+  `Audit` (undocumented either way). Grounded via the Microsoft Learn MCP tool (`microsoft_docs_fetch`
+  against both cmdlet reference pages, fetched in full this run). Commit: `PENDING`. Date: 2026-09-05.
 - [x] **Extend `docs/rbac-model.md` with a new §9: Microsoft Intune RBAC — a fifth system, for
   Intune-deployed scenarios** — a scoped cross-cutting-doc fragment (not a new scenario), closing
   the follow-up logged during the `defender-device-control-usb-allowlist` build: that scenario and
