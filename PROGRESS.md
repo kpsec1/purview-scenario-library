@@ -177,12 +177,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [x] Add a **Defender for Endpoint + Intune** licensing row/section to `docs/licensing-matrix.md`
   — **built** (see DONE below): new §7, cross-linked from `defender-device-control-usb-allowlist/
   README.md` §3.
-- [ ] Cross-reference Intune RBAC (**Policy and Profile manager** role, and the
+- [x] Cross-reference Intune RBAC (**Policy and Profile manager** role, and the
   `DeviceManagementConfiguration.ReadWrite.All` Graph application permission for app-only access)
   into `docs/rbac-model.md`, which currently only documents Purview/Exchange role groups and
-  Entra directory roles, not Intune's own RBAC model — same precedent as the still-open
-  Organization Configuration/Audit Manager backport under the Audit retention-policy follow-ups
-  above.
+  Entra directory roles, not Intune's own RBAC model — **built** (see DONE below): new §9
+  (renumbering the old §9 "How scenarios should cite RBAC" to §10), cross-linked from
+  `defender-device-control-usb-allowlist/README.md`'s Prerequisites table in place of the
+  "not yet cross-referenced" note. The still-open Organization Configuration/Audit Manager
+  backport under the Audit retention-policy follow-ups remains a separate, not-yet-built item.
 - [ ] VERIFY (pilot tenant, before relying on `-Force` to remove a revoked drive from the
   allowlist): whether `PATCH /deviceManagement/deviceConfigurations/{id}` fully replaces the
   `omaSettings` collection or merges/appends — Microsoft's `Update windows10CustomConfiguration`
@@ -920,6 +922,45 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **Extend `docs/rbac-model.md` with a new §9: Microsoft Intune RBAC — a fifth system, for
+  Intune-deployed scenarios** — a scoped cross-cutting-doc fragment (not a new scenario), closing
+  the follow-up logged during the `defender-device-control-usb-allowlist` build: that scenario and
+  its `-wpd-coverage` sibling are the first two fragments in this library governed by Intune's own
+  RBAC model instead of a Purview role group, and the cross-cutting RBAC doc didn't cover Intune at
+  all. New §9 documents: the built-in **Policy and Profile Manager** role (confirmed as the
+  narrowest built-in role whose permission set includes Device configurations Create/Read/Update/
+  Delete/Assign — what both device-control scenarios' Custom OMA-URI profiles need), the other
+  built-in Intune roles for context, the documented Microsoft Entra-role-to-Intune-access subset
+  table (Global Administrator/Intune Administrator = read/write; Security Administrator/Operator/
+  Reader, Compliance Administrator/Compliance Data Administrator, Global Reader, Helpdesk
+  Administrator, Reports Reader = various read-only or audit-only; Conditional Access
+  Administrator = none), and the exact Microsoft Graph application permission
+  (`DeviceManagementConfiguration.ReadWrite.All`, admin-consent required) both scenarios'
+  app-only deploy scripts need — confirmed directly from Microsoft Graph's own
+  `Update-MgDeviceManagement`/`Get-MgDeviceManagementDeviceConfiguration` PowerShell reference
+  pages rather than assumed from the permission's name alone. Old §9 ("How scenarios should cite
+  RBAC") renumbered to §10, with a new point 1 caveat for Intune-deployed scenarios. Cross-linked
+  back into `defender-device-control-usb-allowlist/README.md`'s Prerequisites table in place of the
+  "not yet cross-referenced" note. No VERIFY items needed — every fact came from an official
+  Microsoft Learn/Graph reference page fetched or searched this run, not recalled from memory.
+  Four-lens self-review (no dedicated `reviews.md` — a doc fragment, not a scenario folder, same
+  precedent as the licensing-matrix Defender+Intune addition immediately below): Red Team — no new
+  attack surface; correctly flags Global Administrator/Intune Administrator as over-privileged for
+  routine use, consistent with least-privilege guidance elsewhere in this doc (Pass); Blue Team —
+  n/a, a reference doc not an operational control (Pass); CISO — closes a real gap (a buyer's admin
+  previously had no cross-cutting answer for "which Intune role deploys this control," only a
+  scenario-local, admittedly-incomplete note) (Pass); Product Owner — every role/permission name
+  and the Entra-subset table traced to an official Microsoft Learn/Graph page fetched this run
+  (Pass). Grounded via the Microsoft Learn MCP tool: "Role-based access control (RBAC) with
+  Microsoft Intune" (built-in roles list, full Entra-role-to-Intune-access table, the
+  Global-Administrator/Intune-Administrator least-privilege caution); "Built-in role permissions
+  for Microsoft Intune" (Policy and Profile Manager's exact permission table, confirming Device
+  configurations Create/Read/Update/Delete/Assign); Microsoft Graph permissions reference and the
+  `Update-MgDeviceManagement`/`Get-MgDeviceManagementDeviceConfiguration` PowerShell reference
+  pages (confirming `DeviceManagementConfiguration.ReadWrite.All` as the exact application
+  permission, with its sibling `.Read.All` and the unrelated `DeviceManagementServiceConfig.*`/
+  `DeviceManagementApps.*` permission families correctly excluded). Commit: (recorded in the next
+  commit). Date: 2026-09-05.
 - [x] **Extend `docs/licensing-matrix.md` with a new §7: Microsoft Defender for Endpoint + Intune
   (device-control scenarios)** — a scoped cross-cutting-doc fragment (not a new scenario), closing
   the follow-up logged during the `defender-device-control-usb-allowlist` build: that scenario and

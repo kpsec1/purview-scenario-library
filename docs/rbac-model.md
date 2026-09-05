@@ -6,7 +6,7 @@
 >
 > **Verify before you provision access.** Role names, default assignments, and role-group
 > membership change frequently. This matrix is a practitioner's summary grounded in Microsoft
-> Learn, current as of **2026-09-03**. Sources are linked at the bottom; re-check them before
+> Learn, current as of **2026-09-05**. Sources are linked at the bottom; re-check them before
 > granting production access.
 
 ---
@@ -202,10 +202,69 @@ endpoints, gated by the RBAC systems above — never with a hard-coded credentia
 
 ---
 
-## 9. How scenarios should cite RBAC
+## 9. Microsoft Intune RBAC — a fifth system, for Intune-deployed scenarios
+
+The four systems in §1 cover every Purview-portal capability, but two scenarios in this library —
+`scenarios/dlp/defender-device-control-usb-allowlist/` and its `-wpd-coverage` sibling — don't
+create a Purview policy object at all. They deploy Microsoft Defender for Endpoint device control
+through an **Intune** device configuration profile (`docs/licensing-matrix.md` §7), which uses a
+genuinely separate, fifth RBAC model: managed in the **Intune admin center → Tenant administration
+→ Roles**, not the Purview portal's **Settings → Roles and scopes**.
+
+- **Built-in role that covers device control:** **Policy and Profile Manager** — "Manages
+  compliance policy, configuration profiles, Apple enrollment, Android Enterprise enrollment
+  profiles, corporate device identifiers, and security baselines." Its permission set includes
+  **Device configurations: Create / Read / Update / Delete / Assign / View Reports** — the exact
+  grant both device-control scenarios' `windows10CustomConfiguration` Custom OMA-URI profiles
+  need. Narrower built-in roles (**Read Only Operator**, **Help Desk Operator**) can *read* these
+  profiles but not create or update them.
+- **Other built-in Intune roles**, for context (Intune doesn't order these narrowest→broadest the
+  way Purview role groups are tiered — each is scoped to a different job function): Application
+  Manager, Endpoint Privilege Manager/Reader, Endpoint Security Manager, Help Desk Operator,
+  **Intune Role Administrator** (the only Intune role that can itself assign permissions to other
+  admins), Read Only Operator, School Administrator, plus **Cloud PC Administrator/Reader** in
+  tenants with Windows 365. Custom roles can combine any permission for a least-privilege fit
+  Microsoft's built-in roles don't cover.
+- **Microsoft Entra roles that also carry Intune access** — a documented *subset* relationship
+  (these roles grant Intune permissions in addition to their normal Entra scope; they are not
+  additional Intune role assignments):
+
+  | Entra role | All Intune data | Intune audit data |
+  |---|---|---|
+  | Global Administrator | Read/write | Read/write |
+  | Intune Administrator (appears as **Intune Service Administrator** in Graph/PowerShell) | Read/write | Read/write |
+  | Security Administrator | Read only (full admin for the Endpoint Security node) | Read only |
+  | Security Operator / Security Reader | Read only | Read only |
+  | Compliance Administrator / Compliance Data Administrator | None | Read only |
+  | Global Reader | Read only | Read only |
+  | Helpdesk Administrator (equivalent to the Intune **Help Desk Operator** role) | Read only | Read only |
+  | Reports Reader | None | Read only |
+  | Conditional Access Administrator | None | None |
+
+  Microsoft explicitly recommends **against** using Global Administrator or Intune Administrator
+  for day-to-day Intune management — both are classified **privileged roles** and exceed what
+  almost any routine task needs. Use **Policy and Profile Manager** (or a custom role) instead —
+  the same least-privilege principle §3 already states for Entra-role-to-Purview mapping.
+- **App-only automation (Microsoft Graph):** both device-control scenarios' `deploy/` scripts
+  authenticate as a Graph app registration rather than an interactive admin, and need the
+  **`DeviceManagementConfiguration.ReadWrite.All`** application permission (admin consent
+  required) to create/update `windows10CustomConfiguration` objects — confirmed as the permission
+  Microsoft Graph's own `Update-MgDeviceManagement` / `Get-MgDeviceManagementDeviceConfiguration`
+  PowerShell reference pages list for this resource type. Grant only this permission, not the
+  similarly-named `DeviceManagementServiceConfig.*` or `DeviceManagementApps.*` permissions, which
+  cover different Intune resource families — the same least-privilege rule §8 states for
+  Purview/Exchange Graph scopes applies equally here.
+- **Licensing is tracked separately:** holding the Graph permission or the Policy and Profile
+  Manager role does not itself grant the Intune/Defender for Endpoint license a device needs to be
+  managed — see `docs/licensing-matrix.md` §7.
+
+---
+
+## 10. How scenarios should cite RBAC
 
 Each scenario README's **Prerequisites** section must state:
-1. Which of the **four RBAC systems** (§1) the scenario touches.
+1. Which of the **four RBAC systems** (§1) the scenario touches — or, for an Intune-deployed
+   scenario, that it uses the separate Intune RBAC model (§9) instead.
 2. The **narrowest built-in Purview role group** that covers it (name it exactly), or note that
    a **custom role group** is recommended for least privilege.
 3. Any **Exchange Online RBAC** dependency (§6) — call it out explicitly if the scenario searches
@@ -229,6 +288,9 @@ Each scenario README's **Prerequisites** section must state:
 - Manage role groups in Exchange Online — <https://learn.microsoft.com/exchange/permissions-exo/role-groups>
 - Microsoft Entra built-in roles reference — <https://learn.microsoft.com/entra/identity/role-based-access-control/permissions-reference>
 - Microsoft Entra administrative units — <https://learn.microsoft.com/entra/identity/role-based-access-control/administrative-units>
+- Role-based access control (RBAC) with Microsoft Intune (built-in roles list, Entra-role-to-Intune access table) — <https://learn.microsoft.com/intune/fundamentals/role-based-access-control/overview>
+- Built-in role permissions for Microsoft Intune (Policy and Profile Manager's full permission table) — <https://learn.microsoft.com/intune/fundamentals/role-based-access-control/ref-built-in-roles>
+- Microsoft Graph permissions reference (`DeviceManagementConfiguration.ReadWrite.All`) — <https://learn.microsoft.com/graph/permissions-reference>
 
 > **Disclaimer:** role names, default role-group membership, and which system governs a given
 > feature change as Purview ships updates (e.g. the ongoing move toward Microsoft Defender
