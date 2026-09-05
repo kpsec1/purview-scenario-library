@@ -1016,7 +1016,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `README.md` §3 (Supported OS row) and `design.md` §8 (non-goals) in place of "a natural,
   separately-scoped follow-up." Five new follow-ups recorded above (vendorId/productId matching,
   Portable/Apple/Bluetooth device coverage, two VERIFYs, JAMF deployment path) rather than silently
-  dropped. Commit: (recorded in the next commit). Date: 2026-09-05.
+  dropped. Commit: `e36d988`. Date: 2026-09-05.
 - [x] **Upgrade `scenarios/dlp/endpoint-dlp-usb-block/`'s `EndpointDlpRestrictions` grounding from
   a Tech Community blog to Microsoft's official cmdlet reference, and add an `-ITExceptionAction`
   opt-in** — a scoped sub-task (not a new scenario), closing the open VERIFY carried since that
