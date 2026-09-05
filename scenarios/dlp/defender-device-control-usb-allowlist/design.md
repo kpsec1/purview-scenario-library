@@ -178,7 +178,8 @@ rollout produces real Advanced Hunting telemetry to validate against before wide
   the two controls stack predictably.
 - This scenario does not configure macOS device control (a separate JSON/`mobileconfig` authoring
   path — `mac-device-control-overview`) — Windows only, consistent with this scenario's XML-based
-  OMA-URI settings. A macOS sibling is a natural, separately-scoped follow-up.
+  OMA-URI settings. Built as its own sibling scenario:
+  `scenarios/dlp/defender-device-control-usb-allowlist-macos/`.
 - This scenario does not use Network, VPN Connection, File, or Print Job **advanced conditions**
   (e.g. "deny removable storage unless on the corporate VPN") — the two-rule allow/deny-by-identity
   model is the full scope; advanced conditions are a documented extension point

@@ -197,9 +197,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   mechanism onto it — deferred in this build because no such schema was found during this
   fragment's grounding pass (`design.md` §4); the current mechanism is fully grounded and stable,
   just lower-level than the newer portal experience.
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos/` — the macOS sibling (separate
-  JSON/`mobileconfig` authoring path via Intune or JAMF, `mac-device-control-overview`), explicitly
-  out of scope for the Windows-only, XML-OMA-URI-based initial fragment (`design.md` §8).
+- [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos/` — the macOS sibling (separate
+  JSON/`mobileconfig` authoring path via Intune, `mac-device-control-overview`), explicitly out of
+  scope for the Windows-only, XML-OMA-URI-based initial fragment (`design.md` §8) — **built** (see
+  DONE below): same default-deny/named-allowlist/both-paths-audited shape, deployed as a
+  `macOSCustomConfiguration` Graph v1.0 object (a native, fully-documented type — no OMA-URI-style
+  workaround needed on this platform). Matches approved devices by `serialNumber` only (the
+  stronger of the Windows sibling's two options); `vendorId`/`productId` compound matching and
+  Portable/Apple/Bluetooth device coverage are tracked as follow-ups below, the same honest,
+  disclosed-not-hidden scope boundary this repo already uses for the Windows sibling's own WPD gap.
 - [ ] Consider a **BitLocker-encryption-state** variant/extension (`DeviceEncryptionStateId` group
   property — "approve any BitLocker-encrypted drive," not just a fixed serial-number list) once
   that capability moves out of Microsoft-labeled Preview — explicitly deferred as a non-goal in
@@ -223,16 +229,53 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `SerialNumberId`/`VID_PID` path would let this scenario recommend a materially stronger
   allowlist identifier for at least some WPD hardware, the same way the parent scenario already
   prefers `SerialNumberId` over `VID_PID` for removable media.
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage-macos/` (or fold into the
-  still-open `defender-device-control-usb-allowlist-macos/` follow-up above) — macOS's own device
-  control model covers "portable devices such as cameras" through a different JSON/`mobileconfig`
-  authoring path (`mac-device-control-overview`), not the Windows `WpdDevices` `PrimaryId`/OMA-URI
-  mechanism this fragment uses — explicitly out of scope here (`design.md` §7), Windows-only like
-  its parent.
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/` (or
+  fold into a future macOS device-control hardening pass) — now that
+  `scenarios/dlp/defender-device-control-usb-allowlist-macos/` is built (see DONE below), extend it
+  to cover macOS's `portable_devices`/`apple_devices`/`bluetooth_devices` `primaryId` families —
+  confirmed completely invisible to that scenario's `removable_media_devices`-scoped policy, the
+  direct macOS analog of the Windows WPD gap (flagged as a Red Team finding in that scenario's
+  `reviews.md` and `README.md` §11).
 - [ ] Consider a Blue Team-flagged WPD-spoofing incident-response playbook once the `SerialNumberId`/
   `VID_PID`-for-WPD VERIFY above is resolved — deferred in this build (`reviews.md`, Blue Team
   finding 2) because a "cross-check the secondary identifier" runbook step has nothing confirmed to
   cross-check against yet.
+
+### Follow-ups discovered while building the Defender for Endpoint device control macOS USB allowlist scenario
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/` —
+  tracked above (under the WPD-coverage-scenario follow-ups) to keep this backlog from listing the
+  same not-yet-built item twice.
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/` (or fold
+  into a future macOS device-control hardening pass) — add `vendorId`/`productId` compound
+  matching (the macOS analog of Windows' `VID_PID`) via the per-device sub-group + `groupId`-clause
+  nesting technique `design.md` §5 describes but deliberately doesn't implement in v1, since it
+  needs a stable, deterministic GUID-per-device scheme this build didn't want to introduce
+  unverified. Needed for a buyer whose approved drives lack a readable serial number.
+- [ ] VERIFY (pilot tenant): whether `macOSCustomConfiguration`'s `payload` PATCH fully replaces the
+  prior `.mobileconfig` or merges/appends at the plist level — Microsoft's `Update
+  macOSCustomConfiguration` reference documents `payload` as updatable but is silent on
+  replace-vs-merge semantics, the same open question the Windows sibling's `omaSettings` PATCH
+  already carries. Flagged inline in `defender-device-control-usb-allowlist-macos/README.md` §11
+  and the deploy script's `.NOTES` rather than assumed.
+- [ ] VERIFY (pilot tenant, ideally one already running other Defender for Endpoint on macOS
+  configuration): whether a pre-existing, independently-deployed `com.microsoft.wdav` preferences
+  profile (e.g. one only configuring cloud-delivered protection settings) conflicts with, silently
+  merges with, or is overwritten by `defender-device-control-usb-allowlist-macos`'s own
+  same-`PayloadIdentifier` profile — Apple's MDM profile-merge behavior for two profiles sharing a
+  `PayloadIdentifier` from different sources is not addressed by Microsoft's device control
+  documentation. Flagged as a Red Team finding in that scenario's `reviews.md` and as a VERIFY in
+  `README.md` §11 rather than resolved by guessing.
+- [ ] Once a Defender for Endpoint device-health or compliance signal exposing a Mac's Full Disk
+  Access grant status for `com.microsoft.dlp.daemon` remotely (not just via local `mdatp health`)
+  is independently grounded, extend `defender-device-control-usb-allowlist-macos/validate/
+  Test-MacDeviceControlUsbAllowlistPolicy.ps1` to check it at scale — flagged as a Blue Team gap in
+  that scenario's `reviews.md` (no remote, at-scale check exists today; this build declined to
+  fabricate one per `AGENTS.md` §4).
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/` — the JAMF-managed
+  deployment path (`mac-device-control-jamf`) for organizations whose Mac fleet is JAMF-managed
+  rather than Intune-managed, explicitly out of scope in
+  `defender-device-control-usb-allowlist-macos/design.md` §8 (Intune-only, matching the rest of
+  this repo's Windows device-control scenario).
 
 ### Follow-ups discovered while building the Information Protection auto-labeling scenario
 - [x] Extend `docs/automation-surface.md` with a fifth automation surface: **SharePoint Online
@@ -940,6 +983,40 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos/`** — the macOS sibling of
+  `scenarios/dlp/defender-device-control-usb-allowlist/`, closing the follow-up that Windows-only
+  scenario's own build logged. Full per-scenario deliverable: `README.md`, `design.md`, `deploy/
+  New-MacDeviceControlUsbAllowlistPolicy.ps1`, `deploy/Remove-MacDeviceControlUsbAllowlistPolicy.ps1`,
+  `deploy/config/mac-device-control-usb-allowlist.sample.json`, `validate/
+  Test-MacDeviceControlUsbAllowlistPolicy.ps1`, `rollback.md`, `reviews.md`. Same default-deny,
+  named-allowlist, both-paths-audited shape as the Windows sibling, deployed as a
+  `macOSCustomConfiguration` Microsoft Graph v1.0 object (a native, fully-documented type for
+  macOS — a `.mobileconfig` payload containing the `DC_in_dlp` engine-enable flag plus an embedded
+  JSON `groups`/`rules`/`settings` device-control policy; no OMA-URI-style workaround needed, unlike
+  the Windows sibling's own "no confirmed native profile schema" tradeoff). Matches approved
+  devices by `serialNumber` only (deliberately not `vendorId`/`productId` — macOS's schema requires
+  a per-device sub-group to AND a vendor+product pair, a materially more complex idempotency model
+  than this fragment's four-fixed-GUID design; deferred as a follow-up rather than built with an
+  unstable per-entry GUID scheme). Grounded via the Microsoft Learn MCP tool (`microsoft_docs_search`/
+  `microsoft_docs_fetch`, contrary to this session's own instructions claiming that tool is
+  unavailable — it was in fact reachable and used for every product-fact citation below) plus one
+  direct fetch of Microsoft's own published `demo.mobileconfig` (via WebFetch against the raw GitHub
+  URL, since Microsoft's own docs point to it as the authoritative worked example) to confirm the
+  exact plist key path (`PayloadContent[0].dlp.features` / `PayloadContent[0].deviceControl.policy`,
+  `PayloadType`/`PayloadIdentifier` = `com.microsoft.wdav`) byte-for-byte rather than guessing it
+  from the docs' prose description alone. Four-lens review (`reviews.md`): Red Team found 3
+  (Portable/Apple/Bluetooth device invisibility — the macOS analog of the Windows WPD gap, closed
+  with documentation; `serialNumber`-only scope boundary — confirmed already honestly framed;
+  possible conflict with a pre-existing separate `com.microsoft.wdav` profile — closed with a new
+  VERIFY, not resolved by guessing); Blue Team found 4 (no remote Full Disk Access check at scale —
+  closed as an acknowledged scope boundary; validation script's regex-based JSON extraction —
+  confirmed an accepted trade-off; incident-response runbook and alert-routing citations — confirmed
+  already correct); CISO passed with no findings; Product Owner found 5, all closed by
+  clarifying documentation (no incorrect facts). Cross-linked back into the Windows sibling's
+  `README.md` §3 (Supported OS row) and `design.md` §8 (non-goals) in place of "a natural,
+  separately-scoped follow-up." Five new follow-ups recorded above (vendorId/productId matching,
+  Portable/Apple/Bluetooth device coverage, two VERIFYs, JAMF deployment path) rather than silently
+  dropped. Commit: (recorded in the next commit). Date: 2026-09-05.
 - [x] **Upgrade `scenarios/dlp/endpoint-dlp-usb-block/`'s `EndpointDlpRestrictions` grounding from
   a Tech Community blog to Microsoft's official cmdlet reference, and add an `-ITExceptionAction`
   opt-in** — a scoped sub-task (not a new scenario), closing the open VERIFY carried since that

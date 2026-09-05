@@ -1,0 +1,19 @@
+{
+  "policyDisplayName": "Device Control (macOS) - USB Removable Media Default-Deny Allowlist",
+  "policyDescription": "Denies all removable USB storage on macOS by default; allows only IT-issued, identity-verified backup drives listed in approvedDevices (matched by serial number). Deployed by scenarios/dlp/defender-device-control-usb-allowlist-macos. Owner: Security & Compliance team.",
+  "approvedDevices": [
+    {
+      "label": "IT Data Custodians - encrypted backup drive #1",
+      "serialNumber": "REPLACE_WITH_REAL_SERIAL_NUMBER"
+    },
+    {
+      "label": "IT Data Custodians - encrypted backup drive #2",
+      "serialNumber": "REPLACE_WITH_REAL_SERIAL_NUMBER_2"
+    }
+  ],
+  "notificationUrl": "",
+  "assignment": {
+    "groupId": "REPLACE_WITH_PILOT_MACOS_DEVICE_GROUP_OBJECT_ID",
+    "assignAllDevices": false
+  }
+}
