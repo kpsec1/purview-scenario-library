@@ -917,7 +917,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `omaSetting*` Graph v1.0 resources, the `New-/Update-/Remove-MgDeviceManagementDeviceConfiguration`
   cmdlet references, and Defender for Endpoint Plan 1 licensing) — see `README.md` §12 for the full
   citation list; one VERIFY tagged rather than guessed (PATCH replace-vs-merge semantics for
-  `omaSettings` — README.md §11). — 2026-09-05
+  `omaSettings` — README.md §11).
+  Commit: `0e572bf`. Date: 2026-09-05.
 - [x] **`scenarios/dlp/exchange-pii-exfil-block/`** — a content-based (not label-conditioned)
   Microsoft Purview DLP policy that blocks or forces encryption on outbound Exchange Online email
   containing SSN/Credit Card Number addressed to external recipients, closing the Red-Team-flagged
