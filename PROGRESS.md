@@ -162,14 +162,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   to quote the walkthrough verbatim.
 
 ### Follow-ups discovered while building the Defender for Endpoint device control USB allowlist scenario
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/` (or fold into a future
-  hardening pass) — extend `SecuredDevicesConfiguration` to also cover `WpdDevices` (Windows
-  Portable Devices — phones/cameras in MTP/PTP mode), which this scenario's initial build
-  confirmed are **completely invisible** to a `RemovableMediaDevices`-scoped policy, not merely
-  unrestricted (a real, undetected bypass, flagged as a Red Team finding in `reviews.md` and
-  `README.md` §11). Needs its own grounding pass: WPD groups only support `FriendlyNameId`/
-  `PrimaryId` matching (no `SerialNumberId`/`VID_PID`), a different device-identity story than the
-  `RemovableMediaDevices` groups this fragment already built.
+- [x] `scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/` — extend
+  `SecuredDevicesConfiguration` to also cover `WpdDevices` (Windows Portable Devices —
+  phones/cameras in MTP/PTP mode), which this scenario's initial build confirmed are **completely
+  invisible** to a `RemovableMediaDevices`-scoped policy, not merely unrestricted (a real,
+  undetected bypass, flagged as a Red Team finding in `reviews.md` and `README.md` §11) — **built**
+  (see DONE below). This build's own grounding pass could **not** confirm this item's original
+  premise that "WPD groups only support `FriendlyNameId`/`PrimaryId` matching (no
+  `SerialNumberId`/`VID_PID`)" — Microsoft's general Windows-devices property-support table lists
+  `SerialNumberId`/`VID_PID` without breaking it down per `PrimaryId` family, and no worked example
+  was found either confirming or excluding them for `WpdDevices` specifically. The new scenario
+  states this as a genuinely open VERIFY in both directions rather than repeating the stronger,
+  unsubstantiated exclusion claim — see its `README.md` §11.
 - [ ] Add a **Defender for Endpoint + Intune** licensing row/section to `docs/licensing-matrix.md`
   — this is the first scenario in this library built on that product family rather than a Purview
   policy object, and `defender-device-control-usb-allowlist/README.md` §3 currently carries its
@@ -201,6 +205,35 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   property — "approve any BitLocker-encrypted drive," not just a fixed serial-number list) once
   that capability moves out of Microsoft-labeled Preview — explicitly deferred as a non-goal in
   `design.md` §8.
+
+### Follow-ups discovered while building the Defender for Endpoint device control WPD coverage scenario
+- [ ] VERIFY (pilot tenant): whether `SerialNumberId`/`VID_PID` group-matching properties are
+  honored for `WpdDevices`-classified hardware, or silently ignored/rejected. Microsoft's "Device
+  control policies" reference lists both as supported generic "Windows devices" properties without
+  breaking the table down per `PrimaryId` family, and this build found no worked example pairing
+  either property with a `WpdDevices`-scoped group. `defender-device-control-usb-allowlist-wpd-
+  coverage/deploy/Add-WpdDeviceControlCoverage.ps1` accepts both properties per config entry and
+  `validate/Test-WpdDeviceControlCoverage.ps1` checks them as `[WARN]` (not `[PASS]`/`[FAIL]`)
+  pending this confirmation — see that scenario's `README.md` §11. Resolving this would let a
+  future revision recommend a true per-unit WPD identifier instead of the weaker, user-editable
+  `FriendlyNameId` default.
+- [ ] Once the item above is resolved and a per-unit WPD identifier is confirmed, revisit
+  `defender-device-control-usb-allowlist-wpd-coverage/README.md` §11's Red-Team-flagged
+  friendly-name-spoofing risk (a device's advertised name is typically user-editable, so an
+  attacker who learns an approved name can rename their own device to match it) — a confirmed
+  `SerialNumberId`/`VID_PID` path would let this scenario recommend a materially stronger
+  allowlist identifier for at least some WPD hardware, the same way the parent scenario already
+  prefers `SerialNumberId` over `VID_PID` for removable media.
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage-macos/` (or fold into the
+  still-open `defender-device-control-usb-allowlist-macos/` follow-up above) — macOS's own device
+  control model covers "portable devices such as cameras" through a different JSON/`mobileconfig`
+  authoring path (`mac-device-control-overview`), not the Windows `WpdDevices` `PrimaryId`/OMA-URI
+  mechanism this fragment uses — explicitly out of scope here (`design.md` §7), Windows-only like
+  its parent.
+- [ ] Consider a Blue Team-flagged WPD-spoofing incident-response playbook once the `SerialNumberId`/
+  `VID_PID`-for-WPD VERIFY above is resolved — deferred in this build (`reviews.md`, Blue Team
+  finding 2) because a "cross-check the secondary identifier" runbook step has nothing confirmed to
+  cross-check against yet.
 
 ### Follow-ups discovered while building the Information Protection auto-labeling scenario
 - [x] Extend `docs/automation-surface.md` with a fifth automation surface: **SharePoint Online
@@ -890,6 +923,59 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **`scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/`** — closes the
+  confirmed Red Team finding in the parent `defender-device-control-usb-allowlist` scenario's own
+  review: a device that enumerates as a **Windows Portable Device (WPD)** — most phones, tablets,
+  and cameras in MTP/PTP mode — is completely invisible to a `SecuredDevicesConfiguration =
+  RemovableMediaDevices`-scoped policy, not merely unrestricted (no block, no audit event). This
+  fragment widens the parent's existing Intune device configuration object in place — from 7 to 11
+  `omaSettings` entries — rather than standing up a second, competing policy object (`design.md`
+  §3 explains why two objects would conflict on `SecuredDevicesConfiguration`, not layer): changes
+  the scope string to the documented pipe-separated multi-value form
+  `RemovableMediaDevices|WpdDevices`, and mirrors the parent's default-deny/named-allowlist/
+  audited-both-paths shape with a new `ApprovedWpdDevices` group, an `AllWpdDevices` catch-all
+  group, and an `Allow-ApprovedWpdDevices`/`Deny-AllOtherWpd` rule pair (identical `AccessMask=63`
+  semantics — confirmed identical across `CdRomDevices`/`RemovableMediaDevices`/`WpdDevices`).
+  Full deliverable per `AGENTS.md` §4: `README.md` (12-section skeleton), `design.md`,
+  `deploy/Add-WpdDeviceControlCoverage.ps1` (idempotent — refuses to run if the parent policy
+  doesn't already exist, reconciles a partial/interrupted prior state rather than misreporting it
+  as complete, `-WhatIf` throughout), `deploy/Remove-WpdDeviceControlCoverage.ps1` (surgical
+  rollback of only the WPD delta, leaving the parent's `RemovableMediaDevices` coverage/assignment/
+  object identity untouched), `deploy/config/wpd-device-control-coverage.sample.json`,
+  `validate/Test-WpdDeviceControlCoverage.ps1`, `rollback.md`, `reviews.md` (four-lens, all Fix
+  items resolved, no Fail — including a genuine idempotency-detection bug caught and fixed during
+  the Blue Team review pass itself: the initial draft treated any one of the four expected WPD
+  `omaSettings` nodes as proof the whole set was present, which could have left a partially-applied
+  policy — e.g. a deny rule live with no matching approved-devices group — permanently
+  unreconciled without an operator noticing and passing `-Force`).
+
+  Grounded via the Microsoft Learn MCP tool this run (available and used, despite the run's own
+  initial task instructions stating it would not be), fetched directly against official reference
+  pages: "Device control policies" (the `PrimaryId` family list including `WpdDevices`, the full
+  `DescriptorIdList` properties table, the "Understand mask access (Windows)" section confirming
+  the identical `AccessMask` bit scheme applies to `CdRomDevices`/`RemovableMediaDevices`/
+  `WpdDevices`, the Windows-Device-Manager-to-`FriendlyNameId` mapping, and the Intune reusable-
+  settings-groups table showing only two device group *types* — Printer device and Removable
+  storage, confirming no purpose-built portal authoring surface exists for WPD groups at all) and
+  "Deploy and manage device control with Intune" (the `SecuredDevicesConfiguration` OMA-URI's
+  documented pipe-separated multi-value syntax and its "must be all one word with no spaces"
+  warning) and "Device control in Microsoft Defender for Endpoint" (WPD support added in anti-
+  malware client `4.18.2107`+, a stricter prerequisite than the parent's base `4.18.2103.3`+; the
+  "grant access for all entries associated with the physical device" guidance for devices that
+  dual-enumerate as both a removable-media and a WPD entry; the disk-letter definition
+  distinguishing the two families). One genuine, deliberately unresolved gap: this build's own
+  grounding pass could **not** substantiate an earlier, unconfirmed `PROGRESS.md` note claiming
+  "WPD groups support only `FriendlyNameId`/`PrimaryId` matching (no `SerialNumberId`/`VID_PID`)"
+  — the general property-support table lists those properties for "Windows devices" without a
+  per-`PrimaryId`-family breakdown, and no worked example was found confirming or excluding them
+  for `WpdDevices`. Rather than repeat the stronger, unsubstantiated exclusion claim, this
+  scenario states the gap as genuinely open in both directions (`README.md` §11, `design.md` §2/§6)
+  and flags a Red-Team-confirmed, more serious finding instead: on most platforms a device's
+  advertised name is user-editable, making the one confirmed matching property
+  (`FriendlyNameId`) a spoofable identifier, not just a coarse one — mitigated by documented
+  guidance (small, IT-managed approved population; non-default device names) rather than
+  overclaimed as solved.
+  Date: 2026-09-05.
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist/`** — a device-identity (not
   content-based) USB removable-storage control on **Microsoft Defender for Endpoint device
   control**, the companion this repo's `endpoint-dlp-usb-block/README.md` §11 flagged as needed

@@ -1,0 +1,13 @@
+{
+  "parentPolicyDisplayName": "Device Control - USB Removable Media Default-Deny Allowlist",
+  "approvedWpdDevices": [
+    {
+      "label": "Field Ops - IT-issued rugged handheld scanner (MTP mode)",
+      "friendlyNameId": "REPLACE_WITH_DEVICE_MANAGER_FRIENDLY_NAME"
+    },
+    {
+      "label": "Field Ops - IT-issued rugged handheld scanner - unconfirmed alternate match (see README.md Section 11 VERIFY before relying on this alone)",
+      "serialNumberId": "REPLACE_WITH_REAL_SERIAL_NUMBER_IF_CONFIRMED_ON_PILOT"
+    }
+  ]
+}
