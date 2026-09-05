@@ -202,15 +202,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   every individual parameter is grounded from official Microsoft Learn references, but no worked
   example combines them for this exact case, the same class of gap already flagged (and still open)
   for `pci-teams-exfil-block`'s own `BlockAccess`/Teams combination.
-- [ ] `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion/` (or fold into a future
-  DLP hardening pass) — a separate, low-severity audit rule scoped to `FromMemberOf` the same
-  `-ExceptionGroupEmail` group, active only when `-Action Encrypt`, to close the Red-Team-flagged
-  gap in `exchange-pii-exfil-block/README.md` §11: in Encrypt mode the exception group is silently
-  excluded from the encrypt rule (`ExceptIfFromMemberOf`) with no override concept for a
-  non-halting action, so a member's matching external mail currently leaves the tenant in
-  cleartext with zero alert, incident report, or override record. Deferred from this build to keep
-  the fragment scoped to the base scenario (`AGENTS.md` §6); the compensating-control shape is
-  already sketched in `exchange-pii-exfil-block/README.md` §11 and `design.md` §6.
+- [x] `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion/` — **built** (see DONE
+  below): a single additive, low-severity, non-blocking `PII-Exchange-Audit-Encrypt-Exception` rule
+  added to the parent scenario's existing policy, scoped to `FromMemberOf` the same
+  `-ExceptionGroupEmail` group + `AccessScope NotInOrganization` + the same SIT pair, closing the
+  visibility (not prevention) gap in `exchange-pii-exfil-block/README.md` §11. Four-lens review
+  (Blue Team) flagged the initial hardcoded `Low` severity as a under-triage risk for a
+  high-risk exception group; resolved by adding a `-ReportSeverityLevel` deploy parameter
+  (`Low`/`Medium`/`High`) threaded through to both the deploy and validate scripts.
 - [ ] Once `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s pattern is extended to
   new content-pattern-based DLP scenarios (already tracked as a follow-up under the PCI Teams Part
   2 section above), consider adding the same risk-based `-SharedByIRMUserRisk` compensating-control
@@ -2204,6 +2203,29 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Microsoft Security Blog Tech Community PowerShell walkthrough (not independently fetchable in
   this environment — network egress to techcommunity.microsoft.com blocked — corroborated via two
   independent search-tool summaries and tagged VERIFY for pilot-tenant confirmation) — 2026-09-03
+- [x] **`scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion/`** — a single
+  additive, low-severity, non-blocking `PII-Exchange-Audit-Encrypt-Exception` rule added to
+  `exchange-pii-exfil-block`'s existing policy, closing the Red-Team-flagged visibility gap in that
+  scenario's `README.md` §11: in Encrypt mode, the nominated business-exception group is silently
+  excluded from the encrypt rule with no override concept, so its matching external mail leaves the
+  tenant in cleartext with zero alert, incident report, or override record. This companion doesn't
+  change that outcome — it makes it visible. Full deliverable per `AGENTS.md` §4: `README.md`
+  (12-section skeleton), `design.md` (justifies adding one rule to the parent's existing policy
+  rather than a new policy or reopening the parent scenario), `deploy/
+  New-ExchangePiiEncryptModeAuditCompanion.ps1` (idempotent, requires the parent policy to already
+  exist, computes an explicit non-colliding `-Priority` rather than relying on portal creation-order
+  defaults, drift-checks the parent's own exclusion rule, `-WhatIf` throughout),
+  `deploy/Remove-ExchangePiiEncryptModeAuditCompanion.ps1`, `validate/
+  Test-ExchangePiiEncryptModeAuditCompanion.ps1`, `rollback.md`, `reviews.md` (four-lens; Blue Team
+  Fix resolved by adding a `-ReportSeverityLevel` parameter — Low/Medium/High — after the initial
+  draft hardcoded `Low`, which risked under-triage for a high-risk exception-group population; Red
+  Team, CISO, and Product Owner all Pass). Grounded via `microsoft_docs_search` this run: confirmed
+  the "hosted service locations... priority in order created" and "matches for all... rules are
+  recorded... even though only the most restrictive rule is applied" behavior directly from the
+  official Data Loss Prevention policy reference — new grounding not previously cited by the parent
+  scenario, now feeding this fragment's explicit-priority-computation design decision. No new
+  cmdlets or parameters beyond what the parent scenario already grounded.
+  Commit: `<pending>`. Date: 2026-09-05.
 
 ## Blocked / needs user
 - (none)
