@@ -1,0 +1,18 @@
+{
+  "policyDisplayName": "Device Control - USB Removable Media Default-Deny Allowlist",
+  "policyDescription": "Denies all removable USB storage by default; allows only IT-issued, identity-verified backup drives listed in approvedDevices. Deployed by scenarios/dlp/defender-device-control-usb-allowlist. Owner: Security & Compliance team.",
+  "approvedDevices": [
+    {
+      "label": "IT Data Custodians - encrypted backup drive #1",
+      "serialNumberId": "REPLACE_WITH_REAL_SERIAL_NUMBER"
+    },
+    {
+      "label": "IT Data Custodians - encrypted backup drive #2 (approved by VID_PID - approves the whole product line, see README.md Section 11)",
+      "vidPid": "0781_5591"
+    }
+  ],
+  "assignment": {
+    "groupId": "REPLACE_WITH_PILOT_WINDOWS_DEVICE_GROUP_OBJECT_ID",
+    "assignAllDevices": false
+  }
+}

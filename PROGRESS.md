@@ -141,10 +141,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `scenarios/dlp/endpoint-dlp-usb-block/`. Flagged as out of scope there because the per-rule
   PowerShell syntax for referencing an authorization group inside `-EndpointDlpRestrictions`
   is not documented anywhere found during that scenario's build — needs a fresh grounding pass.
-- [ ] Consider a companion `scenarios/dlp/defender-device-control-usb-allowlist/` (Microsoft
+- [x] Consider a companion `scenarios/dlp/defender-device-control-usb-allowlist/` (Microsoft
   Defender for Endpoint device control, not Purview DLP) — `endpoint-dlp-usb-block/README.md`
   §11 notes Endpoint DLP is content-aware but not device-identity-aware, and a buyer wanting "no
-  unapproved USB devices, period" needs device control in addition, not instead.
+  unapproved USB devices, period" needs device control in addition, not instead — **built** (see
+  DONE below): default-deny for `RemovableMediaDevices`, one named `ApprovedBackupDrives`
+  allowlist group (matched by `SerialNumberId`/`VID_PID`), both the allow and deny paths audited,
+  deployed via Microsoft Graph (`windows10CustomConfiguration` Custom OMA-URI) since no confirmed
+  Graph schema exists yet for the native Intune "Device Control profile" template (`design.md`
+  §4). Genuine Red-Team finding resolved by documentation, not by scope creep: a device presenting
+  as a Windows Portable Device (phones/cameras in MTP mode) is completely invisible to this
+  control, tracked as a follow-up below rather than silently left undocumented.
 - [ ] Verify (against a pilot tenant or an official Microsoft Learn source, not just the Tech
   Community blog cited in `scenarios/dlp/endpoint-dlp-usb-block/README.md` §11) the exact
   `-EndpointDlpRestrictions` `Setting`/`Value` strings this scenario's deploy script uses
@@ -153,6 +160,47 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   parameter only as an opaque hashtable array with no enumerated values, and
   techcommunity.microsoft.com was unreachable (network egress blocked) in this build environment
   to quote the walkthrough verbatim.
+
+### Follow-ups discovered while building the Defender for Endpoint device control USB allowlist scenario
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/` (or fold into a future
+  hardening pass) — extend `SecuredDevicesConfiguration` to also cover `WpdDevices` (Windows
+  Portable Devices — phones/cameras in MTP/PTP mode), which this scenario's initial build
+  confirmed are **completely invisible** to a `RemovableMediaDevices`-scoped policy, not merely
+  unrestricted (a real, undetected bypass, flagged as a Red Team finding in `reviews.md` and
+  `README.md` §11). Needs its own grounding pass: WPD groups only support `FriendlyNameId`/
+  `PrimaryId` matching (no `SerialNumberId`/`VID_PID`), a different device-identity story than the
+  `RemovableMediaDevices` groups this fragment already built.
+- [ ] Add a **Defender for Endpoint + Intune** licensing row/section to `docs/licensing-matrix.md`
+  — this is the first scenario in this library built on that product family rather than a Purview
+  policy object, and `defender-device-control-usb-allowlist/README.md` §3 currently carries its
+  own scoped prerequisites table rather than the cross-cutting matrix, consistent with this
+  repo's established precedent of tracking doc extensions separately rather than bundling them
+  into a scenario fragment.
+- [ ] Cross-reference Intune RBAC (**Policy and Profile manager** role, and the
+  `DeviceManagementConfiguration.ReadWrite.All` Graph application permission for app-only access)
+  into `docs/rbac-model.md`, which currently only documents Purview/Exchange role groups and
+  Entra directory roles, not Intune's own RBAC model — same precedent as the still-open
+  Organization Configuration/Audit Manager backport under the Audit retention-policy follow-ups
+  above.
+- [ ] VERIFY (pilot tenant, before relying on `-Force` to remove a revoked drive from the
+  allowlist): whether `PATCH /deviceManagement/deviceConfigurations/{id}` fully replaces the
+  `omaSettings` collection or merges/appends — Microsoft's `Update windows10CustomConfiguration`
+  reference documents `omaSettings` as updatable but is silent on replace-vs-merge semantics.
+  Flagged inline in `defender-device-control-usb-allowlist/README.md` §11 and the deploy script's
+  `.NOTES` rather than assumed.
+- [ ] Once Microsoft publishes a confirmed Microsoft Graph resource/schema for the native Intune
+  "Device Control profile" template (Endpoint security → Attack Surface Reduction), re-evaluate
+  migrating `defender-device-control-usb-allowlist` off the current Custom-OMA-URI/hand-built-XML
+  mechanism onto it — deferred in this build because no such schema was found during this
+  fragment's grounding pass (`design.md` §4); the current mechanism is fully grounded and stable,
+  just lower-level than the newer portal experience.
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos/` — the macOS sibling (separate
+  JSON/`mobileconfig` authoring path via Intune or JAMF, `mac-device-control-overview`), explicitly
+  out of scope for the Windows-only, XML-OMA-URI-based initial fragment (`design.md` §8).
+- [ ] Consider a **BitLocker-encryption-state** variant/extension (`DeviceEncryptionStateId` group
+  property — "approve any BitLocker-encrypted drive," not just a fixed serial-number list) once
+  that capability moves out of Microsoft-labeled Preview — explicitly deferred as a non-goal in
+  `design.md` §8.
 
 ### Follow-ups discovered while building the Information Protection auto-labeling scenario
 - [x] Extend `docs/automation-surface.md` with a fifth automation surface: **SharePoint Online
@@ -842,6 +890,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **`scenarios/dlp/defender-device-control-usb-allowlist/`** — a device-identity (not
+  content-based) USB removable-storage control on **Microsoft Defender for Endpoint device
+  control**, the companion this repo's `endpoint-dlp-usb-block/README.md` §11 flagged as needed
+  for a buyer wanting "no unapproved USB devices, period": default-deny for all
+  `RemovableMediaDevices`, one named `ApprovedBackupDrives` allowlist group matched by
+  `SerialNumberId`/`VID_PID`, both the allow and deny paths audited (not a silent trust), deployed
+  via a staged pilot-group-then-tenant-wide assignment (the equivalent of a "simulation mode" for
+  a policy type with none). First scenario in this library built on Defender for Endpoint + Intune
+  rather than a Purview policy object — deployed through Microsoft Graph
+  (`windows10CustomConfiguration` Custom OMA-URI, `Invoke-MgGraphRequest`, automation surface 3)
+  because no confirmed Graph schema exists yet for the native Intune "Device Control profile"
+  template (`design.md` §4 explains the grounded reasoning for that choice). Full deliverable per
+  `AGENTS.md` §4: `README.md` (12-section skeleton), `design.md`, `deploy/
+  New-DeviceControlUsbAllowlistPolicy.ps1` (idempotent — fixed, source-controlled group/rule
+  GUIDs so re-runs reconcile in place rather than accumulating orphans — `-WhatIf` throughout, a
+  companion JSON config for the approved-device list and assignment target),
+  `deploy/Remove-DeviceControlUsbAllowlistPolicy.ps1` (staged unassign vs. `-Purge`),
+  `validate/Test-DeviceControlUsbAllowlistPolicy.ps1`, `rollback.md`, `reviews.md` (four-lens, all
+  Fix items resolved, no Fail — including a genuine Red Team finding that a device presenting as a
+  Windows Portable Device, e.g. a phone in MTP mode, is completely invisible to this control, not
+  merely unrestricted, since `SecuredDevicesConfiguration` scopes enforcement to
+  `RemovableMediaDevices` only; documented as an explicit residual gap and tracked as a follow-up
+  rather than silently left out). Every product fact grounded directly against Microsoft Learn
+  (device control policy/group/rule/entry XML schema, OMA-URI paths, the `windows10CustomConfiguration`/
+  `omaSetting*` Graph v1.0 resources, the `New-/Update-/Remove-MgDeviceManagementDeviceConfiguration`
+  cmdlet references, and Defender for Endpoint Plan 1 licensing) — see `README.md` §12 for the full
+  citation list; one VERIFY tagged rather than guessed (PATCH replace-vs-merge semantics for
+  `omaSettings` — README.md §11). — 2026-09-05
 - [x] **`scenarios/dlp/exchange-pii-exfil-block/`** — a content-based (not label-conditioned)
   Microsoft Purview DLP policy that blocks or forces encryption on outbound Exchange Online email
   containing SSN/Credit Card Number addressed to external recipients, closing the Red-Team-flagged
