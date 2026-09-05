@@ -965,7 +965,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   operational guidance (Pass); CISO — the E3-covers-both-scenarios cost note is genuinely
   decision-relevant, not filler (Pass); Product Owner — every claim traced to an official Microsoft
   Learn page fetched this run, not recalled from memory or copied from the flagging scenario's own
-  unverified note (Pass). Commit: `<pending>`. Date: 2026-09-05.
+  unverified note (Pass). Commit: `f41f178`. Date: 2026-09-05.
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/`** — closes the
   confirmed Red Team finding in the parent `defender-device-control-usb-allowlist` scenario's own
   review: a device that enumerates as a **Windows Portable Device (WPD)** — most phones, tablets,
