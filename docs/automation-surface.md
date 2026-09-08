@@ -7,7 +7,7 @@
 >
 > **Verify before you script against production.** Module versions, cmdlet support, and API
 > surfaces change frequently. This is a practitioner's summary grounded in Microsoft Learn,
-> current as of **2026-09-04**. Sources are linked at the bottom; re-check them before building
+> current as of **2026-09-08**. Sources are linked at the bottom; re-check them before building
 > a production pipeline.
 
 ---
@@ -23,7 +23,7 @@ doesn't this cmdlet exist" tickets (the first is RBAC — see `rbac-model.md`).
 | **1** | **Exchange Online PowerShell** | `ExchangeOnlineManagement` module, `Connect-ExchangeOnline` | Mail flow rules (transport rules), recipient/mailbox config, `Search-UnifiedAuditLog` |
 | **2** | **Security & Compliance PowerShell** | Same `ExchangeOnlineManagement` module, `Connect-IPPSSession` (different endpoint) | DLP policies/rules, retention (DLM) policies & labels, sensitivity labels & auto-labeling policies, IRM policy config (partial), Communication Compliance, Records Management, some eDiscovery cmdlets |
 | **3** | **Microsoft Graph** | `Microsoft.Graph` PowerShell SDK (`Connect-MgGraph`) or raw REST (`https://graph.microsoft.com`) | eDiscovery cases/holds/review-sets (`Microsoft.Graph.Security` namespace), Teams DLP real-time evaluation & export, Audit Search Graph API, subject rights requests, DSPM-for-AI protection-scope/process-content APIs, Entra administrative units |
-| **4** | **Microsoft Purview Data Map / Data Governance REST API** | `https://{account}.purview.azure.com` (data-plane) + `https://api.purview-service.microsoft.com` (audit) | Data Map scans, sources, collections; Unified Catalog governance domains, data products, glossary; Data Map history/audit query |
+| **4** | **Microsoft Purview Data Map / Data Governance REST API** | `https://{account}.purview.azure.com` (data-plane) + `https://api.purview-service.microsoft.com` (audit) | Data Map scans, sources, collections; Data Map lineage (custom relationships); Unified Catalog governance domains, data products, data assets, glossary; Data Map history/audit query |
 | **5** | **SharePoint Online Management Shell** | `Microsoft.Online.SharePoint.PowerShell` module, `Connect-SPOService` (a separate tenant-admin endpoint from surfaces 1/2 and from site-level SharePoint/PnP automation) | Tenant-wide SharePoint/OneDrive **prerequisite toggles** that gate Information Protection scenarios — enabling sensitivity-label processing (`Set-SPOTenant -EnableAIPIntegration`), and the PDF/video (MP4) file-type extensions to that support |
 
 > **Rule of thumb for picking a surface:** if the task is a **policy that ships as a
@@ -188,7 +188,9 @@ Connect-SPOService -Url "https://$TenantName-admin.sharepoint.com" -ManagedIdent
 | DSPM for AI — protection scopes / process content / sensitivity label lookups for custom apps | 3 (Graph) | `userProtectionScopeContainer.compute` (protection scopes), `processContent` API, `sensitivityLabels` APIs |
 | Data Map — register sources, run/schedule scans, manage collections | 4 (REST) | `PUT /datasources/{name}`, `PUT /datasources/{name}/scans/{name}`, `/collections` endpoints |
 | Data Map history / audit query | 4 (REST, separate audit endpoint) | `POST https://api.purview-service.microsoft.com/datamap/api/audit/query` |
-| Unified Catalog — governance domains, data products, glossary | 4 (REST) | Purview Data Governance REST API (evolving surface — **VERIFY** exact endpoint names per release) |
+| Data Map — custom lineage relationships (Atlas v2) | 4 (REST) | **Relationship** operation group: `POST /datamap/api/atlas/v2/relationship` (create), `DELETE /datamap/api/atlas/v2/relationship/guid/{guid}` (delete). **Lineage** operation group: `GET /datamap/api/atlas/v2/lineage/uniqueAttribute/type/{typeName}?attr:qualifiedName={qn}` (get by unique attribute, also used to resolve GUIDs before delete). Related but not exercised by this library's scripts: **Entity** operation group's `POST /datamap/api/atlas/v2/entity/bulk` (bulk create-or-update, upsert-by-`qualifiedName`) — the mechanism that creates the assets a custom relationship links. API version pinned: `2023-09-01`, confirmed current by direct fetch of all four operations' Microsoft Learn REST reference pages (§`scenarios/data-lineage/end-to-end-lineage-validation`). |
+| Unified Catalog — glossary (business domains, terms) | 4 (REST) | **Business Domain** operation group: `POST/PUT/DELETE/GET /datagovernance/catalog/businessdomains(/{id})`. **Terms** operation group: `POST/PUT/DELETE/GET /datagovernance/catalog/terms(/{id})`, `POST .../terms/query`, `POST .../terms/{id}/relationships` (term-to-term `Related` links). API version pinned: `2026-03-20-preview` (current public-preview Unified Catalog API version as of this library's `curate-business-glossary` build). |
+| Unified Catalog — data products, data assets | 4 (REST) | **Data Products** operation group: `POST/PUT/DELETE/GET /datagovernance/catalog/dataProducts(/{id})`, `POST .../dataProducts/query`, `POST/DELETE .../dataProducts/{id}/relationships?entityType=` (DATAASSET, TERM, or OKR — links a data product to assets/terms/OKRs). **Data Assets** operation group: `POST/PUT/DELETE/GET /datagovernance/catalog/dataAssets(/{id})`, `POST .../dataAssets/query`. Both share the Unified Catalog's `2026-03-20-preview` API version. **VERIFY** (pilot tenant): the exact relationship request-body shape per `entityType` — see `scenarios/unified-catalog/manage-data-products/README.md` §11. |
 | Administrative units (scoping RBAC) | 3 (Graph) or Entra admin center | `New-MgDirectoryAdministrativeUnit`, `Add-MgDirectoryAdministrativeUnitMember` |
 | Enable sensitivity-label processing for SharePoint/OneDrive files (Information Protection prerequisite) | 5 | `Set-SPOTenant -EnableAIPIntegration $true` (also enables Loop component/page labeling; needs a separate step for OneNote) |
 | Enable sensitivity labels for uploaded/labeled PDF files in SharePoint/OneDrive | 5 | `Set-SPOTenant -EnableSensitivityLabelforPDF $true` (module ≥ 16.0.24211.12000) |
@@ -310,6 +312,15 @@ implementation** section, must state:
 - Learn about auditing solutions in Microsoft Purview (Audit Search Graph API, `Search-UnifiedAuditLog`, bandwidth by license) — <https://learn.microsoft.com/purview/audit-solutions-overview>
 - Tutorial: Authenticate for Microsoft Purview data-plane APIs (Data Map REST) — <https://learn.microsoft.com/purview/data-gov-api-rest-data-plane>
 - Data Map history / audit query REST API — <https://learn.microsoft.com/purview/data-map-history>
+- Relationship - Create REST reference (Data Map data-plane, API version 2023-09-01) — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/relationship/create>
+- Relationship - Delete REST reference (API version 2023-09-01) — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/relationship/delete>
+- Lineage - Get By Unique Attribute REST reference (API version 2023-09-01) — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/lineage/get-by-unique-attribute>
+- Entity - Bulk Create Or Update REST reference (API version 2023-09-01) — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/entity/bulk-create-or-update>
+- Purview Unified Catalog REST API — Terms operation group — <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/terms?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
+- Purview Unified Catalog REST API — Business Domain operation group — <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/business-domain?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
+- Purview Unified Catalog REST API — Data Products operation group — <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/data-products?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
+- Purview Unified Catalog REST API — Data Assets operation group — <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/data-assets?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
+- Unified Catalog API (Public Preview) overview — scope, GA-only coverage, preview API versions, Swagger specification links — <https://learn.microsoft.com/rest/api/purview/unified-catalog-api-overview>
 - Microsoft Graph throttling guidance — <https://learn.microsoft.com/graph/throttling>
 - Paging Microsoft Graph data — <https://learn.microsoft.com/graph/paging>
 - Why use a Microsoft Graph SDK (built-in retry/backoff behavior) — <https://learn.microsoft.com/microsoft-cloud/dev/dev-proxy/concepts/why-use-microsoft-graph-sdk>

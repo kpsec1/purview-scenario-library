@@ -461,10 +461,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   such endpoint was located during that build (Microsoft's own docs show credential creation only
   via the portal UI). Needed for any buyer whose target SQL Server can't use SAMI (e.g. reachable
   only via a self-hosted integration runtime, which doesn't support managed-identity auth).
-- [ ] Sibling Data Map scan scenarios for **Azure SQL Managed Instance**, **Azure Synapse
+- [x] Sibling Data Map scan scenarios for **Azure SQL Managed Instance**, **Azure Synapse
   Analytics** (dedicated + serverless SQL pools), and **on-premises SQL Server** (via self-hosted
   IR) — each has its own registration/authentication nuances Microsoft documents separately;
-  explicitly called out as a non-goal in `scan-azure-sql-and-classify/design.md` §7.
+  explicitly called out as a non-goal in `scan-azure-sql-and-classify/design.md` §7 — **all three
+  built** (see DONE below): `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/`,
+  `scenarios/data-map/scan-azure-synapse-and-classify/`, `scenarios/data-map/
+  scan-on-premises-sql-server-and-classify/`. This item was left unchecked when those three
+  fragments landed; corrected during the `docs/automation-surface.md` §4 Unified Catalog/Data Map
+  lineage routing-table fragment's PROGRESS.md pass.
 - [ ] `scenarios/data-map/scan-azure-sql-and-classify/` also assumes downstream scenarios will
   consume its classification output — once `scenarios/data-estate-insights/
   classification-coverage-report/` (already TODO below) is built, cross-link it back into this
@@ -503,12 +508,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   product, wraps a `scan-azure-sql-and-classify`-scanned asset as a Unified Catalog data asset,
   and links both that asset and this scenario's `Customer`/`Customer ID` terms to it via the
   `Data Products - Create Relationship` operation.
-- [ ] Extend `docs/automation-surface.md` §4's Unified Catalog REST routing-table row (currently
+- [x] Extend `docs/automation-surface.md` §4's Unified Catalog REST routing-table row (currently
   "evolving surface — VERIFY exact endpoint names per release") with the confirmed exact
   operation groups/paths grounded in `curate-business-glossary` (`Terms` and `Business Domain`
   operation groups, `POST/PUT/DELETE/GET /datagovernance/catalog/terms(|/{id})`,
   `.../businessdomains(|/{id})`, `.../terms/{id}/relationships`, API version
-  `2026-03-20-preview`) — closes that cross-cutting doc's open VERIFY for this one surface.
+  `2026-03-20-preview`) — closes that cross-cutting doc's open VERIFY for this one surface —
+  **built** (see DONE below).
 - [ ] VERIFY (pilot tenant, before production reliance): the Unified Catalog `Terms - Query`
   `nameKeyword` filter's exact match semantics (substring/prefix/tokenized) are undocumented;
   `curate-business-glossary`'s idempotency design always re-checks for an exact client-side name
@@ -548,13 +554,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] `scenarios/unified-catalog/manage-okrs/` — script the `Okr`/`Key Result` operation groups and
   link them to data products, closing the last `EntityCategory` gap `manage-data-products/design.md`
   §6 leaves open (OKR linking).
-- [ ] Extend `docs/automation-surface.md` §4's Unified Catalog REST routing-table row with the
+- [x] Extend `docs/automation-surface.md` §4's Unified Catalog REST routing-table row with the
   confirmed `Data Products` and `Data Assets` operation groups/paths grounded in
   `manage-data-products` (`POST/PUT/DELETE/GET /datagovernance/catalog/dataProducts(|/{id})`,
   `.../dataProducts/{id}/relationships`, `.../dataAssets(|/{id})`, `.../dataAssets/query`, API
   version `2026-03-20-preview`) — same pattern `curate-business-glossary`'s and
   `end-to-end-lineage-validation`'s own automation-surface.md follow-ups already established of
-  tracking doc extensions separately rather than bundling them into a scenario fragment.
+  tracking doc extensions separately rather than bundling them into a scenario fragment —
+  **built** (see DONE below).
 - [ ] Once `scenarios/compliance-manager/` or a future access-governance scenario needs it,
   consider scripting **data product access policy** configuration if Microsoft publishes a REST
   surface for it — confirmed not to exist as of this build (`manage-data-products/design.md` §5);
@@ -585,12 +592,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   request/response shape directly from Microsoft's REST reference but not this specific behavior;
   `end-to-end-lineage-validation`'s own existence-check design makes its idempotency independent of
   the answer, but a production integration bypassing that check should confirm it first.
-- [ ] Extend `docs/automation-surface.md` §4's routing table with a row for Data Map lineage
+- [x] Extend `docs/automation-surface.md` §4's routing table with a row for Data Map lineage
   (`entity/bulk`, `relationship`, `lineage/uniqueAttribute/type/{typeName}` — surface 4,
   `datamap/api/atlas/v2/...`, API version `2023-09-01`) — not added in this build to keep the
   fragment scoped to one scenario; `scan-azure-sql-and-classify`'s and
   `curate-business-glossary`'s own automation-surface.md follow-ups set the same precedent of
-  tracking doc extensions separately rather than bundling them into a scenario fragment.
+  tracking doc extensions separately rather than bundling them into a scenario fragment —
+  **built** (see DONE below).
 
 ### Follow-ups discovered while building the Data Quality rules-and-scorecards scenario
 - [ ] `scenarios/data-quality/connection-and-scorecard-alerts/` (or fold into a future Data Quality
@@ -1034,6 +1042,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **`docs/automation-surface.md` §4 — Unified Catalog + Data Map lineage routing-table
+  fragment** — closed three separately-tracked doc-extension follow-ups from the Unified Catalog
+  business-glossary, manage-data-products, and Data Lineage end-to-end-lineage-validation builds
+  by backporting their already-confirmed REST facts into the cross-cutting automation-surface
+  reference, without any new external grounding (every fact was already direct-fetched and cited
+  in the scenarios that discovered it). Replaced the single "evolving surface — VERIFY exact
+  endpoint names per release" Unified Catalog row with three precise rows: **Data Map — custom
+  lineage relationships (Atlas v2)** (`Relationship`/`Lineage`/`Entity` operation groups,
+  `datamap/api/atlas/v2/...`, API version `2023-09-01`), **Unified Catalog — glossary (business
+  domains, terms)** (`Business Domain`/`Terms` operation groups, `datagovernance/catalog/...`, API
+  version `2026-03-20-preview`), and **Unified Catalog — data products, data assets** (`Data
+  Products`/`Data Assets` operation groups, same API version, carrying forward
+  `manage-data-products`'s own open relationship-body-shape VERIFY rather than resolving it by
+  guessing). Also added the surface-4 description note for lineage in §1's five-surfaces table and
+  eight new Learn citations to the Sources section (four Atlas v2 REST references, four Unified
+  Catalog REST references). Corrected one stale, already-completed backlog item in passing: the
+  Azure SQL Managed Instance/Synapse/on-premises-SQL-Server "sibling scan scenarios" item (left
+  unchecked after all three were actually built in earlier turns) is now marked done and
+  cross-referenced. — commit hash pending — 2026-09-08
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`** — the JAMF-managed
   deployment path for macOS Defender for Endpoint device control, closing the follow-up the Intune-
   managed macOS sibling's own build logged. Full per-scenario deliverable: `README.md`, `design.md`,
