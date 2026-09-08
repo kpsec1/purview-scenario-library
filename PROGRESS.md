@@ -1073,7 +1073,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   profile type, rest confirmed correct). Four new follow-ups recorded above (a JAMF Pro API VERIFY,
   a revisit-once-resolved item, and the vendor/product-matching and portable-device-coverage gaps
   already tracked for the Intune sibling, cross-referenced rather than duplicated) rather than
-  silently dropped. Commit: `PENDING`. Date: 2026-09-08.
+  silently dropped. Commit: `8cec510`. Date: 2026-09-08.
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos/`** — the macOS sibling of
   `scenarios/dlp/defender-device-control-usb-allowlist/`, closing the follow-up that Windows-only
   scenario's own build logged. Full per-scenario deliverable: `README.md`, `design.md`, `deploy/
