@@ -1173,7 +1173,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   by editing the already-reviewed prerequisite fragment's script, a genuine cross-fragment ordering
   hazard: re-running that fragment's own `-Force` reconcile after this one silently drops the
   exclusion; this fragment's own `validate` script detects and names that exact drift condition with
-  its remediation, distinct from "never configured." — `<pending-commit>` — 2026-09-08
+  its remediation, distinct from "never configured." — `6472287` — 2026-09-08
 - [x] **`scenarios/data-lineage/custom-process-lineage/`** — models a custom nightly transform job
   as a custom Process-typed Microsoft Purview Data Map entity (`PurviewScenarioLibraryEtlProcess`,
   `superTypes: ["Process"]`) and links it into the lineage graph via `dataset_process_inputs`/
