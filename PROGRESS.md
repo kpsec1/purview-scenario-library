@@ -604,13 +604,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   policy engine), not the consumer-facing access-request workflow.
 
 ### Follow-ups discovered while building the Data Lineage end-to-end-lineage-validation scenario
-- [ ] `scenarios/data-lineage/custom-process-lineage/` (or fold into a future Data Lineage
+- [x] `scenarios/data-lineage/custom-process-lineage/` (or fold into a future Data Lineage
   hardening pass) — script the richer DataSet -> Process -> DataSet lineage shape (a custom
   Process-typed entity representing the transform itself, not just a direct dataset-to-dataset
   edge), once a REST-documented body for creating a *custom* Process entity type is independently
-  grounded — deferred from `end-to-end-lineage-validation` because this build's grounding pass only
-  confirmed the `direct_lineage_dataset_dataset` shape via Microsoft's own worked example; see that
-  scenario's `README.md` §11 and `design.md` §1/§7.
+  grounded — **built** (see DONE below): a fresh grounding pass on this run found and directly
+  confirmed the previously-missing body in Microsoft's own "Create and get lineage relationships
+  using the REST API" tutorial (Example 1: create a Process entity via Entity - Bulk Create Or
+  Update, then `dataset_process_inputs`/`process_dataset_outputs` relationships; "Create New Custom
+  Types": the custom-Process-type body). Composable with, not a replacement for, this scenario's
+  own `direct_lineage_dataset_dataset` edge — see the new scenario's `design.md` §6.
 - [ ] Generalize `scenarios/data-lineage/end-to-end-lineage-validation/validate/
   Test-EndToEndLineage.ps1`'s column-mapping check ("Check 2") to match each `customLineageLinks`
   entry against its own declared upstream node rather than always the origin asset — needed before
@@ -1076,7 +1079,64 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   already listed as a Compliance Manager premium template (`compliance-manager-regulations-list`);
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
+### Follow-ups discovered while building the Data Lineage custom-process-lineage scenario
+- [ ] VERIFY (pilot tenant): whether a relationship end's `typeName` must be the entity's own
+  concrete custom subtype (`PurviewScenarioLibraryEtlProcess`) or may be the literal ancestor type
+  (`Process`) when resolving by `uniqueAttributes.qualifiedName` on `Relationship - Create`.
+  `custom-process-lineage`'s deploy script uses the literal `Process` for both relationship ends
+  referencing the Process entity, exactly matching Microsoft's own worked example — but that
+  example's concrete entity type was a **built-in** subtype (`hive_view_query`), not a custom one.
+  Flagged inline in `custom-process-lineage/README.md` §11 and the deploy script's `.NOTES` rather
+  than assumed; a one-line fix if wrong.
+- [ ] VERIFY (pilot tenant or Microsoft Learn): the exact permission required to create a custom
+  **entity type definition** via `Type - Bulk Create` — this build confirmed collection-level Data
+  Curator is sufficient for the closely related "create a custom classification" action but found
+  no equally explicit statement for entity-type creation specifically. `custom-process-lineage/
+  README.md` §3 documents the residual tenant-wide-blast-radius risk either way this resolves.
+- [ ] VERIFY (pilot tenant): the exact REST path and in-use-type deletion behavior of `Type -
+  Delete` — confirmed to exist only via the .NET SDK's `TypeDefinition.Delete(name)` method
+  signature, not an independently fetched canonical REST reference page. Blocks
+  `custom-process-lineage/rollback.md` from scripting deletion of the custom Process type
+  definition it creates; that file documents the deliberate decision to leave the type in place by
+  default and describes the manual, reviewed alternative.
+- [ ] VERIFY (pilot tenant): the not-found HTTP status code for `Type - Get Entity Def By Name` —
+  its reference page documents only a 200 OK success shape, so `custom-process-lineage`'s
+  existence-check treats any non-success response as "does not exist yet" rather than assuming 404
+  specifically. Functionally safe either way (see `README.md` §11) but not confirmed.
+- [ ] `scenarios/data-lineage/custom-process-lineage-multi-job-catalog/` (or fold into a future
+  Data Lineage hardening pass) — extend the single custom Process type this scenario ships
+  (`PurviewScenarioLibraryEtlProcess`, two attributes) into a richer, multi-job catalog: additional
+  attributes (owning team, source-code repository URL, last-run status) and a pattern for modeling
+  many jobs sharing one type without qualifiedName collisions — explicitly deferred as a non-goal
+  in `custom-process-lineage/design.md` §8 to keep this fragment scoped.
+- [ ] Once a documented REST/Graph way to enumerate live entity counts by type exists (needed to
+  safely confirm "zero remaining entities of this type" before a human deletes the custom Process
+  type definition entirely), reference it from `custom-process-lineage/rollback.md`'s manual
+  decommission guidance instead of pointing at the Data Map portal search/browse UI as the only
+  option.
+
 ## DONE
+- [x] **`scenarios/data-lineage/custom-process-lineage/`** — models a custom nightly transform job
+  as a custom Process-typed Microsoft Purview Data Map entity (`PurviewScenarioLibraryEtlProcess`,
+  `superTypes: ["Process"]`) and links it into the lineage graph via `dataset_process_inputs`/
+  `process_dataset_outputs` relationships, upgrading `end-to-end-lineage-validation`'s single
+  unattributed `direct_lineage_dataset_dataset` edge into the full DataSet -> Process -> DataSet
+  shape that scenario's own `design.md` §7 deliberately deferred. Fresh grounding pass found and
+  directly confirmed the previously-missing custom-Process-entity-creation body (Microsoft's
+  "Create and get lineage relationships using the REST API" tutorial, Example 1 + "Create New
+  Custom Types"). Also confirmed a stronger idempotency pattern than the sibling scenario's own:
+  `Entity - Bulk Create Or Update`'s reference page directly documents upsert-by-qualifiedName
+  semantics, so the Process entity needs no separate existence check (unlike the type definition
+  and the two relationships, whose duplicate-POST/recreate behavior remains unconfirmed and so use
+  the sibling's existing existence-check idiom). Four-lens review raised two Fix findings, both
+  resolved: (1) Red Team — the tenant-wide blast-radius risk of type-definition creation now stated
+  explicitly in `README.md` §3 regardless of how the underlying permission-scope VERIFY resolves;
+  (2) Blue Team/Product Owner — `validate/Test-ProcessLineage.ps1` originally only checked whether
+  the custom type *existed*, not whether its live attribute schema still matched the definition
+  file; added a dedicated schema-drift check (detection-only, not auto-remediating, consistent with
+  this repo's no-unconfirmed-update-body discipline). `docs/automation-surface.md` §4's lineage
+  routing-table row split in two and extended with the newly-exercised Entity/Type operation
+  groups. — 2026-09-08
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/`** —
   extends the macOS Defender for Endpoint device control USB allowlist scenario to also cover the
   `apple_devices`, `portable_devices`, and `bluetooth_devices` `primaryId` families, the direct

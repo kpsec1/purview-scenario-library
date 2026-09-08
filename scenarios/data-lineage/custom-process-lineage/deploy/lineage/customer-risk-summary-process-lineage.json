@@ -1,0 +1,51 @@
+{
+  "processTypeDefinition": {
+    "name": "PurviewScenarioLibraryEtlProcess",
+    "superTypes": ["Process"],
+    "typeVersion": "1.0",
+    "attributeDefs": [
+      {
+        "name": "runbookUrl",
+        "typeName": "string",
+        "cardinality": "SINGLE",
+        "isIndexable": false,
+        "isOptional": true,
+        "isUnique": false
+      },
+      {
+        "name": "scheduleExpression",
+        "typeName": "string",
+        "cardinality": "SINGLE",
+        "isIndexable": false,
+        "isOptional": true,
+        "isUnique": false
+      }
+    ]
+  },
+  "process": {
+    "typeName": "PurviewScenarioLibraryEtlProcess",
+    "qualifiedName": "custom-lineage.nightly-customer-risk-scoring-job",
+    "displayName": "Nightly customer risk-scoring job",
+    "description": "Azure Functions timer-trigger Python job (NOT Azure Data Factory or any other Purview-lineage-integrated processing system) that reads customerdb.dbo.Customers and writes an aggregated risk score per customer into analyticsdb.dbo.CustomerRiskSummary. Modeled here as a Process-typed entity so the lineage graph shows the actual transform, not just an unattributed edge - see README.md Section 1.",
+    "runbookUrl": "https://internal-wiki.example.com/runbooks/nightly-customer-risk-scoring",
+    "scheduleExpression": "0 3 * * *",
+    "columnMapping": [
+      {
+        "DatasetMapping": { "Source": "customerdb.dbo.Customers", "Sink": "analyticsdb.dbo.CustomerRiskSummary" },
+        "ColumnMapping": [
+          { "Source": "CustomerId", "Sink": "CustomerId" }
+        ]
+      }
+    ]
+  },
+  "upstream": {
+    "typeName": "azure_sql_table",
+    "qualifiedName": "<REPLACE - copy from customerdb.dbo.Customers asset's Overview page in the Purview portal>",
+    "displayName": "customerdb.dbo.Customers"
+  },
+  "downstream": {
+    "typeName": "azure_sql_table",
+    "qualifiedName": "<REPLACE - copy from analyticsdb.dbo.CustomerRiskSummary asset's Overview page in the Purview portal>",
+    "displayName": "analyticsdb.dbo.CustomerRiskSummary"
+  }
+}
