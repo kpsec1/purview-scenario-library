@@ -289,12 +289,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-portable-device-coverage/` —
   tracked above (under the WPD-coverage-scenario follow-ups) — **closed**, see that entry above for
   details.
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/` (or fold
-  into a future macOS device-control hardening pass) — add `vendorId`/`productId` compound
-  matching (the macOS analog of Windows' `VID_PID`) via the per-device sub-group + `groupId`-clause
-  nesting technique `design.md` §5 describes but deliberately doesn't implement in v1, since it
-  needs a stable, deterministic GUID-per-device scheme this build didn't want to introduce
-  unverified. Needed for a buyer whose approved drives lack a readable serial number.
+- [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/` — **built**
+  (see DONE below): closes the deferred `vendorId`/`productId` compound-matching gap via the
+  per-device sub-group + `groupId`-clause nesting technique `design.md` §5 (parent scenario)
+  describes. The "stable, deterministic GUID-per-device scheme" blocker is resolved with an RFC 4122
+  §4.3 version-5 (SHA-1, name-based) UUID derived from each device's `vendorId:productId` pair —
+  verified during the build against Python's `uuid.uuid5()` reference implementation. No new rule
+  needed (extends the parent's existing `ApprovedBackupDrives` group directly); multi-device, unlike
+  the Bluetooth sibling's v1 single-device cap.
 - [ ] VERIFY (pilot tenant): whether `macOSCustomConfiguration`'s `payload` PATCH fully replaces the
   prior `.mobileconfig` or merges/appends at the plist level — Microsoft's `Update
   macOSCustomConfiguration` reference documents `payload` as updatable but is silent on
@@ -1186,6 +1188,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   VERIFY on this point was left as-is (out of scope for a scan-rule-set-focused fragment).
 
 ## DONE
+- [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/`** —
+  commit `PENDING` — 2026-09-08 — extends `defender-device-control-usb-allowlist-macos`'s
+  `serialNumber`-only `ApprovedBackupDrives` group with vendorId+productId compound matching, for
+  approved drives with no readable serial number. Closes the gap that scenario's own `design.md` §5
+  deliberately deferred: macOS's schema can only AND vendorId+productId via a per-device sub-group
+  referenced by a `groupId` clause, which needs a stable id per config-file entry — resolved here
+  with a deterministic RFC 4122 §4.3 version-5 (SHA-1) UUID keyed on `vendorId:productId` (not
+  `label`, so a cosmetic rename never orphans a group), independently cross-checked against Python's
+  `uuid.uuid5()` reference implementation for the same input during the build. No new Intune profile
+  and no new/edited rule — both of the parent's existing rules already key off `ApprovedBackupDrives`'
+  group id, so a device newly matched via either mechanism is automatically covered. Supports any
+  number of devices (the Bluetooth sibling fragment capped at one because it lacked this id scheme).
+  `groupId`/`vendorId`/`productId` clause syntax and the "group must be defined before the clause"
+  ordering rule grounded directly against Microsoft's Device Control for macOS Clause reference table
+  (direct fetch); the per-device AND-clause shape cross-checked against two raw GitHub sample
+  policies (`deny_all_bluetooth_devices_except_samsung.json`,
+  `deny_removable_media_except_kingston.json`) fetched during the build. Four-lens review caught and
+  fixed two real defects before closing: a vendorId+productId pair collision that would have produced
+  two policy groups sharing one id, and a PowerShell empty-array-coercion bug
+  (`@($cfg.vendorProductDevices)` on an omitted config key) that misfired the validation error
+  message. One VERIFY carried forward, not resolved by guessing: no Microsoft worked sample pairs a
+  `groupId` clause with more than one sibling sub-group inside one query, so the N-devices-in-one-OR-
+  query composition is this repo's own application of the documented primitive, not itself a directly
+  worked example (`README.md` §11).
 - [x] **`scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/`** — commit `0a3e752` — 2026-09-08 — custom, PII-only Data Map
   scan rule set for Azure SQL Database, extending `scan-azure-sql-and-classify`. Closes that
   scenario's carried-forward VERIFY ("the exact REST JSON body for the 'Scan Rulesets - Create Or

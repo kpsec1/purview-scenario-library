@@ -1,0 +1,6 @@
+{
+  "parentPolicyDisplayName": "Device Control (macOS) - USB Removable Media Default-Deny Allowlist",
+  "vendorProductDevices": [
+    { "label": "REPLACE - e.g. IT-issued imaging dock (no readable serial)", "vendorId": "0951", "productId": "1666" }
+  ]
+}
