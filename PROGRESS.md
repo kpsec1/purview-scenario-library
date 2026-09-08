@@ -1225,7 +1225,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/information-protection/auto-label-eu-personal-data-sharepoint/`** — commit
-  `PENDING` — 2026-09-08 — the EU/UK-region sibling of `auto-label-confidential-sharepoint/`,
+  `a725941` — 2026-09-08 — the EU/UK-region sibling of `auto-label-confidential-sharepoint/`,
   resolving that scenario's own deferred "localize the SIT selection by jurisdiction" follow-up.
   Same auto-labeling policy family and staged-rollout/override model, re-pointed at Microsoft's
   built-in EU-wide bundle SITs (EU national identification number, EU Social Security Number
