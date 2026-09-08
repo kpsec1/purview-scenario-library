@@ -1142,7 +1142,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   <https://learn.microsoft.com/purview/apply-sensitivity-label-automatically#before-you-begin> —
   the same source already cited by the sibling scenario, verified consistent, no new grounding
   pass needed. Doc-only scoped sub-task per `AGENTS.md` §6; no code/design/reviews changes
-  required (no other file in the scenario referenced the stale role list). — 2026-09-08
+  required (no other file in the scenario referenced the stale role list). — `ad6e0d6` — 2026-09-08
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/`** — adds a
   single `vendorId`+`productId`-matched approved-device exception to the
   `defender-device-control-usb-allowlist-macos-portable-device-coverage` fragment's unconditional
