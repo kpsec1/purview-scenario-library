@@ -348,10 +348,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   pasted JSON matches the intended artifact, or that a JAMF admin hasn't silently altered it) — an
   API-based reconcile-and-verify script would close both findings the same way the Intune sibling's
   own Graph-based script already does.
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-vendor-product-matching/` (or
-  fold into a future macOS device-control hardening pass) — same `vendorId`/`productId` compound-
-  matching follow-up already tracked for the Intune sibling above; applies identically here since
-  the policy JSON schema is shared, deferred for the same unverified-dynamic-GUID-sub-group reason.
+- [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-vendor-product-matching/` —
+  **built** (see DONE below): the JAMF-managed sibling of
+  `defender-device-control-usb-allowlist-macos-vendor-product-matching/` (Intune). Unlike the Intune
+  sibling (an incremental Graph PATCH against a live object), this fragment is a **superset
+  generator** — JAMF has no documented API to patch, so it reads one combined config
+  (`approvedDevices` + `vendorProductDevices`) and regenerates the complete policy JSON, reusing the
+  Intune sibling's exact deterministic RFC 4122 §4.3 UUIDv5 scheme and namespace constant so the same
+  `vendorId`+`productId` pair yields the identical sub-group id on both deployment paths (one policy
+  identity across a hybrid Intune+JAMF fleet). The "unverified-dynamic-GUID-sub-group" blocker this
+  item originally cited was resolved when the Intune sibling itself shipped (its own GUID scheme
+  independently verified against Python's `uuid.uuid5()` reference implementation, not a pilot-tenant
+  dependency) — ported here rather than re-derived.
 - [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-portable-device-coverage/` (or
   fold into a future macOS device-control hardening pass) — same Portable-Device/Apple-device/
   Bluetooth-media coverage gap already tracked for the Intune sibling (and for
@@ -1224,6 +1232,32 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   VERIFY on this point was left as-is (out of scope for a scan-rule-set-focused fragment).
 
 ## DONE
+- [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-vendor-product-matching/`**
+  — commit `PENDING` — 2026-09-08 — the JAMF-managed sibling of
+  `defender-device-control-usb-allowlist-macos-vendor-product-matching` (Intune), closing the same
+  vendorId/productId compound-matching gap for JAMF-managed macOS fleets. Because JAMF's device
+  control deployment has no documented API (the base JAMF scenario's own already-disclosed gap),
+  this fragment is a **superset generator** rather than an incremental patcher: one script reads a
+  combined config (`approvedDevices` + `vendorProductDevices`) and regenerates the complete policy
+  JSON in one artifact — a materially simpler idempotency model than the Intune sibling's live-object
+  diff/reconcile, since JAMF's own "regenerate whole, paste whole" mechanism has no live state to
+  diff against. Reuses the Intune sibling's exact deterministic RFC 4122 §4.3 UUIDv5 scheme, fixed
+  namespace constant, and hash-input format verbatim (not re-derived) so the identical
+  `vendorId`+`productId` pair produces the identical sub-group id on both deployment paths — the
+  concrete mechanism for "one policy identity across a hybrid Intune+JAMF fleet." Output is
+  byte-identical to the base JAMF scenario's own script when `vendorProductDevices` is empty (a
+  strict superset, not a divergent reimplementation), and the deploy script is designed to supersede
+  (not run alongside) the base scenario's `New-JamfDeviceControlPolicyJson.ps1` once vendor/product
+  matching is needed. Re-grounded the `groupId`/`vendorId`/`productId` clause semantics and the
+  JAMF-has-no-documented-API finding directly against Microsoft Learn during this build (word-for-
+  word match with the earlier builds' citations) rather than assuming they still held. Four-lens
+  review carried forward the Intune sibling's own inherited VERIFY (no worked Microsoft example pairs
+  a `groupId` clause with more than one sibling sub-group in one query) and the base JAMF scenario's
+  own inherited VERIFY (no documented JAMF Pro API) rather than re-resolving either by guessing; no
+  new VERIFY introduced. This closes the `PROGRESS.md` follow-up item whose original "deferred for
+  the same unverified-dynamic-GUID-sub-group reason" blocker was actually resolved when the Intune
+  sibling itself shipped with an independently-verified (Python `uuid.uuid5()`) UUID scheme, not a
+  pilot-tenant dependency.
 - [x] **`scenarios/information-protection/auto-label-eu-personal-data-sharepoint/`** — commit
   `a725941` — 2026-09-08 — the EU/UK-region sibling of `auto-label-confidential-sharepoint/`,
   resolving that scenario's own deferred "localize the SIT selection by jurisdiction" follow-up.
