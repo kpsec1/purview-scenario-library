@@ -134,13 +134,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   technical control (that README updated in place to point at the real path instead of "planned").
 
 ### Follow-ups discovered while building the Endpoint DLP USB-block scenario
-- [ ] `scenarios/dlp/removable-usb-device-groups-allowlist/` (or fold into a future Endpoint DLP
+- [x] `scenarios/dlp/removable-usb-device-groups-allowlist/` (or fold into a future Endpoint DLP
   hardening pass) — script/document the **Removable USB device groups** portal feature
   (`Set-PolicyConfig -DlpRemovableMediaGroups`) to allow specific IT-issued encrypted backup
   drives by device identity, complementing the group-based (user) exception in
   `scenarios/dlp/endpoint-dlp-usb-block/`. Flagged as out of scope there because the per-rule
   PowerShell syntax for referencing an authorization group inside `-EndpointDlpRestrictions`
-  is not documented anywhere found during that scenario's build — needs a fresh grounding pass.
+  is not documented anywhere found during that scenario's build — needs a fresh grounding pass —
+  **investigated, not built** (see DONE below): the fresh grounding pass confirmed the portal
+  workflow end-to-end (create the device group in Endpoint DLP settings by Vendor ID/Product
+  ID/Instance ID, then add it as an exclusion in a rule's actions/exceptions) but found the
+  PowerShell layer more thoroughly undocumented than originally scoped — not just the per-rule
+  reference syntax, but `Set-PolicyConfig -DlpRemovableMediaGroups`'s own hashtable shape, and the
+  same for all four sibling device-group parameters (`-DlpPrinterGroups`/`-DlpNetworkShareGroups`/
+  `-DlpAppGroups`/`-DlpExtensionGroups`): every one of their descriptions and the cmdlet's entire
+  `EXAMPLES` section are unpublished placeholder text in Microsoft's official reference, and
+  `New-DlpComplianceRule`/`Set-DlpComplianceRule` expose no parameter at all for referencing a
+  device group as a rule condition/exception. Scripting either half would mean fabricating an
+  unconfirmed hashtable shape, which this repo's grounding standard (`AGENTS.md` §4) does not
+  permit. `scenarios/dlp/endpoint-dlp-usb-block/README.md` §11/§12 and `design.md` §6–7 updated in
+  place with the full finding and new citations, rather than a new scenario folder being built on
+  an unscriptable feature. Re-open if Microsoft ever publishes the hashtable shape or adds a
+  rule-level device-group parameter.
 - [x] Consider a companion `scenarios/dlp/defender-device-control-usb-allowlist/` (Microsoft
   Defender for Endpoint device control, not Purview DLP) — `endpoint-dlp-usb-block/README.md`
   §11 notes Endpoint DLP is content-aware but not device-identity-aware, and a buyer wanting "no
@@ -2596,6 +2611,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scenario, now feeding this fragment's explicit-priority-computation design decision. No new
   cmdlets or parameters beyond what the parent scenario already grounded.
   Commit: `04191a9`. Date: 2026-09-05.
+- [x] Removable USB device groups grounding pass (`scenarios/dlp/endpoint-dlp-usb-block/` §11/§12,
+  `design.md` §6–7) — **investigated, not built**: confirmed the portal workflow end-to-end
+  (create the device group in Endpoint DLP settings by Vendor ID/Product ID/Instance ID, add an
+  alias, then reference it as an exclusion in a rule's actions/exceptions) via the official
+  `dlp-configure-endpoint-settings` reference and a Microsoft Q&A answer describing the same
+  rule-level exclusion step. Found the PowerShell layer more thoroughly undocumented than the
+  original backlog item scoped: not just the per-rule reference syntax, but `Set-PolicyConfig
+  -DlpRemovableMediaGroups`'s own hashtable shape, and the same for all four sibling device-group
+  parameters (`-DlpPrinterGroups`/`-DlpNetworkShareGroups`/`-DlpAppGroups`/`-DlpExtensionGroups`)
+  — every one of their descriptions and the cmdlet's entire `EXAMPLES` section are unpublished
+  placeholder text in Microsoft's own reference (confirmed by direct fetch of the underlying
+  `office-docs-powershell` source, since `learn.microsoft.com` itself is blocked by this
+  environment's egress proxy for direct fetches — WebSearch's summarized snippets and GitHub's
+  raw-content mirror of the same official docs were used instead). Also confirmed
+  `New-DlpComplianceRule`/`Set-DlpComplianceRule` expose no parameter at all for referencing a
+  device group as a rule condition/exception. Scripting either half would mean fabricating an
+  unconfirmed hashtable shape, which `AGENTS.md` §4 does not permit, so no new scenario folder was
+  built — the finding was folded into `endpoint-dlp-usb-block`'s existing docs instead, with three
+  new citations (Microsoft's `dlp-configure-endpoint-settings` page, the Microsoft Q&A thread, and
+  the `Set-PolicyConfig` reference). Commit: `PENDING`. Date: 2026-09-08.
 
 ## Blocked / needs user
 - (none)

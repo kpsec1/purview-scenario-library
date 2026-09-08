@@ -323,12 +323,28 @@ permanently delete the policy and its rules.
   per activity using those confirmed names. Bluetooth and RDP restriction `Setting` names were not
   found in that reference and remain unconfirmed.
 - **This scenario does not configure Removable USB device groups** (per-physical-device
-  allowlisting of specific IT-issued encrypted backup drives, distinct from the group-based
-  IT Data Custodians user exception this scenario does implement). That's a portal-only,
-  per-device registration workflow with no PowerShell object this deploy script can create —
-  tracked as a follow-up in `PROGRESS.md`. Combining it with this scenario lets a buyer scope the
-  IT exception down from "any removable media, watched" to "only these specific backup drives,
-  unrestricted."
+  allowlisting of specific IT-issued encrypted backup drives by Vendor ID/Product ID/Instance ID,
+  distinct from the group-based IT Data Custodians *user* exception this scenario does implement).
+  A dedicated grounding pass (`PROGRESS.md`) confirmed the portal workflow end-to-end: create the
+  group under **Purview portal → Settings → Data loss prevention → Endpoint DLP settings →
+  Removable USB device groups** (name it, add each device by Vendor ID/Product ID/Instance ID, and
+  give it an alias that appears only in the Purview console), then reference that group as an
+  **exclusion in a rule's actions/exceptions** back in the policy editor [[19]](#references)
+  [[20]](#references). The pass found the *cmdlet-level* half genuinely undocumented rather than
+  merely undiscovered: `Set-PolicyConfig` does expose a `-DlpRemovableMediaGroups` parameter
+  (`PswsHashtable`) confirmed to exist in Microsoft's own reference, alongside four sibling
+  device-group parameters (`-DlpPrinterGroups`, `-DlpNetworkShareGroups`, `-DlpAppGroups`,
+  `-DlpExtensionGroups`) — but as of this pass, every one of those five parameters' descriptions,
+  and the cmdlet's entire `EXAMPLES` section, are unpublished placeholder text in Microsoft's
+  official reference [[21]](#references); and `New-DlpComplianceRule`/`Set-DlpComplianceRule`
+  expose no parameter of any kind for referencing a device group as a rule condition or exception
+  [[9]](#references)/[[10]](#references) — confirming the rule-level reference step is portal-only
+  too, not merely the device-registration step already flagged. Scripting this without a
+  documented hashtable shape would mean fabricating dictionary keys this repo's grounding standard
+  (`AGENTS.md` §4) does not permit, so it stays a portal-only workflow until Microsoft publishes
+  one. Combining it with this scenario would let a buyer scope the IT exception down from "any
+  removable media, watched" to "only these specific backup drives, unrestricted" — tracked as a
+  closed, investigated-not-built item in `PROGRESS.md` rather than an open build item.
 - **This scenario does not replace Microsoft Defender for Endpoint device control.** Device
   control can deny an unapproved USB device outright regardless of content (content-blind, at the
   driver level); Endpoint DLP is content-aware but requires the device to already be a recognized
@@ -355,6 +371,9 @@ permanently delete the policy and its rules.
 16. Creating Endpoint DLP Rules using PowerShell - Part 1 (Microsoft Security Blog, Tech Community — secondary/corroborating EndpointDlpRestrictions Setting/Value hashtable example for RemovableMedia and Print, superseded as primary citation by items 9–10) — <https://techcommunity.microsoft.com/blog/microsoft-security-blog/creating-endpoint-dlp-rules-using-powershell---part-1/4286999>
 17. Connect-IPPSSession reference (app-only certificate auth) — <https://learn.microsoft.com/powershell/module/exchangepowershell/connect-ippssession>
 18. U.S. Social Security Number (SSN) / Credit Card Number sensitive information types — reused from `scenarios/information-protection/auto-label-confidential-sharepoint/` (see that scenario's own references for SIT definition citations).
+19. Configure endpoint DLP settings (Removable USB device groups — creation workflow, Vendor ID/Product ID/Instance ID device identification, per-device alias) — <https://learn.microsoft.com/purview/dlp-configure-endpoint-settings>
+20. Configuring USB hardware ID exceptions in Microsoft Purview endpoint DLP (Microsoft Q&A — confirms the rule-level workflow: create the device group in Endpoint DLP settings, then add an exclusion for it under the rule's actions/exceptions) — <https://learn.microsoft.com/answers/questions/5942592/configuring-usb-hardware-id-exceptions-in-microsof>
+21. Set-PolicyConfig reference (`-DlpRemovableMediaGroups`/`-DlpPrinterGroups`/`-DlpNetworkShareGroups`/`-DlpAppGroups`/`-DlpExtensionGroups` — confirmed to exist as `PswsHashtable`/`PswsHashtable[]` parameters; description text and the cmdlet's EXAMPLES section are unpublished placeholder content as of this pass) — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-policyconfig>
 
 > Re-verify all links against current Microsoft Learn and a pilot tenant before a customer-facing
 > assessment or sale. The `EndpointDlpRestrictions` `Setting`/`Value` shape is now grounded in
