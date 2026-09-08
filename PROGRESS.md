@@ -1200,7 +1200,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (see "Follow-ups discovered while building the Conditional Access insider-risk-block scenario"
   above): the DLP-sibling preview-claim backport, a P2-partial-licensing-enforcement VERIFY, the
   `excludeGuestsOrExternalUsers` scripting gap, a Quick-Setup-collision-name VERIFY, and a
-  softer-grant-control Moderate/Minor variant. — `<commit-hash-pending>` — 2026-09-08
+  softer-grant-control Moderate/Minor variant. — `8f261bb` — 2026-09-08
 - [x] **Backport: Compliance Administrator/Compliance Data Administrator turn-on-policy
   prerequisite** — added to `scenarios/information-protection/auto-label-confidential-sharepoint/
   README.md` §3 (new prerequisites row + reference [15]), closing the doc-only gap the sibling
