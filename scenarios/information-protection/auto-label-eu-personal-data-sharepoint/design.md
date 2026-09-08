@@ -151,8 +151,9 @@ parameter; it does not re-derive any of the already-reviewed rollout/override de
   prerequisite-dependency pattern as the sibling scenario (`README.md` §3).
 - This scenario does not cover Exchange (email) — scoped to SharePoint/OneDrive at-rest content,
   matching the sibling scenario's own scope split with
-  `auto-label-confidential-exchange/`. An EU-personal-data Exchange variant is a candidate
-  follow-up, not built here.
+  `auto-label-confidential-exchange/`. The EU-personal-data Exchange variant is now built as
+  `scenarios/information-protection/auto-label-eu-personal-data-exchange/` — see that scenario's
+  `design.md` for why it is a third, sibling scenario rather than a parameter on this one.
 - This scenario does not attempt EU personal-data-category completeness (names, physical
   addresses, health data, biometric data are all "personal data" under GDPR Article 4(1) but are
   covered by entirely separate SIT/named-entity families) — see §4's explicit starter-set framing.

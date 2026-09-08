@@ -418,11 +418,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   but no worked example found during this build's grounding pass shows the corresponding `Get-*`
   read-back shape. `auto-label-eu-personal-data-sharepoint/validate/
   Test-EuPersonalDataAutoLabelPolicy.ps1` checks both defensively rather than assuming one.
-- [ ] `scenarios/information-protection/auto-label-eu-personal-data-exchange/` — the Exchange
+- [x] `scenarios/information-protection/auto-label-eu-personal-data-exchange/` — the Exchange
   (email) companion to this SharePoint/OneDrive scenario, the same location-split pattern already
   used for the U.S.-SIT sibling (`auto-label-confidential-sharepoint/` → `auto-label-confidential-
-  exchange/`) — explicitly out of scope here per `auto-label-eu-personal-data-sharepoint/design.md`
-  §8.
+  exchange/`) — **built** (see DONE below): combines the Exchange location/exclusion/encryption
+  mechanics from `auto-label-confidential-exchange` with the EU/UK SIT set and
+  `-SensitiveInfoTypeName` localization mechanism from this scenario, unchanged from both sources.
+  Four-lens review surfaced two findings specific to the three-scenario combination not visible
+  from either sibling alone: independent SIT-list localization drift between this scenario and the
+  new Exchange sibling (no shared config store ties the two scripts together), and a policy-name
+  disambiguation risk across the now four sibling-family auto-labeling policies during incident
+  response — both resolved with README additions (a standing review-cadence check and a
+  disambiguation table), not new code. Cross-linked back into this scenario's own `README.md` §11
+  and `design.md` §8.
 - [ ] Consider a per-country checksum-strength reference table (which EU national ID bundle members
   are checksum-validated vs. pattern-only) as either a cross-cutting doc addition or an expanded
   `README.md` §11 table — flagged as a Red Team finding (`auto-label-eu-personal-data-sharepoint/
@@ -3141,6 +3149,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   built — the finding was folded into `endpoint-dlp-usb-block`'s existing docs instead, with three
   new citations (Microsoft's `dlp-configure-endpoint-settings` page, the Microsoft Q&A thread, and
   the `Set-PolicyConfig` reference). Commit: `2783842`. Date: 2026-09-08.
+- [x] `scenarios/information-protection/auto-label-eu-personal-data-exchange/` — the Exchange
+  (email) companion to `auto-label-eu-personal-data-sharepoint`, combining its EU/UK SIT set and
+  `-SensitiveInfoTypeName` localization mechanism with `auto-label-confidential-exchange`'s
+  Exchange location/sender-exclusion/encryption mechanics — both inherited unchanged and verified
+  directly against their source scripts, not re-derived. Four-lens review surfaced two findings
+  specific to running all three (now four, counting the U.S.-SIT SharePoint original) sibling
+  policies together: independent SIT-list localization drift between this scenario and its
+  SharePoint/OneDrive EU counterpart (no shared config store ties the two scripts' parameters
+  together), and a policy-name disambiguation risk during incident response across four
+  similarly-named auto-labeling policies — both resolved with README additions (a standing
+  review-cadence check; a disambiguation table naming all four policies, locations, and SIT sets)
+  rather than new code. Cross-linked back into `auto-label-eu-personal-data-sharepoint/README.md`
+  §11 and `design.md` §8. Commit: pending. Date: 2026-09-08.
 
 ## Blocked / needs user
 - (none)

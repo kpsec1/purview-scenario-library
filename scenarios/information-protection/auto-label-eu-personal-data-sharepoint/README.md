@@ -313,8 +313,12 @@ to permanently delete the policy and its rules.
   entities [[7]](#references) — the bundle name is a Microsoft product-naming convention, not a
   legal EU-membership boundary. Treat "EU national identification number" as "EU + UK," not
   strictly EU-27, when explaining coverage to a buyer.
-- **This scenario does not cover Exchange (email).** The Exchange companion is not built in this
-  pass — see `design.md` §8 (candidate follow-up).
+- **This scenario does not cover Exchange (email).** The Exchange companion is now built as
+  `scenarios/information-protection/auto-label-eu-personal-data-exchange/` (closed 2026-09-08) — a
+  separate policy object, not an additional rule on this scenario's own policy, because Exchange
+  auto-labeling has a materially different exclusion mechanism (sender-based, not location-based)
+  and observability model — see that scenario's `design.md` §3 and this scenario's own
+  `design.md` §8.
 
 ## 12. References
 
