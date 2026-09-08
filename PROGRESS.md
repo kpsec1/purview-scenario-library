@@ -366,12 +366,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (see DONE below).
 - [x] `scenarios/information-protection/auto-label-confidential-exchange/` — Exchange-location
   companion to `auto-label-confidential-sharepoint` — **built** (see DONE below).
-- [ ] Backport the newly-discovered "turning on a policy requires Compliance Administrator or
-  Compliance Data Administrator, not just Information Protection Admin" prerequisite into
-  `scenarios/information-protection/auto-label-confidential-sharepoint/README.md` §3 — it applies
-  there too but wasn't called out when that (already-DONE) fragment was originally built. Deferred
-  from `auto-label-confidential-exchange` to avoid re-opening a finished fragment for a doc-only
-  addition; see that new scenario's `reviews.md` (Product Owner lens) for the full citation.
 - [x] Content-based Exchange DLP rule (not label-conditioned) that blocks or forces encryption on
   outbound SSN/Credit-Card-Number mail to external recipients, closing the Red-Team-flagged gap in
   `auto-label-confidential-exchange/README.md` §11 — **built** (see DONE below) as
@@ -1138,6 +1132,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   fragment's script for a coupling change (`design.md` §8 explains the trade-off considered).
 
 ## DONE
+- [x] **Backport: Compliance Administrator/Compliance Data Administrator turn-on-policy
+  prerequisite** — added to `scenarios/information-protection/auto-label-confidential-sharepoint/
+  README.md` §3 (new prerequisites row + reference [15]), closing the doc-only gap the sibling
+  Exchange scenario (`auto-label-confidential-exchange`) surfaced: turning on an auto-labeling
+  policy after simulation requires Compliance Administrator or Compliance Data Administrator, not
+  just Information Protection Admin, which is sufficient only to author/simulate. Citation:
+  "Automatically apply a sensitivity label to Microsoft 365 data" §"Before you begin" —
+  <https://learn.microsoft.com/purview/apply-sensitivity-label-automatically#before-you-begin> —
+  the same source already cited by the sibling scenario, verified consistent, no new grounding
+  pass needed. Doc-only scoped sub-task per `AGENTS.md` §6; no code/design/reviews changes
+  required (no other file in the scenario referenced the stale role list). — 2026-09-08
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/`** — adds a
   single `vendorId`+`productId`-matched approved-device exception to the
   `defender-device-control-usb-allowlist-macos-portable-device-coverage` fragment's unconditional
