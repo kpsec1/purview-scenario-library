@@ -1136,7 +1136,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   file; added a dedicated schema-drift check (detection-only, not auto-remediating, consistent with
   this repo's no-unconfirmed-update-body discipline). `docs/automation-surface.md` §4's lineage
   routing-table row split in two and extended with the newly-exercised Entity/Type operation
-  groups. — 2026-09-08
+  groups. — `66faec0` — 2026-09-08
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/`** —
   extends the macOS Defender for Endpoint device control USB allowlist scenario to also cover the
   `apple_devices`, `portable_devices`, and `bluetooth_devices` `primaryId` families, the direct
