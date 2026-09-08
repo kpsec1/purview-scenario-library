@@ -510,14 +510,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `@azure-rest/purview-scanning` JS SDK type definitions, and the `Az.Purview` PowerShell module's
   parameter signatures — three converging but indirect sources. Flagged inline in that scenario's
   `README.md` §11 and the deploy script's `.NOTES`.
-- [ ] `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/` (or fold into a future Data
-  Map hardening pass) — script a **custom, PII-only scan rule set** (excluding all system
-  classifications except U.S. Social Security Number and Credit Card Number) once the "Scan
-  Rulesets - Create Or Update" REST body is independently grounded, or by wrapping the `Az.Purview`
-  PowerShell module's `New-AzPurviewAzureSqlDatabaseScanRulesetObject
-  -ExcludedSystemClassification` cmdlet directly instead of raw REST. Deferred from
-  `scan-azure-sql-and-classify` because the exact REST JSON shape wasn't confirmed during that
-  build — see its `README.md` §11 VERIFY.
+- [x] `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/` — script a **custom, PII-only
+  scan rule set** (excluding all system classifications except U.S. Social Security Number and
+  Credit Card Number by default) — **built** (see DONE below): the "Scan Rulesets - Create Or
+  Replace"/"- Get" REST reference pages were direct-fetched in full this build, closing the VERIFY
+  this item was waiting on (the exclusion list itself is derived live from the tenant's Types API
+  rather than a hard-coded snapshot — the `data-map-classification-supported-list` page turned out
+  to list classifications by name only, with no exact `MICROSOFT.*` identifiers anywhere on it).
 - [ ] Consider scripting **credential-object creation** (Key Vault-backed, for the
   `AzureSqlDatabaseCredential` scan kind — SQL authentication or service principal) once a
   documented REST endpoint for it is found; deferred from `scan-azure-sql-and-classify` because no
@@ -1168,7 +1167,49 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   deliberately not attempted in this build to avoid reopening an already-reviewed, unrelated
   fragment's script for a coupling change (`design.md` §8 explains the trade-off considered).
 
+### Follow-ups discovered while building the Data Map PII-only scan rule set (Azure SQL Database) scenario
+- [ ] VERIFY (pilot tenant): whether `GET .../types/typedefs?type=CLASSIFICATION` paginates once a
+  tenant has an unusually large number of custom classification rules layered on top of the ~200
+  system ones — no continuation-token field is documented on the response shape, and
+  `deploy/New-PiiOnlyScanRuleset.ps1` does not implement paging. Flagged inline in the script's
+  `.NOTES` and `README.md` §11.
+- [ ] `scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/`,
+  `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/`, and
+  `scenarios/data-map/scan-on-premises-sql-server-and-classify-pii-ruleset/` — the same PII-only
+  custom scan rule set pattern for this repo's three sibling Data Map source types, each with its
+  own `*ScanRuleset` `kind` (`AzureSynapse`/`AzureSqlDatabaseManagedInstance`/`SqlServerDatabase`,
+  all confirmed to exist in the Scan Rulesets - Create Or Replace body-shape table this build
+  direct-fetched) — not built this round to keep the fragment scoped to one source type.
+- [ ] Consider a **credential-object creation** follow-up (Key Vault-backed, for the
+  `AzureSqlDatabaseCredential` scan kind) becoming unblocked by the same Types/Scan-Rulesets REST
+  grounding pass this build did — not investigated this round; the base scenario's `README.md` §11
+  VERIFY on this point was left as-is (out of scope for a scan-rule-set-focused fragment).
+
 ## DONE
+- [x] **`scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/`** — custom, PII-only Data Map
+  scan rule set for Azure SQL Database, extending `scan-azure-sql-and-classify`. Closes that
+  scenario's carried-forward VERIFY ("the exact REST JSON body for the 'Scan Rulesets - Create Or
+  Update' operation was not independently confirmed") via a direct fetch of the canonical **Scan
+  Rulesets - Create Or Replace**/**- Get** Microsoft Learn REST reference pages (not reconstructed
+  from adjacent evidence). Full deliverable: `README.md` (12-section skeleton), `design.md` (6
+  design goals, including deriving the ~200-entry exclusion list live from the tenant's own Types
+  API — `GET .../types/typedefs?type=CLASSIFICATION` — rather than a hard-coded snapshot, since the
+  `data-map-classification-supported-list` page turned out to list classifications by
+  human-readable name only, no exact `MICROSOFT.*` identifiers anywhere on it),
+  `deploy/New-PiiOnlyScanRuleset.ps1` (idempotent, `-WhatIf`-capable; GETs the tenant's live
+  classification defs, computes the exclusion list, creates/updates the Custom ruleset, then GETs
+  and reconciles the existing scan onto it preserving every other scan property),
+  `deploy/Remove-PiiOnlyScanRuleset.ps1` (staged rollback: revert scan to System ruleset, then
+  optionally delete the custom ruleset), `validate/Test-PiiOnlyScanRuleset.ps1`, `rollback.md`, and
+  `reviews.md` (four-lens review — Red Team flagged a scan-kind-mismatch risk from a
+  `-ScanName`/`-DataSourceName` typo and a silent-clobber risk on the account-wide ruleset object
+  when two teams share a default name, both fixed with new guard checks in the deploy script; Blue
+  Team flagged missing detectability guidance for a classification-scope-narrowing change, resolved
+  by grounding and citing the Management-category "Scan rule set: Create/Update/Delete" audit event
+  and the `PurviewDataMapOperation` Graph audit record type; CISO and Product Owner both passed
+  without required changes — no Fail). Three sibling-source-type follow-ups and one pagination
+  VERIFY opened (see "Follow-ups discovered while building the Data Map PII-only scan rule set
+  (Azure SQL Database) scenario" above).
 - [x] **`scenarios/adaptive-protection/conditional-access-insider-risk-block/`** — Conditional
   Access "Insider Risk" condition scenario, deferred from `dynamic-risk-dlp-enforcement` as its
   own follow-up fragment (different admin surface — Microsoft Entra, not Purview/EXO — with its
