@@ -1060,7 +1060,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Catalog REST references). Corrected one stale, already-completed backlog item in passing: the
   Azure SQL Managed Instance/Synapse/on-premises-SQL-Server "sibling scan scenarios" item (left
   unchecked after all three were actually built in earlier turns) is now marked done and
-  cross-referenced. — commit hash pending — 2026-09-08
+  cross-referenced. — `0435984` — 2026-09-08
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`** — the JAMF-managed
   deployment path for macOS Defender for Endpoint device control, closing the follow-up the Intune-
   managed macOS sibling's own build logged. Full per-scenario deliverable: `README.md`, `design.md`,
