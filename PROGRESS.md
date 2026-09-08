@@ -383,11 +383,47 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   documentation confirms this behavior for unencrypted Office (Word/PowerPoint/Excel) attachments
   specifically but doesn't state the PDF case with the same confidence. Flagged inline in
   `auto-label-confidential-exchange/README.md` §11 rather than resolved by guessing.
-- [ ] Consider a `scenarios/information-protection/` sub-scenario (or a cross-cutting note) on
+- [x] Consider a `scenarios/information-protection/` sub-scenario (or a cross-cutting note) on
   **localizing sensitive information type selection by data-residency/jurisdiction** — flagged as
   a Red Team/CISO finding in `auto-label-confidential-sharepoint/reviews.md`: the SSN + Credit
   Card Number starter set is U.S.-centric and should not be presented as GDPR-complete personal-
-  data coverage for an EU/UK-only tenant without swapping in the relevant regional SITs.
+  data coverage for an EU/UK-only tenant without swapping in the relevant regional SITs. — **built**
+  (see DONE below) as `scenarios/information-protection/auto-label-eu-personal-data-sharepoint/`:
+  the direct EU/UK sibling, defaulting to Microsoft's built-in EU-wide bundle SITs (EU national
+  identification number, EU Social Security Number (SSN) or Equivalent ID, EU debit card number)
+  with a `-SensitiveInfoTypeName` parameter for narrowing to specific member states — the actual
+  scripted localization mechanism this item asked for, not just README prose. Cross-linked back
+  into `auto-label-confidential-sharepoint/README.md` §2.
+
+### Follow-ups discovered while building the EU/UK personal data auto-labeling scenario
+- [ ] VERIFY (pilot tenant, before production reliance): the exact, byte-precise capitalization of
+  the three default SIT names (`EU national identification number`, `EU Social Security Number
+  (SSN) or Equivalent ID`, `EU debit card number`) as required by `Get-DlpSensitiveInformationType`/
+  the portal SIT picker — Microsoft's own Learn pages render the same SIT with inconsistent casing
+  across pages, and this build found no single byte-exact authoritative source. Mitigated at
+  runtime (the deploy script resolves every name against the tenant's live SIT catalog and fails
+  clearly on a mismatch rather than silently deploying a zero-match rule) but not resolved with
+  certainty — see `auto-label-eu-personal-data-sharepoint/design.md` §4 and `README.md` §11.
+- [ ] VERIFY (pilot tenant): `Get-AutoSensitivityLabelRule`'s read-back property casing for
+  `ContentContainsSensitiveInformation` (`name` vs. `Name`) — the documented *write* shape uses
+  lowercase `name`/`mincount` (confirmed against `New-DlpComplianceRule`'s own reference examples),
+  but no worked example found during this build's grounding pass shows the corresponding `Get-*`
+  read-back shape. `auto-label-eu-personal-data-sharepoint/validate/
+  Test-EuPersonalDataAutoLabelPolicy.ps1` checks both defensively rather than assuming one.
+- [ ] `scenarios/information-protection/auto-label-eu-personal-data-exchange/` — the Exchange
+  (email) companion to this SharePoint/OneDrive scenario, the same location-split pattern already
+  used for the U.S.-SIT sibling (`auto-label-confidential-sharepoint/` → `auto-label-confidential-
+  exchange/`) — explicitly out of scope here per `auto-label-eu-personal-data-sharepoint/design.md`
+  §8.
+- [ ] Consider a per-country checksum-strength reference table (which EU national ID bundle members
+  are checksum-validated vs. pattern-only) as either a cross-cutting doc addition or an expanded
+  `README.md` §11 table — flagged as a Red Team finding (`auto-label-eu-personal-data-sharepoint/
+  reviews.md`) but only individual examples (France CNI: no checksum; Belgium National Number: yes)
+  were grounded in this build, not a full 26-country table.
+- [ ] Consider adding `EU passport number` and `EU driver's license number` as an opt-in bundle
+  (not a new default) for a buyer whose SharePoint/OneDrive estate is travel-document- or
+  HR-record-heavy — both are real, confirmed EU-wide bundle SITs (`design.md` §4) already
+  documented as available via `-SensitiveInfoTypeName`, just not defaulted on.
 
 ### Follow-ups discovered while building the Exchange PII exfiltration block (DLP) scenario
 - [ ] VERIFY (pilot tenant): the exact `Name` value `Get-RMSTemplate` returns for the auto-created
@@ -1188,6 +1224,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   VERIFY on this point was left as-is (out of scope for a scan-rule-set-focused fragment).
 
 ## DONE
+- [x] **`scenarios/information-protection/auto-label-eu-personal-data-sharepoint/`** — commit
+  `PENDING` — 2026-09-08 — the EU/UK-region sibling of `auto-label-confidential-sharepoint/`,
+  resolving that scenario's own deferred "localize the SIT selection by jurisdiction" follow-up.
+  Same auto-labeling policy family and staged-rollout/override model, re-pointed at Microsoft's
+  built-in EU-wide bundle SITs (EU national identification number, EU Social Security Number
+  (SSN) or Equivalent ID, EU debit card number — grounded via the Microsoft Learn MCP tool, which
+  was available and used directly despite this run's initial instructions stating it would not
+  be) instead of U.S. SSN + Credit Card Number. Ships a genuine design differentiator beyond a
+  copy-paste: `-SensitiveInfoTypeName` is a real deploy-script parameter (resolved against
+  `Get-DlpSensitiveInformationType` at runtime, failing clearly on a near-miss rather than
+  silently deploying a zero-match rule), letting a buyer narrow from the full 26-country default
+  bundle down to only the member states they actually operate in for tighter false-positive
+  control. Four-lens review surfaced and closed: checksum-strength variance across the EU
+  national-ID bundle (documented, plus a new per-country-match-distribution KPI), an
+  unconfirmed `Get-AutoSensitivityLabelRule` read-back property-casing assumption in the
+  validation script (fixed defensively), and the "EU" bundle name's inclusion of the
+  (non-EU-member, post-Brexit) U.K. NINO entity (documented). Two VERIFY items and one Exchange-
+  companion follow-up carried to TODO rather than guessed at — see "Follow-ups discovered while
+  building the EU/UK personal data auto-labeling scenario" above.
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/`** —
   commit `f0907e1` — 2026-09-08 — extends `defender-device-control-usb-allowlist-macos`'s
   `serialNumber`-only `ApprovedBackupDrives` group with vendorId+productId compound matching, for

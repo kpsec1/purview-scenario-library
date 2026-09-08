@@ -39,7 +39,11 @@ emails, health data, national IDs outside the U.S., etc.). SSN in particular is 
 identifier; a tenant whose regulated population is EU/UK-only should swap in the relevant
 EU national-ID and equivalent built-in SITs (§6 shows exactly where in the rule definition to
 change this) rather than treating this scenario's default condition set as regulatory coverage
-by itself. ISO/IEC 27001 Annex A.5.12/A.8.2 (information classification generally) is the driver
+by itself — or deploy `scenarios/information-protection/auto-label-eu-personal-data-sharepoint/`
+directly, the built EU/UK-region sibling of this scenario, which ships that swap already made
+(EU national identification number, EU Social Security Number (SSN) or Equivalent ID, EU debit
+card number) plus a `-SensitiveInfoTypeName` parameter for narrowing to specific member states.
+ISO/IEC 27001 Annex A.5.12/A.8.2 (information classification generally) is the driver
 this default configuration most directly satisfies as shipped; treat the GDPR/CCPA framing above
 as the reason the *capability* matters, not a claim that two SITs alone achieve GDPR-complete
 personal-data coverage.
