@@ -2630,7 +2630,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   unconfirmed hashtable shape, which `AGENTS.md` §4 does not permit, so no new scenario folder was
   built — the finding was folded into `endpoint-dlp-usb-block`'s existing docs instead, with three
   new citations (Microsoft's `dlp-configure-endpoint-settings` page, the Microsoft Q&A thread, and
-  the `Set-PolicyConfig` reference). Commit: `PENDING`. Date: 2026-09-08.
+  the `Set-PolicyConfig` reference). Commit: `2783842`. Date: 2026-09-08.
 
 ## Blocked / needs user
 - (none)
