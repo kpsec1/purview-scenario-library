@@ -1233,7 +1233,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-vendor-product-matching/`**
-  — commit `PENDING` — 2026-09-08 — the JAMF-managed sibling of
+  — commit `ed22e8a` — 2026-09-08 — the JAMF-managed sibling of
   `defender-device-control-usb-allowlist-macos-vendor-product-matching` (Intune), closing the same
   vendorId/productId compound-matching gap for JAMF-managed macOS fleets. Because JAMF's device
   control deployment has no documented API (the base JAMF scenario's own already-disclosed gap),
