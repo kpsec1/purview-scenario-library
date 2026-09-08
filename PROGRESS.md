@@ -3161,7 +3161,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   similarly-named auto-labeling policies — both resolved with README additions (a standing
   review-cadence check; a disambiguation table naming all four policies, locations, and SIT sets)
   rather than new code. Cross-linked back into `auto-label-eu-personal-data-sharepoint/README.md`
-  §11 and `design.md` §8. Commit: pending. Date: 2026-09-08.
+  §11 and `design.md` §8. Commit: `943d23f`. Date: 2026-09-08.
 
 ## Blocked / needs user
 - (none)
