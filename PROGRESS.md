@@ -1186,7 +1186,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   VERIFY on this point was left as-is (out of scope for a scan-rule-set-focused fragment).
 
 ## DONE
-- [x] **`scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/`** — custom, PII-only Data Map
+- [x] **`scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/`** — commit `0a3e752` — 2026-09-08 — custom, PII-only Data Map
   scan rule set for Azure SQL Database, extending `scan-azure-sql-and-classify`. Closes that
   scenario's carried-forward VERIFY ("the exact REST JSON body for the 'Scan Rulesets - Create Or
   Update' operation was not independently confirmed") via a direct fetch of the canonical **Scan
