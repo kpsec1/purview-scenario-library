@@ -244,22 +244,54 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `SerialNumberId`/`VID_PID` path would let this scenario recommend a materially stronger
   allowlist identifier for at least some WPD hardware, the same way the parent scenario already
   prefers `SerialNumberId` over `VID_PID` for removable media.
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/` (or
-  fold into a future macOS device-control hardening pass) — now that
+- [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/` — now that
   `scenarios/dlp/defender-device-control-usb-allowlist-macos/` is built (see DONE below), extend it
   to cover macOS's `portable_devices`/`apple_devices`/`bluetooth_devices` `primaryId` families —
   confirmed completely invisible to that scenario's `removable_media_devices`-scoped policy, the
   direct macOS analog of the Windows WPD gap (flagged as a Red Team finding in that scenario's
-  `reviews.md` and `README.md` §11).
+  `reviews.md` and `README.md` §11) — **built** (see DONE below): widens the parent's shared
+  `.mobileconfig` payload (not a second profile — macOS's `com.microsoft.wdav`-typed policy is one
+  document across all four families) with three new `settings.features` enables, three catch-all
+  groups, two optional `serialNumber`-matched allowlists (Apple/Portable — confirmed via
+  Microsoft's own `audit_all_apple_devices_except_serial_numbers.json` sample for Apple; unconfirmed
+  by a direct worked example for Portable, tracked as a VERIFY below), and five deny/allow rule
+  pairs. Bluetooth ships default-deny-only in v1 (no allowlist) — Microsoft's own worked sample for
+  that family uses a structurally different `vendorId`+`productId` single-device match, not the
+  OR'd-`serialNumber` shape used for the other two; a Bluetooth allowlist is a new follow-up below.
+  Since the underlying policy JSON schema is identical across the Intune and JAMF macOS deployment
+  paths, this build also closes the equivalent JAMF-sibling follow-up tracked immediately below
+  without a second build (per that item's own note).
 - [ ] Consider a Blue Team-flagged WPD-spoofing incident-response playbook once the `SerialNumberId`/
   `VID_PID`-for-WPD VERIFY above is resolved — deferred in this build (`reviews.md`, Blue Team
   finding 2) because a "cross-check the secondary identifier" runbook step has nothing confirmed to
   cross-check against yet.
 
-### Follow-ups discovered while building the Defender for Endpoint device control macOS USB allowlist scenario
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/` —
-  tracked above (under the WPD-coverage-scenario follow-ups) to keep this backlog from listing the
-  same not-yet-built item twice.
+### Follow-ups discovered while building the Defender for Endpoint device control macOS Apple/Portable/Bluetooth coverage scenario
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/` (or fold into
+  a future macOS device-control hardening pass) — add a `vendorId`+`productId`-matched Bluetooth
+  approved-device exception (single device in v1, matching the exact shape Microsoft's own
+  `deny_all_bluetooth_devices_except_samsung.json` sample demonstrates), closing the "Bluetooth is
+  always default-deny, no exceptions" scope boundary
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md` §5 deliberately
+  leaves open rather than guessing an OR'd-multi-device shape Microsoft hasn't published a sample
+  for.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples pass): a directly-confirmed
+  worked example pairing the `serialNumber` clause with a `portable_devices`-scoped group —
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage`'s grounding pass confirmed
+  this pattern only for `apple_devices` (via `audit_all_apple_devices_except_serial_numbers.json`);
+  Microsoft's Clause reference table is unscoped by device family (a stronger starting position than
+  the Windows WPD-coverage sibling's own equivalent VERIFY), but this is not the same as a worked
+  example. `validate/Test-MacPortableDeviceCoverage.ps1` checks this as `[WARN]`, not `[PASS]`,
+  pending confirmation — see that scenario's `README.md` §11.
+- [ ] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
+  just Bluetooth, above) once the per-device, dynamic-sub-group `groupId`-clause-nesting idempotency
+  model is independently verified against a pilot tenant — same deferred complexity already tracked
+  under `defender-device-control-usb-allowlist-macos-vendor-product-matching/` for the parent's own
+  `removable_media_devices` family; this fragment's two new `serialNumber`-based allowlists carry
+  the identical limitation, not a new one.
+- [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-portable-device-coverage/` —
+  tracked above (under the WPD-coverage-scenario follow-ups) — **closed**, see that entry above for
+  details.
 - [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/` (or fold
   into a future macOS device-control hardening pass) — add `vendorId`/`productId` compound
   matching (the macOS analog of Windows' `VID_PID`) via the per-device sub-group + `groupId`-clause
@@ -321,12 +353,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   fold into a future macOS device-control hardening pass) — same `vendorId`/`productId` compound-
   matching follow-up already tracked for the Intune sibling above; applies identically here since
   the policy JSON schema is shared, deferred for the same unverified-dynamic-GUID-sub-group reason.
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-portable-device-coverage/` (or
+- [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-portable-device-coverage/` (or
   fold into a future macOS device-control hardening pass) — same Portable-Device/Apple-device/
   Bluetooth-media coverage gap already tracked for the Intune sibling (and for
   `defender-device-control-usb-allowlist-macos-portable-device-coverage` above); applies identically
   here since the underlying policy JSON is shared between both deployment paths — closing it for one
-  sibling's policy shape closes it for both.
+  sibling's policy shape closes it for both — **closed by**
+  `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/` (see DONE
+  below): that fragment's `design.md` §8 documents explicitly that its policy JSON shape applies
+  identically to the JAMF-deployed sibling, so no separate JAMF-specific build was needed.
 
 ### Follow-ups discovered while building the Information Protection auto-labeling scenario
 - [x] Extend `docs/automation-surface.md` with a fifth automation surface: **SharePoint Online
@@ -1042,6 +1077,31 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/`** —
+  extends the macOS Defender for Endpoint device control USB allowlist scenario to also cover the
+  `apple_devices`, `portable_devices`, and `bluetooth_devices` `primaryId` families, the direct
+  macOS analog of the Windows WPD-coverage sibling. Full per-scenario deliverable: `README.md`,
+  `design.md`, `deploy/Add-MacPortableDeviceCoverage.ps1`, `deploy/
+  Remove-MacPortableDeviceCoverage.ps1`, `deploy/config/mac-portable-device-coverage.sample.json`,
+  `validate/Test-MacPortableDeviceCoverage.ps1`, `rollback.md`, `reviews.md`. Widens the parent's
+  shared `.mobileconfig` payload in place (macOS device control has one `com.microsoft.wdav`-typed
+  policy document per Mac, not one profile per family, confirmed via Microsoft's own reference) with
+  three new `settings.features` enables, three catch-all groups, two optional `serialNumber`-matched
+  allowlists (Apple/Portable), and five deny/allow rule pairs — grounded directly against Microsoft
+  Learn's "Device Control for macOS" reference and cross-checked against four of Microsoft's own
+  published GitHub sample policy JSON files, which also resolved a genuine documentation ambiguity
+  (the Learn page's entry-`$type` table renders `PortableDevice` capitalized in one cell,
+  inconsistent with its own Access Types table and every worked sample — resolved as a rendering
+  defect, not a second valid casing, on the strength of the worked examples). Bluetooth ships
+  default-deny-only in v1 (no allowlist) — a deliberate, disclosed scope decision, since Microsoft's
+  own worked Bluetooth exception sample uses a structurally different `vendorId`+`productId`
+  single-device match rather than the OR'd-`serialNumber` shape used for the other two families.
+  Four-lens review caught and fixed one genuine grounding defect before finalizing: an initial-draft
+  Advanced Hunting query referenced a fabricated `PolicyName` field, corrected to the real,
+  Microsoft-confirmed `RemovableStoragePolicy` field. Since the underlying policy JSON schema is
+  identical across the Intune and JAMF macOS deployment paths, this build also closes the equivalent
+  JAMF-sibling follow-up without a second build. — (commit hash recorded in a follow-up entry) —
+  2026-09-08
 - [x] **`docs/automation-surface.md` §4 — Unified Catalog + Data Map lineage routing-table
   fragment** — closed three separately-tracked doc-extension follow-ups from the Unified Catalog
   business-glossary, manage-data-products, and Data Lineage end-to-end-lineage-validation builds

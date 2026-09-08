@@ -1,0 +1,7 @@
+{
+  "parentPolicyDisplayName": "Device Control (macOS) - USB Removable Media Default-Deny Allowlist",
+  "approvedAppleDevices": [
+    { "label": "REPLACE - e.g. IT-issued iPad, compliance kiosk", "serialNumber": "REPLACE_WITH_REAL_SERIAL_NUMBER" }
+  ],
+  "approvedPortableDevices": []
+}
