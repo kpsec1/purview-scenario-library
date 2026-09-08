@@ -443,12 +443,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   tenant) rather than compounding a second unverified use of the same parameter. Also requires
   either Advanced classification scanning and protection enabled, or an explicit File Type
   condition, per Microsoft's documented Devices-policy prerequisite.
-- [ ] `scenarios/adaptive-protection/conditional-access-insider-risk-block/` — script/document
+- [x] `scenarios/adaptive-protection/conditional-access-insider-risk-block/` — script/document
   the Conditional Access "Insider risk" condition integration (Microsoft Entra admin center,
   requires **Microsoft Entra ID P2**), deferred from `dynamic-risk-dlp-enforcement` because it's
   a different admin surface (Entra, not Purview/EXO) with its own license prerequisite this
   scenario's DLP-only design doesn't otherwise require. Still a Microsoft-labeled **preview**
-  integration as of this build — re-check GA status before scoping.
+  integration as of this build — re-check GA status before scoping. — **built** (see DONE below):
+  the GA re-check this item asked for found the integration is **no longer preview** — corrects
+  the stale claim, see the new DONE entry and `design.md` §8 in the built scenario.
 - [ ] Consider a cross-cutting or Data Lifecycle Management-module scenario covering the
   120-day deleted-content preservation policy Adaptive Protection can auto-create for
   Elevated-risk users — deferred from `dynamic-risk-dlp-enforcement` as a separate opt-in with
@@ -461,6 +463,41 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   or whether a separate `-ContentIsShared` boolean condition is also required — flagged inline in
   `dynamic-risk-dlp-enforcement/deploy/New-AdaptiveProtectionDlpPolicy.ps1`'s `.NOTES` and
   `README.md` §11.
+
+### Follow-ups discovered while building the Conditional Access insider-risk-block scenario
+- [ ] Backport the GA-status correction (`conditional-access-insider-risk-block/design.md` §8)
+  into `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/design.md` §7 and `README.md`
+  §11 — both currently state the Conditional Access integration is "still labeled preview," which
+  this build's fresh grounding pass found is no longer accurate (no preview label on Microsoft's
+  current "Block access for users with elevated insider risk" guide or the Graph v1.0
+  `conditionalAccessConditionSet.insiderRiskLevels` resource property). Small, doc-only backport
+  scoped to a single follow-up fragment per `AGENTS.md` §6 — deliberately not done inside this
+  build to avoid reopening an already-reviewed sibling scenario's files for an unrelated fragment.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn licensing-enforcement pass): what actually
+  happens at sign-in for a user in a Conditional Access policy's scope who lacks the required
+  Entra ID P2 license for the Insider Risk condition specifically — silently exempted, blocked
+  outright, or another behavior. Flagged inline as VERIFY in `docs/licensing-matrix.md` §8 and
+  `conditional-access-insider-risk-block/README.md` §11 rather than assumed.
+- [ ] Script Graph's `conditions.users.excludeGuestsOrExternalUsers` nested condition (the
+  "exclude B2B direct connect / service providers / other external" categories Microsoft's own
+  documented procedure also recommends) once its exact shape is confirmed against a worked
+  example — deferred in this build's v1 script, which only scripts `excludeUsers`/`excludeGroups`.
+  See `conditional-access-insider-risk-block/design.md` §7 and `README.md` §11.
+- [ ] VERIFY (pilot tenant): Microsoft Quick Setup's exact auto-generated Conditional Access
+  policy display name, so `conditional-access-insider-risk-block`'s own `(Custom)`-suffixed name
+  can be independently confirmed not to collide, the same confirmation the DLP sibling scenario
+  already has for its own Quick-Setup-generated DLP policy name. Not confirmed during this build
+  — see `README.md` §11.
+- [ ] Consider a second Conditional Access policy variant applying a softer grant control (e.g.
+  require MFA / require compliant device, rather than block) scoped to Moderate/Minor risk levels
+  — the Conditional-Access-side analog of the DLP sibling's own Elevated-block/Moderate-Minor-
+  audit split, which this scenario's single-policy v1 does not replicate (Conditional Access grant
+  controls apply per-policy, not per-condition-value — see `design.md` §6).
+- [ ] Consider scripting a companion "block legacy authentication" Conditional Access policy (or
+  documenting/verifying one already exists) as a prerequisite hardening step for this scenario —
+  flagged as a Red Team finding in `conditional-access-insider-risk-block/reviews.md` (legacy auth
+  clients may not fully honor the Insider Risk condition) but not built in this fragment, since it
+  is a general Conditional Access hardening practice outside this scenario's specific scope.
 
 ### Follow-ups discovered while building the Data Map Azure SQL scan-and-classify scenario
 - [ ] VERIFY (pilot tenant or the Purview OpenAPI spec, before production use): the exact REST
@@ -1132,6 +1169,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   fragment's script for a coupling change (`design.md` §8 explains the trade-off considered).
 
 ## DONE
+- [x] **`scenarios/adaptive-protection/conditional-access-insider-risk-block/`** — Conditional
+  Access "Insider Risk" condition scenario, deferred from `dynamic-risk-dlp-enforcement` as its
+  own follow-up fragment (different admin surface — Microsoft Entra, not Purview/EXO — with its
+  own Entra ID P2 license prerequisite). Full deliverable: `README.md` (12-section skeleton),
+  `design.md` (including a §8 correction to the DLP sibling's now-stale "still preview" claim —
+  this build's fresh grounding pass confirmed the integration is GA: no preview label on
+  Microsoft's current "Block access for users with elevated insider risk" guide or the Graph v1.0
+  `conditionalAccessConditionSet.insiderRiskLevels` resource property, independent reporting
+  places GA at June 2024), `deploy/New-InsiderRiskConditionalAccessPolicy.ps1` (idempotent,
+  `-WhatIf`-capable, `-Mode ReportOnly|Enabled|Disabled`, Graph
+  `New-/Update-MgIdentityConditionalAccessPolicy`), `deploy/Remove-InsiderRiskConditionalAccessPolicy.ps1`
+  (staged rollback: disable / step-back-to-Report-only / `-Purge`),
+  `validate/Test-InsiderRiskConditionalAccessPolicy.ps1`, `rollback.md`, and `reviews.md`
+  (four-lens review — Red Team flagged an existing-session/CAE bypass window and a legacy-
+  authentication gap, Blue Team flagged an undocumented second propagation delay distinct from
+  Adaptive Protection's 36-hour window, CISO flagged the sign-in-block's larger business-
+  continuity impact needing service-desk readiness alongside HR/Legal coordination, Product Owner
+  flagged the DLP sibling's stale preview claim — all four Fix items resolved in place, no Fail).
+  Also backported: `docs/rbac-model.md` new §10 (Microsoft Entra Conditional Access — a sixth RBAC
+  system; old §10 renumbered to §11) and Sources; `docs/licensing-matrix.md` new §8 (Entra ID P2
+  for the Conditional Access Insider Risk condition specifically, distinct from the broader P1/P2
+  administrative-units prerequisite in §4) and Sources; `docs/automation-surface.md` surface 3's
+  "Typical use" column extended to mention Conditional Access policies
+  (`Microsoft.Graph.Identity.SignIns`). Grounded via direct fetch of the Microsoft Learn/Graph
+  docs source repos (`MicrosoftDocs/entra-docs`, `microsoftgraph/microsoft-graph-docs-contrib`)
+  since the Microsoft Learn MCP tool and direct `learn.microsoft.com` fetches were both
+  unavailable in this run's network environment (egress-proxy-blocked) — cited URLs are the
+  canonical `learn.microsoft.com` pages those source files render to. Five follow-ups opened
+  (see "Follow-ups discovered while building the Conditional Access insider-risk-block scenario"
+  above): the DLP-sibling preview-claim backport, a P2-partial-licensing-enforcement VERIFY, the
+  `excludeGuestsOrExternalUsers` scripting gap, a Quick-Setup-collision-name VERIFY, and a
+  softer-grant-control Moderate/Minor variant. — `<commit-hash-pending>` — 2026-09-08
 - [x] **Backport: Compliance Administrator/Compliance Data Administrator turn-on-policy
   prerequisite** — added to `scenarios/information-protection/auto-label-confidential-sharepoint/
   README.md` §3 (new prerequisites row + reference [15]), closing the doc-only gap the sibling

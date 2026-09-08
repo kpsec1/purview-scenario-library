@@ -159,6 +159,37 @@ controls.
 
 ---
 
+## 8. Adjacent product family: Microsoft Entra ID P2 (Conditional Access risk-based conditions)
+
+One scenario in this library — `scenarios/adaptive-protection/conditional-access-insider-risk-block/`
+— is **not** built on a Purview policy object or an Intune profile. It authors a **Microsoft
+Entra Conditional Access** policy using the Insider Risk condition, which requires **Microsoft
+Entra ID P2** specifically — a materially narrower and more specific requirement than the general
+"Entra ID P1/P2 for administrative units" prerequisite already in §4, which P1 alone also
+satisfies. Documented here rather than folded into §2, which is scoped to Purview modules.
+
+| Requirement | Minimum entitlement | Notes |
+|---|---|---|
+| Conditional Access Insider Risk condition | **Microsoft Entra ID P2** — standalone, or bundled in **Microsoft 365 E5** / **Microsoft 365 E5 Security** | Confirmed on Microsoft's own Conditional Access Insider Risk recommendation page [[8]](#sources-microsoft-learn--re-verify-before-quoting). **Entra ID P1 alone is not sufficient** for this specific condition, even though P1 covers Conditional Access generally and administrative units (§4) — a buyer who licensed P1 only for administrative-unit scoping is **not** automatically covered for this scenario. |
+| Feeder Adaptive Protection signal | Same as the Adaptive Protection row in §2 (E5/Suite, built on IRM + DLP) | Not a new requirement — this scenario consumes the same insider risk level Adaptive Protection already computes for the DLP-based `dynamic-risk-dlp-enforcement` sibling scenario. |
+| Population sizing | Every user in the Conditional Access policy's **Users** scope needs Entra ID P2 | Not just admins/security staff — if the policy's `includeUsers` is `All` (this scenario's default, matching Microsoft's own documented procedure), P2 coverage must extend tenant-wide before enabling enforcement. Confirm actual P2 seat count against the policy's real scope before a sales commitment — this is a common licensing-compliance trap when a buyer already has *some* P2 seats (e.g. for Entra ID Protection risk policies) but not full coverage. |
+
+> **VERIFY (pilot tenant or a future Microsoft Learn licensing-enforcement pass):** exactly what
+> happens at sign-in for a user in scope of this policy who does **not** hold Entra ID P2 —
+> whether Microsoft's licensing-enforcement model exempts that specific user from the Insider Risk
+> condition (a silent under-coverage gap), blocks their sign-in outright for lacking the required
+> license, or something else. Not independently confirmed during this build; do not assume either
+> behavior when sizing a partial-P2-coverage rollout.
+
+**Cost note for a CISO conversation:** unlike the Defender for Endpoint + Intune adjacency in §7
+(which can be a materially *cheaper* entry point than E5-gated Purview controls), this adjacency
+is typically an **incremental cost** — a tenant already at Microsoft 365 E5 for Adaptive
+Protection does not automatically hold Entra ID P2 for every user (E5 licensing bundles vary by
+program and vintage; always confirm the specific SKU's inclusions rather than assuming). Budget
+this explicitly rather than treating it as already covered by the Purview E5/Suite spend in §2.
+
+---
+
 ## Sources (Microsoft Learn — re-verify before quoting)
 
 - Microsoft Purview service description — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description>
@@ -168,6 +199,8 @@ controls.
 - Administrative units prerequisites — <https://learn.microsoft.com/purview/purview-admin-units>
 - Sensitivity labels in Data Map (licensing FAQ) — <https://learn.microsoft.com/purview/data-map-sensitivity-labels-faq>
 - Purview pricing calculators — <https://azure.microsoft.com/pricing/details/purview/>
+- [8] Protect your tenant with Insider Risk in Conditional Access (Entra ID P2 licensing
+  requirement for the Conditional Access Insider Risk condition) — <https://learn.microsoft.com/entra/identity/monitoring-health/recommendation-insider-risk-condition>
 - Microsoft Product Terms (authoritative) — <https://www.microsoft.com/licensing/terms/product/ForOnlineServices/EAEAS>
 - Microsoft Defender service description (Defender for Endpoint P1/P2 plan contents & bundling) — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-defender-service-description>
 - Device control in Microsoft Defender for Endpoint (prerequisites, anti-malware client versions) — <https://learn.microsoft.com/defender-endpoint/device-control-overview>

@@ -260,11 +260,47 @@ genuinely separate, fifth RBAC model: managed in the **Intune admin center → T
 
 ---
 
-## 10. How scenarios should cite RBAC
+## 10. Microsoft Entra Conditional Access — a sixth system, for identity-layer scenarios
+
+`scenarios/adaptive-protection/conditional-access-insider-risk-block/` is the first scenario in
+this library that authors a **Microsoft Entra Conditional Access** policy rather than a Purview
+policy object or an Intune device configuration profile. Conditional Access is administered
+entirely in the **Microsoft Entra admin center**, a genuinely separate, sixth RBAC model from the
+four in §1 and from Intune's own model in §9 — not a Purview role group, and not one of the
+Intune roles either.
+
+- **Built-in Entra role that covers Conditional Access authoring:** **Conditional Access
+  Administrator** — can create, edit, and delete Conditional Access policies. This is the role
+  Microsoft's own documented procedure for the Insider Risk condition specifically names as the
+  minimum needed to create that policy.
+- **Least privilege still applies:** Microsoft explicitly recommends against using **Global
+  Administrator** or **Security Administrator** for routine Conditional Access authoring —
+  **Conditional Access Administrator** is the narrowest built-in role that covers it, the same
+  least-privilege principle §3 and §9 already state for Entra-role and Intune-role assignment.
+- **This role does not grant any Purview access.** A Conditional Access Administrator cannot
+  configure Adaptive Protection settings or insider risk levels — that remains the **Insider Risk
+  Management**/**Insider Risk Management Admins** Purview role group (§4), a deliberately separate
+  grant on a separate admin surface, exactly as `conditional-access-insider-risk-block/README.md`
+  §3 documents.
+- **App-only automation (Microsoft Graph):** the scenario's `deploy/` scripts authenticate as a
+  Graph app registration and need the **`Policy.ReadWrite.ConditionalAccess`** and
+  **`Policy.Read.All`** application permissions (admin consent required, least-privileged per
+  Microsoft's own documented permissions table for creating/updating a `conditionalAccessPolicy`)
+  — the same least-privilege rule §8 and §9 already state for Purview/Exchange and Intune Graph
+  scopes applies equally here.
+- **Licensing is tracked separately, again:** holding the role or the Graph permission does not
+  itself grant the **Microsoft Entra ID P2** entitlement every user in a Conditional Access
+  policy's scope needs for a premium condition like Insider Risk to apply — see
+  `docs/licensing-matrix.md` §8.
+
+---
+
+## 11. How scenarios should cite RBAC
 
 Each scenario README's **Prerequisites** section must state:
 1. Which of the **four RBAC systems** (§1) the scenario touches — or, for an Intune-deployed
-   scenario, that it uses the separate Intune RBAC model (§9) instead.
+   scenario, that it uses the separate Intune RBAC model (§9) instead, or, for a Conditional
+   Access-deployed scenario, that it uses the separate Entra Conditional Access model (§10).
 2. The **narrowest built-in Purview role group** that covers it (name it exactly), or note that
    a **custom role group** is recommended for least privilege.
 3. Any **Exchange Online RBAC** dependency (§6) — call it out explicitly if the scenario searches
@@ -291,6 +327,10 @@ Each scenario README's **Prerequisites** section must state:
 - Role-based access control (RBAC) with Microsoft Intune (built-in roles list, Entra-role-to-Intune access table) — <https://learn.microsoft.com/intune/fundamentals/role-based-access-control/overview>
 - Built-in role permissions for Microsoft Intune (Policy and Profile Manager's full permission table) — <https://learn.microsoft.com/intune/fundamentals/role-based-access-control/ref-built-in-roles>
 - Microsoft Graph permissions reference (`DeviceManagementConfiguration.ReadWrite.All`) — <https://learn.microsoft.com/graph/permissions-reference>
+- Protect your tenant with Insider Risk in Conditional Access (Conditional Access Administrator
+  + Insider Risk Management role prerequisites, Entra ID P2 requirement) — <https://learn.microsoft.com/entra/identity/monitoring-health/recommendation-insider-risk-condition>
+- Update conditionalAccessPolicy (`Policy.ReadWrite.ConditionalAccess` + `Policy.Read.All`
+  least-privileged permissions) — <https://learn.microsoft.com/graph/api/conditionalaccesspolicy-update>
 
 > **Disclaimer:** role names, default role-group membership, and which system governs a given
 > feature change as Purview ships updates (e.g. the ongoing move toward Microsoft Defender
