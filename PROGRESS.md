@@ -286,11 +286,47 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Test-MacDeviceControlUsbAllowlistPolicy.ps1` to check it at scale — flagged as a Blue Team gap in
   that scenario's `reviews.md` (no remote, at-scale check exists today; this build declined to
   fabricate one per `AGENTS.md` §4).
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/` — the JAMF-managed
+- [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/` — the JAMF-managed
   deployment path (`mac-device-control-jamf`) for organizations whose Mac fleet is JAMF-managed
   rather than Intune-managed, explicitly out of scope in
   `defender-device-control-usb-allowlist-macos/design.md` §8 (Intune-only, matching the rest of
-  this repo's Windows device-control scenario).
+  this repo's Windows device-control scenario) — **built** (see DONE below): identical policy
+  content (same groups/rules/settings JSON, same fixed GUIDs) as the Intune sibling, but a
+  materially different deploy shape — `deploy/New-JamfDeviceControlPolicyJson.ps1` generates and
+  optionally locally schema-validates (`mdatp device-control policy validate`) the policy JSON,
+  since Microsoft's own `mac-device-control-jamf` procedure has no documented API for the JAMF Pro
+  "Device Control Policy" custom-schema property — that step (and enabling `DC_in_dlp`) stays a
+  precisely-documented manual JAMF-console action in `README.md` §5, not fabricated. `developer.
+  jamf.com` was unreachable in this build's network environment, so a JAMF Pro API for this
+  specific property type could not be independently ruled in or out — tracked as a fresh VERIFY
+  below rather than guessed either way.
+
+### Follow-ups discovered while building the Defender for Endpoint device control macOS USB allowlist (JAMF) scenario
+- [ ] VERIFY (`developer.jamf.com`, or a pilot JAMF Pro tenant): whether a documented JAMF Pro
+  REST/Classic API request body exists for programmatically setting a Custom-Schema-sourced
+  Application & Custom Settings property's value (the mechanism `mac-device-control-jamf` uses for
+  the Device Control Policy property) — as opposed to uploading a plain `.plist` file, a different,
+  simpler mechanism JAMF also supports for other Defender for Endpoint preferences. `developer.
+  jamf.com` was unreachable from this build's network environment, so this could not be checked
+  directly. If found, `defender-device-control-usb-allowlist-macos-jamf`'s Steps 2–4 (`README.md`
+  §5) could be automated end-to-end instead of staying JAMF-console-only — see that scenario's
+  `README.md` §11 and `design.md` §3.
+- [ ] Once the item above is resolved and a JAMF Pro API path is confirmed, revisit
+  `defender-device-control-usb-allowlist-macos-jamf/reviews.md`'s Red-Team/Blue-Team findings on
+  the undetectable-drift risk of a manual JAMF-console-only deployment (no way to confirm the
+  pasted JSON matches the intended artifact, or that a JAMF admin hasn't silently altered it) — an
+  API-based reconcile-and-verify script would close both findings the same way the Intune sibling's
+  own Graph-based script already does.
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-vendor-product-matching/` (or
+  fold into a future macOS device-control hardening pass) — same `vendorId`/`productId` compound-
+  matching follow-up already tracked for the Intune sibling above; applies identically here since
+  the policy JSON schema is shared, deferred for the same unverified-dynamic-GUID-sub-group reason.
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-portable-device-coverage/` (or
+  fold into a future macOS device-control hardening pass) — same Portable-Device/Apple-device/
+  Bluetooth-media coverage gap already tracked for the Intune sibling (and for
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage` above); applies identically
+  here since the underlying policy JSON is shared between both deployment paths — closing it for one
+  sibling's policy shape closes it for both.
 
 ### Follow-ups discovered while building the Information Protection auto-labeling scenario
 - [x] Extend `docs/automation-surface.md` with a fifth automation surface: **SharePoint Online
@@ -998,6 +1034,46 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
 
 ## DONE
+- [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`** — the JAMF-managed
+  deployment path for macOS Defender for Endpoint device control, closing the follow-up the Intune-
+  managed macOS sibling's own build logged. Full per-scenario deliverable: `README.md`, `design.md`,
+  `deploy/New-JamfDeviceControlPolicyJson.ps1`, `deploy/config/
+  mac-device-control-usb-allowlist-jamf.sample.json`, `validate/
+  Test-JamfDeviceControlPolicyJson.ps1`, `rollback.md`, `reviews.md`. Byte-identical policy content
+  (same `groups`/`rules`/`settings` JSON, same fixed group/rule GUIDs) to the Intune sibling, so a
+  hybrid Intune+JAMF Mac fleet enforces one identical policy identity — but a materially different
+  deploy shape: Microsoft's own `mac-device-control-jamf` procedure documents JSON authoring and
+  local `mdatp device-control policy validate` as scriptable (both automated by this scenario's
+  deploy script), but has **no documented API** for the JAMF Pro "Device Control Policy"
+  custom-schema property or the `DC_in_dlp` preferences-schema toggle — both stay precise, numbered
+  manual JAMF-console steps in `README.md` §5 rather than a fabricated API call, consistent with
+  this repo's grounding standard and its own "Removable USB device groups" precedent. `developer.
+  jamf.com` was unreachable from this build's network environment, so a JAMF Pro API for this
+  property type could not be independently ruled in or out either way — recorded as a fresh VERIFY
+  rather than guessed. Grounded via the Microsoft Learn MCP tool (`microsoft_docs_search`/
+  `microsoft_docs_fetch` — reachable and used for every citation, the same tool this session's own
+  scheduled-task instructions incorrectly claimed was unavailable in this environment) across four
+  pages: `mac-device-control-jamf` (the four-step JAMF procedure itself), `mac-device-control-
+  overview` (shared policy schema, the `com.microsoft.dlp.daemon` Full Disk Access requirement, and
+  the separate `DC_in_dlp` toggle), `mac-jamfpro-policies` (Preference Domain must be exactly
+  `com.microsoft.wdav`; the Full Disk Access PPPC/`fulldisk.mobileconfig` procedure), and the
+  Purview-specific `device-onboarding-offboarding-macos-jamfpro-mde` (confirming the same
+  `fulldisk.mobileconfig`/`schema.json` update procedure applies to the DLP/device-control daemon,
+  not just the general EDR sensor). Four-lens review (`reviews.md`): Red Team found 3 (the
+  manual-JAMF-console-only deployment path is itself an undetectable-drift/insider-bypass surface —
+  newly identified and disclosed as the scenario's primary, most prominent limitation, not buried;
+  2 gaps confirmed already correctly shared with the Intune sibling); Blue Team found 3 (no way to
+  confirm the console paste step was performed or performed correctly — disclosed with a
+  compensating manual-recheck process, not fabricated away; no audit trail beyond JAMF Pro's own
+  profile history — disclosed as a real change-management cost; runbook/KPI/alerting confirmed
+  correctly shared); CISO found 1 (initial board-narrative wording implied audit parity with the
+  Intune sibling that doesn't hold — reworded to state the manual change-management story plainly);
+  Product Owner found 5 (1 clarified the Full Disk Access prerequisite uses the same
+  `fulldisk.mobileconfig` mechanism as general MDE-on-JAMF setup rather than implying a second
+  profile type, rest confirmed correct). Four new follow-ups recorded above (a JAMF Pro API VERIFY,
+  a revisit-once-resolved item, and the vendor/product-matching and portable-device-coverage gaps
+  already tracked for the Intune sibling, cross-referenced rather than duplicated) rather than
+  silently dropped. Commit: `PENDING`. Date: 2026-09-08.
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos/`** — the macOS sibling of
   `scenarios/dlp/defender-device-control-usb-allowlist/`, closing the follow-up that Windows-only
   scenario's own build logged. Full per-scenario deliverable: `README.md`, `design.md`, `deploy/
