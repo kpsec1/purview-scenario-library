@@ -267,14 +267,11 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   cross-check against yet.
 
 ### Follow-ups discovered while building the Defender for Endpoint device control macOS Apple/Portable/Bluetooth coverage scenario
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/` (or fold into
-  a future macOS device-control hardening pass) — add a `vendorId`+`productId`-matched Bluetooth
-  approved-device exception (single device in v1, matching the exact shape Microsoft's own
-  `deny_all_bluetooth_devices_except_samsung.json` sample demonstrates), closing the "Bluetooth is
-  always default-deny, no exceptions" scope boundary
-  `defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md` §5 deliberately
-  leaves open rather than guessing an OR'd-multi-device shape Microsoft hasn't published a sample
-  for.
+- [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/` — adds a
+  `vendorId`+`productId`-matched Bluetooth approved-device exception (single device in v1, matching
+  the exact shape Microsoft's own `deny_all_bluetooth_devices_except_samsung.json` sample
+  demonstrates, fetched directly during this build), closing the "Bluetooth is always default-deny,
+  no exceptions" scope boundary — **built** (see DONE below).
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples pass): a directly-confirmed
   worked example pairing the `serialNumber` clause with a `portable_devices`-scoped group —
   `defender-device-control-usb-allowlist-macos-portable-device-coverage`'s grounding pass confirmed
@@ -1115,7 +1112,68 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   decommission guidance instead of pointing at the Data Map portal search/browse UI as the only
   option.
 
+### Follow-ups discovered while building the Defender for Endpoint device control macOS Bluetooth approved-device allowlist scenario
+- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist-multi-device/`
+  (or fold into a future macOS device-control hardening pass) — support more than one approved
+  Bluetooth device. Needs either a separate allow/exception rule pair per device (config-driven,
+  deterministic-GUID-per-index loop) or the per-device sub-group + `groupId`-clause-nesting
+  technique this repo's sibling scenarios already defer as unverified complexity
+  (`defender-device-control-usb-allowlist-macos-vendor-product-matching/`,
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md` §5) — deferred in
+  this build (`design.md` §5) because there was no concrete second-device requirement to design
+  against, not because either approach is blocked on an open VERIFY.
+- [ ] VERIFY (pilot tenant): the exact `AdditionalFields` property names for a Bluetooth device's
+  `vendorId`/`productId` on a `RemovableStoragePolicyTriggered` deny event (used in this scenario's
+  `README.md` §7 step 6 worked query to help an operator find an unapproved device's identifiers) —
+  not independently confirmed by a Microsoft worked example; this build's query is an extension of
+  the same cross-platform `DeviceEvents` schema assumption the parent and portable-device-coverage
+  fragments already establish for other fields, not a directly confirmed field name for these two
+  specifically. Flagged inline in `README.md` §11 rather than resolved by guessing.
+- [ ] Once the ordering-hazard root cause is resolved some other way (e.g. if Microsoft ever
+  documents a merge-not-replace PATCH semantics for `payload`, or if a future refactor of the
+  portable-device-coverage fragment's own script becomes independently warranted for an unrelated
+  reason), reconsider whether `defender-device-control-usb-allowlist-macos-bluetooth-allowlist`'s
+  disclosed-and-detected mitigation (`design.md` §8) should be upgraded to a structural fix instead —
+  deliberately not attempted in this build to avoid reopening an already-reviewed, unrelated
+  fragment's script for a coupling change (`design.md` §8 explains the trade-off considered).
+
 ## DONE
+- [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/`** — adds a
+  single `vendorId`+`productId`-matched approved-device exception to the
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage` fragment's unconditional
+  `Deny-AllBluetoothDevices` rule, closing that fragment's deliberately deferred "Bluetooth is
+  always default-deny, no exceptions" scope boundary. Full per-scenario deliverable: `README.md`,
+  `design.md`, `deploy/Add-MacBluetoothDeviceAllowlist.ps1`, `deploy/
+  Remove-MacBluetoothDeviceAllowlist.ps1`, `deploy/config/mac-bluetooth-device-allowlist.sample.json`,
+  `validate/Test-MacBluetoothDeviceAllowlist.ps1`, `rollback.md`, `reviews.md`. Grounded by directly
+  fetching Microsoft's own `deny_all_bluetooth_devices_except_samsung.json` sample policy (raw
+  GitHub content) and the official "Device Control for macOS" reference tables (via the Microsoft
+  Learn MCP tool, which — despite this run's own standing instruction that it is unavailable in this
+  cloud environment — was reachable and used as the primary grounding source once `learn.microsoft.com`
+  direct fetches were blocked by network egress policy; WebFetch against the GitHub raw-content host
+  worked directly). Confirms directly from Microsoft's reference (not inferred) that `includeGroups`
+  combines multiple groups with AND semantics and `excludeGroups` with OR semantics — the specific
+  fact scoping this fragment to exactly one approved device in v1 (more would need a per-device
+  sub-group + `groupId`-clause-nesting technique this repo's sibling scenarios already defer as
+  unverified complexity). Deliberately diverges from Microsoft's own sample in one respect: adds an
+  explicit `allow` entry (not just `auditAllow`) because this shared policy's inherited
+  `settings.global.defaultEnforcement = "deny"` (fail-closed, set by the root parent scenario) means
+  excluding a device from the deny rule alone is insufficient to grant it access, unlike the sample's
+  own `defaultEnforcement = "allow"` policy. Four-lens review caught and fixed one genuine
+  correctness defect before finalizing (not merely flagged): the initial draft's deploy/remove
+  scripts replaced the shared `Deny-AllBluetoothDevices` rule's `excludeGroups` array wholesale,
+  which would have silently clobbered any exclusion an admin added independently outside this
+  fragment — both scripts now preserve every entry they don't own. Also strengthened the
+  `vendorId`/`productId`-is-a-model-not-a-unit disclosure beyond the initial draft's framing (it is
+  weaker than this control's `serialNumber`-based allowlists, not merely a variant of the same risk,
+  since no forgery is even required to pass a second unit of the same model, and Bluetooth
+  vendor/product identifiers are commonly software-configurable on inexpensive BLE dev hardware) and
+  added an Operations & tuning KPI recommendation (allowed-device count/volume vs. physically-issued
+  units) as the practical triage signal for that residual gap. Documents, rather than silently fixes
+  by editing the already-reviewed prerequisite fragment's script, a genuine cross-fragment ordering
+  hazard: re-running that fragment's own `-Force` reconcile after this one silently drops the
+  exclusion; this fragment's own `validate` script detects and names that exact drift condition with
+  its remediation, distinct from "never configured." — `<pending-commit>` — 2026-09-08
 - [x] **`scenarios/data-lineage/custom-process-lineage/`** — models a custom nightly transform job
   as a custom Process-typed Microsoft Purview Data Map entity (`PurviewScenarioLibraryEtlProcess`,
   `superTypes: ["Process"]`) and links it into the lineage graph via `dataset_process_inputs`/
