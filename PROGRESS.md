@@ -1189,7 +1189,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/`** —
-  commit `PENDING` — 2026-09-08 — extends `defender-device-control-usb-allowlist-macos`'s
+  commit `f0907e1` — 2026-09-08 — extends `defender-device-control-usb-allowlist-macos`'s
   `serialNumber`-only `ApprovedBackupDrives` group with vendorId+productId compound matching, for
   approved drives with no readable serial number. Closes the gap that scenario's own `design.md` §5
   deliberately deferred: macOS's schema can only AND vendorId+productId via a per-device sub-group
