@@ -1100,8 +1100,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Advanced Hunting query referenced a fabricated `PolicyName` field, corrected to the real,
   Microsoft-confirmed `RemovableStoragePolicy` field. Since the underlying policy JSON schema is
   identical across the Intune and JAMF macOS deployment paths, this build also closes the equivalent
-  JAMF-sibling follow-up without a second build. — (commit hash recorded in a follow-up entry) —
-  2026-09-08
+  JAMF-sibling follow-up without a second build. — `7516333` — 2026-09-08
 - [x] **`docs/automation-surface.md` §4 — Unified Catalog + Data Map lineage routing-table
   fragment** — closed three separately-tracked doc-extension follow-ups from the Unified Catalog
   business-glossary, manage-data-products, and Data Lineage end-to-end-lineage-validation builds
