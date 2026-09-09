@@ -1676,6 +1676,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
+- [x] **`scenarios/adaptive-protection/conditional-access-insider-risk-step-up-auth/`** — commit
+  `6e39ee9` — 2026-09-09. Companion to `conditional-access-insider-risk-block` closing the
+  PROGRESS.md follow-up for a graduated Moderate/Minor Conditional Access response. Full README
+  (12-section skeleton), design.md, deploy/ (`New-InsiderRiskStepUpPolicies.ps1` — creates/
+  reconciles two policies: Moderate risk → Terms of Use requirement scoped to
+  `MicrosoftAdminPortals`; Minor risk → permanently Report-only visibility policy with no
+  `Enabled` state reachable via the script; `Remove-InsiderRiskStepUpPolicies.ps1`), validate/
+  (`Test-InsiderRiskStepUpPolicies.ps1`), rollback.md, reviews.md (four-lens review — caught and
+  fixed a fail-safe defect: the Minor policy's grant-control payload container was originally
+  `block`, changed to `mfa` so an out-of-band state change to `enabled` degrades to an MFA prompt
+  rather than a tenant-wide lockout). Grounded against Microsoft's "Adaptive Protection
+  configuration guide" (rejecting an earlier, unverified "require MFA/compliant device" idea in
+  favor of Microsoft's own documented Terms of Use + Report-only pairing), the dedicated
+  "Require terms of use... Microsoft Admin Portals" how-to, the `conditionalAccessGrantControls`/
+  `conditionalAccessApplications` Graph v1.0 resource references, and the `Create agreement` Graph
+  reference (confirming agreement creation is delegated-permission-only, not app-only-automatable
+  — disclosed as a genuine automation gap rather than worked around). `docs/licensing-matrix.md`
+  §8 updated to reference both Conditional Access scenarios and the Terms of Use feature's own
+  lower Entra ID P1 floor. Two VERIFY items and a scoped follow-up recorded above.
 - [x] **`scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/`** — commit
   `176c5fa` — 2026-09-09. Full README (12-section skeleton), design.md, deploy/
   (`New-PriorityCleanupPermanentDeletionPolicy.ps1` — provisions the same confirmed
