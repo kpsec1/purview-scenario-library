@@ -1365,7 +1365,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`departing-employee-data-theft` — script HR-connector app-secret cleanup** — commit
-  `<pending>` — 2026-09-09 — resolved the follow-up (discovered while building
+  `81fee1d` — 2026-09-09 — resolved the follow-up (discovered while building
   `Register-HrConnectorApp.ps1`) asking for a scripted way to delete the superseded secret that
   `-RotateSecret` leaves behind, since Microsoft Entra applications support multiple concurrent
   client secrets by design and nothing deletes the old one automatically. Added the standalone
