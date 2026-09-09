@@ -1350,7 +1350,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`auto-label-eu-personal-data-exchange` — port `-IncludeTravelDocumentSits` for parity with
-  the SharePoint/OneDrive EU sibling** — commit `PENDING` — 2026-09-09 — added the same opt-in
+  the SharePoint/OneDrive EU sibling** — commit `9302c57` — 2026-09-09 — added the same opt-in
   switch to `deploy/New-EuPersonalDataAutoLabelExchangePolicy.ps1` and `validate/
   Test-EuPersonalDataAutoLabelExchangePolicy.ps1`, appending `EU passport number` and `EU driver's
   license number` to whatever `-SensitiveInfoTypeName` set is already in effect, so the Exchange
