@@ -3622,7 +3622,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   same official Microsoft Learn URLs, corroborated by more than one independent source for facts
   needing a verbatim quote (the CSV column header, the 10,000-member cap), rather than a direct
   page fetch; disclosed in `README.md`'s closing reference note rather than presented as
-  first-party-verified. Commit: `<pending>`. Date: 2026-09-09.
+  first-party-verified. Commit: `e167f52`. Date: 2026-09-09.
 
 ## Blocked / needs user
 - **Environment note, not a scenario blocker:** as of this run (2026-09-09), this cloud execution
