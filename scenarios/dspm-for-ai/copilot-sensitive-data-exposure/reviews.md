@@ -171,3 +171,30 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/New-CopilotSensitiveDataProtectionPolicy.ps1`, and
 `validate/Test-CopilotSensitiveDataProtectionPolicy.ps1`. No Fail items were raised. This fragment
 meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Follow-up round — 2026-09-09: correcting the third-party-AI-site non-goal cross-reference
+
+Triggered by closing a `PROGRESS.md` backlog item (`scenarios/dspm-for-ai/
+third-party-ai-site-adaptive-block/`) that this scenario's original `design.md` §7 pointed at as a
+straightforward future extension of `dynamic-risk-dlp-enforcement`'s Adaptive Protection pattern.
+A dedicated grounding pass found that claim overstated what's actually scriptable — see
+`design.md` §7's corrected wording. Re-reviewed under all four lenses; no code, README, or deploy
+script changed (only `design.md` §7's prose), so this is a narrow, targeted check rather than a
+full re-review.
+
+- **🔴 Red Team — Pass.** No control changed; the correction only removes an inaccurate forward
+  pointer. Nothing new to attack.
+- **🔵 Blue Team — Pass.** No detection/alerting surface changed.
+- **🎩 CISO — Pass.** Prevents a future sales conversation from promising a "simple extension"
+  that doesn't exist yet — a smaller, correctness-preserving change, not a new cost or risk.
+- **🟦 Microsoft Product Owner — Pass.** This is exactly the kind of correction this lens exists to
+  catch: the original non-goal note implied a scriptable path (via the existing Adaptive Protection
+  DLP pattern) that Microsoft doesn't currently document for either constituent one-click policy.
+  Leaving it uncorrected risked a future fragment fabricating `-EndpointDlpRestrictions` or
+  "Inline web traffic" location parameters to match the (incorrect) claim that this was a routine
+  extension. Confirmed the corrected §7 wording accurately reflects both mechanisms and cites the
+  closed `PROGRESS.md` item rather than asserting a capability from memory.
+
+No Fix/Fail. Correction confirmed sound.

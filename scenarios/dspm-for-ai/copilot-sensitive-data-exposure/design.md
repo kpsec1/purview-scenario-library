@@ -135,10 +135,16 @@ content-processing control, not an access control — see §7 (Non-goals) below.
   Copilot-location DLP action with its own condition type (`Email is received from > External
   users`), out of scope here to keep this fragment to the oversharing/labeled-content exposure
   problem it is named for.
-- This scenario does not configure Adaptive Protection-driven, risk-based Copilot/AI-site DLP (the
-  `DSPM for AI - Block sensitive info from AI sites` and related one-click policies target
-  **third-party** generative AI sites accessed via a browser, a different location/enforcement
-  plane from the first-party Microsoft 365 Copilot location this scenario covers) — see
-  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` for this repo's existing
-  Adaptive-Protection-driven DLP pattern, which a future scenario could extend to third-party AI
-  sites specifically.
+- This scenario does not configure Adaptive Protection-driven, risk-based DLP for **third-party**
+  generative AI sites accessed via a browser (a different location/enforcement plane from the
+  first-party Microsoft 365 Copilot location this scenario covers). A dedicated grounding pass
+  (`PROGRESS.md`, 2026-09-09) investigated this as a follow-up scenario and found it is **not**
+  a straightforward extension of `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s
+  Teams/Exchange pattern the way this note previously implied: the DSPM for AI one-click policies
+  that cover third-party AI sites split across two structurally different mechanisms — an
+  Endpoint DLP (`Devices`) policy against the built-in, non-editable "Generative AI Websites"
+  sensitive service domain group, and a newer "Inline web traffic" / Edge for Business location
+  using an "Adaptive app scopes" cloud-app construct — and neither has a Microsoft-published
+  PowerShell/Graph worked example as of this pass, so this repo does not script either rather than
+  fabricate the missing parameters. See the closed `PROGRESS.md` follow-up item for the full
+  citation trail.

@@ -766,13 +766,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   PowerShell worked example as of this build (only the label-exclusion and web-grounding-
   restriction actions have one) — needs a fresh grounding pass once Microsoft publishes an example
   or the feature reaches GA.
-- [ ] `scenarios/dspm-for-ai/third-party-ai-site-adaptive-block/` — the Adaptive-Protection-driven,
+- [x] `scenarios/dspm-for-ai/third-party-ai-site-adaptive-block/` — the Adaptive-Protection-driven,
   risk-based DLP policies for **third-party** generative AI sites accessed via a browser
   (`DSPM for AI - Block sensitive info from AI sites`, `DSPM for AI - Block elevated risk users
-  from submitting prompts to AI apps in Microsoft Edge`), explicitly called out as a non-goal in
-  `copilot-sensitive-data-exposure/design.md` §7 — a different policy location/enforcement plane
-  from the first-party Microsoft 365 Copilot location that scenario covers, and a natural extension
-  of `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s existing pattern.
+  from submitting prompts to AI apps in Microsoft Edge`) — **investigated, not built** (see DONE
+  below): this item's own premise ("a natural extension of `dynamic-risk-dlp-enforcement`'s
+  existing pattern") did not survive a dedicated grounding pass. Neither one-click policy has a
+  Microsoft-published PowerShell/Graph worked example as of this pass; `copilot-sensitive-data-
+  exposure/design.md` §7's non-goal note (which originally pointed here) corrected in place.
+  Re-open once Microsoft publishes a PowerShell/Graph cmdlet for either the "Inline web traffic" /
+  Adaptive app scopes location, or for referencing a Sensitive Service Domain Group inside
+  `New-DlpComplianceRule -EndpointDlpRestrictions`.
 - [ ] Consider updating `docs/licensing-matrix.md` to add the DLP-for-Copilot licensing-tier split
   (label-exclusion rule requires E5-tier; prompt-safeguard/web-grounding rule is available at all
   Copilot licensing tiers) as its own row/footnote — currently only cited inline in
@@ -1447,6 +1451,61 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   timelines.
 
 ## DONE
+- [x] **Investigate and correct: `scenarios/dspm-for-ai/third-party-ai-site-adaptive-block/`
+  (Adaptive-Protection-driven DLP for third-party generative AI sites)** — a correctness
+  correction rather than a new scenario, closing the backlog item logged during the
+  `copilot-sensitive-data-exposure` build ("a natural extension of `dynamic-risk-dlp-enforcement`'s
+  existing pattern"). A dedicated grounding pass found that premise did not hold up: DSPM for AI's
+  "Fortify your data security" recommendation creates **three** one-click policies covering
+  third-party AI sites, split across two structurally different, currently non-scriptable
+  mechanisms — not one directly extensible Adaptive Protection DLP pattern.
+  - **`DSPM for AI - Block sensitive info from AI sites`** is an **Endpoint DLP (`Devices`
+    location)** policy against the built-in, non-editable **"Generative AI Websites"** sensitive
+    service domain group (confirmed via `dlp-configure-endpoint-settings#browser-and-domain-
+    restrictions-to-sensitive-data`: "The Generative AI Websites group... is used for default
+    policies within Data Security Posture Management for AI and can't be edited or deleted"),
+    combined with Adaptive Protection (`SharedByIRMUserRisk` = Elevated) for a block-with-override
+    action. This is the same family as the already-tracked, still-open
+    `endpoint-dlp-usb-block-adaptive-protection` follow-up above — `New-DlpComplianceRule
+    -EndpointDlpRestrictions`'s exact `Setting`/`Value` strings remain an unconfirmed VERIFY
+    (`scenarios/dlp/endpoint-dlp-usb-block/README.md` §11), and no worked PowerShell example
+    referencing a sensitive service domain group (built-in or custom) by ID inside that parameter,
+    or a cmdlet for creating/listing such groups at all, was found in `Set-PolicyConfig`'s
+    published parameter list (`set-policyconfig?view=exchange-ps` — no
+    `-DlpSensitiveServiceDomainGroups`-shaped parameter present) or elsewhere.
+  - **`DSPM for AI - Block elevated risk users from submitting prompts to AI apps in Microsoft
+    Edge`** and **`DSPM for AI - Block sensitive info from AI apps in Edge`** use a newer,
+    structurally distinct **"Inline web traffic"** policy location enforced through **Edge for
+    Business**, scoped via an **"Adaptive app scopes" → "All unmanaged AI apps"** cloud-app
+    construct (`dlp-browser-dlp-learn`, `dlp-create-policy-block-to-ai-via-edge`) — a portal-wizard
+    flow that automatically provisions Microsoft Edge configuration policies and Microsoft Intune
+    policies outside of Purview. `New-DlpCompliancePolicy`'s full published parameter syntax
+    (`new-dlpcompliancepolicy?view=exchange-ps`) has no `Locations`/`EnforcementPlanes` value, and
+    `New-DlpComplianceRule`'s full published parameter syntax
+    (`new-dlpcompliancerule?view=exchange-ps`) has no action parameter, for "Inline web traffic" /
+    "Adaptive app scopes" / "Restrict browser and network activities" — this location is
+    documented as portal/wizard-only as of this pass, with per-policy pay-as-you-go billing
+    (`dlp-browser-dlp-learn#licensing`) layered on top.
+  - Per `AGENTS.md` §4, this repo does not fabricate the missing `-EndpointDlpRestrictions`
+    setting/value pair, the sensitive-service-domain-group reference mechanism, or an "Inline web
+    traffic" location/action parameter set to force a deploy script into existence. Corrected
+    `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/design.md` §7 (the non-goal note that
+    originally pointed here, rewritten to state the actual finding instead of implying a
+    straightforward extension) and added a follow-up four-lens round to that scenario's
+    `reviews.md` (all four lenses Pass, no Fix/Fail — confirming the correction itself is sound).
+    No new scenario folder created; no code changed. Grounded via the Microsoft Learn MCP tool
+    (`microsoft_docs_search`/`microsoft_docs_fetch`, available this run despite this task's stored
+    instructions claiming otherwise): `dspm-for-ai-considerations#one-click-policies-from-data-
+    security-posture-management-for-ai` (the three policies' exact names/descriptions and their
+    shared "Fortify your data security" source), `dlp-browser-dlp-learn` and
+    `dlp-create-policy-block-to-ai-via-edge` (Inline web traffic / Edge for Business / Adaptive app
+    scopes mechanics, PAYG billing, no PowerShell surface), `dlp-configure-endpoint-settings`
+    (Generative AI Websites sensitive service domain group), `ai-microsoft-purview-permissions`
+    (DSPM for AI role groups), and the full published parameter syntax of `New-DlpCompliancePolicy`,
+    `New-DlpComplianceRule`, and `Set-PolicyConfig` (`?view=exchange-ps` reference pages) —
+    confirming by omission that no cmdlet/parameter for either mechanism exists in Microsoft's own
+    published reference. Re-open per the corrected `TODO` note above once Microsoft documents one.
+  — 2026-09-09
 - [x] **`scenarios/insider-risk/security-policy-violations-by-risky-users/` — Security Policy
   Violations by Risky Users scenario** — commit `61992b3` — 2026-09-09 — built the fourth and final
   member of the "Security policy violations…" Insider Risk Management template family (base,
