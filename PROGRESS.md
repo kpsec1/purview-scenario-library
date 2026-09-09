@@ -490,14 +490,51 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   HR-connector auth flow was independently grounded, and fabricating the exact parameter set
   risked violating `AGENTS.md` §4's no-invented-cmdlets rule. Worth a dedicated, narrowly-scoped
   follow-up fragment once grounded.
-- [ ] `scenarios/insider-risk/security-policy-violations-by-departing-users/` — the related but
+- [x] `scenarios/insider-risk/security-policy-violations-by-departing-users/` — the related but
   distinct IRM template requiring Microsoft Defender for Endpoint integration, explicitly called
-  out as a non-goal in `departing-employee-data-theft/design.md` §7.
+  out as a non-goal in `departing-employee-data-theft/design.md` §7 — **built** (see DONE below):
+  reuses (does not duplicate) the sibling scenario's HR connector/`Send-HrTerminationRecord.ps1`,
+  documents the two new portal-only prerequisites (Defender for Endpoint's "Share endpoint alerts
+  with Microsoft Compliance Center" advanced feature; Intelligent detections' alert-triage-status
+  selection), and ships `deploy/Export-SecurityViolationInsiderRiskAlerts.ps1` — a new,
+  scenario-specific capability (not a copy of the sibling's export script) that best-effort-joins
+  the resulting IRM alert to its correlated Defender for Endpoint alert by `IncidentId`. Both the
+  overall template family and its Defender for Endpoint indicator category are Microsoft-labeled
+  **preview** — flagged prominently, not just once, per the four-lens review's CISO finding.
 - [ ] VERIFY (pilot tenant, before any customer relies on the daily-schedule pattern in
   `departing-employee-data-theft/deploy/Send-HrTerminationRecord.ps1`): whether re-uploading an
   unchanged resignation CSV on a subsequent scheduled run is a safe no-op or creates a duplicate
   signal — undocumented by Microsoft as of this build (flagged inline in the script's `.NOTES`
   and `README.md` §11).
+
+### Follow-ups discovered while building the Security Policy Violations by Departing Users scenario
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether this template's specific
+  Defender for Endpoint indicators (malware/harmful-app install, security-control bypass) require
+  Defender for Endpoint **Plan 2**'s EDR sensor, or whether Plan 1's next-gen antivirus/tamper-
+  protection alerting already satisfies them — Microsoft's own prerequisite table for this
+  template names only "an active Defender for Endpoint subscription" with no plan qualifier, and
+  no page found during this build resolves it either way. `README.md` §3.
+- [ ] VERIFY (pilot tenant): whether a Defender for Endpoint alert and the Insider Risk
+  Management alert it triggers under this template actually share one `incidentId` — the core
+  assumption behind `deploy/Export-SecurityViolationInsiderRiskAlerts.ps1`'s join. Microsoft
+  documents general cross-product alert correlation into a shared incident and separately
+  documents that IRM alert data reaches the same unified alert queue, but no worked example
+  confirming this specific pairing was found. The script degrades gracefully (exports the IRM
+  alert with an empty `RelatedDefenderAlerts` array) when the join doesn't fire, so this doesn't
+  block production use — it would only let a future revision state the join's reliability with
+  confidence instead of "best effort." `README.md` §11; `design.md` §2 goal 5/§5.
+- [ ] Cross-reference a Microsoft Defender for Endpoint role capable of managing advanced features
+  (e.g., **Security Administrator**) into `docs/rbac-model.md` — that doc currently covers Purview,
+  Entra directory, and Intune RBAC (§9) but not the Defender for Endpoint role needed for this
+  scenario's §5 Step 2 (enabling "Share endpoint alerts with Microsoft Compliance Center").
+  `security-policy-violations-by-departing-users/README.md` §3 notes this gap inline rather than
+  guessing at a role name beyond the one Microsoft's own advanced-features documentation implies.
+- [ ] Consider `scenarios/insider-risk/security-policy-violations/` (the base template — no
+  departure/HR trigger, scores every onboarded user continuously), `…-by-priority-users/`, and
+  `…-by-risky-users/` as separate, narrowly-scoped follow-up fragments — each has a materially
+  different trigger/scoping model (continuous, priority-user-group, or HR-performance-indicator-
+  driven) than the departing-users variant just built. `design.md` §3/§7.
+
 ### Follow-ups discovered while building the Adaptive Protection dynamic-risk-DLP scenario
 - [ ] `scenarios/dlp/endpoint-dlp-usb-block-adaptive-protection/` (or fold into a future Endpoint
   DLP hardening pass) — script the **Devices** half of Adaptive Protection (risk-based
@@ -3218,6 +3255,32 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   review-cadence check; a disambiguation table naming all four policies, locations, and SIT sets)
   rather than new code. Cross-linked back into `auto-label-eu-personal-data-sharepoint/README.md`
   §11 and `design.md` §8. Commit: `943d23f`. Date: 2026-09-08.
+- [x] `scenarios/insider-risk/security-policy-violations-by-departing-users/` — full scenario
+  (README, design, deploy/, validate/, rollback, four-lens review) for Insider Risk Management's
+  **Security policy violations by departing users** template, the Defender-for-Endpoint-driven
+  sibling of `departing-employee-data-theft` flagged as a non-goal there. Grounded directly
+  against Microsoft Learn: the template's own prerequisites/triggering-events table, its
+  Microsoft-labeled **preview** status (both the template family and its Defender for Endpoint
+  indicator category), the 15,000-user scope limit, the "Share endpoint alerts with Microsoft
+  Compliance Center" Defender-portal-only toggle, Intelligent detections' alert-triage-status
+  import behavior, and the Graph `security-alert`/`security-detectionsource` resource schemas
+  (`incidentId`, `alertPolicyId`, `detectionSource` members) backing the new
+  `Export-SecurityViolationInsiderRiskAlerts.ps1` script. Reuses (does not duplicate) the sibling
+  scenario's HR connector and `Send-HrTerminationRecord.ps1` per `AGENTS.md`'s no-unneeded-
+  abstraction guidance. Four-lens review raised and resolved two Red Team findings (device-
+  tampering is invisible to an offline/physical attack on the endpoint; the Defender alert-sharing
+  toggle is tenant-wide, not per-policy), one Blue Team finding (a policy can be created with zero
+  triggering events enabled and no error, unlike the sibling scenario — added a deployment-time
+  checklist item), and one CISO finding (preview status needed a concrete pilot-first rollout
+  recommendation, not just a disclosure banner) — all closed with README/validate-script
+  additions, no Fail items. One implementation bug caught and fixed before commit: the export
+  script's `foreach`/`ForEach-Object` results needed explicit `@()` array-wrapping to avoid
+  PowerShell silently unwrapping single-item or empty results to scalars/`$null`, which would have
+  broken `.Count` checks and produced a JSON scalar instead of an array on export. Three follow-ups
+  and one RBAC cross-reference gap recorded above rather than resolved by guessing (Defender for
+  Endpoint Plan 1 vs. Plan 2 sufficiency; whether the `incidentId` join is actually reliable;
+  Security Administrator role not yet in `docs/rbac-model.md`; the three sibling "Security policy
+  violations…" templates left as separate candidate fragments). Commit: `<pending>`. Date: 2026-09-09.
 
 ## Blocked / needs user
 - (none)

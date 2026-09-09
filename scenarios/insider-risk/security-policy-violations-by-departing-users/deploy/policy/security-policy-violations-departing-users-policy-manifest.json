@@ -1,0 +1,43 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Insider Risk Management has no documented PowerShell or Graph write API for policy authoring as of this writing (docs/automation-surface.md §6; design.md §4). No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal steps in README.md §5, so the deployed policy can be diffed against intent during review instead of relying on institutional memory of what was clicked.",
+  "policyName": "Security Policy Violations by Departing Users",
+  "policyTemplate": "Security policy violations by departing users",
+  "templateStatus": "Microsoft-labeled PREVIEW as of this writing - re-verify GA status before a customer-facing commitment. README.md §1/§11.",
+  "scope": {
+    "users": "Same population as departing-employee-data-theft's policy, or a subset",
+    "maxUsersInScope": 15000,
+    "note": "Microsoft-fixed limit for this specific template - distinct from, and larger than, the sibling Data theft template's 20,000-user limit. Do not conflate the two."
+  },
+  "triggeringEvents": [
+    {
+      "type": "HR connector - employee resignation",
+      "source": "REUSED from ../../departing-employee-data-theft/deploy/policy/departing-employee-policy-manifest.json's HR connector - not a second connector object",
+      "optional": true,
+      "fields": ["UserPrincipalName", "ResignationDate", "LastWorkingDate"]
+    },
+    {
+      "type": "User account deleted from Microsoft Entra ID",
+      "source": "Built-in Entra signal - enable explicitly in the policy workflow",
+      "optional": true,
+      "note": "Unlike the sibling Data theft template, Microsoft's own prerequisite table lists BOTH triggers as optional for this template, without naming either as the documented primary. README.md §5 Step 5 / §6."
+    }
+  ],
+  "indicators": {
+    "microsoftDefenderForEndpointIndicators": {
+      "category": "Microsoft Defender for Endpoint indicators (preview)",
+      "note": "Individual indicator names are not enumerated in Microsoft's own documentation as of this build (only the category-level description: 'unapproved or malicious software installation or bypassing security controls'). VERIFY the exact selectable indicator toggles against the live policy-creation workflow at deploy time. README.md §5 Step 5 / §11."
+    },
+    "otherIndicatorCategoriesSelectable": "VERIFY: whether Office/Device/Cumulative-exfiltration indicator categories are also selectable for this specific template in the live portal - not confirmed by Microsoft Learn during this build. Do not assume either way."
+  },
+  "prerequisites": {
+    "defenderForEndpointSubscription": "Active Microsoft Defender for Endpoint subscription (Plan not specified by Microsoft's own prerequisite table - VERIFY Plan 1 vs Plan 2 sufficiency for this template's specific indicators). README.md §3.",
+    "defenderForEndpointAdvancedFeature": "'Share endpoint alerts with Microsoft Compliance Center' toggled ON in the Microsoft Defender portal (Settings > Endpoints > Advanced features). Portal-only - no API. README.md §5 Step 2.",
+    "intelligentDetectionsTriageStatuses": "At least one Defender for Endpoint alert triage status (Unknown/New/In progress/Resolved) selected in Purview Settings > Insider Risk Management > Intelligent detections. Portal-only - no API. README.md §5 Step 3."
+  },
+  "alertReview": {
+    "pseudonymizeUserNames": true,
+    "note": "Repo default - do not disable pseudonymization without an explicit, documented privacy/legal decision. Same as the sibling scenario."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-09"
+}
