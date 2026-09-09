@@ -1472,7 +1472,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   untouched — out of scope for this correction, no fresh grounding pass was done on it. Added two
   new numbered references (14, 15) to `README.md` §12 and a correction addendum to `reviews.md`
   documenting the fix; no code changed, so no new four-lens review round was run, per `AGENTS.md`
-  §6. Commit: `<pending>`. Date: 2026-09-09.
+  §6. Commit: `6142d66`. Date: 2026-09-09.
 - [x] **Investigate and correct: `scenarios/dspm-for-ai/third-party-ai-site-adaptive-block/`
   (Adaptive-Protection-driven DLP for third-party generative AI sites)** — a correctness
   correction rather than a new scenario, closing the backlog item logged during the
