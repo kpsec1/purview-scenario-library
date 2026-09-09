@@ -172,3 +172,106 @@ No Fix/Fail items from this lens.
 
 All Fix items from this round are resolved in the current state of `README.md` and `design.md`. No
 Fail items were raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Review round 2 — 2026-09-09 — opt-in travel-document bundle (`-IncludeTravelDocumentSits`)
+
+Scope: the `PROGRESS.md` follow-up asking for parity with the SharePoint/OneDrive EU sibling's own
+`-IncludeTravelDocumentSits` switch, ported to this scenario's `deploy/
+New-EuPersonalDataAutoLabelExchangePolicy.ps1` and `validate/
+Test-EuPersonalDataAutoLabelExchangePolicy.ps1`, plus the supporting `README.md`/`design.md`
+updates.
+
+### 🔴 Red Team
+
+**Verdict: Pass**
+
+- The U.S./U.K. passport-merge gotcha this switch introduces was already found and disclosed by
+  the SharePoint/OneDrive sibling's own round 2 review — porting the same switch here doesn't
+  introduce a new bypass or coverage gap, it extends an already-disclosed one to a second channel.
+  Re-confirmed (not re-derived) by re-fetching both bundle index pages directly during this round;
+  membership is unchanged from the sibling's original grounding.
+- One genuinely Exchange-specific angle checked and found not to be a new risk: whether the
+  encryption side-effect finding already in this scenario's round 1 review (external senders not
+  encrypted by default) interacts differently with the two new SITs. It doesn't — encryption
+  behavior is keyed off the label, not the specific SIT that triggered it, so the existing round 1
+  finding and its `-ExternalMailRightsManagementOwner` mitigation apply identically to messages
+  matching the new opt-in SITs.
+- The cross-scenario `-SensitiveInfoTypeName` drift finding from round 1 (this scenario vs. the
+  SharePoint/OneDrive sibling) now also applies to `-IncludeTravelDocumentSits` specifically: a
+  buyer could enable the bundle on one channel and not the other. This is the same finding, not a
+  new one — the existing `README.md` §8 standing review-cadence check ("confirm both scripts'
+  `-SensitiveInfoTypeName` lists match") already covers it without a bulletin change, since the
+  bundle switch only changes what's *in* that list, not the drift risk itself.
+
+No Fix/Fail items from this lens.
+
+### 🔵 Blue Team
+
+**Verdict: Pass**
+
+- The validate script's new `-IncludeTravelDocumentSits` switch mirrors the deploy script's
+  parameter name and behavior exactly, and mirrors the SharePoint/OneDrive sibling's validate
+  script's own switch — an operator who already knows how to check the file-scoped sibling's bundle
+  deployment doesn't have to relearn a different pattern for email.
+- Added `README.md` §7 test case 9 gives operators a concrete way to observe the merge behavior via
+  **Items to review** (simulation) or Activity Explorer (enforced) — the correct Exchange-specific
+  observability surface, not a copy-pasted reference to the SharePoint sibling's "Labeled items"
+  dashboard, which doesn't exist for Exchange (already-established §7/§11 distinction, correctly
+  preserved in the new test case).
+- No new alerting/observability surface is introduced — matches from the new SITs surface through
+  the same Items-to-review/Activity-Explorer path already reviewed in round 1.
+
+No Fix/Fail items from this lens.
+
+### 🎩 CISO
+
+**Verdict: Pass**
+
+- Small, well-bounded, no-incremental-licensing-cost parity fix (§10 unchanged) that closes a
+  specific, previously-deferred backlog item without expanding this scenario's scope or its
+  regulatory framing.
+- The U.S./U.K. passport-merge disclosure, and its interaction with the sharper GDPR/external-
+  encryption framing already central to this scenario's round 1 review, are both stated plainly in
+  `README.md` §11 — a CISO evaluating this switch for email specifically sees both risks together,
+  not just the file-scoped one.
+- Would I fund this? Yes — it removes an inconsistency (a switch available on one channel but not
+  its sibling) that would otherwise be a natural buyer question, at no additional cost.
+
+No Fix/Fail items from this lens.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Pass**
+
+- Both opt-in SIT names and their full bundle membership were re-fetched directly from Microsoft
+  Learn during this round (not re-asserted from the sibling's round 2 citation alone) and confirmed
+  byte-for-byte identical in membership to what the SharePoint/OneDrive sibling already documented —
+  no drift in Microsoft's bundle composition since that scenario's own grounding pass, both dated
+  2026-09-09.
+- No new cmdlet introduced — `-IncludeTravelDocumentSits` is the same array-append-and-dedupe
+  pattern already reviewed and passed in the sibling scenario, applied in front of this scenario's
+  own already-grounded `Get-DlpSensitiveInformationType` resolution path.
+- The byte-exact-casing VERIFY already open for this scenario's default SITs (`README.md` §11)
+  extends to `"EU driver's license number"` the same way it already does for the SharePoint/OneDrive
+  sibling — carried forward as open, not resolved by guessing, consistent with how the sibling's own
+  Product Owner review treated the identical gap.
+- Scope discipline: this round did not attempt a per-country checksum table for either opt-in
+  bundle in *this* scenario's files — correctly deferred to the single shared table already tracked
+  as a `PROGRESS.md` follow-up, avoiding a second, potentially-drifting copy of the same 50+-page
+  grounding effort.
+
+No Fix/Fail items from this lens.
+
+### Summary — round 2
+
+| Lens | Verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Pass | 0 (gotcha already disclosed by the ported sibling switch; two Exchange-specific angles checked and confirmed not new risks) | — |
+| 🔵 Blue Team | Pass | 0 | — |
+| 🎩 CISO | Pass | 0 | — |
+| 🟦 Microsoft Product Owner | Pass | 0 (1 VERIFY extended, not newly opened) | — |
+
+No Fix/Fail items raised this round. This fragment (the parity addition) meets the definition of
+done in `AGENTS.md` §9.

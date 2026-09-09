@@ -469,12 +469,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `README.md` §6/§11, with a new `reviews.md` round 2 four-lens review specific to this change.
 
 ### Follow-ups discovered while building the opt-in travel-document bundle switch
-- [ ] Port `-IncludeTravelDocumentSits` (or an equivalent mechanism) to
-  `scenarios/information-protection/auto-label-eu-personal-data-exchange/`'s deploy/validate
-  scripts for parity with its SharePoint/OneDrive sibling — out of scope for the fragment that
-  added the switch (the `PROGRESS.md` item that scoped it named only the SharePoint/OneDrive
-  scenario), but the same opt-in rationale (travel-document-/HR-record-heavy estates) applies
-  equally to the Exchange location.
 - [ ] Consider a full per-country checksum/confidence table for the "EU passport number" and
   "EU driver's license number" bundles, matching the depth already built for the default "EU
   national identification number" bundle (`design.md` §4) — deliberately deferred when the opt-in
@@ -1355,6 +1349,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   into the UUIDv5 name string) is directly reusable there without modification once picked up.
 
 ## DONE
+- [x] **`auto-label-eu-personal-data-exchange` — port `-IncludeTravelDocumentSits` for parity with
+  the SharePoint/OneDrive EU sibling** — commit `PENDING` — 2026-09-09 — added the same opt-in
+  switch to `deploy/New-EuPersonalDataAutoLabelExchangePolicy.ps1` and `validate/
+  Test-EuPersonalDataAutoLabelExchangePolicy.ps1`, appending `EU passport number` and `EU driver's
+  license number` to whatever `-SensitiveInfoTypeName` set is already in effect, so the Exchange
+  channel isn't left one switch behind its file-scoped sibling. Both bundle memberships (25-state
+  EU passport bundle + combined "U.S./U.K. passport number" entity; 27-state + standalone U.K. EU
+  driver's-license bundle) re-fetched directly from Microsoft Learn during this fragment and
+  confirmed unchanged from the sibling's original 2026-09-09 grounding — no drift. `README.md`
+  §5/§6/§7/§11 and `design.md` §5/§7/References updated; `reviews.md` round 2 four-lens review
+  added (all four lenses Pass — the gotcha was already disclosed by the ported switch, and two
+  Exchange-specific angles — encryption-side-effect interaction, cross-scenario SIT-list drift —
+  were checked and confirmed not to be new risks). No new VERIFY items opened; the existing
+  driver's-license apostrophe-casing VERIFY (already tracked for this scenario) now explicitly
+  covers the ported name too.
 - [x] **`auto-label-eu-personal-data-sharepoint` — opt-in travel-document SIT bundle
   (`-IncludeTravelDocumentSits`)** — commit `6db12ca` — 2026-09-09 — added the switch to
   `deploy/New-EuPersonalDataAutoLabelPolicy.ps1` and `validate/Test-EuPersonalDataAutoLabelPolicy.ps1`,

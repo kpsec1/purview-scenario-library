@@ -124,6 +124,37 @@ regulated population is limited to specific member states passes just those coun
 (e.g. `-SensitiveInfoTypeName 'Germany Identity Card Number','France Social Security Number','EU
 debit card number'`) for tighter false-positive control than the full 26-country default bundle.
 
+**Opt-in travel-document bundle (`-IncludeTravelDocumentSits`)** — ported unchanged from the
+SharePoint/OneDrive EU sibling's own switch of the same name (`design.md` §4/§5 there), added to
+this scenario as a follow-up (`PROGRESS.md`, "Follow-ups discovered while building the opt-in
+travel-document bundle switch") for parity across both locations rather than leaving the Exchange
+channel one switch behind its file-scoped sibling. Appends `'EU passport number'` and `"EU driver's
+license number"` — both real, confirmed EU-wide bundle SITs — to whatever `-SensitiveInfoTypeName`
+set is already in effect (default or a caller's narrowed override), not a replacement of it.
+
+Both bundle memberships were re-fetched directly from their own Microsoft Learn index pages during
+this addition (2026-09-09) and confirmed identical to the SharePoint/OneDrive sibling's original
+grounding, not assumed to still match:
+
+- **EU passport number**: 25 EU member states' own entities + one combined **"U.S./U.K. passport
+  number"** entity — no standalone U.K. entity, and no Luxembourg or Netherlands entity either
+  [[9]](#references).
+- **EU driver's license number**: all 27 EU member states' own entities + a standalone **U.K.**
+  entity — the more complete of the two bundles [[10]](#references).
+
+**The same U.S./U.K.-merge consequence the SharePoint/OneDrive sibling's `design.md` §4 already
+disclosed applies unchanged to email**: a buyer who enables this switch specifically for U.K.
+travel-document coverage in email also enables U.S. passport-number detection as an inseparable
+side effect — there is no way to select one without the other via this bundle SIT. Flagged in
+`README.md` §6/§11 and the deploy script's `.PARAMETER IncludeTravelDocumentSits` block, not
+silently absorbed into "just enable the bundle" framing.
+
+**Scope boundary carried forward, not re-litigated:** per-country checksum/confidence detail for
+either opt-in bundle is not tabled in this scenario, matching the SharePoint/OneDrive sibling's own
+disclosed scope boundary (`design.md` §4 there) — that table, if built, belongs in one place
+(tracked as a shared `PROGRESS.md` follow-up) rather than duplicated and risking drift across two
+scenario folders that both reference the same two SITs.
+
 ## 6. Where the two siblings' designs combine without friction, and the one place they don't
 
 Combining the two siblings' already-reviewed decisions was mechanical everywhere except one
@@ -159,6 +190,7 @@ place, described here rather than glossed over:
 | `ExternalMailRightsManagementOwner` | Not configured by default | Inherited from `auto-label-confidential-exchange/design.md` §6 — a deliberate, buyer-specific decision this scenario should not default silently, now sharper given §6's GDPR framing. |
 | Label scope prerequisite | Confidential label's scope must include **Emails** | Inherited from `auto-label-confidential-exchange/design.md` §6 — distinct from the SharePoint/OneDrive siblings' "Files & other data assets" requirement. |
 | Regulatory framing | GDPR Article 32 as the primary driver, with an explicit sharper note on the external-encryption gap | §6 — the one place this scenario's combination surfaces a decision neither sibling alone made. |
+| Opt-in travel-document bundle | `-IncludeTravelDocumentSits` switch, ported unchanged from the SharePoint/OneDrive EU sibling | §5 — parity follow-up so the Exchange channel isn't one switch behind its file-scoped sibling; both bundle memberships re-confirmed directly, not assumed. |
 
 ## 8. Non-goals
 
@@ -186,3 +218,5 @@ place, described here rather than glossed over:
 6. EU national identification number / EU Social Security Number (SSN) or Equivalent ID / EU debit card number entity definitions — <https://learn.microsoft.com/purview/sit-defn-eu-national-identification-number>, <https://learn.microsoft.com/purview/sit-defn-eu-social-security-number-equivalent-identification>, <https://learn.microsoft.com/purview/sit-defn-eu-debit-card-number>
 7. Automatically apply a sensitivity label to Microsoft 365 data — "Example: Apply a label to Exchange email based on the subject" (ExchangeLocation All requirement for external senders) — <https://learn.microsoft.com/purview/apply-sensitivity-label-automatically#example-apply-a-label-to-exchange-email-based-on-the-subject>
 8. Create custom sensitive information types — "These SITs can't be copied" (confirms the EU-wide bundle SITs are real, selectable SIT objects) — <https://learn.microsoft.com/purview/sit-create-a-custom-sensitive-information-type#before-you-begin>
+9. EU passport number bundle membership (25 EU states + one combined "U.S./U.K. passport number" entity — no standalone U.K., Luxembourg, or Netherlands entity), re-fetched directly 2026-09-09 — <https://learn.microsoft.com/purview/sit-defn-eu-passport-number>
+10. EU driver's license number bundle membership (all 27 EU member states + a standalone U.K. entity), re-fetched directly 2026-09-09 — <https://learn.microsoft.com/purview/sit-defn-eu-drivers-license-number>
