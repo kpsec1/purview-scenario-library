@@ -1,0 +1,48 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Insider Risk Management has no documented PowerShell or Graph write API for policy authoring or priority-user-group management as of this writing (docs/automation-surface.md §6; design.md §2 goal 6). No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal steps in README.md §5, so the deployed policy and priority user group can be diffed against intent during review instead of relying on institutional memory of what was clicked.",
+  "policyName": "Security Policy Violations by Priority Users",
+  "policyTemplate": "Security policy violations by priority users",
+  "templateStatus": "Microsoft-labeled PREVIEW as of this writing (same family as the base and departing-users siblings) - re-verify GA status before a customer-facing commitment. README.md §1/§11.",
+  "priorityUserGroup": {
+    "createdInSettings": "Purview portal > Settings > Insider Risk Management > Priority user groups > Create priority user group. README.md §5 Step 4.",
+    "maxMembers": 10000,
+    "membershipSource": "deploy/Get-PriorityUserGroupScopeCandidates.ps1 output CSV (bulk upload) and/or portal search/select - NOT a live-synced Entra group. README.md §5 Step 3/4, §11.",
+    "reviewPermissions": "Assign one or more of Insider Risk Management / Insider Risk Management Analysts / Insider Risk Management Investigators role groups, or specific individual users, as reviewers for this group's data. README.md §3/§8.",
+    "note": "This is a distinct, Microsoft-managed object - NOT the same thing as a plain Entra security group assigned to the sibling base template's policy. design.md §2 goal 1."
+  },
+  "scope": {
+    "users": "The priority user group above, assigned at policy creation - this template does not accept a plain Entra group or individual users directly.",
+    "maxActivelyScoredUsers": 1000,
+    "note": "Microsoft-fixed limit for this specific template, cumulative across ALL policies built from it tenant-wide - IDENTICAL to the base 'Security policy violations' template's own cap (shared cumulative ceiling, not two separate 1,000-user allowances), smaller than the departing-users sibling's 15,000 and the risky-users sibling's 7,500. Interaction with the priority user group's own 10,000-member cap is UNDOCUMENTED by Microsoft - see design.md §3, README.md §6/§11. Do not conflate any of these four caps."
+  },
+  "triggeringEvents": [
+    {
+      "type": "Microsoft Defender for Endpoint security alert (defense evasion of security controls or unwanted software)",
+      "optional": false,
+      "note": "This IS the template's only triggering event - identical to the base template, there is no HR connector or Entra-account-deletion toggle on this template's policy-creation workflow. README.md §5 Step 5 / §6."
+    }
+  ],
+  "indicators": {
+    "microsoftDefenderForEndpointIndicators": {
+      "category": "Microsoft Defender for Endpoint indicators (preview)",
+      "note": "Individual indicator names are not enumerated in Microsoft's own documentation as of this build. VERIFY the exact selectable indicator toggles against the live policy-creation workflow at deploy time. README.md §5 Step 5 / §11."
+    },
+    "otherIndicatorCategoriesSelectable": "VERIFY: whether Office/Device/Cumulative-exfiltration indicator categories are also selectable for this specific template in the live portal - not confirmed by Microsoft Learn during this build. Do not assume either way."
+  },
+  "scoringBehavior": {
+    "priorityGroupBoost": "Membership in the priority user group increases both the LIKELIHOOD and SEVERITY of resulting alerts for the same underlying activity, versus a non-priority user. README.md §5/§6/design.md §5."
+  },
+  "prerequisites": {
+    "defenderForEndpointSubscription": "Active Microsoft Defender for Endpoint subscription (Plan not specified by Microsoft's own prerequisite table - same open VERIFY the base and departing-users siblings carry). README.md §3.",
+    "defenderForEndpointAdvancedFeature": "'Share endpoint alerts with Microsoft Compliance Center' toggled ON in the Microsoft Defender portal (Settings > Endpoints > Advanced features). Tenant-wide, shared with any other 'Security policy violations...' family policy. Portal-only - no API. README.md §5 Step 2.",
+    "hrConnector": "NOT REQUIRED for this template - unlike the departing-users and risky-users siblings.",
+    "priorityUserGroup": "REQUIRED for this template - the distinguishing prerequisite versus the base template. README.md §3/§5 Step 4."
+  },
+  "alertReview": {
+    "pseudonymizeUserNames": true,
+    "note": "Repo default - do not disable pseudonymization without an explicit, documented privacy/legal decision. Same as every other Insider Risk Management scenario in this library.",
+    "reviewerScoping": "Optionally restricted at the priority-user-group level (see priorityUserGroup.reviewPermissions above) - a capability the base template's plain-group mechanism does not offer."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-09"
+}

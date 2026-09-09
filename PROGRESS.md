@@ -604,15 +604,31 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `…-by-priority-users/` and `…-by-risky-users/` remain open follow-ups below — each has its own
   materially different trigger/scoping model and wasn't bundled into this fragment per
   `AGENTS.md` §6's one-fragment-per-turn discipline.
-- [ ] `scenarios/insider-risk/security-policy-violations-by-priority-users/` — the priority-users
-  variant of this template family: triggering event is "Defense evasion of security controls or
-  unwanted software detected by Microsoft Defender for Endpoint" (same as the base template just
-  built) but additionally requires a formal **priority user group** (Insider Risk Management
-  settings → Priority user groups, up to 10,000 members per group) assigned to the policy. Same
-  1,000-user template-wide cap as the base template — confirm during that build whether the
-  priority-user-group's own 10,000-member ceiling and this template's 1,000-actively-scored ceiling
-  interact in a way worth documenting (e.g., does Microsoft warn if the group exceeds the
-  template's scoring cap). `insider-risk-management-policy-templates#security-policy-violations-by-priority-users`.
+- [x] `scenarios/insider-risk/security-policy-violations-by-priority-users/` — **built** (see DONE
+  below): the priority-users variant of this template family. Same triggering event as the base
+  template (Defender for Endpoint security-violation alert, no HR/Entra-deletion trigger), scored
+  against a **priority user group** (Settings → Priority user groups; up to 10,000 members;
+  populated via portal search/select or a `user principal name`-headed CSV bulk upload — no
+  Graph/PowerShell write API found for this object) instead of a plain Entra group. New
+  `deploy/Get-PriorityUserGroupScopeCandidates.ps1` resolves an Entra group's transitive membership
+  into upload-ready CSV and sizes it against **both** documented caps independently (10,000-member
+  group cap and the 1,000-actively-scored template cap, cumulative with the base template per the
+  same Microsoft limits reference). The interaction between those two caps — this item's own
+  originating question — has **no confirmed answer**: no Microsoft Learn page states what happens
+  when a priority user group exceeds the template's actively-scored cap once assigned to a policy.
+  Documented as an explicit, unresolved VERIFY throughout (`design.md` §3, `README.md` §3/§6/§11)
+  rather than guessed at. Alert export reused unmodified from the departing-users sibling, same
+  reuse pattern as the base template. Four-lens review caught and fixed one overclaim (README §5
+  originally asserted the "Users and groups" step accepts *only* the priority group, not also
+  additional scope — softened to an open VERIFY, no worked example found either way) and one
+  disclosure gap (no-`mail`-attribute candidates flagged `[WARN]` but the original draft didn't
+  say what to do about it — added explicit guidance not to silently drop guest/service accounts
+  from the priority population). **Grounding note:** this build's network access could not reach
+  learn.microsoft.com directly (proxy-blocked) — all facts were grounded via WebSearch against the
+  same official Microsoft Learn URLs (corroborated by more than one independent source where a
+  direct quote was needed, e.g. the CSV column header and the 10,000-member cap) rather than a
+  direct page fetch; flagged in `README.md`'s closing reference note. Re-verify directly against
+  the live pages before a customer-facing commitment.
 - [ ] `scenarios/insider-risk/security-policy-violations-by-risky-users/` — the risky-users variant:
   triggering events are HR performance-indicator signals (performance improvement / poor review /
   job-level change, via the HR connector — reusable from `departing-employee-data-theft` per this
@@ -3585,6 +3601,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   fragments recorded above (`…-by-priority-users/`, `…-by-risky-users/`) rather than bundled into
   this one, per `AGENTS.md` §6's one-fragment-per-turn discipline, plus one general (not
   scenario-specific) VERIFY on group-scope live-sync behavior. Commit: `f23a07a`. Date: 2026-09-09.
+- [x] `scenarios/insider-risk/security-policy-violations-by-priority-users/` — priority-users
+  variant of the Security Policy Violations template family, scored against a formal **priority
+  user group** (up to 10,000 members; portal-only, CSV-bulk-upload-capable, no Graph/PowerShell
+  write API) instead of the base template's plain Entra group. New `deploy/
+  Get-PriorityUserGroupScopeCandidates.ps1` resolves an Entra group into an upload-ready
+  `user principal name` CSV and sizes it against both the group's 10,000-member cap and the
+  template's 1,000-actively-scored cap (cumulative with the base template) independently — the
+  interaction between the two is undocumented by Microsoft and left as an explicit, unresolved
+  VERIFY (`design.md` §3) rather than guessed at, directly answering this item's own originating
+  question. Alert export reused unmodified from the departing-users sibling. Four-lens review
+  caught and fixed two issues: an overclaim in README §5 (asserted the priority group is the
+  *only* accepted policy scope input — softened to VERIFY, no worked example found either way,
+  independently flagged by both Blue Team and Microsoft Product Owner) and a Red Team disclosure
+  gap (candidates with no Graph `mail` attribute — plausible guest/service accounts — flagged
+  `[WARN]` by the script with no guidance on not silently dropping them from the priority
+  population; added explicit README §11 guidance). Grounding note: this cloud environment's
+  network access could not reach learn.microsoft.com directly (egress-proxy-blocked, confirmed via
+  `/root/.ccr/README.md` diagnostics) — all product facts were grounded via WebSearch against the
+  same official Microsoft Learn URLs, corroborated by more than one independent source for facts
+  needing a verbatim quote (the CSV column header, the 10,000-member cap), rather than a direct
+  page fetch; disclosed in `README.md`'s closing reference note rather than presented as
+  first-party-verified. Commit: `<pending>`. Date: 2026-09-09.
 
 ## Blocked / needs user
-- (none)
+- **Environment note, not a scenario blocker:** as of this run (2026-09-09), this cloud execution
+  environment's egress proxy blocks direct WebFetch access to `learn.microsoft.com` (confirmed via
+  `/root/.ccr/README.md`'s diagnostic endpoint — "destination host is not allowed by your
+  organization's egress policy for this session"), and the Microsoft Learn MCP tool
+  (`mcp__Microsoft_Learn__*`) is not present in this session's tool list either. WebSearch still
+  works and returns Microsoft Learn URLs plus synthesized snippets, so grounding remained possible
+  but weaker than a direct page fetch (no verbatim-quote confirmation without corroboration from
+  more than one independent secondary source). If a future run has either capability restored,
+  prefer it over WebSearch-only grounding, and consider re-verifying this run's WebSearch-grounded
+  facts (flagged inline in the fragment above and its own `README.md` §11/closing note) against a
+  direct fetch.
