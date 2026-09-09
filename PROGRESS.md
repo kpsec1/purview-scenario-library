@@ -469,12 +469,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `README.md` §6/§11, with a new `reviews.md` round 2 four-lens review specific to this change.
 
 ### Follow-ups discovered while building the opt-in travel-document bundle switch
-- [ ] Consider a full per-country checksum/confidence table for the "EU passport number" and
-  "EU driver's license number" bundles, matching the depth already built for the default "EU
-  national identification number" bundle (`design.md` §4) — deliberately deferred when the opt-in
-  switch was added because it would mean individually fetching 25–28 more Microsoft Learn
-  entity-definition pages per bundle for a non-default condition set. Worth doing once either
-  bundle sees real adoption via `-IncludeTravelDocumentSits`.
 - [ ] VERIFY (pilot tenant): whether `"EU driver's license number"` (the spelling used in this
   repo's prose since the scenario's original build) or `"EU drivers license number"` (the literal,
   no-apostrophe title on the SIT's own Microsoft Learn bundle-index page, fetched directly during
@@ -1349,6 +1343,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   into the UUIDv5 name string) is directly reusable there without modification once picked up.
 
 ## DONE
+- [x] **`auto-label-eu-personal-data-sharepoint` — full per-country checksum/confidence table for
+  both opt-in travel-document bundles** — commit `<pending>` — 2026-09-09 — closed the
+  `PROGRESS.md` follow-up asking for the same per-country grounding depth already built for the
+  default "EU national identification number" bundle. Fetched all 26 "EU passport number" and all
+  28 "EU driver's license number" member entity-definition pages directly from Microsoft Learn (54
+  pages total) and tabled Format/Checksum/Confidence for each in `design.md` §4. Headline finding:
+  only **2 of 26 passport-bundle entities (8%)** are checksum-validated (Germany, Poland) and only
+  **3 of 28 driver's-license-bundle entities (11%)** are (Germany, Spain, U.K.) — versus 73% for
+  the default national-ID bundle; the driver's-license bundle additionally caps at Medium (75)
+  confidence for 25 of its 28 members (no High-confidence tier exists for its non-checksum
+  countries). `README.md` §8/§11 updated with the numeric finding; the Exchange sibling
+  (`auto-label-eu-personal-data-exchange/README.md` §11 and `design.md` §5) updated from "not
+  tabled" to reference the now-built table rather than duplicate it. `reviews.md` round 3
+  four-lens review added (all four lenses Pass — this round closes a previously-disclosed gap
+  rather than introducing new risk). No new VERIFY items opened; the existing driver's-license
+  apostrophe-casing VERIFY and byte-exact-casing VERIFY are unchanged.
 - [x] **`auto-label-eu-personal-data-exchange` — port `-IncludeTravelDocumentSits` for parity with
   the SharePoint/OneDrive EU sibling** — commit `9302c57` — 2026-09-09 — added the same opt-in
   switch to `deploy/New-EuPersonalDataAutoLabelExchangePolicy.ps1` and `validate/

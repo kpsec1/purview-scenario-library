@@ -149,11 +149,13 @@ side effect — there is no way to select one without the other via this bundle 
 `README.md` §6/§11 and the deploy script's `.PARAMETER IncludeTravelDocumentSits` block, not
 silently absorbed into "just enable the bundle" framing.
 
-**Scope boundary carried forward, not re-litigated:** per-country checksum/confidence detail for
-either opt-in bundle is not tabled in this scenario, matching the SharePoint/OneDrive sibling's own
-disclosed scope boundary (`design.md` §4 there) — that table, if built, belongs in one place
-(tracked as a shared `PROGRESS.md` follow-up) rather than duplicated and risking drift across two
-scenario folders that both reference the same two SITs.
+**Per-country checksum/confidence detail lives in one place, not duplicated:** the SharePoint/
+OneDrive sibling's `design.md` §4 now tables all 26 "EU passport number" and all 28 "EU driver's
+license number" members (only 8% and 11% checksum-validated, respectively, versus 73% for the
+default national-ID bundle) — this scenario references that single table rather than duplicating it,
+avoiding drift across two scenario folders that both reference the same two SITs. The headline
+finding applies unchanged to email: a buyer enabling `-IncludeTravelDocumentSits` here should expect
+the same materially higher false-positive rate as the SharePoint/OneDrive sibling.
 
 ## 6. Where the two siblings' designs combine without friction, and the one place they don't
 

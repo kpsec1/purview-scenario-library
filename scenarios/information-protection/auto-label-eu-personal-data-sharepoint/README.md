@@ -255,6 +255,11 @@ simulation mode reviewed for at least a business cycle (7+ days) → Enable.
   matches specifically; track override/manual relabel activity in Activity Explorer.
 - **Backlog coverage** — same on-demand classification recommendation as the sibling scenario for
   a tenant with years of existing content [[1]](#references).
+- **If `-IncludeTravelDocumentSits` is enabled**, watch its false-positive rate separately from the
+  default condition set — `design.md` §4 tables both opt-in bundles and finds only 8% (passport)
+  and 11% (driver's license) of their per-country entities are checksum-validated, versus 73% for
+  the default national-ID bundle. Expect proportionally more manual overrides/relabels from these
+  two SITs and narrow to specific countries via §6 if the volume is high.
 
 **Alert routing:** same as the sibling scenario — no DLP-style incident-report email; use the
 policy's Overview/Labeled items/Labeling failures dashboard and Activity Explorer, or pull labeling
@@ -354,10 +359,16 @@ to permanently delete the policy and its rules.
   three covering all 27 EU member states plus a standalone U.K. entity. Don't assume "EU-wide"
   means identical coverage across these three SITs — see `design.md` §4 for the full
   per-bundle membership table.
-- **Per-country checksum/confidence detail is not tabled for the two opt-in bundles**, unlike the
-  default national-ID bundle's full 26-country table (§8/`design.md` §4). Tabling both to the same
-  depth would mean fetching 25–28 more individual entity-definition pages per bundle for a
-  non-default condition set — tracked as a `PROGRESS.md` follow-up rather than fabricated.
+- **The two opt-in travel-document bundles carry far weaker checksum validation than the default
+  national-ID bundle.** `design.md` §4 now tables all 26 "EU passport number" members and all 28
+  "EU driver's license number" members to the same depth as the default bundle's table: only **2 of
+  26 passport entities (8%)** are checksum-validated (Germany, Poland) and only **3 of 28
+  driver's-license entities (11%)** are (Germany, Spain, U.K.) — versus 73% for the default
+  national-ID bundle. The driver's-license bundle additionally caps at Medium (75) confidence for 25
+  of its 28 members (no High-confidence tier exists for the non-checksum countries in this SIT
+  family). A buyer who enables `-IncludeTravelDocumentSits` should expect a materially higher
+  false-positive rate than the default condition set and should weigh the per-country
+  `-SensitiveInfoTypeName` narrowing in §6 more heavily than for the default bundle.
 - **This scenario does not cover Exchange (email).** The Exchange companion is now built as
   `scenarios/information-protection/auto-label-eu-personal-data-exchange/` (closed 2026-09-08) — a
   separate policy object, not an additional rule on this scenario's own policy, because Exchange

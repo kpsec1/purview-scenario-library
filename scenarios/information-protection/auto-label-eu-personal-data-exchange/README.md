@@ -425,9 +425,12 @@ reference: `./deploy/Remove-EuPersonalDataAutoLabelExchangePolicy.ps1` disables 
   addition, 2026-09-09). Enabling this switch to add U.K. passport-number detection to email also
   enables U.S. passport-number detection with no way to select one without the other via this
   bundle SIT. A buyer who needs U.K.-only passport detection without U.S. false positives would
-  need a custom SIT (out of scope here). Per-country checksum/confidence detail for the two opt-in
-  bundles is not tabled in this scenario — see the SharePoint/OneDrive sibling's `design.md` §4 for
-  what has been grounded, and `PROGRESS.md` for the still-open follow-up to table the rest.
+  need a custom SIT (out of scope here). Per-country checksum/confidence detail for both opt-in
+  bundles is now fully tabled in the SharePoint/OneDrive sibling's `design.md` §4 (not duplicated
+  here): only **8% of the 26 passport-bundle entities** (Germany, Poland) and **11% of the 28
+  driver's-license-bundle entities** (Germany, Spain, U.K.) are checksum-validated, versus 73% for
+  the default national-ID bundle — expect a materially higher false-positive rate from email
+  matches on either opt-in SIT than from the default condition set.
 - **VERIFY (pilot tenant, before production reliance): byte-exact SIT name capitalization.**
   Inherited unchanged from the SharePoint/OneDrive EU sibling's own open item (`design.md` §4) —
   Microsoft's Learn pages render the same SIT names with inconsistent casing across pages. Mitigated

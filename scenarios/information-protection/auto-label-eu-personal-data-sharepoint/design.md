@@ -97,12 +97,10 @@ that narrower control (`-SensitiveInfoTypeName` still accepts a fully custom lis
 one). Flagged as a Red Team-relevant finding in `reviews.md` round 2 and `README.md` §11, not
 silently absorbed into the "just enable the bundle" framing.
 
-**Scope boundary, disclosed rather than silently deferred:** unlike the default national-ID bundle
-(§4 above, which has a full 26-country checksum/confidence table grounded in the original build),
-this fragment does not table checksum/confidence detail per country for the passport or driver's-
-license bundles — that would mean individually fetching 25–28 more entity-definition pages per
-bundle, roughly doubling this fragment's scope for an *opt-in*, non-default condition set. Tracked
-as a follow-up in `PROGRESS.md` rather than fabricated or silently skipped.
+**Per-country checksum/confidence detail for both opt-in bundles is now tabled below**, to the same
+depth as the default national-ID bundle — closing the follow-up this scenario originally deferred
+(fetching 25–28 more individual Microsoft Learn entity-definition pages per bundle, one round of
+grounding per bundle, fetched directly on 2026-09-09).
 
 **Per-country checksum-strength reference — all 26 members of the "EU national identification
 number" bundle.** `reviews.md` (Red Team finding 1) flagged that the bundle's per-country entities
@@ -147,6 +145,95 @@ Germany's pre-2010 10-digit path as effectively pattern-only for false-positive 
 The 7 pattern-only countries carry the bundle's highest false-positive risk and are the first
 candidates to exclude via the `-SensitiveInfoTypeName` localization mechanism (§5) for a tenant that
 doesn't operate in those markets — see `README.md` §8's KPI guidance and §11.
+
+**Per-country checksum-strength reference — all 26 members of the opt-in "EU passport number"
+bundle**, each fetched directly from its own Microsoft Learn entity-definition page (2026-09-09):
+
+| Country | Format | Checksum | Highest documented confidence | Notes |
+|---|---|---|---|---|
+| Austria | 1 letter + 7 digits | No (`Not applicable`) | High (85) | — |
+| Belgium | 2 letters + 6 digits | No (`Not applicable`) | High (85) | — |
+| Bulgaria | 9 digits | No | High (85) | — |
+| Croatia | 9 digits | No | High (85) | — |
+| Cyprus | 1 letter + 6–8 digits | No | High (85) | — |
+| Czech Republic | 8 digits | No | High (85) | — |
+| Denmark | 9 digits | No | High (85) | — |
+| Estonia | 1 letter + 7 digits | No | High (85) | — |
+| Finland | 2 letters + 7 digits | No | High (85) | — |
+| France | 2 digits + 2 letters + 5 digits | No | High (85) | Matched via a function (`Func_fr_passport`), not a plain regex, but still not checksum-validated |
+| Germany | 9–11 chars, letter-set-restricted | **Yes** | High (85) | Checksum path requires DLP engine ≥ 15.20.4570.0; below that version the entity falls back to a 75-confidence, non-checksum pattern match — see `README.md` §11 |
+| Greece | 2 letters + 7 digits | No | High (85) | — |
+| Hungary | 2 letters + 6–7 digits | No | High (85) | — |
+| Ireland | 2 alphanumeric + 7 digits | No | High (85) | — |
+| Italy | 2 alphanumeric + 7 digits | No (`Not applicable`) | High (85) | — |
+| Latvia | 2 alphanumeric + 7 digits | No | High (85) | — |
+| Lithuania | 8 alphanumeric | No (`Not applicable`) | High (85) | — |
+| Malta | 7 digits | No | High (85) | — |
+| Poland | 2 letters + 7 digits | **Yes** | High (85) | Checksum-validated function (`Func_polish_passport_number_v2`); confidence tiers at 85/75/65 depending on which of checksum+keyword+date corroborate |
+| Portugal | 1 letter + 6 digits | No | High (85) | — |
+| Romania | 8 or 9 digits | No | High (85) | — |
+| Slovakia | 8–9 alphanumeric | No | High (85) | — |
+| Slovenia | "P" + 1 letter + 7 digits | No | High (85) | — |
+| Spain | 8–9 alphanumeric | No (`Not applicable`) | High (85) | — |
+| Sweden | 8 digits | No | High (85) | — |
+| U.S./U.K. passport number | 1 alphanumeric + 8 digits | No | High (85) | Combined entity — see §4 above; matches both U.S. and U.K. formats |
+
+**Only 2 of 26 members (8%) are checksum-validated** (Germany, Poland) — a materially weaker
+validation profile than the default national-ID bundle's 73%. Every entity in this bundle reaches
+the same 85-confidence ceiling regardless of checksum status (the non-checksum entities earn High
+confidence from pattern + keyword + a nearby issue/expiry date, not from a weaker structural match),
+so a buyer cannot distinguish "checksum-backed, high-confidence passport match" from "9-digit
+pattern near the word 'passport'" by confidence level alone — see `README.md` §11 for the
+false-positive-planning consequence.
+
+**Per-country checksum-strength reference — all 28 members of the opt-in "EU driver's license
+number" bundle**, each fetched directly from its own Microsoft Learn entity-definition page
+(2026-09-09):
+
+| Country | Format | Checksum | Highest documented confidence | Notes |
+|---|---|---|---|---|
+| Austria | 8 digits | No | Medium (75) | — |
+| Belgium | 10 digits | No | Medium (75) | — |
+| Bulgaria | 9 digits | No | Medium (75) | — |
+| Croatia | 8 digits | No | Medium (75) | — |
+| Cyprus | 12 digits | No | Medium (75) | — |
+| Czech Republic | "E" + 1 letter + 6 digits | No | Medium (75) | — |
+| Denmark | 8 digits | No | Medium (75) | — |
+| Estonia | "ET" + 6 digits | No | Medium (75) | — |
+| Finland | 6 digits + hyphen + 3 digits + 1 alphanumeric | No | Medium (75) | — |
+| France | 12 digits | No | Medium (75) | Matched via a function (`Func_french_drivers_license`) that discounts French phone-number-shaped false positives, not a checksum |
+| Germany | 11 alphanumeric | **Yes** | Medium (75) | Checksum required for a match at all (single-tier definition — no non-checksum fallback pattern documented, unlike the German passport entity) |
+| Greece | 9 digits | No | Medium (75) | — |
+| Hungary | 2 letters + 6 digits | No | Medium (75) | — |
+| Ireland | 6 digits + 4 letters | No | Medium (75) | — |
+| Italy | 1 letter + 8 alphanumeric + 1 letter | No | Medium (75) | — |
+| Latvia | 3 letters + 6 digits | No | Medium (75) | — |
+| Lithuania | 8 digits | No | Medium (75) | — |
+| Luxembourg | 6 digits | No | Medium (75) | — |
+| Malta | 2 alphanumeric + 3 digits + 3 digits | No | Medium (75) | — |
+| Netherlands | 10 digits | No | Medium (75) | — |
+| Poland | 11 or 14 digits with 2 slashes | No | Medium (75) | — |
+| Portugal | 2 letters/1 letter + 5–8 digits, hyphenated | No | Medium (75) | — |
+| Romania | 1 alphanumeric + 8 digits | No | Medium (75) | — |
+| Slovakia | 1 alphanumeric + 7 digits | No | Medium (75) | — |
+| Slovenia | 9 digits | No | Medium (75) | — |
+| Spain | 8 digits + 1 alphanumeric | **Yes** | High (85) | Two checksum functions (citizen/foreigner formats); 85 with a keyword nearby, 75 (checksum only, no keyword) otherwise — the only driver's-license entity in this bundle that reaches High confidence |
+| Sweden | 6 digits + hyphen + 4 digits | No | Medium (75) | — |
+| U.K. | 18-character composite (name-derived + DOB-encoded + check letters) | **Yes** | Medium (75) | Checksum required for a match at all; 75 with a keyword nearby, 65 (checksum only) otherwise |
+
+**Only 3 of 28 members (11%) are checksum-validated** (Germany, Spain, U.K.). Unlike the passport
+bundle, this bundle's own top confidence tier for 25 of its 28 members is capped at Medium (75) —
+Microsoft's own entity definitions for this SIT family document no High-confidence (85) tier at all
+for the non-checksum countries, only a single medium-confidence pattern-plus-keyword rule. Spain and
+the U.K. are the only two members that can reach a stronger evidentiary combination (checksum +
+keyword), and only Spain reaches 85.
+
+**Cross-bundle takeaway (Red Team-relevant, see `reviews.md` round 3):** the three EU-wide bundles
+this scenario can reference carry sharply different validation strength — 73% checksum-validated for
+the *default* national-ID bundle, but only 8% (passport) and 11% (driver's license) for the two
+*opt-in* bundles. A buyer who enables `-IncludeTravelDocumentSits` should not assume the same
+false-positive profile as the default condition set; §5's per-country `-SensitiveInfoTypeName`
+narrowing is proportionally more valuable for these two bundles than for the default one.
 
 **VERIFY (pilot tenant, before production reliance):** the exact, byte-precise capitalization of
 these three SIT names as they must be passed to `-ContentContainsSensitiveInformation` /

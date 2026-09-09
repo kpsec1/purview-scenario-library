@@ -268,3 +268,93 @@ All Fix items from round 2 are resolved in the current state of `README.md`, `de
 `deploy/New-EuPersonalDataAutoLabelPolicy.ps1`, and
 `validate/Test-EuPersonalDataAutoLabelPolicy.ps1`. This fragment meets the definition of done in
 `AGENTS.md` §9.
+
+## Review round 3 — 2026-09-09 — per-country checksum/confidence table for both opt-in bundles
+
+Scope: the `PROGRESS.md` follow-up asking for a full per-country checksum/confidence table for the
+"EU passport number" and "EU driver's license number" opt-in bundles, matching the depth already
+built for the default "EU national identification number" bundle in round 1. Reviewed after fetching
+all 26 passport-bundle and all 28 driver's-license-bundle entity-definition pages directly from
+Microsoft Learn and adding both tables to `design.md` §4, with `README.md` §8/§11 updated to cite
+the results.
+
+### 🔴 Red Team
+
+**Verdict: Pass (no new Fix — this round closes a prior gap rather than opening one)**
+
+- The headline finding this round surfaces is itself the Red Team-relevant one: both opt-in bundles
+  are dramatically weaker on checksum validation than the default bundle a buyer already trusts (8%
+  and 11% vs. 73%). That is now disclosed, not hidden — `README.md` §11 states it in the same
+  concrete, numeric terms this repo's Red Team lens requires, not "some countries lack checksums."
+- Verified the driver's-license bundle's confidence ceiling claim directly against every one of the
+  28 fetched pages, not sampled: 25 of 28 entities have exactly one `<Pattern>` tier at
+  `confidenceLevel="75"` with no higher tier defined at all — a materially different (weaker)
+  structure than the passport bundle's uniform two-tier 85/75 definitions, and worth calling out
+  explicitly rather than averaging the two bundles together as "opt-in SITs are weaker."
+- No bypass/evasion angle beyond what's already disclosed: a pattern-only, no-checksum SIT (the
+  overwhelming majority of both bundles) is inherently easier to evade by using a superficially
+  similar but invalid number, but this is the same class of risk already reviewed and accepted for
+  the default bundle's 7 pattern-only members in round 1 — not a new risk class introduced by this
+  round's grounding work.
+
+No Fix/Fail items from this lens.
+
+### 🔵 Blue Team
+
+**Verdict: Pass**
+
+- `README.md` §8's new KPI bullet gives operators a concrete, numeric expectation (8%/11% vs. 73%
+  checksum coverage) to calibrate false-positive triage effort *before* enabling
+  `-IncludeTravelDocumentSits`, rather than discovering the weaker signal quality only after
+  fielding a wave of override requests.
+- No new alerting/observability surface introduced — this round is documentation-only (design.md
+  tables + README cross-references); the underlying policy mechanics, deploy script, and validate
+  script are unchanged from round 2.
+
+No Fix/Fail items from this lens.
+
+### 🎩 CISO
+
+**Verdict: Pass**
+
+- Zero cost, zero risk change — pure grounding/documentation completeness work that closes a
+  disclosed gap from round 2 rather than changing behavior. No new licensing, no new
+  infrastructure, no new admin action required.
+- The 8%/11%-vs-73% checksum-coverage numbers are exactly the kind of concrete, decision-usable
+  metric a CISO needs to size the operational cost (override/relabel volume) of enabling the two
+  opt-in bundles before approving that expansion for a specific regulated population.
+- Would I fund this? Yes — closing a previously-disclosed, explicitly-tracked gap with real,
+  individually-fetched data (not estimated or extrapolated) is exactly the standard this library
+  holds itself to elsewhere.
+
+No Fix/Fail items from this lens.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Pass**
+
+- All 54 entity-definition pages (26 passport + 28 driver's-license) were fetched directly from
+  their own Microsoft Learn URLs during this round — no value in either new table was inferred,
+  extrapolated from a subset, or carried over from the national-ID bundle's own numbers.
+- The Germany-passport engine-version caveat (checksum path requires DLP engine ≥ 15.20.4570.0,
+  confirmed directly from that entity's own `<Version minEngineVersion="...">` XML block) is
+  reproduced faithfully in `design.md` §4 rather than simplified away — the same standard of
+  fidelity this repo already applies to the German national-ID entity's post-2010-only checksum
+  caveat in round 1's table.
+- No invented cmdlets, blade paths, or SIT names — this round's only artifact is descriptive data
+  (format/checksum/confidence) tabled directly from Microsoft's own entity-definition XML, the same
+  low-risk grounding pattern as round 1.
+
+No Fix/Fail items from this lens.
+
+### Summary — round 3
+
+| Lens | Verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Pass | 0 (closes a prior disclosed gap) | — |
+| 🔵 Blue Team | Pass | 0 | — |
+| 🎩 CISO | Pass | 0 | — |
+| 🟦 Microsoft Product Owner | Pass | 0 | — |
+
+No Fix/Fail items from round 3. This fragment (the `PROGRESS.md` follow-up requesting per-country
+checksum/confidence tables for both opt-in bundles) meets the definition of done in `AGENTS.md` §9.
