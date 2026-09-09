@@ -1,0 +1,30 @@
+{
+  "_comment": "Config for deploy/New-PriorityCleanupExchangePolicy.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Creates a PRIORITY CLEANUP retention label + policy + rule that PERMANENTLY DELETES matching mailbox content, overriding existing retention policies, litigation holds, eDiscovery holds, and even Preservation Lock. Read README.md Sections 2 and 11 before deploying - this is IRREVERSIBLE and bypasses the safeguards every other retention control in this repo relies on.",
+  "label": {
+    "name": "Priority Cleanup - Data Spillage",
+    "comment": "Data-spillage priority cleanup label (2026 M&A-deck leak incident). Permanently deletes matched items regardless of hold status. Underlying mechanism per New-ComplianceTag -PriorityCleanup.",
+    "retentionAction": "Delete",
+    "retentionDurationDays": 0,
+    "retentionType": "TaggedAgeInDays",
+    "approvalStages": [
+      { "stageName": "PriorityCleanupAdmin", "reviewers": ["priority-cleanup-admin2@contoso.com"] },
+      { "stageName": "RetentionManager", "reviewers": ["retention-manager@contoso.com"] },
+      { "stageName": "EDiscoveryAdmin", "reviewers": ["ediscovery-admin@contoso.com"] }
+    ],
+    "_labelNote": "retentionAction must be 'Delete' for priority cleanup per New-ComplianceTag's PriorityCleanup parameter set (RetentionAction/RetentionDuration/RetentionType/MultiStageReviewProperty are all mandatory once -PriorityCleanup is used). retentionDurationDays=0 is this scenario's best-effort mapping of the portal's 'delete matched items as soon as possible' choice - VERIFY (README.md Section 11): Microsoft's reference does not publish the literal duration value 'as soon as possible' maps to. retentionType=TaggedAgeInDays (clock starts when the priority-cleanup label is applied) is this scenario's choice, not a documented default - see design.md Section 4. approvalStages become the label's -MultiStageReviewProperty JSON (one stage per required approver: priority cleanup admin, retention manager, eDiscovery admin, per priority-cleanup-exchange#prerequisites-for-priority-cleanup). The stageName strings and stage ORDER shown here are this scenario's own construction, not values copied from a Microsoft worked example for priority cleanup specifically - VERIFY before relying on stage order to match the documented approval sequence (README.md Section 11)."
+  },
+  "policy": {
+    "name": "Priority Cleanup - Data Spillage - Exchange",
+    "comment": "Static scope: mailboxes confirmed to have received the leaked attachment. Switch to exchangeLocation 'All' only if the spread is unknown - see README.md Section 6.",
+    "exchangeLocation": ["spillage-recipient1@contoso.com", "spillage-recipient2@contoso.com"],
+    "exchangeLocationException": [],
+    "enabled": false,
+    "_policyNote": "enabled=false by default - this scenario requires a deliberate -Simulate or -Enabled run, never a default-on deploy (README.md Section 5). exchangeLocation accepts specific mailboxes (up to 100 confidently, per Microsoft's own sizing guidance) or the literal string 'All'. Group mailboxes are supported only via adaptive scopes (out of scope for this static-scope starter - see design.md Section 7)."
+  },
+  "rule": {
+    "contentMatchQuery": "AttachmentNames:\"Q4-Acquisition-Targets.xlsx\" AND sent>=2026-08-15",
+    "_ruleNote": "KeyQL query (-ContentMatchQuery), same search index as eDiscovery content search. NOTE: priority cleanup's KeyQL does NOT support SenderAuthor, SubjectTitle, (c:c), or (c:s) - confirmed limitation, do not use those properties here even though eDiscovery search otherwise allows them. Narrow this to the actual spillage signal; an over-broad query permanently destroys content that cannot be recovered - see README.md Section 11."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-09"
+}

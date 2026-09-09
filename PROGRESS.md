@@ -698,10 +698,59 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `irm-case-escalation-to-ediscovery` follow-ups near the top of this file). Resolving either half
   would let `adaptive-protection-deleted-content-preservation/README.md` §11's self-sabotage
   finding state a concrete detection mechanism instead of an open gap.
-- [ ] Consider a Data Lifecycle Management follow-up scenario for **Priority Cleanup** — a
+- [x] Consider a Data Lifecycle Management follow-up scenario for **Priority Cleanup** — a
   different DLM feature that also applies retention labels internally and can override holds to
   reclaim disk space or permanently delete sensitive information — explicitly out of scope for
-  this fragment (`design.md` §7) since it's unrelated to Adaptive Protection.
+  this fragment (`design.md` §7) since it's unrelated to Adaptive Protection. — **built** (see
+  DONE below) as `scenarios/data-lifecycle-management/priority-cleanup-exchange-data-spillage/`:
+  the Exchange, data-spillage variant (Microsoft's own lead use case and richest, 3-stage approval
+  model). Grounded directly against the official `-PriorityCleanup` parameter set Microsoft ships
+  on `New-ComplianceTag`/`New-RetentionCompliancePolicy`/`New-RetentionComplianceRule` — a real,
+  documented automation surface, not a fabricated one. Two genuine construction gaps disclosed as
+  VERIFY rather than guessed: the `-MultiStageReviewProperty` 3-stage JSON shape (mandatory on the
+  label, but no Microsoft worked example ties it to priority cleanup's specific 3-approver model),
+  and the `RetentionDuration`/`RetentionType` value that maps to the portal's "delete as soon as
+  possible" choice. Confirmed no PowerShell/Graph cmdlet exists for approving pending priority
+  cleanup items or for the tenant-wide on/off toggle — both stated as portal-only gaps, not
+  invented. The SharePoint/OneDrive variant (different, single-eDiscovery-admin approver model,
+  mandatory simulation, and a separate public-preview permanent-deletion sub-feature) is a
+  follow-up below, per `AGENTS.md` §6's one-fragment-per-turn discipline.
+
+### Follow-ups discovered while building the Priority Cleanup Exchange data-spillage scenario
+- [ ] `scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/` — the
+  SharePoint/OneDrive sibling: different approver model (eDiscovery admin only, vs. Exchange's
+  3-stage priority-cleanup-admin/retention-manager/eDiscovery-admin chain), **mandatory**
+  simulation before every enable (vs. recommended-only for Exchange), and typical continual use
+  (stale Teams meeting recordings/transcripts, Preservation Hold library cleanup after a user
+  leaves) rather than Exchange's rare, incident-driven use — explicitly deferred in this build
+  (`design.md` §3/§7) as a materially different fragment, not a copy-paste of the Exchange script.
+- [ ] `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/` (or fold into the
+  SharePoint/OneDrive sibling above) — the separate SharePoint/OneDrive **permanent deletion**
+  sub-feature (bypasses the second-stage Recycle Bin entirely; public preview rollout begins
+  2026-08-24) — out of scope for this Exchange-only fragment.
+- [ ] VERIFY (pilot tenant, before production reliance): whether the `-MultiStageReviewProperty`
+  JSON's `StageName` values and array order are meaningful to the platform (e.g. must match a
+  fixed priority-cleanup-admin → retention-manager → eDiscovery-admin sequence) or are purely a
+  display label with role membership alone driving approval order — no Microsoft worked example
+  ties this parameter to priority cleanup specifically, only its general multi-stage-disposition-
+  review shape. Flagged inline in `priority-cleanup-exchange-data-spillage/design.md` §4,
+  `README.md` §6/§11, and the deploy script's `.NOTES`/config `_labelNote` rather than guessed.
+- [ ] VERIFY (pilot tenant): the exact `RetentionDuration`/`RetentionType` value the portal's
+  "delete matched items as soon as possible" choice actually issues — this scenario defaults to
+  `RetentionDuration 0` / `RetentionType TaggedAgeInDays` as the closest literal reading, loosely
+  corroborated by the end-user-facing `(-1 days)` countdown Microsoft's docs describe for this
+  mode, but no cmdlet-level worked example confirms it. `priority-cleanup-exchange-data-spillage/
+  design.md` §4 and `README.md` §6/§11.
+- [ ] Once a documented PowerShell/Graph cmdlet exists for the priority-cleanup tenant-wide
+  on/off toggle (the "Priority cleanup settings" portal page), or for the "Pending cleanups"
+  approval queue, extend `priority-cleanup-exchange-data-spillage`'s scripts to cover it — neither
+  was found during this build's grounding pass across official Microsoft Learn sources; both are
+  disclosed as portal-only gaps rather than fabricated cmdlets (`README.md` §11, `design.md` §7).
+- [ ] Consider a companion scenario chaining eDiscovery search-and-purge (soft-delete) with this
+  scenario's priority cleanup policy, matching Microsoft's own documented workflow for avoiding
+  the end-user-visible "Retention: ... (-1 days)" message bar in Outlook — deferred here
+  (`design.md` §7) since no eDiscovery search-and-purge scenario exists yet in this repo to chain
+  onto.
 
 ### Follow-ups discovered while building the Conditional Access insider-risk-block scenario
 - [x] Backport the GA-status correction (`conditional-access-insider-risk-block/design.md` §8)
@@ -1517,6 +1566,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   timelines.
 
 ## DONE
+- [x] **`scenarios/data-lifecycle-management/priority-cleanup-exchange-data-spillage/`** — full
+  README (12-section skeleton), design.md, deploy/ (`New-PriorityCleanupExchangePolicy.ps1` —
+  idempotent create-or-report of a priority cleanup label/policy/rule via the official
+  `-PriorityCleanup` parameter set on `New-ComplianceTag`/`New-RetentionCompliancePolicy`/
+  `New-RetentionComplianceRule`, refuses to deploy without an explicit `-Simulate`/`-Enabled`/
+  `-DryRun` choice, `-EnforceSimulation` mode for the second-admin turn-on step;
+  `Remove-PriorityCleanupExchangePolicy.ps1` — disable/delete rollback that never force-removes
+  the label and warns explicitly that a completed approval can't be recalled), validate/ script
+  (`Test-PriorityCleanupExchangePolicy.ps1` — classification via the documented `-PriorityCleanup`
+  filter switch on each `Get-*` cmdlet rather than an assumed boolean property), rollback.md
+  (staged: portal-only decline-pending-items step first, then disable, then delete, then optional
+  label removal), four-lens reviews.md (Red Team Fix round resolved — spoliation framing,
+  approver-distinctness gap disclosed, query-scope as the one-way door; Blue Team Fix round
+  resolved — unfriendly audit-op names, no approval-queue API disclosed rather than hidden,
+  documented-filter-switch classification; CISO Fix round resolved — governance-gate framing,
+  confirmed on preview-status prominence and funding recommendation; Product Owner Fix round
+  resolved — two construction gaps flagged as VERIFY rather than fabricated). Grounded directly
+  via the Microsoft Learn MCP tool (`microsoft_docs_search`/`microsoft_docs_fetch`, available this
+  run): fetched the full `priority-cleanup-exchange`/`priority-cleanup-onedrive-sharepoint`/
+  `priority-cleanup-permanent-deletion` pages and the complete PowerShell reference for
+  `New-ComplianceTag`, `New-/Set-/Get-RetentionCompliancePolicy`, `New-/Set-/Get-
+  RetentionComplianceRule`, and `Get-ComplianceTag` — confirming the official `-PriorityCleanup`
+  parameter set/filter switch is real and documented (not the fabricated `New-
+  PriorityCleanupPolicy`/`Set-PriorityCleanupSetting` cmdlet names an initial WebSearch AI summary
+  surfaced and this build explicitly rejected after finding no Microsoft Learn page naming
+  either). Confirmed licensing directly against the Purview service description's dedicated
+  priority-cleanup licensing line (same E5-tier family as Records Management); backported a row
+  into `docs/licensing-matrix.md` §2 and a cross-reference into `docs/rbac-model.md` §4's Data
+  Lifecycle Management row for the 3-stage approver role requirement. Two genuine construction
+  gaps (the `-MultiStageReviewProperty` 3-stage JSON shape; the `RetentionDuration`/`RetentionType`
+  mapping for "delete as soon as possible") disclosed as VERIFY per `AGENTS.md` §4 rather than
+  guessed with false confidence — tracked as follow-ups above. — 2026-09-09
 - [x] **`scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/` —
   Adaptive Protection Deleted-Content Preservation scenario** — built the Data Lifecycle
   Management half of Adaptive Protection this library had deferred since
