@@ -1724,7 +1724,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/adaptive-protection/block-legacy-authentication/`** — commit
-  `(pending — recorded in the next commit)` — 2026-09-09. Closes the `PROGRESS.md` follow-up
+  `d8d0c01` — 2026-09-09. Closes the `PROGRESS.md` follow-up
   originally raised in `conditional-access-insider-risk-block/reviews.md` (Red Team: legacy-auth
   clients may not fully honor the Insider Risk condition). Full README (12-section skeleton),
   design.md, deploy/ (`New-BlockLegacyAuthenticationPolicy.ps1` — checks first, best-effort, for
