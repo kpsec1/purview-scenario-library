@@ -1680,7 +1680,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/unified-catalog/manage-critical-data-elements-related-terms/`** — commit
-  (recorded in next commit below) — 2026-09-09. Closes the `PROGRESS.md` follow-up
+  `c4b8019` — 2026-09-09. Closes the `PROGRESS.md` follow-up
   `manage-critical-data-elements/design.md` §7 deferred as a non-goal. Full README (12-section
   skeleton), design.md, deploy/ (`Add-CdeRelatedTerm.ps1` — idempotent link-only script: resolves
   an already-existing governance domain, critical data element, and glossary term(s) strictly by
