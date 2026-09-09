@@ -1344,7 +1344,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`auto-label-eu-personal-data-sharepoint` — full per-country checksum/confidence table for
-  both opt-in travel-document bundles** — commit `<pending>` — 2026-09-09 — closed the
+  both opt-in travel-document bundles** — commit `b0012e0` — 2026-09-09 — closed the
   `PROGRESS.md` follow-up asking for the same per-country grounding depth already built for the
   default "EU national identification number" bundle. Fetched all 26 "EU passport number" and all
   28 "EU driver's license number" member entity-definition pages directly from Microsoft Learn (54
