@@ -572,12 +572,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   alert with an empty `RelatedDefenderAlerts` array) when the join doesn't fire, so this doesn't
   block production use — it would only let a future revision state the join's reliability with
   confidence instead of "best effort." `README.md` §11; `design.md` §2 goal 5/§5.
-- [ ] Cross-reference a Microsoft Defender for Endpoint role capable of managing advanced features
+- [x] Cross-reference a Microsoft Defender for Endpoint role capable of managing advanced features
   (e.g., **Security Administrator**) into `docs/rbac-model.md` — that doc currently covers Purview,
   Entra directory, and Intune RBAC (§9) but not the Defender for Endpoint role needed for this
   scenario's §5 Step 2 (enabling "Share endpoint alerts with Microsoft Compliance Center").
   `security-policy-violations-by-departing-users/README.md` §3 notes this gap inline rather than
-  guessing at a role name beyond the one Microsoft's own advanced-features documentation implies.
+  guessing at a role name beyond the one Microsoft's own advanced-features documentation implies —
+  **built** (see DONE below): new §12 covers basic permissions (Security Administrator/Security
+  Reader), the legacy granular **Manage security settings in Security Center** permission, and its
+  Defender-unified-RBAC (URBAC) equivalent **Core security settings (Manage)**.
 - [ ] Consider `scenarios/insider-risk/security-policy-violations/` (the base template — no
   departure/HR trigger, scores every onboarded user continuously), `…-by-priority-users/`, and
   `…-by-risky-users/` as separate, narrowly-scoped follow-up fragments — each has a materially
@@ -3441,6 +3444,32 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Endpoint Plan 1 vs. Plan 2 sufficiency; whether the `incidentId` join is actually reliable;
   Security Administrator role not yet in `docs/rbac-model.md`; the three sibling "Security policy
   violations…" templates left as separate candidate fragments). Commit: `3d61f9b`. Date: 2026-09-09.
+- [x] **Extend `docs/rbac-model.md` with a new §12: Microsoft Defender for Endpoint portal RBAC —
+  an eighth system, for scenarios that configure Defender for Endpoint tenant-wide settings** —
+  commit `<pending>` — 2026-09-09 — a scoped cross-cutting-doc fragment (not a new scenario),
+  closing the follow-up logged during the Security Policy Violations by Departing Users build:
+  that scenario's §5 Step 2 requires toggling "Share endpoint alerts with Microsoft Compliance
+  Center" on the Microsoft Defender portal's Advanced features page, a Defender-portal RBAC
+  surface `docs/rbac-model.md` didn't cover. New §12 documents three grounded access paths: (1)
+  basic permissions — Microsoft Entra **Security Administrator** (full access)/**Security Reader**
+  (read-only); (2) granular legacy Defender for Endpoint RBAC — the **Manage security settings in
+  Security Center** permission, evidenced not by symmetry but by Microsoft's own companion
+  procedure for the adjacent Intune-connection toggle on the *same* settings page, which names this
+  exact permission as the non-Entra-role alternative to Security Administrator; (3) its Defender
+  **unified RBAC (URBAC)** equivalent — **Core security settings (Manage)** (+ **Detection tuning
+  (Manage)**) per Microsoft's own legacy-to-unified permission mapping table, mandatory for every
+  tenant provisioned on/after February 16, 2025. Also notes the toggle has no documented
+  Graph/PowerShell surface (consistent with the parent scenario's own finding) and that this
+  role/permission grants no Purview access, the same separation-of-concerns point §9–§11 already
+  make for Intune/Conditional Access/app-registration RBAC. Old §12 ("How scenarios should cite
+  RBAC") renumbered to §13, with a new point 1 caveat for Defender-for-Endpoint-configuring
+  scenarios. Cross-linked back into
+  `security-policy-violations-by-departing-users/README.md`'s Prerequisites table and §5 Step 1 in
+  place of the "not yet cross-referenced" note. No VERIFY items needed — every fact came from an
+  official Microsoft Learn page fetched in full this run (`defender-endpoint/advanced-features`,
+  `defender-endpoint/rbac`, `defender-endpoint/user-roles`, `defender-xdr/manage-rbac`,
+  `defender-xdr/compare-rbac-roles`, `intune/device-security/microsoft-defender/configure-
+  integration`), not inferred or fabricated.
 
 ## Blocked / needs user
 - (none)

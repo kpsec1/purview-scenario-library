@@ -57,7 +57,7 @@ This scenario adds **one prerequisite the sibling scenario does not have**:
 | Defender for Endpoint → Purview alert sharing | "Share endpoint alerts with Microsoft Compliance Center" advanced feature, enabled in the Microsoft Defender portal | Portal-only toggle, no documented Graph/PowerShell equivalent — see §5 Step 2 [[4]](#references) |
 | HR data source (optional trigger) | Same HR connector as `departing-employee-data-theft` — **reused, not a second connector** | If that scenario is already deployed, skip straight to this scenario's §5 Step 4; Microsoft documents the connector as a single tenant-level object multiple policy templates can consume [[5]](#references) |
 | Role to configure policies/settings | **Insider Risk Management** or **Insider Risk Management Admins** role group | Same as the sibling scenario — `docs/rbac-model.md` §4 |
-| Role to configure the Defender for Endpoint advanced feature | A Defender for Endpoint role with **Security settings** management permissions (e.g., **Security Administrator**) | Different admin surface than Purview RBAC — not yet cross-referenced into `docs/rbac-model.md`; tracked in `PROGRESS.md` |
+| Role to configure the Defender for Endpoint advanced feature | Microsoft Entra **Security Administrator** (basic permissions), or the granular **Manage security settings in Security Center** permission (legacy Defender for Endpoint RBAC) / **Core security settings (Manage)** permission (Defender unified RBAC) | Different admin surface than Purview RBAC — see `docs/rbac-model.md` §12 |
 | Automation identity for alert export | App registration with the Microsoft Graph **`SecurityAlert.Read.All`** application permission, certificate-based | Identical to the sibling scenario's export script — the same app registration can be reused [[6]](#references) |
 
 > Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms
@@ -89,7 +89,8 @@ Full rule-by-rule rationale is in `design.md` §4–6.
 
 Same as the sibling scenario's README §5 Step 1 (Purview role groups, audit log confirmation).
 Additionally confirm the operator has a Defender for Endpoint role capable of changing advanced
-features (Step 2 below) — typically **Security Administrator** [[4]](#references).
+features (Step 2 below) — typically **Security Administrator**, or the granular permission
+`docs/rbac-model.md` §12 documents [[4]](#references).
 
 ### Step 2 — Enable the Defender for Endpoint → Purview alert-sharing feature (manual, one-time)
 

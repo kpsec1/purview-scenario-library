@@ -340,14 +340,58 @@ right to mint a new application identity in the first place.
   `scenarios/insider-risk/departing-employee-data-theft/README.md` §3 requires the HR-connector
   app to stay permission-free: there is nothing of value to impersonate into.
 
-## 12. How scenarios should cite RBAC
+## 12. Microsoft Defender for Endpoint portal RBAC — an eighth system, for scenarios that configure Defender for Endpoint tenant-wide settings
+
+`scenarios/insider-risk/security-policy-violations-by-departing-users/README.md` §5 Step 2 requires
+toggling **Share endpoint alerts with Microsoft Compliance Center** on the Microsoft Defender
+portal's **Settings → Endpoints → Advanced features** page — a tenant-wide Defender for Endpoint
+setting, not a Purview policy object, an Intune profile, a Conditional Access policy, or an app
+registration. This is a genuinely separate, eighth RBAC model from the seven in §1/§9/§10/§11:
+administered entirely in the **Microsoft Defender portal** (`security.microsoft.com`), and itself
+split across two RBAC generations depending on when the tenant was provisioned.
+
+- **Basic permissions management (either generation):** the Microsoft Entra **Security
+  Administrator** role grants full access to the Microsoft Defender portal, including every
+  Advanced features toggle — the same role §9's Intune table already lists as carrying
+  full-admin Endpoint Security node access. **Security Reader** grants read-only access (can view
+  the current toggle state, cannot change it). This is the simplest, least-friction option for a
+  tenant that hasn't opted into granular Defender for Endpoint RBAC, and is what Microsoft's own
+  companion procedure for the adjacent **Configure the Microsoft Intune connection** toggle on the
+  *same* Advanced features page names explicitly as one of its two supported prerequisites.
+- **Granular RBAC — tenants on the legacy (pre-February 2025) Defender for Endpoint permissions
+  model:** the **Manage security settings in Security Center** permission, assignable to a custom
+  role under **Settings → Endpoints → Roles**. Microsoft's own role-permissions reference doesn't
+  enumerate "Advanced features" by name, but the same companion Intune-connection-toggle procedure
+  above names this exact permission as the non-Entra-role alternative to Security Administrator for
+  configuring that toggle — strong, directly-cited evidence for the sibling toggle on the identical
+  settings page, not an assumption by symmetry alone.
+- **Granular RBAC — tenants on Microsoft Defender **unified RBAC** (URBAC), mandatory for every
+  Defender for Endpoint customer provisioned on or after February 16, 2025:** Microsoft's own
+  legacy-to-unified permission mapping table translates **Manage security settings in Security
+  Center** to the **Authorization and settings → Security settings → Core security settings
+  (Manage)** permission (with **Detection tuning (Manage)** also carried over from the same legacy
+  permission) — assignable to a custom URBAC role under the same **Settings → Endpoints → Roles**
+  page. Existing tenants keep the legacy model above until they migrate; new tenants since that
+  date have URBAC only, with no legacy option.
+- **This role/permission does not grant any Purview access.** A user who can toggle Defender for
+  Endpoint's Advanced features cannot configure Insider Risk Management policies or indicators —
+  that remains the **Insider Risk Management**/**Insider Risk Management Admins** Purview role
+  group (§4), the same separation-of-concerns point §9–§11 already make for Intune, Conditional
+  Access, and Entra app-registration RBAC.
+- **Portal-only setting, no automation surface:** unlike the other seven systems, this toggle has
+  no documented Microsoft Graph or PowerShell equivalent — `security-policy-violations-by-departing-
+  users/README.md` §3 and §5 already flag this; a human with one of the roles/permissions above
+  must set it interactively, and no `deploy/` script in this repo attempts it.
+
+## 13. How scenarios should cite RBAC
 
 Each scenario README's **Prerequisites** section must state:
 1. Which of the **four RBAC systems** (§1) the scenario touches — or, for an Intune-deployed
    scenario, that it uses the separate Intune RBAC model (§9) instead, for a Conditional
-   Access-deployed scenario, that it uses the separate Entra Conditional Access model (§10), or,
-   for a scenario whose own code creates an app registration, that it uses the separate Entra
-   app-registration RBAC model (§11).
+   Access-deployed scenario, that it uses the separate Entra Conditional Access model (§10), for
+   a scenario whose own code creates an app registration, that it uses the separate Entra
+   app-registration RBAC model (§11), or, for a scenario that configures a Defender for Endpoint
+   tenant-wide setting, that it uses the separate Defender for Endpoint portal RBAC model (§12).
 2. The **narrowest built-in Purview role group** that covers it (name it exactly), or note that
    a **custom role group** is recommended for least privilege.
 3. Any **Exchange Online RBAC** dependency (§6) — call it out explicitly if the scenario searches
@@ -385,6 +429,20 @@ Each scenario README's **Prerequisites** section must state:
   applications" behavior; least-privilege guidance between the three app-registration roles) — <https://learn.microsoft.com/entra/identity/role-based-access-control/delegate-app-roles>
 - New-MgApplication, New-MgServicePrincipal, Add-MgApplicationPassword (Microsoft.Graph.Applications
   least-privileged delegated permissions: `Application.ReadWrite.All`) — <https://learn.microsoft.com/powershell/module/microsoft.graph.applications/new-mgapplication>
+- Configure advanced features in Defender for Endpoint (Advanced features page, incl. **Share
+  endpoint alerts with Microsoft Compliance Center**) — <https://learn.microsoft.com/defender-endpoint/advanced-features>
+- Manage portal access using role-based access control in Microsoft Defender for Endpoint (legacy
+  RBAC model; Security Administrator/Security Reader basic-permissions behavior) — <https://learn.microsoft.com/defender-endpoint/rbac>
+- Create and manage roles for role-based access control (legacy permission list, incl. **Manage
+  security settings in Security Center** and **Manage portal system settings**) — <https://learn.microsoft.com/defender-endpoint/user-roles>
+- Microsoft Defender unified role-based access control (RBAC) (URBAC, mandatory for tenants
+  provisioned on/after Feb 16, 2025) — <https://learn.microsoft.com/defender-xdr/manage-rbac>
+- Map existing RBAC permissions to Microsoft Defender unified RBAC permissions (legacy **Manage
+  security settings in Security Center** → **Core security settings (Manage)** + **Detection
+  tuning (Manage)** mapping) — <https://learn.microsoft.com/defender-xdr/compare-rbac-roles>
+- Configure Microsoft Defender for Endpoint with Intune and onboard devices (names **Security
+  Administrator** or **"Manage security settings in Security Center"** as the two supported
+  prerequisites for the adjacent Intune-connection toggle on the same Advanced features page) — <https://learn.microsoft.com/intune/device-security/microsoft-defender/configure-integration>
 
 > **Disclaimer:** role names, default role-group membership, and which system governs a given
 > feature change as Purview ships updates (e.g. the ongoing move toward Microsoft Defender
