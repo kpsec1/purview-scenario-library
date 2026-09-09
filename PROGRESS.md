@@ -280,12 +280,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the Windows WPD-coverage sibling's own equivalent VERIFY), but this is not the same as a worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks this as `[WARN]`, not `[PASS]`,
   pending confirmation — see that scenario's `README.md` §11.
-- [ ] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
+- [x] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
   just Bluetooth, above) once the per-device, dynamic-sub-group `groupId`-clause-nesting idempotency
   model is independently verified against a pilot tenant — same deferred complexity already tracked
   under `defender-device-control-usb-allowlist-macos-vendor-product-matching/` for the parent's own
   `removable_media_devices` family; this fragment's two new `serialNumber`-based allowlists carry
-  the identical limitation, not a new one.
+  the identical limitation, not a new one — **built** (see DONE below) as
+  `scenarios/dlp/defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/`:
+  the same RFC 4122 §4.3 UUIDv5 deterministic-sub-group technique the removable-media sibling already
+  proved, applied independently to both the Apple and Portable families in one fragment (family
+  folded into the hash input so the two families' sub-groups can never collide), with no new rule
+  needed. Deliberately requires each family's `ApprovedAppleDevices`/`ApprovedPortableDevices` group
+  to already have ≥1 `serialNumber` device configured (this fragment never builds that group/its
+  Allow rule from a zero-`serialNumber` starting state — a disclosed scope boundary, see the new
+  follow-up immediately below) and inherits a more severe version of the Bluetooth sibling's own
+  disclosed cross-fragment ordering hazard (`Add-MacPortableDeviceCoverage.ps1 -Force` can silently
+  drop or fully orphan this fragment's additions) — disclosed and detected, not silently engineered
+  around, the same precedent the Bluetooth fragment already established.
 - [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-portable-device-coverage/` —
   tracked above (under the WPD-coverage-scenario follow-ups) — **closed**, see that entry above for
   details.
@@ -1239,7 +1250,52 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   grounding pass this build did — not investigated this round; the base scenario's `README.md` §11
   VERIFY on this point was left as-is (out of scope for a scan-rule-set-focused fragment).
 
+### Follow-ups discovered while building the Defender for Endpoint device control macOS Apple/Portable vendorId/productId compound-matching scenario
+- [ ] Build the Apple/Portable `ApprovedAppleDevices`/`ApprovedPortableDevices` group + its
+  `Allow-Approved*Devices` rule from a zero-`serialNumber` starting state, removing this fragment's
+  own disclosed prerequisite ("at least one `serialNumber` device must already be configured for a
+  family before a `vendorId`/`productId` device can be added to it" — `design.md` §3,
+  `defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/README.md`
+  §3/§11). Deliberately deferred in this build to avoid this fragment also owning
+  `Allow-Approved*Devices` rule creation/teardown and `Deny-AllOther*Devices`'s `excludeGroups`
+  reconciliation — object ownership that belongs to
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage`'s own script today.
+- [ ] Consider backporting an ordering-hazard-awareness change into
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage/deploy/
+  Add-MacPortableDeviceCoverage.ps1` itself (e.g. preserving any `groupId` clause it doesn't own
+  when rebuilding `ApprovedAppleDevices`/`ApprovedPortableDevices`, the same "preserve, don't
+  blind-rebuild" fix that would also close this fragment's own disclosed ordering hazard at the
+  root) — deliberately not attempted in this build, the same "don't reopen an already-reviewed
+  foundational script for an optional extension's benefit" reasoning the Bluetooth allowlist
+  fragment's own `design.md` §8 already applied to its own analogous, less severe hazard. Re-open if
+  a future, unrelated reason to revise that script's own reconcile logic ever comes up.
+- [ ] Extend the Bluetooth family's own single-device `vendorId`/`productId` allowlist
+  (`defender-device-control-usb-allowlist-macos-bluetooth-allowlist/`) to multi-device using this
+  fragment's now twice-proven per-device sub-group + deterministic-UUIDv5 + `groupId`-clause
+  technique — tracked separately as
+  `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist-multi-device/`
+  already in this backlog; this build's own family-scoped hash-input pattern (folding a family tag
+  into the UUIDv5 name string) is directly reusable there without modification once picked up.
+
 ## DONE
+- [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/`**
+  — commit: pending — date: 2026-09-09 — extends
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage`'s `serialNumber`-only Apple
+  and Portable device allowlists with `vendorId`/`productId` compound matching, the same RFC 4122
+  §4.3 UUIDv5 deterministic-sub-group + `groupId`-clause technique
+  `defender-device-control-usb-allowlist-macos-vendor-product-matching` already proved once for
+  removable media — applied independently to both families in one fragment, with a family tag folded
+  into the hash input so the two families' sub-groups can never collide. Both new Learn/GitHub facts
+  (the current Query `any`/`or` synonymy; confirmation that no published sample pairs `vendorId`/
+  `productId` with `apple_devices`/`portable_devices`) were re-fetched directly during this build, not
+  carried over unverified. Requires each family's Approved group to already have ≥1 `serialNumber`
+  device configured — deliberately does not build that group/its Allow rule from a
+  zero-`serialNumber` starting state (tracked as a follow-up above) — and inherits a more severe
+  version of the Bluetooth sibling fragment's own disclosed cross-fragment ordering hazard against
+  `Add-MacPortableDeviceCoverage.ps1`, disclosed and detected (not silently engineered around) the
+  same way. Four-lens review caught and fixed one real defect before closing: an unvalidated
+  `query.$type` pass-through on the Approved group that could have silently written a corrupted or
+  `null` value into a live Intune policy.
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-vendor-product-matching/`**
   — commit `ed22e8a` — 2026-09-08 — the JAMF-managed sibling of
   `defender-device-control-usb-allowlist-macos-vendor-product-matching` (Intune), closing the same

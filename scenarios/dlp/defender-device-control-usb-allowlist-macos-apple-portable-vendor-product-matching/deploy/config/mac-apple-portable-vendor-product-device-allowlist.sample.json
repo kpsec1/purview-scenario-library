@@ -1,0 +1,17 @@
+{
+  "parentPolicyDisplayName": "Device Control (macOS) - USB Removable Media Default-Deny Allowlist",
+  "vendorProductAppleDevices": [
+    {
+      "label": "Loaner-iPad-EnterpriseImage-01",
+      "vendorId": "05ac",
+      "productId": "12ab"
+    }
+  ],
+  "vendorProductPortableDevices": [
+    {
+      "label": "Warehouse-Barcode-Scanner-03",
+      "vendorId": "0951",
+      "productId": "1666"
+    }
+  ]
+}
