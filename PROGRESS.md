@@ -914,9 +914,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   products behavior Microsoft documents) — explicitly out of scope in `manage-data-products/
   design.md` §6, which links only `DATAASSET` and `TERM` entity types — **built** (see DONE
   below).
-- [ ] `scenarios/unified-catalog/manage-okrs/` — script the `Okr`/`Key Result` operation groups and
+- [x] `scenarios/unified-catalog/manage-okrs/` — script the `Okr`/`Key Result` operation groups and
   link them to data products, closing the last `EntityCategory` gap `manage-data-products/design.md`
-  §6 leaves open (OKR linking).
+  §6 leaves open (OKR linking) — **built** (see DONE below): full README/design/deploy/validate/
+  rollback/reviews. Grounding pass found the Okr operation group has **no relationship operation
+  of its own** (confirmed by fetching all thirteen of its operations) — the link is instead
+  created from the **Data Products** side, whose `Create/List/Delete Relationship` operations'
+  shared `EntityCategory` enum documents `OBJECTIVE`/`KEYRESULT` as valid values (fetched
+  directly). Also corrects a pre-existing `docs/automation-surface.md` §4 inaccuracy (an informal
+  "OKR" paraphrase where the real enum values are `OBJECTIVE`/`KEYRESULT`) and adds a dedicated
+  Okr operation-group routing-table row.
 - [x] Extend `docs/automation-surface.md` §4's Unified Catalog REST routing-table row with the
   confirmed `Data Products` and `Data Assets` operation groups/paths grounded in
   `manage-data-products` (`POST/PUT/DELETE/GET /datagovernance/catalog/dataProducts(|/{id})`,
@@ -1593,7 +1600,49 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   unconfirmed end-to-end behavior but are independent deployments and could resolve on different
   timelines.
 
+### Follow-ups discovered while building the Unified Catalog manage-okrs scenario
+- [ ] VERIFY (pilot tenant): whether the `Okr - Update`/`Okr - Create` `additionalProperties`
+  request-field shape inconsistency (an object of computed roll-up fields on Create/Get vs. an
+  `OkrSharedEntityStatus` enum on Update, per Microsoft's own REST reference pages for the same
+  field name on the same resource) is a documentation defect or reflects two genuinely different
+  server-side behaviors. `manage-okrs/deploy/New-Okr.ps1` never sends this field on either call —
+  design.md §6 — so this is not blocking, but the underlying discrepancy is unresolved.
+- [ ] VERIFY (pilot tenant): whether a key result's own `domainId` is validated against its parent
+  objective's `domain`, silently ignored, or independently enforced — `manage-okrs/design.md` §5.
+- [ ] VERIFY (pilot tenant): the `assetId`-omission question already open for
+  `manage-data-products`' own `DATAASSET`/`TERM` relationship calls, now also open for this
+  scenario's `entityType=OBJECTIVE` call to the same `Data Products - Create Relationship`
+  operation — `manage-okrs/README.md` §11.
+- [ ] Once Microsoft documents a portal action or REST caller for `entityType=KEYRESULT` on the
+  Data Products relationship operations (a documented enum value with no discoverable portal
+  action as of this build), extend `manage-okrs` to script it — `design.md` §4/§7.
+- [ ] Consider a small scheduled companion script that re-runs `validate/Test-Okr.ps1` on a cadence
+  and diffs its output against a prior run, as the only unattended staleness-detection workaround
+  for a key result's `progress` value (`manage-okrs/README.md` §8, Blue Team finding 2 in
+  `reviews.md`) — not built this run to keep this fragment scoped to the create/link capability
+  `PROGRESS.md` asked for.
+
 ## DONE
+- [x] **`scenarios/unified-catalog/manage-okrs/`** — commit
+  `(pending — recorded in the next commit)` — 2026-09-09. Full README (12-section skeleton),
+  design.md, deploy/ (`New-Okr.ps1` — idempotent create-or-update of an objective and its key
+  results via the `Okr` operation group, then links the objective to one or more already-existing
+  data products via the **Data Products** operation group's own `Create Relationship` operation
+  with `entityType=OBJECTIVE`; `Remove-Okr.ps1` — staged unpublish/unlink/delete rollback),
+  validate/ script (`Test-Okr.ps1`), rollback.md, and a four-lens reviews.md (all Fix items
+  resolved; no Fail). Grounded via the Microsoft Learn MCP tool by fetching the `Okr` operation
+  group's full operation list directly (confirming it has **no relationship operation of its
+  own** — a genuine, confirmed API asymmetry, not a gap this build failed to research) and the
+  **Data Products - Create/List/Delete Relationship** operations' shared `EntityCategory` enum
+  directly (confirming `OBJECTIVE`/`KEYRESULT` as real, documented values there). Because
+  Microsoft's own docs state OKR names are explicitly allowed to duplicate, this scenario departs
+  from every other Unified Catalog scenario in this repo's name-based idempotency pattern in
+  favor of a caller-generated, pre-pinned `id` per objective/key result (design.md §3) — a
+  deliberate, documented design choice, not an oversight. Corrects a pre-existing
+  `docs/automation-surface.md` §4 inaccuracy (an informal "OKR" paraphrase of the real
+  `OBJECTIVE`/`KEYRESULT` enum values) and adds a dedicated Okr operation-group routing-table row.
+  Five follow-ups added above (four VERIFY items requiring a pilot tenant; one deferred
+  KEYRESULT-linking/staleness-detection scope item) — none blocking.
 - [x] **`scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/`** —
   commit `115f0f0` — 2026-09-09. Full README (12-section
   skeleton), design.md, deploy/ (`New-PriorityCleanupSharePointOneDrivePolicy.ps1` — idempotent

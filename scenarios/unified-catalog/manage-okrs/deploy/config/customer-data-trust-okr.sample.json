@@ -1,0 +1,30 @@
+{
+  "domain": {
+    "name": "Customer Experience"
+  },
+  "objective": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "definition": "Increase trust in customer master data by reducing duplicate and inconsistent customer records across source systems",
+    "owners": ["alice@contoso.com"],
+    "targetDate": "2026-12-31T00:00:00Z"
+  },
+  "keyResults": [
+    {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "definition": "Reduce the duplicate customer-ID rate across source systems from 8% to under 2%",
+      "progress": 8,
+      "goal": 2,
+      "max": 8,
+      "status": "NotTracked"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "definition": "Bring 100% of Customer Master Data's linked source tables under an active data quality score",
+      "progress": 0,
+      "goal": 100,
+      "max": 100,
+      "status": "NotTracked"
+    }
+  ],
+  "relatedDataProducts": ["Customer Master Data"]
+}
