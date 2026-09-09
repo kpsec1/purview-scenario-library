@@ -679,7 +679,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `README.md` §11.
 
 ### Follow-ups discovered while building the Conditional Access insider-risk-block scenario
-- [ ] Backport the GA-status correction (`conditional-access-insider-risk-block/design.md` §8)
+- [x] Backport the GA-status correction (`conditional-access-insider-risk-block/design.md` §8)
   into `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/design.md` §7 and `README.md`
   §11 — both currently state the Conditional Access integration is "still labeled preview," which
   this build's fresh grounding pass found is no longer accurate (no preview label on Microsoft's
@@ -687,6 +687,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `conditionalAccessConditionSet.insiderRiskLevels` resource property). Small, doc-only backport
   scoped to a single follow-up fragment per `AGENTS.md` §6 — deliberately not done inside this
   build to avoid reopening an already-reviewed sibling scenario's files for an unrelated fragment.
+  — **built** (see DONE below): both files corrected in place, both sources independently
+  re-fetched (via the Microsoft Learn MCP tool, available this run) rather than trusting the
+  sibling's own citation, and a correction addendum recorded in `reviews.md` per this repo's
+  no-guessing grounding standard.
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn licensing-enforcement pass): what actually
   happens at sign-in for a user in a Conditional Access policy's scope who lacks the required
   Entra ID P2 license for the Insider Risk condition specifically — silently exempted, blocked
@@ -1451,6 +1455,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   timelines.
 
 ## DONE
+- [x] **Backport GA-status correction into `scenarios/adaptive-protection/dynamic-risk-dlp-
+  enforcement/`** — doc-only correction fragment (not a new scenario). Corrected two stale
+  "Microsoft-labeled preview" claims about the Conditional Access "Insider risk" condition
+  integration in `design.md` §2 and §7 (Non-goals) and `README.md` §11 (Known limitations),
+  left over from this scenario's original build before the sibling
+  `scenarios/adaptive-protection/conditional-access-insider-risk-block/` scenario existed and
+  re-grounded GA status. Independently re-verified both sources this run (not just carried over
+  from the sibling's own citation) via the Microsoft Learn MCP tool (`microsoft_docs_fetch`,
+  available this run): no preview label on "Block access for users with insider risk"
+  (<https://learn.microsoft.com/entra/identity/conditional-access/policy-risk-based-insider-block>)
+  or on the Graph v1.0 `conditionalAccessConditionSet` resource
+  (<https://learn.microsoft.com/graph/api/resources/conditionalaccessconditionset>). Both non-goal
+  bullets also updated to point at the now-built sibling scenario instead of "tracked as a
+  follow-up fragment." Data Lifecycle Management's own preview label was deliberately left
+  untouched — out of scope for this correction, no fresh grounding pass was done on it. Added two
+  new numbered references (14, 15) to `README.md` §12 and a correction addendum to `reviews.md`
+  documenting the fix; no code changed, so no new four-lens review round was run, per `AGENTS.md`
+  §6. Commit: `<pending>`. Date: 2026-09-09.
 - [x] **Investigate and correct: `scenarios/dspm-for-ai/third-party-ai-site-adaptive-block/`
   (Adaptive-Protection-driven DLP for third-party generative AI sites)** — a correctness
   correction rather than a new scenario, closing the backlog item logged during the

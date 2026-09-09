@@ -172,3 +172,21 @@ No remaining Fix/Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`,
 and `deploy/New-AdaptiveProtectionDlpPolicy.ps1`. No Fail items were raised. This fragment meets
 the definition of done in `AGENTS.md` §9.
+
+---
+
+## Correction addendum (2026-09-09)
+
+Finding 3 above (Microsoft Product Owner lens) resolved this scenario's original draft by
+**adding** "(preview)" labels to the Data Lifecycle Management and Conditional Access
+integrations named in `design.md` §7's Non-goals. The Conditional Access half of that fix is now
+stale: the sibling scenario `scenarios/adaptive-protection/conditional-access-insider-risk-block/`
+independently re-grounded GA status while being built, finding no preview label on Microsoft's
+current "Block access for users with insider risk" how-to guide or the Graph v1.0
+`conditionalAccessConditionSet.insiderRiskLevels` resource. Both sources were re-fetched directly
+during this correction pass (not just carried over from the sibling's citation) — no preview
+label on either. `design.md` §2/§7 and `README.md` §11 updated in place to remove the stale
+"(preview)" qualifier for Conditional Access specifically and point at the now-built sibling
+scenario; the Data Lifecycle Management preview label is untouched (out of scope for this
+correction — no fresh grounding pass was done on it here). This is a doc-only correction, not a
+new review round: no code changed, so no new four-lens pass was run.

@@ -304,11 +304,19 @@ Protection itself, the feeder IRM policy, or resets any user's current insider r
   Elevated-risk user is blocked from sharing *anything* externally via Exchange/Teams, not just
   confidential material. A buyer wanting narrower scoping should add a content-sensitivity
   condition on top (`design.md` §6) rather than assume this scenario already does so.
-- **This scenario does not configure Endpoint DLP (Devices), Conditional Access (preview
-  integration), or Data Lifecycle Management (preview integration)** — all three are Adaptive
+- **This scenario does not configure Endpoint DLP (Devices), Conditional Access, or
+  Data Lifecycle Management (preview integration)** — all three are Adaptive
   Protection-integrated but out of scope here; see `design.md` §7 and `PROGRESS.md` for the
-  follow-up fragments this build opened. **This is a real, exploitable gap, not a theoretical
-  one:** an Elevated-risk user blocked from emailing or Teams-sharing a file externally can, as
+  follow-up fragments this build opened (Conditional Access is now built as the sibling scenario
+  `scenarios/adaptive-protection/conditional-access-insider-risk-block/`). **Correction
+  (2026-09-09):** this bullet previously called Conditional Access a "preview integration" too —
+  that build's own fresh grounding pass found no preview label on Microsoft's current "Block
+  access for users with insider risk" how-to guide or on the Graph v1.0
+  `conditionalAccessConditionSet.insiderRiskLevels` resource (independent industry reporting
+  places GA at June 2024), both re-confirmed directly during this correction pass
+  [[14]](#references)[[15]](#references). Data Lifecycle Management's integration remains
+  Microsoft-labeled preview and is unaffected by this correction. **This is a real, exploitable
+  gap, not a theoretical one:** an Elevated-risk user blocked from emailing or Teams-sharing a file externally can, as
   of this scenario alone, still exfiltrate the identical file via a direct SharePoint/OneDrive
   download, a USB copy, printing, or an upload to a personal cloud-storage app — none of which
   this policy's Exchange/Teams-only scope inspects. Communicate this plainly to a buyer: this
@@ -348,6 +356,10 @@ Protection itself, the feeder IRM policy, or resets any user's current insider r
 12. Remove-DlpCompliancePolicy reference — <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancepolicy>
 13. DLP policy reference — locations table (Exchange, Teams, Devices support for Adaptive
     Protection) — <https://learn.microsoft.com/purview/dlp-policy-reference#locations>
+14. Block access for users with insider risk (the how-to guide independently re-fetched during
+    this scenario's 2026-09-09 correction pass — carries no preview label) — <https://learn.microsoft.com/entra/identity/conditional-access/policy-risk-based-insider-block>
+15. conditionalAccessConditionSet resource type (`insiderRiskLevels` property, Graph v1.0 —
+    independently re-fetched during the same correction pass, confirmed current/non-beta) — <https://learn.microsoft.com/graph/api/resources/conditionalaccessconditionset>
 
 > Re-verify all links, cmdlet/API behavior, and licensing terms against current Microsoft Learn
 > before a customer-facing assessment or sale — Adaptive Protection is a comparatively new

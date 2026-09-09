@@ -53,10 +53,12 @@ the case is still open and before an analyst has necessarily looked at it.
    posture (`-Mode TestWithNotifications`) and requires an explicit `-Mode Enable -Force` to go
    live, consistent with this library's existing DLP scenarios.
 5. **Scope narrowly to what's grounded; name what's deferred.** Adaptive Protection also
-   supports **Devices** (Endpoint DLP) and **Conditional Access** locations (the latter still
-   labeled **preview** by Microsoft as of this writing) [[1]](#references)[[3]](#references).
-   Both are explicitly out of scope for this fragment —
-   see §7 (Non-goals) for why, and `PROGRESS.md` for the follow-up fragments this build opened.
+   supports **Devices** (Endpoint DLP) and **Conditional Access** locations [[1]](#references)
+   [[3]](#references). Both are explicitly out of scope for this fragment — see §7 (Non-goals)
+   for why; Conditional Access is now built as a sibling scenario
+   (`scenarios/adaptive-protection/conditional-access-insider-risk-block/`), see the correction
+   note there. (Corrected 2026-09-09 — Conditional Access is no longer Microsoft-labeled
+   preview; see §7.)
 
 ## 3. Why Adaptive Protection here (not a static DLP rule, not IRM alone)
 
@@ -152,12 +154,19 @@ policy this scenario creates.
   (`scenarios/dlp/endpoint-dlp-usb-block/README.md` §11) for its exact `Setting`/`Value`
   strings — stacking a second unverified use of that same parameter into a new scenario would
   compound, not close, that gap. Tracked as a follow-up fragment in `PROGRESS.md`.
-- **This scenario does not configure the Conditional Access "Insider risk" condition** (a
-  Microsoft-labeled **preview** integration as of this writing [[1]](#references)). That's a
+- **This scenario does not configure the Conditional Access "Insider risk" condition.** That's a
   Microsoft Entra admin center policy, a different admin surface entirely, and (per Microsoft
   Entra's own recommendation page) requires **Microsoft Entra ID P2** specifically —  a license
-  this scenario's DLP-only design doesn't otherwise require [[9]](#references). Tracked as a
-  follow-up fragment in `PROGRESS.md`.
+  this scenario's DLP-only design doesn't otherwise require [[9]](#references). Built as the
+  sibling scenario `scenarios/adaptive-protection/conditional-access-insider-risk-block/`
+  instead of bundled here. **Correction (2026-09-09):** this bullet
+  previously called the integration "a Microsoft-labeled preview integration as of this
+  writing" — that was accurate at the time this scenario was first built but is stale. The
+  sibling scenario's own build re-grounded GA status and found no preview label on Microsoft's
+  current "Block access for users with insider risk" how-to guide or on the Graph v1.0
+  `conditionalAccessConditionSet.insiderRiskLevels` resource; independent industry reporting
+  places GA at June 2024. Both sources were re-confirmed directly (not just carried over from
+  the sibling's own citation) during this correction pass [[14]](#references)[[15]](#references).
 - **This scenario does not configure the Data Lifecycle Management 120-day deleted-content
   preservation policy** (also a Microsoft-labeled **preview** integration [[1]](#references))
   that Adaptive Protection can auto-create for Elevated-risk users — a separate opt-in with its
