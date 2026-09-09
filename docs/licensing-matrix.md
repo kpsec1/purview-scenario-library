@@ -200,6 +200,34 @@ this explicitly rather than treating it as already covered by the Purview E5/Sui
 
 ---
 
+## 9. Adjacent product family: Microsoft Entra ID P1 (baseline Conditional Access — block legacy authentication)
+
+`scenarios/adaptive-protection/block-legacy-authentication/` is the third scenario in this
+library built on **Microsoft Entra Conditional Access** rather than a Purview policy object, but
+the **first that needs only Microsoft Entra ID P1**, not the P2 both §8 scenarios require. Its
+`clientAppTypes` condition and `block` grant control use no risk-based or premium-only condition,
+so Microsoft's own Conditional Access licensing reference confirms the P1 floor applies
+[[10]](#sources-microsoft-learn--re-verify-before-quoting) — a buyer already at Microsoft 365 E3
+(which bundles Entra ID P1) needs **no incremental identity license** for this specific scenario,
+unlike either §8 scenario.
+
+| Requirement | Minimum entitlement | Notes |
+|---|---|---|
+| Custom Conditional Access policy (this scenario's own path) | **Microsoft Entra ID P1** — standalone, or bundled in **Microsoft 365 E3/E5**, **Microsoft 365 Business Premium** | Confirmed on Microsoft's Conditional Access overview and licensing references [[10]](#sources-microsoft-learn--re-verify-before-quoting) [[11]](#sources-microsoft-learn--re-verify-before-quoting) — no Entra ID P2 needed for this control specifically. |
+| Microsoft-managed "Block legacy authentication" policy (auto-deployed, informational — not required to use this scenario) | **Microsoft Entra ID P2** or **Microsoft 365 Business Premium** | A narrower eligibility gate than P1 alone — a P1-only tenant will never receive Microsoft's auto-deployed equivalent and should expect to rely on this scenario's own custom policy instead [[12]](#sources-microsoft-learn--re-verify-before-quoting). |
+| No Conditional Access license at all (Entra ID Free) | **Security defaults**, at no cost | A separate, zero-customization mechanism that also blocks legacy authentication — not this scenario's scripted path [[13]](#sources-microsoft-learn--re-verify-before-quoting). |
+
+**Cost note for a CISO conversation:** this is the cheapest Conditional-Access-based adjacency in
+this library — for a buyer already licensed at Microsoft 365 E3 or higher (which the large
+majority of this library's other Purview scenarios already assume for E5/Suite features, or which
+bundles P1 even below E5), this scenario typically adds **zero incremental license cost**, and if
+the tenant already holds Entra ID P2 or Microsoft 365 Business Premium, the underlying control may
+already be auto-deployed by Microsoft for free (`scenarios/adaptive-protection/
+block-legacy-authentication/design.md` §3) — confirm with that scenario's own detection check
+before budgeting anything at all.
+
+---
+
 ## Sources (Microsoft Learn — re-verify before quoting)
 
 - Microsoft Purview service description — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description>
@@ -219,6 +247,13 @@ this explicitly rather than treating it as already covered by the Purview E5/Sui
 - Manage device security with endpoint security policies in Intune (Defender integration prerequisites) — <https://learn.microsoft.com/intune/device-configuration/endpoint-security/manage-policies>
 - Manage endpoint security policies in Microsoft Defender for Endpoint (Intune-enrollment-only footnote for device control) — <https://learn.microsoft.com/defender-endpoint/endpoint-security-policies-configure>
 - Microsoft Intune licensing (Plan 1/Plan 2/Suite) — <https://learn.microsoft.com/intune/fundamentals/licensing>
+- [10] What is Conditional Access? (License requirements — Microsoft Entra ID P1 floor for
+  Conditional Access generally, distinct from the P2 floor risk-based conditions need) — <https://learn.microsoft.com/entra/identity/conditional-access/overview>
+- [11] Microsoft Entra licensing (Conditional Access requires Entra ID P1) — <https://learn.microsoft.com/entra/fundamentals/licensing>
+- [12] Microsoft-managed Conditional Access policies (P2/Microsoft 365 Business Premium
+  eligibility gate for the auto-deployed policy) — <https://learn.microsoft.com/entra/identity/conditional-access/managed-policies>
+- [13] Security defaults in Microsoft Entra ID (zero-cost alternative for tenants without Entra ID
+  P1/P2) — <https://learn.microsoft.com/entra/fundamentals/security-defaults>
 
 > **Disclaimer:** SKU names, tiers, and PAYG meters change. Nothing here is a licensing guarantee.
 > Validate every entitlement against Product Terms and the service description for the customer's

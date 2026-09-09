@@ -797,11 +797,55 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scoped to Microsoft Admin Portals (Moderate) and a permanently Report-only visibility policy
   (Minor) — reproduced exactly rather than the guessed alternative. See the new scenario's
   `design.md` §3 for the rejected-alternative rationale.
-- [ ] Consider scripting a companion "block legacy authentication" Conditional Access policy (or
+- [x] Consider scripting a companion "block legacy authentication" Conditional Access policy (or
   documenting/verifying one already exists) as a prerequisite hardening step for this scenario —
   flagged as a Red Team finding in `conditional-access-insider-risk-block/reviews.md` (legacy auth
   clients may not fully honor the Insider Risk condition) but not built in this fragment, since it
-  is a general Conditional Access hardening practice outside this scenario's specific scope.
+  is a general Conditional Access hardening practice outside this scenario's specific scope. —
+  **built** (see DONE below) as `scenarios/adaptive-protection/block-legacy-authentication/`.
+  Central grounding finding: Microsoft now auto-deploys a **Microsoft-managed** "Block legacy
+  authentication" Conditional Access policy to Entra ID P2/Microsoft 365 Business Premium-eligible
+  tenants (Report-only, auto-enabling no less than 30 days later) — the deploy script checks for
+  this first (best-effort, by the confirmed `Microsoft-managed:` displayName-prefix convention)
+  and reports its state rather than blindly deploying a duplicate, only proceeding to its own
+  custom policy (`clientAppTypes = ['exchangeActiveSync','other']`, matching Microsoft's exact
+  documented portal procedure) when no Microsoft-managed equivalent is found or
+  `-SkipManagedPolicyCheck` is passed. Also the library's first Conditional-Access-based scenario
+  confirmed to need only **Microsoft Entra ID P1** (not P2, unlike its two CA siblings) —
+  `docs/licensing-matrix.md` new §9, `docs/rbac-model.md` §10 updated to cross-link it and
+  disclose the P1/P2 split. Four-lens review caught and fixed a real validate-script logic gap
+  (Blue Team finding 1): a *disabled* Microsoft-managed policy with no custom policy deployed was
+  originally scored WARN, not FAIL, even though that combination means zero actual legacy-auth
+  coverage — corrected before this fragment was marked done.
+
+### Follow-ups discovered while building the Block Legacy Authentication scenario
+- [ ] VERIFY (pilot tenant): the exact, byte-precise remainder of a Microsoft-managed policy's
+  displayName beyond the confirmed `Microsoft-managed:` prefix (e.g. whether it is exactly
+  `Microsoft-managed: Block legacy authentication`) — not independently confirmed word-for-word
+  during this build. `block-legacy-authentication/deploy/New-BlockLegacyAuthenticationPolicy.ps1`'s
+  detection regex is deliberately tolerant (prefix + `legacy` substring match) rather than an
+  exact-string comparison specifically because of this open question — see `README.md` §11.
+- [ ] VERIFY (pilot tenant, before relying on Graph to manage a Microsoft-managed policy
+  directly): whether `Update-MgIdentityConditionalAccessPolicy`/
+  `Remove-MgIdentityConditionalAccessPolicy` actually accept a PATCH (state/exclusions) or reject
+  a DELETE against a Microsoft-managed policy's `id` the same way the portal UI restricts
+  renaming/deletion — not independently tested during this build. This scenario's own scripts
+  never attempt either against a Microsoft-managed policy regardless of the answer
+  (`design.md` §7), so this doesn't block use — it would only let a future revision offer a
+  scripted "manage the Microsoft-managed policy's exclusions" path instead of directing the
+  operator to the portal.
+- [ ] Consider a companion scenario scripting Exchange-side legacy-authentication blocking
+  (`New-AuthenticationPolicy -BlockLegacyAuth*` / `Set-User -AuthenticationPolicy`, or the
+  Exchange 2019 hybrid authentication-policy mechanism) — `design.md` §7 notes this is a separate,
+  workload-specific control surface that acts *before* first-factor authentication completes,
+  materially more effective against the credential-stuffing/password-spray lockout scenario
+  Conditional Access's own documented Q&A guidance says it cannot stop (`design.md` §8). Deferred
+  from this fragment as a different admin surface (Exchange Online PowerShell, not Entra/Graph).
+- [ ] Once Microsoft's `excludeGuestsOrExternalUsers` nested Users condition shape is confirmed
+  against a worked example (the same open item already tracked near the top of this file for
+  `conditional-access-insider-risk-block`), also add it to
+  `block-legacy-authentication/deploy/New-BlockLegacyAuthenticationPolicy.ps1` — not a new,
+  separate uncertainty, just a second consumer of the same unresolved VERIFY.
 
 ### Follow-ups discovered while building the Data Map Azure SQL scan-and-classify scenario
 - [ ] VERIFY (pilot tenant or the Purview OpenAPI spec, before production use): the exact REST
@@ -1679,6 +1723,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
+- [x] **`scenarios/adaptive-protection/block-legacy-authentication/`** — commit
+  `(pending — recorded in the next commit)` — 2026-09-09. Closes the `PROGRESS.md` follow-up
+  originally raised in `conditional-access-insider-risk-block/reviews.md` (Red Team: legacy-auth
+  clients may not fully honor the Insider Risk condition). Full README (12-section skeleton),
+  design.md, deploy/ (`New-BlockLegacyAuthenticationPolicy.ps1` — checks first, best-effort, for
+  an existing Microsoft-managed "Block legacy authentication" policy by its confirmed
+  `Microsoft-managed:` displayName-prefix convention, and only proceeds to create/reconcile its
+  own custom Conditional Access policy — `clientAppTypes = ['exchangeActiveSync','other']`,
+  matching Microsoft's exact documented portal procedure — when none is found or
+  `-SkipManagedPolicyCheck` is passed; `Remove-BlockLegacyAuthenticationPolicy.ps1` for staged
+  rollback), validate/ (`Test-BlockLegacyAuthenticationPolicy.ps1`), rollback.md, reviews.md
+  (four-lens review — Red Team and Blue Team both raised Fix findings, resolved: (1) added an
+  explicit disclosure, with citation, that Conditional Access is a post-first-factor-
+  authentication control and does not stop a credential-stuffing/password-spray attempt from
+  confirming valid credentials; (2) fixed a genuine validate-script logic gap where a *disabled*
+  Microsoft-managed policy with no custom policy deployed was scored WARN instead of FAIL, even
+  though that combination is zero actual coverage). Central grounding finding, independently
+  confirmed via the Microsoft Learn MCP tool (available this run): Microsoft now auto-deploys this
+  exact control as a Microsoft-managed policy to Entra ID P2/Microsoft 365 Business Premium-
+  eligible tenants, auto-enabling it no less than 30 days after first appearing — this scenario is
+  designed around detecting that rather than blindly duplicating it, and is independently
+  confirmed as the library's first Conditional-Access-based scenario needing only **Microsoft
+  Entra ID P1** (not P2). `docs/licensing-matrix.md` new §9 and `docs/rbac-model.md` §10 updated
+  to cross-link it and disclose the P1/P2 split so a reader doesn't assume every
+  Conditional-Access-based scenario in this library needs P2. Four new follow-ups recorded (two
+  pilot-tenant VERIFYs, an Exchange-side-blocking companion-scenario idea, and a shared-VERIFY
+  cross-reference) under a new "Follow-ups discovered while building the Block Legacy
+  Authentication scenario" section.
 - [x] **`scenarios/unified-catalog/manage-critical-data-elements-related-terms/`** — commit
   `c4b8019` — 2026-09-09. Closes the `PROGRESS.md` follow-up
   `manage-critical-data-elements/design.md` §7 deferred as a non-goal. Full README (12-section

@@ -267,7 +267,11 @@ this library that authors a **Microsoft Entra Conditional Access** policy rather
 policy object or an Intune device configuration profile. Conditional Access is administered
 entirely in the **Microsoft Entra admin center**, a genuinely separate, sixth RBAC model from the
 four in §1 and from Intune's own model in §9 — not a Purview role group, and not one of the
-Intune roles either.
+Intune roles either. `scenarios/adaptive-protection/conditional-access-insider-risk-step-up-auth/`
+and `scenarios/adaptive-protection/block-legacy-authentication/` reuse this same model
+unchanged — the **role** and **Graph permission** requirements below apply identically across all
+three; only the **license** each scenario's specific condition needs differs (§8 for the two P2-
+gated scenarios, `docs/licensing-matrix.md` §9 for `block-legacy-authentication`'s P1-only floor).
 
 - **Built-in Entra role that covers Conditional Access authoring:** **Conditional Access
   Administrator** — can create, edit, and delete Conditional Access policies. This is the role
@@ -289,9 +293,12 @@ Intune roles either.
   — the same least-privilege rule §8 and §9 already state for Purview/Exchange and Intune Graph
   scopes applies equally here.
 - **Licensing is tracked separately, again:** holding the role or the Graph permission does not
-  itself grant the **Microsoft Entra ID P2** entitlement every user in a Conditional Access
-  policy's scope needs for a premium condition like Insider Risk to apply — see
-  `docs/licensing-matrix.md` §8.
+  itself grant the license entitlement every user in a Conditional Access policy's scope needs for
+  the policy's specific condition to apply — **Microsoft Entra ID P2** for a premium condition
+  like Insider Risk (`docs/licensing-matrix.md` §8), or the lower **Microsoft Entra ID P1** floor
+  for `block-legacy-authentication`'s non-risk-based condition (`docs/licensing-matrix.md` §9).
+  Don't assume every Conditional-Access-based scenario in this library needs P2 just because the
+  first two did.
 
 ---
 
