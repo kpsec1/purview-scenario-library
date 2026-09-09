@@ -1323,7 +1323,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **EU national ID bundle — full 26-country checksum-strength reference table** — commit
-  `PENDING` — 2026-09-09 — `auto-label-eu-personal-data-sharepoint/design.md` §4 now tables all 26
+  `8243578` — 2026-09-09 — `auto-label-eu-personal-data-sharepoint/design.md` §4 now tables all 26
   members of the "EU national identification number" bundle (Austria through U.K.), each grounded
   directly against its own Microsoft Learn entity-definition page: 19 checksum-validated, 7
   pattern-only (Austria, Croatia, Cyprus, France, Greece, Malta, U.K.), with Germany's checksum
