@@ -1624,7 +1624,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/unified-catalog/manage-okrs/`** — commit
-  `(pending — recorded in the next commit)` — 2026-09-09. Full README (12-section skeleton),
+  `e47e8be` — 2026-09-09. Full README (12-section skeleton),
   design.md, deploy/ (`New-Okr.ps1` — idempotent create-or-update of an objective and its key
   results via the `Okr` operation group, then links the objective to one or more already-existing
   data products via the **Data Products** operation group's own `Create Relationship` operation
