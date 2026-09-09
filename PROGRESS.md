@@ -1595,7 +1595,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/`** —
-  commit `(pending — recorded in the next commit)` — 2026-09-09. Full README (12-section
+  commit `115f0f0` — 2026-09-09. Full README (12-section
   skeleton), design.md, deploy/ (`New-PriorityCleanupSharePointOneDrivePolicy.ps1` — idempotent
   create-or-report of a priority cleanup label/policy/rule via the official `-PriorityCleanup`
   parameter set, targeting `-OneDriveLocation`/`-SharePointLocation` instead of the Exchange
