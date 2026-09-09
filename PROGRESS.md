@@ -3584,7 +3584,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `List[string]` (no `+` operator defined for that type) corrected to `.Add($gid)`. Two follow-up
   fragments recorded above (`…-by-priority-users/`, `…-by-risky-users/`) rather than bundled into
   this one, per `AGENTS.md` §6's one-fragment-per-turn discipline, plus one general (not
-  scenario-specific) VERIFY on group-scope live-sync behavior. Date: 2026-09-09.
+  scenario-specific) VERIFY on group-scope live-sync behavior. Commit: `f23a07a`. Date: 2026-09-09.
 
 ## Blocked / needs user
 - (none)
