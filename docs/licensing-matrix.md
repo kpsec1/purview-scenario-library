@@ -162,12 +162,21 @@ controls.
 
 ## 8. Adjacent product family: Microsoft Entra ID P2 (Conditional Access risk-based conditions)
 
-One scenario in this library — `scenarios/adaptive-protection/conditional-access-insider-risk-block/`
-— is **not** built on a Purview policy object or an Intune profile. It authors a **Microsoft
-Entra Conditional Access** policy using the Insider Risk condition, which requires **Microsoft
-Entra ID P2** specifically — a materially narrower and more specific requirement than the general
-"Entra ID P1/P2 for administrative units" prerequisite already in §4, which P1 alone also
-satisfies. Documented here rather than folded into §2, which is scoped to Purview modules.
+Two scenarios in this library — `scenarios/adaptive-protection/conditional-access-insider-risk-block/`
+(Elevated risk) and `scenarios/adaptive-protection/conditional-access-insider-risk-step-up-auth/`
+(Moderate/Minor risk) — are **not** built on a Purview policy object or an Intune profile. Both
+author **Microsoft Entra Conditional Access** policies using the Insider Risk condition, which
+requires **Microsoft Entra ID P2** specifically — a materially narrower and more specific
+requirement than the general "Entra ID P1/P2 for administrative units" prerequisite already in §4,
+which P1 alone also satisfies. Documented here rather than folded into §2, which is scoped to
+Purview modules.
+
+> The second scenario's Moderate-risk policy additionally uses Conditional Access's **Terms of
+> Use** grant control, whose own feature floor is a lower **Microsoft Entra ID P1**
+> [[9]](#sources-microsoft-learn--re-verify-before-quoting) — already satisfied by the P2
+> requirement below, since P2 is a superset of P1 entitlement. Called out only so a buyer
+> evaluating the Terms of Use policy in isolation (without the Insider Risk condition, or without
+> the Elevated sibling) knows the *feature's own* floor, not just this table's overall floor.
 
 | Requirement | Minimum entitlement | Notes |
 |---|---|---|
@@ -202,6 +211,8 @@ this explicitly rather than treating it as already covered by the Purview E5/Sui
 - Purview pricing calculators — <https://azure.microsoft.com/pricing/details/purview/>
 - [8] Protect your tenant with Insider Risk in Conditional Access (Entra ID P2 licensing
   requirement for the Conditional Access Insider Risk condition) — <https://learn.microsoft.com/entra/identity/monitoring-health/recommendation-insider-risk-condition>
+- [9] Set up Microsoft Entra terms of use with Conditional Access (Entra ID P1 licensing floor for
+  the Terms of Use feature itself) — <https://learn.microsoft.com/entra/identity/conditional-access/terms-of-use>
 - Microsoft Product Terms (authoritative) — <https://www.microsoft.com/licensing/terms/product/ForOnlineServices/EAEAS>
 - Microsoft Defender service description (Defender for Endpoint P1/P2 plan contents & bundling) — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-defender-service-description>
 - Device control in Microsoft Defender for Endpoint (prerequisites, anti-malware client versions) — <https://learn.microsoft.com/defender-endpoint/device-control-overview>

@@ -788,11 +788,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   can be independently confirmed not to collide, the same confirmation the DLP sibling scenario
   already has for its own Quick-Setup-generated DLP policy name. Not confirmed during this build
   — see `README.md` §11.
-- [ ] Consider a second Conditional Access policy variant applying a softer grant control (e.g.
-  require MFA / require compliant device, rather than block) scoped to Moderate/Minor risk levels
-  — the Conditional-Access-side analog of the DLP sibling's own Elevated-block/Moderate-Minor-
-  audit split, which this scenario's single-policy v1 does not replicate (Conditional Access grant
-  controls apply per-policy, not per-condition-value — see `design.md` §6).
+- [x] Consider a second Conditional Access policy variant applying a softer grant control scoped
+  to Moderate/Minor risk levels — **built** as
+  `scenarios/adaptive-protection/conditional-access-insider-risk-step-up-auth/` (see DONE below).
+  This build's grounding pass found the naive "require MFA / require compliant device" idea this
+  item originally suggested was an unverified guess; Microsoft's own "Adaptive Protection
+  configuration guide" documents a specific, different pairing instead — Terms of Use acceptance
+  scoped to Microsoft Admin Portals (Moderate) and a permanently Report-only visibility policy
+  (Minor) — reproduced exactly rather than the guessed alternative. See the new scenario's
+  `design.md` §3 for the rejected-alternative rationale.
 - [ ] Consider scripting a companion "block legacy authentication" Conditional Access policy (or
   documenting/verifying one already exists) as a prerequisite hardening step for this scenario —
   flagged as a Red Team finding in `conditional-access-insider-risk-block/reviews.md` (legacy auth
@@ -1649,6 +1653,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   end-user-visible "Retention: ... (-1 days)" message bar in Outlook — same deferral already tracked
   under the Priority Cleanup Exchange data-spillage follow-ups above (not duplicated here; both
   priority-cleanup scenarios could eventually chain to it once it exists).
+
+### Follow-ups discovered while building the Conditional Access step-up-auth scenario
+- [ ] VERIFY (pilot tenant, before production reliance): whether a user who has already accepted
+  the Moderate policy's Terms of Use agreement's current version is re-prompted on every
+  subsequent sign-in the policy evaluates, or only once per acceptance/version. Not independently
+  confirmed during this build — flagged inline in
+  `conditional-access-insider-risk-step-up-auth/README.md` §11.
+- [ ] VERIFY (pilot tenant): whether Entra sign-in logs distinguish a "Terms of Use declined"
+  outcome from a "Terms of Use pending/not yet presented" outcome for this scenario's Moderate
+  policy specifically — relevant for the help-desk runbook in `README.md` §8 when triaging a user
+  who reports being unable to complete sign-in. Not independently confirmed during this build.
+- [ ] Consider scripting Microsoft's additional documented "exclude guests/external users" nested
+  Users condition for this scenario's two policies once the shared open item on this (tracked
+  under the Conditional Access insider-risk-block follow-ups above) is resolved — same deferred
+  shape, not duplicated here.
+- [ ] Once a documented Graph endpoint or PowerShell cmdlet exists that supports **application**
+  (app-only) permissions for Terms of Use agreement creation (`identityGovernance/termsOfUse/
+  agreements`, currently delegated-permission-only per the `Create agreement` reference), extend
+  `deploy/New-InsiderRiskStepUpPolicies.ps1` to optionally create the agreement itself instead of
+  requiring a pre-created `-AgreementId` — closing the one genuine automation gap this scenario's
+  `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
 - [x] **`scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/`** — commit
