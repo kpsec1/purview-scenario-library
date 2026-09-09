@@ -583,11 +583,52 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   **built** (see DONE below): new §12 covers basic permissions (Security Administrator/Security
   Reader), the legacy granular **Manage security settings in Security Center** permission, and its
   Defender-unified-RBAC (URBAC) equivalent **Core security settings (Manage)**.
-- [ ] Consider `scenarios/insider-risk/security-policy-violations/` (the base template — no
-  departure/HR trigger, scores every onboarded user continuously), `…-by-priority-users/`, and
-  `…-by-risky-users/` as separate, narrowly-scoped follow-up fragments — each has a materially
-  different trigger/scoping model (continuous, priority-user-group, or HR-performance-indicator-
-  driven) than the departing-users variant just built. `design.md` §3/§7.
+- [x] `scenarios/insider-risk/security-policy-violations/` (the base template) — **built** (see
+  DONE below): the base "Security policy violations" template's own triggering event *is* the
+  Defender for Endpoint security alert (no HR/departure trigger, no priority-user-group
+  requirement, confirmed directly against Microsoft's policy-templates reference during this
+  build). Correction to this item's own original framing: "scores every onboarded user
+  continuously" is not achievable at enterprise scale — Microsoft caps this specific template at
+  **1,000** actively-scored users tenant-wide (identical to the priority-users sibling's own cap,
+  smaller than departing-users' 15,000 and risky-users' 7,500), so the scenario ships a new,
+  genuinely scenario-specific `deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1` (resolves a
+  chosen Entra group's transitive user membership via `Get-MgGroupTransitiveMemberAsUser`, dedupes,
+  filters to enabled accounts, checks against the cap) rather than defaulting to an "all users"
+  scope. Reuses the departing-users sibling's `Export-SecurityViolationInsiderRiskAlerts.ps1`
+  unmodified (that script has no policy-specific filter, so shipping a copy would be pure
+  duplication). Four-lens review surfaced and resolved one real gap: whether an IRM policy's scope
+  tracks a directly-added group's live membership isn't documented by Microsoft either way, so a
+  newly added privileged-group member could sit unmonitored under a calendar-only review cadence —
+  `README.md` §8 now ties re-scoping to the group-membership-change event itself, with a quarterly
+  review as a backstop, not the primary mechanism. `design.md` §3/§6 for the full grounding.
+  `…-by-priority-users/` and `…-by-risky-users/` remain open follow-ups below — each has its own
+  materially different trigger/scoping model and wasn't bundled into this fragment per
+  `AGENTS.md` §6's one-fragment-per-turn discipline.
+- [ ] `scenarios/insider-risk/security-policy-violations-by-priority-users/` — the priority-users
+  variant of this template family: triggering event is "Defense evasion of security controls or
+  unwanted software detected by Microsoft Defender for Endpoint" (same as the base template just
+  built) but additionally requires a formal **priority user group** (Insider Risk Management
+  settings → Priority user groups, up to 10,000 members per group) assigned to the policy. Same
+  1,000-user template-wide cap as the base template — confirm during that build whether the
+  priority-user-group's own 10,000-member ceiling and this template's 1,000-actively-scored ceiling
+  interact in a way worth documenting (e.g., does Microsoft warn if the group exceeds the
+  template's scoring cap). `insider-risk-management-policy-templates#security-policy-violations-by-priority-users`.
+- [ ] `scenarios/insider-risk/security-policy-violations-by-risky-users/` — the risky-users variant:
+  triggering events are HR performance-indicator signals (performance improvement / poor review /
+  job-level change, via the HR connector — reusable from `departing-employee-data-theft` per this
+  library's established reuse pattern) and/or Communication Compliance risk-signal integration,
+  **plus** an active Defender for Endpoint subscription (a three-way AND/OR prerequisite shape none
+  of this template family's other three members have). 7,500-user template-wide cap.
+  `insider-risk-management-policy-templates#security-policy-violations-by-risky-users`.
+- [ ] VERIFY (pilot tenant): whether adding an Entra security group directly to an Insider Risk
+  Management policy's "Users and groups" scope keeps the in-scope population in sync with the
+  group's future membership changes, or captures membership as a snapshot at add-time — not stated
+  either way by Microsoft's own policy-configuration documentation. Surfaced while building
+  `scenarios/insider-risk/security-policy-violations/` (the base template) but is a general IRM
+  policy-scoping question, not specific to that one scenario — flagged inline in that scenario's
+  `README.md` §5 Step 4 and §11, and in `design.md` §6, rather than assumed either way. Resolving
+  this would let every Insider Risk Management scenario in this library that scopes a policy by
+  group (not just this one) state its re-scoping cadence guidance with more precision.
 
 ### Follow-ups discovered while building the Adaptive Protection dynamic-risk-DLP scenario
 - [ ] `scenarios/dlp/endpoint-dlp-usb-block-adaptive-protection/` (or fold into a future Endpoint
@@ -3514,6 +3555,36 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   items and one cross-scenario follow-up recorded above rather than resolved by guessing (rule
   priority auto-shift behavior, end-to-end composition validation, and whether the Encrypt-mode
   audit companion should get an opt-in higher severity default).
+- [x] **`scenarios/insider-risk/security-policy-violations/`** — full scenario (README.md,
+  design.md, deploy/, validate/, rollback.md, reviews.md) deploying Insider Risk Management's base
+  **Security policy violations** template — the sibling of `security-policy-violations-by-
+  departing-users` with no HR/departure trigger and no priority-user-group requirement; its own
+  triggering event is the Defender for Endpoint security-violation alert itself, confirmed directly
+  against Microsoft's policy-templates prerequisites table. Corrects this fragment's own
+  originating backlog framing ("scores every onboarded user continuously"): Microsoft caps this
+  specific template at **1,000** actively-scored users tenant-wide (identical to the
+  priority-users sibling's own cap despite requiring no priority-group object; smaller than
+  departing-users' 15,000 and risky-users' 7,500) — an all-users scope is infeasible above roughly
+  that headcount (`design.md` §3). Ships one new, genuinely scenario-specific capability,
+  `deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1` — resolves an operator-chosen Entra
+  group's (or groups') transitive user membership via `Get-MgGroupTransitiveMemberAsUser` (the
+  `microsoft.graph.user` OData cast, confirmed to require the `ConsistencyLevel: eventual` header
+  directly from both the cmdlet and Graph REST references), dedupes across groups, filters to
+  enabled accounts, and pre-flight-checks the count against the 1,000-user cap. Reuses the
+  departing-users sibling's `Export-SecurityViolationInsiderRiskAlerts.ps1` unmodified rather than
+  duplicating it — that script applies no policy-specific filter, so it already works against this
+  scenario's own alerts (`AGENTS.md`'s no-unneeded-abstraction guidance). Four-lens review raised
+  and resolved one substantive finding, independently flagged by both Red Team and Blue Team:
+  whether an IRM policy's scope tracks a directly-added group's live membership isn't documented by
+  Microsoft either way, so a newly added privileged-group member could sit unmonitored under a
+  calendar-only review cadence — `README.md` §8 now ties re-scoping to the group-membership-change
+  event itself (quarterly review demoted to a backstop), and both `README.md` §11 and `design.md`
+  §6 state the underlying VERIFY explicitly rather than assuming either behavior. One
+  implementation bug caught and fixed before commit: `SourceGroupIds += $gid` against a
+  `List[string]` (no `+` operator defined for that type) corrected to `.Add($gid)`. Two follow-up
+  fragments recorded above (`…-by-priority-users/`, `…-by-risky-users/`) rather than bundled into
+  this one, per `AGENTS.md` §6's one-fragment-per-turn discipline, plus one general (not
+  scenario-specific) VERIFY on group-scope live-sync behavior. Date: 2026-09-09.
 
 ## Blocked / needs user
 - (none)
