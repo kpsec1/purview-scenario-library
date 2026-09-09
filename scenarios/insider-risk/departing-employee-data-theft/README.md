@@ -127,6 +127,21 @@ Record `$hrApp.AppId` (the **Application (client) ID** for Step 3) and `$hrApp.T
 Entra ID never shows the plaintext value again after this run. Re-run with `-RotateSecret` at
 the ~90-day rotation point (§3, §11) rather than creating a second app registration.
 
+Once the new secret from a `-RotateSecret` run is confirmed working in
+`Send-HrTerminationRecord.ps1`'s scheduled task, remove the superseded secret it left behind —
+`-RotateSecret` adds a secret, it never deletes one (§11):
+
+```powershell
+# Dry run — lists which already-expired secrets would be deleted, calls nothing
+./deploy/Remove-HrConnectorAppSecret.ps1 -RemoveExpired -WhatIf
+
+# Delete every already-expired secret on the app
+./deploy/Remove-HrConnectorAppSecret.ps1 -RemoveExpired
+```
+
+`validate/Test-HrConnectorAppRegistration.ps1` warns if an already-expired secret is still
+present, as a recurring nudge to run this cleanup.
+
 ### Step 3 — Create the HR connector
 
 Purview portal → **Settings** → **Data connectors** → **My connectors** → **Add connector** →
@@ -383,10 +398,13 @@ deleting the policy, connector, or the HR-connector app registration's client se
   vault and rotate it on a short cycle; `Send-HrTerminationRecord.ps1` never persists it to disk.
 - **`Register-HrConnectorApp.ps1 -RotateSecret` adds a secret, it doesn't replace one.** Microsoft
   Entra applications support multiple concurrent client secrets by design — running with
-  `-RotateSecret` issues a new one alongside any existing (even expired) ones. Remove the
-  superseded secret yourself (Entra admin center, or `Remove-MgApplicationPassword`) once the new
-  secret is confirmed working in `Send-HrTerminationRecord.ps1`'s scheduled task — this script
-  won't guess at that timing for you [[20]](#references).
+  `-RotateSecret` issues a new one alongside any existing (even expired) ones. Once the new
+  secret is confirmed working in `Send-HrTerminationRecord.ps1`'s scheduled task, remove the
+  superseded one with `deploy/Remove-HrConnectorAppSecret.ps1 -RemoveExpired` (Entra admin center,
+  or `Remove-MgApplicationPassword` directly, both still work too) — the *timing* of when the new
+  secret is confirmed working is still a judgment call this scenario won't guess at for you, but
+  the cleanup step itself is scripted, idempotent, and `-WhatIf`-capable rather than a manual
+  Entra admin center task [[20]](#references)[[22]](#references).
 - **Data risk graph is being retired November 24, 2026.** If a walkthrough or screenshot in a
   demo references the visual "data risk graph" investigation view, note that Microsoft has
   announced its retirement — don't build a workflow around it for a new deployment
@@ -424,6 +442,7 @@ deleting the policy, connector, or the HR-connector app registration's client se
 19. New-MgApplication, Get-MgApplication, New-MgServicePrincipal, Add-MgApplicationPassword, Remove-MgApplication, Remove-MgServicePrincipal (Microsoft.Graph.Applications PowerShell reference) — <https://learn.microsoft.com/powershell/module/microsoft.graph.applications/new-mgapplication>, <https://learn.microsoft.com/powershell/module/microsoft.graph.applications/new-mgserviceprincipal>, <https://learn.microsoft.com/powershell/module/microsoft.graph.applications/add-mgapplicationpassword>
 20. Add and manage application credentials in Microsoft Entra ID (multiple concurrent client secrets are supported; a secret's plaintext value is shown only once) — <https://learn.microsoft.com/entra/identity-platform/how-to-add-credentials>
 21. Delegate app registration permissions in Microsoft Entra ID (default "Users can register applications" behavior; Application Developer / Application Administrator / Cloud Application Administrator roles) — <https://learn.microsoft.com/entra/identity/role-based-access-control/delegate-app-roles>
+22. Remove-MgApplicationPassword (Microsoft.Graph.Applications, v1.0; `-ApplicationId` aliased `ObjectId`) and the underlying `application: removePassword` Graph REST action — <https://learn.microsoft.com/powershell/module/microsoft.graph.applications/remove-mgapplicationpassword>, <https://learn.microsoft.com/graph/api/application-removepassword>
 
 > Re-verify all links, cmdlet/API behavior, and licensing terms against current Microsoft Learn
 > before a customer-facing assessment or sale — this module changes faster than most in the

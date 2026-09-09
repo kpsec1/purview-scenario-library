@@ -25,6 +25,9 @@
       - A secret expiring within 30 days - a nudge to rotate before README.md §3/§11's
         recommended ~90-day cadence lapses into an actual outage of
         Send-HrTerminationRecord.ps1's scheduled run.
+      - One or more already-expired secrets still present on the application - a nudge to run
+        deploy/Remove-HrConnectorAppSecret.ps1 -RemoveExpired, since Register-HrConnectorApp.ps1
+        -RotateSecret only ever adds a secret, it never deletes the one it superseded.
 
 .PARAMETER DisplayName
     Display name of the app registration to check. Must match the -DisplayName used with
@@ -104,6 +107,10 @@ if ($app) {
         Test-Check -Description "Soonest-expiring valid secret has more than $SecretExpiryWarningDays day(s) remaining (has $daysRemaining) - rotate with Register-HrConnectorApp.ps1 -RotateSecret if not" `
             -Condition ($daysRemaining -gt $SecretExpiryWarningDays) -Warn
     }
+
+    $expiredCredentials = @($credentials | Where-Object { $_.EndDateTime -le $now })
+    Test-Check -Description "No already-expired secrets left on the application (found $($expiredCredentials.Count)) - clean up superseded secrets with Remove-HrConnectorAppSecret.ps1 -RemoveExpired" `
+        -Condition ($expiredCredentials.Count -eq 0) -Warn
 
     $grantedPermissions = @($app.RequiredResourceAccess)
     Test-Check -Description 'No Microsoft Graph API permission is granted to this app (RequiredResourceAccess is empty - README.md §3 hygiene requirement)' `

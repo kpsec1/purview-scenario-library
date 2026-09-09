@@ -526,14 +526,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   four-lens pass on the new capability.
 
 ### Follow-ups discovered while building the HR-connector app-registration automation
-- [ ] Consider a `-RemoveExpired` (or standalone `Remove-HrConnectorAppSecret.ps1`) option that
+- [x] Consider a `-RemoveExpired` (or standalone `Remove-HrConnectorAppSecret.ps1`) option that
   calls `Remove-MgApplicationPassword` to delete a superseded secret by `KeyId` after
   `Register-HrConnectorApp.ps1 -RotateSecret` adds a new one, rather than leaving cleanup as a
-  fully manual step (`README.md` §11) — deferred from this build to keep the fragment scoped;
-  `Remove-MgApplicationPassword`'s exact parameter set was not independently re-verified this
-  session (only `New-MgApplication`/`Get-MgApplication`/`New-MgServicePrincipal`/
-  `Add-MgApplicationPassword`/`Remove-MgApplication`/`Remove-MgServicePrincipal` were), so ground
-  it fresh before building rather than assuming symmetry with `Add-MgApplicationPassword`.
+  fully manual step (`README.md` §11) — **built** (see DONE below) as the standalone
+  `deploy/Remove-HrConnectorAppSecret.ps1`, with a default `-RemoveExpired` mode (deletes only
+  already-dead credentials, so it can never reduce the app's working-secret count) and a
+  narrower `-KeyId`/`-Force` mode for force-retiring a still-valid secret. `Remove-
+  MgApplicationPassword`'s exact parameter set was freshly re-verified this session against its
+  own Microsoft Learn reference page rather than assumed by symmetry with
+  `Add-MgApplicationPassword` — including the non-obvious detail that its `-KeyId` parameter's
+  documented type is `System.String`, not `System.Guid`, despite the underlying Graph resource
+  property's Edm type being `Guid`; this script's own `-KeyId` parameter matches that (typed
+  `[string]` with a GUID-format `ValidatePattern`, not `[guid]`).
 - [x] `scenarios/insider-risk/security-policy-violations-by-departing-users/` — the related but
   distinct IRM template requiring Microsoft Defender for Endpoint integration, explicitly called
   out as a non-goal in `departing-employee-data-theft/design.md` §7 — **built** (see DONE below):
@@ -1359,6 +1364,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   into the UUIDv5 name string) is directly reusable there without modification once picked up.
 
 ## DONE
+- [x] **`departing-employee-data-theft` — script HR-connector app-secret cleanup** — commit
+  `<pending>` — 2026-09-09 — resolved the follow-up (discovered while building
+  `Register-HrConnectorApp.ps1`) asking for a scripted way to delete the superseded secret that
+  `-RotateSecret` leaves behind, since Microsoft Entra applications support multiple concurrent
+  client secrets by design and nothing deletes the old one automatically. Added the standalone
+  `deploy/Remove-HrConnectorAppSecret.ps1`: a default `-RemoveExpired` mode that only ever
+  deletes already-dead credentials (safe by construction — can never reduce the app's working-
+  secret count) and a narrower `-KeyId`/`-Force` mode for force-retiring a still-valid secret
+  (refuses without `-Force` if it's the application's only unexpired secret). Idempotent,
+  `-WhatIf`-capable, never logs `SecretText`. Grounded via the Microsoft Learn MCP server
+  (available this run, same as the prior fragment, contrary to this task's stored instructions):
+  independently re-verified `Remove-MgApplicationPassword`'s full parameter set (not assumed by
+  symmetry with `Add-MgApplicationPassword`) and caught a non-obvious mismatch before it shipped —
+  its `-KeyId` parameter's documented type is `System.String`, not `System.Guid`, despite the
+  underlying `passwordCredential.keyId` Graph resource property's Edm type being `Guid` — so this
+  script's own `-KeyId` parameter is typed `[string]` with a GUID-format `ValidatePattern`, not
+  `[guid]`. Also confirmed `application: removePassword`'s REST reference documents object-ID
+  addressing only (no dual `id`/`appId` addressing the way `addPassword` documents), so the
+  script's `.NOTES` doesn't claim that flexibility exists. Added a matching WARN check to
+  `validate/Test-HrConnectorAppRegistration.ps1` (already-expired secrets still present — not a
+  hard failure, a hygiene nudge). Updated `README.md` (Step 2 code block, §11, §12 reference 22),
+  `design.md` (§4 component table row, §6 new key-decision row), and `rollback.md` (Stage 3 now
+  offers secret-only revocation via the new script as an alternative to full app deletion). Added
+  a reviews.md addendum (mini four-lens pass on the new capability only — Pass, no Fix/Fail): Red
+  Team confirmed the default mode can't break the live integration and no secret plaintext is
+  ever handled; Blue Team confirmed the cleanup gap is now caught by the validate script's new
+  WARN, not just fixable; CISO confirmed near-zero incremental cost; Microsoft Product Owner
+  confirmed the cmdlet/REST grounding above.
 - [x] **`departing-employee-data-theft` — script the HR-connector Entra app registration** —
   commit `12d1932` — 2026-09-09 — resolved the follow-up asking whether app-registration
   creation could be scripted instead of left as a manual Entra admin center task. Grounded via

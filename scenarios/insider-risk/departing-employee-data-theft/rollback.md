@@ -45,8 +45,13 @@ materially weaker signal — the risk window is not fully closed by this stage).
    & secrets** → delete the client secret (or delete the app registration entirely if it serves
    no other purpose). Do this even if you only completed Stage 1/2 above but are retiring the
    integration — a live, unused secret is a standing credential-leak risk regardless of whether
-   the policy/connector that used it still exists. Equivalent script (same
-   `Application.ReadWrite.All` delegated session `deploy/Register-HrConnectorApp.ps1` uses):
+   the policy/connector that used it still exists.
+
+   To revoke just the secret and keep the app registration (e.g. pausing the integration rather
+   than retiring it), use `deploy/Remove-HrConnectorAppSecret.ps1 -KeyId <guid> -Force` (`-Force`
+   is required because this deliberately removes a still-valid secret, not merely an expired one
+   — see that script's own `.PARAMETER Force`). To remove the app registration entirely, same
+   `Application.ReadWrite.All` delegated session `deploy/Register-HrConnectorApp.ps1` uses:
    ```powershell
    $app = Get-MgApplication -Filter "displayName eq 'Purview HR Connector - Insider Risk Management (single-purpose)'"
    Remove-MgServicePrincipal -ServicePrincipalId (Get-MgServicePrincipal -Filter "appId eq '$($app.AppId)'").Id

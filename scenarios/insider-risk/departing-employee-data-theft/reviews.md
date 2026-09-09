@@ -220,3 +220,53 @@ the original verdicts above are not reopened.
   Microsoft's own built-in-roles reference and delegation guide, not guessed at. **Verdict: Pass.**
 
 No Fix/Fail from this addendum.
+
+---
+
+## Addendum 2 — HR-connector app-secret cleanup follow-up
+
+A follow-up fragment (tracked in `PROGRESS.md`, discovered while building the app-registration
+automation above) resolved the previously-deferred item "script the superseded-secret cleanup
+`-RotateSecret` leaves behind" by adding `deploy/Remove-HrConnectorAppSecret.ps1` and a matching
+WARN check in `validate/Test-HrConnectorAppRegistration.ps1`. Mini four-lens pass on the new
+capability only — the original verdicts above and Addendum 1 are not reopened.
+
+- 🔴 **Red Team** — could a cleanup script itself become a footgun (e.g. deleting the only
+  working secret and silently breaking the integration, or deleting it unnoticed by an attacker
+  covering their tracks after planting a rogue secret)? The default `-RemoveExpired` mode can
+  only ever delete credentials that are *already* dead (`EndDateTime` in the past), so it can
+  never reduce the app's working-secret count — there is no default-path way to break
+  `Send-HrTerminationRecord.ps1`. The narrower `-KeyId` mode, which *can* target a still-valid
+  secret, refuses to proceed if doing so would leave zero unexpired secrets unless `-Force` is
+  also passed — an explicit, deliberate override, not an accidental one-flag mistake. The script
+  never prints or logs `SecretText` (only the non-secret `KeyId`/`DisplayName`/`EndDateTime`),
+  so it doesn't introduce a new place a secret's plaintext could leak. **Verdict: Pass.**
+- 🔵 **Blue Team** — is the cleanup gap now actually caught, not just fixable? Yes:
+  `Test-HrConnectorAppRegistration.ps1` now WARNs whenever an already-expired secret is still
+  present, so a superseded secret left behind after a `-RotateSecret` run surfaces on the very
+  next validation pass instead of persisting silently until someone happens to check the
+  Microsoft Entra admin center. Both new checks (this one and the pre-existing 30-day
+  expiry-warning) are WARN, not FAIL, deliberately — an expired secret sitting unused is
+  unwanted hygiene debt, not an active control failure, and forcing it to FAIL would make the
+  validation script cry wolf on a routine, non-urgent condition. **Verdict: Pass.**
+- 🎩 **CISO** — closes the residual-risk item Addendum 1's own Red Team finding named but
+  deferred ("this script won't guess at that timing for you") with essentially zero incremental
+  cost: same `Microsoft.Graph.Applications` module and `Application.ReadWrite.All` delegated
+  scope the bootstrap script already uses, no new licensing dependency. A standing, unused client
+  secret is exactly the kind of small residual exposure that accumulates unnoticed across a
+  fleet of tenants an MSSP operates — scripting its removal is a proportionate, low-cost
+  reduction in that exposure. **Would I fund this?** Yes, as a minor increment on an
+  already-funded scenario, consistent with Addendum 1's own framing.
+- 🟦 **Microsoft Product Owner** — `Remove-MgApplicationPassword` is confirmed current, non-beta
+  `Microsoft.Graph.Applications` (v1.0), re-verified directly against its Microsoft Learn
+  reference page during this build (not assumed from `Add-MgApplicationPassword`'s shape by
+  analogy) — including that `-ApplicationId` is aliased `ObjectId` and takes the object ID, the
+  same easy-to-get-wrong detail Addendum 1 already called out for the add-password cmdlet. The
+  underlying `application: removePassword` REST reference documents object-ID addressing only
+  (`POST /applications/{id}/removePassword`); the script's own `.NOTES` states this precisely
+  rather than assuming, by analogy with `addPassword`'s documented dual `id`/`appId` addressing,
+  that the same flexibility exists here. `passwordCredential.keyId`'s type (`Guid`) was
+  independently confirmed against the Graph resource-type reference before being used as this
+  script's `-KeyId` parameter type. **Verdict: Pass.**
+
+No Fix/Fail from this addendum.
