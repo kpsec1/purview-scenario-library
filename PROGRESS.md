@@ -727,11 +727,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `docs/rbac-model.md` §4 (both updated to state the two workloads' different approver-role tables
   and shared tenant-wide toggle), and backporting a "see the sibling" cross-link into the Exchange
   scenario's own `README.md`/`design.md` in place of the old "tracked as a follow-up" language.
-- [ ] `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/` (or fold into the
-  SharePoint/OneDrive sibling above) — the separate SharePoint/OneDrive **permanent deletion**
-  sub-feature (bypasses the second-stage Recycle Bin entirely; public preview rollout begins
-  2026-08-24) — still out of scope; explicitly deferred again in the now-built sibling's own
-  `README.md` §11/§2 and `design.md` §7.
+- [x] `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/` — **built** (see
+  DONE below): the separate SharePoint/OneDrive **permanent deletion** sub-feature (bypasses the
+  second-stage Recycle Bin entirely). Public preview rollout (2026-08-24) had begun by this build's
+  date (2026-09-09), so the deferral no longer applied. Central finding: no confirmed PowerShell/
+  Graph parameter selects "Delete data permanently" (the portal-only differentiator step) —
+  `New-ComplianceTag -RetentionAction` was directly confirmed to accept only
+  `Delete`/`Keep`/`KeepAndDelete`, no fourth value. Scripts the shared, confirmed base
+  label/policy/rule objects and discloses the manual step + read-back gap rather than guessing;
+  post-hoc confirmation via the new `PriorityCleanupFileDeleted` audit operation is fully scripted.
 - [ ] VERIFY (pilot tenant, before production reliance): whether the `-MultiStageReviewProperty`
   JSON's `StageName` values and array order are meaningful to the platform (e.g. must match a
   fixed priority-cleanup-admin → retention-manager → eDiscovery-admin sequence) or are purely a
@@ -1622,7 +1626,47 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `reviews.md`) — not built this run to keep this fragment scoped to the create/link capability
   `PROGRESS.md` asked for.
 
+### Follow-ups discovered while building the Priority Cleanup Permanent Deletion scenario
+- [ ] VERIFY (pilot tenant): whether a policy provisioned via
+  `priority-cleanup-permanent-deletion/deploy/New-PriorityCleanupPermanentDeletionPolicy.ps1` (the
+  shared `-PriorityCleanup` label/policy/rule shape) is a valid starting point for the Purview
+  portal's "Choose what to do with the content > Delete data permanently" wizard step, or whether
+  permanent-deletion policies must be created end-to-end through the portal wizard instead —
+  `design.md` §4 states both readings as open; neither is confirmed by Microsoft's published
+  documentation.
+- [ ] VERIFY (pilot tenant, or a future Microsoft Learn pass): current permanent-deletion
+  availability by cloud environment. This build's own date (2026-09-09) is after the cited
+  2026-08-24 Worldwide multi-tenant public-preview rollout start, but GCC/GCC High/DoD timing is
+  not stated on the official Learn page this scenario cites — `README.md` §11 flags this rather
+  than assuming parity with Worldwide multi-tenant.
+- [ ] Once Microsoft publishes a PowerShell/Graph parameter or worked example for selecting
+  "Delete data permanently" (closing this scenario's central disclosed gap — `design.md` §4), script
+  it directly in `New-PriorityCleanupPermanentDeletionPolicy.ps1` instead of the current
+  print-and-stop manual step, and add a matching read-back check to `validate/
+  Test-PriorityCleanupPermanentDeletionPolicy.ps1`.
+- [ ] Consider a companion scenario chaining eDiscovery search-and-purge (soft-delete) with either
+  priority-cleanup workload, matching Microsoft's own documented workflow for avoiding the
+  end-user-visible "Retention: ... (-1 days)" message bar in Outlook — same deferral already tracked
+  under the Priority Cleanup Exchange data-spillage follow-ups above (not duplicated here; both
+  priority-cleanup scenarios could eventually chain to it once it exists).
+
 ## DONE
+- [x] **`scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/`** — commit
+  `PENDING` — 2026-09-09. Full README (12-section skeleton), design.md, deploy/
+  (`New-PriorityCleanupPermanentDeletionPolicy.ps1` — provisions the same confirmed
+  `-PriorityCleanup` label/policy/rule shape as the `priority-cleanup-sharepoint-onedrive` sibling,
+  then prints a mandatory manual portal step rather than guessing at an unconfirmed CLI parameter;
+  `Remove-PriorityCleanupPermanentDeletionPolicy.ps1`), validate/
+  (`Test-PriorityCleanupPermanentDeletionPolicy.ps1` — confirms shared base objects, explicitly
+  cannot confirm permanent-deletion mode, directs to audit search instead), rollback.md (documents
+  there is NO Recycle Bin recourse, unlike the sibling), reviews.md (four-lens, all Fix resolved).
+  Central grounded finding: `New-ComplianceTag -RetentionAction` confirmed to accept only
+  `Delete`/`Keep`/`KeepAndDelete` (no "permanent" value) — corroborates the feature's own
+  portal-only procedure page rather than merely citing its silence. New audit operation
+  `PriorityCleanupFileDeleted` (distinct from the sibling's `PriorityCleanupFileRecycled`) is the
+  scenario's sole scriptable, reliable confirmation path. Cross-linked from
+  `docs/licensing-matrix.md` §7 and backported into the sibling's `README.md`/`design.md` (removed
+  "tracked as a follow-up" language, now a direct sibling-scenario link).
 - [x] **`scenarios/unified-catalog/manage-okrs/`** — commit
   `e47e8be` — 2026-09-09. Full README (12-section skeleton),
   design.md, deploy/ (`New-Okr.ps1` — idempotent create-or-update of an objective and its key

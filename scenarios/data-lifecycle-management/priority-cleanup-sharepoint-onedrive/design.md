@@ -125,8 +125,8 @@ undone" framing.
 ## 7. Non-goals
 
 - **Permanent deletion sub-feature** (bypasses the Recycle Bin; public preview from 2026-08-24) —
-  a distinct capability requiring its own scoping once it's further out of preview; tracked as a
-  follow-up in `PROGRESS.md`.
+  a distinct capability with its own approval model and irreversibility profile; built as its own
+  sibling scenario, `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/`.
 - **Adaptive-scope targeting** — this scenario is static-scope only, same non-goal as the Exchange
   sibling.
 - **Scripting the approval workflow itself** — no documented API exists; portal-only by design.
