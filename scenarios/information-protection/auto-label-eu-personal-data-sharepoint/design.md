@@ -77,6 +77,50 @@ default set because passport/driver's-license numbers are lower-frequency in day
 OneDrive business content than national-ID and payment-card numbers, not because they're any less
 real. `-SensitiveInfoTypeName` (§5) accepts them directly if a buyer's data inventory calls for it.
 
+**Per-country checksum-strength reference — all 26 members of the "EU national identification
+number" bundle.** `reviews.md` (Red Team finding 1) flagged that the bundle's per-country entities
+don't carry equal detection confidence, but the original build only grounded two representative
+examples (France: no checksum; Belgium: yes). This table closes that gap with all 26, each fetched
+directly from its own Microsoft Learn entity-definition page rather than inferred from the two
+examples:
+
+| Country | Entity (as titled by Microsoft) | Checksum | Highest documented confidence | Notes |
+|---|---|---|---|---|
+| Austria | Austria identity card | No (`Not applicable`) | Medium (75) | — |
+| Belgium | Belgium national number | **Yes** | Medium (75) | — |
+| Bulgaria | Bulgaria uniform civil number | **Yes** | High (85) | — |
+| Croatia | Croatia identity card number | No | Medium (75) | — |
+| Cyprus | Cyprus identity card | No (`Not applicable`) | Medium (75) | — |
+| Czech Republic | Czech personal identity number | **Yes** | High (85) | Checksum required on both the legacy 9-digit and current 10-digit formats |
+| Denmark | Denmark personal identification number | **Yes** | Medium (75) | — |
+| Estonia | Estonia personal identification code | **Yes** | High (85) | — |
+| Finland | Finland national ID | **Yes** | High (85) | — |
+| France | France national ID card (CNI) | No | Low (65) | Lowest documented confidence in the bundle |
+| Germany | Germany identity card number | **Yes**, post-2010 format only | High (85) | Pre-November-2010 10-digit format matches on regex only, no checksum function documented |
+| Greece | Greece national ID card | No | High (85) | High confidence here comes from pattern+keyword, not checksum |
+| Hungary | Hungary personal identification number | **Yes** | High (85) | — |
+| Ireland | Ireland personal public service (PPS) number | **Yes** | High (85) | Checksum applies to both the pre-2013 and current formats |
+| Italy | Italy fiscal code | **Yes** | High (85) | — |
+| Latvia | Latvia personal code | **Yes** | High (85) | Checksum applies to both the legacy hyphenated and current formats |
+| Lithuania | Lithuania personal code | **Yes** | High (85) | — |
+| Luxembourg | Luxembourg National Identification Number (Natural persons) | **Yes** | High (85) | — |
+| Malta | Malta identity card number | No (`Not applicable`) | Medium (75) | — |
+| Netherlands | Netherlands citizens service (BSN) number | **Yes** | High (85) | — |
+| Portugal | Portugal citizen card number | **Yes** | High (85) | — |
+| Romania | Romania personal numeric code (CNP) | **Yes** | High (85) | — |
+| Slovakia | Slovakia personal number | **Yes** | High (85) | — |
+| Slovenia | Slovenia Unique Master Citizen Number | **Yes** | High (85) | — |
+| Spain | Spain DNI | **Yes** | High (85) | — |
+| U.K. | U.K. national insurance number (NINO) | No | High (85) | High confidence here comes from pattern+keyword, not checksum |
+
+**19 of 26 members (73%) are checksum-validated; 7 are pattern-only** (Austria, Croatia, Cyprus,
+France, Greece, Malta, U.K.). Two of the 19 (Germany, and to a lesser extent the dual-format
+countries noted above) only guarantee the checksum on a subset of the formats they match — treat
+Germany's pre-2010 10-digit path as effectively pattern-only for false-positive planning purposes.
+The 7 pattern-only countries carry the bundle's highest false-positive risk and are the first
+candidates to exclude via the `-SensitiveInfoTypeName` localization mechanism (§5) for a tenant that
+doesn't operate in those markets — see `README.md` §8's KPI guidance and §11.
+
 **VERIFY (pilot tenant, before production reliance):** the exact, byte-precise capitalization of
 these three SIT names as they must be passed to `-ContentContainsSensitiveInformation` /
 `New-DlpComplianceRule`. Microsoft's own Learn pages render the same SIT with inconsistent casing
@@ -178,3 +222,29 @@ parameter; it does not re-derive any of the already-reviewed rollout/override de
 6. EU drivers license number entity definition — <https://learn.microsoft.com/purview/sit-defn-eu-drivers-license-number>
 7. New-AutoSensitivityLabelRule reference (`-Workload` single-valued) —
    <https://learn.microsoft.com/powershell/module/exchangepowershell/new-autosensitivitylabelrule>
+8. Austria identity card entity definition — <https://learn.microsoft.com/purview/sit-defn-austria-identity-card>
+9. Belgium national number entity definition — <https://learn.microsoft.com/purview/sit-defn-belgium-national-number>
+10. Bulgaria uniform civil number entity definition — <https://learn.microsoft.com/purview/sit-defn-bulgaria-uniform-civil-number>
+11. Croatia identity card number entity definition — <https://learn.microsoft.com/purview/sit-defn-croatia-identity-card-number>
+12. Cyprus identity card entity definition — <https://learn.microsoft.com/purview/sit-defn-cyprus-identity-card>
+13. Czech personal identity number entity definition — <https://learn.microsoft.com/purview/sit-defn-czech-personal-identity-number>
+14. Denmark personal identification number entity definition — <https://learn.microsoft.com/purview/sit-defn-denmark-personal-identification-number>
+15. Estonia personal identification code entity definition — <https://learn.microsoft.com/purview/sit-defn-estonia-personal-identification-code>
+16. Finland national ID entity definition — <https://learn.microsoft.com/purview/sit-defn-finland-national-id>
+17. France national ID card (CNI) entity definition — <https://learn.microsoft.com/purview/sit-defn-france-national-id-card>
+18. Germany identity card number entity definition — <https://learn.microsoft.com/purview/sit-defn-germany-identity-card-number>
+19. Greece national ID card entity definition — <https://learn.microsoft.com/purview/sit-defn-greece-national-id-card>
+20. Hungary personal identification number entity definition — <https://learn.microsoft.com/purview/sit-defn-hungary-personal-identification-number>
+21. Ireland personal public service (PPS) number entity definition — <https://learn.microsoft.com/purview/sit-defn-ireland-personal-public-service-number>
+22. Italy fiscal code entity definition — <https://learn.microsoft.com/purview/sit-defn-italy-fiscal-code>
+23. Latvia personal code entity definition — <https://learn.microsoft.com/purview/sit-defn-latvia-personal-code>
+24. Lithuania personal code entity definition — <https://learn.microsoft.com/purview/sit-defn-lithuania-personal-code>
+25. Luxembourg National Identification Number (Natural persons) entity definition — <https://learn.microsoft.com/purview/sit-defn-luxemburg-national-identification-number-natural-persons>
+26. Malta identity card number entity definition — <https://learn.microsoft.com/purview/sit-defn-malta-identity-card-number>
+27. Netherlands citizens service (BSN) number entity definition — <https://learn.microsoft.com/purview/sit-defn-netherlands-citizens-service-number>
+28. Portugal citizen card number entity definition — <https://learn.microsoft.com/purview/sit-defn-portugal-citizen-card-number>
+29. Romania personal numeric code (CNP) entity definition — <https://learn.microsoft.com/purview/sit-defn-romania-personal-numeric-code>
+30. Slovakia personal number entity definition — <https://learn.microsoft.com/purview/sit-defn-slovakia-personal-number>
+31. Slovenia Unique Master Citizen Number entity definition — <https://learn.microsoft.com/purview/sit-defn-slovenia-unique-master-citizen-number>
+32. Spain DNI entity definition — <https://learn.microsoft.com/purview/sit-defn-spain-dni>
+33. U.K. national insurance number (NINO) entity definition — <https://learn.microsoft.com/purview/sit-defn-uk-national-insurance-number>

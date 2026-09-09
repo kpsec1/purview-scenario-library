@@ -224,11 +224,12 @@ simulation mode reviewed for at least a business cycle (7+ days) → Enable.
   that only ever sees matches from 2–3 countries is a strong signal to consider narrowing to a
   per-country `-SensitiveInfoTypeName` list (§6) for tighter false-positive control, rather than
   running the full 26-country bundle indefinitely.
-- **False-positive rate** — national ID formats with weak or no checksum validation (several
-  per-country entities in the EU national ID bundle are pattern-only, no checksum — verify per
-  country via the individual entity definition pages linked from `design.md` §4 reference 2)
-  carry a materially higher false-positive risk than checksum-validated formats like EU debit
-  card number; track override/manual relabel activity in Activity Explorer.
+- **False-positive rate** — national ID formats with weak or no checksum validation carry a
+  materially higher false-positive risk than checksum-validated formats like EU debit card number.
+  `design.md` §4 now tables all 26 EU national ID bundle members: 19 are checksum-validated, 7 are
+  pattern-only (Austria, Croatia, Cyprus, France, Greece, Malta, U.K.) — if a tenant's regulated
+  population includes one of those 7, expect a higher false-positive rate from that country's
+  matches specifically; track override/manual relabel activity in Activity Explorer.
 - **Backlog coverage** — same on-demand classification recommendation as the sibling scenario for
   a tenant with years of existing content [[1]](#references).
 
@@ -304,10 +305,12 @@ to permanently delete the policy and its rules.
   the bundle itself is not a starting template.
 - **EU checksums vary by country, unlike the sibling scenario's SITs.** Both U.S. SSN and Credit
   Card Number carry checksum validation; within the EU national ID bundle, checksum support is
-  inconsistent per country (e.g. Belgium National Number has a checksum, several others documented
-  as pattern-only) — expect a higher false-positive rate from the bundle overall than from the
-  sibling scenario's fully-checksummed U.S. SIT pair, and treat this as one more reason a
-  precision-conscious buyer should consider the per-country localization path in §6.
+  inconsistent per country. `design.md` §4 tables all 26 members: **19 are checksum-validated**
+  (e.g. Belgium, Germany post-2010, Spain) and **7 are pattern-only** (Austria, Croatia, Cyprus,
+  France, Greece, Malta, U.K.) — expect a higher false-positive rate from the bundle overall than
+  from the sibling scenario's fully-checksummed U.S. SIT pair, and treat this as one more reason a
+  precision-conscious buyer should consider the per-country localization path in §6, especially if
+  the tenant's regulated population sits in one of the 7 pattern-only markets.
 - **"EU" as used by Microsoft's SIT naming does not track EU membership exactly.** The national ID
   bundle includes the U.K. (post-Brexit, no longer an EU member state) as one of its member
   entities [[7]](#references) — the bundle name is a Microsoft product-naming convention, not a

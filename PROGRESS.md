@@ -442,11 +442,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   response — both resolved with README additions (a standing review-cadence check and a
   disambiguation table), not new code. Cross-linked back into this scenario's own `README.md` §11
   and `design.md` §8.
-- [ ] Consider a per-country checksum-strength reference table (which EU national ID bundle members
+- [x] Consider a per-country checksum-strength reference table (which EU national ID bundle members
   are checksum-validated vs. pattern-only) as either a cross-cutting doc addition or an expanded
   `README.md` §11 table — flagged as a Red Team finding (`auto-label-eu-personal-data-sharepoint/
   reviews.md`) but only individual examples (France CNI: no checksum; Belgium National Number: yes)
-  were grounded in this build, not a full 26-country table.
+  were grounded in this build, not a full 26-country table. — **built** (see DONE below): all 26
+  members of the "EU national identification number" bundle fetched individually from their own
+  Microsoft Learn entity-definition pages and tabled in `auto-label-eu-personal-data-sharepoint/
+  design.md` §4 — 19 are checksum-validated, 7 are pattern-only (Austria, Croatia, Cyprus, France,
+  Greece, Malta, U.K.), with Germany flagged as checksum-validated on its post-2010 format only.
+  `README.md` §8/§11 in both the SharePoint/OneDrive and Exchange EU-personal-data siblings updated
+  from vague "several others" prose to the exact counts, cross-linking the new table instead of
+  duplicating it.
 - [ ] Consider adding `EU passport number` and `EU driver's license number` as an opt-in bundle
   (not a new default) for a buyer whose SharePoint/OneDrive estate is travel-document- or
   HR-record-heavy — both are real, confirmed EU-wide bundle SITs (`design.md` §4) already
@@ -1315,6 +1322,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   into the UUIDv5 name string) is directly reusable there without modification once picked up.
 
 ## DONE
+- [x] **EU national ID bundle — full 26-country checksum-strength reference table** — commit
+  `PENDING` — 2026-09-09 — `auto-label-eu-personal-data-sharepoint/design.md` §4 now tables all 26
+  members of the "EU national identification number" bundle (Austria through U.K.), each grounded
+  directly against its own Microsoft Learn entity-definition page: 19 checksum-validated, 7
+  pattern-only (Austria, Croatia, Cyprus, France, Greece, Malta, U.K.), with Germany's checksum
+  scoped to its post-2010 format only. Resolves the Red Team finding in that scenario's `reviews.md`
+  (finding 1), which the original build had only backed with two representative examples. `README.md`
+  §8/§11 in both the SharePoint/OneDrive and Exchange EU-personal-data siblings updated to cite the
+  exact counts and the new table instead of "several others documented as pattern-only." 26 new
+  citations added to `design.md`'s reference list.
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/`**
   — commit `5410ea0` — 2026-09-09 — extends
   `defender-device-control-usb-allowlist-macos-portable-device-coverage`'s `serialNumber`-only Apple

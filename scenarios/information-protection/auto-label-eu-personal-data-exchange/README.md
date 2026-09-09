@@ -258,9 +258,11 @@ days" option.
   message. A tenant that only ever sees matches from 2–3 countries is a signal to consider
   narrowing to a per-country `-SensitiveInfoTypeName` list (§6) rather than running the full
   26-country bundle indefinitely.
-- **False-positive rate** — the EU national ID bundle's checksum coverage varies by country (§11);
-  watch for user-reported "why was my email suddenly Confidential/encrypted" tickets, since there is
-  no per-item failure dashboard for email the way there is for files.
+- **False-positive rate** — the EU national ID bundle's checksum coverage varies by country: 19 of
+  26 members are checksum-validated, 7 are pattern-only (Austria, Croatia, Cyprus, France, Greece,
+  Malta, U.K. — full table in the SharePoint/OneDrive sibling's `design.md` §4, cited from this
+  scenario's own §11); watch for user-reported "why was my email suddenly Confidential/encrypted"
+  tickets, since there is no per-item failure dashboard for email the way there is for files.
 
 **Alert routing:** no DLP-style incident-report email from auto-labeling itself. For Exchange
 specifically, also budget for the **encryption side-effect**: an internal sender whose message
@@ -364,11 +366,12 @@ reference: `./deploy/Remove-EuPersonalDataAutoLabelExchangePolicy.ps1` disables 
   Exchange DLP rule for external send, as materially higher-priority than for the U.S.-SIT sibling —
   not an equally-optional extension.
 - **EU checksums vary by country, unlike the U.S.-SIT sibling's fully-checksummed SIT pair.**
-  Inherited unchanged from `auto-label-eu-personal-data-sharepoint/README.md` §11: within the EU
-  national ID bundle, checksum support is inconsistent per country (e.g. Belgium National Number has
-  a checksum, several others are pattern-only) — expect a higher false-positive rate from the bundle
-  overall, and treat this as one more reason a precision-conscious buyer should consider the
-  per-country localization path in §6.
+  Inherited unchanged from `auto-label-eu-personal-data-sharepoint/README.md` §11, now backed by a
+  full 26-country table in that sibling's `design.md` §4: **19 members are checksum-validated**
+  (e.g. Belgium, Germany post-2010, Spain), **7 are pattern-only** (Austria, Croatia, Cyprus, France,
+  Greece, Malta, U.K.) — expect a higher false-positive rate from the bundle overall, and treat this
+  as one more reason a precision-conscious buyer should consider the per-country localization path
+  in §6, especially if the tenant's regulated population sits in one of the 7 pattern-only markets.
 - **The `-SensitiveInfoTypeName` localization parameter is independent per scenario, and nothing
   keeps this scenario's list in sync with `auto-label-eu-personal-data-sharepoint`'s.** Both
   scripts accept the same-shaped parameter and default to the same three-SIT bundle, which invites
