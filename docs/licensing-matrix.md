@@ -70,7 +70,7 @@ equivalents unless noted — always confirm against Product Terms for GCC/GCC-Hi
 | **Audit (Premium)** | Long retention, high-value events, Audit API | **E5**, Suite, or **E5 eDiscovery & Audit** add-on | |
 | **Data Lifecycle Management** | Basic org/location retention | **E3 / Business Premium / Office 365 E3+** | Broadest license coverage of any module |
 | Data Lifecycle Management | Adaptive scopes, auto-apply, trainable-classifier retention | **E5** (or IP&G add-on) | |
-| Data Lifecycle Management | **Priority cleanup** (permanently delete content, overriding retention/holds/Preservation Lock) | **E5** (or IP&G add-on) | Preview; confirmed on its own line in the service description, same tier as Records Management — `scenarios/data-lifecycle-management/priority-cleanup-exchange-data-spillage/` |
+| Data Lifecycle Management | **Priority cleanup** (delete content, overriding retention/holds/Preservation Lock — Exchange: permanent; SharePoint/OneDrive: to the second-stage Recycle Bin) | **E5** (or IP&G add-on) | Preview; confirmed on its own line in the service description, same tier as Records Management; one shared tenant-wide toggle covers both workloads — `scenarios/data-lifecycle-management/priority-cleanup-exchange-data-spillage/`, `scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/` |
 | **Records Management** | Records declaration, disposition, file plan | **E5** (or IP&G add-on) | |
 | **Information Barriers** | Segment communication between groups | **E5**, Suite, or E5 add-on | Requires supported workloads (Teams, SPO, OneDrive, Exchange) |
 

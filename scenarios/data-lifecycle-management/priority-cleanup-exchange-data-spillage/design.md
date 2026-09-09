@@ -49,9 +49,10 @@ scope [[1]](#references)[[2]](#references):
 This fragment builds the **Exchange, data-spillage** variant — the use case Microsoft's own docs lead
 with, and the one with the richest (3-stage) approval model. The SharePoint/OneDrive variant (stale
 Teams recordings / Preservation Hold library cleanup, and the separate public-preview **permanent
-deletion** sub-feature for that workload [[3]](#references)) is a distinct fragment with a different
-approver model and a required simulation step — tracked as a follow-up, per `AGENTS.md` §6's
-one-fragment-per-turn discipline.
+deletion** sub-feature for that workload [[3]](#references)) is now built as its own sibling fragment,
+`scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/` — a different approver
+model (eDiscovery-admin-only, conditional) and a required (not merely recommended) simulation step,
+per that scenario's own `design.md` §3.
 
 ## 4. Object model and the two open construction choices
 
@@ -126,9 +127,10 @@ already completed, matching Microsoft's own limitation notice [[5]](#references)
 
 ## 7. Non-goals
 
-- **SharePoint/OneDrive priority cleanup** (stale recordings, Preservation Hold library, the separate
-  public-preview permanent-deletion sub-feature) — a different approver model and a required
-  simulation step; tracked as a follow-up.
+- **SharePoint/OneDrive priority cleanup** (stale recordings, Preservation Hold library) — now built
+  as `scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/`. That sibling's own
+  separate public-preview **permanent-deletion** sub-feature remains out of scope and tracked as a
+  follow-up in `PROGRESS.md`.
 - **Adaptive-scope targeting** (needed for group mailboxes) — this scenario is static-scope only.
 - **Scripting the approval workflow itself** — no documented API exists; portal-only by design.
 - **Tenant-wide on/off toggle automation** — the "Priority cleanup settings" configuration page has no

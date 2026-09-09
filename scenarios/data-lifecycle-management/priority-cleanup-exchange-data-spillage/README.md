@@ -112,7 +112,9 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 Skipping simulation (`-Enabled` instead of `-Simulate`) is supported — Microsoft states simulation is
 *"No (but recommended)"* for Exchange, unlike SharePoint/OneDrive where it's mandatory
 [[2]](#references) — but this scenario's scripts still refuse to deploy with **no** explicit choice at
-all (`-Simulate`, `-Enabled`, or `-DryRun`); see `design.md` §5.
+all (`-Simulate`, `-Enabled`, or `-DryRun`); see `design.md` §5. The SharePoint/OneDrive sibling
+(`scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/`) has no `-Enabled` path
+at all, for exactly this reason.
 
 ### Portal reference
 

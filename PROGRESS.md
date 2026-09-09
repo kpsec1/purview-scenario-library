@@ -717,17 +717,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   follow-up below, per `AGENTS.md` §6's one-fragment-per-turn discipline.
 
 ### Follow-ups discovered while building the Priority Cleanup Exchange data-spillage scenario
-- [ ] `scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/` — the
+- [x] `scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/` — the
   SharePoint/OneDrive sibling: different approver model (eDiscovery admin only, vs. Exchange's
   3-stage priority-cleanup-admin/retention-manager/eDiscovery-admin chain), **mandatory**
   simulation before every enable (vs. recommended-only for Exchange), and typical continual use
   (stale Teams meeting recordings/transcripts, Preservation Hold library cleanup after a user
-  leaves) rather than Exchange's rare, incident-driven use — explicitly deferred in this build
-  (`design.md` §3/§7) as a materially different fragment, not a copy-paste of the Exchange script.
+  leaves) rather than Exchange's rare, incident-driven use — **built** (see DONE below): full
+  README/design/deploy/validate/rollback/reviews, cross-linking `docs/licensing-matrix.md` §7 and
+  `docs/rbac-model.md` §4 (both updated to state the two workloads' different approver-role tables
+  and shared tenant-wide toggle), and backporting a "see the sibling" cross-link into the Exchange
+  scenario's own `README.md`/`design.md` in place of the old "tracked as a follow-up" language.
 - [ ] `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/` (or fold into the
   SharePoint/OneDrive sibling above) — the separate SharePoint/OneDrive **permanent deletion**
   sub-feature (bypasses the second-stage Recycle Bin entirely; public preview rollout begins
-  2026-08-24) — out of scope for this Exchange-only fragment.
+  2026-08-24) — still out of scope; explicitly deferred again in the now-built sibling's own
+  `README.md` §11/§2 and `design.md` §7.
 - [ ] VERIFY (pilot tenant, before production reliance): whether the `-MultiStageReviewProperty`
   JSON's `StageName` values and array order are meaningful to the platform (e.g. must match a
   fixed priority-cleanup-admin → retention-manager → eDiscovery-admin sequence) or are purely a
@@ -1545,6 +1549,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   already in this backlog; this build's own family-scoped hash-input pattern (folding a family tag
   into the UUIDv5 name string) is directly reusable there without modification once picked up.
 
+### Follow-ups discovered while building the Priority Cleanup SharePoint/OneDrive scenario
+- [ ] VERIFY (pilot tenant): whether the label's `-MultiStageReviewProperty` for this workload
+  needs a `PriorityCleanupAdmin` stage entry in addition to the `EDiscoveryAdmin` stage this
+  scenario's config uses, for the documented pre-turn-on "second Priority Cleanup Admin reviews
+  simulation and turns the policy on" check to register correctly — no Microsoft worked example
+  ties this parameter to priority cleanup for SharePoint/OneDrive specifically. Flagged inline in
+  `priority-cleanup-sharepoint-onedrive/design.md` §4, `README.md` §6/§11, and the config's
+  `_labelNote` rather than guessed.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the Exchange-specific KeyQL
+  exclusions (`SenderAuthor`, `SubjectTitle`, `(c:c)`, `(c:s)` unsupported in a priority cleanup
+  `ContentMatchQuery`) also apply to SharePoint/OneDrive priority cleanup queries — Microsoft's
+  SharePoint/OneDrive-specific page neither repeats nor contradicts that Exchange-page-only list.
+  `priority-cleanup-sharepoint-onedrive/README.md` §11.
+- [ ] Consider a small scheduled-task helper script that periodically reviews/re-simulates a
+  continual priority-cleanup rule's query — the KeyQL surface this scenario grounds has no
+  confirmed relative-date ("older than N days") operator, so a "stale content" query as documented
+  here matches ALL matching content indefinitely, not just old items, unless an admin manually
+  narrows it on a cadence. Explicitly deferred as a distinct fragment in
+  `priority-cleanup-sharepoint-onedrive/design.md` §7 rather than bolted onto that scenario's
+  one-shot create-or-report deploy script.
+- [ ] Once a documented PowerShell/Graph cmdlet exists for the priority-cleanup tenant-wide on/off
+  toggle (shared by both the Exchange and SharePoint/OneDrive scenarios — same open gap noted
+  under the Exchange sibling's own follow-ups above), extend both scenarios' scripts to cover it.
+
 ### Follow-ups discovered while building the Exchange PII exfil Part 2 (elevated-risk compensating control) scenario
 - [ ] VERIFY (pilot tenant): rule priority compaction behavior — same undocumented
   auto-shift-on-collision question already open for the Teams sibling fragment, applied here to
@@ -1566,6 +1594,33 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   timelines.
 
 ## DONE
+- [x] **`scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/`** —
+  commit `(pending — recorded in the next commit)` — 2026-09-09. Full README (12-section
+  skeleton), design.md, deploy/ (`New-PriorityCleanupSharePointOneDrivePolicy.ps1` — idempotent
+  create-or-report of a priority cleanup label/policy/rule via the official `-PriorityCleanup`
+  parameter set, targeting `-OneDriveLocation`/`-SharePointLocation` instead of the Exchange
+  sibling's `-ExchangeLocation`; unlike the sibling, has **no** `-Enabled`-at-creation path at all
+  — only `-Simulate` then `-EnforceSimulation` — because Microsoft documents simulation as
+  mandatory, not optional, for this workload; `Remove-PriorityCleanupSharePointOneDrivePolicy.ps1`
+  — disable/delete rollback that states the materially softer Recycle-Bin-recovery story rather
+  than reusing the Exchange sibling's "cannot be undone" language), validate/ script
+  (`Test-PriorityCleanupSharePointOneDrivePolicy.ps1` — classification via the `-PriorityCleanup`
+  filter switch; explicitly treats `Enabled:$false`/`Mode: In simulation` as the expected baseline
+  state for this workload, unlike the Exchange sibling), rollback.md, and a four-lens reviews.md
+  (all Fix items resolved; no Fail). Grounded via the Microsoft Learn MCP tool (available and
+  working in this session, unlike the prior run's environment) directly against
+  `priority-cleanup-onedrive-sharepoint`, `priority-cleanup-exchange` (for the cross-workload
+  comparison table), `priority-cleanup-permanent-deletion`, and the `New-ComplianceTag`/
+  `New-RetentionCompliancePolicy`/`New-RetentionComplianceRule` cmdlet reference pages — confirmed
+  `-OneDriveLocation`/`-SharePointLocation` support under the same `-PriorityCleanup`-bearing
+  parameter set, and the `ProgID:Media AND ProgID:Meeting` query verbatim from Microsoft's own
+  worked example (no construction needed there, unlike the Exchange sibling's hand-built query).
+  Two genuine construction gaps disclosed as VERIFY rather than guessed: the single-stage
+  `-MultiStageReviewProperty` shape for this workload's reduced approver model, and whether
+  Exchange's documented KeyQL exclusions also apply here. Backported cross-links into the Exchange
+  sibling's `README.md`/`design.md` (replacing "tracked as a follow-up" with a direct pointer to
+  this now-built scenario) and into `docs/licensing-matrix.md` §7 / `docs/rbac-model.md` §4 (the
+  latter corrected to show the two workloads' different approver-role tables, not just Exchange's).
 - [x] **`scenarios/data-lifecycle-management/priority-cleanup-exchange-data-spillage/`** — full
   README (12-section skeleton), design.md, deploy/ (`New-PriorityCleanupExchangePolicy.ps1` —
   idempotent create-or-report of a priority cleanup label/policy/rule via the official
