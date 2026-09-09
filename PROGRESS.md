@@ -3492,8 +3492,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `defender-endpoint/rbac`, `defender-endpoint/user-roles`, `defender-xdr/manage-rbac`,
   `defender-xdr/compare-rbac-roles`, `intune/device-security/microsoft-defender/configure-
   integration`), not inferred or fabricated.
-- [x] **`scenarios/dlp/exchange-pii-exfil-block-part2-obfuscation-mitigation/`** — commit hash
-  recorded in a follow-up commit — 2026-09-09 — full scenario (README.md, design.md, deploy/,
+- [x] **`scenarios/dlp/exchange-pii-exfil-block-part2-obfuscation-mitigation/`** — commit
+  `8f24b6e` — 2026-09-09 — full scenario (README.md, design.md, deploy/,
   validate/, rollback.md, reviews.md) extending `exchange-pii-exfil-block` with the same
   `-SharedByIRMUserRisk`-based Adaptive Protection compensating control
   `pci-teams-exfil-block-part2-obfuscation-mitigation` already built for the Teams DLP scenario,
