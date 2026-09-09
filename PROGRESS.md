@@ -1360,7 +1360,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`departing-employee-data-theft` — script the HR-connector Entra app registration** —
-  commit `PENDING` — 2026-09-09 — resolved the follow-up asking whether app-registration
+  commit `12d1932` — 2026-09-09 — resolved the follow-up asking whether app-registration
   creation could be scripted instead of left as a manual Entra admin center task. Grounded via
   the Microsoft Learn MCP server (available this run, contrary to this task's stored
   instructions) rather than WebFetch, which is proxy-blocked for `learn.microsoft.com` in this
