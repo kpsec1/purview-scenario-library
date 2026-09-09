@@ -856,10 +856,11 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   gating prerequisite in `README.md` §3, with a `Write-Warning` as the interim compensating
   control. No REST operation for configuring a data product access policy itself was found during
   this build's grounding pass (`design.md` §5) — that stays a portal-only manual step.
-- [ ] `scenarios/unified-catalog/manage-critical-data-elements/` — script the `Critical Data
+- [x] `scenarios/unified-catalog/manage-critical-data-elements/` — script the `Critical Data
   Elements` operation group (create a CDE, map asset columns to it, the auto-linking-to-data-
   products behavior Microsoft documents) — explicitly out of scope in `manage-data-products/
-  design.md` §6, which links only `DATAASSET` and `TERM` entity types.
+  design.md` §6, which links only `DATAASSET` and `TERM` entity types — **built** (see DONE
+  below).
 - [ ] `scenarios/unified-catalog/manage-okrs/` — script the `Okr`/`Key Result` operation groups and
   link them to data products, closing the last `EntityCategory` gap `manage-data-products/design.md`
   §6 leaves open (OKR linking).
@@ -876,6 +877,42 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   surface for it — confirmed not to exist as of this build (`manage-data-products/design.md` §5);
   the REST API's own `Policies` operation group is a different feature (the RBAC authorization-
   policy engine), not the consumer-facing access-request workflow.
+
+### Follow-ups discovered while building the Unified Catalog manage-critical-data-elements scenario
+- [ ] VERIFY (pilot tenant): whether `entityType=DATACOLUMN` (the value this scenario's scripts
+  send, matching the formally-documented `EntityCategory` enum) or `entityType=CRITICALDATACOLUMN`
+  (the value every worked example on the Critical Data Elements Create/List/Delete Relationship
+  reference pages actually uses) is the real, accepted value for mapping a column to a critical
+  data element. This is a genuine, three-page-consistent discrepancy in Microsoft's own REST
+  reference, not a gap this build failed to research — see `manage-critical-data-elements/
+  design.md` §6 and `README.md` §11. Resolving this would let this scenario and
+  `docs/automation-surface.md`'s new routing-table row drop the hedge and state one confirmed
+  value.
+- [ ] `scenarios/unified-catalog/manage-critical-data-elements-related-terms/` (or fold into a
+  future Unified Catalog pass) — script the "Manage related terms" action Microsoft's critical
+  data elements portal exposes (link a CDE to a glossary term via `entityType=TERM` on the same
+  **Create Relationship** operation this scenario already uses for `DATACOLUMN`) — explicitly
+  deferred as a non-goal in `manage-critical-data-elements/design.md` §7 to keep that fragment
+  scoped to the column-mapping capability this backlog item asked for; the code pattern already
+  exists in `manage-data-products/deploy/New-DataProduct.ps1`'s own `TERM` relationship handling
+  and would need no new grounding to port.
+- [ ] VERIFY (pilot tenant): whether Microsoft's critical-data-element **access policies** (the
+  portal's **Manage policies** action on a CDE's details page) have any REST surface distinct from
+  the RBAC-authorization-policy `Policies` operation group — `manage-data-products/design.md` §5
+  already confirmed the identical two-concepts trap for data products; this build's grounding pass
+  did not re-run that same check specifically for critical data elements (deferred as a non-goal,
+  `manage-critical-data-elements/design.md` §7) and should before this feature is presented as
+  fully API-manageable end to end.
+- [ ] VERIFY (pilot tenant): whether the Critical Data Elements `Query` `nameKeyword` filter's
+  exact match semantics (substring/prefix/tokenized) match the same open question already tracked
+  for `curate-business-glossary`'s Query Terms and `manage-data-products`' Query Data Products — no
+  new evidence either way was found for this third instance of the same undocumented filter.
+- [ ] Once a documented REST endpoint exists for **Critical Data Elements - Get Facets** and
+  **Count** (both listed in the operation group but not fetched/grounded in this build, since
+  neither was needed for create/map/observe), consider a small companion reporting scenario (or
+  fold into `data-estate-insights`) that surfaces CDE coverage the same way
+  `classification-coverage-report`/`sensitivity-label-coverage-report` do for classifications and
+  labels.
 
 ### Follow-ups discovered while building the Data Lineage end-to-end-lineage-validation scenario
 - [x] `scenarios/data-lineage/custom-process-lineage/` (or fold into a future Data Lineage
@@ -3795,6 +3832,42 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   needing a verbatim quote (the CSV column header, the 10,000-member cap), rather than a direct
   page fetch; disclosed in `README.md`'s closing reference note rather than presented as
   first-party-verified. Commit: `e167f52`. Date: 2026-09-09.
+- [x] `scenarios/unified-catalog/manage-critical-data-elements/` — **Manage a Critical Data
+  Element scenario** — scripts the Critical Data Elements operation group Microsoft's
+  `2026-03-20-preview` Unified Catalog API introduced: idempotent create/update of a critical data
+  element, resolution and mapping of Data Map columns to it, and observation (never creation) of
+  Microsoft's automatically-computed "associated data products" rollup as a live cross-check
+  against `manage-data-products`. First scenario in this repo to bridge the Unified Catalog API
+  and the Data Map/Atlas Entity API for the same object graph — `Resolve-DataMapColumnId` derives
+  a column's own Data Map GUID from its parent table's GUID plus its display name (`GET
+  .../datamap/api/atlas/v2/entity/guid/{tableGuid}`, matching
+  `relationshipAttributes.columns[].displayText`), grounded directly against Microsoft's own
+  `azure_sql_table` type-definition tutorial (its `columns` relationshipAttributeDefs entry) —
+  not assumed from a generic Atlas pattern. Fully grounded via the Microsoft Learn MCP tool
+  (`microsoft_docs_search`/`microsoft_docs_fetch`, available and used directly this run, contrary
+  to this task's stored instructions that it would be unavailable): Critical Data Elements
+  Count/Create/Create Relationship/Delete/Delete Relationship/Get/Get Facets/List/List
+  Relationships/Query/Update and Data Columns Add Related Entity/Delete Related/Get/Ingest/List
+  Related Entities/Query operation groups all directly fetched, plus the `unified-catalog-critical-
+  data-elements` concept page, the billing FAQ's data-product/CDE governed-asset dedup answer, and
+  the Data Map/Atlas Entity - Get REST reference. One genuine, three-page-consistent Microsoft
+  Learn documentation defect found and disclosed rather than silently resolved: every worked
+  example for the CDE relationship operations uses `entityType=CRITICALDATACOLUMN`, but the
+  formally-documented `EntityCategory` enum on those same pages has no such value and lists
+  `DATACOLUMN` instead — this build's scripts send `DATACOLUMN` (the enum-conformant choice) and
+  flag the discrepancy as an explicit VERIFY (new follow-up above) rather than guessing silently.
+  Four-lens review caught and fixed three findings before finalizing (see `reviews.md`): a
+  silent-column-skip false-confidence risk (resolved via a named "run validate after every deploy"
+  operational discipline in `README.md` §8, since the deploy script tolerates an unresolved column
+  as a non-fatal warning by design), a case-sensitive column-name-matching footgun (documented
+  as a named gotcha rather than loosened, to avoid a worse wrong-column-match ambiguity), and the
+  domain-scoped-role over-breadth risk already tracked for this repo's other Unified Catalog
+  scenarios (inherited by reference into `README.md` §3 rather than re-argued). `docs/
+  automation-surface.md` §4 extended with new routing-table rows for the Critical Data Elements/
+  Data Columns operation groups and the Data Map Entity-Get column-resolution pattern. Four new
+  follow-ups recorded above (a DATACOLUMN/CRITICALDATACOLUMN VERIFY, a deferred related-terms
+  companion, a deferred CDE-access-policy REST-surface re-check, and a deferred Get
+  Facets/Count-based coverage-reporting companion). Commit: `d7e8860`. Date: 2026-09-09.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**
