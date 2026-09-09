@@ -503,12 +503,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (Blue Team) flagged the initial hardcoded `Low` severity as a under-triage risk for a
   high-risk exception group; resolved by adding a `-ReportSeverityLevel` deploy parameter
   (`Low`/`Medium`/`High`) threaded through to both the deploy and validate scripts.
-- [ ] Once `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s pattern is extended to
+- [x] Once `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s pattern is extended to
   new content-pattern-based DLP scenarios (already tracked as a follow-up under the PCI Teams Part
   2 section above), consider adding the same risk-based `-SharedByIRMUserRisk` compensating-control
   rule to `exchange-pii-exfil-block`'s own named policy — the same split-content/behavioral blind
   spot `pci-teams-exfil-block-part2-obfuscation-mitigation` addresses for Teams applies equally to
-  Exchange (SSN/PAN fragments split across separate emails to the same or different recipients).
+  Exchange (SSN/PAN fragments split across separate emails to the same or different recipients) —
+  **built** as `scenarios/dlp/exchange-pii-exfil-block-part2-obfuscation-mitigation/` (see DONE
+  below).
 
 ### Follow-ups discovered while building the Insider Risk Management departing-employee scenario
 - [x] Consider scripting the HR-connector Entra app registration itself (Microsoft Graph
@@ -1365,6 +1367,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist-multi-device/`
   already in this backlog; this build's own family-scoped hash-input pattern (folding a family tag
   into the UUIDv5 name string) is directly reusable there without modification once picked up.
+
+### Follow-ups discovered while building the Exchange PII exfil Part 2 (elevated-risk compensating control) scenario
+- [ ] VERIFY (pilot tenant): rule priority compaction behavior — same undocumented
+  auto-shift-on-collision question already open for the Teams sibling fragment, applied here to
+  `deploy/New-ExchangePiiElevatedRiskBlock.ps1`'s name-agnostic compaction algorithm (design.md §6).
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): no single Microsoft-published example
+  validates the exact end-to-end composition this fragment designs (named DLP policy High-severity
+  alerts → Data-leaks direct trigger → Cumulative exfiltration scoring → Adaptive Protection → a
+  rule on that same named policy) — see `design.md` §6b.
+- [ ] Consider whether `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion` should
+  offer a documented, opt-in way to raise its rule to `-ReportSeverityLevel High` specifically when
+  a buyer also deploys this Part 2 fragment, closing the exception-group-in-Encrypt-mode blind spot
+  this build's Red Team review surfaced (`exchange-pii-exfil-block-part2-obfuscation-mitigation/
+  README.md` §11) — not built this run since it would require touching a different, already-shipped
+  scenario's default rather than staying scoped to this fragment.
+- [ ] Once the Teams sibling fragment's own open VERIFY items (design.md §6b composition validation,
+  pilot-tenant priority-reordering confirmation) are resolved against a real tenant, re-run the
+  equivalent pilot-tenant checks for this fragment too — the two fragments share the same class of
+  unconfirmed end-to-end behavior but are independent deployments and could resolve on different
+  timelines.
 
 ## DONE
 - [x] **`departing-employee-data-theft` — script HR-connector app-secret cleanup** — commit
@@ -3470,6 +3492,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `defender-endpoint/rbac`, `defender-endpoint/user-roles`, `defender-xdr/manage-rbac`,
   `defender-xdr/compare-rbac-roles`, `intune/device-security/microsoft-defender/configure-
   integration`), not inferred or fabricated.
+- [x] **`scenarios/dlp/exchange-pii-exfil-block-part2-obfuscation-mitigation/`** — commit hash
+  recorded in a follow-up commit — 2026-09-09 — full scenario (README.md, design.md, deploy/,
+  validate/, rollback.md, reviews.md) extending `exchange-pii-exfil-block` with the same
+  `-SharedByIRMUserRisk`-based Adaptive Protection compensating control
+  `pci-teams-exfil-block-part2-obfuscation-mitigation` already built for the Teams DLP scenario,
+  applied here to Exchange. Grounded via Microsoft Learn (fetched in full this run) that Exchange
+  Online — unlike Microsoft Teams — is a natively supported "High Severity DLP Alert" indicator
+  workload, so the feeder Insider Risk Management policy triggers directly off the parent DLP
+  policy ("User matches a data loss prevention (DLP) policy") with no Communication Compliance
+  detour, a materially simpler design than the Teams sibling (`design.md` §3/§6a). The deploy
+  script's rule-priority reconciliation deliberately generalizes the Teams sibling's hardcoded
+  three-rule-name approach into a name-agnostic compaction (read whichever rules currently exist,
+  preserve relative order, compact to start at 1) because the parent Exchange scenario has an
+  optional exception-group rule and a separately-deployable Encrypt-mode audit companion scenario
+  that a fixed rule list would miscount. Four-lens review (Red Team) surfaced and documented a
+  genuine, previously-unstated gap: the parent scenario's exception-group population in
+  `-Action Encrypt` mode generates no High-severity alert and so is invisible to this fragment's
+  feeder trigger entirely — traced to the exact rule wiring, documented in `README.md` §11 with a
+  concrete buyer-facing mitigation, not silently left for a reviewer to discover. Three VERIFY
+  items and one cross-scenario follow-up recorded above rather than resolved by guessing (rule
+  priority auto-shift behavior, end-to-end composition validation, and whether the Encrypt-mode
+  audit companion should get an opt-in higher severity default).
 
 ## Blocked / needs user
 - (none)

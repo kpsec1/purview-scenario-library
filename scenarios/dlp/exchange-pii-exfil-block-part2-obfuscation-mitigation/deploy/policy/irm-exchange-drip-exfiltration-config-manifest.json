@@ -1,0 +1,44 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Every field below is a portal-only configuration step (README.md Section 5, design.md Section 5) - no script in this scenario's deploy/ folder reads or applies this file. It is a structured, versioned source of truth for the person completing the portal steps, so the deployed configuration can be diffed against intent during review. Only deploy/New-ExchangePiiElevatedRiskBlock.ps1 (the DLP rule) is scripted.",
+  "dlpAlertsIndicatorGlobalSetting": {
+    "path": "Purview portal > Insider Risk Management > Settings > Policy indicators > Built-in Indicators tab > Data loss prevention (DLP) indicators > Add DLP policies",
+    "policyToAdd": "PII DLP - Exchange External Send Control (scenarios/dlp/exchange-pii-exfil-block)",
+    "note": "Exchange Online is a natively supported 'High Severity DLP Alert' indicator workload - unlike this fragment's Microsoft Teams sibling (pci-teams-exfil-block-part2-obfuscation-mitigation), no Communication Compliance detour is required. See design.md Section 3.",
+    "requiredCheckbox": "Generating alerts from selected DLP policies (must be checked and Saved for the indicator to activate globally)"
+  },
+  "parentDlpPolicyPrerequisite": {
+    "requirement": "At least one rule on the parent policy must have Incident reports set to High severity - this is the actual triggering threshold, not merely 'the policy exists'.",
+    "confirmedAlreadyTrue": "scenarios/dlp/exchange-pii-exfil-block/deploy/New-ExchangePiiDlpPolicy.ps1 sets ReportSeverityLevel = High on both PII-Exchange-Override-External and PII-Exchange-Protect-External by default - no change needed to the parent scenario for this fragment to work.",
+    "sourceCaveat": "PII-Exchange-Audit-Internal (internal-recipient traffic) is deliberately Low severity in the parent scenario and will NOT trigger this indicator - by design, since internal PII sharing is not the exfiltration signal this fragment cares about."
+  },
+  "feederInsiderRiskPolicy": {
+    "name": "IRM-PII-Exchange-Drip-Exfiltration (buyer names as appropriate)",
+    "template": "Data leaks",
+    "scope": "Same user population as scenarios/dlp/exchange-pii-exfil-block (all mailboxes in ExchangeLocation scope, or a narrower population if the buyer scoped the parent policy down) - not limited to departing users, unlike scenarios/insider-risk/departing-employee-data-theft",
+    "triggeringEvent": "User matches a data loss prevention (DLP) policy - select 'PII DLP - Exchange External Send Control' from the DLP policy dropdown on the policy workflow's Triggers page. Do NOT select 'User performs an exfiltration activity' instead - that built-in-indicators trigger is the correct choice for the Teams sibling fragment (where the DLP-alert trigger cannot see Teams), but here the direct DLP-policy trigger is both simpler and more precisely scoped to this exact control.",
+    "policyIndicators": [
+      "Built-in Office exfiltration indicators (defaults) - e.g. sending email with attachments to recipients outside the organization, downloading content from SharePoint/OneDrive",
+      "No Communication Compliance indicator needed - see dlpAlertsIndicatorGlobalSetting above"
+    ],
+    "cumulativeExfiltrationDetection": "ON (default for the Data leaks template) - the specific ML-based feature Microsoft documents for detecting exfiltration activity that 'exceed[s] the normal amount performed by users in your organization... over multiple exfiltration activity types', including gradual/slow-drip patterns",
+    "sequenceDetection": "Enabled with default sequences - optional, not the primary mechanism this fragment relies on",
+    "priorityContent": "Sensitive information types: U.S. Social Security Number (SSN), Credit Card Number (increases risk score for any activity involving them)",
+    "evaluationCadence": "High-severity DLP alerts are processed by the Data leaks trigger as they occur; Cumulative exfiltration detection itself is still evaluated ~daily - see README.md Section 11"
+  },
+  "adaptiveProtectionScope": {
+    "action": "Add the new IRM-PII-Exchange-Drip-Exfiltration policy to Adaptive Protection's feeder-policy scope, in addition to (not instead of) any existing feeder policy such as scenarios/insider-risk/departing-employee-data-theft or the Teams sibling fragment's own feeder policy",
+    "path": "Purview portal > Insider Risk Management > Adaptive protection > Insider risk levels",
+    "note": "Insider risk levels are tenant-wide, computed from every feeder policy in scope - see scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/README.md Section 11, an already-documented constraint this fragment inherits rather than re-derives."
+  },
+  "dlpRule": {
+    "name": "PII-Exchange-ElevatedRisk-Block-AllExternal",
+    "deployedBy": "deploy/New-ExchangePiiElevatedRiskBlock.ps1",
+    "addedToPolicy": "PII DLP - Exchange External Send Control (scenarios/dlp/exchange-pii-exfil-block)",
+    "priority": 0,
+    "condition": "SharedByIRMUserRisk = Elevated AND AccessScope = NotInOrganization (no content/SIT condition)",
+    "action": "Block, no override (even for the parent scenario's -ExceptionGroupEmail members), regardless of whether the parent policy is currently in -Action Block or -Action Encrypt mode"
+  },
+  "residualGap": "This configuration does NOT detect or block the first message of a perfectly-executed split-SSN/PAN attempt - no Microsoft capability performs cross-message content reconstruction as of this writing. See README.md Section 11 and design.md Section 1.",
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-09"
+}
