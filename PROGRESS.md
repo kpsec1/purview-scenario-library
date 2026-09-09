@@ -3446,7 +3446,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   violations…" templates left as separate candidate fragments). Commit: `3d61f9b`. Date: 2026-09-09.
 - [x] **Extend `docs/rbac-model.md` with a new §12: Microsoft Defender for Endpoint portal RBAC —
   an eighth system, for scenarios that configure Defender for Endpoint tenant-wide settings** —
-  commit `<pending>` — 2026-09-09 — a scoped cross-cutting-doc fragment (not a new scenario),
+  commit `b126d27` — 2026-09-09 — a scoped cross-cutting-doc fragment (not a new scenario),
   closing the follow-up logged during the Security Policy Violations by Departing Users build:
   that scenario's §5 Step 2 requires toggling "Share endpoint alerts with Microsoft Compliance
   Center" on the Microsoft Defender portal's Advanced features page, a Defender-portal RBAC
