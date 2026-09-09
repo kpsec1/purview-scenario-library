@@ -956,14 +956,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   design.md` §6 and `README.md` §11. Resolving this would let this scenario and
   `docs/automation-surface.md`'s new routing-table row drop the hedge and state one confirmed
   value.
-- [ ] `scenarios/unified-catalog/manage-critical-data-elements-related-terms/` (or fold into a
-  future Unified Catalog pass) — script the "Manage related terms" action Microsoft's critical
-  data elements portal exposes (link a CDE to a glossary term via `entityType=TERM` on the same
-  **Create Relationship** operation this scenario already uses for `DATACOLUMN`) — explicitly
-  deferred as a non-goal in `manage-critical-data-elements/design.md` §7 to keep that fragment
-  scoped to the column-mapping capability this backlog item asked for; the code pattern already
-  exists in `manage-data-products/deploy/New-DataProduct.ps1`'s own `TERM` relationship handling
-  and would need no new grounding to port.
+- [x] `scenarios/unified-catalog/manage-critical-data-elements-related-terms/` — script the
+  "Manage related terms" action Microsoft's critical data elements portal exposes — **built** (see
+  DONE below): links an existing CDE to one or more existing glossary terms via
+  `entityType=TERM` on the same **Create Relationship** operation the sibling scenario already
+  uses for `DATACOLUMN`. Two new, genuine open questions surfaced and disclosed rather than
+  guessed: (1) whether linking a *published* term is accepted, given Microsoft's docs state a
+  Draft-state requirement only for the reciprocal term-side flow, not this CDE-side one; (2)
+  whether Data Steward alone (without Data Product Owner) is really sufficient for this specific
+  action, given the source page's silence on this one procedure vs. its explicit dual-role
+  requirement for CDE creation. Both flagged as VERIFY in the new scenario's `README.md` §11 and
+  `design.md` §4-5 rather than resolved by guessing.
 - [ ] VERIFY (pilot tenant): whether Microsoft's critical-data-element **access policies** (the
   portal's **Manage policies** action on a CDE's details page) have any REST surface distinct from
   the RBAC-authorization-policy `Policies` operation group — `manage-data-products/design.md` §5
@@ -1676,6 +1679,29 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
+- [x] **`scenarios/unified-catalog/manage-critical-data-elements-related-terms/`** — commit
+  (recorded in next commit below) — 2026-09-09. Closes the `PROGRESS.md` follow-up
+  `manage-critical-data-elements/design.md` §7 deferred as a non-goal. Full README (12-section
+  skeleton), design.md, deploy/ (`Add-CdeRelatedTerm.ps1` — idempotent link-only script: resolves
+  an already-existing governance domain, critical data element, and glossary term(s) strictly by
+  name, then creates `entityType=TERM` Critical Data Elements relationships via the identical
+  list-before-create idempotency guard the sibling scenario already uses for `DATACOLUMN`;
+  `Remove-CdeRelatedTerm.ps1` — targeted, selective, or full unlink), validate/
+  (`Test-CdeRelatedTerms.ps1`), rollback.md (documents the interaction with the sibling's own
+  `-Purge`, which predates this scenario and does not remove TERM links), reviews.md (four-lens
+  review — Red Team and Microsoft Product Owner both raised Fix findings, resolved: (1) unlinking
+  a term now carries an explicit warning that it can loosen an inherited access-policy aggregation
+  on downstream data products, not just tidy up metadata; (2) the "Data Steward alone is
+  sufficient" role claim was corrected from asserted fact to a disclosed inference from
+  documentation silence, with a fallback instruction). Grounded via fresh direct Microsoft Learn
+  MCP fetches (available this run) of the Critical Data Elements Create/List/Delete Relationship
+  reference pages (confirming `TERM` is a clean, non-ambiguous `EntityCategory` value — no
+  enum-vs-worked-example discrepancy the way the sibling's `DATACOLUMN` choice has) and the
+  critical-data-elements/glossary-terms concept pages (the "Manage related terms" procedure and
+  the reciprocal flow's Draft-state requirement). Two VERIFY items recorded above rather than
+  resolved by guessing; no cross-cutting doc changes needed (docs/automation-surface.md's existing
+  Unified Catalog row already describes the Critical Data Elements relationship operation
+  generically enough to cover this).
 - [x] **`scenarios/adaptive-protection/conditional-access-insider-risk-step-up-auth/`** — commit
   `6e39ee9` — 2026-09-09. Companion to `conditional-access-insider-risk-block` closing the
   PROGRESS.md follow-up for a graduated Moderate/Minor Conditional Access response. Full README

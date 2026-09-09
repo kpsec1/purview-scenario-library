@@ -1,0 +1,15 @@
+{
+  "domain": {
+    "name": "Customer Experience",
+    "note": "Must match the governance domain used by scenarios/unified-catalog/curate-business-glossary/ and scenarios/unified-catalog/manage-critical-data-elements/ - this scenario resolves it by name and does not create a domain of its own."
+  },
+  "criticalDataElement": {
+    "name": "Customer ID",
+    "note": "Must already exist - created by scenarios/unified-catalog/manage-critical-data-elements/. This scenario resolves it by name and does not create a critical data element of its own (design.md Section 2)."
+  },
+  "relatedTerms": [
+    "Customer ID",
+    "Customer"
+  ],
+  "_termNote": "Each entry must be the exact (case-insensitive per Find-TermByName's client-side match) name of an existing, already-created glossary term in the same governance domain - created by scenarios/unified-catalog/curate-business-glossary/. 'Customer ID' (the business term defining what the identifier means) and 'Customer' (its parent term) are both defined in that scenario's customer-experience-glossary.json. A term name that doesn't resolve is skipped with a warning, not treated as fatal - see README.md Section 11."
+}
