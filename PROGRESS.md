@@ -1505,7 +1505,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
     `New-DlpComplianceRule`, and `Set-PolicyConfig` (`?view=exchange-ps` reference pages) —
     confirming by omission that no cmdlet/parameter for either mechanism exists in Microsoft's own
     published reference. Re-open per the corrected `TODO` note above once Microsoft documents one.
-  — 2026-09-09
+  — commit `54002a7` — 2026-09-09
 - [x] **`scenarios/insider-risk/security-policy-violations-by-risky-users/` — Security Policy
   Violations by Risky Users scenario** — commit `61992b3` — 2026-09-09 — built the fourth and final
   member of the "Security policy violations…" Insider Risk Management template family (base,
