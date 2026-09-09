@@ -1514,8 +1514,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   dynamic-risk-dlp-enforcement/README.md` §11 and `design.md` §7 (previously "deferred/out of
   scope," now pointing at the built sibling), matching this library's established
   cross-referencing convention. Three follow-up VERIFY items and one possible future fragment
-  (Priority Cleanup) recorded above rather than resolved by guessing. Commit: (recorded in next
-  commit below). Date: 2026-09-09.
+  (Priority Cleanup) recorded above rather than resolved by guessing. Commit: `a8710e8`.
+  Date: 2026-09-09.
 - [x] **Backport GA-status correction into `scenarios/adaptive-protection/dynamic-risk-dlp-
   enforcement/`** — doc-only correction fragment (not a new scenario). Corrected two stale
   "Microsoft-labeled preview" claims about the Conditional Access "Insider risk" condition
@@ -3797,6 +3797,48 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   first-party-verified. Commit: `e167f52`. Date: 2026-09-09.
 
 ## Blocked / needs user
+- **URGENT — `origin/main` and this session's working history share NO common git ancestor;
+  could not push to `origin/main` as instructed (2026-09-09).** This session started with `HEAD`
+  already detached from `refs/heads/main` (a pre-existing condition, not something this session
+  caused). Investigation: local `main` (== `origin/main`, hash `7b7437e`) has 51 commits, root
+  dated 2026-09-04, tip dated 2026-09-08 12:25 UTC, 38 scenario folders, `PROGRESS.md` 2,712
+  lines. The detached `HEAD` this session (and evidently several prior sessions) has been
+  committing to has 50+1 commits, root dated 2026-09-08 14:26 UTC (~2 hours after `main`'s tip),
+  tip now `a8710e8`, **53** scenario folders, `PROGRESS.md` 3,749 lines. `git merge-base main
+  HEAD` returns nothing — the two histories are provably unrelated (no shared root commit), even
+  though `HEAD`'s tree is a confirmed **superset** of `main`'s (every scenario folder, every doc
+  file, and the full `docs/`+root file listing on `main` is present and unchanged-or-newer on
+  `HEAD` — verified by directory-listing diff before this note was written). Best explanation: at
+  or around 2026-09-08 14:26 UTC, some prior session's working tree got re-rooted as a fresh
+  commit (e.g. a squash, an orphan re-init, or a workspace restored from a snapshot without its
+  `.git` history) using `main`'s content as the starting tree, and every session since — including
+  this one, until now — kept extending that detached lineage without anyone noticing `HEAD` was no
+  longer connected to `refs/heads/main` or reflected in `origin/main`. **This means roughly a full
+  day of fragment work (2026-09-08 14:26 through 2026-09-09 14:16, ~15 scenario folders, dozens of
+  commits, all "committed AND pushed" per each turn's own summary) was never actually pushed to
+  `origin/main` and is invisible on GitHub right now.**
+  **What this session did instead of guessing:** committed this turn's fragment normally on the
+  existing detached lineage (commit `a8710e8`, safe/additive, not destructive), then — per this
+  session's git-safety instructions, which forbid force-pushing to `main` without explicit live
+  user authorization, and since no user is present in a scheduled/autonomous run to ask — did
+  **not** force-push over `origin/main`. Since detached-`HEAD` commits are unreferenced by any
+  branch and vulnerable to `git gc`/loss the moment `HEAD` moves, this session instead created and
+  pushed a new branch, `claude/continue-from-detached-2026-09-09`, pointing at `a8710e8`, to
+  `origin` — preserving all of this lineage's work remotely without touching `main`.
+  **Decision needed from you:** `origin/main` is now materially behind the actual state of this
+  project. The straightforward fix is almost certainly to force-update `refs/heads/main` (both
+  local and on `origin`) to point at `claude/continue-from-detached-2026-09-09`'s tip (`a8710e8`)
+  — content-loss risk is low given the confirmed superset relationship, but this discards `main`'s
+  own distinct (if fully-subsumed) commit history, which is exactly the kind of hard-to-reverse,
+  shared-state-affecting action this session is instructed not to take unilaterally. Please either
+  (a) confirm the force-update of `main` so future scheduled runs go back to targeting
+  `origin/main` directly, or (b) open/merge a PR from `claude/continue-from-detached-2026-09-09`
+  into `main` through GitHub's normal merge flow instead of a force-push, or (c) tell this
+  project's scheduled-run prompt to target `claude/continue-from-detached-2026-09-09` as the
+  working branch going forward if you'd rather keep `main` untouched for now. Until one of these
+  happens, future scheduled runs should keep committing to the same detached lineage (or check out
+  `claude/continue-from-detached-2026-09-09` explicitly) rather than trying to sync with
+  `origin/main`, to avoid forking the work a second time.
 - **Environment note, not a scenario blocker:** as of this run (2026-09-09), this cloud execution
   environment's egress proxy blocks direct WebFetch access to `learn.microsoft.com` (confirmed via
   `/root/.ccr/README.md`'s diagnostic endpoint — "destination host is not allowed by your
