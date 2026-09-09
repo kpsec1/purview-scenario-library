@@ -170,3 +170,101 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/New-EuPersonalDataAutoLabelPolicy.ps1`, and
 `validate/Test-EuPersonalDataAutoLabelPolicy.ps1`. No Fail items were raised. This fragment meets
 the definition of done in `AGENTS.md` §9.
+
+---
+
+## Review round 2 — 2026-09-09 — opt-in travel-document bundle (`-IncludeTravelDocumentSits`)
+
+Scope: the `PROGRESS.md` follow-up asking for `EU passport number` and `EU driver's license
+number` as an opt-in bundle (not a new default). Reviewed after adding the
+`-IncludeTravelDocumentSits` switch to `deploy/New-EuPersonalDataAutoLabelPolicy.ps1` and
+`validate/Test-EuPersonalDataAutoLabelPolicy.ps1`, and the supporting `README.md`/`design.md`
+updates.
+
+### 🔴 Red Team
+
+**Verdict: Fix (resolved)**
+
+1. **The "EU passport number" bundle's U.K. coverage is not what a buyer would assume from the
+   name.** This round's grounding pass (fetching the bundle's own Microsoft Learn index page
+   directly) found no standalone U.K. passport entity — U.K. coverage exists only inside a single
+   combined "U.S./U.K. passport number" entity. A buyer who enables this switch specifically for
+   U.K. travel-document coverage gets U.S. passport-number matching bundled in with no way to
+   disable it independently — a real scope-creep and false-positive-surface risk that the original
+   "just flip on the opt-in bundle" framing would have hidden.
+   - **Resolution:** Documented prominently in the `.PARAMETER IncludeTravelDocumentSits` doc
+     block (with a `Write-Host` runtime notice on every use), `design.md` §4, and `README.md` §6
+     and §11 — not buried in a single footnote.
+2. **The three EU-wide bundles this scenario can reference have inconsistent member-state
+   coverage**, which could otherwise let an operator assume "EU-wide" means the same 26–28
+   countries across all of them.
+   - **Resolution:** Full per-bundle membership table added to `design.md` §4 (fetched directly
+     from each bundle's own index page, not inferred), cross-referenced from `README.md` §11.
+
+No remaining Fix/Fail after resolution.
+
+### 🔵 Blue Team
+
+**Verdict: Pass**
+
+- The validate script's new `-IncludeTravelDocumentSits` switch mirrors the deploy script's
+  parameter name and behavior exactly (append, don't replace), so an operator checking a
+  bundle-enabled deployment doesn't have to reconstruct the expanded SIT list by hand — the same
+  operability principle the base scenario's `-SensitiveInfoTypeName` validation already follows.
+- Added README.md §7 test case 8 gives operators a concrete way to observe the U.S./U.K. merge
+  behavior in practice (upload a test U.S. or U.K. passport number, confirm both match), rather
+  than leaving it as a documentation-only claim.
+- No new alerting/observability surface is introduced — labeling events from the new SITs surface
+  through the same Overview/Labeled items/Activity Explorer path already reviewed in round 1.
+
+No Fix/Fail items from this lens.
+
+### 🎩 CISO
+
+**Verdict: Pass**
+
+- Small, well-bounded, no-incremental-licensing-cost extension (same built-in SIT catalog,
+  same entitlement — `README.md` §10 unchanged) that closes a specific, previously-deferred
+  backlog item without expanding this scenario's scope into a second condition-set default.
+- The U.S./U.K. passport-merge disclosure is exactly the kind of specific, board-relevant caveat
+  a CISO needs before approving this switch for a U.K.-regulated population — "enabling this also
+  adds U.S. passport detection" is a one-sentence, concrete risk statement, not vague hedging.
+- Would I fund this? Yes — it's a documentation- and parameter-level enhancement to an
+  already-funded, already-reviewed control, not new infrastructure or licensing spend.
+
+No Fix/Fail items from this lens.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Pass**
+
+- Both opt-in SIT names were re-confirmed as real, selectable bundle SITs by fetching their own
+  Microsoft Learn bundle-index pages directly during this round (not re-asserted from the round-1
+  citation alone), and their exact per-country membership lists were captured rather than assumed
+  from the national-ID bundle's own composition.
+- No new cmdlet introduced — `-IncludeTravelDocumentSits` is pure script-parameter logic (array
+  append + dedupe) layered in front of the same, already-grounded `Get-DlpSensitiveInformationType`
+  resolution path; no risk of an invented cmdlet or parameter shape.
+- The byte-exact-casing VERIFY already open for this scenario's default SITs (`README.md` §11)
+  now explicitly extends to `"EU driver's license number"` vs. the page-title spelling `"EU
+  drivers license number"` (no apostrophe) — flagged as joining the existing VERIFY rather than
+  treated as newly resolved, since this round could not reach a live tenant to confirm either way.
+- Scope discipline: this round deliberately did not attempt a full per-country checksum table for
+  either opt-in bundle (a ~50-page grounding effort for a non-default condition set) — correctly
+  deferred as a `PROGRESS.md` follow-up rather than fabricated to look complete.
+
+No Fix/Fail items from this lens.
+
+### Summary — round 2
+
+| Lens | Verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Fix | 2 (both closed with doc/design/runtime-notice additions) | Closed |
+| 🔵 Blue Team | Pass | 0 | — |
+| 🎩 CISO | Pass | 0 | — |
+| 🟦 Microsoft Product Owner | Pass | 0 (1 VERIFY extended, not newly opened) | — |
+
+All Fix items from round 2 are resolved in the current state of `README.md`, `design.md`,
+`deploy/New-EuPersonalDataAutoLabelPolicy.ps1`, and
+`validate/Test-EuPersonalDataAutoLabelPolicy.ps1`. This fragment meets the definition of done in
+`AGENTS.md` §9.

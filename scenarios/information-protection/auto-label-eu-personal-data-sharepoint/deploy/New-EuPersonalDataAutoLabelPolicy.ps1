@@ -63,6 +63,21 @@
     narrower, jurisdiction-specific list to localize further (design.md §5) - any name accepted
     by Get-DlpSensitiveInformationType in the connected tenant is valid, not just EU-region SITs.
 
+.PARAMETER IncludeTravelDocumentSits
+    Opt-in switch (not a new default - README.md §6, design.md §4). Appends 'EU passport number'
+    and "EU driver's license number" to whatever -SensitiveInfoTypeName is in effect (the default
+    three-SIT set, or a caller-supplied override), deduplicated, before name resolution. Both are
+    real, confirmed EU-wide bundle SITs - use this switch instead of retyping the full SIT list
+    when a buyer's SharePoint/OneDrive estate is travel-document- or HR-record-heavy.
+
+    GOTCHA (design.md §4): the "EU passport number" bundle's U.K. coverage is not a standalone
+    U.K. entity the way the national-ID and driver's-license bundles have one - it is a single
+    combined "U.S./U.K. passport number" entity. Turning on this switch for U.K.-only travel-
+    document coverage also enables U.S. passport number detection as a side effect. The three
+    EU-wide bundles this scenario can reference do not all cover the same set of member states
+    either (passport: 25 states, no Luxembourg/Netherlands; driver's license: all 27 states;
+    national ID: 26, no Poland/Sweden) - see design.md §4 for the full breakdown.
+
 .PARAMETER ExcludedSharePointSiteUrl
     Optional SharePoint site URL(s) to exclude from the policy (e.g. a legal-hold/eDiscovery
     site). Maps to -SharePointLocationException on the policy.
@@ -101,6 +116,13 @@
 
     Deploys (or updates) the policy in full enforcement mode with the default EU-wide SIT set.
 
+.EXAMPLE
+    ./New-EuPersonalDataAutoLabelPolicy.ps1 -LabelName 'Confidential' -IncludeTravelDocumentSits
+
+    Deploys in simulation mode (default) with the default EU-wide SIT set plus the opt-in
+    passport/driver's-license bundle - see the IncludeTravelDocumentSits parameter description
+    for the U.S./U.K. passport-entity gotcha before enabling this for a U.K.-only buyer.
+
 .NOTES
     Sources (Microsoft Learn, verify before production use):
     - Automatically apply a sensitivity label to Microsoft 365 data (prerequisites, override
@@ -115,6 +137,11 @@
       https://learn.microsoft.com/purview/sit-defn-eu-national-identification-number
       https://learn.microsoft.com/purview/sit-defn-eu-social-security-number-equivalent-identification
       https://learn.microsoft.com/purview/sit-defn-eu-debit-card-number
+    - EU passport number bundle membership (25 EU states + one combined "U.S./U.K. passport
+      number" entity - no standalone U.K. entity) and EU driver's license number bundle
+      membership (all 27 EU states + a standalone U.K. entity), fetched directly 2026-09-09:
+      https://learn.microsoft.com/purview/sit-defn-eu-passport-number
+      https://learn.microsoft.com/purview/sit-defn-eu-drivers-license-number
     - VERIFY (pilot tenant): byte-exact SIT name capitalization - see design.md §4 and README.md §11.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
@@ -134,6 +161,9 @@ param(
         'EU Social Security Number (SSN) or Equivalent ID',
         'EU debit card number'
     ),
+
+    [Parameter()]
+    [switch]$IncludeTravelDocumentSits,
 
     [Parameter()]
     [string[]]$ExcludedSharePointSiteUrl,
@@ -190,6 +220,14 @@ Assert-IppsSession
 $label = Get-Label -Identity $LabelName -ErrorAction SilentlyContinue
 if (-not $label) {
     throw "Label '$LabelName' was not found. This script requires an existing, published sensitivity label - see README.md §3 (label authoring is a prerequisite, not deployed by this scenario)."
+}
+
+if ($IncludeTravelDocumentSits) {
+    # Opt-in bundle, not a new default - README.md §6, design.md §4. Appended to whatever set is
+    # already in effect (default or a caller-supplied override), not a replacement of it.
+    $travelDocumentSits = @('EU passport number', "EU driver's license number")
+    Write-Host "IncludeTravelDocumentSits: adding $($travelDocumentSits -join ', ') to the configured SIT set. Note: the EU passport number bundle's U.K. coverage is a combined 'U.S./U.K. passport number' entity, not standalone U.K.-only - see design.md §4." -ForegroundColor Cyan
+    $SensitiveInfoTypeName = @($SensitiveInfoTypeName + $travelDocumentSits) | Select-Object -Unique
 }
 
 $resolvedSitNames = Resolve-SensitiveInfoTypeNames -Name $SensitiveInfoTypeName

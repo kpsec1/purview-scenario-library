@@ -71,11 +71,38 @@ family, one financial SIT), not an attempt at exhaustive EU personal-data covera
 and health-data SITs exist separately and are out of scope here, same "starter set, not
 jurisdiction-complete" framing the sibling scenario's `README.md` §2 already uses).
 
-**Deliberately not defaulted to:** "EU passport number" and "EU driver's license number" (also
-real, confirmed EU-wide bundle SITs [[5]](#references)[[6]](#references)) — omitted from the
-default set because passport/driver's-license numbers are lower-frequency in day-to-day SharePoint/
-OneDrive business content than national-ID and payment-card numbers, not because they're any less
-real. `-SensitiveInfoTypeName` (§5) accepts them directly if a buyer's data inventory calls for it.
+**Deliberately not defaulted to, but now available as an opt-in bundle:** "EU passport number" and
+"EU driver's license number" (also real, confirmed EU-wide bundle SITs
+[[5]](#references)[[6]](#references)) — omitted from the *default* set because passport/driver's-
+license numbers are lower-frequency in day-to-day SharePoint/OneDrive business content than
+national-ID and payment-card numbers, not because they're any less real. A buyer whose estate is
+travel-document- or HR-record-heavy can add both with `-IncludeTravelDocumentSits` (§5) instead of
+retyping the full `-SensitiveInfoTypeName` list by hand.
+
+**Bundle-membership grounding (fetched directly, 2026-09-09) — and why the three EU-wide bundles
+this scenario can reference are not interchangeable in coverage:**
+
+| Bundle | Member entities | Count | Notes |
+|---|---|---|---|
+| EU national identification number (default) | Austria, Belgium, Bulgaria, Croatia, Cyprus, Czech Republic, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Portugal, Romania, Slovakia, Slovenia, Spain, U.K. | 26 | No Poland or Sweden entity exists in this bundle |
+| EU passport number (opt-in) | Austria, Belgium, Bulgaria, Croatia, Cyprus, Czech, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Malta, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden, **U.S./U.K. passport number** (one combined entity) [[5]](#references) | 26 | No standalone Luxembourg or Netherlands entity. U.K. passport coverage is **not** a standalone entity — it is bundled with U.S. passport numbers as a single entity, per Microsoft's own bundle index page |
+| EU driver's license number (opt-in) | Austria, Belgium, Bulgaria, Croatia, Cyprus, Czech, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxemburg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden, U.K. [[6]](#references) | 28 | All 27 EU member states plus a standalone U.K. entity — the most complete of the three bundles |
+
+**Real consequence of the U.K./U.S. passport merge:** a buyer who enables `-IncludeTravelDocumentSits`
+specifically to add U.K. passport-number detection also enables U.S. passport-number detection as
+an inseparable side effect — there is no way to select one without the other via this bundle SIT.
+A buyer who needs U.K.-only passport detection without U.S. false positives would need to build a
+custom SIT or accept the combined entity's broader match surface; this scenario does not attempt
+that narrower control (`-SensitiveInfoTypeName` still accepts a fully custom list if a buyer builds
+one). Flagged as a Red Team-relevant finding in `reviews.md` round 2 and `README.md` §11, not
+silently absorbed into the "just enable the bundle" framing.
+
+**Scope boundary, disclosed rather than silently deferred:** unlike the default national-ID bundle
+(§4 above, which has a full 26-country checksum/confidence table grounded in the original build),
+this fragment does not table checksum/confidence detail per country for the passport or driver's-
+license bundles — that would mean individually fetching 25–28 more entity-definition pages per
+bundle, roughly doubling this fragment's scope for an *opt-in*, non-default condition set. Tracked
+as a follow-up in `PROGRESS.md` rather than fabricated or silently skipped.
 
 **Per-country checksum-strength reference — all 26 members of the "EU national identification
 number" bundle.** `reviews.md` (Red Team finding 1) flagged that the bundle's per-country entities
@@ -149,6 +176,14 @@ resolves the sibling scenario's own deferred localization follow-up, and its exi
 cross-referenced back into `auto-label-confidential-sharepoint/README.md` §11 so a reader of either
 scenario finds the other.
 
+**`-IncludeTravelDocumentSits` is a separate, additive mechanism, not a replacement for
+`-SensitiveInfoTypeName`.** Where `-SensitiveInfoTypeName` replaces the entire condition list
+(for narrowing to specific member states, per §4/§5), `-IncludeTravelDocumentSits` appends the two
+opt-in bundle SITs (§4) to whatever list is already in effect — the default three-SIT set, or a
+caller's own narrowed override — so a buyer localizing to Germany + France can still opt into
+travel-document coverage for those same two countries' passport/driver's-license formats without
+having to spell out the bundle names by hand.
+
 ## 6. Policy architecture
 
 Identical shape to the sibling scenario (`auto-label-confidential-sharepoint/design.md` §4): one
@@ -186,7 +221,7 @@ parameter; it does not re-derive any of the already-reviewed rollout/override de
 | Default SITs | EU national identification number, EU Social Security Number (SSN) or Equivalent ID, EU debit card number | §4 — direct EU/UK analog of the sibling's identity+financial pair, grounded against Microsoft's canonical entity-definitions index |
 | Localization mechanism | `-SensitiveInfoTypeName string[]` parameter, resolved via `Get-DlpSensitiveInformationType` at deploy time | §5 — turns "swap the SIT list for your jurisdiction" from README prose (the sibling's approach) into an actual script parameter |
 | Name validation | Deploy script resolves every configured SIT name against `Get-DlpSensitiveInformationType` and fails clearly (listing near-matches) rather than silently deploying a zero-match rule | Directly mitigates the casing-uncertainty VERIFY in §4 rather than shipping a rule that might silently match nothing |
-| Passport/driver's-license SITs | Available via the parameter, not defaulted | §4 — lower day-to-day frequency in business documents than ID/payment identifiers; a buyer's own data inventory should drive adding them, not this scenario's default |
+| Passport/driver's-license SITs | Available via `-SensitiveInfoTypeName` directly, or additively via the `-IncludeTravelDocumentSits` opt-in switch | §4 — lower day-to-day frequency in business documents than ID/payment identifiers; a buyer's own data inventory should drive adding them, not this scenario's default. The switch exists so opting in doesn't require retyping the full SIT list, and so the U.S./U.K. passport-merge gotcha (§4) is surfaced at the call site, not just in prose |
 | Label, override behavior, exclusion mechanism, rollout mode | Unchanged from the sibling scenario | §6 — already reviewed and correct; this scenario's scope is the SIT set, not the rollout/override model |
 
 ## 8. Non-goals

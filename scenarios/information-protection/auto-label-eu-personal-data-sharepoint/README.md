@@ -136,6 +136,13 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
     -LabelName 'Confidential' `
     -SensitiveInfoTypeName 'Germany Identity Card Number','France Social Security Number','EU debit card number'
 
+# 3c. Or, add the opt-in passport/driver's-license bundle on top of whichever set above is in
+#     effect (§6) — read the U.S./U.K. passport-merge gotcha in §11 before enabling for a
+#     U.K.-only buyer:
+./deploy/New-EuPersonalDataAutoLabelPolicy.ps1 `
+    -LabelName 'Confidential' `
+    -IncludeTravelDocumentSits
+
 # 4. After a review window, enforce
 ./deploy/New-EuPersonalDataAutoLabelPolicy.ps1 `
     -LabelName 'Confidential' `
@@ -176,7 +183,17 @@ countries' own per-country SITs instead — e.g.:
 |---|---|
 | Full EU/UK coverage (default) | `'EU national identification number','EU Social Security Number (SSN) or Equivalent ID','EU debit card number'` |
 | Germany + France only | `'Germany Identity Card Number','France Social Security Number','EU debit card number'` |
-| Add passport numbers too | append `'EU passport number'` (also a real, confirmed EU-wide bundle SIT — `design.md` §4) |
+
+**Opt-in travel-document bundle (`-IncludeTravelDocumentSits`):** additive switch — appends `'EU
+passport number'` and `"EU driver's license number"` (also real, confirmed EU-wide bundle SITs —
+`design.md` §4) to whichever `-SensitiveInfoTypeName` set is already in effect (default or
+localized), instead of requiring the full list to be retyped by hand. Use for a buyer whose
+SharePoint/OneDrive estate is travel-document- or HR-record-heavy. **Before enabling for a U.K.-only
+buyer:** the "EU passport number" bundle has no standalone U.K. entity — U.K. passport coverage is
+merged into a single combined "U.S./U.K. passport number" entity, so this switch also enables U.S.
+passport-number detection as an inseparable side effect (`design.md` §4). The two opt-in bundles'
+member-state coverage also isn't identical to each other or to the default national-ID bundle — see
+`design.md` §4 for the full per-bundle membership table.
 
 The deploy script resolves every name against `Get-DlpSensitiveInformationType` before creating or
 updating any rule, and fails with a list of close matches if a name doesn't resolve exactly — see
@@ -209,6 +226,12 @@ its `.NOTES` block.
    actually enforced and not silently falling back to the full bundle.
 7. **Enforcement confirmation** — after moving to `-Mode Enable`, re-run the automated config
    check and confirm it reports `Mode: Enable`.
+8. **Opt-in bundle test (if `-IncludeTravelDocumentSits` was used)** — run
+   `./validate/Test-EuPersonalDataAutoLabelPolicy.ps1 -LabelName 'Confidential'
+   -IncludeTravelDocumentSits` to confirm both rules' condition lists include `EU passport number`
+   and `EU driver's license number` in addition to the base SIT set. Upload a test U.S. or U.K.
+   passport-number test value (never a real one) to confirm the combined-entity gotcha in §11 in
+   practice — both should match, since this bundle has no way to select one without the other.
 
 ## 8. Operations & tuning
 
@@ -316,6 +339,25 @@ to permanently delete the policy and its rules.
   entities [[7]](#references) — the bundle name is a Microsoft product-naming convention, not a
   legal EU-membership boundary. Treat "EU national identification number" as "EU + UK," not
   strictly EU-27, when explaining coverage to a buyer.
+- **The opt-in `-IncludeTravelDocumentSits` bundle's U.K. passport coverage is merged with U.S.
+  passport coverage.** Microsoft's "EU passport number" bundle has no standalone U.K. passport
+  entity — U.K. coverage exists only as a single combined "U.S./U.K. passport number" entity, per
+  the bundle's own index page. Enabling this switch to add U.K. passport-number detection also
+  enables U.S. passport-number detection with no way to select one without the other via this
+  bundle SIT. If a buyer needs U.K.-only passport detection without U.S. false positives, this
+  scenario's bundle switch is the wrong tool — a custom SIT would be required instead (out of
+  scope here). See `design.md` §4.
+- **The three EU-wide bundles this scenario can reference do not cover the same member states.**
+  The default national-ID bundle (26 entities) has no Poland or Sweden entity; the opt-in passport
+  bundle (26 entities) has no standalone Luxembourg or Netherlands entity (and merges U.K. into the
+  U.S./U.K. entity above); the opt-in driver's-license bundle (28 entities) is the only one of the
+  three covering all 27 EU member states plus a standalone U.K. entity. Don't assume "EU-wide"
+  means identical coverage across these three SITs — see `design.md` §4 for the full
+  per-bundle membership table.
+- **Per-country checksum/confidence detail is not tabled for the two opt-in bundles**, unlike the
+  default national-ID bundle's full 26-country table (§8/`design.md` §4). Tabling both to the same
+  depth would mean fetching 25–28 more individual entity-definition pages per bundle for a
+  non-default condition set — tracked as a `PROGRESS.md` follow-up rather than fabricated.
 - **This scenario does not cover Exchange (email).** The Exchange companion is now built as
   `scenarios/information-protection/auto-label-eu-personal-data-exchange/` (closed 2026-09-08) — a
   separate policy object, not an additional rule on this scenario's own policy, because Exchange

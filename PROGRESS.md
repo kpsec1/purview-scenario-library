@@ -454,10 +454,43 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `README.md` §8/§11 in both the SharePoint/OneDrive and Exchange EU-personal-data siblings updated
   from vague "several others" prose to the exact counts, cross-linking the new table instead of
   duplicating it.
-- [ ] Consider adding `EU passport number` and `EU driver's license number` as an opt-in bundle
+- [x] Consider adding `EU passport number` and `EU driver's license number` as an opt-in bundle
   (not a new default) for a buyer whose SharePoint/OneDrive estate is travel-document- or
-  HR-record-heavy — both are real, confirmed EU-wide bundle SITs (`design.md` §4) already
-  documented as available via `-SensitiveInfoTypeName`, just not defaulted on.
+  HR-record-heavy — **built** (see DONE below): `-IncludeTravelDocumentSits` switch added to
+  `auto-label-eu-personal-data-sharepoint/deploy/New-EuPersonalDataAutoLabelPolicy.ps1` and its
+  validate script, appending both SITs to whatever `-SensitiveInfoTypeName` set is already in
+  effect. A dedicated grounding pass (fetching both bundles' own Microsoft Learn index pages
+  directly) surfaced a real gotcha not previously documented anywhere in this repo: the "EU
+  passport number" bundle has no standalone U.K. entity — U.K. coverage is merged into a single
+  combined "U.S./U.K. passport number" entity, so this switch also enables U.S. passport detection
+  as an inseparable side effect. The three EU-wide bundles this scenario can reference also don't
+  share identical member-state coverage (26/26/28 entities respectively, different countries
+  missing from each) — full membership tables added to `design.md` §4, cross-referenced from
+  `README.md` §6/§11, with a new `reviews.md` round 2 four-lens review specific to this change.
+
+### Follow-ups discovered while building the opt-in travel-document bundle switch
+- [ ] Port `-IncludeTravelDocumentSits` (or an equivalent mechanism) to
+  `scenarios/information-protection/auto-label-eu-personal-data-exchange/`'s deploy/validate
+  scripts for parity with its SharePoint/OneDrive sibling — out of scope for the fragment that
+  added the switch (the `PROGRESS.md` item that scoped it named only the SharePoint/OneDrive
+  scenario), but the same opt-in rationale (travel-document-/HR-record-heavy estates) applies
+  equally to the Exchange location.
+- [ ] Consider a full per-country checksum/confidence table for the "EU passport number" and
+  "EU driver's license number" bundles, matching the depth already built for the default "EU
+  national identification number" bundle (`design.md` §4) — deliberately deferred when the opt-in
+  switch was added because it would mean individually fetching 25–28 more Microsoft Learn
+  entity-definition pages per bundle for a non-default condition set. Worth doing once either
+  bundle sees real adoption via `-IncludeTravelDocumentSits`.
+- [ ] VERIFY (pilot tenant): whether `"EU driver's license number"` (the spelling used in this
+  repo's prose since the scenario's original build) or `"EU drivers license number"` (the literal,
+  no-apostrophe title on the SIT's own Microsoft Learn bundle-index page, fetched directly during
+  this round) is the byte-exact name `Get-DlpSensitiveInformationType`/the portal SIT picker
+  actually require — joins the existing open SIT-name-casing VERIFY for this scenario
+  (`README.md` §11) rather than a new, separate uncertainty. The deploy script's existing
+  `Resolve-SensitiveInfoTypeNames` name-resolution check already fails clearly (listing
+  near-matches) if the hardcoded default is wrong, rather than silently deploying a zero-match
+  rule, so this doesn't block use — it would only let a future revision state the default with
+  certainty.
 
 ### Follow-ups discovered while building the Exchange PII exfiltration block (DLP) scenario
 - [ ] VERIFY (pilot tenant): the exact `Name` value `Get-RMSTemplate` returns for the auto-created
@@ -1322,6 +1355,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   into the UUIDv5 name string) is directly reusable there without modification once picked up.
 
 ## DONE
+- [x] **`auto-label-eu-personal-data-sharepoint` — opt-in travel-document SIT bundle
+  (`-IncludeTravelDocumentSits`)** — commit `PENDING` — 2026-09-09 — added the switch to
+  `deploy/New-EuPersonalDataAutoLabelPolicy.ps1` and `validate/Test-EuPersonalDataAutoLabelPolicy.ps1`,
+  appending `EU passport number` and `EU driver's license number` to whatever
+  `-SensitiveInfoTypeName` set is already in effect. Grounding pass (fetching both bundles' own
+  Microsoft Learn index pages directly) found the "EU passport number" bundle has no standalone
+  U.K. entity — U.K. coverage is merged into a single "U.S./U.K. passport number" entity — and that
+  the three EU-wide bundles this scenario references don't share identical member-state coverage.
+  Both facts documented in `design.md` §4 (new membership tables) and `README.md` §6/§11, with a
+  `reviews.md` round 2 four-lens review (2 Red Team findings, both resolved; Blue/CISO/Product
+  Owner all Pass). Three follow-ups recorded above (port to the Exchange sibling; full per-country
+  checksum table for the two new bundles; the driver's-license apostrophe-casing VERIFY).
 - [x] **EU national ID bundle — full 26-country checksum-strength reference table** — commit
   `8243578` — 2026-09-09 — `auto-label-eu-personal-data-sharepoint/design.md` §4 now tables all 26
   members of the "EU national identification number" bundle (Austria through U.K.), each grounded

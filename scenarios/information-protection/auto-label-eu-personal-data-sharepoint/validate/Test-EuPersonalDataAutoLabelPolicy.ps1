@@ -36,9 +36,20 @@
     match the -SensitiveInfoTypeName used at deploy time (defaults to the same EU-wide bundle set
     the deploy script defaults to).
 
+.PARAMETER IncludeTravelDocumentSits
+    Pass this if the policy was deployed with -IncludeTravelDocumentSits, so this script checks
+    for 'EU passport number' and "EU driver's license number" in addition to whatever
+    -SensitiveInfoTypeName set is in effect - mirrors the deploy script's own switch instead of
+    requiring the caller to retype the full expanded list. See README.md §6, design.md §4.
+
 .EXAMPLE
     Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
     ./Test-EuPersonalDataAutoLabelPolicy.ps1 -LabelName 'Confidential'
+
+.EXAMPLE
+    ./Test-EuPersonalDataAutoLabelPolicy.ps1 -LabelName 'Confidential' -IncludeTravelDocumentSits
+
+    Validates a policy deployed with the opt-in passport/driver's-license bundle enabled.
 #>
 [CmdletBinding()]
 param(
@@ -56,8 +67,15 @@ param(
         'EU national identification number',
         'EU Social Security Number (SSN) or Equivalent ID',
         'EU debit card number'
-    )
+    ),
+
+    [Parameter()]
+    [switch]$IncludeTravelDocumentSits
 )
+
+if ($IncludeTravelDocumentSits) {
+    $SensitiveInfoTypeName = @($SensitiveInfoTypeName + @('EU passport number', "EU driver's license number")) | Select-Object -Unique
+}
 
 $ErrorActionPreference = 'Stop'
 $script:failures = 0
