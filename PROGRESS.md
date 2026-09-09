@@ -1356,7 +1356,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`auto-label-eu-personal-data-sharepoint` — opt-in travel-document SIT bundle
-  (`-IncludeTravelDocumentSits`)** — commit `PENDING` — 2026-09-09 — added the switch to
+  (`-IncludeTravelDocumentSits`)** — commit `6db12ca` — 2026-09-09 — added the switch to
   `deploy/New-EuPersonalDataAutoLabelPolicy.ps1` and `validate/Test-EuPersonalDataAutoLabelPolicy.ps1`,
   appending `EU passport number` and `EU driver's license number` to whatever
   `-SensitiveInfoTypeName` set is already in effect. Grounding pass (fetching both bundles' own
