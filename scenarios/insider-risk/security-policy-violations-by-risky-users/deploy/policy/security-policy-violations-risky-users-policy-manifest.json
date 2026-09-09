@@ -1,0 +1,43 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Insider Risk Management has no documented PowerShell or Graph write API for policy authoring as of this writing (docs/automation-surface.md §6; design.md §4). No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal steps in README.md §5, so the deployed policy can be diffed against intent during review instead of relying on institutional memory of what was clicked.",
+  "policyName": "Security Policy Violations by Risky Users",
+  "policyTemplate": "Security policy violations by risky users",
+  "templateStatus": "Microsoft-labeled PREVIEW as of this writing (same family-wide status as the base/departing-users/priority-users siblings) - re-verify GA status before a customer-facing commitment. README.md §1/§11.",
+  "scope": {
+    "users": "A plain Entra security group (or groups) resolved via ../security-policy-violations/deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1 -MaxUsers 7500 (reused unmodified) - this template has no priority-user-group requirement, unlike the …by priority users sibling",
+    "maxUsersInScope": 7500,
+    "note": "Microsoft-fixed limit for this specific template - distinct from the base/priority-users siblings' 1,000 and the departing-users sibling's 15,000. Do not conflate the four. Cumulative tenant-wide across every policy built from this exact template."
+  },
+  "triggeringEvents": [
+    {
+      "type": "HR connector - job level change / performance review / performance improvement plan indicators",
+      "source": "deploy/Send-HrRiskIndicatorRecord.ps1 uploading to a DEDICATED HR connector (own JobId, own app registration) - not the departing-employee-data-theft sibling's Resignation-scoped connector",
+      "requiredEither": true,
+      "note": "At least one of this trigger OR the Communication Compliance trigger below is required (Microsoft's prerequisite table states 'AND/OR', not both mandatory). Both together is also supported and recommended for broader coverage - README.md §5 Step 5."
+    },
+    {
+      "type": "Communication Compliance risk-signal integration",
+      "source": "Portal-only option selected in the IRM policy-creation workflow itself - auto-creates a dedicated 'Detect inappropriate text' Communication Compliance policy. No PowerShell surface exists for Communication Compliance policy creation/management (Microsoft Learn, explicit statement).",
+      "requiredEither": true,
+      "note": "Threat/Harassment/Discrimination trainable classifiers; 5+ risky messages in 24h brings a user in-scope; up to 48h latency. Microsoft's own documentation uses two different names for the auto-created policy in the same article ('Insider risk trigger - (date created)' in one paragraph, 'Risky user in messages - (date created)' in the next) - disclosed as an unresolved documentation inconsistency, not resolved by guessing which is correct. README.md §5 Step 6 / §11."
+    }
+  ],
+  "indicators": {
+    "microsoftDefenderForEndpointIndicators": {
+      "category": "Microsoft Defender for Endpoint indicators (preview)",
+      "note": "Same indicator category as every sibling in this template family - individual indicator names are not enumerated in Microsoft's own documentation as of this build. VERIFY the exact selectable indicator toggles against the live policy-creation workflow at deploy time. README.md §5 Step 7 / §11."
+    },
+    "communicationComplianceIndicators": "NOT selectable for this template per Microsoft's own indicator-category documentation - the CC integration option above is a TRIGGER mechanism only for this specific template, unlike the sibling 'Data leaks by risky users' template, which additionally lists CC content indicators as selectable scoring indicators. Do not conflate the two 'risky users' templates. design.md §2 goal 3."
+  },
+  "prerequisites": {
+    "hrConnectorOrCommunicationCompliance": "At least one of: Microsoft 365 HR connector configured for risk indicators (Job level change / Performance review / Performance improvement plan), OR Communication Compliance integration with a dedicated risky-user policy. Both is supported. README.md §3.",
+    "defenderForEndpointSubscription": "Active Microsoft Defender for Endpoint subscription (Plan not specified by Microsoft's own prerequisite table - same open Plan 1/Plan 2 VERIFY as every sibling). README.md §3.",
+    "defenderForEndpointAdvancedFeature": "'Share endpoint alerts with Microsoft Compliance Center' toggled ON in the Microsoft Defender portal (Settings > Endpoints > Advanced features). Portal-only - no API. README.md §5 Step 3."
+  },
+  "alertReview": {
+    "pseudonymizeUserNames": true,
+    "note": "Repo default - do not disable pseudonymization without an explicit, documented privacy/legal decision. Same as every sibling scenario."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-09"
+}

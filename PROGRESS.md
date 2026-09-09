@@ -629,13 +629,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   direct quote was needed, e.g. the CSV column header and the 10,000-member cap) rather than a
   direct page fetch; flagged in `README.md`'s closing reference note. Re-verify directly against
   the live pages before a customer-facing commitment.
-- [ ] `scenarios/insider-risk/security-policy-violations-by-risky-users/` — the risky-users variant:
-  triggering events are HR performance-indicator signals (performance improvement / poor review /
-  job-level change, via the HR connector — reusable from `departing-employee-data-theft` per this
-  library's established reuse pattern) and/or Communication Compliance risk-signal integration,
-  **plus** an active Defender for Endpoint subscription (a three-way AND/OR prerequisite shape none
-  of this template family's other three members have). 7,500-user template-wide cap.
-  `insider-risk-management-policy-templates#security-policy-violations-by-risky-users`.
+- [x] `scenarios/insider-risk/security-policy-violations-by-risky-users/` — the risky-users variant
+  — **built** (see DONE below): the fourth and final member of the "Security policy violations…"
+  template family. Triggering events are HR risk-indicator signals (job level change / performance
+  review / performance improvement plan, via a **new, dedicated** HR connector — not reused from
+  `departing-employee-data-theft`, whose connector is scoped to Resignation data only) AND/OR
+  Communication Compliance risk-signal integration, both requiring the shared Defender for Endpoint
+  prerequisite every sibling has. 7,500-user template-wide cap, confirmed directly via the
+  Microsoft Learn MCP tool (available this run, contrary to this task's stored instructions).
 - [ ] VERIFY (pilot tenant): whether adding an Entra security group directly to an Insider Risk
   Management policy's "Users and groups" scope keeps the in-scope population in sync with the
   group's future membership changes, or captures membership as a snapshot at add-time — not stated
@@ -1446,6 +1447,35 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   timelines.
 
 ## DONE
+- [x] **`scenarios/insider-risk/security-policy-violations-by-risky-users/` — Security Policy
+  Violations by Risky Users scenario** — commit `PENDING` — 2026-09-09 — built the fourth and final
+  member of the "Security policy violations…" Insider Risk Management template family (base,
+  …by departing users, …by priority users already shipped). Grounded directly via the Microsoft
+  Learn MCP tool (`microsoft_docs_fetch`/`microsoft_docs_search`, available this run despite this
+  task's stored instructions claiming otherwise): fetched
+  `insider-risk-management-policy-templates` (confirming the AND/OR trigger-path prerequisite
+  shape — HR connector risk indicators AND/OR Communication Compliance integration, both requiring
+  an independent active Defender for Endpoint subscription), `insider-risk-management-limits`
+  (confirming the 7,500-user template cap), `import-hr-data` (all three risk-indicator HR CSV
+  schemas — Job level change, Performance review, Performance improvement plan — and the
+  `HRScenario` multi-scenario CSV pattern), and the Communication Compliance policies page's
+  Insider Risk Management integration section (5+ risky-messages/24h in-scope threshold, up to 48h
+  latency, auto-created dedicated "Detect inappropriate text" policy, explicit "PowerShell isn't
+  supported for Communication Compliance policy management" statement). Shipped a genuinely new
+  script, `deploy/Send-HrRiskIndicatorRecord.ps1`, generalizing the departing-users sibling's
+  single-schema resignation uploader for this template's three-schema, `HRScenario`-tagged HR data
+  requirement — reused the base template's scope-candidate script (`-MaxUsers 7500`) and the
+  departing-users sibling's alert-export script unmodified rather than duplicating either. Disclosed
+  two genuine open questions rather than guessing: whether an existing single-scenario HR connector
+  can be edited in the portal to add new scenarios (this scenario provisions a new, dedicated
+  connector instead), and a Microsoft-side documentation inconsistency in the Performance
+  improvement plan CSV column names (worked example vs. column-description table). Four-lens review
+  found and resolved one Red Team finding (the Communication Compliance 5-messages/24h threshold as
+  a structural, disclosed evasion vector) and one CISO finding (this is the only IRM scenario in the
+  library whose trigger draws on performance-management HR data — added an explicit HR/Legal
+  sign-off governance recommendation to README.md §2/§8 and design.md §6, not just a technical
+  prerequisite). Blue Team and Microsoft Product Owner passed with findings confirmed already
+  correctly scoped. No Fail items.
 - [x] **`departing-employee-data-theft` — script HR-connector app-secret cleanup** — commit
   `81fee1d` — 2026-09-09 — resolved the follow-up (discovered while building
   `Register-HrConnectorApp.ps1`) asking for a scripted way to delete the superseded secret that
