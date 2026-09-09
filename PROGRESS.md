@@ -1448,7 +1448,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/insider-risk/security-policy-violations-by-risky-users/` — Security Policy
-  Violations by Risky Users scenario** — commit `PENDING` — 2026-09-09 — built the fourth and final
+  Violations by Risky Users scenario** — commit `61992b3` — 2026-09-09 — built the fourth and final
   member of the "Security policy violations…" Insider Risk Management template family (base,
   …by departing users, …by priority users already shipped). Grounded directly via the Microsoft
   Learn MCP tool (`microsoft_docs_fetch`/`microsoft_docs_search`, available this run despite this
