@@ -21,9 +21,10 @@ the HR resignation-date data feed, and a Graph-based alert export path for SOC i
 1. Start risk scoring for a user **before** their last working day, not after — the highest-
    value exfiltration window is the notice period, and a policy triggered only by account
    deletion (post-departure) misses it entirely.
-2. Automate the one part of this template that has a genuinely scriptable, idempotent-safe
-   surface — uploading HR resignation/termination data on a recurring schedule — rather than
-   leaving it a manual, easily-forgotten portal task.
+2. Automate the parts of this template that have a genuinely scriptable, idempotent-safe
+   surface — the HR-connector app registration bootstrap, and uploading HR resignation/
+   termination data on a recurring schedule — rather than leaving them manual, easily-forgotten
+   portal tasks.
 3. Be explicit about what **cannot** be scripted. Unlike the DLP scenarios in this library,
    Insider Risk Management policy authoring, priority-user-group management, and role-group
    assignment have no PowerShell or Graph write surface as of this writing (`docs/
@@ -84,7 +85,7 @@ flowchart TD
 | Component | Mechanism | Scriptable? |
 |---|---|---|
 | HR resignation data feed | `deploy/Send-HrTerminationRecord.ps1` → HR connector ingestion webhook | **Yes** — this scenario's code |
-| Graph app registration for the HR connector | Microsoft Entra admin center (Microsoft identity platform app-registration quickstart) | No documented Graph-cmdlet quickstart specific to this flow was found during this build — treated as a manual, one-time portal prerequisite (see README §5, Prerequisites) rather than guessed at |
+| Entra app registration for the HR connector | `deploy/Register-HrConnectorApp.ps1` → `Microsoft.Graph.Applications` (`New-MgApplication`/`New-MgServicePrincipal`/`Add-MgApplicationPassword`) | **Yes** — a follow-up fragment resolved this: no HR-connector-*specific* cmdlet exists, but none is needed, because Step 2's requirement is a plain, permission-free app registration that generic Graph cmdlets cover completely (README §5 Step 2) |
 | HR connector object itself | Purview portal → Settings → Data connectors → Add connector → HR | No — portal-only, one-time |
 | IRM policy (template, indicators, thresholds, users in scope) | Purview portal → Insider Risk Management → Policies | No — portal-only; `deploy/policy/departing-employee-policy-manifest.json` documents the intended configuration as a **reference for the person doing the portal steps**, not an API payload |
 | Priority user group (optional — see §6) | Purview portal → Insider Risk Management → Settings → Priority user groups | No — portal-only |
@@ -121,6 +122,7 @@ run cycle — see Operations §8 in the README for the recommended cadence.
 | Priority user group | Not deployed by default; scenario documents how to add one | A departing employee with elevated data access (finance, engineering with source access, an executive) should also be a priority user, which sharpens alert severity — but making that decision requires the buyer's own access-tier mapping, which this scenario can't assume. README §8 (Operations & tuning) covers when/how to add it. |
 | HR CSV data minimization | Only `UserPrincipalName`, `ResignationDate`, `LastWorkingDate` | The Employee resignation CSV schema supports only these three columns (per `import-hr-data`); this scenario does not use the separate, optional Employee profile connector (name/address/department), which this template doesn't require. |
 | HR connector auth | Client secret (`appSecret`), **not** the certificate-based app-only pattern used everywhere else in this repo (`docs/automation-surface.md` §3) | Microsoft's own documented HR-connector ingestion sample script (`import-hr-data` Step 4, GitHub `m365-compliance-connector-sample-scripts`) authenticates via OAuth 2.0 client-credentials with an application ID + secret against `login.windows.net`; no certificate-credential variant of this specific ingestion flow is documented. This is a deliberate, cited deviation, not an oversight — mitigated in README §3/§11 with short secret-rotation guidance, a hard requirement to store the secret in a vault (never in this repo or on disk in plaintext), and a single-purpose app registration with **no Microsoft Graph API permissions granted**, so a leaked secret can only submit HR resignation records, not read tenant data (Red Team finding — `reviews.md`). |
+| App registration creation | `deploy/Register-HrConnectorApp.ps1` (generic `Microsoft.Graph.Applications` cmdlets), interactive delegated auth (`Application.ReadWrite.All`) | Not this repo's usual app-only certificate pattern, deliberately: this is a one-time (or rarely-run, for rotation) bootstrap task performed by a human admin, not a scheduled unattended job. A standing app-only credential empowered to create other app registrations and mint their secrets would be a materially higher-value target than the interactive session this task actually needs. Idempotent by display-name lookup; `-RotateSecret` adds a secret without duplicating the app. |
 | Alert export mechanism | Microsoft Graph Security API `/security/alerts_v2`, filtered client-side on `detectionSource eq 'microsoftInsiderRiskManagement'` | This is Microsoft's own documented integration path for getting IRM alert data into a SIEM (`irm-investigate-alerts-defender`). Client-side filtering (not server-side `$filter`) is used deliberately — see README §11 for why. |
 | Case/investigation actions (assign, escalate to eDiscovery, resolve) | Out of scope — left to the Purview/Defender portal | No Graph write surface for IRM case management was found and grounded during this build; scripting alert *triage* would risk fabricating an unverified API. Read-only export is the safe, grounded automation boundary. Once a case *is* manually escalated, `scenarios/insider-risk/irm-case-escalation-to-ediscovery/` picks up from there (provenance linkage + custodian/hold reconciliation on the resulting eDiscovery case) — still no API for the escalation click itself. |
 

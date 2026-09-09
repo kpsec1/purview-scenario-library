@@ -170,3 +170,53 @@ No Fix/Fail items from this lens.
 All Fix items from this round are resolved in the current state of `README.md` and
 `design.md`. No Fail items were raised. This fragment meets the definition of done in
 `AGENTS.md` §9.
+
+---
+
+## Addendum — HR-connector app-registration automation follow-up
+
+A follow-up fragment (tracked in `PROGRESS.md`) resolved the previously-deferred item "script
+the HR-connector Entra app registration" by adding `deploy/Register-HrConnectorApp.ps1` and
+`validate/Test-HrConnectorAppRegistration.ps1`. Mini four-lens pass on the new capability only —
+the original verdicts above are not reopened.
+
+- 🔴 **Red Team** — does automating app-registration creation introduce a new bypass or a
+  higher-value credential? No: the script grants **no** Microsoft Graph API permission to the
+  app it creates (no `RequiredResourceAccess` call anywhere in it), matching the single-purpose
+  scoping the original Red Team round already required. The one new consideration is the
+  *operator's own* credential during the bootstrap run: the script uses interactive delegated
+  `Connect-MgGraph -Scopes 'Application.ReadWrite.All'`, not a standing app-only credential — a
+  deliberate choice (`design.md` §6) because a standing credential empowered to create other
+  app registrations and mint their secrets would itself be a higher-value target than the
+  one-time interactive session this bootstrap task needs. `-RotateSecret` adds a secret rather
+  than replacing one (Microsoft Entra applications support multiple concurrent secrets by
+  design); this is documented as a known limitation (README §11) rather than silently leaving a
+  stale secret's exposure window open without comment. **Verdict: Pass.**
+- 🔵 **Blue Team** — is the hygiene guarantee (no Graph permissions) enforceable, not just
+  documented? `validate/Test-HrConnectorAppRegistration.ps1` makes it a repeatable, scriptable
+  [PASS]/[FAIL] check (`RequiredResourceAccess` is empty) rather than a one-time manual glance
+  at creation — so permission drift introduced later by an unrelated admin action gets caught on
+  the next validation run, not only at bootstrap. The script also warns inside 30 days of secret
+  expiry, giving an operational lead time the original manual-portal process had no equivalent
+  reminder for. **Verdict: Pass.**
+- 🎩 **CISO** — this closes a real, if narrow, gap: a manual, undocumented-by-Microsoft portal
+  step is exactly the kind of one-off task that gets done inconsistently across environments (a
+  wider `SignInAudience`, a permission added "just in case," no rotation cadence). Scripting it
+  with an idempotent, `-WhatIf`-capable, permission-free-by-construction tool is a small but
+  genuine reduction in that variance, at no incremental licensing cost — this is ordinary
+  `Microsoft.Graph.Applications` tooling already available to any Entra-licensed tenant. **Would
+  I fund this?** Yes, though it's a minor increment on an already-funded scenario, not a
+  standalone business case.
+- 🟦 **Microsoft Product Owner** — `New-MgApplication`, `New-MgServicePrincipal`,
+  `Get-MgApplication`, `Add-MgApplicationPassword`, `Remove-MgApplication`, and
+  `Remove-MgServicePrincipal` are all current, non-deprecated `Microsoft.Graph.Applications`
+  (v1.0) cmdlets, verified against their individual Microsoft Learn reference pages rather than
+  assumed by analogy — including the easy-to-get-wrong detail that `Add-MgApplicationPassword`'s
+  `-ApplicationId` parameter is aliased `ObjectId` and takes the application's object ID, not its
+  `AppId` (client ID); the script and its `.NOTES` call this out explicitly. The Entra-role
+  guidance added to `docs/rbac-model.md` §11 (self-service app registration is on by default;
+  **Application Developer** is the narrowest role that restores it if disabled, ahead of the
+  broader **Cloud Application Administrator**/**Application Administrator**) is grounded against
+  Microsoft's own built-in-roles reference and delegation guide, not guessed at. **Verdict: Pass.**
+
+No Fix/Fail from this addendum.

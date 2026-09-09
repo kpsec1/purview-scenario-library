@@ -295,12 +295,59 @@ Intune roles either.
 
 ---
 
-## 11. How scenarios should cite RBAC
+## 11. Microsoft Entra app registration RBAC — a seventh system, for scenarios that create their own app registrations
+
+`scenarios/insider-risk/departing-employee-data-theft/deploy/Register-HrConnectorApp.ps1` is the
+first scenario in this library whose own script *creates* a Microsoft Entra app registration
+(rather than merely authenticating as one that already exists) — a genuinely separate concern
+from the six systems in §1/§9/§10, which all govern access to an *existing* resource, not the
+right to mint a new application identity in the first place.
+
+- **By default, no special role is needed.** Microsoft Entra ID's **Users can register
+  applications** tenant setting defaults to **Yes** — every member user can register an app and
+  manage every aspect of the apps they create, with no role assignment required. Most tenants
+  running this scenario for the first time will hit this default case.
+- **If a tenant has locked this down** (`Users can register applications` = **No**, typically
+  alongside restricting user consent), the narrowest built-in role that restores the ability is
+  **Application Developer** — it can create application registrations independent of that
+  setting, and the creator is automatically added as the app's first owner. This is the correct,
+  least-privilege choice for a one-off or occasional bootstrap task like
+  `Register-HrConnectorApp.ps1` — the same least-privilege principle §3, §9, and §10 already
+  state for Entra-role, Intune-role, and Conditional-Access-role assignment.
+- **Broader roles exist but are unnecessary here:** **Cloud Application Administrator** and
+  **Application Administrator** can create and manage *all* app registrations and enterprise
+  apps tenant-wide (the latter also manages Application Proxy) — both are privileged roles
+  intended for admins who administer every application in the tenant, not for running a single
+  scenario's bootstrap script. Neither role is added as an app's owner automatically the way
+  **Application Developer** is. Don't reach for either just to run
+  `Register-HrConnectorApp.ps1`.
+- **The operation itself needs `Application.ReadWrite.All`** (delegated), the Microsoft Graph
+  scope `Register-HrConnectorApp.ps1` requests via `Connect-MgGraph -Scopes
+  'Application.ReadWrite.All'` — an interactive, human-run session, not a standing app-only
+  credential. Microsoft's own permissions tables for `New-MgApplication`,
+  `New-MgServicePrincipal`, and `Add-MgApplicationPassword` all name this as their
+  least-privileged delegated permission.
+- **This role/scope does not itself grant any Purview access**, the same separation-of-concerns
+  point §9 and §10 make for Intune and Conditional Access: a user who can register Entra
+  applications cannot configure Insider Risk Management policies or the HR connector object
+  those applications authenticate — that remains the **Insider Risk Management**/**Insider Risk
+  Management Admins** Purview role group and the **Data Connector Admin** role respectively
+  (`scenarios/insider-risk/departing-employee-data-theft/README.md` §3).
+- **Important caveat Microsoft documents explicitly:** any of these roles/permissions can add
+  credentials to *any* application in their scope and use them to impersonate that application's
+  identity — if the application has been granted access to a resource, an admin holding one of
+  these roles could act through it. This is exactly why
+  `scenarios/insider-risk/departing-employee-data-theft/README.md` §3 requires the HR-connector
+  app to stay permission-free: there is nothing of value to impersonate into.
+
+## 12. How scenarios should cite RBAC
 
 Each scenario README's **Prerequisites** section must state:
 1. Which of the **four RBAC systems** (§1) the scenario touches — or, for an Intune-deployed
-   scenario, that it uses the separate Intune RBAC model (§9) instead, or, for a Conditional
-   Access-deployed scenario, that it uses the separate Entra Conditional Access model (§10).
+   scenario, that it uses the separate Intune RBAC model (§9) instead, for a Conditional
+   Access-deployed scenario, that it uses the separate Entra Conditional Access model (§10), or,
+   for a scenario whose own code creates an app registration, that it uses the separate Entra
+   app-registration RBAC model (§11).
 2. The **narrowest built-in Purview role group** that covers it (name it exactly), or note that
    a **custom role group** is recommended for least privilege.
 3. Any **Exchange Online RBAC** dependency (§6) — call it out explicitly if the scenario searches
@@ -331,6 +378,13 @@ Each scenario README's **Prerequisites** section must state:
   + Insider Risk Management role prerequisites, Entra ID P2 requirement) — <https://learn.microsoft.com/entra/identity/monitoring-health/recommendation-insider-risk-condition>
 - Update conditionalAccessPolicy (`Policy.ReadWrite.ConditionalAccess` + `Policy.Read.All`
   least-privileged permissions) — <https://learn.microsoft.com/graph/api/conditionalaccesspolicy-update>
+- Microsoft Entra built-in roles reference — Application Administrator, Application Developer,
+  Cloud Application Administrator (permission tables, privileged-role labeling, impersonation
+  caveat) — <https://learn.microsoft.com/entra/identity/role-based-access-control/permissions-reference>
+- Delegate app registration permissions in Microsoft Entra ID (default "Users can register
+  applications" behavior; least-privilege guidance between the three app-registration roles) — <https://learn.microsoft.com/entra/identity/role-based-access-control/delegate-app-roles>
+- New-MgApplication, New-MgServicePrincipal, Add-MgApplicationPassword (Microsoft.Graph.Applications
+  least-privileged delegated permissions: `Application.ReadWrite.All`) — <https://learn.microsoft.com/powershell/module/microsoft.graph.applications/new-mgapplication>
 
 > **Disclaimer:** role names, default role-group membership, and which system governs a given
 > feature change as Purview ships updates (e.g. the ongoing move toward Microsoft Defender

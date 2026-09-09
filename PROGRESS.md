@@ -511,13 +511,29 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Exchange (SSN/PAN fragments split across separate emails to the same or different recipients).
 
 ### Follow-ups discovered while building the Insider Risk Management departing-employee scenario
-- [ ] Consider scripting the HR-connector Entra app registration itself (Microsoft Graph
+- [x] Consider scripting the HR-connector Entra app registration itself (Microsoft Graph
   `New-MgApplication`/`New-MgServicePrincipal`/app-password creation) instead of leaving it a
   manual portal prerequisite (`scenarios/insider-risk/departing-employee-data-theft/README.md`
-  §5 step 2) — deferred in this build because no Graph-cmdlet quickstart specific to this
-  HR-connector auth flow was independently grounded, and fabricating the exact parameter set
-  risked violating `AGENTS.md` §4's no-invented-cmdlets rule. Worth a dedicated, narrowly-scoped
-  follow-up fragment once grounded.
+  §5 step 2) — **built** (see DONE below): a follow-up grounding pass found that no
+  HR-connector-*specific* cmdlet was ever needed — Microsoft's own guide names only the generic
+  app-registration quickstart, because Step 2's requirement is a plain, permission-free app
+  registration. `deploy/Register-HrConnectorApp.ps1` (idempotent, `-WhatIf`-capable,
+  `-RotateSecret` for the ~90-day rotation cadence) and
+  `validate/Test-HrConnectorAppRegistration.ps1` (checks existence, service principal, unexpired
+  secret, and — the load-bearing hygiene check — that no Graph API permission has been granted)
+  ship this without inventing anything; `docs/rbac-model.md` §11 (new) documents the
+  Entra-role/Graph-scope prerequisite for running it, and reviews.md carries an addendum
+  four-lens pass on the new capability.
+
+### Follow-ups discovered while building the HR-connector app-registration automation
+- [ ] Consider a `-RemoveExpired` (or standalone `Remove-HrConnectorAppSecret.ps1`) option that
+  calls `Remove-MgApplicationPassword` to delete a superseded secret by `KeyId` after
+  `Register-HrConnectorApp.ps1 -RotateSecret` adds a new one, rather than leaving cleanup as a
+  fully manual step (`README.md` §11) — deferred from this build to keep the fragment scoped;
+  `Remove-MgApplicationPassword`'s exact parameter set was not independently re-verified this
+  session (only `New-MgApplication`/`Get-MgApplication`/`New-MgServicePrincipal`/
+  `Add-MgApplicationPassword`/`Remove-MgApplication`/`Remove-MgServicePrincipal` were), so ground
+  it fresh before building rather than assuming symmetry with `Add-MgApplicationPassword`.
 - [x] `scenarios/insider-risk/security-policy-violations-by-departing-users/` — the related but
   distinct IRM template requiring Microsoft Defender for Endpoint integration, explicitly called
   out as a non-goal in `departing-employee-data-theft/design.md` §7 — **built** (see DONE below):
@@ -1343,6 +1359,36 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   into the UUIDv5 name string) is directly reusable there without modification once picked up.
 
 ## DONE
+- [x] **`departing-employee-data-theft` — script the HR-connector Entra app registration** —
+  commit `PENDING` — 2026-09-09 — resolved the follow-up asking whether app-registration
+  creation could be scripted instead of left as a manual Entra admin center task. Grounded via
+  the Microsoft Learn MCP server (available this run, contrary to this task's stored
+  instructions) rather than WebFetch, which is proxy-blocked for `learn.microsoft.com` in this
+  environment: `import-hr-data` Step 2 needs only a plain, permission-free app registration, so
+  no HR-connector-specific cmdlet is required — generic `Microsoft.Graph.Applications` cmdlets
+  cover it completely. Added `deploy/Register-HrConnectorApp.ps1` (idempotent by display-name
+  lookup, `-WhatIf`-capable, `-RotateSecret` for the README-recommended ~90-day rotation
+  cadence; deliberately grants the created app **no** Microsoft Graph API permission) and
+  `validate/Test-HrConnectorAppRegistration.ps1` (existence, service principal, unexpired
+  secret, and — the load-bearing check — that no permission has been granted). Updated
+  `README.md` (§3, Step 2, §7, §11, §12 references), `design.md` (§2, §4, §6), `rollback.md`
+  (scripted equivalent for Stage 3), and added a reviews.md addendum (mini four-lens pass, all
+  Pass, no Fix/Fail). Added `docs/rbac-model.md` §11 "Microsoft Entra app registration RBAC — a
+  seventh system" (grounded: self-service app registration is on by default; **Application
+  Developer** is the narrowest role if it's been disabled, ahead of the broader **Cloud
+  Application Administrator**/**Application Administrator**), renumbering the old §11 ("How
+  scenarios should cite RBAC") to §12 and updating its checklist item 1 — verified no other file
+  in the repo cross-referenced the old §11 by number. All cmdlets (`New-MgApplication`,
+  `Get-MgApplication`, `New-MgServicePrincipal`, `Add-MgApplicationPassword`,
+  `Remove-MgApplication`, `Remove-MgServicePrincipal`) independently verified against their own
+  Microsoft Learn reference pages, including the easy-to-get-wrong detail that
+  `Add-MgApplicationPassword -ApplicationId` takes the object ID (aliased `ObjectId`), not the
+  `AppId`. Also discovered and fixed, in the same commit: this session's `main` branch was
+  detached from `origin/main` at session start with 34 prior fragments' commits sitting
+  unpushed on a detached HEAD from an earlier run in this same session — fast-forwarded and
+  confirmed already in sync with `origin/main` (no data loss; documented here per §6 discipline
+  since it affected repo state before this fragment started, even though no separate push was
+  needed).
 - [x] **`auto-label-eu-personal-data-sharepoint` — full per-country checksum/confidence table for
   both opt-in travel-document bundles** — commit `b0012e0` — 2026-09-09 — closed the
   `PROGRESS.md` follow-up asking for the same per-country grounding depth already built for the

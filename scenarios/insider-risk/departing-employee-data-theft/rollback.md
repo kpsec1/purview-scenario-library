@@ -45,7 +45,15 @@ materially weaker signal — the risk window is not fully closed by this stage).
    & secrets** → delete the client secret (or delete the app registration entirely if it serves
    no other purpose). Do this even if you only completed Stage 1/2 above but are retiring the
    integration — a live, unused secret is a standing credential-leak risk regardless of whether
-   the policy/connector that used it still exists.
+   the policy/connector that used it still exists. Equivalent script (same
+   `Application.ReadWrite.All` delegated session `deploy/Register-HrConnectorApp.ps1` uses):
+   ```powershell
+   $app = Get-MgApplication -Filter "displayName eq 'Purview HR Connector - Insider Risk Management (single-purpose)'"
+   Remove-MgServicePrincipal -ServicePrincipalId (Get-MgServicePrincipal -Filter "appId eq '$($app.AppId)'").Id
+   Remove-MgApplication -ApplicationId $app.Id
+   ```
+   Deleted applications land in a 30-day recoverable container, not permanent deletion
+   immediately — see the Microsoft Graph `Remove-MgApplication` reference.
 4. If a priority user group was created for this scenario (README.md §8) and is not reused by
    another policy: Purview portal → **Settings** → **Insider Risk Management** → **Priority
    user groups** → delete it.

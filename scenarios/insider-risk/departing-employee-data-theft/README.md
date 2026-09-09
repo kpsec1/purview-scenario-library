@@ -52,16 +52,19 @@ row) and §3 (add-on SKUs). Summary for this scenario:
 | Role to create the HR connector | **Data Connector Admin** role | Included by default in both role groups above [[3]](#references) |
 | Microsoft 365 audit log | Enabled (default for most tenants) | Insider Risk Management scoring depends on it; confirm it hasn't been explicitly disabled [[4]](#references) |
 | HR data source | Any system that can export **UserPrincipalName, ResignationDate, LastWorkingDate** to CSV | This scenario's `deploy/Send-HrTerminationRecord.ps1` uploads the CSV — it does not connect to or extract from the HR system itself |
-| Entra app registration for the HR connector | App registration + client secret, created via the Microsoft Entra admin center | Manual, one-time prerequisite — no automation script in this scenario creates it; see §5 step 2 below [[5]](#references) |
+| Entra app registration for the HR connector | App registration + client secret | Scripted — `deploy/Register-HrConnectorApp.ps1`, idempotent, `-WhatIf`-capable; see §5 step 2 below. No special Entra role is needed to run it unless the tenant has disabled self-service app registration, in which case the operator needs the **Application Developer** role — `docs/rbac-model.md` §11 [[5]](#references) |
 | Automation identity for alert export | App registration with the Microsoft Graph **`SecurityAlert.Read.All`** application permission, certificate-based (this repo's default pattern) | See `docs/automation-surface.md` §3; this is a *separate* app registration from the HR connector one above — different surface, different credential type [[6]](#references) |
 | Device onboarding (optional) | Required only if device indicators (USB copy, printing, network-share transfer) are enabled | Same onboarding prerequisite as `scenarios/dlp/endpoint-dlp-usb-block/` — see that scenario's README §3 |
 
-> **HR-connector app registration hygiene:** the Entra app created in Step 2 below should be
-> **single-purpose** — grant it no Microsoft Graph API permissions at all; it only needs the
-> HR-connector ingestion webhook's own OAuth resource (§11). Scoping it this way bounds the
-> blast radius of a leaked client secret to "can submit HR resignation records," not "can read
-> tenant data." Rotate the secret on a fixed cadence (e.g. every 90 days) rather than leaving it
-> valid indefinitely — see `reviews.md`, Red Team lens.
+> **HR-connector app registration hygiene:** the Entra app `deploy/Register-HrConnectorApp.ps1`
+> creates in Step 2 below is **single-purpose by construction** — it grants no Microsoft Graph
+> API permissions at all; the app only needs the HR-connector ingestion webhook's own OAuth
+> resource (§11). Scoping it this way bounds the blast radius of a leaked client secret to "can
+> submit HR resignation records," not "can read tenant data."
+> `validate/Test-HrConnectorAppRegistration.ps1` checks this stays true on every run, not just
+> at creation time. Rotate the secret on a fixed cadence (e.g. every 90 days,
+> `Register-HrConnectorApp.ps1 -RotateSecret`) rather than leaving it valid indefinitely — see
+> `reviews.md`, Red Team lens.
 
 > Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms
 > before a sales commitment — SKU names change.
@@ -99,13 +102,30 @@ Management Admins** [[2]](#references). Confirm the Microsoft 365 audit log is e
 (**Purview** → **Audit** → confirm status, or `docs/rbac-model.md` §6 for the underlying
 `Search-UnifiedAuditLog` dependency) [[4]](#references).
 
-### Step 2 — Register the Entra app for the HR connector (manual, one-time)
+### Step 2 — Register the Entra app for the HR connector (scripted, idempotent)
 
-Register an application in the Microsoft Entra admin center and record its **Application
-(client) ID**, a **client secret**, and the **Tenant ID** — Microsoft's own HR-connector guide
-walks through this as a manual step with no PowerShell/Graph-cmdlet quickstart specific to this
-flow [[3]](#references). Store the secret in a vault immediately; it is passed to
-`deploy/Send-HrTerminationRecord.ps1` as a `SecureString`, never written to disk.
+Microsoft's own HR-connector guide cites only the generic "Register an application" quickstart
+for this step — no HR-connector-specific cmdlet exists, because none is needed: the requirement
+is a plain, permission-free app registration [[3]](#references)[[5]](#references).
+`deploy/Register-HrConnectorApp.ps1` scripts that generic sequence (`New-MgApplication` →
+`New-MgServicePrincipal` → `Add-MgApplicationPassword`) instead of leaving it a manual portal
+task, and deliberately grants **no** Microsoft Graph API permission — see the callout below.
+
+```powershell
+Connect-MgGraph -Scopes 'Application.ReadWrite.All'
+
+# Dry run — reports whether a new app would be created or an existing one reused, calls nothing
+./deploy/Register-HrConnectorApp.ps1 -WhatIf
+
+# Real run — creates the app, its service principal, and a 3-month client secret
+$hrApp = ./deploy/Register-HrConnectorApp.ps1
+```
+
+Record `$hrApp.AppId` (the **Application (client) ID** for Step 3) and `$hrApp.TenantId`. Store
+`$hrApp.ClientSecret` (a `SecureString`) in a vault immediately — it is passed to
+`deploy/Send-HrTerminationRecord.ps1` as `-AppSecret`, never written to disk, and Microsoft
+Entra ID never shows the plaintext value again after this run. Re-run with `-RotateSecret` at
+the ~90-day rotation point (§3, §11) rather than creating a second app registration.
 
 ### Step 3 — Create the HR connector
 
@@ -177,6 +197,10 @@ Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thu
 ### Step 7 — Validate
 
 ```powershell
+Connect-MgGraph -Scopes 'Application.Read.All'
+./validate/Test-HrConnectorAppRegistration.ps1
+
+Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 ./validate/Test-DepartingEmployeeIrmSetup.ps1 -CsvPath './employee_resignations.csv'
 ```
 
@@ -199,21 +223,26 @@ Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thu
 
 ## 7. Validation / how to prove it works
 
-1. **Automated checks** — `./validate/Test-DepartingEmployeeIrmSetup.ps1 -CsvPath
+1. **App registration hygiene** — `./validate/Test-HrConnectorAppRegistration.ps1` confirms the
+   HR-connector app registration exists, its service principal exists, its client secret isn't
+   expired (warns inside 30 days of expiry), and — the check that matters most — that it still
+   holds **no** Microsoft Graph API permission, so the single-purpose scoping README.md §3
+   documents hasn't silently drifted. Exits non-zero on a hard failure.
+2. **Automated checks** — `./validate/Test-DepartingEmployeeIrmSetup.ps1 -CsvPath
    './employee_resignations.csv'` confirms the Graph session and `SecurityAlert.Read.All`
    permission actually work (not just that they were requested) and that the resignation CSV
    schema is correct. Exits non-zero on a hard failure.
-2. **Manual checklist** — the same script prints a checklist for everything that has no API to
+3. **Manual checklist** — the same script prints a checklist for everything that has no API to
    query (policy existence/template/state, HR connector import log, role-group membership,
    priority-user-group currency) — see `design.md` §6 for why these can't be automated.
-3. **End-to-end functional test (non-production names only)** — in a pilot tenant: add a test
+4. **End-to-end functional test (non-production names only)** — in a pilot tenant: add a test
    account's `UserPrincipalName` to a resignation CSV with a near-term `ResignationDate`, run
    `Send-HrTerminationRecord.ps1`, confirm the Purview portal's HR connector log shows
    `RecordsSaved: 1`, then from that test account perform a few of the configured indicator
    activities (e.g., download several files from a SharePoint library, copy a file to USB if
    device indicators are enabled). Confirm an alert appears in **Insider Risk Management** →
    **Alerts** within the activation window, and that `Export-InsiderRiskAlerts.ps1` retrieves it.
-4. **Evidence trail** — the alert's **Activity explorer** tab shows the specific indicator
+5. **Evidence trail** — the alert's **Activity explorer** tab shows the specific indicator
    events that contributed to the score, which is the artifact an auditor or investigator would
    review [[12]](#references).
 
@@ -352,6 +381,12 @@ deleting the policy, connector, or the HR-connector app registration's client se
   with an application secret, not a certificate — a deliberate, cited exception to this
   library's certificate-first default (`docs/automation-surface.md` §3). Store the secret in a
   vault and rotate it on a short cycle; `Send-HrTerminationRecord.ps1` never persists it to disk.
+- **`Register-HrConnectorApp.ps1 -RotateSecret` adds a secret, it doesn't replace one.** Microsoft
+  Entra applications support multiple concurrent client secrets by design — running with
+  `-RotateSecret` issues a new one alongside any existing (even expired) ones. Remove the
+  superseded secret yourself (Entra admin center, or `Remove-MgApplicationPassword`) once the new
+  secret is confirmed working in `Send-HrTerminationRecord.ps1`'s scheduled task — this script
+  won't guess at that timing for you [[20]](#references).
 - **Data risk graph is being retired November 24, 2026.** If a walkthrough or screenshot in a
   demo references the visual "data risk graph" investigation view, note that Microsoft has
   announced its retirement — don't build a workflow around it for a new deployment
@@ -386,6 +421,9 @@ deleting the policy, connector, or the HR-connector app registration's client se
 16. Investigate insider risk threats in the Microsoft Defender portal (Graph Security API integration path, Incidents/Alerts/Advanced hunting) — <https://learn.microsoft.com/defender-xdr/irm-investigate-alerts-defender>
 17. Microsoft Purview service description — Insider Risk Management licensing table — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description>
 18. Plan for Insider Risk Management (per-template prerequisites) — <https://learn.microsoft.com/purview/insider-risk-management-plan>
+19. New-MgApplication, Get-MgApplication, New-MgServicePrincipal, Add-MgApplicationPassword, Remove-MgApplication, Remove-MgServicePrincipal (Microsoft.Graph.Applications PowerShell reference) — <https://learn.microsoft.com/powershell/module/microsoft.graph.applications/new-mgapplication>, <https://learn.microsoft.com/powershell/module/microsoft.graph.applications/new-mgserviceprincipal>, <https://learn.microsoft.com/powershell/module/microsoft.graph.applications/add-mgapplicationpassword>
+20. Add and manage application credentials in Microsoft Entra ID (multiple concurrent client secrets are supported; a secret's plaintext value is shown only once) — <https://learn.microsoft.com/entra/identity-platform/how-to-add-credentials>
+21. Delegate app registration permissions in Microsoft Entra ID (default "Users can register applications" behavior; Application Developer / Application Administrator / Cloud Application Administrator roles) — <https://learn.microsoft.com/entra/identity/role-based-access-control/delegate-app-roles>
 
 > Re-verify all links, cmdlet/API behavior, and licensing terms against current Microsoft Learn
 > before a customer-facing assessment or sale — this module changes faster than most in the
