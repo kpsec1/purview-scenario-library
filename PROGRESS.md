@@ -1279,7 +1279,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/`**
-  — commit: pending — date: 2026-09-09 — extends
+  — commit `5410ea0` — 2026-09-09 — extends
   `defender-device-control-usb-allowlist-macos-portable-device-coverage`'s `serialNumber`-only Apple
   and Portable device allowlists with `vendorId`/`productId` compound matching, the same RFC 4122
   §4.3 UUIDv5 deterministic-sub-group + `groupId`-clause technique
