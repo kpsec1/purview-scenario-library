@@ -1652,7 +1652,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/`** — commit
-  `PENDING` — 2026-09-09. Full README (12-section skeleton), design.md, deploy/
+  `176c5fa` — 2026-09-09. Full README (12-section skeleton), design.md, deploy/
   (`New-PriorityCleanupPermanentDeletionPolicy.ps1` — provisions the same confirmed
   `-PriorityCleanup` label/policy/rule shape as the `priority-cleanup-sharepoint-onedrive` sibling,
   then prints a mandatory manual portal step rather than guessing at an unconfirmed CLI parameter;
