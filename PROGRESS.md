@@ -665,11 +665,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   integration as of this build — re-check GA status before scoping. — **built** (see DONE below):
   the GA re-check this item asked for found the integration is **no longer preview** — corrects
   the stale claim, see the new DONE entry and `design.md` §8 in the built scenario.
-- [ ] Consider a cross-cutting or Data Lifecycle Management-module scenario covering the
-  120-day deleted-content preservation policy Adaptive Protection can auto-create for
-  Elevated-risk users — deferred from `dynamic-risk-dlp-enforcement` as a separate opt-in with
-  its own retention-policy implications, better scoped alongside this library's future Data
-  Lifecycle Management module scenarios (still TODO below) than bundled into the DLP scenario.
+- [x] `scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/` —
+  **built** (see DONE below): the 120-day deleted-content preservation policy Adaptive Protection
+  can auto-create for Elevated-risk users, deferred from `dynamic-risk-dlp-enforcement` as a
+  separate opt-in with its own retention-policy implications.
 - VERIFY (pilot tenant, before a customer relies on it in production): whether representing the
   portal's compound "Content is shared from Microsoft 365 with people outside my organization"
   condition using `-AccessScope NotInOrganization` alone (this scenario's and
@@ -677,6 +676,32 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   or whether a separate `-ContentIsShared` boolean condition is also required — flagged inline in
   `dynamic-risk-dlp-enforcement/deploy/New-AdaptiveProtectionDlpPolicy.ps1`'s `.NOTES` and
   `README.md` §11.
+
+### Follow-ups discovered while building the Adaptive Protection deleted-content-preservation scenario
+- [ ] VERIFY (pilot tenant): whether the Data Lifecycle Management/Records Management Purview role
+  group is *also* accepted for the "Adaptive protection in Data Lifecycle Management" toggle
+  itself (it surfaces under the Data Lifecycle Management solution settings UI, not the Insider
+  Risk Management app), or whether only the Insider Risk Management/Insider Risk Management Admins
+  role group Microsoft's own page links to actually works. Flagged inline in
+  `adaptive-protection-deleted-content-preservation/README.md` §3/§11 rather than assumed.
+- [ ] VERIFY (pilot tenant): the exact `AuditData` JSON field names populated for the
+  `SharePointDataProactivelyPreserved`/`ExchangeDataProactivelyPreserved` audit Operations —
+  `deploy/Export-AdaptiveProtectionPreservationEvidence.ps1` extracts `Workload`/`ObjectId`/
+  `SourceFileName` best-effort from the general Search-UnifiedAuditLog schema, not a worked
+  Microsoft example for these two Operations specifically. The raw `AuditData` JSON column is
+  always preserved regardless.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether disabling the "Adaptive
+  protection in Data Lifecycle Management" toggle (or any other admin action on it) is captured in
+  Insider Risk Management's own internal audit log (viewable by the Insider Risk Management
+  Auditors role) — not confirmed either way, and that log has no documented Graph/REST query API
+  this library has found (the same gap already tracked for a different scenario — see the
+  `irm-case-escalation-to-ediscovery` follow-ups near the top of this file). Resolving either half
+  would let `adaptive-protection-deleted-content-preservation/README.md` §11's self-sabotage
+  finding state a concrete detection mechanism instead of an open gap.
+- [ ] Consider a Data Lifecycle Management follow-up scenario for **Priority Cleanup** — a
+  different DLM feature that also applies retention labels internally and can override holds to
+  reclaim disk space or permanently delete sensitive information — explicitly out of scope for
+  this fragment (`design.md` §7) since it's unrelated to Adaptive Protection.
 
 ### Follow-ups discovered while building the Conditional Access insider-risk-block scenario
 - [x] Backport the GA-status correction (`conditional-access-insider-risk-block/design.md` §8)
@@ -1455,6 +1480,42 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   timelines.
 
 ## DONE
+- [x] **`scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/` —
+  Adaptive Protection Deleted-Content Preservation scenario** — built the Data Lifecycle
+  Management half of Adaptive Protection this library had deferred since
+  `dynamic-risk-dlp-enforcement`'s own build: the 120-day auto-preservation of content an
+  Elevated-risk user deletes from SharePoint/OneDrive/Exchange. Grounded directly via the
+  Microsoft Learn MCP tool (`microsoft_docs_search`/`microsoft_docs_fetch`, available this run):
+  confirmed there is genuinely **no** `Get-`/`New-`/`Set-` cmdlet or Graph resource for the
+  underlying toggle or its auto-created retention label/policy — Microsoft states outright that
+  "you don't need to create or manage" it and that it "aren't visible in the Microsoft Purview
+  portal." Rather than force a fabricated deploy script into existence (`AGENTS.md` §4), this
+  fragment documents the exact portal-only enablement path precisely and ships code for what
+  genuinely is scriptable: `deploy/Export-AdaptiveProtectionPreservationEvidence.ps1` (a rolling,
+  de-duplicated `Search-UnifiedAuditLog` export for the two documented audit Operations —
+  `SharePointDataProactivelyPreserved`/`ExchangeDataProactivelyPreserved` — reusing this library's
+  proven audit-trail-export pattern from `Export-EdiscoveryAuditTrail.ps1`) and `validate/
+  Test-AdaptiveProtectionDlmPreservation.ps1` (a health check that deliberately reports
+  `[INCONCLUSIVE]`, never `[FAIL]`, on a zero-row result, since no status cmdlet exists to
+  distinguish "off" from "on but not yet triggered"). Directly re-confirmed via `microsoft_docs_
+  fetch` against the live page (not a cached snippet) that this integration is **still
+  Microsoft-labeled preview**, unlike the Conditional Access insider-risk integration this library
+  already re-verified as GA. Four-lens review raised and resolved three Red Team findings before
+  commit: (1) the scenario only preserves deletions, not exfiltration, and only covers three
+  locations — now stated plainly rather than implied; (2) a privileged Elevated-risk user (anyone
+  holding the Insider Risk Management/Insider Risk Management Admins role group) can destroy their
+  own evidence by disabling the toggle, since doing so releases **everything** currently preserved
+  immediately and tenant-wide, per Microsoft's own documented behavior — added explicit role-
+  hygiene guidance and disclosed that this configuration change isn't confirmed to be captured
+  anywhere this library's own audit script can query; (3) no real-time alert fires on a
+  preservation event — added a SIEM-forwarding recommendation. CISO lens added one Fix: explicit
+  guidance not to treat this as a substitute for a real eDiscovery hold once an investigation is
+  actually opened. Cross-linked back into `scenarios/adaptive-protection/
+  dynamic-risk-dlp-enforcement/README.md` §11 and `design.md` §7 (previously "deferred/out of
+  scope," now pointing at the built sibling), matching this library's established
+  cross-referencing convention. Three follow-up VERIFY items and one possible future fragment
+  (Priority Cleanup) recorded above rather than resolved by guessing. Commit: (recorded in next
+  commit below). Date: 2026-09-09.
 - [x] **Backport GA-status correction into `scenarios/adaptive-protection/dynamic-risk-dlp-
   enforcement/`** — doc-only correction fragment (not a new scenario). Corrected two stale
   "Microsoft-labeled preview" claims about the Conditional Access "Insider risk" condition

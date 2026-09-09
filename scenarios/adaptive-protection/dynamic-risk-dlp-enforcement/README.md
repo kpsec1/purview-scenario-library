@@ -307,15 +307,18 @@ Protection itself, the feeder IRM policy, or resets any user's current insider r
 - **This scenario does not configure Endpoint DLP (Devices), Conditional Access, or
   Data Lifecycle Management (preview integration)** — all three are Adaptive
   Protection-integrated but out of scope here; see `design.md` §7 and `PROGRESS.md` for the
-  follow-up fragments this build opened (Conditional Access is now built as the sibling scenario
-  `scenarios/adaptive-protection/conditional-access-insider-risk-block/`). **Correction
+  follow-up fragments this build opened. Conditional Access is now built as the sibling scenario
+  `scenarios/adaptive-protection/conditional-access-insider-risk-block/`, and Data Lifecycle
+  Management as `scenarios/data-lifecycle-management/
+  adaptive-protection-deleted-content-preservation/`. **Correction
   (2026-09-09):** this bullet previously called Conditional Access a "preview integration" too —
   that build's own fresh grounding pass found no preview label on Microsoft's current "Block
   access for users with insider risk" how-to guide or on the Graph v1.0
   `conditionalAccessConditionSet.insiderRiskLevels` resource (independent industry reporting
   places GA at June 2024), both re-confirmed directly during this correction pass
   [[14]](#references)[[15]](#references). Data Lifecycle Management's integration remains
-  Microsoft-labeled preview and is unaffected by this correction. **This is a real, exploitable
+  Microsoft-labeled preview, directly re-confirmed by the new sibling scenario's own build, and is
+  unaffected by this correction. **This is a real, exploitable
   gap, not a theoretical one:** an Elevated-risk user blocked from emailing or Teams-sharing a file externally can, as
   of this scenario alone, still exfiltrate the identical file via a direct SharePoint/OneDrive
   download, a USB copy, printing, or an upload to a personal cloud-storage app — none of which

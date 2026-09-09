@@ -170,8 +170,9 @@ policy this scenario creates.
 - **This scenario does not configure the Data Lifecycle Management 120-day deleted-content
   preservation policy** (also a Microsoft-labeled **preview** integration [[1]](#references))
   that Adaptive Protection can auto-create for Elevated-risk users — a separate opt-in with its
-  own retention-policy implications, better scoped alongside this library's future Data
-  Lifecycle Management scenarios than bundled here.
+  own retention-policy implications. Built as the sibling scenario
+  `scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/` instead
+  of bundled here.
 - **This scenario does not modify or manage the feeder IRM policy's alert/case workflow.**
   Alert triage, case escalation, and analyst response remain exactly as documented in
   `scenarios/insider-risk/departing-employee-data-theft/README.md` §8 — Adaptive Protection adds
