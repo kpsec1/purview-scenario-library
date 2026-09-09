@@ -1,0 +1,19 @@
+{
+  "domain": {
+    "name": "Customer Experience",
+    "note": "Must match the governance domain created by scenarios/unified-catalog/curate-business-glossary/ - this scenario resolves it by name and does not create a domain of its own."
+  },
+  "criticalDataElement": {
+    "name": "Customer ID",
+    "description": "The customer identifier as it appears across every source system that stores a customer record. Different systems spell it differently ('CustID', 'CID', 'CustomerID') - this critical data element maps every one of those columns into the same logical concept so a data quality rule, an access policy, or a consumer's mental model only has to deal with 'Customer ID' once, not once per source.",
+    "dataType": "TEXT",
+    "owners": ["data-governance-lead@contoso.com"]
+  },
+  "columns": [
+    {
+      "dataMapAssetId": "00000000-0000-0000-0000-000000000000",
+      "columnName": "CustomerID",
+      "note": "REPLACE dataMapAssetId with the real Microsoft Purview Data Map asset GUID for customerdb.dbo.Customers (Azure SQL table registered and scanned by scenarios/data-map/scan-azure-sql-and-classify/, the same asset scenarios/unified-catalog/manage-data-products/ already wraps as a Unified Catalog data asset). columnName must match the column's exact display name in Data Map (case-sensitive - see README.md Section 11) - the script resolves the column's own Data Map GUID from this pair rather than requiring you to hunt for a column-level GUID by hand. Add further entries to this array to map the same logical 'Customer ID' concept from other source systems (e.g. a legacy CRM's 'CustID' column) - critical data elements are designed to aggregate more than one physical column, per README.md Section 1."
+    }
+  ]
+}
