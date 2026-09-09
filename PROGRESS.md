@@ -3280,7 +3280,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   and one RBAC cross-reference gap recorded above rather than resolved by guessing (Defender for
   Endpoint Plan 1 vs. Plan 2 sufficiency; whether the `incidentId` join is actually reliable;
   Security Administrator role not yet in `docs/rbac-model.md`; the three sibling "Security policy
-  violations…" templates left as separate candidate fragments). Commit: `<pending>`. Date: 2026-09-09.
+  violations…" templates left as separate candidate fragments). Commit: `3d61f9b`. Date: 2026-09-09.
 
 ## Blocked / needs user
 - (none)
