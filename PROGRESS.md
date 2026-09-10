@@ -1828,8 +1828,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
-- [x] **`scenarios/unified-catalog/governance-domain-hierarchy/`** — commit `(recorded in next
-  commit)` — 2026-09-10. Full README (12-section skeleton), design.md, deploy/
+- [x] **`scenarios/unified-catalog/governance-domain-hierarchy/`** — commit `f63b43e` — 2026-09-10. Full README (12-section skeleton), design.md, deploy/
   (`New-GovernanceDomainHierarchy.ps1` — recursive idempotent upsert of a domain tree, one shared
   paginated `Enumerate` pass, `(name, parentId)`-keyed matching, business-concept attribute values,
   opt-in data estate mapping; `Remove-GovernanceDomainHierarchy.ps1` — `-Unpublish`/`-Purge`,
