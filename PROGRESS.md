@@ -1467,12 +1467,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   or whether it's confirmed to be a duplicate label for an event already covered.
 
 ### Follow-ups discovered while building the Communication Compliance harassment-and-code-of-conduct scenario
-- [ ] `scenarios/communication-compliance/financial-regulatory-supervision/` (or similar) — the
-  FINRA/SEC-oriented "Regulatory compliance" policy template (Customer complaints, Gifts &
-  entertainment, Money laundering, Regulatory collusion, Stock manipulation, Unauthorized
-  disclosure classifiers) — a different regulatory driver (broker-dealer supervision) from
-  `harassment-and-code-of-conduct`'s HR/code-of-conduct focus; explicitly called out as a non-goal
-  in that scenario's `design.md` §7.
+- [x] `scenarios/communication-compliance/financial-regulatory-supervision/` — **built** (see DONE
+  below): the FINRA/SEC-oriented "Regulatory compliance" classifier family (Corporate sabotage,
+  Customer complaints, Gifts & entertainment, Money laundering, [Workplace/Regulatory] collusion,
+  Stock manipulation, Unauthorized disclosure), scoped to the firm's FINRA-registered-representative
+  population rather than "All users" — a deliberate departure from this scenario's own all-users
+  scoping, justified in the new fragment's `design.md` §3.
 - [ ] Consider a `scenarios/insider-risk/` or `scenarios/adaptive-protection/` follow-up wiring the
   documented Communication Compliance → Insider Risk Management integration (the auto-created
   "Insider risk trigger" policy using the Threat/Harassment/Discrimination classifiers) — deferred
@@ -2098,7 +2098,86 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   investigated this build; the current heuristic only scores IP-based connectors that are already
   IP-restricted.
 
+### Follow-ups discovered while building the Communication Compliance financial-regulatory-supervision scenario
+- [ ] Third-party financial messaging connectors (Bloomberg Message/Mail, ICE Chat, Reuters Eikon
+  Messenger, Symphony, and the other Microsoft-documented native data connectors for Communication
+  Compliance) — explicitly out of scope for this scenario (`design.md` §7); each connector has its own
+  distinct setup workflow and deserves its own scoped fragment. Candidate name:
+  `scenarios/communication-compliance/financial-connector-onboarding/` or split per connector.
+- [ ] An HR/registration-connector-style reconciliation script deriving/reconciling the firm's
+  FINRA-registered-representative population (this scenario's `usersInScope` group) against the
+  firm's own broker-dealer registration system (e.g. FINRA BrokerCheck/CRD) — explicitly out of scope
+  this build (`design.md` §7); the same class of gap `scenarios/insider-risk/
+  departing-employee-data-theft/`'s own HR-connector follow-up tracks for a different population.
+- [ ] The built-in **"Detect conflict of interest"** Communication Compliance policy template, as its
+  own standalone scenario — deferred as a non-goal in `financial-regulatory-supervision/design.md` §5/
+  §7 pending confirmation of its exact classifier bundling (see the VERIFY item below).
+- [ ] A preventive DLP companion scoped to a firm's actual restricted-list/watch-list tickers (real-time
+  blocking, not just detective review) — deferred as a non-goal in `financial-regulatory-supervision/
+  design.md` §7; natural complement to `scenarios/information-barriers/segregate-trading-and-research/`.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether Microsoft's built-in "Detect
+  financial regulatory compliance" and "Detect conflict of interest" policy templates bundle Corporate
+  sabotage, Customer complaints, Gifts & entertainment, Money laundering, [Workplace/Regulatory]
+  collusion, Stock manipulation, and Unauthorized disclosure identically to how
+  `financial-regulatory-supervision`'s custom policy selects all seven explicitly — this build's
+  WebSearch-only grounding (no direct `learn.microsoft.com` fetch available) could not confirm the
+  per-template classifier split. `financial-regulatory-supervision/design.md` §5/§8 and `README.md`
+  §11 flag this rather than guessing.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the current portal-UI label for the
+  collusion-related Regulatory-compliance classifier — this build's WebSearch-only grounding found it
+  referred to as both "Regulatory collusion" and "Workplace collusion" across independent secondary
+  sources, without a direct canonical-page fetch to resolve which is current. `financial-regulatory-
+  supervision/README.md` §11, `design.md` §5, and the deploy manifest all flag this rather than
+  picking one silently.
+- [ ] VERIFY (pilot tenant): the exact `AuditData` JSON property name Microsoft populates with the
+  remediation action taken on a `SupervisoryReviewTag` event. `financial-regulatory-supervision/
+  deploy/Export-FinraSupervisionEvidence.ps1` tries a short list of plausible candidate property names
+  (`$actionPropertyCandidates`) and falls back to pointing at the row's own raw `AuditData` rather than
+  guessing — update that list once the real property name is confirmed. `README.md` §11 and the
+  script's own `.NOTES`/`validate/Test-FinraSupervisionEvidence.ps1` both flag this as an open item.
+
 ## DONE
+- [x] **`scenarios/communication-compliance/financial-regulatory-supervision/`** — commit `<pending —
+  see next commit>` — 2026-09-10. Full scenario (README, design, deploy, validate, rollback,
+  four-lens review) closing the FINRA/SEC-oriented follow-up deferred from
+  `harassment-and-code-of-conduct/design.md` §7. Deploys a Communication Compliance custom policy
+  covering the "Regulatory compliance" classifier family (Corporate sabotage, Customer complaints,
+  Gifts & entertainment, Money laundering, [Workplace/Regulatory] collusion — naming VERIFY, Stock
+  manipulation, Unauthorized disclosure) plus an evasion-phrase-only keyword dictionary, scoped to
+  the firm's FINRA-registered-representative population rather than "All users" (`design.md` §3 — a
+  deliberate departure from the harassment sibling's all-users scoping, since Rule 3110(b)(4)
+  attaches to the firm's securities-business personnel specifically). Central grounding findings: (1)
+  Rule 3110(b)(4) requires registered-principal review evidenced with four specific elements
+  (reviewer, content, date, action taken) — Communication Compliance's own RBAC has no concept of
+  FINRA registration status, so this scenario adds that as a named, gating prerequisite *and* a
+  recurring quarterly reconciliation control (added during the four-lens review — see below), not a
+  one-time onboarding check; (2) the SEC/CFTC's 2021–2024 "off-channel communications" enforcement
+  sweep (>$3 billion in combined penalties across 100+ firms) grounds the regulatory driver in
+  concrete, quantified enforcement history, and is used to make an honest point in `README.md` §11:
+  this scenario supervises Exchange/Teams perfectly while doing nothing for the personal-device
+  off-channel gap that actually drove those fines. Scriptable deliverable:
+  `deploy/Export-FinraSupervisionEvidence.ps1` reuses the harassment sibling's three
+  Search-UnifiedAuditLog query categories (Communication-Compliance-wide, not policy-specific) and
+  adds a genuinely new derivation — a FINRA Rule 3110(b)(4) evidence-of-review CSV reshaping
+  `ReviewTag` events into the rule's four required fields, with a disclosed, defensively-coded VERIFY
+  for the one unconfirmed `AuditData` property name (remediation action taken) rather than a guessed
+  field name. Four-lens review caught and fixed three real findings before finalizing (see
+  `reviews.md`): a stand-alone-evidence risk (the evidence-of-review CSV alone is weaker proof than it
+  looks — added an explicit warning not to rely on it without the native alert record), a script
+  inefficiency (the AuditData fallback was duplicating the same JSON payload twice in one row — fixed
+  to reference the row's own AuditData column instead), and a one-time-only registration gate (fixed
+  by adding a recurring quarterly Investigators-vs-FINRA-registration-roster reconciliation to
+  `README.md` §8). Also found and fixed a stale, contradictory row in `docs/automation-surface.md` §4
+  claiming Communication Compliance policy config runs through Security & Compliance PowerShell
+  ("Surface 2") — corrected to state the portal-only reality both this scenario and its sibling
+  independently confirm, rather than left as a silent inconsistency. This build's network environment
+  could not directly fetch `learn.microsoft.com`/`sec.gov`/`finra.org`/`smarsh.com` (all returned
+  `EGRESS_BLOCKED`); every product and regulatory fact was corroborated via WebSearch across multiple
+  independent secondary sources instead, with disagreements (the collusion classifier's exact current
+  name) flagged as VERIFY rather than asserted — see `design.md` §10. Six follow-ups recorded above
+  under a new section (`### Follow-ups discovered while building the Communication Compliance
+  financial-regulatory-supervision scenario`) rather than duplicated here.
+
 - [x] **`scenarios/compliance-manager/entra-privileged-role-monitoring/`** — commit `b4bb49d` —
   2026-09-10. Full scenario (README, design, deploy, validate, rollback, four-lens review) scripting
   a rolling audit trail of direct (non-PIM) Entra ID role-assignment changes for Global

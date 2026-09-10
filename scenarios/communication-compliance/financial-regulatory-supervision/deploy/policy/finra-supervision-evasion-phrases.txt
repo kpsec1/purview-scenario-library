@@ -1,0 +1,32 @@
+# Custom keyword dictionary - CONCEALMENT/EVASION PHRASES ONLY.
+#
+# Purpose: catch language indicating someone knows a conversation is being monitored and is
+# deliberately routing sensitive discussion around it - the exact pattern regulators cite in
+# off-channel-communications enforcement actions as evidence of intent (README.md Section 2,
+# design.md Section 5). This list does NOT duplicate the Corporate sabotage / Customer complaints /
+# Gifts & entertainment / Money laundering / [Workplace/Regulatory] collusion / Stock manipulation /
+# Unauthorized disclosure trainable classifiers, which already cover explicit regulatory-violation
+# language far more robustly than a static word list could.
+#
+# NEVER add restricted-list ticker symbols, issuer names, deal codenames, or any other firm-specific
+# confidential supervisory information to this file or its production equivalent - see README.md
+# Section 11 and reviews.md Red Team. A keyword dictionary that reveals what the firm is watching for
+# is a liability, not a control.
+let's discuss offline
+let's take this offline
+call me instead
+don't put that in an email
+don't put that in writing
+don't send that in writing
+keep this between us
+keep this off the record
+off the record
+this conversation didn't happen
+delete this after reading
+delete after you read this
+use my personal phone
+text me instead
+let's talk in person about this
+not over email
+not over teams
+better discussed in person

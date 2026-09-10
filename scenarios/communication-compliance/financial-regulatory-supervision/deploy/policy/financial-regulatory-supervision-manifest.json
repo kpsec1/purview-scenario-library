@@ -1,0 +1,71 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Communication Compliance has no documented REST, Graph, or PowerShell write API for policy creation or management as of this writing - see design.md Section 2. No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal wizard in README.md Section 5, so the deployed policy can be diffed against intent during review. Follows the same precedent set by scenarios/communication-compliance/harassment-and-code-of-conduct/deploy/policy/communication-compliance-policy-manifest.json for this module's portal-only surface.",
+  "policyType": "custom",
+  "policyName": "Financial Regulatory Compliance Supervision - Registered Representatives",
+  "policyNameNote": "Policy names cannot be changed after creation. Confirm before creating.",
+  "locations": [
+    "Exchange Online",
+    "Microsoft Teams"
+  ],
+  "locationsNote": "Viva Engage is optional - add only if the firm's registered representatives actually conduct business communication there. Third-party financial messaging platforms (Bloomberg Message/Mail, ICE Chat, Reuters Eikon Messenger, Symphony, and the other Microsoft-documented native data connectors) are explicitly out of scope for this scenario - see design.md Section 7. A firm relying on those platforms for trading-floor communication must supervise them through their own dedicated connector setup, not assume this policy covers them.",
+  "direction": [
+    "Inbound",
+    "Outbound",
+    "Internal"
+  ],
+  "directionNote": "Internal is deliberately included - desk-to-desk internal chat is exactly where collusion/stock-manipulation language is most likely to appear, unlike external customer correspondence alone.",
+  "usersInScope": {
+    "option": "group",
+    "note": "The firm's FINRA-registered/supervised-person population, sourced from its own broker-dealer registration or HR system and reflected in an Entra ID group or adaptive scope - NOT 'All users'. See design.md Section 3 for why this scenario deliberately departs from the harassment-and-code-of-conduct sibling's all-users scoping. This scenario does not derive or reconcile this population automatically - see design.md Section 7 (Non-goals).",
+    "placeholderGroupName": "FINRA-Registered-Representatives"
+  },
+  "excludedUsersAndGroups": [],
+  "reviewers": {
+    "roleGroup": "Communication Compliance Investigators",
+    "note": "Investigators (not Analysts) because a substantive Rule 3110(b)(4) supervisory judgment requires full message content, not metadata-only access (README.md Section 3, design.md Section 6). GATING REQUIREMENT beyond Purview's own RBAC: every named reviewer below must separately hold an appropriate FINRA registration (e.g. a Series 24 principal, or a documented delegated-review designee under the firm's written supervisory procedures) - Communication Compliance has no native concept of FINRA registration status and will not enforce this for you.",
+    "placeholderMembers": [
+      "compliance-principal-1@contoso.example",
+      "compliance-principal-2@contoso.example"
+    ]
+  },
+  "conditions": {
+    "trainableClassifiers": [
+      { "name": "Corporate sabotage", "note": "Deliberate destruction/damage to corporate assets or property - part of the Regulatory compliance classifier family this scenario draws from, though Microsoft frames its primary use case around sector regulation like NERC CIP rather than broker-dealer supervision specifically." },
+      { "name": "Customer complaints", "note": "Maps to FINRA Rule 4530 customer-complaint reporting and CFPB-style complaint-detection obligations." },
+      { "name": "Gifts & entertainment", "note": "Maps to FINRA Rule 3220 (Influencing or Rewarding Employees of Others) and firm gifts/entertainment policies." },
+      { "name": "Money laundering", "note": "Signs of concealing/disguising the origin or destination of proceeds." },
+      { "name": "[Workplace/Regulatory] collusion", "note": "NAMING VERIFY (design.md Section 5, README.md Section 11): this build found this classifier referred to as both 'Regulatory collusion' and 'Workplace collusion' across independent secondary sources, and could not directly fetch Microsoft's canonical classifier-definitions page to resolve which is the current portal-UI label. Confirm at deploy time. Detects price fixing, trade-secret sharing, coordinated buying strategies, and secretive/concealing behavior." },
+      { "name": "Stock manipulation", "note": "Recommendations to buy/sell/hold stock to manipulate price - the core classifier for FINRA/SEC market-manipulation supervision." },
+      { "name": "Unauthorized disclosure", "note": "Sharing of explicitly confidential/internal-only information - most directly relevant to insider-trading/MNPI-leakage supervision." }
+    ],
+    "customKeywordDictionary": {
+      "file": "finra-supervision-evasion-phrases.txt",
+      "purpose": "Concealment/evasion phrasing only (e.g. 'let's discuss offline') - the exact phrasing regulators cite in off-channel-communications enforcement actions as evidence traders knew to route sensitive discussion around a monitored channel. NEVER add restricted-list ticker symbols, issuer names, or deal codenames to this file or its production equivalent - the restricted list is itself confidential supervisory information and a keyword dictionary that reveals what the firm is watching for is a liability. See design.md Section 5 and reviews.md Red Team."
+    },
+    "conditionCombination": "OR (Content matches any of these classifiers) OR (Message/Attachment contains any of these words, from the custom keyword dictionary)"
+  },
+  "reviewPercentage": 100,
+  "reviewPercentageNote": "Shipped as this scenario's default because an UNREVIEWED match under a FINRA-registered-person population is a documented Rule 3110(b)(4) supervisory-review gap, not merely a missed alert (design.md Section 8) - a materially different risk posture from the harassment sibling's alert-fatigue framing. Regulators do not mandate a fixed sampling percentage; lowering this below 100% is the firm's own written-supervisory-procedures decision requiring Compliance/Legal sign-off, not a default this scenario recommends. Record any deviation here.",
+  "filterEmailBlasts": true,
+  "ocrEnabled": true,
+  "privacySettings": {
+    "usernamePseudonymization": true,
+    "note": "Settings > Communication Compliance > Privacy tab > 'Show anonymized versions of usernames' - portal-only, tenant-wide setting, not per-policy."
+  },
+  "noticeTemplate": {
+    "create": true,
+    "name": "Regulatory Supervision Notice",
+    "note": "Only needed if the firm's escalation path uses the 'Notify' remediation action (README.md Section 5, step 10)."
+  },
+  "wspAlignment": {
+    "required": true,
+    "note": "README.md Section 5, step 11: the firm's own written supervisory procedures (WSPs) must document the review percentage, escalation path, and registered-principal assignments this policy actually implements. A correctly configured policy that the WSPs don't describe is still an examination finding waiting to happen."
+  },
+  "outOfScope": {
+    "thirdPartyConnectors": "Bloomberg Message/Mail, ICE Chat, Reuters Eikon Messenger, Symphony, and other Microsoft-documented native data connectors - design.md Section 7, a candidate follow-up fragment.",
+    "retentionOfCommunications": "SEC 17a-4 / FINRA 4511 books-and-records retention of the underlying communications is handled by scenarios/data-lifecycle-management/retention-labels-financial-records/, not this scenario - design.md Section 7/Section 8.",
+    "registeredRepresentativePopulationDerivation": "This scenario assumes usersInScope.placeholderGroupName already exists and is kept current by the firm's own registration/HR process - design.md Section 7."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-10"
+}
