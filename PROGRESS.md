@@ -5263,7 +5263,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (`### Follow-ups discovered while building the eDiscovery search-and-purge-data-spillage
   scenario`) rather than duplicated here. Commit: `fe612a9`. Date: 2026-09-10.
 - [x] **`scenarios/data-lifecycle-management/publish-labels-for-manual-application/`** — commit
-  `PENDING_HASH` — 2026-09-10. Full README/design/deploy/validate/rollback/reviews. Publishes an
+  `e6e7848` — 2026-09-10. Full README/design/deploy/validate/rollback/reviews. Publishes an
   *existing* retention label (`New-RetentionCompliancePolicy` + `New-RetentionComplianceRule
   -PublishComplianceTag`) so admins/users can manually apply it in Outlook/SharePoint/OneDrive/Teams —
   never creates or edits the label itself. Central grounding finding, made while researching this
