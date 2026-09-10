@@ -1938,7 +1938,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/adaptive-protection/direct-send-anonymous-relay-hardening/`** — commit
-  `<pending — see next commit>` — 2026-09-10. Closes the Red Team finding (finding 3) from
+  `c8f12fa` — 2026-09-10. Closes the Red Team finding (finding 3) from
   `exchange-legacy-auth-block/reviews.md`: SMTP AUTH blocking doesn't touch Direct Send (unauthenticated
   SMTP direct to the tenant's MX endpoint) or an over-broad IP-based anonymous relay connector. Full
   README (12-section skeleton), design.md, deploy/ (`New-DirectSendHardening.ps1` — always-on
