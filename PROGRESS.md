@@ -770,12 +770,44 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] VERIFY: how long a `purgeData` job report's `reportFileMetadata.downloadUrl` remains valid
   before expiring — not stated on the `ediscoveryPurgeDataOperation` Graph reference page.
   `search-and-purge-data-spillage/README.md` §11.
-- [ ] Consider a `scenarios/ediscovery/search-and-purge-teams-messages/` (or fold into a future
-  eDiscovery hardening pass) — the `purgeAreas: teamsMessages` half of the same `purgeData` Graph
-  action, deliberately out of scope for the initial (mailbox-focused) fragment because Teams purge
-  only deletes the eDiscovery **compliance copy**, not the user-visible message — a materially
-  different, easily-misunderstood guarantee documented on its own page. `search-and-purge-data-
-  spillage/design.md` §8.
+- [x] `scenarios/ediscovery/search-and-purge-teams-messages/` — **built** (see DONE below): the
+  `purgeAreas: teamsMessages` half of the same `purgeData` Graph action. Re-grounding this item found
+  the original follow-up's own premise was **backwards**: current Microsoft Learn states that for
+  `purgeAreas: teamsMessages`, either `purgeType` value permanently deletes the Teams *user-visible*
+  message immediately (not just the compliance copy) — the compliance-copy-only behavior applies only
+  to the legacy, cmdlet-based purge path Microsoft's own current guidance says to avoid for Teams.
+  `search-and-purge-data-spillage/README.md` §6/§11 and `design.md` §7/§8 corrected in place rather
+  than left standing next to a scenario that contradicts them.
+
+### Follow-ups discovered while building the eDiscovery Teams search-and-purge scenario
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): reconcile the private-channel
+  compliance-copy storage model — "Find and delete Microsoft Teams chat messages in eDiscovery"
+  states "a dedicated mailbox for each private channel," while "Finding content in Microsoft Teams
+  in eDiscovery" states private-channel messages are "stored in the Exchange Online mailboxes of all
+  members of the private channel." This build found no page reconciling the two.
+  `search-and-purge-teams-messages/README.md` §11 and `design.md` §4.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn/SDK pass): the typed Microsoft.Graph.Security
+  v1.0 PowerShell cmdlet name for binding an existing `ediscoveryNoncustodialDataSource` onto a
+  search via `POST .../searches/{id}/noncustodialSources/$ref` — this build found no page confirming
+  it, so `deploy/New-TeamsMessagePurgeSearch.ps1` calls the confirmed raw HTTP shape via
+  `Invoke-MgGraphRequest` instead of guessing. `search-and-purge-teams-messages/design.md` §6.
+- [ ] VERIFY (pilot tenant): how a case-level `ediscoveryNoncustodialDataSource`'s `DisplayName` is
+  populated for a `userSource` (mailbox) — only a `siteSource` worked example was found. The deploy
+  script's find-or-create idempotency check matches on `DisplayName` as a best-effort heuristic.
+  `search-and-purge-teams-messages/design.md` §6.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether `-PurgeType` still meaningfully
+  affects the Teams **compliance copy's** own retention/hold-interaction timing, even though it no
+  longer gates the user-copy outcome (both values delete the user copy immediately). No Microsoft
+  Learn page found during this build confirms either way. `search-and-purge-teams-messages/README.md`
+  §11.
+- [ ] Consider a cross-cutting follow-up scripting the Teams-purge hold-removal/reapplication
+  sequence (identify holds on target mailboxes via Top Locations, remove, purge, reapply) that
+  `search-and-purge-teams-messages` deliberately left manual (`design.md` §3 goal 5) — a genuinely
+  separate, larger scope (hold lifecycle management) than this fragment's own search-and-purge focus.
+- [ ] Consider grounding Microsoft's newer **Data Security Investigations** purge-queue workflow
+  (referenced as an alternative entry point on the "Find and delete Microsoft Teams chat messages"
+  page) as its own future fragment — a different product surface this build didn't ground.
+  `search-and-purge-teams-messages/design.md` §9.
 - [ ] Once `Get-MgSecurityCaseEdiscoveryCaseOperation`/`caseOperation` documents a way to identify
   which `ediscoverySearch` a completed `purgeData` (or `addToReviewSet`/export) operation targeted
   without an undocumented expand, revisit both `search-and-purge-data-spillage/deploy/
@@ -1768,6 +1800,35 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
+- [x] **`scenarios/ediscovery/search-and-purge-teams-messages/`** — commit `<pending>` — 2026-09-10.
+  Closes the `PROGRESS.md` follow-up raised in `search-and-purge-data-spillage/design.md` §8 (the
+  `purgeAreas: teamsMessages` half of the same `purgeData` Graph action, scoped out of that mailbox-
+  focused fragment). Full README (12-section skeleton), design.md, deploy/
+  (`New-TeamsMessagePurgeSearch.ps1` — find-or-create case/search, binds each declared target mailbox
+  as a case-level `ediscoveryNoncustodialDataSource` and attaches it to the search via
+  `noncustodialSources@odata.bind`/`$ref`; `Invoke-TeamsMessagePurge.ps1` — the destructive
+  `purgeAreas: teamsMessages` purge), validate/ (`Test-TeamsMessagePurgeSearchAndPurge.ps1`),
+  rollback.md, reviews.md (four-lens review — Red Team and Blue Team both raised Fix findings,
+  resolved). **Central grounding finding, and a genuine correction to the sibling scenario's own
+  prior text:** re-grounding `purgeAreas: teamsMessages` directly against current Microsoft Learn
+  (the `purgeData` Graph reference and "Find and delete Microsoft Teams chat messages in eDiscovery")
+  found the original follow-up's premise was backwards — for this Graph action, **either**
+  `purgeType` value (`recoverable` or `permanentlyDelete`) permanently deletes the Teams
+  **user-visible** message immediately; only the legacy, cmdlet-based purge path (which Microsoft's
+  own current guidance says to avoid for Teams) is compliance-copy-only. Because there is no
+  reversible mode at all for Teams, `Invoke-TeamsMessagePurge.ps1` requires `-ConfirmPermanentDelete`
+  **unconditionally** for both `-PurgeType` values — a deliberate, disclosed deviation from the
+  mailbox sibling's pattern (which only gates `PermanentlyDelete`). `search-and-purge-data-spillage/
+  README.md` §6/§11 and `design.md` §7/§8 corrected in place to match. Four VERIFY items and two
+  follow-up fragment ideas recorded above (private-channel storage-model conflict between two current
+  Microsoft Learn pages; unconfirmed `$ref`-bind SDK cmdlet name; unconfirmed
+  `noncustodialDataSource.DisplayName` shape for a mailbox source; unconfirmed effect of `purgeType`
+  on the compliance copy's own timing; a hold-lifecycle-automation follow-up; grounding the newer
+  Data Security Investigations purge-queue surface). Environment note: the Microsoft Learn MCP tool
+  was available and used directly for all grounding this run (multiple `microsoft_docs_fetch`/
+  `microsoft_docs_search` calls against `learn.microsoft.com/graph/api/...` and
+  `learn.microsoft.com/purview/...`), not WebSearch-only — a better grounding posture than the prior
+  run's environment-note entry under Blocked/needs user.
 - [x] **`scenarios/adaptive-protection/block-legacy-authentication/`** — commit
   `d8d0c01` — 2026-09-09. Closes the `PROGRESS.md` follow-up
   originally raised in `conditional-access-insider-risk-block/reviews.md` (Red Team: legacy-auth

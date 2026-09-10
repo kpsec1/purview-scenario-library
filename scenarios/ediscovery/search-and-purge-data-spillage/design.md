@@ -144,17 +144,23 @@ this repo."
 | Default purge type | `Recoverable` (soft-delete-equivalent) | Matches Microsoft's own Warning-banner treatment of hard-delete; conservative default per this repo's precedent |
 | Hard-delete gate | `-PurgeType PermanentlyDelete` **and** `-ConfirmPermanentDelete` both required | Two independent, deliberate flags for the one truly irreversible path |
 | Idempotency (purge) | Never auto-skip a repeat purge | Re-running is the documented way to clear >100 items/mailbox or newly matched content |
-| Scope | `purgeAreas: mailboxes` only; Teams messages explicitly out of scope | Teams purge only removes the eDiscovery *compliance copy*, not the user-visible message — a materially different, easily-misunderstood capability documented on its own page [[10]](#references); mixing it into this scenario's mailbox-focused default risked a false sense of completeness |
+| Scope | `purgeAreas: mailboxes` only; Teams messages explicitly out of scope | A materially different, separately-scoped capability documented on its own page [[10]](#references) — built as `scenarios/ediscovery/search-and-purge-teams-messages/`. **Correction:** this row previously justified the scoping decision by describing Teams purge as "compliance-copy-only"; that sibling scenario's own re-grounding found the opposite is true for the Graph action — Teams purge is *more* consequential (immediate, unconditional deletion of the user-visible message), not less. The scoping decision (a separate scenario) still stands; the reason has been corrected |
 | Held-mailbox handling | Document the gap; hand off to `priority-cleanup-exchange-data-spillage` | Search-and-purge cannot override a hold by design; re-implementing that override here would duplicate a control this repo already built and reviewed |
 | Licensing | eDiscovery (Premium), not Standard | A Graph-created case is a Premium-configured case; 100-item/mailbox ceiling, not 10 |
 
 ## 8. Non-goals
 
 - **Microsoft Teams message purge** (`purgeAreas: teamsMessages`) — a materially different capability
-  (compliance-copy-only deletion, no true "hide from the user" soft-delete equivalent) documented on
-  its own page [[10]](#references); a candidate follow-up, not folded in here to avoid the false
-  impression that this scenario's default `Recoverable` purge behaves the same way for Teams content
-  that it does for mail.
+  documented on its own page [[10]](#references), now built as `scenarios/ediscovery/
+  search-and-purge-teams-messages/`; not folded in here to avoid the false impression that this
+  scenario's default `Recoverable` purge behaves the same way for Teams content that it does for
+  mail. **Correction:** this non-goal's original rationale described Teams purge as "compliance-copy-
+  only deletion, no true hide-from-user soft-delete equivalent" — i.e. safer than this scenario's own
+  mailbox purge. The sibling scenario's own grounding pass found current Microsoft Learn states the
+  opposite: for the Graph `purgeData` action, either `purgeType` value permanently deletes the Teams
+  user-visible message immediately, with no reversible mode at all — *more* consequential than this
+  scenario's `Recoverable` default, not less. The compliance-copy-only behavior applies only to the
+  legacy, cmdlet-based purge path, which Microsoft's own current guidance says to avoid for Teams.
 - **Overriding litigation holds or retention policies** — by design, not a gap; see §6.
 - **SharePoint/OneDrive content** — `purgeData`'s documented scope is Exchange mailboxes and Teams
   messages only; SharePoint/OneDrive spillage needs a different remediation path (file deletion/

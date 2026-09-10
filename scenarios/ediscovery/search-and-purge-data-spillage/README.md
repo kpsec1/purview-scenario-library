@@ -130,7 +130,7 @@ is visible to, and re-checkable by, `validate/Test-DataSpillageSearchAndPurge.ps
 | Estimate cmdlet | `Invoke-MgEstimateSecurityCaseEdiscoveryCaseSearchStatistics` | POST `.../searches/{id}/estimateStatistics`; returns `indexedItemCount`/`mailboxCount` via the polled operation [[11]](#references) |
 | Purge cmdlet | `Clear-MgSecurityCaseEdiscoveryCaseSearchData` | POST `.../searches/{id}/purgeData` [[6]](#references) |
 | `purgeType` | `recoverable` (default) or `permanentlyDelete` | `recoverable` = soft-delete-equivalent; `permanentlyDelete` requires `-ConfirmPermanentDelete` too |
-| `purgeAreas` | `mailboxes` | `teamsMessages` is a materially different capability (compliance-copy-only) — out of scope, `design.md` §8 |
+| `purgeAreas` | `mailboxes` | `teamsMessages` is out of scope here — see `scenarios/ediscovery/search-and-purge-teams-messages/`. **Correction:** an earlier version of this row described `teamsMessages` as "compliance-copy-only" (implying it's safer than a mailbox purge); current Microsoft Learn states the opposite for this Graph action — it permanently deletes the Teams user-visible message immediately, for either `purgeType` value. `design.md` §8. |
 | Items purged per mailbox per run | **≤ 100** | Premium-tier ceiling (a Graph-created case is Premium-configured); re-run to clear more [[2]](#references) |
 | Operation polling | `Get-MgSecurityCaseEdiscoveryCaseOperation` | Same pattern as `premium-legal-hold-and-export`'s `Wait-CaseOperation` helper |
 
@@ -196,8 +196,13 @@ search/operation records but never reverses a completed purge.
 - **100 items per mailbox per run.** Repeat the purge to clear more; this is a documented Microsoft
   limit, not a bug in this scenario's scripts [[2]](#references).
 - **Doesn't purge Microsoft Teams messages**, even though `purgeAreas: teamsMessages` exists on the
-  same Graph action — deliberately out of scope; see `design.md` §8 for why (compliance-copy-only
-  deletion, a different guarantee than mailbox soft-delete).
+  same Graph action — deliberately out of scope; see `scenarios/ediscovery/
+  search-and-purge-teams-messages/` for that sibling scenario. **Correction (superseding this
+  scenario's own earlier text):** Teams purge is not "compliance-copy-only" as previously stated
+  here — Microsoft's `purgeData` reference states that either `purgeType` value permanently deletes
+  the Teams user-visible message immediately when `purgeAreas` is `teamsMessages`, a *more*
+  consequential guarantee than this scenario's own `Recoverable` mailbox purge, not a lesser one.
+  See that sibling's `design.md` §2 for the full re-grounding.
 - **`PermanentlyDelete` is irreversible** for a mailbox not on hold. Always review the
   `estimateStatistics` output first; there is no "undo."
 - **VERIFY (pilot tenant):** whether a mailbox on litigation hold behaves identically for the Graph
