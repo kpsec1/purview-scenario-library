@@ -167,3 +167,178 @@ No remaining Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`, and
 `deploy/`/`validate/`. No Fail items were raised. This fragment meets the definition of done in
 `AGENTS.md` §9.
+
+---
+
+# Round 2 — `Export-RoleAssignableGroupMembershipAuditTrail.ps1` (companion script)
+
+Reviewed after drafting the companion script that closes round 1's Red Team finding 1 (the
+role-assignable-group blind spot) — `deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1`,
+`validate/Test-RoleAssignableGroupMembershipAuditTrail.ps1`, `design.md` §10, and the matching
+`README.md`/`rollback.md` updates. One round of findings below; all **Fix** items were applied
+before this file was finalized. No **Fail** items were raised.
+
+---
+
+## 🔴 Red Team
+
+**Verdict: Fix (resolved)**
+
+1. **Does closing the group-membership gap open a narrower, second-order gap: what if the
+   *role-to-group assignment itself* changes, not the group's membership?** If `Global
+   Administrator` is *removed* from a role-assignable group entirely (not a membership change to
+   the group, but the group-to-role unassignment itself), that's a `RoleManagement`-category event
+   on the **group** as principal — does the sibling script's `Export-EntraPrivilegedRoleAuditTrail.ps1`
+   catch it (its `targetResources` Role-type filter doesn't care what kind of principal was added/
+   removed), or does it fall in a gap between the two scripts?
+   - **Resolution:** Traced through both scripts' logic: `Export-EntraPrivilegedRoleAuditTrail.ps1`
+     filters on `activityDisplayName in ('Add member to role', 'Remove member from role', ...)` and
+     a `Role`-typed `targetResources` entry matching a monitored role name — it does **not** filter
+     on the affected principal's type (user vs. group), so a role assigned to or removed from a
+     **group** (the role-to-group assignment/unassignment itself, as opposed to the group's own
+     membership) is a `RoleManagement`-category "Add/Remove member to/from role" event exactly like
+     a role assigned to a user, and the sibling script already catches it — confirmed by re-reading
+     its existing code rather than assumed. Only the group's own **membership** (who's inside it)
+     needed a separate `GroupManagement`-category watcher, which is exactly what this companion
+     builds. No gap between the two scripts. Documented this boundary explicitly in `design.md` §10
+     so a future reader doesn't have to re-derive it.
+2. **A sophisticated attacker with `RoleManagement.ReadWrite.Directory` could create a brand-new
+   role-assignable group, assign it a monitored role, and add themselves to it — all inside one
+   Phase 1-to-Phase 1 discovery gap (between two scheduled runs of this companion script).** Is
+   that window a real, disclosed risk?
+   - **Resolution:** Yes, and it's inherent to any poll-based (not event-driven) detective control —
+     the same accepted trade-off `Export-EntraPrivilegedRoleAuditTrail.ps1` already carries for its
+     own daily-poll cadence (round 1 didn't flag this for the sibling script because polling is this
+     entire scenario's chosen architecture, `design.md` §2). Added an explicit note to `README.md`
+     §11: the companion's window of exposure is bounded by its own run interval (daily by default,
+     `design.md` §10) — the same "run daily, not weekly" guidance the sibling script's §8 already
+     gives applies identically here, and a tighter interval (e.g. hourly) directly narrows this
+     window for a buyer with a lower risk tolerance. Not a code change — a disclosed operational
+     parameter, consistent with how this scenario already treats cadence.
+3. **Could an attacker evade detection by adding themselves to the role-assignable group's
+   membership through a path other than the standard `Add member to group` activity — e.g. a bulk
+   import?** `reference-audit-activities` documents a distinct
+   `"GroupManagement | Bulk import group members - finished (bulk)"` activity under a *different*
+   name than the two this script's `$monitoredActivities` filters on.
+   - **Resolution:** Genuine, disclosed gap — added to `README.md` §11: the companion currently
+     monitors only the two standard single-member `Add member to group`/`Remove member from group`
+     activities; a bulk-import path (`Microsoft Entra (AAD) Management UX` audit source, a distinct
+     activity name) is not covered by the current `$monitoredActivities` list. Not fixed by silently
+     widening the filter to an unconfirmed bulk-activity shape this build didn't independently
+     verify targets the same `targetResources` schema — tracked as a follow-up in `PROGRESS.md`
+     rather than guessed at, consistent with `AGENTS.md` §4.
+
+No remaining Fail after resolution — finding 1 was resolved by tracing existing code (no scope
+gap existed); findings 2 and 3 are genuine, now-disclosed residual gaps with concrete guidance
+(narrower poll interval; a follow-up to ground the bulk-import activity name) rather than silently
+assumed away.
+
+---
+
+## 🔵 Blue Team
+
+**Verdict: Fix (resolved)**
+
+1. **Two structurally different `Write-Warning` types (Phase 1 "group discovered" vs. Phase 2
+   "membership changed") could be confused by an on-call responder skimming console output or a
+   log aggregator that doesn't preserve the full message text** — the original draft didn't call
+   this out.
+   - **Resolution:** Added an explicit operations note to `README.md` §8 distinguishing the two
+     warning types and what each means (informational scope-change vs. actionable incident signal).
+2. **The validate script's manual checklist item about cross-referencing Phase 1 discovery against
+   the portal is good, but nothing tells a responder what to do if the two *disagree*** (i.e. the
+   CSV's discovered `GroupDisplayName`/`RoleDisplayName` doesn't match what the Roles & admins blade
+   currently shows).
+   - **Resolution:** Confirmed this is expected and time-bound, not necessarily a bug: Phase 1 runs
+     fresh each invocation, so a portal check performed *after* the script ran (and after a role
+     was reassigned) will legitimately show a different current state than the CSV's per-run
+     snapshot. Clarified this in the validate script's manual checklist wording (checking against
+     the portal "at the time this run executed" rather than "now") rather than leaving it as an
+     apparent discrepancy with no explanation.
+3. **Throttling/retry behavior for the two new Graph resources (`groups`, `roleManagement/
+   directory`) wasn't separately confirmed** — the deploy script's `.NOTES` asserted "all three
+   Graph resources ... implement automatic retry" without independently checking the two new ones.
+   - **Resolution:** Confirmed: `Get-MgGroup` and `Get-MgRoleManagementDirectoryRoleAssignment`/
+     `Get-MgRoleManagementDirectoryRoleDefinition` are Microsoft Graph PowerShell SDK cmdlets from
+     the same SDK family (`Microsoft.Graph.Groups`, `Microsoft.Graph.Identity.Governance`) as the
+     already-confirmed `Get-MgAuditLogDirectoryAudit` — the SDK's retry-with-backoff behavior is a
+     property of the SDK's HTTP pipeline, not resource-specific, so it applies uniformly. No change
+     needed beyond the existing `.NOTES` wording, which already states this correctly.
+
+No remaining Fail after resolution.
+
+---
+
+## 🎩 CISO
+
+**Verdict: Pass**
+
+- **Risk reduction vs. cost:** fully closes a Red-Team-disclosed, previously-accepted-as-residual
+  gap in an already-shipped, already-funded scenario, at a small, bounded incremental cost (two
+  additional least-privileged Graph application permissions, no new license tier). This is exactly
+  the kind of gap-closure a CISO should expect a vendor to deliver as a matter of course once
+  disclosed, not treat as a new discretionary spend decision.
+- **Board-level narrative upgrade:** "we monitor privileged role changes made directly to a user,
+  AND to a role-assignable group's own membership, with only two narrow, disclosed residual gaps
+  (a bounded polling window; an unconfirmed bulk-import activity path) instead of one large,
+  previously-accepted gap" is a materially stronger position for an ISO 27001/SOC 2 auditor
+  conversation than round 1's "disclosed but unmitigated" framing.
+- **Compliance mapping:** same ISO/IEC 27001:2022 Annex A (A.5) and SOC 2 CC6 mapping as the parent
+  scenario — this companion is additive evidence for the same control objective, not a new one.
+- **Change-management impact:** near-zero — one new scheduled script sharing the existing app
+  registration (two additional permission grants), no new portal object.
+- **Would I fund this?** Yes, without hesitation — closing a self-disclosed gap in a shipped
+  control at negligible incremental cost is the easiest follow-on funding decision a CISO can make.
+
+No Fix/Fail items from this lens.
+
+---
+
+## 🟦 Microsoft Product Owner
+
+**Verdict: Fix (resolved)**
+
+1. **Is the two-phase discover-then-monitor design the right shape, or should this have been built
+   as a single combined query?** Checked whether Microsoft Graph's `directoryAudits` resource could
+   instead be filtered directly for "any GroupManagement event on any role-assignable group," which
+   would avoid a separate discovery phase.
+   - **Resolution:** No such combined filter exists — `targetResources` on a `GroupManagement` event
+     identifies the affected group by `id`/`displayName` only, with no queryable "is this group
+     role-assignable and does it currently hold role X" property exposed on the audit record itself.
+     The two-phase design (resolve the group set first via `groups`/`roleManagement` resources, then
+     query `directoryAudits` for exactly that set) is the only grounded approach — confirmed correct,
+     not just convenient.
+2. **Cmdlet currency check** — `Get-MgGroup`, `Get-MgRoleManagementDirectoryRoleDefinition`, and
+   `Get-MgRoleManagementDirectoryRoleAssignment` checked directly against their current Microsoft
+   Learn reference pages (not assumed from memory); all current, non-deprecated, with the
+   `-Filter`/`-All` syntax the deploy script uses matching the documented parameter sets.
+3. **Permission accuracy** — `Group.Read.All` and `RoleManagement.Read.Directory` checked against
+   the `Get-MgGroup` and `Get-MgRoleManagementDirectoryRoleAssignment` cmdlet reference pages'
+   own Application-permissions tables (the actual cmdlets the deploy script calls, not just the
+   underlying REST resource) — both confirmed directly listed. Note: the generic REST "List groups"
+   API page documents a differently-shaped, oddly-narrow permission
+   (`Group-NestingSupport.ReadWrite.All`) as its own least-privileged option; the deploy script's
+   `.NOTES` and `README.md` §12 cite the `Get-MgGroup` cmdlet page specifically rather than that REST
+   page, avoiding the mismatch.
+4. **Is this reinventing a native Microsoft capability?** Checked whether Entra ID, PIM, or Access
+   Reviews ship a built-in alert specifically for "role-assignable group membership changed." No
+   such native alert was found distinct from Access Reviews' own periodic (not real-time/audit-
+   driven) recertification workflow for role-assignable groups — this script remains a genuinely
+   complementary, real-time-capable detective control, not a duplicate of an existing native alert.
+
+No remaining Fail after resolution.
+
+---
+
+## Round 2 Summary
+
+| Lens | Initial verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Fix | 3 (group-vs-role-assignment boundary, resolved by tracing existing code — no gap; poll-window exposure, disclosed with operational guidance; bulk-import activity path, disclosed as a follow-up rather than guessed at) | Closed |
+| 🔵 Blue Team | Fix | 3 (warning-type confusion risk, closed with an operations note; discovery-vs-portal timing discrepancy, closed with clarified checklist wording; new-resource throttling, confirmed already correctly covered) | Closed |
+| 🎩 CISO | Pass | 0 | — |
+| 🟦 Microsoft Product Owner | Fix | 4 (two-phase design necessity, confirmed correct; cmdlet currency, confirmed; permission accuracy, confirmed with a transparency note on the odd "least privileged" naming; native-capability reinvention, confirmed not a duplicate) | Closed |
+
+All Fix items from this round are resolved in the current state of `README.md`, `design.md`, and
+`deploy/`/`validate/`. No Fail items were raised. This fragment (the companion script closing round
+1's Red Team finding 1) meets the definition of done in `AGENTS.md` §9.

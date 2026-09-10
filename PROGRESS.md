@@ -1461,15 +1461,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   higher-value addition to this scenario that this build deliberately declined to fabricate.
 
 ### Follow-ups discovered while building the Entra Privileged Role Monitoring scenario
-- [ ] Extend (or add a companion script to) `entra-privileged-role-monitoring/deploy/
+- [x] Extend (or add a companion script to) `entra-privileged-role-monitoring/deploy/
   Export-EntraPrivilegedRoleAuditTrail.ps1` to close its own disclosed Red Team gap: a role
   assigned to an Entra ID P1/P2 **role-assignable group** grants access via a `GroupManagement`
   "Add member to group" audit event, not a `RoleManagement` "Add member to role" event — invisible
-  to the current script. Needs two new capabilities: (1) enumerate role-assignable groups
-  (`GET /groups?$filter=isAssignableToRole eq true`) cross-referenced against which of the four
-  monitored roles each currently holds, then (2) monitor `GroupManagement`-category membership
-  events for exactly that discovered group set. Not built this run to keep the fragment scoped to
-  direct role-assignment monitoring per `design.md` §4b/§9.
+  to the current script — **built** (see DONE below) as a companion script,
+  `deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1`, in the same scenario folder. Two
+  phases: (1) enumerate role-assignable groups (`Get-MgGroup -Filter "isAssignableToRole eq
+  true"`, confirmed to work without `ConsistencyLevel`/`$count` advanced-query headers) cross-
+  referenced against which of the four monitored roles each currently holds
+  (`Get-MgRoleManagementDirectoryRoleAssignment -Filter "roleDefinitionId eq '<id>'"`), then (2)
+  monitor `GroupManagement`-category membership events (`Add member to group`/`Remove member from
+  group`, confirmed activity names) for exactly that discovered group set, matching by the
+  `Group`-typed `targetResources` entry's `id` — a stronger match key than the sibling script's own
+  `displayName`-only matching, confirmed via a Microsoft worked `Get-EntraAuditDirectoryLog`
+  example. `design.md` §4b/§10, `README.md`, `rollback.md`, and `reviews.md` (round 2, four-lens)
+  all updated. Two new residual gaps disclosed rather than silently accepted — see the two new
+  VERIFY/follow-up items below.
+- [ ] Ground the exact `targetResources` audit-log shape for the **bulk import group members**
+  activity (`"Bulk import group members - finished (bulk)"`, a distinct, differently-named activity
+  from `"Add member to group"` under the Microsoft Entra (AAD) Management UX audit source) and, if
+  it carries the same `Group`/`User`-typed `targetResources` shape, add it to
+  `Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s `$monitoredActivities` list — currently a
+  disclosed, unconfirmed gap (a member added to a monitored role-assignable group via bulk import
+  is not confirmed to be covered). `entra-privileged-role-monitoring/README.md` §11 and `reviews.md`
+  round 2, Red Team finding 3.
+- [ ] VERIFY (pilot tenant): whether a `Get-MgAuditLogDirectoryAudit`-specific (not just
+  `Get-EntraAuditDirectoryLog`-specific) worked example exists for combining `activityDisplayName
+  eq` with two `targetResources/any(...)` lambda clauses in one server-side `$filter` — if
+  confirmed, both `Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s group-match narrowing and
+  the sibling script's own `Role`-typed narrowing could move from client-side to server-side,
+  reducing the amount of data pulled per run on a high-churn tenant.
+  `entra-privileged-role-monitoring/design.md` §10.
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the "Add member to role
   (permanent)" activity name Microsoft's own "Security operations for privileged accounts"
   out-of-PIM detection guidance cites (tagged `Service = PIM`) is the same underlying event as the
@@ -2152,6 +2175,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   script's own `.NOTES`/`validate/Test-FinraSupervisionEvidence.ps1` both flag this as an open item.
 
 ## DONE
+- [x] **`scenarios/compliance-manager/entra-privileged-role-monitoring/` — role-assignable-group
+  membership companion script** — commit `PENDING` — 2026-09-10. Closes the disclosed Red Team gap
+  (round 1, finding 1): a monitored role assigned to an Entra ID P1/P2 role-assignable group grants
+  access via a `GroupManagement` "Add member to group" event, invisible to
+  `Export-EntraPrivilegedRoleAuditTrail.ps1`'s `RoleManagement`-category filter. New companion
+  `deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1` (+ matching
+  `validate/Test-RoleAssignableGroupMembershipAuditTrail.ps1`) in the same scenario folder: Phase 1
+  discovers role-assignable groups holding one of the four monitored roles (`Get-MgGroup -Filter
+  "isAssignableToRole eq true"` + `Get-MgRoleManagementDirectoryRoleAssignment`, both confirmed
+  worked-example filter shapes, re-run fresh every invocation, no cached state), Phase 2 monitors
+  exactly that group set's own `GroupManagement`-category membership events, matching by the
+  `Group`-typed `targetResources` entry's `id` (confirmed via a Microsoft worked
+  `Get-EntraAuditDirectoryLog` example — also the source that confirmed `eq` filters on
+  `isAssignableToRole` don't need `ConsistencyLevel`/`$count`). `design.md` §4b (updated in place)
+  and new §10, `README.md` (§1/§3/§4/§5/§6/§7/§8/§9/§10/§11/§12 all touched), `rollback.md`, and
+  `reviews.md` round 2 (four-lens, all Fix items resolved) all updated/added. Two new residual gaps
+  disclosed rather than resolved by guessing: the bulk-group-import activity path, and whether the
+  companion's own poll-based Phase 1 discovery leaves a bounded detection window between runs — both
+  carried into `README.md` §11 and `PROGRESS.md` as follow-ups. Grounded entirely via the Microsoft
+  Learn MCP tool (available this run); no facts invented.
 - [x] **`scenarios/compliance-manager/assess-against-iso27001/` — switch to ISO/IEC 27001:2022** —
   commit `984fa9e` — 2026-09-10. Closes the "ISO/IEC 27001:2022 premium template is now confirmed to
   exist" follow-up above and fully resolves this scenario's own Microsoft Product Owner finding 2

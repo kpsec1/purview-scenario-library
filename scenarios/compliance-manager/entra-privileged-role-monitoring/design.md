@@ -129,7 +129,7 @@ blade itself (as opposed to the classic Entra roles blade) might log only under 
 suffixed name and be missed by this script's current filter — a real, bounded gap, not a
 theoretical one, and the reason this is flagged as a VERIFY rather than closed with an assumption.
 
-## 4b. A separate, real gap this scenario does not close: role-assignable groups
+## 4b. A separate gap this scenario originally did not close: role-assignable groups — now closed by a companion script (§10)
 
 Microsoft's own `groups-concept` documentation states plainly that a **role-assignable group**
 (an Entra ID P1/P2 feature — `isAssignableToRole: true`) can hold one of this scenario's four
@@ -139,14 +139,16 @@ role" event per person added to the group. Concretely: if `Compliance Data Admin
 assigned to a role-assignable group (a legitimate, Microsoft-recommended practice for managing a
 role across many people), adding a new member to that group generates a `GroupManagement`-category
 "Add member to group" audit event, not a `RoleManagement`-category "Add member to role" event —
-**invisible to this scenario's current `category eq 'RoleManagement'` filter entirely.** This is a
-genuine, disclosed gap, not a theoretical one — see README.md §11 and the Red Team finding in
-`reviews.md`. Closing it fully requires a second capability this fragment does not build: first
-enumerating which groups are role-assignable and hold one of the four monitored roles (`GET
+**invisible to `Export-EntraPrivilegedRoleAuditTrail.ps1`'s `category eq 'RoleManagement'` filter
+entirely.** This was a genuine, disclosed gap when this scenario first shipped — see the Red Team
+finding in `reviews.md` round 1. **It is now closed** by
+`deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1` (§10 below), which first enumerates
+which groups are role-assignable and hold one of the four monitored roles (`GET
 /groups?$filter=isAssignableToRole eq true` plus a directory-role-assignment cross-reference), then
-separately monitoring `GroupManagement` category membership-change events for exactly that set of
-groups. Tracked as a follow-up in `PROGRESS.md` rather than built into this fragment, to keep this
-scenario's own scope matched to what `PROGRESS.md` asked for (direct role-assignment monitoring).
+separately monitors `GroupManagement` category membership-change events for exactly that set of
+groups — the same two-phase approach this section originally scoped as future work. README.md §11's
+matching limitation is updated in place to point at the companion script instead of describing the
+gap as unmitigated.
 
 ## 5. Idempotency model — a genuine simplification over the Compliance Manager sibling, not a shortcut
 
@@ -214,3 +216,90 @@ flowchart TD
   monitors a change, it does not gate or reverse one. A buyer wanting a preventive (not just
   detective) control should pair this with Conditional Access-based step-up authentication for
   privileged roles and/or PIM's approval workflow, both outside this fragment's scope.
+
+## 10. The role-assignable-group companion script (`Export-RoleAssignableGroupMembershipAuditTrail.ps1`)
+
+Closes §4b's gap with a second, standalone script in this same scenario folder — not a rewrite of
+`Export-EntraPrivilegedRoleAuditTrail.ps1`, which is untouched (§7's "don't reproduce/replace the
+sibling script" principle applies equally to this companion's relationship with its own sibling).
+
+**Two phases, both re-run on every invocation — no cached discovery state:**
+
+1. **Discovery.** `Get-MgGroup -Filter "isAssignableToRole eq true" -All` lists every role-assignable
+   group in the tenant — a plain `eq` filter on a boolean property, confirmed by two independent
+   Microsoft Learn sources to work **without** the `ConsistencyLevel: eventual`/`$count` advanced-
+   query headers some other `$filter` operators on directory objects require (`graph/filter-query-
+   parameter`'s own worked example is literally `~/groups?$filter=isAssignableToRole eq true`; the
+   general advanced-query guidance separately confirms `eq` filters "work by default" while `ne`/
+   `not`/`endswith` do not). For each of the four monitored role names,
+   `Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '<role>'"` resolves the role
+   definition Id, then `Get-MgRoleManagementDirectoryRoleAssignment -Filter "roleDefinitionId eq
+   '<id>'" -All` lists its active assignments — both filter shapes directly confirmed by Microsoft's
+   own "List Microsoft Entra role assignments" worked PowerShell examples. A client-side join (any
+   assignment whose `PrincipalId` is also a role-assignable group's `Id`) produces the monitored-
+   group set. Re-running discovery every invocation (rather than caching it in a config file) means a
+   group newly assigned to — or removed from — a monitored role between runs is picked up
+   automatically on the very next scheduled run, with no separate reconciliation step needed.
+
+2. **Audit export.** For the discovered group set, `Get-MgAuditLogDirectoryAudit` is called with the
+   **same** grounded server-side filter shape as the sibling script (`category eq 'GroupManagement'`
+   + date range only — §4's reasoning for not guessing at a wider compound filter applies here
+   identically), narrowing client-side to `Add member to group`/`Remove member from group` events
+   whose `targetResources` array contains a `Group`-typed entry matching one of the monitored group
+   Ids.
+
+**A grounding improvement this companion surfaced, not just a gap-fill:** confirming the
+`targetResources` shape for `Add member to group` required finding a genuinely new source —
+Microsoft's `Get-EntraAuditDirectoryLog` reference page's Example 9 is a **directly worked example**
+combining `activityDisplayName eq 'Add member to group'` with
+`targetResources/any(r:r/type eq 'User')` and `targetResources/any(r:r/id eq '$groupId' and r/type
+eq 'Group')` in one compound `$filter`. Two things follow from this single source: (a) it confirms a
+`Group`-typed `targetResources` entry carries a stable `id` property, not just `displayName` — a
+materially stronger match key than the sibling script had available for its own `Role`-typed targets
+(which only `displayName` was confirmed for); this companion matches by `GroupId`, not by name. (b)
+It demonstrates that Microsoft Graph's `directoryAudits` resource **does** support combining
+`activityDisplayName eq` with two `targetResources/any(...)` lambda clauses via `and` — a materially
+more precise compound filter than either sibling script in this scenario uses. This companion
+deliberately does **not** adopt that fuller server-side filter, for a disclosed, narrow reason: the
+worked example is for `Get-EntraAuditDirectoryLog` (the newer `Microsoft.Entra.Reports` module),
+while this scenario's automation surface choice (§6) is `Get-MgAuditLogDirectoryAudit`
+(`Microsoft.Graph.Reports`) for consistency with the sibling script. Both cmdlets front the same
+underlying `/auditLogs/directoryAudits` REST resource and `$filter` grammar, so the shape should
+carry over — but this build did not find an independent worked example confirming the identical
+`targetResources/any(...)` lambda syntax specifically through `Get-MgAuditLogDirectoryAudit`, so
+narrowing to the monitored group set stays client-side here, matching this scenario's existing
+no-unconfirmed-compound-filter discipline (§4) rather than extrapolating a confirmed-for-one-cmdlet
+shape onto a sibling cmdlet without its own worked example. Tracked as a narrow follow-up in
+`PROGRESS.md`: if a worked `Get-MgAuditLogDirectoryAudit`-specific example for the same lambda shape
+surfaces, both this companion and (for its own `Role`-typed narrowing) the sibling script could move
+part of their client-side narrowing server-side.
+
+**Idempotency and output shape:** identical de-duplication-by-`Id` model as the sibling script (§5) —
+same API, same documented stable-Id guarantee. Each CSV row carries the `RoleDisplayName` the group
+held **at discovery time for that run**, so the file is self-documenting about why a given group was
+in scope, not just that its membership changed.
+
+**Non-goals inherited from the sibling script, unchanged:** PIM-mediated activation monitoring,
+alerting/SIEM routing beyond console output, and writing/removing group memberships or role
+assignments — see §9 above, which this companion does not restate but fully inherits.
+
+**Boundary with the sibling script, confirmed not to have a gap (reviews.md round 2, Red Team
+finding 1):** a role **assigned to or removed from a role-assignable group itself** (the
+group-to-role assignment/unassignment, as distinct from who is *inside* the group) is a
+`RoleManagement`-category "Add/Remove member to/from role" event whose `targetResources` includes
+a `Role`-typed entry — `Export-EntraPrivilegedRoleAuditTrail.ps1` already catches this today,
+because its filter does not care whether the affected principal is a user or a group. Only the
+group's own **membership** (who's inside an already-role-assigned group) needed this companion's
+separate `GroupManagement`-category watcher. The two scripts' coverage is complementary, not
+overlapping and not gapped, once this distinction is made explicit.
+
+**Two disclosed residual gaps, not closed by this fragment (reviews.md round 2, Red Team findings 2
+and 3), both carried into README.md §11 and PROGRESS.md rather than silently accepted:** (a) Phase 1
+discovery is a poll, not an event trigger — an attacker who completes the entire "create
+role-assignable group → assign it a monitored role → add self as member" sequence between two
+scheduled runs has a detection-window gap bounded by the run interval, the same class of trade-off
+this scenario's daily-cadence guidance already manages for direct role assignment; (b) a member
+added via a documented-but-differently-named **bulk import** activity
+(`"Bulk import group members - finished (bulk)"`) is not confirmed to be covered by this script's
+two single-member `$monitoredActivities` entries — not resolved by guessing at an unconfirmed
+activity/`targetResources` shape.

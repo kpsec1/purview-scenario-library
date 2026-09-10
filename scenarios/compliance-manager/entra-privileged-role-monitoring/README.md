@@ -17,6 +17,15 @@ control assumes "only people with an explicit Purview role grant can touch this"
 real visibility into a population of accounts that can bypass that assumption entirely, without
 generating a single Purview-specific audit event.
 
+This scenario ships **two** scripts. `Export-EntraPrivilegedRoleAuditTrail.ps1` covers **direct**
+role assignment/removal for the four roles. `Export-RoleAssignableGroupMembershipAuditTrail.ps1`
+closes a gap the first script's own Red Team review disclosed (`reviews.md` round 1, finding 1):
+one of the four roles assigned to an Entra ID P1/P2 **role-assignable group** instead of directly to
+a user generates a completely different, invisible-to-the-first-script audit event when someone is
+added to or removed from that group. The second script discovers which role-assignable groups
+currently hold one of the four roles, then monitors exactly those groups' own membership — see §4/§5
+below and `design.md` §10.
+
 ## 2. Business/regulatory driver
 
 Least-privilege and separation-of-duties controls (ISO/IEC 27001:2022 Annex A access-control
@@ -39,6 +48,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 |---|---|---|
 | Reading the Entra directory audit log itself | **No premium license required** | Available at every Entra ID tier, including Free — only the **retention window** differs by tier (§11) [[6]](#references) |
 | Automation identity's Graph application permission | **`AuditLog.Read.All`** (least-privileged; `Directory.Read.All` also works but is broader) | Application permission on the app registration, admin-consented tenant-wide — see `docs/rbac-model.md` §8 and `docs/automation-surface.md` §3 [[4]](#references) |
+| Additional permissions for `Export-RoleAssignableGroupMembershipAuditTrail.ps1` only | **`Group.Read.All`** and **`RoleManagement.Read.Directory`** | Needed for Phase 1 discovery (listing role-assignable groups and their current role assignments) — not needed by `Export-EntraPrivilegedRoleAuditTrail.ps1`, which only reads the audit log. `Group.Read.All` is directly listed on the `Get-MgGroup` cmdlet's own Application-permissions table (the cmdlet this script actually calls) [[15]](#references); `RoleManagement.Read.Directory` is the least-privileged application permission documented for `Get-MgRoleManagementDirectoryRoleAssignment`/`Get-MgRoleManagementDirectoryRoleDefinition` [[16]](#references) |
 | Automation identity's Entra role (delegated/interactive use only) | **Reports Reader**, **Security Reader**, or **Security Administrator** | Only required for **delegated** (signed-in user) calls to this API; **not** required for the app-only pattern this scenario's script defaults to — Microsoft's own permissions table lists this role requirement specifically under "delegated access using work or school accounts" [[4]](#references) |
 | Longer retention (optional) | **Microsoft Entra ID P1/P2** (30 days) or **Microsoft Purview Audit (Premium)** (1 year, `AzureActiveDirectory` workload, via the E5/Purview Suite/E5 eDiscovery-and-Audit-add-on license already covering `assess-against-iso27001`) | Neither is required to *run* this scenario — only to extend the underlying log's own retention beyond Free tier's 7 days (§11) [[7]](#references)[[8]](#references) |
 | Dependency (not deployed by this scenario) | `scenarios/compliance-manager/assess-against-iso27001/` strongly recommended, not required | This scenario closes a specific gap that scenario's own Red Team review disclosed — see `design.md` §1/§7. The script itself has no hard dependency and is useful standalone for any module relying on `rbac-model.md` §3's four-role mapping |
@@ -56,11 +66,20 @@ flowchart TD
     C --> D[Rolling audit-trail CSV]
     D --> E["validate/Test-EntraPrivilegedRoleAuditTrail.ps1"]
     D -.same time window, cross-referenced.-> F["scenarios/compliance-manager/assess-against-iso27001/<br/>deploy/out/compliance-manager-audit-trail.csv"]
+
+    G["Get-MgGroup -Filter isAssignableToRole eq true<br/>+ Get-MgRoleManagementDirectoryRoleAssignment<br/>(Phase 1: discover role-assignable groups<br/>holding one of the 4 monitored roles)"] --> H[Monitored group set - current state, re-discovered every run]
+    H --> I["Member added/removed from a<br/>monitored role-assignable group"] --> J["Microsoft Entra directory audit log<br/>category=GroupManagement<br/>activity: Add/Remove member to/from group"]
+    J --> K["deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1<br/>(Phase 2: Get-MgAuditLogDirectoryAudit)"]
+    H --> K
+    K --> L[Rolling audit-trail CSV #2]
+    L --> M["validate/Test-RoleAssignableGroupMembershipAuditTrail.ps1"]
+    L -.same time window, cross-referenced.-> D
 ```
 
-This scenario is a single, standalone, read-only script — there is no assessment or policy object
-to create in the portal. See `design.md` §2 for why this uses a different Graph API from every
-other audit-trail script in this library.
+This scenario ships two standalone, read-only scripts — there is no assessment or policy object to
+create in the portal for either. See `design.md` §2 for why this scenario uses a different Graph API
+from every other audit-trail script in this library, and `design.md` §10 for the second script's own
+two-phase (discover, then monitor) design.
 
 ## 5. Step-by-step implementation
 
@@ -68,10 +87,12 @@ other audit-trail script in this library.
 
 1. Register (or reuse) an Entra app registration for unattended automation — see
    `docs/automation-surface.md` §3's "App-only setup" steps.
-2. Grant it the **`AuditLog.Read.All`** Microsoft Graph **Application** permission and complete
-   tenant-wide admin consent [[4]](#references). No Exchange/Purview role group assignment is
-   needed for this script — unlike surfaces 1/2 in this library, surface 3's app-only calls are
-   governed purely by the consented Graph permission (`docs/rbac-model.md` §8).
+2. Grant it the **`AuditLog.Read.All`** Microsoft Graph **Application** permission (both scripts)
+   plus, if running `Export-RoleAssignableGroupMembershipAuditTrail.ps1`, **`Group.Read.All`** and
+   **`RoleManagement.Read.Directory`**, and complete tenant-wide admin consent
+   [[4]](#references)[[15]](#references)[[16]](#references). No Exchange/Purview role group
+   assignment is needed for either script — unlike surfaces 1/2 in this library, surface 3's app-only
+   calls are governed purely by the consented Graph permission(s) (`docs/rbac-model.md` §8).
 3. Generate and attach a certificate per `docs/automation-surface.md` §3 (CBA is this library's
    default pattern; a client secret is acceptable only for a quick POC).
 
@@ -106,6 +127,37 @@ SDK's automatic retry-with-backoff on `Retry-After` per `docs/automation-surface
 needing its own 429-handling — expected daily event volume for a 4-role population is low enough
 that this is a defense-in-depth note, not an anticipated real bottleneck.
 
+### Companion script path — role-assignable-group membership (`design.md` §10)
+
+Run alongside (not instead of) the script above — same daily cadence, same certificate/app
+registration (with the two additional permissions from §3):
+
+```powershell
+# 1. Connect (same app registration, now also holding Group.Read.All and RoleManagement.Read.Directory)
+Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
+
+# 2. Dry run — discovers the current monitored group set, queries the last 24 hours, reports what
+#    would be merged, writes nothing
+./deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1 -OutputCsvPath './out/role-assignable-group-membership-audit-trail.csv' -WhatIf
+
+# 3. First real run — a one-time backfill covering the tenant's actual retention window
+./deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1 `
+    -StartDate (Get-Date).AddDays(-30) -EndDate (Get-Date) `
+    -OutputCsvPath './out/role-assignable-group-membership-audit-trail.csv'
+
+# 4. Recurring run — schedule DAILY, same reasoning as the sibling script (Section 8)
+./deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1 -OutputCsvPath './out/role-assignable-group-membership-audit-trail.csv'
+
+# 5. Validate
+./validate/Test-RoleAssignableGroupMembershipAuditTrail.ps1 -AuditTrailCsvPath './out/role-assignable-group-membership-audit-trail.csv'
+```
+
+This script additionally uses `Microsoft.Graph.Groups` (`Get-MgGroup`) and
+`Microsoft.Graph.Identity.Governance` (`Get-MgRoleManagementDirectoryRoleDefinition`,
+`Get-MgRoleManagementDirectoryRoleAssignment`) for its Phase 1 discovery, on top of the same
+`Microsoft.Graph.Reports` call the sibling script uses for Phase 2. All calls go through SDK
+cmdlets — same throttling note as above applies to all three.
+
 ## 6. Configuration reference
 
 | Setting | Value this scenario uses | Notes |
@@ -119,6 +171,19 @@ that this is a defense-in-depth note, not an anticipated real bottleneck.
 
 Full cmdlet parameter grounding: `deploy/Export-EntraPrivilegedRoleAuditTrail.ps1`'s inline comments
 and its `.NOTES` block cite the exact Microsoft Learn reference pages.
+
+**`Export-RoleAssignableGroupMembershipAuditTrail.ps1` (companion script):**
+
+| Setting | Value this scenario uses | Notes |
+|---|---|---|
+| Phase 1 discovery filters | `isAssignableToRole eq true` (`Get-MgGroup`); `DisplayName eq '<role>'` (`Get-MgRoleManagementDirectoryRoleDefinition`); `roleDefinitionId eq '<id>'` (`Get-MgRoleManagementDirectoryRoleAssignment`) | All three directly confirmed by Microsoft worked examples — `design.md` §10 |
+| Phase 2 Graph resource | `/auditLogs/directoryAudits` (`Get-MgAuditLogDirectoryAudit`) — same resource as the sibling script | `design.md` §10 |
+| Phase 2 server-side filter | `category eq 'GroupManagement' and activityDateTime ge <start> and activityDateTime le <end>` | Same grounded shape as the sibling script's own filter, applied to a different category |
+| Monitored activities (client-side filter) | `Add member to group`, `Remove member from group` | Core Directory `GroupManagement` category — confirmed activity names, `design.md` §10 |
+| Monitored roles (`-PrivilegedRoleDisplayNames`) | Same 4 roles as the sibling script | Keep the two scripts' role lists in sync if customized |
+| Default lookback window | 24 hours (`-StartDate`/`-EndDate`) | Same reasoning as the sibling script |
+| Idempotency | De-duplicate by the record's own documented `Id` (GUID) on every merge | Same model as the sibling script — `design.md` §5/§10 |
+| Discovery caching | **None** — Phase 1 re-runs on every invocation | A group added to or removed from a monitored role between runs is picked up automatically on the next run |
 
 ## 7. Validation / how to prove it works
 
@@ -143,6 +208,17 @@ and its `.NOTES` block cite the exact Microsoft Learn reference pages.
    row there is exactly the previously-invisible access grant this scenario surfaces — confirming
    you can now see it is the real proof this scenario delivers value, not just that the script
    runs.
+5. **`Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s own file-integrity check** —
+   `./validate/Test-RoleAssignableGroupMembershipAuditTrail.ps1 -AuditTrailCsvPath
+   './out/role-assignable-group-membership-audit-trail.csv'`, same schema/duplicate/timestamp checks
+   as the sibling script's validate script, plus a `GroupId`-non-empty check.
+6. **The cross-reference this companion exists to enable** — in a test tenant, create (or reuse) a
+   role-assignable group, assign it one of the four monitored roles, then add and remove a test user
+   from the group's membership. Confirm: (a) `Export-EntraPrivilegedRoleAuditTrail.ps1`'s own output
+   shows **nothing** for this change (the RoleManagement-category filter genuinely can't see it), and
+   (b) `Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s output shows the add/remove pair with
+   the correct `GroupDisplayName`/`RoleDisplayName`. That contrast — visible here, invisible there —
+   is the proof this companion closes the disclosed gap rather than merely duplicating coverage.
 
 ## 8. Operations & tuning
 
@@ -187,11 +263,20 @@ as a near-zero-tolerance signal per the script's own differentiated warning seve
 5. **Document** — every reviewed event, planned or not, is retained in this CSV as evidence; do not
    delete rows from it.
 
+**`Export-RoleAssignableGroupMembershipAuditTrail.ps1` operations note:** run on the **same daily
+schedule** as the sibling script — they share the same underlying log and retention constraints.
+Its console `Write-Warning` output includes **two** distinct signal types worth distinguishing in
+an on-call runbook: a `"Monitored group discovered"` warning (Phase 1 — informational; a group is
+now in scope, not itself an incident) and a `"Monitored-group membership change detected"` warning
+(Phase 2 — the actual signal this script exists to produce, follow the same incident-response
+runbook above). A tenant with **zero** role-assignable groups holding any of the four roles will
+never see either warning — that is the expected, healthy state for most tenants (§11).
+
 ## 9. Rollback / decommission
 
-See `rollback.md` for the full procedure — there is no portal object to roll back (this scenario
-is a single read-only script); decommissioning means stopping the schedule, deciding the CSV's
-retention fate, and revoking the app registration's `AuditLog.Read.All` grant.
+See `rollback.md` for the full procedure — there is no portal object to roll back for either script
+in this scenario (both are read-only); decommissioning means stopping the schedule(s), deciding the
+CSVs' retention fate, and revoking the app registration's Graph permission grants.
 
 ## 10. Cost & licensing notes
 
@@ -208,20 +293,50 @@ retention fate, and revoking the app registration's `AuditLog.Read.All` grant.
   record, at no incremental license cost.
 - **Sizing note:** this script's own compute/storage cost is negligible — a small daily CSV append
   for a population of, at most, a handful of privileged-role changes per day in a healthy tenant.
+  The companion script's Phase 1 discovery calls (`Get-MgGroup`, `Get-MgRoleManagementDirectory*`)
+  add a small, fixed daily cost independent of tenant size (bounded by the tenant's 500-role-
+  assignable-group maximum [[1]](#references)), not a per-user cost.
 
 ## 11. Known limitations & gotchas
 
-- **This scenario does not cover a role assigned to a role-assignable group.** If one of the four
-  monitored roles is assigned to an Entra ID P1/P2 **role-assignable group** (a legitimate,
-  Microsoft-recommended practice), adding a new member to that group generates a
-  `GroupManagement`-category "Add member to group" event, not a `RoleManagement`-category "Add
-  member to role" event — **entirely invisible to this script's current filter**. See `design.md`
-  §4b for why this is a genuine, disclosed gap rather than a theoretical one, and the Red Team
-  finding in `reviews.md`. Before relying on this scenario as complete coverage, confirm none of
-  the four monitored roles is assigned to a role-assignable group (**Entra ID** → **Roles &
-  admins** → the role → **Assignments**, or `Get-MgDirectoryRoleMember`/the role's assigned-groups
-  view) — if one is, that group's own membership needs separate, dedicated monitoring (tracked as a
-  follow-up in `PROGRESS.md`).
+- **A role assigned to a role-assignable group is covered by the companion script, not by
+  `Export-EntraPrivilegedRoleAuditTrail.ps1` itself.** If one of the four monitored roles is
+  assigned to an Entra ID P1/P2 **role-assignable group** (a legitimate, Microsoft-recommended
+  practice), adding a new member to that group generates a `GroupManagement`-category "Add member
+  to group" event, not a `RoleManagement`-category "Add member to role" event — **entirely invisible
+  to `Export-EntraPrivilegedRoleAuditTrail.ps1`'s own filter**. Run
+  `Export-RoleAssignableGroupMembershipAuditTrail.ps1` (§5/§7/§8, `design.md` §10) alongside it to
+  close this gap — it was a disclosed, unmitigated limitation in this scenario's first release (see
+  the Red Team finding in `reviews.md` round 1) and is now closed by that companion script (`reviews.md`
+  round 2). The companion's own limitations (below) still apply — it is not a substitute for
+  confirming, at deploy time, that both scripts are actually scheduled and running.
+- **The companion script's Phase 1 discovery is current-state-only, re-evaluated fresh on every
+  run.** If a role-assignable group held a monitored role for part of a search window but had the
+  role removed before the run that covers that window, membership changes that occurred while the
+  role was still assigned won't be included in that run's output (the group is no longer in the
+  monitored set by the time discovery runs). For a tenant with frequent role-to-group reassignment,
+  consider a shorter interval between runs to narrow this window; for the common case (role-to-group
+  assignments are infrequent, deliberate changes), this is a low-probability edge case, not a
+  routine gap. See `design.md` §10.
+- **The companion script does not distinguish a tenant-wide role assignment to a group from one
+  scoped to an administrative unit, and does not separately alert on PIM-mediated group-role
+  activation start/end** — see the deploy script's `.NOTES` VERIFY items and `design.md` §10's
+  "Non-goals inherited from the sibling script."
+- **The companion script's detection window is bounded by its own run interval, not real-time.**
+  An attacker who creates a new role-assignable group, assigns it a monitored role, and adds
+  themselves to it entirely between two scheduled runs has a window (24 hours at the default daily
+  cadence) before the next Phase 1 discovery picks up the new group. This is the same inherent
+  trade-off every poll-based control in this scenario carries (§8's "run daily, not weekly"
+  guidance) — a buyer with a lower risk tolerance can narrow this window with a shorter schedule
+  interval (e.g. hourly). See `reviews.md` round 2, Red Team finding 2.
+- **The companion script does not monitor bulk group-membership import activities.** Microsoft's
+  `reference-audit-activities` page documents a separate `"Bulk import group members - finished
+  (bulk)"` activity (under the Microsoft Entra (AAD) Management UX audit source) distinct from the
+  two single-member activities (`Add member to group`/`Remove member from group`) this script's
+  `$monitoredActivities` filters on — a member added to a monitored group via a bulk import
+  operation is not confirmed to be covered. Not resolved by widening the filter to an unconfirmed
+  activity/`targetResources` shape (`AGENTS.md` §4) — tracked as a follow-up in `PROGRESS.md`. See
+  `reviews.md` round 2, Red Team finding 3.
 - **VERIFY (pilot tenant or a future Microsoft Learn pass):** Microsoft's own "Security operations
   for privileged accounts" guidance names a differently-suffixed activity ("Add member to role
   (permanent)", tagged `Service = PIM`) for detecting roles assigned outside PIM — not confirmed to
@@ -297,8 +412,19 @@ retention fate, and revoking the app registration's `AuditLog.Read.All` grant.
     "Add member to role (permanent)" detection guidance underlying this scenario's §11 VERIFY item)
     — <https://learn.microsoft.com/entra/architecture/security-operations-privileged-accounts>
 14. Use Microsoft Entra groups to manage role assignments (role-assignable groups; membership
-    governance is expected to happen at the group level — grounds this scenario's disclosed
-    role-assignable-group gap) — <https://learn.microsoft.com/entra/identity/role-based-access-control/groups-concept>
+    governance is expected to happen at the group level; 500 role-assignable group maximum per
+    tenant — grounds the companion script's discovery design) — <https://learn.microsoft.com/entra/identity/role-based-access-control/groups-concept>
+15. Get-MgGroup reference (Application permissions table, listing `Group.Read.All`) — <https://learn.microsoft.com/powershell/module/microsoft.graph.groups/get-mggroup>
+16. Get-MgRoleManagementDirectoryRoleAssignment reference (permissions table: `RoleManagement.Read.Directory`
+    least-privileged application permission) — <https://learn.microsoft.com/powershell/module/microsoft.graph.identity.governance/get-mgrolemanagementdirectoryroleassignment>
+17. List Microsoft Entra role assignments (worked PowerShell examples: `Get-MgRoleManagementDirectoryRoleAssignment
+    -Filter "PrincipalId eq '<group id>'"` for a group; role-definition-then-assignment pattern) — <https://learn.microsoft.com/entra/identity/role-based-access-control/view-assignments>
+18. Use the `$filter` query parameter (worked example: `~/groups?$filter=isAssignableToRole eq true`
+    as a default, non-advanced-query `eq` filter) — <https://learn.microsoft.com/graph/filter-query-parameter>
+19. Advanced query capabilities on Microsoft Entra ID objects (`eq` filters work by default; `ne`/
+    `not`/`endswith` require `ConsistencyLevel: eventual` + `$count`) — <https://learn.microsoft.com/graph/aad-advanced-queries>
+20. Get-EntraAuditDirectoryLog reference, Example 9 (worked filter confirming the `targetResources`
+    `Group`-type entry's `id` property for "Add member to group" events) — <https://learn.microsoft.com/powershell/module/microsoft.entra.reports/get-entraauditdirectorylog>
 
 > Re-verify all links and the retention/licensing figures against current Microsoft Learn before a
 > customer-facing deployment — Entra ID's audit-log retention model is tied to licensing tier and
