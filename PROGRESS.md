@@ -1411,14 +1411,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the glossary-health question it was tracked for.
 
 ### Follow-ups discovered while building the Compliance Manager ISO 27001 assessment scenario
-- [ ] `scenarios/compliance-manager/entra-privileged-role-monitoring/` (or fold into a future
-  cross-cutting RBAC-hardening pass) — script monitoring of Entra directory role-assignment changes
-  for Global Administrator/Compliance Administrator/Compliance Data Administrator/Security
-  Administrator, the four Entra roles that grant implicit Compliance Manager Administration-
-  equivalent access invisibly to `assess-against-iso27001`'s audit-trail script (flagged as a Red
-  Team finding in that scenario's `reviews.md` and `README.md` §11) — via Microsoft Graph's Entra
-  directory audit log / `auditLogs/directoryAudits`, not the Compliance-Manager-specific
-  `Search-UnifiedAuditLog` operations this scenario already covers.
+- [x] `scenarios/compliance-manager/entra-privileged-role-monitoring/` — **built** (see DONE
+  below): scripts monitoring of Entra directory role-assignment changes for Global Administrator/
+  Compliance Administrator/Compliance Data Administrator/Security Administrator via Microsoft
+  Graph's Entra directory audit log (`Get-MgAuditLogDirectoryAudit` / `auditLogs/directoryAudits`),
+  closing the Red Team finding in `assess-against-iso27001/reviews.md` and cross-linked back into
+  that scenario's `README.md` §8/§11 and `design.md` §4.
 - [ ] VERIFY (pilot tenant, before production reliance): the internal JSON shape of the `AuditData`
   payload for `ComplianceManagerRolesChange`/`ComplianceManagerAutomationLevelChange`/
   `ComplianceManagerAutomationChange` audit records — not published in Microsoft's
@@ -1446,6 +1444,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   tenant, ground the "Action Update" tab's exact column schema and revisit the non-goal recorded in
   `assess-against-iso27001/design.md` §7 — a schema-accurate generator script would be a genuine,
   higher-value addition to this scenario that this build deliberately declined to fabricate.
+
+### Follow-ups discovered while building the Entra Privileged Role Monitoring scenario
+- [ ] Extend (or add a companion script to) `entra-privileged-role-monitoring/deploy/
+  Export-EntraPrivilegedRoleAuditTrail.ps1` to close its own disclosed Red Team gap: a role
+  assigned to an Entra ID P1/P2 **role-assignable group** grants access via a `GroupManagement`
+  "Add member to group" audit event, not a `RoleManagement` "Add member to role" event — invisible
+  to the current script. Needs two new capabilities: (1) enumerate role-assignable groups
+  (`GET /groups?$filter=isAssignableToRole eq true`) cross-referenced against which of the four
+  monitored roles each currently holds, then (2) monitor `GroupManagement`-category membership
+  events for exactly that discovered group set. Not built this run to keep the fragment scoped to
+  direct role-assignment monitoring per `design.md` §4b/§9.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the "Add member to role
+  (permanent)" activity name Microsoft's own "Security operations for privileged accounts"
+  out-of-PIM detection guidance cites (tagged `Service = PIM`) is the same underlying event as the
+  plain "Add member to role" (Core Directory service) `Export-EntraPrivilegedRoleAuditTrail.ps1`
+  currently filters on, or a genuinely distinct event this script's filter would miss. Flagged
+  inline in `entra-privileged-role-monitoring/README.md` §11, `design.md` §4a, and the deploy
+  script's `.NOTES` rather than resolved by guessing (`AGENTS.md` §4).
+- [ ] Once the item above is resolved, revisit whether `$monitoredActivities` in
+  `Export-EntraPrivilegedRoleAuditTrail.ps1` needs the `(permanent)`-suffixed activity name added,
+  or whether it's confirmed to be a duplicate label for an event already covered.
 
 ### Follow-ups discovered while building the Communication Compliance harassment-and-code-of-conduct scenario
 - [ ] `scenarios/communication-compliance/financial-regulatory-supervision/` (or similar) — the
@@ -2080,6 +2099,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
+- [x] **`scenarios/compliance-manager/entra-privileged-role-monitoring/`** — commit `PENDING` —
+  2026-09-10. Full scenario (README, design, deploy, validate, rollback, four-lens review) scripting
+  a rolling audit trail of direct (non-PIM) Entra ID role-assignment changes for Global
+  Administrator/Compliance Administrator/Compliance Data Administrator/Security Administrator, via
+  Microsoft Graph's `Get-MgAuditLogDirectoryAudit` (`auditLogs/directoryAudits` — a new automation
+  surface for this library, added to `docs/automation-surface.md` §4's routing table). Closes the
+  Red Team finding in `assess-against-iso27001/reviews.md`; that scenario's `README.md` §8/§11 and
+  `design.md` §4 were cross-linked back to this one. Grounded: the `directoryAudit`/`targetResource`
+  resource schemas, `Get-MgAuditLogDirectoryAudit`'s parameter set, Core Directory RoleManagement's
+  6 direct-assignment activity names (widened from an initial 2 during the Microsoft Product Owner
+  review pass), Entra audit-log retention (7 days Free / 30 days P1-P2), and — during the four-lens
+  review — the native "Roles are being assigned outside of PIM" alert's P2/Governance licensing gate
+  (confirms this scenario isn't a reinvention) and a real, disclosed gap for roles assigned to
+  role-assignable groups (tracked as a follow-up). Two items tagged VERIFY rather than guessed: the
+  `targetResources` array shape for the monitored activities, and whether a differently-suffixed
+  "Add member to role (permanent)" activity name from Microsoft's own out-of-PIM detection guidance
+  is the same event or a distinct one this script's filter would miss.
 - [x] **`scenarios/data-estate-insights/glossary-curation-coverage-report/`** — commit `bc447a2` —
   2026-09-10. Full scenario (README, design, deploy, validate, rollback, four-lens review) scripting
   an exportable, historical glossary-curation-coverage report against the Unified Catalog Terms REST

@@ -113,8 +113,9 @@ Administrator, or Security Administrator **Entra ID role** generates no such eve
 confirms these users don't even appear on the Compliance Manager **User access** settings page
 [[3]](#references, `README.md`). This script's audit trail is therefore a record of explicit
 Compliance Manager role grants, not a complete record of everyone who could edit this assessment —
-see `README.md` §11 for the operational mitigation (cross-check Entra directory role-assignment
-history separately).
+`scenarios/compliance-manager/entra-privileged-role-monitoring/` now scripts the Entra
+directory role-assignment cross-check this gap requires, as a companion scenario rather than a
+change to this one's own script; see `README.md` §11.
 
 ## 5. Why a dedicated assessment instead of extending the Data Protection Baseline
 

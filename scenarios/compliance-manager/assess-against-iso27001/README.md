@@ -191,12 +191,14 @@ tab and compliance-score trend at least **monthly**; review **role assignments**
 (`ComplianceManagerRolesChange` events) and any `ComplianceManagerAutomationLevelChange`/
 `ComplianceManagerAutomationChange` event **immediately** when the audit-trail script's built-in
 warning fires (deploy script `.NOTES`), not on the monthly cadence — an automation-trust change is
-a control-integrity event, not routine drift. **Quarterly**, also: (a) run **Export actions** (§5
-step 12) and retain the output outside Compliance Manager as a durable evidence snapshot — the
-native Reports page's own history only covers 6 months (§11); and (b) cross-check Entra directory
-role-assignment history for Global Administrator/Compliance Administrator/Compliance Data
-Administrator/Security Administrator against `docs/rbac-model.md` §3, since none of those four
-roles' Compliance Manager access shows up in this scenario's audit-trail CSV (§11).
+a control-integrity event, not routine drift. **Daily**, also: run
+`scenarios/compliance-manager/entra-privileged-role-monitoring/deploy/
+Export-EntraPrivilegedRoleAuditTrail.ps1` — that scenario now scripts the quarterly Entra
+directory role-assignment cross-check this operations section used to describe as a manual task
+(§11), closing this scenario's own Red Team finding 1 with a real, dailyable control instead of a
+portal-only recommendation. **Quarterly**, also: run **Export actions** (§5 step 12) and retain
+the output outside Compliance Manager as a durable evidence snapshot — the native Reports page's
+own history only covers 6 months (§11).
 
 **KPIs to watch:**
 - **Compliance score trend** (native Reports page, up to 6 months of history) — a flat or
@@ -264,10 +266,13 @@ independently.
   explicit per-assessment role assignment — and Microsoft's own docs confirm users who have access
   this way don't even appear on the **User access** settings page [[3]](#references). Their access
   is an Entra directory role assignment, not a `ComplianceManagerRolesChange` event, so this
-  scenario's audit-trail script has no visibility into who holds it or when it changed. Treat the
-  four Entra roles above as an equally privileged, separately-monitored population — see
-  `docs/rbac-model.md` §3 for tracking Entra role assignment changes via Entra's own directory
-  audit log, which this scenario's script does not call.
+  scenario's audit-trail script has no visibility into who holds it or when it changed. This gap
+  is now closed by a companion scenario:
+  `scenarios/compliance-manager/entra-privileged-role-monitoring/` scripts exactly this
+  cross-check via Entra's own directory audit log (Microsoft Graph, `Get-MgAuditLogDirectoryAudit`)
+  — deploy it alongside this scenario rather than relying on the quarterly manual check this
+  limitation used to describe as the only mitigation. See `docs/rbac-model.md` §3 for the
+  underlying four-role mapping.
 - **The Reports page's own score/action-history is not preserved by this scenario beyond its
   native retention.** The native Reports page's detailed history view covers up to 6 months
   (§7/§8) but this scenario doesn't export or archive it — a change older than 6 months is gone
