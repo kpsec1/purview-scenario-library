@@ -2045,7 +2045,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
-- [x] **`scenarios/data-quality/connection-and-scorecard-alerts/`** — commit `PENDING` —
+- [x] **`scenarios/data-quality/connection-and-scorecard-alerts/`** — commit `5f0369a` —
   2026-09-10. Full scenario (README, design, deploy, validate, rollback, four-lens review) scripting
   the two prerequisites `rules-and-scorecards` deliberately left portal-only: the Data Quality
   data-source connection (`New-DataQualityConnection.ps1`) and score-threshold alerts
