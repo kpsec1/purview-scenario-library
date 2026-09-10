@@ -2137,8 +2137,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   script's own `.NOTES`/`validate/Test-FinraSupervisionEvidence.ps1` both flag this as an open item.
 
 ## DONE
-- [x] **`scenarios/communication-compliance/financial-regulatory-supervision/`** — commit `<pending —
-  see next commit>` — 2026-09-10. Full scenario (README, design, deploy, validate, rollback,
+- [x] **`scenarios/communication-compliance/financial-regulatory-supervision/`** — commit `16b3641` —
+  2026-09-10. Full scenario (README, design, deploy, validate, rollback,
   four-lens review) closing the FINRA/SEC-oriented follow-up deferred from
   `harassment-and-code-of-conduct/design.md` §7. Deploys a Communication Compliance custom policy
   covering the "Regulatory compliance" classifier family (Corporate sabotage, Customer complaints,
