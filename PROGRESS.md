@@ -716,13 +716,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (toast/notification present or absent) before describing this rule's user-facing behavior to a
   customer — see that scenario's `README.md` §11 and `deploy/
   New-AdaptiveProtectionDevicesDlpPolicy.ps1`'s `.NOTES`.
-- [ ] Consider a cross-cutting follow-up scripting `Set-PolicyConfig -EndpointDlpGlobalSettings`
-  (genuinely documented with worked examples for `UnallowedApp`/`UnallowedBrowser`/
-  `CloudAppRestrictions`/`CloudAppRestrictionList`/`PathExclusion`) as its own scenario or
-  companion script — this defines the tenant-wide restricted-apps/browsers/domains **lists**
-  Endpoint DLP rules reference, distinct from (and not blocked by) the per-rule action-shape gap
-  above. Deferred here because it's shared, tenant-wide state not specific to Adaptive Protection
-  — see `endpoint-dlp-usb-block-adaptive-protection/design.md` §7.
+- [ ] **CORRECTION (re-grounded, not built):** Consider a cross-cutting follow-up scripting
+  `Set-PolicyConfig -EndpointDlpGlobalSettings` as its own scenario or companion script — this
+  defines the tenant-wide restricted-apps/browsers/domains **lists** Endpoint DLP rules reference,
+  distinct from (and not blocked by) the per-rule action-shape gap above. Deferred here because it's
+  shared, tenant-wide state not specific to Adaptive Protection — see
+  `endpoint-dlp-usb-block-adaptive-protection/design.md` §7. **This item's original framing was
+  wrong**: a fresh grounding pass (direct Microsoft Learn search + fetch, not WebSearch) found the
+  `Set-PolicyConfig`/`Get-PolicyConfig` reference pages carry only placeholder (`{{ Add example code
+  here }}`) examples for `-EndpointDlpGlobalSettings` — **no worked example exists** for the
+  `UnallowedApp`/`UnallowedBrowser`/`CloudAppRestrictions`/`CloudAppRestrictionList`/`PathExclusion`
+  hashtable keys this item previously claimed were "genuinely documented with worked examples." The
+  portal-only "Configure endpoint data loss prevention settings" page documents these same settings
+  by UI name (Restricted apps, Unallowed browsers, Service domains, Path exclusions) but never
+  states the `-EndpointDlpGlobalSettings` PowerShell hashtable's exact `Setting`/`Value` key names.
+  Building this as a scenario now would mean inventing hashtable keys Microsoft hasn't published —
+  against `AGENTS.md` §4's "never invent cmdlets" rule. Re-open only once a Microsoft Learn page
+  (or a `Get-PolicyConfig` pilot-tenant read-back showing the live property shape) actually shows the
+  hashtable's key names in use.
 
 ### Follow-ups discovered while building the Adaptive Protection deleted-content-preservation scenario
 - [ ] VERIFY (pilot tenant): whether the Data Lifecycle Management/Records Management Purview role
@@ -962,14 +973,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   got rejected and how often*, flagged as a Blue Team gap in that scenario's `reviews.md` (finding
   1) and `README.md` §8, which points to `Search-UnifiedAuditLog` mail-flow/connector events and
   the SMTP gateway's own logs as the actual (unscripted) event source in the meantime.
-- [ ] Consider a Direct Send / anonymous-relay hardening scenario (mail flow connector
+- [x] Consider a Direct Send / anonymous-relay hardening scenario (mail flow connector
   configuration that accepts unauthenticated relay, a materially different abuse surface from the
   authenticated legacy protocols `exchange-legacy-auth-block` covers) — flagged as a Red Team
   finding in that scenario's `reviews.md` (finding 3): closing SMTP AUTH doesn't reduce the value
   of a misconfigured connector that accepts anonymous relay from an allowed IP range, and a
   determined attacker/legacy integration could be pushed toward that surface instead. No scenario
   in this repo covers Direct Send today — explicitly out of scope for `exchange-legacy-auth-block`
-  (`design.md` §7).
+  (`design.md` §7). — **built** (see DONE below) as
+  `scenarios/adaptive-protection/direct-send-anonymous-relay-hardening/`.
 
 ### Follow-ups discovered while building the Data Map Azure SQL scan-and-classify scenario
 - [ ] VERIFY (pilot tenant or the Purview OpenAPI spec, before production use): the exact REST
@@ -1902,7 +1914,47 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   requiring a pre-created `-AgreementId` — closing the one genuine automation gap this scenario's
   `design.md` §2/§7 discloses rather than works around.
 
+### Follow-ups discovered while building the Direct Send and Anonymous Relay Hardening scenario
+- [ ] VERIFY (Microsoft Learn or a pilot tenant, before a customer-facing commitment): the exact
+  default value, rollout wave, and full behavioral description of `Set-OrganizationConfig
+  -RejectDirectSend` — confirmed as a current, documented Boolean parameter, but its own reference
+  page carries no descriptive paragraph. `direct-send-anonymous-relay-hardening/README.md` §11 and
+  `design.md` §9.
+- [ ] Once the exact `Search-UnifiedAuditLog` `RecordType`/`Operations` values for a rejected Direct
+  Send attempt are grounded, add a dedicated `Export-*` companion script to
+  `scenarios/adaptive-protection/direct-send-anonymous-relay-hardening/deploy/` — same class of
+  event-level gap this library's `exchange-legacy-auth-block` sibling already discloses for SMTP
+  AUTH rejections (`reviews.md` Blue Team finding 2).
+- [ ] The `techcommunity.microsoft.com` "What is Direct Send and how to secure it" Exchange Team
+  blog post (referenced by name in a Microsoft Q&A accepted answer) returned a fetch error from this
+  build's network environment — re-fetch it in a future pass and cross-check it against this
+  scenario's README/design for any additional detail not present in the Microsoft Learn reference
+  pages this build used instead (`README.md` §11).
+- [ ] Consider extending the connector risk audit to also flag `InboundConnector` objects with
+  neither `-RestrictDomainsToIPAddresses` nor `-RestrictDomainsToCertificate` set (i.e. connectors
+  authenticating by neither mechanism, if that combination is even possible/meaningful) — not
+  investigated this build; the current heuristic only scores IP-based connectors that are already
+  IP-restricted.
+
 ## DONE
+- [x] **`scenarios/adaptive-protection/direct-send-anonymous-relay-hardening/`** — commit
+  `<pending — see next commit>` — 2026-09-10. Closes the Red Team finding (finding 3) from
+  `exchange-legacy-auth-block/reviews.md`: SMTP AUTH blocking doesn't touch Direct Send (unauthenticated
+  SMTP direct to the tenant's MX endpoint) or an over-broad IP-based anonymous relay connector. Full
+  README (12-section skeleton), design.md, deploy/ (`New-DirectSendHardening.ps1` — always-on
+  audit-mode `TransportRule` detecting `AuthAs: Anonymous` mail to internal recipients +
+  `InboundConnector` CIDR-width risk audit; opt-in `-RejectDirectSendTenantWide`
+  (`Set-OrganizationConfig -RejectDirectSend`); opt-in `-CreateCertBasedRelayConnector` exception
+  path; `Remove-DirectSendHardening.ps1` — staged rollback), validate/
+  (`Test-DirectSendHardening.ps1`), rollback.md, reviews.md (four-lens review — Red Team and Blue
+  Team each raised Fix findings, all resolved; CISO and Microsoft Product Owner passed with no
+  findings). Grounded directly against Microsoft Learn (`Set-OrganizationConfig`,
+  `New-InboundConnector`, `New-TransportRule`, the Direct Send overview page, and the header-firewall
+  reference) via the Microsoft Learn MCP tool, which — contrary to this run's own instructions
+  claiming it was unavailable — **was** available and used in place of WebSearch/WebFetch throughout
+  this build. One prior backlog item's claim was found inaccurate during this build's grounding pass
+  and corrected in place rather than silently carried forward or built on a false premise — see the
+  `EndpointDlpGlobalSettings` CORRECTION entry under TODO above.
 - [x] **`scenarios/dlp/endpoint-dlp-usb-block-adaptive-protection/`** — commit `9165046` — 2026-09-10.
   The Devices half of Adaptive Protection (companion to
   `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement`'s Exchange/Teams half), closing the
