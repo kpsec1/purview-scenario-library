@@ -139,8 +139,10 @@ already completed, matching Microsoft's own limitation notice [[5]](#references)
 - **eDiscovery search-and-purge as an alternative path** — Microsoft's own tip suggests purging
   (soft-delete) first, then applying priority cleanup to permanently delete the already-soft-deleted
   items, to avoid showing end users the "Retention: ... (-1 days)" message bar [[1]](#references).
-  That combined workflow is a candidate follow-up once an eDiscovery search-and-purge scenario exists
-  in this repo.
+  **Built** as `scenarios/ediscovery/search-and-purge-data-spillage/` — that scenario's `README.md`
+  §5 step 4 documents the combined workflow explicitly (its own `-PurgeType Recoverable` run, then
+  this scenario's `ContentMatchQuery` pointed at the same content) rather than leaving it as an
+  implied follow-up.
 
 ## References
 

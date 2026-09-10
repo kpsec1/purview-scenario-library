@@ -754,11 +754,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   approval queue, extend `priority-cleanup-exchange-data-spillage`'s scripts to cover it — neither
   was found during this build's grounding pass across official Microsoft Learn sources; both are
   disclosed as portal-only gaps rather than fabricated cmdlets (`README.md` §11, `design.md` §7).
-- [ ] Consider a companion scenario chaining eDiscovery search-and-purge (soft-delete) with this
+- [x] Consider a companion scenario chaining eDiscovery search-and-purge (soft-delete) with this
   scenario's priority cleanup policy, matching Microsoft's own documented workflow for avoiding
   the end-user-visible "Retention: ... (-1 days)" message bar in Outlook — deferred here
   (`design.md` §7) since no eDiscovery search-and-purge scenario exists yet in this repo to chain
-  onto.
+  onto. **Built** (see DONE below) as `scenarios/ediscovery/search-and-purge-data-spillage/`.
+
+### Follow-ups discovered while building the eDiscovery search-and-purge-data-spillage scenario
+- [ ] VERIFY (pilot tenant): whether a mailbox on litigation hold behaves identically for the Graph
+  `purgeData` action as Microsoft's FAQ documents for the PowerShell `New-ComplianceSearchAction
+  -Purge` path (items only hidden from view, not deleted, regardless of `purgeType`) — both paths
+  share the same underlying eDiscovery search/purge engine, but no Microsoft Learn page
+  independently confirms the hold behavior specifically for `purgeData`. `search-and-purge-data-
+  spillage/README.md` §11 and `design.md` §2 goal 5/§6.
+- [ ] VERIFY: how long a `purgeData` job report's `reportFileMetadata.downloadUrl` remains valid
+  before expiring — not stated on the `ediscoveryPurgeDataOperation` Graph reference page.
+  `search-and-purge-data-spillage/README.md` §11.
+- [ ] Consider a `scenarios/ediscovery/search-and-purge-teams-messages/` (or fold into a future
+  eDiscovery hardening pass) — the `purgeAreas: teamsMessages` half of the same `purgeData` Graph
+  action, deliberately out of scope for the initial (mailbox-focused) fragment because Teams purge
+  only deletes the eDiscovery **compliance copy**, not the user-visible message — a materially
+  different, easily-misunderstood guarantee documented on its own page. `search-and-purge-data-
+  spillage/design.md` §8.
+- [ ] Once `Get-MgSecurityCaseEdiscoveryCaseOperation`/`caseOperation` documents a way to identify
+  which `ediscoverySearch` a completed `purgeData` (or `addToReviewSet`/export) operation targeted
+  without an undocumented expand, revisit both `search-and-purge-data-spillage/deploy/
+  Invoke-DataSpillagePurge.ps1`'s `Get-PriorPurgeOperations` and `premium-legal-hold-and-export/
+  deploy/New-EdiscoverySearchReviewSetExport.ps1`'s equivalent case-wide (not search-specific)
+  operation-listing limitation — the same underlying Graph gap affects both scenarios.
 
 ### Follow-ups discovered while building the Conditional Access insider-risk-block scenario
 - [x] Backport the GA-status correction (`conditional-access-insider-risk-block/design.md` §8)
@@ -4301,6 +4324,46 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   via WebSearch corroborated across multiple independent secondary sources. Two follow-ups
   recorded above under a new section (`### Follow-ups discovered while building the Exchange-side
   legacy authentication block scenario`) rather than duplicated here. Commit: `a9f29e7`. Date:
+  2026-09-10.
+
+- [x] **`scenarios/ediscovery/search-and-purge-data-spillage/`** — closes the long-standing
+  follow-up under "Follow-ups discovered while building the Priority Cleanup Exchange
+  data-spillage scenario" (deferred there since no eDiscovery search-and-purge scenario existed
+  yet to chain onto). Full README (12-section skeleton), design.md, deploy/
+  (`New-DataSpillageSearch.ps1` — find-or-create an eDiscovery case + search, run
+  `estimateStatistics`, report `indexedItemCount`/`mailboxCount` for review before purging;
+  `Invoke-DataSpillagePurge.ps1` — the destructive stage, `-PurgeType Recoverable` (default,
+  soft-delete-equivalent) or `PermanentlyDelete` (requires a second, independent
+  `-ConfirmPermanentDelete` switch)), validate/ (`Test-DataSpillageSearchAndPurge.ps1`),
+  rollback.md, reviews.md. Built entirely on **Microsoft Graph** (`ediscoveryCase`/
+  `ediscoverySearch`/`purgeData`, v1.0), not the S&C PowerShell `New-ComplianceSearchAction
+  -Purge` path Microsoft's own current docs still show for interactive use — `docs/
+  automation-surface.md` §3 already documents (from the `premium-legal-hold-and-export` sibling)
+  that app-only auth for eDiscovery S&C PowerShell cmdlets is unsupported by Microsoft, and this
+  build confirmed a fully-documented, fully-supported Graph equivalent exists
+  (`ediscoverySearch: purgeData`, Application permission `eDiscovery.ReadWrite.All`) rather than
+  reopening that unsupported path. Central grounding finding: the classic "Data spillage scenario:
+  Search and purge" walkthrough this item's own follow-up note pointed at, and the classic
+  Content Search overview page, are **both retired** (2025-08-31, now 21Vianet/China-only) — this
+  scenario re-derives the same workflow shape (search → validate → purge → verify) from that
+  retired page's *concept* only, grounding every cmdlet/API call in current, non-retired
+  references instead (the "Find and delete email messages in eDiscovery" guide, and the Graph
+  `ediscoverySearch`/`purgeData`/`estimateStatistics` reference pages). Confirmed a Graph-created
+  case is Premium-tier (100 items/mailbox/run, not Standard's 10), and that `purgeData` does
+  **not** override a litigation hold (Microsoft's FAQ: held mailboxes only have items hidden from
+  view) — closing the gap this scenario's own README §5 step 4 now documents explicitly by
+  chaining to the already-built `priority-cleanup-exchange-data-spillage` sibling for held
+  content, matching Microsoft's own documented "search-and-purge first, then priority cleanup"
+  tip. `docs/rbac-model.md` §4 updated with the granular Compliance Search/Search And Purge role
+  detail; `priority-cleanup-exchange-data-spillage/design.md` §7 backported to point at this new
+  scenario instead of "candidate follow-up" language. Four-lens review caught and fixed a real
+  correctness bug before finalizing (see `reviews.md`, Blue Team finding 3): both deploy scripts
+  originally assumed one async-operation `Location` header URL style by analogy with the
+  `premium-legal-hold-and-export` sibling's own script, when Microsoft's own published example for
+  this action family uses a different (OData-canonical) style — replaced with a shared helper that
+  handles both rather than guessing one. Four follow-ups recorded above under a new section
+  (`### Follow-ups discovered while building the eDiscovery search-and-purge-data-spillage
+  scenario`) rather than duplicated here. Commit: pending (recorded in the next commit). Date:
   2026-09-10.
 
 ## Blocked / needs user
