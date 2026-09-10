@@ -116,7 +116,7 @@ This means:
 - **Nontechnical** improvement actions (documentation and operational actions — e.g., "a written
   information security policy exists," "a personnel background-check policy is documented," "an
   incident response plan is maintained") sync **only within a shared group**. PCI DSS Requirement
-  12 and ISO/IEC 27001:2013's Annex A both require overlapping documentation of this kind (security
+  12 and ISO/IEC 27001:2022's Annex A both require overlapping documentation of this kind (security
   policy, risk assessment, incident response, personnel security). Placing both assessments in the
   same group (`deploy/policy/pci-dss-assessment-manifest.json`'s `group.strategy:
   joinExistingIfPresent`) is what lets completing that documentation work **once** credit both
@@ -125,7 +125,7 @@ This means:
 
 A second grounded rule from the same reference governs whether this is even possible: a group can
 contain multiple assessments for the same **product** (Microsoft 365) only if each is for a
-**different regulation**. PCI DSS v4.0 + ISO/IEC 27001:2013 in one group is explicitly the
+**different regulation**. PCI DSS v4.0 + ISO/IEC 27001:2022 in one group is explicitly the
 supported case (different regulations), not an edge case Microsoft's documentation leaves
 ambiguous. Microsoft also documents that **groups can't be deleted** once created, regardless of
 how many assessments remain in them — see `rollback.md` for what this means for decommissioning.
@@ -182,7 +182,7 @@ flowchart TD
     A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - README.md Section 5] --> B["PCI DSS v4.0 assessment<br/>Group: Security & Compliance Assessments (joined or created)<br/>Scope: Microsoft 365"]
     C["Already-deployed PCI-relevant scenarios in this tenant:<br/>DLP PCI Teams Part 1+2 / Info Protection / Endpoint DLP /<br/>Adaptive Protection / IRM / Audit"] -.built-in automation<br/>feeds technical-action signals<br/>tenant-wide, any group.-> B
     D[Contributors/Assessors] -->|manual work: evidence,<br/>notes, test status,<br/>Excel Action Update wizard| B
-    E["ISO/IEC 27001:2013 assessment<br/>(assess-against-iso27001, if deployed)<br/>same group"] <-.nontechnical improvement-action<br/>updates sync within the shared group only.-> B
+    E["ISO/IEC 27001:2022 assessment<br/>(assess-against-iso27001, if deployed)<br/>same group"] <-.nontechnical improvement-action<br/>updates sync within the shared group only.-> B
     B --> F[Compliance score<br/>Controls tab<br/>native Reports page]
     G["Admin changes a Compliance Manager<br/>role or automation-trust setting<br/>(tenant-wide, not assessment-scoped)"] --> H["Unified audit log:<br/>ComplianceManagerRolesChange /<br/>ComplianceManagerAutomationLevelChange /<br/>ComplianceManagerAutomationChange"]
     H --> I["REUSED: assess-against-iso27001/deploy/<br/>Export-ComplianceManagerAuditTrail.ps1"]

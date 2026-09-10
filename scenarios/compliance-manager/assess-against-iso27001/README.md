@@ -1,16 +1,16 @@
-# Compliance Manager — Assess Against ISO/IEC 27001:2013
+# Compliance Manager — Assess Against ISO/IEC 27001:2022
 
 ## 1. Scenario summary
 
 Stands up a dedicated **Microsoft Purview Compliance Manager** assessment against the
-**ISO/IEC 27001:2013** premium regulatory template, gives it a deliberate grouping and role
+**ISO/IEC 27001:2022** premium regulatory template, gives it a deliberate grouping and role
 structure, and layers one genuinely scriptable piece of monitoring on top: a rolling export of the
 only Compliance-Manager-specific events Microsoft's audit log documents (role changes and
 automated-testing trust changes). Because Compliance Manager itself has no write API, most of this
 scenario is a precise, repeatable **portal runbook** rather than a script — see §5 and `design.md`
 §2 for why that is the correct, current-best-practice shape for this scenario, not a shortcut.
 
-**Who it's for:** a security/compliance team pursuing ISO/IEC 27001:2013 certification (or
+**Who it's for:** a security/compliance team pursuing ISO/IEC 27001:2022 certification (or
 maintaining an existing ISMS) that wants a single, scored, audit-ready view of how Microsoft 365
 controls map to Annex A — and, ideally, a team that has already deployed some of this library's
 DLP/Information Protection/Insider Risk Management scenarios and wants Compliance Manager's
@@ -18,15 +18,20 @@ built-in automation to give them credit for that work.
 
 ## 2. Business/regulatory driver
 
-**ISO/IEC 27001:2013** (and its 2022 successor edition — Compliance Manager currently offers the
-:2013 template; see §11) is the internationally recognized standard for an Information Security
-Management System (ISMS). An organization pursuing certification, renewing an existing
-certificate, or answering a customer/partner security questionnaire that asks "are you ISO 27001
-certified / aligned?" needs a control-by-control, evidenced answer — not a narrative claim.
-Compliance Manager's ISO/IEC 27001:2013 premium template exists specifically to produce that
-evidence for the Microsoft 365 portion of the estate: a scored assessment, per-control status, and
-an exportable report an internal auditor or external QSA-equivalent assessor can review
-[[1]](#references).
+**ISO/IEC 27001:2022** is the current edition of the internationally recognized standard for an
+Information Security Management System (ISMS), and the one this scenario targets: the industry-wide
+IAF-mandated transition window closed October 31, 2025 — every ISO/IEC 27001:2013 certificate had
+to expire or be reissued against :2022 by that date, and certification bodies stopped conducting
+initial/recertification audits against :2013 after April 30, 2024 [[18]](#references). Compliance
+Manager's template catalog still lists :2013 alongside :2022 (see §11), but :2013 is not the
+correct choice for a new assessment as of this build — see `design.md` §5b for the full grounding
+behind this scenario's switch from an earlier draft that recommended :2013. An organization
+pursuing certification, renewing an existing certificate, or answering a customer/partner security
+questionnaire that asks "are you ISO 27001 certified / aligned?" needs a control-by-control,
+evidenced answer — not a narrative claim. Compliance Manager's ISO/IEC 27001:2022 premium template
+exists specifically to produce that evidence for the Microsoft 365 portion of the estate: a scored
+assessment, per-control status, and an exportable report an internal auditor or external
+QSA-equivalent assessor can review [[17]](#references).
 
 This is a governance/evidence control, not a technical control — it does not itself reduce risk
 the way a DLP policy or a sensitivity label does. Its value is making the technical controls this
@@ -41,7 +46,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Compliance Manager base access | **Office 365 / Microsoft 365** license (any tier) | Compliance Manager itself is available at all subscription levels; only premium regulatory templates require more [[9]](#references) |
-| ISO/IEC 27001:2013 premium template | **A5/E5/G5** (3 free premium templates of choice, post-Dec-2022 licensing change) **or** the purchased **Compliance Manager premium assessment add-on**, **or** a **90-day premium assessments trial** (25 templates) | ISO 27001 was an *included* template before the December 2022 licensing change; it now counts against the free-3 allotment like any other premium template — do not assume a pre-2022 deployment guide's licensing claim still holds [[10]](#references) |
+| ISO/IEC 27001:2022 premium template | **A5/E5/G5** (3 free premium templates of choice, post-Dec-2022 licensing change) **or** the purchased **Compliance Manager premium assessment add-on**, **or** a **90-day premium assessments trial** (25 templates) | ISO 27001 was an *included* template before the December 2022 licensing change; it now counts against the free-3 allotment like any other premium template — do not assume a pre-2022 deployment guide's licensing claim still holds. **VERIFY:** whether :2013 and :2022 (listed as two separate catalog entries, §11) consume one shared license slot as a "regulation family" (the way Microsoft documents for CMMC's five levels) or two independent slots — not stated either way in the regulations-list/licensing references this scenario cites [[10]](#references) |
 | Role to create/administer the assessment | **Compliance Manager Administration** (or **Compliance Manager Assessor** to create; **Global Administrator** also works) | See §"Create assessments" role requirement, and `docs/rbac-model.md` §4 for the Purview role-group mapping [[3]](#references) |
 | Role to edit/test without creating | **Compliance Manager Contribution** (create + edit) or **Compliance Manager Assessor** (edit only, no create) | Assign the narrowest role per person — see `deploy/policy/iso27001-assessment-manifest.json` |
 | Role for read-only visibility | **Compliance Manager Reader** | Entra mapping: Global Reader / Security Reader also grants read access [[3]](#references) |
@@ -56,7 +61,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 
 ```mermaid
 flowchart TD
-    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - Section 5] --> B["ISO/IEC 27001:2013 assessment<br/>Group: Security & Compliance Assessments<br/>Scope: Microsoft 365"]
+    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - Section 5] --> B["ISO/IEC 27001:2022 assessment<br/>Group: Security & Compliance Assessments<br/>Scope: Microsoft 365"]
     C["Already-deployed scenarios in this tenant:<br/>DLP / Information Protection / IRM"] -.built-in automation<br/>feeds signals.-> B
     D[Contributors/Assessors] -->|manual work: evidence,<br/>notes, test status,<br/>Excel Action Update wizard| B
     B --> E[Compliance score<br/>Controls tab<br/>native Reports page]
@@ -87,9 +92,11 @@ runs independently on its own schedule, reading (never writing) the unified audi
 3. Sign in to the [Microsoft Purview portal](https://purview.microsoft.com) → **Compliance
    Manager** → **Assessments** → **Add assessment**.
 4. On **Base your assessment on a regulation** → **Select regulation** → search for and select
-   **ISO/IEC 27001:2013** → **Save** → confirm → **Next** [[2]](#references).
+   **ISO/IEC 27001:2022** (not the separately listed **ISO/IEC 27001:2013** entry — §2/§11 explain
+   why :2022 is the correct choice for a new assessment as of this build) → **Save** → confirm →
+   **Next** [[2]](#references).
 5. On **Add name and group**: enter a unique assessment name (this scenario's default:
-   `ISO/IEC 27001:2013 - Microsoft 365 Estate` — assessment names must be unique tenant-wide and
+   `ISO/IEC 27001:2022 - Microsoft 365 Estate` — assessment names must be unique tenant-wide and
    effectively can't be renamed without deleting and recreating). Choose **Create new group**
    with the name from the manifest (`Security & Compliance Assessments`) unless an existing group
    is the deliberate, planned target → **Next**.
@@ -103,7 +110,7 @@ runs independently on its own schedule, reading (never writing) the unified audi
    stakeholder at Administration by default [[3]](#references).
 9. **Do not** rely on the tenant's default **Data Protection Baseline** assessment as a substitute
    for step 4–7 — it blends NIST CSF/ISO/FedRAMP/GDPR elements and is not itself a citable
-   ISO/IEC 27001:2013 control set (`design.md` §5) [[4]](#references).
+   ISO/IEC 27001:2022 control set (`design.md` §5) [[4]](#references).
 
 ### Ongoing portal work — testing and evidencing controls (also has no script path)
 
@@ -149,8 +156,8 @@ own for anything, including its own audit footprint (design.md §2 and §4).
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Regulation/template | ISO/IEC 27001:2013 | Premium template — see §3 licensing |
-| Assessment name | `ISO/IEC 27001:2013 - Microsoft 365 Estate` | Effectively permanent once created |
+| Regulation/template | ISO/IEC 27001:2022 | Premium template — see §3 licensing. Not :2013 — see §2/§11 |
+| Assessment name | `ISO/IEC 27001:2022 - Microsoft 365 Estate` | Effectively permanent once created |
 | Group | `Security & Compliance Assessments` (new) | Permanent — group membership can't be changed after assessment creation |
 | Services in scope | Microsoft 365 only | Multicloud is an explicit non-goal — `design.md` §7 |
 | Recommended role split | Administration: 1–2 people · Contribution/Assessor: control owners · Reader: auditors/leadership | See `deploy/policy/iso27001-assessment-manifest.json` |
@@ -238,7 +245,7 @@ independently.
 
 ## 10. Cost & licensing notes
 
-- **Premium-template licensing, not PAYG.** ISO/IEC 27001:2013 is a premium regulatory template —
+- **Premium-template licensing, not PAYG.** ISO/IEC 27001:2022 is a premium regulatory template —
   cost is either 1 of the tenant's 3 free A5/E5/G5 premium-template slots, a purchased **Compliance
   Manager premium assessment add-on**, or a time-boxed free trial (§3). There is no Azure
   consumption/PAYG component for Compliance Manager itself [[9]](#references)[[10]](#references).
@@ -295,10 +302,27 @@ independently.
 - **The "Action Update" Excel bulk-import file's exact column schema is not scripted here.** See
   `design.md` §7 (Non-goals) for why fabricating it would violate `AGENTS.md` §4 — this is a
   tracked follow-up in `PROGRESS.md` once a real exported file can be inspected.
-- **Compliance Manager offers ISO/IEC 27001:2013, not the 2022 edition, as a template today.**
-  VERIFY current template availability at deploy time — Microsoft periodically adds/updates
-  regulatory templates, and a 2022-edition template (if since added) would be the more current
-  choice for a new certification effort.
+- **Compliance Manager's Regulations page lists both ISO/IEC 27001:2013 and ISO/IEC 27001:2022 as
+  separate premium templates** (confirmed by direct fetch of `compliance-manager-regulations-list`,
+  2026-09-10) — do not select :2013 by mistake when following §5 step 4; they are two distinct,
+  independently-licensed catalog entries, not one template with a version dropdown. This scenario
+  originally recommended :2013 (its first Microsoft Learn grounding pass only surfaced :2013
+  documentation) and was corrected to :2022 once the industry-wide certification transition
+  deadline (October 31, 2025 — `design.md` §5b) made :2013 the wrong default for a new assessment.
+  A tenant with a pre-existing :2013 assessment from an earlier deployment of this scenario is not
+  automatically upgraded — see `design.md` §5b for the recommended migration path (Compliance
+  Manager documents no assessment-to-assessment copy/upgrade action).
+- **No dedicated Microsoft Learn page under `/compliance/regulatory/` is branded for the :2022
+  Compliance-Manager template specifically**, unlike :2013's own
+  `compliance/regulatory/offering-iso-27001` page. The only ":2022"-titled Learn page found during
+  this grounding pass (`azure/compliance/offerings/offering-iso-27001`) documents Azure's own
+  ISO/IEC 27001:2022 certification, not the customer-facing Compliance Manager premium template —
+  this scenario cites `compliance-manager-regulations-list` for the template's existence instead of
+  reusing the :2013 page's URL as if it also covered :2022. See `design.md` §5b.
+- **VERIFY:** whether the :2013 and :2022 templates consume one shared premium-license slot as a
+  "regulation family" (the documented behavior for CMMC's five levels) or two independent slots —
+  not stated either way in the sources this scenario cites. Relevant only to a tenant that
+  deliberately keeps both templates active (e.g. during a :2013→:2022 assessment migration); see §3.
 - **This scenario doesn't verify Microsoft's per-control improvement-action mapping.** `design.md`
   §6 explains why that specific claim can't be grounded from public docs — treat the "deploy
   DLP/IP/IRM scenarios first" recommendation as directionally correct, not as a guarantee of any
@@ -326,6 +350,9 @@ independently.
 14. Audit log activities — Compliance Manager activities table (the 3 documented operations) — <https://learn.microsoft.com/purview/audit-log-activities#compliance-manager-activities>
 15. Search-UnifiedAuditLog reference — <https://learn.microsoft.com/powershell/module/exchangepowershell/search-unifiedauditlog>
 16. Search the audit log for deleted mailbox items — permissions section (View-Only Audit Logs / Audit Logs Exchange Online role requirement) — <https://learn.microsoft.com/purview/audit-log-search-deleted-mailbox-items#verify-administrator-permissions>
+17. Compliance Manager regulations list — Premium regulations / Global section, lists ISO/IEC 27001:2013 and ISO/IEC 27001:2022 as separate entries (direct fetch, 2026-09-10; same URL as reference 10) — <https://learn.microsoft.com/purview/compliance-manager-regulations-list#premium-regulations>
+18. IAF MD 26:2023 — Transition Requirements for ISO/IEC 27001 (International Accreditation Forum mandatory document: initial/recertification audits to :2013 stopped after April 30, 2024; all :2013 certificates expire or are reissued against :2022 by October 31, 2025) — <https://iaf.nu/iaf_system/uploads/documents/IAF_MD26_Issue_2_15012023.pdf>
+19. Microsoft 365 - ISO 27001:2022 Certificate (2024-2027) — Microsoft's own current Office 365/Microsoft 365 ISO/IEC 27001 certification cycle, linked from reference 1's FAQ — <https://servicetrust.microsoft.com/DocumentPage/6af50cea-280c-4859-acff-bd1ea8e2660a>
 
 > Re-verify all links and the premium-template licensing model against current Microsoft Learn
 > before a customer-facing assessment or sale — Compliance Manager's regulation catalog and

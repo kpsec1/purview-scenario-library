@@ -1,4 +1,4 @@
-# Four-Lens Review — Compliance Manager: Assess Against ISO/IEC 27001:2013
+# Four-Lens Review — Compliance Manager: Assess Against ISO/IEC 27001:2022
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One
 round of findings below; all **Fix** items were applied to the scenario before this file was
@@ -107,7 +107,7 @@ actually produce.
   operational mitigation (quarterly Entra role cross-check) rather than a silent gap, which is
   exactly what a board/audit committee should see.
 - **Compliance mapping:** correctly scoped to being an *evidence and tracking* mechanism for
-  ISO/IEC 27001:2013, not a claim of certification or of technical risk reduction — `README.md`
+  ISO/IEC 27001:2022, not a claim of certification or of technical risk reduction — `README.md`
   §11 explicitly repeats Microsoft's own "a high score isn't proof of compliance" caveat rather
   than letting a buyer over-read the tooling.
 - **Change-management impact:** the recommended deployment order (deploy technical controls first,
@@ -144,10 +144,23 @@ No Fix/Fail items from this lens.
    effort in 2026?** The 2022 edition superseded 2013 as the standard organizations actually
    certify against; recommending the older template without flagging this could misdirect a buyer
    pursuing fresh certification.
-   - **Resolution:** Added an explicit item to `README.md` §11 flagging this as a VERIFY — confirm
-     current template availability (2013 vs. 2022 edition, or both) in the tenant's **Regulations**
-     page at deploy time, since Compliance Manager's template catalog changes over time and this
-     scenario's own Microsoft Learn search only surfaced :2013 documentation as of this build.
+   - **Original resolution (superseded — see correction below):** Added an item to `README.md` §11
+     flagging this as a VERIFY — confirm current template availability (2013 vs. 2022 edition, or
+     both) in the tenant's **Regulations** page at deploy time, since this scenario's own Microsoft
+     Learn search only surfaced :2013 documentation as of the original build.
+   - **Correction (2026-09-10, re-grounded via the Microsoft Learn MCP tool, PROGRESS.md follow-up
+     item):** the VERIFY above is now resolved, not merely re-flagged. Direct fetch of
+     `compliance-manager-regulations-list` confirms both :2013 and :2022 are live, separate premium
+     templates. The IAF's mandatory transition document (IAF MD 26) closed the industry-wide
+     :2013→:2022 certification transition window on October 31, 2025, with certification bodies
+     having already stopped initial/recertification audits against :2013 after April 30, 2024 — both
+     dates are now in the past. Microsoft's own Microsoft 365/Office 365 ISO/IEC 27001 certificate is
+     itself now the "2022 Certificate (2024-2027)" cycle. This scenario, its manifest, and its
+     validate script were switched to recommend and deploy **ISO/IEC 27001:2022** as the default —
+     see `design.md` §5b for the full grounding and the disclosed citation gap (no dedicated
+     `/compliance/regulatory/` Learn page is branded for the :2022 Compliance-Manager template
+     specifically, unlike :2013's own page). The original finding's underlying concern (recommending
+     the wrong edition to a 2026 buyer) is now fully addressed rather than deferred.
 3. **Is building a dedicated assessment instead of extending the Data Protection Baseline the
    right call, or does it read as reinventing something Microsoft already ships for free?**
    - **Resolution:** `design.md` §5 addresses this directly, using the same reasoning pattern this
@@ -180,7 +193,19 @@ No remaining Fail after resolution.
 | 🔴 Red Team | Fix | 3 (implicit-Entra-role blind spot, closed with documentation + operational mitigation; Excel-upload gap, confirmed already correctly scoped; Reports-page 6-month retention gap, closed with a quarterly export recommendation) | Closed |
 | 🔵 Blue Team | Fix | 3 (manual-checklist burden, confirmed consistent with existing repo precedent; alert-routing scope, confirmed consistent with existing repo precedent; severity clarity, confirmed already correct) | Closed |
 | 🎩 CISO | Pass | 0 | — |
-| 🟦 Microsoft Product Owner | Fix | 5 (no-write-API shape, confirmed correct and independently re-verified; 2013-vs-2022 template, closed with a VERIFY; Data Protection Baseline reinvention question, closed with design rationale; licensing accuracy, confirmed; role-name accuracy, confirmed) | Closed |
+| 🟦 Microsoft Product Owner | Fix | 5 (no-write-API shape, confirmed correct and independently re-verified; 2013-vs-2022 template, originally closed with a VERIFY, now fully resolved 2026-09-10 — scenario switched to :2022; Data Protection Baseline reinvention question, closed with design rationale; licensing accuracy, confirmed; role-name accuracy, confirmed) | Closed |
 
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`, and
 `deploy/`. No Fail items were raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+## Correction addendum (2026-09-10)
+
+A dedicated `PROGRESS.md` follow-up item ("ISO/IEC 27001:2022 premium template is now confirmed to
+exist," recorded while grounding the sibling `pci-dss-assessment` scenario) asked this scenario's
+own :2013-vs-:2022 VERIFY (Microsoft Product Owner finding 2, above) to be revisited. A fresh
+grounding pass this run resolved it definitively rather than re-deferring it: this scenario, its
+`design.md` (new §5b), its deploy manifest, and its validate script were all switched from
+ISO/IEC 27001:2013 to **ISO/IEC 27001:2022** as the recommended and scripted template. No other
+finding in this review round was reopened or affected — the switch is a regulation-name/citation
+change throughout the fragment's docs and manifest, not a change to the audit-trail script's logic,
+the role model, or any of the four lenses' other conclusions.

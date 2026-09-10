@@ -9,7 +9,7 @@
     "strategy": "joinExistingIfPresent",
     "name": "Security & Compliance Assessments",
     "note": "If scenarios/compliance-manager/assess-against-iso27001/ (or any other Compliance Manager assessment) is already deployed in this tenant using this same group name, ADD this PCI DSS assessment to that existing group rather than creating a new one. If this is the tenant's first Compliance Manager assessment, create a new group with this name so future assessments join it. See design.md Section 6 for exactly what group membership does and does not buy you - the benefit is narrower than 'shared credit for every control.'",
-    "groupingRule": "Microsoft documents that a group can contain multiple assessments for the SAME product only if each one is for a DIFFERENT regulation (compliance-manager-assessments, 'Groups for assessments') - PCI DSS v4.0 + ISO/IEC 27001:2013 in one group is an explicitly supported combination, not an edge case."
+    "groupingRule": "Microsoft documents that a group can contain multiple assessments for the SAME product only if each one is for a DIFFERENT regulation (compliance-manager-assessments, 'Groups for assessments') - PCI DSS v4.0 + ISO/IEC 27001:2022 in one group is an explicitly supported combination, not an edge case."
   },
   "servicesInScope": [
     "Microsoft 365"

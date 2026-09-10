@@ -1426,14 +1426,29 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   on it for correctness — the script's real de-duplication key hashes the full raw payload instead.
   Confirming the actual shape would let a future revision surface richer, grounded columns (e.g.
   which specific improvement action or role was changed) instead of the current opaque JSON blob.
-- [ ] **ISO/IEC 27001:2022 premium template is now confirmed to exist** — found while grounding the
+- [x] **ISO/IEC 27001:2022 premium template is now confirmed to exist** — found while grounding the
   `pci-dss-assessment` sibling scenario: Compliance Manager's current `compliance-manager-
   regulations-list` premium-regulations catalog lists both "ISO/IEC 27001:2013" and "ISO/IEC
   27001:2022" as separate templates (2022 is the edition organizations now actually certify
   against). `assess-against-iso27001/README.md` §11's original VERIFY ("only :2013 was found") is
   now out of date. Update that scenario's `README.md`/`design.md` to acknowledge the :2022 template
   exists and either switch the recommended template to it or explicitly justify staying on :2013 —
-  not done in this turn to keep this fragment scoped to `pci-dss-assessment` alone.
+  **closed** (see DONE below): re-fetched `compliance-manager-regulations-list` directly (confirming
+  both templates are still live), then independently grounded the industry-wide IAF MD 26
+  :2013→:2022 certification transition (initial/recertification audits to :2013 stopped April 30,
+  2024; all :2013 certificates had to expire or be reissued against :2022 by October 31, 2025 — both
+  now in the past) and confirmed Microsoft's own M365/O365 ISO 27001 certificate is itself now the
+  "2022 Certificate (2024-2027)" cycle. `assess-against-iso27001`'s `README.md`, `design.md` (new
+  §5b), `reviews.md` (MPO finding 2 resolution updated, correction addendum added), `rollback.md`,
+  its deploy manifest, and its validate script were all switched from :2013 to **ISO/IEC 27001:2022**
+  as the recommended/scripted template, closing the VERIFY with a decision rather than re-deferring
+  it. Stale `27001:2013` cross-references in the two sibling scenarios that name this assessment
+  (`pci-dss-assessment`'s group-pairing docs/manifest, `entra-privileged-role-monitoring`'s
+  compliance-mapping citations) were corrected in the same pass — the latter also needed the Annex A
+  clause number itself fixed (2013's separate "A.9 Access Control" domain doesn't carry over to
+  2022's consolidated 4-theme/93-control structure; access control now sits under Organizational
+  Controls, A.5), not just a 2013→2022 text substitution, since ISO's 2022 revision renumbered and
+  merged Annex A rather than just re-dating it.
 - [x] `scenarios/compliance-manager/pci-dss-assessment/` (already tracked above, under the DLP
   PCI Teams follow-ups) — **built** (see DONE below), and cross-linked back into
   `assess-against-iso27001`'s manifest as a sibling assessment in the same `Security & Compliance
@@ -2137,6 +2152,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   script's own `.NOTES`/`validate/Test-FinraSupervisionEvidence.ps1` both flag this as an open item.
 
 ## DONE
+- [x] **`scenarios/compliance-manager/assess-against-iso27001/` — switch to ISO/IEC 27001:2022** —
+  commit PENDING — 2026-09-10. Closes the "ISO/IEC 27001:2022 premium template is now confirmed to
+  exist" follow-up above and fully resolves this scenario's own Microsoft Product Owner finding 2
+  (`reviews.md`), previously closed only with a VERIFY. Grounding (Microsoft Learn MCP + WebSearch,
+  both available this run): (1) direct fetch of `compliance-manager-regulations-list` confirms
+  ISO/IEC 27001:2013 and ISO/IEC 27001:2022 are two separate, currently-live premium templates in
+  Compliance Manager's catalog; (2) the International Accreditation Forum's mandatory transition
+  document (IAF MD 26) closed the industry-wide :2013→:2022 certification transition window —
+  certification bodies stopped initial/recertification audits against :2013 after April 30, 2024,
+  and every :2013 certificate had to expire or be reissued against :2022 by October 31, 2025, both
+  now in the past; (3) Microsoft's own Microsoft 365/Office 365 ISO/IEC 27001 certificate is itself
+  now the "2022 Certificate (2024-2027)" cycle. Switched the scenario's regulation/template
+  recommendation from :2013 to **ISO/IEC 27001:2022** throughout `README.md` (title, §1-§2, §3
+  table, §4 diagram, §5 steps, §6 config table, §10, §11 gotchas rewritten with the full grounding
+  and a disclosed citation gap — no dedicated `/compliance/regulatory/` Learn page is branded for
+  the :2022 Compliance-Manager template the way :2013 has one — and §12 references 17-19 added),
+  `design.md` (title, §1, §3, §5, new §5b carrying the full transition grounding, §9 diagram),
+  `reviews.md` (title, MPO finding 2's resolution updated in place plus a new correction addendum,
+  summary table), `rollback.md` (title + regulation mention), the deploy manifest
+  (`iso27001-assessment-manifest.json` — `regulation`/`assessmentName` switched, a new
+  `regulationNote` added, schema version bumped), and `validate/Test-ComplianceManagerAuditTrail.ps1`
+  (default `-AssessmentName` and checklist text). Also corrected now-stale `27001:2013` cross-
+  references in two sibling scenarios that name this assessment: `pci-dss-assessment` (group-pairing
+  prose, manifest `groupingRule`, rollback text, README diagram) and
+  `entra-privileged-role-monitoring` (compliance-mapping citations in `README.md` §2 and
+  `reviews.md`) — the latter needed more than a text substitution: 2013's separate "Annex A.9 Access
+  Control" domain doesn't carry over to 2022's consolidated 4-theme/93-control Annex A structure
+  (access control now sits under the Organizational Controls theme, A.5), independently verified via
+  WebSearch across multiple corroborating sources before correcting rather than assuming the old
+  clause number still applied. No change to the audit-trail script's logic, role model, or any other
+  finding across all three scenarios' reviews — this is a regulation-name/citation correction
+  throughout, not a functional change.
 - [x] **`scenarios/communication-compliance/financial-regulatory-supervision/`** — commit `16b3641` —
   2026-09-10. Full scenario (README, design, deploy, validate, rollback,
   four-lens review) closing the FINRA/SEC-oriented follow-up deferred from

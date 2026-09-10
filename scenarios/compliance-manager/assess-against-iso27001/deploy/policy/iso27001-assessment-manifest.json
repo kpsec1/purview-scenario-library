@@ -1,8 +1,9 @@
 {
   "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Compliance Manager has no documented REST, Graph, or PowerShell write API for assessment creation, control mapping, or improvement-action status/evidence updates as of this writing (docs/automation-surface.md has no routing-table row for Compliance Manager; see design.md Section 2). No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal wizard in README.md Section 5, so the deployed assessment can be diffed against intent during review instead of relying on institutional memory of what was clicked. This follows the identical precedent set by scenarios/insider-risk/departing-employee-data-theft/deploy/policy/departing-employee-policy-manifest.json for another portal-only Purview surface.",
-  "regulation": "ISO/IEC 27001:2013",
+  "regulation": "ISO/IEC 27001:2022",
+  "regulationNote": "Compliance Manager's Regulations page lists ISO/IEC 27001:2013 and ISO/IEC 27001:2022 as two separate premium templates (compliance-manager-regulations-list, re-fetched 2026-09-10). This manifest targets :2022 because the industry-wide IAF MD 26 transition period ended October 31, 2025 - all ISO/IEC 27001:2013 certificates must have expired or been reissued against :2022 by that date, and certification bodies stopped conducting initial/recertification audits to :2013 after April 30, 2024. See README.md Section 2/Section 11 and design.md Section 5b.",
   "regulationTier": "Premium template - counts against the tenant's purchased or A5/E5/G5 3-free-premium-template allotment. See README.md Section 3.",
-  "assessmentName": "ISO/IEC 27001:2013 - Microsoft 365 Estate",
+  "assessmentName": "ISO/IEC 27001:2022 - Microsoft 365 Estate",
   "assessmentNameNote": "Assessment names must be unique tenant-wide (Microsoft Learn: compliance-manager-assessments). Confirm before creating - like a DLP policy name elsewhere in this repo, it cannot be changed by renaming after creation without deleting and recreating.",
   "group": {
     "strategy": "createNew",
@@ -36,6 +37,6 @@
     ],
     "note": "The only three Compliance-Manager-specific operations documented in Microsoft's audit-log-activities reference as of this build (design.md Section 4). Monitored on a recurring schedule by deploy/Export-ComplianceManagerAuditTrail.ps1 - see README.md Section 5."
   },
-  "schemaVersion": "1.0",
-  "lastUpdated": "2026-09-03"
+  "schemaVersion": "1.1",
+  "lastUpdated": "2026-09-10"
 }

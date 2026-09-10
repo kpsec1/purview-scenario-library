@@ -19,8 +19,10 @@ generating a single Purview-specific audit event.
 
 ## 2. Business/regulatory driver
 
-Least-privilege and separation-of-duties controls (ISO/IEC 27001:2013 Annex A.9 access control,
-SOC 2 CC6, and equivalent frameworks) require an organization to know **who can access or modify a
+Least-privilege and separation-of-duties controls (ISO/IEC 27001:2022 Annex A access-control
+requirements — consolidated under the Organizational Controls theme, A.5, in the 2022 revision's
+93-control structure, not the 2013 edition's separate 14-domain "A.9 Access Control" clause — plus
+SOC 2 CC6 and equivalent frameworks) require an organization to know **who can access or modify a
 control's evidence**, not just who the control's own tooling reports as having access. Compliance
 Manager's own **User access** settings page — the surface `assess-against-iso27001/README.md` §5
 step 8 uses to assign roles — provably does not list users who hold Compliance Manager access

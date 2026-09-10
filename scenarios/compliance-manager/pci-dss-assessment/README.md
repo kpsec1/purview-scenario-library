@@ -63,7 +63,7 @@ flowchart TD
     A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - Section 5] --> B["PCI DSS v4.0 assessment<br/>Group: Security & Compliance Assessments<br/>Scope: Microsoft 365"]
     C["Already-deployed PCI-relevant scenarios:<br/>DLP PCI Teams Part 1+2 / Info Protection /<br/>Endpoint DLP / Adaptive Protection / IRM / Audit"] -.built-in automation<br/>feeds technical-action signals<br/>tenant-wide, any group.-> B
     D[Contributors/Assessors] -->|manual work: evidence,<br/>notes, test status,<br/>Excel Action Update wizard| B
-    E["ISO/IEC 27001:2013 assessment<br/>(assess-against-iso27001, if deployed)<br/>same group"] <-.nontechnical improvement-action<br/>updates sync within the shared group only.-> B
+    E["ISO/IEC 27001:2022 assessment<br/>(assess-against-iso27001, if deployed)<br/>same group"] <-.nontechnical improvement-action<br/>updates sync within the shared group only.-> B
     B --> F[Compliance score<br/>Controls tab<br/>native Reports page]
     G["Admin changes a Compliance Manager<br/>role or automation-trust setting"] --> H["Unified audit log:<br/>ComplianceManagerRolesChange /<br/>ComplianceManagerAutomationLevelChange /<br/>ComplianceManagerAutomationChange"]
     H --> I["REUSED: assess-against-iso27001/deploy/<br/>Export-ComplianceManagerAuditTrail.ps1"]

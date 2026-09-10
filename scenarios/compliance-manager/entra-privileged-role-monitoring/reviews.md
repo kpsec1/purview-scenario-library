@@ -97,8 +97,9 @@ No remaining Fail after resolution.
   before this scenario existed — the two Red Team findings became documented residual risk with
   concrete mitigation paths, exactly what a board/audit committee should be shown.
 - **Compliance mapping:** directly supports least-privilege/separation-of-duties evidence for
-  ISO/IEC 27001:2013 Annex A.9 and SOC 2 CC6 — a natural, correctly-scoped complement to
-  `assess-against-iso27001` rather than a standalone claim.
+  ISO/IEC 27001:2022's Annex A access-control requirements (Organizational Controls theme, A.5) and
+  SOC 2 CC6 — a natural, correctly-scoped complement to `assess-against-iso27001` rather than a
+  standalone claim.
 - **Change-management impact:** near-zero — one new scheduled script, no new portal object, no new
   role grant beyond a single least-privileged Graph application permission for the automation
   identity.

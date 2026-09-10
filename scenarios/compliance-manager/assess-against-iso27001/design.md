@@ -1,10 +1,10 @@
-# Design — Compliance Manager: Assess Against ISO/IEC 27001:2013
+# Design — Compliance Manager: Assess Against ISO/IEC 27001:2022
 
 ## 1. Problem statement
 
 A security/compliance team that has already implemented technical controls elsewhere in this
 library (DLP, sensitivity labels, retention, Insider Risk Management) needs a single, scored,
-audit-ready view of how those controls — plus everything else ISO/IEC 27001:2013's Annex A
+audit-ready view of how those controls — plus everything else ISO/IEC 27001:2022's Annex A
 covers — map to a recognized management-system standard, for a certification audit, a customer
 security questionnaire, or an internal ISMS (Information Security Management System) review.
 Microsoft Purview Compliance Manager ships a **premium regulatory template** for exactly this
@@ -58,7 +58,7 @@ shortcut.
 
 ## 3. Design goals
 
-1. Stand up a **dedicated ISO/IEC 27001:2013 assessment** (not just rely on the default Data
+1. Stand up a **dedicated ISO/IEC 27001:2022 assessment** (not just rely on the default Data
    Protection Baseline assessment, which blends NIST CSF/ISO/FedRAMP/GDPR elements and is not
    itself sufficient evidence for an ISO 27001 audit — see §5 below) with a deliberate grouping
    strategy and a minimal, correct services scope.
@@ -121,14 +121,60 @@ change to this one's own script; see `README.md` §11.
 
 Every tenant already has the **Data Protection Baseline** default assessment (free at every
 subscription level), which draws elements from NIST CSF, ISO, FedRAMP, and GDPR — not a complete,
-citable ISO/IEC 27001:2013 control set, and not swappable into one. Building on it instead of a
+citable ISO/IEC 27001:2022 control set, and not swappable into one. Building on it instead of a
 dedicated ISO 27001 assessment would produce a compliance score that mixes frameworks in a way no
 auditor can cleanly map back to Annex A, and — like the tenant's default (weak) Teams DLP policy
 in `scenarios/dlp/pci-teams-exfil-block/design.md` §3a — the baseline assessment is a starting
 point Microsoft explicitly documents as such, not a substitute for the framework-specific premium
-template. This scenario deploys a dedicated, named ISO/IEC 27001:2013 assessment for the same
+template. This scenario deploys a dedicated, named ISO/IEC 27001:2022 assessment for the same
 class of reason that scenario deploys a dedicated DLP policy: a shared, generic default should not
 silently carry one control's specific evidentiary weight.
+
+## 5b. Why :2022, not :2013 (re-grounded 2026-09-10, supersedes this scenario's original VERIFY)
+
+The original build of this scenario (`reviews.md`, Microsoft Product Owner finding 2) flagged the
+:2013-vs-:2022 template choice as an open VERIFY rather than a decision, because its Microsoft
+Learn search at the time only surfaced :2013 documentation. A fresh grounding pass (Microsoft
+Learn MCP, re-fetched 2026-09-10) resolves this:
+
+1. **Both templates exist side by side today.** Compliance Manager's `compliance-manager-
+   regulations-list` article lists **ISO/IEC 27001:2013** and **ISO/IEC 27001:2022** as two
+   separate entries under Premium regulations → Global — confirmed by direct fetch, not merely a
+   search snippet [[17]](#references, `README.md`).
+2. **The industry-wide transition window has closed.** The International Accreditation Forum's
+   mandatory transition document (IAF MD 26) set the following, now-elapsed deadlines: certification
+   bodies stopped conducting **initial or recertification** audits against ISO/IEC 27001:2013 after
+   **April 30, 2024**, and every ISO/IEC 27001:2013 certificate had to **expire or be reissued**
+   against :2022 by **October 31, 2025** [[18]](#references, `README.md`). As of this build's date (2026-09-10),
+   both deadlines are in the past — an organization pursuing a *new* certification, or maintaining
+   an existing one, has no path that still ends in a valid :2013 certificate.
+3. **Microsoft's own certification has already moved.** The Office 365/Microsoft 365 ISO/IEC 27001
+   certificate Microsoft cites from its own compliance offering page is now the **"Microsoft 365 -
+   ISO 27001:2022 Certificate (2024-2027)"** [[19]](#references, `README.md`) — Microsoft assesses its own cloud
+   infrastructure against :2022, not :2013, as of the 2024-2027 cycle.
+
+**Conclusion:** this scenario now targets **ISO/IEC 27001:2022** as the regulation/template
+(`README.md` §5 step 4, manifest `regulation`/`assessmentName`). The :2013 template is left in
+place in Microsoft's catalog (likely for tenants with assessments already built against it, or as
+a historical reference) but is not the correct choice for a new assessment as of this build — a
+buyer who already has a live :2013 assessment from an earlier deployment of this scenario should
+plan a controlled migration (create the new :2022 assessment per the runbook, carry over
+evidence/notes manually per improvement action — Compliance Manager does not document an
+assessment-to-assessment copy/upgrade path — then retire the :2013 assessment per `rollback.md`),
+not an in-place edit: an assessment's regulation/template is set at creation and is not
+documented as changeable afterward, the same "effectively permanent" constraint that already
+governs this assessment's name and group (`README.md` §5, steps 4-5).
+
+**One residual citation gap, disclosed rather than papered over:** unlike :2013 (which has a
+dedicated, citable "ISO/IEC 27001:2013 Information Security Management Standards" page under
+`learn.microsoft.com/compliance/regulatory/offering-iso-27001` that explicitly names the
+Compliance Manager premium template), this grounding pass found **no equivalent dedicated page
+under that same `/compliance/regulatory/` path branded for :2022** — the only ":2022"-titled page
+found lives under `/azure/compliance/offerings/offering-iso-27001` and documents **Azure's own**
+ISO/IEC 27001:2022 certification, not the Compliance Manager customer-facing premium template
+specifically. This scenario therefore cites `compliance-manager-regulations-list` (which does
+directly name the :2022 template) as the primary source for the template's existence, rather than
+reusing the :2013 page's URL as if it also covered :2022 — see `README.md` §11 and §12.
 
 ## 6. How this assessment gets its evidence (design intent, not a verified per-control map)
 
@@ -182,7 +228,7 @@ scenarios first, then creating this assessment, is the recommended order (`READM
 
 ```mermaid
 flowchart TD
-    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook] --> B[ISO/IEC 27001:2013 assessment<br/>created in Compliance Manager]
+    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook] --> B[ISO/IEC 27001:2022 assessment<br/>created in Compliance Manager]
     C[Already-deployed DLP / Information Protection /<br/>IRM scenarios in this tenant] -.built-in automation<br/>feeds signals.-> B
     D[Compliance Manager Contributors/Assessors] -->|manual work: evidence, notes,<br/>test status, Excel Action Update wizard| B
     B --> E[Compliance score + Controls tab<br/>+ native Reports page 7-day/6-month history]

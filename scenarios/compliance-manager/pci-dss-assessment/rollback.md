@@ -31,7 +31,7 @@ consideration specific to this scenario:
 - **This is permanent — you cannot get it back.** Re-creating means running the full portal
   runbook in `README.md` §5 again from scratch.
 - Improvement actions that don't appear in any other assessment are deleted along with it.
-  Improvement actions **shared with the ISO/IEC 27001:2013 assessment in the same group are
+  Improvement actions **shared with the ISO/IEC 27001:2022 assessment in the same group are
   unaffected** — deleting this PCI DSS assessment does not touch `assess-against-iso27001` or the
   nontechnical improvement-action data it shares with it (`design.md` §6).
 - **Export a report first** (`README.md` §7, "Export an assessment report") — the exported Excel
@@ -66,7 +66,7 @@ depends on whether the ISO 27001 scenario is also deployed:
   rollback procedures govern their controls independently.
 - **A compliance score history already reported** via Compliance Manager's native Reports page —
   Microsoft's own product data, independent of this scenario's CSV export.
-- **The ISO/IEC 27001:2013 assessment or its shared group**, as stated in Stage 3 above.
+- **The ISO/IEC 27001:2022 assessment or its shared group**, as stated in Stage 3 above.
 
 ## Verification after rollback
 

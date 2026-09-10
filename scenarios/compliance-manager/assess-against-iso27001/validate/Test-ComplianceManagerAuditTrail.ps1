@@ -58,7 +58,7 @@ param(
     [string]$AuditTrailCsvPath,
 
     [Parameter()]
-    [string]$AssessmentName = 'ISO/IEC 27001:2013 - Microsoft 365 Estate'
+    [string]$AssessmentName = 'ISO/IEC 27001:2022 - Microsoft 365 Estate'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -136,7 +136,7 @@ else {
 
 Write-Host "`n=== MANUAL VERIFICATION CHECKLIST (no read API exists to automate these - design.md Section 2) ===" -ForegroundColor Cyan
 $manualChecklist = @(
-    "Purview portal > Compliance Manager > Assessments: an assessment named '$AssessmentName' exists, based on the ISO/IEC 27001:2013 regulation, with status other than blank/None (i.e. at least one control has been tested)."
+    "Purview portal > Compliance Manager > Assessments: an assessment named '$AssessmentName' exists, based on the ISO/IEC 27001:2022 regulation, with status other than blank/None (i.e. at least one control has been tested)."
     "Assessment's Services tab shows Microsoft 365 in scope, matching deploy/policy/iso27001-assessment-manifest.json's servicesInScope."
     "Assessment belongs to the group named in deploy/policy/iso27001-assessment-manifest.json's group.name - confirm before adding further assessments to it, since group membership can't be changed later."
     "Compliance Manager > Settings > User access (or the assessment's own Manage user access pane): role assignments match deploy/policy/iso27001-assessment-manifest.json's roleAssignments - no one holds Administration who only needs Assessor/Reader."

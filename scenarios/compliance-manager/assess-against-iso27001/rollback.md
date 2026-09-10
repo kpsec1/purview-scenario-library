@@ -1,4 +1,4 @@
-# Rollback — Compliance Manager: Assess Against ISO/IEC 27001:2013
+# Rollback — Compliance Manager: Assess Against ISO/IEC 27001:2022
 
 This scenario has two independent things to roll back: the **assessment itself** (portal-only, no
 script touches it) and the **audit-trail export** (this scenario's one scripted artifact). Handle
@@ -26,7 +26,7 @@ role assignments per user. Does not affect the assessment's data or other users'
 From the assessment's details page → **Delete assessment**. Microsoft's own guidance:
 
 - **This is permanent — you cannot get it back.** Re-creating means running the full portal
-  runbook in `README.md` §5 again from scratch, including re-selecting the ISO/IEC 27001:2013
+  runbook in `README.md` §5 again from scratch, including re-selecting the ISO/IEC 27001:2022
   regulation and re-scoping services.
 - Improvement actions that don't appear in any other assessment are deleted along with it.
   Improvement actions shared with another assessment in the same group (or another group) are
