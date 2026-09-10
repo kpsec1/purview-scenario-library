@@ -1800,7 +1800,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
-- [x] **`scenarios/ediscovery/search-and-purge-teams-messages/`** — commit `<pending>` — 2026-09-10.
+- [x] **`scenarios/ediscovery/search-and-purge-teams-messages/`** — commit `d95d1e2` — 2026-09-10.
   Closes the `PROGRESS.md` follow-up raised in `search-and-purge-data-spillage/design.md` §8 (the
   `purgeAreas: teamsMessages` half of the same `purgeData` Graph action, scoped out of that mailbox-
   focused fragment). Full README (12-section skeleton), design.md, deploy/
