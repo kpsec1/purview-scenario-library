@@ -163,8 +163,9 @@ No remaining Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`,
 `deploy/Add-CopilotExternalEmailBlockRule.ps1`, and
 `validate/Test-CopilotExternalEmailBlockRule.ps1`. No Fail items were raised. This fragment meets
-the definition of done in `AGENTS.md` §9, with two open technical caveats disclosed consistently
-everywhere they matter rather than hidden or resolved by guessing: (1) the `-FromScope` condition is
-not independently confirmed for the Microsoft 365 Copilot location, and (2) the "files and emails"
-Copilot-DLP licensing tier this rule requires is not yet reflected in `docs/licensing-matrix.md`
-(tracked separately in `PROGRESS.md`).
+the definition of done in `AGENTS.md` §9, with one open technical caveat disclosed consistently
+everywhere it matters rather than hidden or resolved by guessing: the `-FromScope` condition is
+not independently confirmed for the Microsoft 365 Copilot location. The second caveat this round
+raised — the "files and emails" Copilot-DLP licensing tier this rule requires not yet being
+reflected in `docs/licensing-matrix.md` — is now closed: `docs/licensing-matrix.md` §2 carries the
+same tier split as its own dedicated DSPM for AI rows (see `PROGRESS.md`).

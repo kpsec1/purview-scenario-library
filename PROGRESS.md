@@ -1097,14 +1097,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Re-open once Microsoft publishes a PowerShell/Graph cmdlet for either the "Inline web traffic" /
   Adaptive app scopes location, or for referencing a Sensitive Service Domain Group inside
   `New-DlpComplianceRule -EndpointDlpRestrictions`.
-- [ ] Consider updating `docs/licensing-matrix.md` to add the DLP-for-Copilot licensing-tier split
+- [x] Consider updating `docs/licensing-matrix.md` to add the DLP-for-Copilot licensing-tier split
   (label-exclusion rule requires E5-tier; prompt-safeguard/web-grounding rule is available at all
-  Copilot licensing tiers) as its own row/footnote — currently only cited inline in
-  `copilot-sensitive-data-exposure/README.md` §3, not surfaced in the cross-cutting matrix.
-  `copilot-external-email-block/README.md` §3/§10 independently confirmed (via Microsoft's Purview
-  service description) that the external-email-block rule sits in the same higher "files and emails"
-  tier as the label-exclusion rule, not the broader "prompts" tier — fold that citation in too when
-  this item is picked up.
+  Copilot licensing tiers) as its own row/footnote — **built** (see DONE below).
 
 ### Follow-ups discovered while building the Copilot External Email Block scenario
 - [ ] VERIFY (pilot tenant, or a future Microsoft-published PowerShell worked example): whether the
@@ -2012,6 +2007,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
+- [x] **`docs/licensing-matrix.md` — DLP-for-Copilot licensing-tier split** — commit `PENDING` —
+  2026-09-10. Cross-cutting doc sub-task (no new scenario, no four-lens review required — same
+  precedent as the earlier Intune-RBAC/`docs/rbac-model.md` backport). Added two new rows under the
+  existing **DSPM for AI** module in §2's master matrix: DLP for Microsoft Copilot restricting
+  **files & emails** (label-exclusion rule) is **E5**-only (Microsoft 365/Office 365 E5/A5, Purview
+  Suite/EDU/FLW, or M365/A5/F5 Information Protection and Governance — listed **No** on Business
+  Basic/Standard/Premium and the E3/A3/A1/G3/F3/F1 tiers), while DLP that safeguards **prompts**
+  (SIT-based web-grounding / full-block rule) is available on **all** Microsoft 365 Copilot and
+  Copilot Chat licenses regardless of underlying M365 tier. Sourced from the same Microsoft Purview
+  service description page (`#microsoft-purview-data-loss-prevention-dlp-for-microsoft-copilot`)
+  already fetched and quoted verbatim during the `copilot-sensitive-data-exposure` and
+  `copilot-external-email-block` builds — new footnote `[14]` added to the matrix's Sources section
+  citing the same URL. `learn.microsoft.com` was unreachable from this run's network egress (blocked
+  by the proxy) and public WebSearch only surfaced unofficial third-party blog summaries (one of
+  which conflicts with the repo's own directly-quoted official-page text on the label-exclusion
+  tier) — rather than overwrite an already-verbatim-quoted official citation with a lower-confidence
+  secondary source, this fragment consolidated the existing, precisely-quoted in-repo grounding
+  (`copilot-external-email-block/README.md` §3, itself sourced from a direct Learn fetch in an
+  earlier session) into the cross-cutting doc, rather than re-deriving the fact from scratch. Closed
+  the loop on both scenarios that flagged this gap: `copilot-external-email-block/README.md` §3 and
+  `reviews.md` (its Microsoft Product Owner "Fix" finding) updated in place to point at the now-
+  populated matrix instead of "not yet reflected."
 - [x] **`scenarios/data-lifecycle-management/event-based-retention-and-disposition/`** — commit
   `3659e77` — 2026-09-10. Event-based retention for departed-employee records: a retention event
   type (`New-ComplianceRetentionEventType`), an event-based label (`New-ComplianceTag -EventType`,

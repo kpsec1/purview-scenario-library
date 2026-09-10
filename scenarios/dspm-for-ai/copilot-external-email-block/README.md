@@ -70,9 +70,9 @@ Governance) and Office 365 E5/A5; "Purview DLP to safeguard **prompts**" is list
 tier with Copilot access [[6]](#references). This rule's condition ("Email is received from") is a
 files-and-emails-category capability by Microsoft's own grouping, not a prompt-safeguarding one — so,
 unlike Rule 1/Rule 2's broader Copilot-DLP-for-prompts entitlement, this rule specifically requires
-the higher E5-class tier the "files and emails" row names. Re-verify against `docs/licensing-matrix.md`
-and current Microsoft Learn before a sales commitment — this split is not yet reflected in that
-cross-cutting doc (tracked as a separate `PROGRESS.md` follow-up).
+the higher E5-class tier the "files and emails" row names. This split is now also reflected in
+`docs/licensing-matrix.md` §2 (DSPM for AI rows) — re-verify both against current Microsoft Learn
+before a sales commitment.
 
 > Verify current entitlement names and the preview/GA status of this specific action against
 > `docs/licensing-matrix.md` and current Microsoft Learn before a sales commitment — this is the

@@ -6,7 +6,7 @@
 > **Verify before you quote a customer.** Licensing changes frequently. The Microsoft
 > **Product Terms** and the **Purview service description** are the only authoritative sources —
 > this matrix is a practitioner's summary grounded in Microsoft Learn, current as of
-> **2026-09-05**. Sources are linked at the bottom; re-check them before a sales commitment.
+> **2026-09-10**. Sources are linked at the bottom; re-check them before a sales commitment.
 
 ---
 
@@ -57,6 +57,8 @@ equivalents unless noted — always confirm against Product Terms for GCC/GCC-Hi
 | **Insider Risk Management** | All IRM policies | **E5**, Suite, or **E5 Insider Risk Management** add-on | Cloud/GenAI indicators on non-M365 → **PAYG** (Data Security processing unit/day) |
 | **Adaptive Protection** | Risk-based dynamic DLP/label enforcement | **E5** / Suite (built on IRM + DLP) | Inherits IRM + DLP prerequisites |
 | **DSPM for AI** | Copilot & GenAI data-security posture | See `ai-microsoft-purview-considerations` | Audit of Copilot activity included in **E5**; broader protections may bill **PAYG** |
+| DSPM for AI | DLP for Microsoft Copilot — restrict **files & emails** (label-exclusion rule) | **E5** — Microsoft 365/Office 365 E5/A5, **Microsoft Purview Suite/EDU/FLW**, or **Microsoft 365/A5/F5 Information Protection and Governance** | Listed **No** on Business Basic/Standard/Premium and the E3/A3/A1/G3/F3/F1 tiers [[14]](#sources-microsoft-learn--re-verify-before-quoting) |
+| DSPM for AI | DLP for Microsoft Copilot — safeguard **prompts** (SIT-based web-grounding / full-block rule) | **All Microsoft 365 Copilot and Copilot Chat licenses**, any underlying M365 tier | Listed **Yes*** for every Copilot-licensed tier — do not over-quote E5 for this half of the policy [[14]](#sources-microsoft-learn--re-verify-before-quoting) |
 | **Data Map** | Scan & classify into Data Map | Azure subscription | No scan charge once on Unified Catalog PAYG or Enterprise tier |
 | **Unified Catalog** | Curate/govern technical assets | **PAYG only** | Metered: **unique governed assets/day** |
 | **Data Quality / Health** | DQ rules, scorecards, health mgmt | **PAYG only** | Metered: **Data Governance Processing Units (DGPU)**; Basic/Standard/Advanced SKUs |
@@ -259,6 +261,8 @@ before budgeting anything at all.
   eligibility gate for the auto-deployed policy) — <https://learn.microsoft.com/entra/identity/conditional-access/managed-policies>
 - [13] Security defaults in Microsoft Entra ID (zero-cost alternative for tenants without Entra ID
   P1/P2) — <https://learn.microsoft.com/entra/fundamentals/security-defaults>
+- [14] Microsoft Purview service description — Data Loss Prevention (DLP) for Microsoft Copilot
+  licensing table (the "files and emails" vs. "prompts" tier split) — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-data-loss-prevention-dlp-for-microsoft-copilot>
 
 > **Disclaimer:** SKU names, tiers, and PAYG meters change. Nothing here is a licensing guarantee.
 > Validate every entitlement against Product Terms and the service description for the customer's
