@@ -4363,8 +4363,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this action family uses a different (OData-canonical) style — replaced with a shared helper that
   handles both rather than guessing one. Four follow-ups recorded above under a new section
   (`### Follow-ups discovered while building the eDiscovery search-and-purge-data-spillage
-  scenario`) rather than duplicated here. Commit: pending (recorded in the next commit). Date:
-  2026-09-10.
+  scenario`) rather than duplicated here. Commit: `fe612a9`. Date: 2026-09-10.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**
