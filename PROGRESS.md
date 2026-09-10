@@ -1680,12 +1680,46 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   automation-surface citation ("surface 1" → surface 2) was also corrected as a low-risk side effect of
   already being in the file (the broader repo-wide "surface N" drift sweep below remains separately
   tracked and unresolved).
-- [ ] `scenarios/data-lifecycle-management/adaptive-scope-retention/` — auto-apply/retention scoped by
+- [x] `scenarios/data-lifecycle-management/adaptive-scope-retention/` — auto-apply/retention scoped by
   an **adaptive scope** (attribute-driven) instead of static locations, for large/dynamic estates
-  (noted as out of scope here).
+  (noted as out of scope here). — **built** (see DONE below): full README/design/deploy/validate/
+  rollback/reviews, modeling Microsoft's own documented "retain executives' content longer, via the
+  Title attribute" adaptive-scope example. Genuine gap disclosed rather than guessed: which of an
+  adaptive scope's covered locations a `New-RetentionCompliancePolicy -AdaptiveScopeLocation` policy
+  actually applies to isn't exposed as a documented parameter on that cmdlet (no `-ExchangeLocation`/
+  `-OneDriveLocation` equivalent in that parameter set) — flagged `VERIFY (pilot tenant)` in
+  `README.md` §11 and `design.md` §4 rather than assumed. New follow-ups recorded below.
 - [ ] Consider **file plan descriptors** (`-FilePlanProperty`: categories, citations, authorities,
   provisions) for a formal records file plan, and bulk label/policy creation via the documented CSV
   script (`bulk-create-publish-labels-using-powershell`).
+
+### Follow-ups discovered while building the DLM adaptive-scope-retention scenario
+- [ ] VERIFY (pilot tenant): whether a `New-RetentionCompliancePolicy -AdaptiveScopeLocation` policy
+  applies to **all** locations the referenced adaptive scope's `LocationType` covers (e.g., for a
+  `User`-type scope: Exchange mailboxes, OneDrive, Teams chats, Copilot experiences, Enterprise/Other
+  AI apps, Teams call logs) by default, or whether some undocumented mechanism narrows it — no
+  `-ExchangeLocation`/`-OneDriveLocation`-equivalent parameter was found on this cmdlet's
+  `AdaptiveScopeLocation` parameter set, unlike the portal's own "choose locations" step in the
+  adaptive-policy creation flow. `adaptive-scope-retention/README.md` §11 and `design.md` §4 disclose
+  this rather than guessing an answer.
+- [ ] VERIFY: the property name(s) `Get-AdaptiveScopeMembers`'s first (metadata) returned element
+  actually exposes (total count, page size, more-pages flag, watermark) — Microsoft's reference
+  describes them in prose but doesn't name them. `adaptive-scope-retention/validate/
+  Test-AdaptiveScopeRetention.ps1` prints the metadata object generically (`Format-List`) rather than
+  guessing a property name like `TotalMemberCount`.
+- [ ] `scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/` (or fold into this
+  scenario as a `-part2`) — the auto-apply retention **label** variant of the same pattern
+  (`New-RetentionComplianceRule -ApplyComplianceTag` instead of `-RetentionComplianceAction`, same
+  `-AdaptiveScopeLocation` policy) — noted as a non-goal in `adaptive-scope-retention/design.md` §7.
+- [ ] Consider `-LocationType Site` and `-LocationType Group` adaptive-scope variants (SharePoint site
+  properties / KeyQL, and Microsoft 365 Group attributes respectively) as companions to this
+  scenario's `User`-type example — `adaptive-scope-retention/design.md` §7.
+- [ ] Ground the exact `Search-UnifiedAuditLog` `-RecordType` value (if any is required alongside
+  `-Operations`) for the adaptive-scope/retention-policy audit operations
+  (`NewAdaptiveScope`/`SetAdaptiveScope`/`RemoveAdaptiveScope`/`ApplicableAdaptiveScopeChange` and the
+  `*RetentionCompliancePolicy`/`*RetentionComplianceRule` operations) cited in
+  `adaptive-scope-retention/README.md` §8 — not resolved in this build; the README's guidance uses
+  `-Operations` alone rather than asserting an unconfirmed `-RecordType`.
 
 ### Follow-ups discovered while building the DLM publish-labels-for-manual-application scenario
 - [ ] VERIFY (pilot tenant): `Get-RetentionComplianceRule`'s `PublishComplianceTag` read-back property

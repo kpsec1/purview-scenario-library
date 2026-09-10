@@ -1,0 +1,33 @@
+{
+  "_comment": "Config for deploy/New-AdaptiveScopeRetention.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Models the documented Microsoft example (Learn 'Adaptive or static policy scopes for retention'): a longer retention period for executives, targeted by the Entra 'Title' attribute via an adaptive scope instead of a static distribution list that goes stale as people are promoted, hired, or leave.",
+  "adaptiveScope": {
+    "name": "Executives - US and Canada",
+    "comment": "User-type adaptive scope: Title matches a defined set of executive titles. Re-evaluated daily against Entra ID; no group to maintain.",
+    "locationType": "User",
+    "administrativeUnit": "",
+    "filterConditions": {
+      "conjunction": "Or",
+      "conditions": [
+        { "name": "Title", "operator": "Equals", "value": "Chief Executive Officer" },
+        { "name": "Title", "operator": "Equals", "value": "Chief Financial Officer" },
+        { "name": "Title", "operator": "Equals", "value": "Chief Operating Officer" },
+        { "name": "Title", "operator": "Equals", "value": "General Counsel" }
+      ]
+    },
+    "_scopeNote": "locationType: User | Group | Site (New-AdaptiveScope -LocationType) - determines which attributes/properties are valid and which policy locations the scope can be used with (README.md Section 6). administrativeUnit: Entra administrative unit GUID to restrict scope membership to a delegated boundary; leave blank for Full directory. filterConditions maps to -FilterConditions (the simple-query-builder shape: a top-level Conditions array of {Name,Operator,Value} with a Conjunction of And/Or; Operator is one of Equals/NotEquals/StartsWith/NotStartsWith). For the advanced query builder instead (OPATH for User/Group, KeyQL for Site), use -RawQuery - not shown here; see README.md Section 6. Illustrative titles - set to your organization's real executive roster signal, validated by HR/Legal."
+  },
+  "policy": {
+    "name": "Executive Communications Retention - Adaptive",
+    "comment": "Retain-only (Keep) policy for executives' Exchange email and OneDrive content, scoped by the adaptive scope above instead of a static distribution list.",
+    "enabled": true,
+    "_policyNote": "Maps to New-RetentionCompliancePolicy -AdaptiveScopeLocation <adaptiveScope.name>. This parameter set has no separate -ExchangeLocation/-OneDriveLocation/-SharePointLocation toggles - unlike a static-scope policy, which User-type locations (Exchange mailboxes, OneDrive, Teams chats, Copilot experiences, etc.) the policy actually applies to is not exposed as a documented parameter here - see the VERIFY note in README.md Section 11 and design.md Section 4 before assuming Exchange+OneDrive-only in production."
+  },
+  "rule": {
+    "retentionDurationDays": 3650,
+    "retentionComplianceAction": "Keep",
+    "expirationDateOption": "CreationAgeInDays",
+    "_ruleNote": "Maps to New-RetentionComplianceRule -RetentionDuration -RetentionComplianceAction -ExpirationDateOption. retentionComplianceAction: Keep | Delete | KeepAndDelete. retentionDurationDays: 3650 (~10 years) is an illustrative litigation-readiness / corporate-governance baseline for executive communications - tune to your actual obligation. expirationDateOption: CreationAgeInDays | ModificationAgeInDays (SharePoint/OneDrive/Groups only) - when the clock starts. This is Keep-only (retain, do not delete) by default; no records/lock semantics are involved, unlike the sibling retention-labels-financial-records scenario."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-10"
+}
