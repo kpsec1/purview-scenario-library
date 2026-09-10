@@ -131,18 +131,15 @@ other DLP scenarios cite.
    in §8 below.
 9. **Submit**, then **Done**.
 
-> **Not scripted, portal-only, documented here for completeness:** Microsoft also offers a third
-> Copilot-location action — **Prevent Copilot from processing content > Processing prompts**,
-> which fully blocks a Copilot response when the prompt itself contains a chosen SIT (rather than
-> only restricting web-search grounding). As of this build it is in **preview**, and Microsoft's
-> own `New-DlpComplianceRule`/`New-DlpCompliancePolicy` reference documentation does not publish a
-> worked PowerShell example for it (only for the label-exclusion and web-grounding-restriction
-> actions this scenario's script uses). Per this repo's no-invented-cmdlets rule
-   (`AGENTS.md` §4), the deploy script does **not** attempt to construct this rule from an
-   unconfirmed `-RestrictAccess` setting string. **VERIFY**: if a buyer wants full prompt-response
-   blocking (not just web-grounding restriction) for SIT matches, add this third rule through the
-   portal directly and confirm its resulting `Get-DlpComplianceRule` output shape before scripting
-   it into this repo.
+> **Now scripted as a separate, extending scenario:** Microsoft also offers a third Copilot-location
+> action — **Prevent Copilot from processing content > Processing prompts**, which fully blocks a
+> Copilot response when the prompt itself contains a chosen SIT (rather than only restricting
+> web-search grounding). A dedicated re-grounding pass (`PROGRESS.md`, 2026-09-10) found Microsoft
+> has since published a fuller worked use case for this action (still preview, still no worked
+> PowerShell example for this exact condition/action combination) — see
+> `scenarios/dspm-for-ai/copilot-prompt-full-block/`, which adds this action as a third rule on this
+> same policy, with the remaining PowerShell-grounding gap explicitly disclosed rather than resolved
+> by guessing (`AGENTS.md` §4).
 
 **DSPM for AI oversharing assessment (no activation needed, but review the results):**
 
@@ -341,10 +338,11 @@ by this scenario (portal-only, automatic) and has nothing to roll back.
   content (files, email, Teams) to answer a sensitive-looking prompt. Do not present this rule as a
   general "block sensitive prompts" control — it solves a narrower, real problem (sensitive prompt
   fragments leaking to a web search provider), not the oversharing problem.
-- **Full prompt-response blocking ("Processing prompts" action) is intentionally not scripted.**
-  See the callout in §5 — it is a preview feature without a published PowerShell worked example as
-  of this build; add it through the portal and confirm its `Get-DlpComplianceRule` output shape
-  before extending the deploy script to cover it.
+- **Full prompt-response blocking ("Processing prompts" action) is now scripted separately.** See
+  the callout in §5 and `scenarios/dspm-for-ai/copilot-prompt-full-block/`, which adds it as a third
+  rule on this same policy. It remains a preview feature without a published PowerShell worked
+  example for this exact condition/action combination as of that scenario's build — see its own
+  `README.md` §5/§11 for the disclosed gap.
 - **Files uploaded directly into a prompt are not scanned by DLP at all** — Microsoft's
   documentation is explicit that DLP only inspects the text typed into the prompt, not the content
   of an uploaded file [[2]](#references). A user can bypass both rules entirely by uploading a

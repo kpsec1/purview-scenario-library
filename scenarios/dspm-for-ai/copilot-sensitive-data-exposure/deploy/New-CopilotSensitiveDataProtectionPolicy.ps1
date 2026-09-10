@@ -27,9 +27,10 @@
     Does NOT deploy a third, related Copilot-location action - "Prevent Copilot from processing
     content > Processing prompts" (full response block on a sensitive-information-type match, not
     just a web-grounding restriction). That action is in preview and has no published Microsoft
-    PowerShell worked example as of this writing; see README.md §5 and design.md §6. Add it
-    through the portal if needed, and confirm its Get-DlpComplianceRule output shape before
-    extending this script to cover it.
+    PowerShell worked example for this exact condition/action combination as of this writing; see
+    README.md §5 and design.md §6. It is deployed by a separate, extending scenario instead -
+    scenarios/dspm-for-ai/copilot-prompt-full-block/deploy/Add-CopilotPromptFullBlockRule.ps1 - which
+    adds it as a third rule on this same policy and discloses the remaining grounding gap explicitly.
 
 .PARAMETER PolicyName
     Name of the DLP policy. Policy names cannot be changed after creation (Microsoft Learn:

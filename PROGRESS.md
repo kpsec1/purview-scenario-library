@@ -970,13 +970,31 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   rollout of `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` instead of tenant-wide
   `TestWithNotifications` simulation as the only pre-enforcement pilot mechanism. Flagged inline in
   that scenario's `README.md` §11 and `reviews.md` (Red Team).
-- [ ] `scenarios/dspm-for-ai/copilot-prompt-full-block/` (or fold into a future DSPM-for-AI pass) —
-  script the "Prevent Copilot from processing content > Processing prompts" action (full response
-  block on a sensitive-information-type match in the prompt itself), deferred from
-  `copilot-sensitive-data-exposure` because it is a preview feature with no published Microsoft
-  PowerShell worked example as of this build (only the label-exclusion and web-grounding-
-  restriction actions have one) — needs a fresh grounding pass once Microsoft publishes an example
-  or the feature reaches GA.
+- [x] `scenarios/dspm-for-ai/copilot-prompt-full-block/` — **built** (see DONE below): the fresh
+  grounding pass this item asked for found Microsoft has since published a fuller worked use case
+  for the "Prevent Copilot from processing content > Processing prompts" action (Contoso / Canada
+  physical addresses / EU debit card numbers example, and a clearer supported-conditions-and-actions
+  table), though the feature remains preview and Microsoft still has not published a worked
+  PowerShell example combining a CCSI condition with `-RestrictAccess` for this specific action. Built
+  as a rule added to the parent scenario's existing policy (`Add-CopilotPromptFullBlockRule.ps1`),
+  using the only confirmed `-RestrictAccess` setting/value pair for this location
+  (`ExcludeContentProcessing`/`Block`, otherwise documented only for the label-exclusion condition) as
+  a reasoned, explicitly-disclosed inference rather than an invented one — see that scenario's
+  `design.md` §5 for the full reasoning and `README.md` §5/§11 for the carried-forward VERIFY. Parent
+  scenario's `README.md`, `design.md`, and deploy script `.NOTES` cross-linked to the new scenario in
+  place of the old "not scripted" callouts.
+- [ ] VERIFY (pilot tenant, or a future Microsoft-published PowerShell worked example): whether
+  `-RestrictAccess @(@{setting='ExcludeContentProcessing';value='Block'})` is in fact what the portal
+  emits for a `ContentContainsSensitiveInformation`-conditioned rule using the "Processing prompts"
+  full-block action on the Microsoft 365 Copilot location, as opposed to a different, undocumented
+  setting string specific to that condition/action combination. Flagged inline in
+  `copilot-prompt-full-block/README.md` §5/§11, `design.md` §5, the deploy script's `.NOTES`, and
+  checked as `[WARN]` (not `[FAIL]`) by `validate/Test-CopilotPromptFullBlockRule.ps1`.
+- [ ] Consider `scenarios/dspm-for-ai/copilot-external-email-block/` (or fold into a future
+  DSPM-for-AI pass) — script the fourth documented Copilot-location action, "Block external email
+  from being processed" (preview; `Email is received from > External users` condition), explicitly
+  left out of scope by `copilot-prompt-full-block/design.md` §7 to keep that fragment focused on the
+  SIT-in-prompt problem it was named for.
 - [x] `scenarios/dspm-for-ai/third-party-ai-site-adaptive-block/` — the Adaptive-Protection-driven,
   risk-based DLP policies for **third-party** generative AI sites accessed via a browser
   (`DSPM for AI - Block sensitive info from AI sites`, `DSPM for AI - Block elevated risk users
@@ -1800,6 +1818,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
+- [x] **`scenarios/dspm-for-ai/copilot-prompt-full-block/`** — commit `PENDING` — 2026-09-10. Closes
+  the `PROGRESS.md` follow-up carried from `copilot-sensitive-data-exposure/design.md` §6 ("needs a
+  fresh grounding pass once Microsoft publishes an example or the feature reaches GA"). Full README
+  (12-section skeleton), design.md, deploy/ (`Add-CopilotPromptFullBlockRule.ps1` — adds a third rule,
+  `Copilot-Block-SensitivePrompts-FullResponse`, to the parent scenario's existing DLP policy;
+  `Remove-CopilotPromptFullBlockRule.ps1` — disable/`-Purge`, scoped to this one rule only),
+  validate/ (`Test-CopilotPromptFullBlockRule.ps1`), rollback.md, reviews.md (four-lens review — Red
+  Team, Blue Team, and CISO each raised a Fix finding, all resolved). **Grounding result:** Microsoft
+  has published a fuller worked use case for the "Prevent/Restrict Copilot from processing content >
+  Processing prompts" action since the parent scenario's build (Contoso / Canada physical addresses /
+  EU debit card numbers example, a clearer supported-conditions-and-actions table), but the feature
+  remains preview and Microsoft still has not published a worked PowerShell example combining a
+  `ContentContainsSensitiveInformation` condition with `-RestrictAccess` for this specific action —
+  the exact `setting` string is not independently confirmed. Built anyway, using the only confirmed
+  `-RestrictAccess` value pair for this location (`ExcludeContentProcessing`/`Block`, otherwise
+  documented only for a sensitivity-label condition) as a reasoned, disclosed inference — not a
+  fabricated parameter — per `AGENTS.md` §4; see `design.md` §5 for the full reasoning and the new
+  VERIFY item above for the still-open half. Parent scenario's `README.md`, `design.md`, deploy
+  script `.NOTES`, and `reviews.md` (new follow-up review round) cross-linked to this scenario in
+  place of the old "not scripted, portal-only" callouts.
 - [x] **`scenarios/ediscovery/search-and-purge-teams-messages/`** — commit `d95d1e2` — 2026-09-10.
   Closes the `PROGRESS.md` follow-up raised in `search-and-purge-data-spillage/design.md` §8 (the
   `purgeAreas: teamsMessages` half of the same `purgeData` Graph action, scoped out of that mailbox-

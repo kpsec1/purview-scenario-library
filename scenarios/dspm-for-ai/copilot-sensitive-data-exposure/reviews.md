@@ -198,3 +198,27 @@ full re-review.
   closed `PROGRESS.md` item rather than asserting a capability from memory.
 
 No Fix/Fail. Correction confirmed sound.
+
+---
+
+## Follow-up round — 2026-09-10: cross-linking the new Copilot prompt full-block scenario
+
+Triggered by building `scenarios/dspm-for-ai/copilot-prompt-full-block/`, which fulfils the
+`PROGRESS.md` follow-up to re-check the "Processing prompts" full-block action this scenario's
+README §5, §11 and design.md §6 originally flagged as portal-only/not-scripted. Updated those three
+callouts in place to point at the new scenario instead of describing the action as permanently
+unscripted. No code in this scenario's `deploy/`/`validate/` changed — only prose pointing at the new
+extending scenario — so this is a narrow, targeted check.
+
+- **🔴 Red Team — Pass.** No control in this scenario changed; the new scenario's own `reviews.md`
+  carries its own Red Team findings for the newly-added rule.
+- **🔵 Blue Team — Pass.** No detection/alerting surface in this scenario changed.
+- **🎩 CISO — Pass.** Accurately signals to a buyer that the previously-noted gap has a documented
+  (if still partially unconfirmed) path forward, without overstating that the underlying
+  PowerShell-grounding question is fully closed.
+- **🟦 Microsoft Product Owner — Pass.** Confirmed the updated callouts do not overclaim GA status or
+  a fully-confirmed mechanism for the new rule — they accurately say "built separately, gap still
+  disclosed there," matching what `copilot-prompt-full-block/README.md` §5 and `design.md` §5 actually
+  say.
+
+No Fix/Fail. Correction confirmed sound.
