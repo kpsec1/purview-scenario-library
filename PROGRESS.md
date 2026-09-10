@@ -1350,13 +1350,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `classification-coverage-report`'s exact pattern (paginated `Discovery - Query`, client-side tally,
   replace-by-`RunId` trend log) to the `label` field on the same `SearchResultValue` schema — **built**
   (see DONE below).
-- [ ] `scenarios/data-estate-insights/glossary-curation-coverage-report/` — the native "Glossary
+- [x] `scenarios/data-estate-insights/glossary-curation-coverage-report/` — the native "Glossary
   insights"/"Data stewardship" dashboards (term-to-asset attachment rates, active-user counts) use
   different underlying data than `Discovery - Query`'s per-asset `classification`/`label` fields and
   would need a different REST primitive (likely the Unified Catalog Terms operation group this
   repo's `scenarios/unified-catalog/curate-business-glossary/` already grounds) — explicitly scoped
   out of `classification-coverage-report/design.md` §7 as a different data source, not a copy-paste
-  extension of this fragment's pattern.
+  extension of this fragment's pattern — **built** (see DONE below): confirms the Terms operation
+  group (`List`, `List Related Entities`) is the right primitive for term-to-asset attachment and
+  status/completeness KPIs, but also found the classic glossary report targets a *different* term
+  model (classic, Atlas-based) from the one this repo's own `curate-business-glossary` writes to
+  (current Unified Catalog Terms API) — the two are not interchangeable, and the new scenario's
+  KPIs are the Unified-Catalog-model equivalent, not a literal reproduction of the classic report.
+  Active-user/search-telemetry counts remain out of scope: no documented REST operation on any
+  Unified Catalog operation group exposes that data — confirmed, not merely assumed, by this build.
 - [ ] VERIFY (pilot tenant, before production reliance): `classification-coverage-report/deploy/
   Export-ClassificationCoverageReport.ps1`'s `Get-FullBreakdown` warns (but does not fail) when the
   number of records actually paged via `continuationToken` doesn't match the response's own
@@ -1374,6 +1381,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this turn), but the next pass on that scenario (or a dedicated Data Map/Data Lineage grounding
   fragment) should confirm this `mssql://` scheme against a pilot tenant and, if confirmed, update
   that scenario's README/design.md to close the VERIFY instead of requiring manual portal copy.
+
+### Follow-ups discovered while building the Data Estate Insights glossary-curation-coverage-report scenario
+- [ ] VERIFY (pilot tenant): whether `Global Catalog Reader`/`Local Catalog Reader` can see
+  `EXPIRED`-status terms (documented only as "read published artifacts"), or whether `EXPIRED` is
+  treated as no-longer-published and hidden the same way `DRAFT` is. `-PublishedOnly` mode currently
+  treats both Draft and Expired counts as unmeasurable or unset for a reader-only credential;
+  confirming Expired visibility could let a future revision report it without Data Steward.
+  `glossary-curation-coverage-report/README.md` §11 and `design.md` §2 goal 2.
+- [ ] VERIFY (pilot tenant): the actual server-side maximum for `Terms - List`'s `top` query
+  parameter — Microsoft's reference documents the parameter but not a ceiling. This scenario
+  defaults `-PageSize` to a conservative 100 and always follows `nextLink`, so an unconfirmed cap
+  cannot cause silent truncation, but confirming the real maximum would let a future revision tune
+  the default for fewer round-trips at scale. `glossary-curation-coverage-report/deploy/
+  Export-GlossaryCurationCoverageReport.ps1`'s `.NOTES`.
+- [ ] Once Microsoft enumerates valid `Terms - Get Facets` `facets[].name` values beyond the single
+  worked `owner` example, revisit whether a `status`-facet (or similar) request could replace this
+  scenario's per-page client-side status tally with a single aggregate call — see `design.md` §6.
+- [ ] Consider a companion reconciliation script (or an extension to this scenario's own deploy
+  script) that cross-references a tenant still on the **classic, Atlas-based Data Catalog glossary**
+  against Unified Catalog Terms, to help a buyer mid-migration understand which of their two
+  glossaries this report — and which the native classic glossary report — actually covers. Not built
+  here because no Microsoft-documented migration-status API was located during this build; flagged
+  as a real, disclosed gap in `README.md` §11 rather than assumed away.
+- [ ] Once a Data Products or Critical Data Elements scenario in this repo needs "which terms are
+  linked to which data products" (as opposed to this scenario's "which terms are linked to any data
+  asset"), extend the same `List Related Entities` pattern with `entityType=DATAPRODUCT` — the
+  `EntityCategory` enum already documents that value; not built here to keep this fragment scoped to
+  the glossary-health question it was tracked for.
 
 ### Follow-ups discovered while building the Compliance Manager ISO 27001 assessment scenario
 - [ ] `scenarios/compliance-manager/entra-privileged-role-monitoring/` (or fold into a future
@@ -2045,6 +2080,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
+- [x] **`scenarios/data-estate-insights/glossary-curation-coverage-report/`** — commit `PENDING` —
+  2026-09-10. Full scenario (README, design, deploy, validate, rollback, four-lens review) scripting
+  an exportable, historical glossary-curation-coverage report against the Unified Catalog Terms REST
+  API (`2026-03-20-preview`, same version `curate-business-glossary` pins) — status distribution
+  (Draft/Published/Expired), completeness (missing definition/owner/expert), and term-to-asset
+  attachment (`List Related Entities?entityType=DATAASSET`), using the same replace-by-RunId
+  trend-log pattern as `classification-coverage-report`. Direct-fetched the Terms - List/Get, Terms -
+  List Related Entities, and Terms - Get Facets REST reference pages plus the classic-glossary-report
+  and `data-governance-roles-permissions` pages this run; the central finding is that the *native*
+  classic glossary report targets a different, classic Atlas-based glossary model than the Unified
+  Catalog Terms model this repo's own glossary scenario writes to — the two have different status
+  vocabularies (Draft/Approved/Alert/Expired vs. DRAFT/PUBLISHED/EXPIRED) and are not
+  interchangeable, so this scenario reproduces the classic report's *KPI categories* against the new
+  model rather than claiming to replicate the classic report itself (documented explicitly in
+  `design.md` §1/§4 and `README.md` §11, not glossed over). Also confirmed no documented REST
+  operation exposes the native Data Stewardship/Catalog Adoption dashboards' active-user/search
+  telemetry on any Unified Catalog operation group — closing that half of the originating
+  `PROGRESS.md` follow-up as "confirmed absent," not merely unattempted. Defaults to requiring
+  **Data Steward** (the only documented role that can see `DRAFT` terms) with an explicit
+  `-PublishedOnly` mode for a lower-privilege Global/Local-Catalog-Reader-only run, disclosed as a
+  real privilege trade-off rather than claimed at parity with the Data-Reader-only
+  `classification-coverage-report` sibling. Four-lens review raised and resolved: Red Team (Data
+  Steward's write-capable blast radius in default mode; the breakdown JSON's incomplete/unlinked-term
+  names as a governance-weak-point reconnaissance artifact; a `-PublishedOnly` run's different
+  `TotalTerms` meaning going unnoticed in a trend diff — all resolved via README/design/validate
+  additions), Blue Team (a role-permission gap silently reading as a false zero rather than an error
+  — resolved via an incident-response runbook addition); CISO passed without findings; Microsoft
+  Product Owner's one finding (an early draft's classic/new-model conflation) is the same central
+  correction already reflected above. Five new VERIFY/follow-up items recorded above. `pwsh` was not
+  available in this run's environment to syntax-parse the scripts; verified instead by brace/paren
+  balance checks and a full manual read-through (see this fragment's own follow-up list above if a
+  future run has `pwsh` available and wants to close that gap retroactively).
 - [x] **`scenarios/data-quality/connection-and-scorecard-alerts/`** — commit `5f0369a` —
   2026-09-10. Full scenario (README, design, deploy, validate, rollback, four-lens review) scripting
   the two prerequisites `rules-and-scorecards` deliberately left portal-only: the Data Quality
