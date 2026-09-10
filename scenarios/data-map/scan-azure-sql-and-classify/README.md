@@ -262,9 +262,10 @@ relevant.
 
 **Downstream use:** once columns are classified, they become groundwork for
 `scenarios/information-protection/` auto-labeling scope decisions, `scenarios/dlp/` policy
-targeting, and any future Data Estate Insights/classification-coverage reporting fragment in this
-library — this scenario intentionally stops at "classify and make visible," not "act on the
-classification."
+targeting, and `scenarios/data-estate-insights/classification-coverage-report/` — which turns this
+scenario's own `customerdb.dbo.Customers` classification output into an exportable, historical
+coverage trend line — this scenario intentionally stops at "classify and make visible," not "act on
+the classification."
 
 ## 9. Rollback / decommission
 

@@ -1080,10 +1080,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scan-on-premises-sql-server-and-classify/`. This item was left unchecked when those three
   fragments landed; corrected during the `docs/automation-surface.md` §4 Unified Catalog/Data Map
   lineage routing-table fragment's PROGRESS.md pass.
-- [ ] `scenarios/data-map/scan-azure-sql-and-classify/` also assumes downstream scenarios will
+- [x] `scenarios/data-map/scan-azure-sql-and-classify/` also assumes downstream scenarios will
   consume its classification output — once `scenarios/data-estate-insights/
   classification-coverage-report/` (already TODO below) is built, cross-link it back into this
-  scenario's §8 "Downstream use" note.
+  scenario's §8 "Downstream use" note — **built** (see DONE below): `classification-coverage-report`
+  landed some time ago (it already links back to this scenario throughout its own README), but this
+  scenario's own §8 note still said "any future Data Estate Insights/classification-coverage
+  reporting fragment in this library." Replaced with a direct
+  `scenarios/data-estate-insights/classification-coverage-report/` cross-link in
+  `scan-azure-sql-and-classify/README.md` §8.
 
 ### Follow-ups discovered while building the DSPM for AI Copilot sensitive-data-exposure scenario
 - [ ] VERIFY (pilot tenant): whether a `{"Type":"Group","Identity":"..."}` `Inclusions` entry in
@@ -2316,6 +2321,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-map/scan-azure-sql-and-classify/README.md` §8 — cross-link to the built
+  `classification-coverage-report` scenario** — commit PENDING — 2026-09-10. Small, scoped doc
+  fragment (not a new scenario): `classification-coverage-report` landed some time ago and already
+  cross-links back into this scenario throughout its own README, but this scenario's own §8
+  "Downstream use" note still described it only as "any future Data Estate Insights/
+  classification-coverage reporting fragment in this library." Replaced with a direct
+  `scenarios/data-estate-insights/classification-coverage-report/` reference. No code change, no
+  live-tenant dependency; verified the target scenario exists and is complete before editing.
 - [x] **`scenarios/data-lifecycle-management/adaptive-scope-retention/` — adaptive-scope retention for
   executive communications** — commit 36854a6 — 2026-09-10. Full README/design/deploy/validate/
   rollback/reviews; models Microsoft's own documented "retain executives longer via the Title
