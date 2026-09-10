@@ -1818,7 +1818,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
-- [x] **`scenarios/dspm-for-ai/copilot-prompt-full-block/`** — commit `PENDING` — 2026-09-10. Closes
+- [x] **`scenarios/dspm-for-ai/copilot-prompt-full-block/`** — commit `5e1548a` — 2026-09-10. Closes
   the `PROGRESS.md` follow-up carried from `copilot-sensitive-data-exposure/design.md` §6 ("needs a
   fresh grounding pass once Microsoft publishes an example or the feature reaches GA"). Full README
   (12-section skeleton), design.md, deploy/ (`Add-CopilotPromptFullBlockRule.ps1` — adds a third rule,
