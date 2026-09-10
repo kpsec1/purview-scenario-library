@@ -647,8 +647,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this would let every Insider Risk Management scenario in this library that scopes a policy by
   group (not just this one) state its re-scoping cadence guidance with more precision.
 
-### Follow-ups discovered while building the Adaptive Protection dynamic-risk-DLP scenario
-- [ ] `scenarios/dlp/endpoint-dlp-usb-block-adaptive-protection/` (or fold into a future Endpoint
+- [x] `scenarios/dlp/endpoint-dlp-usb-block-adaptive-protection/` (or fold into a future Endpoint
   DLP hardening pass) — script the **Devices** half of Adaptive Protection (risk-based
   clipboard/USB/print/network-share/restricted-app restrictions via `-SharedByIRMUserRisk` +
   `-EndpointDlpRestrictions`), deferred from `dynamic-risk-dlp-enforcement` because
@@ -656,7 +655,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `scenarios/dlp/endpoint-dlp-usb-block/` — needs that VERIFY closed first (ideally via a pilot
   tenant) rather than compounding a second unverified use of the same parameter. Also requires
   either Advanced classification scanning and protection enabled, or an explicit File Type
-  condition, per Microsoft's documented Devices-policy prerequisite.
+  condition, per Microsoft's documented Devices-policy prerequisite. — **built** (see DONE below):
+  this item's own stated blocker was actually already closed by `endpoint-dlp-usb-block`'s own
+  later grounding pass (Print/CopyPaste/ScreenCapture/RemovableMedia/NetworkShare/UnallowedApps
+  Setting names and the Audit/Block/Ignore/Warn enum, confirmed on both `New-`/`Set-
+  DlpComplianceRule`'s official reference pages) — this build re-confirmed that directly via a
+  fresh fetch of both pages rather than trusting the stale PROGRESS.md wording, then scripted the
+  4 of 6 Quick-Setup Devices actions with a fully-grounded `-EndpointDlpRestrictions` shape
+  (RemovableMedia/CopyPaste/NetworkShare/Print). The remaining 2 actions ("Access by restricted
+  apps," cloud/browser-domain upload restriction) remain genuinely unscriptable — Microsoft's own
+  reference documents `UnallowedApps` only as an app-declaration mechanism (not an action), and no
+  Setting name for the cloud/browser restriction is documented anywhere — disclosed precisely as a
+  4-of-6 scope boundary rather than fabricated, per `AGENTS.md` §4. The Devices-only prerequisite
+  is satisfied via Advanced classification scanning and protection (portal-only toggle, confirmed
+  no PowerShell/Graph surface exists), not a File Type condition, because
+  `-ContentFileTypeMatches`'s value syntax is itself unpublished placeholder text on both cmdlet
+  reference pages — a second, related undocumented-parameter finding this build surfaced and
+  disclosed rather than guessed around.
 - [x] `scenarios/adaptive-protection/conditional-access-insider-risk-block/` — script/document
   the Conditional Access "Insider risk" condition integration (Microsoft Entra admin center,
   requires **Microsoft Entra ID P2**), deferred from `dynamic-risk-dlp-enforcement` because it's
@@ -676,6 +691,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   or whether a separate `-ContentIsShared` boolean condition is also required — flagged inline in
   `dynamic-risk-dlp-enforcement/deploy/New-AdaptiveProtectionDlpPolicy.ps1`'s `.NOTES` and
   `README.md` §11.
+
+### Follow-ups discovered while building the Adaptive Protection Devices Endpoint DLP scenario
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples pass): whether a documented
+  `-EndpointDlpRestrictions` rule-level action shape for "Access by restricted apps" or "Upload to
+  a restricted cloud service domain or access from unallowed browsers" has since been published.
+  `endpoint-dlp-usb-block-adaptive-protection`'s scripted rules cover only 4 of Microsoft's 6
+  documented Devices Quick Setup actions because `UnallowedApps`'s only documented example
+  declares an app (not an action), and no Setting name for the cloud/browser restriction is
+  documented anywhere this build found — see that scenario's `README.md` §11 and `design.md`
+  §2/§6/§7. If either is resolved, extend `deploy/New-AdaptiveProtectionDevicesDlpPolicy.ps1`'s
+  two rules to the full 6-action Quick Setup shape.
+- [ ] VERIFY (pilot tenant): `-ContentFileTypeMatches`'s value syntax and valid strings — both
+  `New-DlpComplianceRule` and `Set-DlpComplianceRule`'s official reference pages carry unpublished
+  placeholder text for this parameter as of this writing. `endpoint-dlp-usb-block-adaptive-
+  protection` avoided it entirely (Advanced-classification-scanning prerequisite path instead —
+  see that scenario's `design.md` §4/§6), but resolving this would let a future revision add
+  Microsoft's own file-type-scoped condition and close the file-type-scope divergence disclosed in
+  that scenario's `README.md` §6/§11.
+- [ ] VERIFY (pilot tenant): the disclosed `NotifyUser`/Block tension in
+  `endpoint-dlp-usb-block-adaptive-protection`'s Elevated-block rule — Microsoft's cmdlet reference
+  states Block/Warn values require `NotifyUser`, but the same documented Devices Quick Setup rule
+  table shows "User Notification: Off" for this exact rule. Confirm what a user actually sees
+  (toast/notification present or absent) before describing this rule's user-facing behavior to a
+  customer — see that scenario's `README.md` §11 and `deploy/
+  New-AdaptiveProtectionDevicesDlpPolicy.ps1`'s `.NOTES`.
+- [ ] Consider a cross-cutting follow-up scripting `Set-PolicyConfig -EndpointDlpGlobalSettings`
+  (genuinely documented with worked examples for `UnallowedApp`/`UnallowedBrowser`/
+  `CloudAppRestrictions`/`CloudAppRestrictionList`/`PathExclusion`) as its own scenario or
+  companion script — this defines the tenant-wide restricted-apps/browsers/domains **lists**
+  Endpoint DLP rules reference, distinct from (and not blocked by) the per-rule action-shape gap
+  above. Deferred here because it's shared, tenant-wide state not specific to Adaptive Protection
+  — see `endpoint-dlp-usb-block-adaptive-protection/design.md` §7.
 
 ### Follow-ups discovered while building the Adaptive Protection deleted-content-preservation scenario
 - [ ] VERIFY (pilot tenant): whether the Data Lifecycle Management/Records Management Purview role
@@ -1856,6 +1903,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
+- [x] **`scenarios/dlp/endpoint-dlp-usb-block-adaptive-protection/`** — commit PENDING — 2026-09-10.
+  The Devices half of Adaptive Protection (companion to
+  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement`'s Exchange/Teams half), closing the
+  device-channel bypass that sibling scenario's own Red Team review named explicitly. Full README
+  (12-section skeleton), design.md, deploy/ (`New-AdaptiveProtectionDevicesDlpPolicy.ps1` — one
+  Endpoint DLP policy, two `-SharedByIRMUserRisk`-keyed rules restricting
+  RemovableMedia/CopyPaste/NetworkShare/Print via `-EndpointDlpRestrictions`;
+  `Remove-AdaptiveProtectionDevicesDlpPolicy.ps1` — disable/`-Purge`), validate/
+  (`Test-AdaptiveProtectionDevicesDlpPolicy.ps1`), rollback.md, reviews.md (four-lens review — Red
+  Team, CISO, and Microsoft Product Owner each raised Fix findings, all resolved; Blue Team passed
+  with one clarification).
+  **Grounding result:** re-confirmed directly (fresh fetch of both official cmdlet reference
+  pages, not carried over from the stale PROGRESS.md wording) that the `-EndpointDlpRestrictions`
+  Setting/Value shape for `RemovableMedia`/`CopyPaste`/`NetworkShare`/`Print` is fully documented,
+  unblocking this fragment. Two of Microsoft's six documented Quick Setup Devices actions
+  ("Access by restricted apps," cloud/browser-domain upload restriction) are **not** scripted —
+  `UnallowedApps` is documented only as an app-declaration mechanism (no action shape), and no
+  Setting name for the cloud/browser restriction is documented anywhere this build found;
+  disclosed as a precise 4-of-6 scope boundary (README.md §1/§5/§11, design.md §2/§6/§7) rather
+  than fabricated. The Devices-only "Advanced classification scanning and protection OR File Type
+  condition" prerequisite is satisfied via the former (portal-only, no PowerShell/Graph surface
+  found) because `-ContentFileTypeMatches`'s value syntax is itself unpublished placeholder text
+  on both cmdlet reference pages — a related, previously-unflagged undocumented-parameter finding
+  disclosed rather than guessed around. **New design tradeoff surfaced and disclosed:** because no
+  File Type condition was added, this scenario's rule is *broader* than Microsoft's own Quick
+  Setup rule in file-type scope (applies to any file type, not just Word/Excel/PowerPoint/
+  Archive/Mail) while being *narrower* in activity scope (4 of 6 actions) — both directions
+  documented explicitly rather than left implicit (README.md §6/§11, design.md §6).
 - [x] **`scenarios/dspm-for-ai/copilot-external-email-block/`** — commit `d600eed` — 2026-09-10.
   Closes the `PROGRESS.md` follow-up carried from `copilot-prompt-full-block/design.md` §7 and
   `copilot-sensitive-data-exposure/design.md` §7 (the fourth and final documented Copilot-location
