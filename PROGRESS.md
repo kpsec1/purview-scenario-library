@@ -1856,7 +1856,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
-- [x] **`scenarios/dspm-for-ai/copilot-external-email-block/`** — commit `PENDING` — 2026-09-10.
+- [x] **`scenarios/dspm-for-ai/copilot-external-email-block/`** — commit `d600eed` — 2026-09-10.
   Closes the `PROGRESS.md` follow-up carried from `copilot-prompt-full-block/design.md` §7 and
   `copilot-sensitive-data-exposure/design.md` §7 (the fourth and final documented Copilot-location
   DLP condition/action pair). Full README (12-section skeleton), design.md, deploy/
