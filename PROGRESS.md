@@ -2153,7 +2153,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/compliance-manager/assess-against-iso27001/` — switch to ISO/IEC 27001:2022** —
-  commit PENDING — 2026-09-10. Closes the "ISO/IEC 27001:2022 premium template is now confirmed to
+  commit `984fa9e` — 2026-09-10. Closes the "ISO/IEC 27001:2022 premium template is now confirmed to
   exist" follow-up above and fully resolves this scenario's own Microsoft Product Owner finding 2
   (`reviews.md`), previously closed only with a VERIFY. Grounding (Microsoft Learn MCP + WebSearch,
   both available this run): (1) direct fetch of `compliance-manager-regulations-list` confirms
