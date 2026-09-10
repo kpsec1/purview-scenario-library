@@ -1036,10 +1036,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `curate-business-glossary`'s deploy script sends a minimal practical body instead and flags this
   discrepancy rather than fabricating placeholder values for those fields — confirm the minimal
   body is accepted (or find the correct minimal shape) against a pilot tenant.
-- [ ] Consider a `scenarios/unified-catalog/governance-domain-hierarchy/` (or fold into a future
+- [x] Consider a `scenarios/unified-catalog/governance-domain-hierarchy/` (or fold into a future
   Unified Catalog pass) covering multi-domain parent/child governance hierarchies, custom
   attribute groups, and data estate mappings to Data Map collections — explicitly out of scope in
-  `curate-business-glossary/design.md` §6–7, which models a single standalone domain.
+  `curate-business-glossary/design.md` §6–7, which models a single standalone domain. — **built**
+  (see DONE below): a `Corporate → Sales (→ Sales - EMEA) / Marketing` tree, idempotent by
+  `(name, parentId)` matching (Business Domain has no name-filter Query op, unlike Terms — one full
+  paginated `Enumerate` pass instead), business-concept attribute *values* set per domain (creating
+  the attribute *definitions* themselves confirmed portal-only), and an opt-in data estate mapping
+  whose exact `relatedCollections`/`parentCollection.refName` semantics are flagged VERIFY rather
+  than guessed (Microsoft's own worked examples for that one nested object use meaningless
+  placeholder strings, unlike the rest of the same request body). Four-lens review caught and fixed
+  a real full-replace-PUT bug (`isRestricted` wasn't seeded from the live object like
+  `managedAttributes`/`domains` were, so it would have been silently cleared on a re-run) and added
+  a missing **Governance Domain Owner** row to `docs/rbac-model.md` §5.
 
 ### Follow-ups discovered while building the Unified Catalog manage-data-products scenario
 - [ ] VERIFY (pilot tenant or the Swagger spec linked from the Unified Catalog API overview page):
@@ -1818,6 +1828,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
+- [x] **`scenarios/unified-catalog/governance-domain-hierarchy/`** — commit `(recorded in next
+  commit)` — 2026-09-10. Full README (12-section skeleton), design.md, deploy/
+  (`New-GovernanceDomainHierarchy.ps1` — recursive idempotent upsert of a domain tree, one shared
+  paginated `Enumerate` pass, `(name, parentId)`-keyed matching, business-concept attribute values,
+  opt-in data estate mapping; `Remove-GovernanceDomainHierarchy.ps1` — `-Unpublish`/`-Purge`,
+  deepest-first per Microsoft's documented subdomains-before-parent delete ordering), validate/
+  (`Test-GovernanceDomainHierarchy.ps1`), rollback.md, reviews.md (four-lens review — Red Team,
+  Blue Team, CISO, and Microsoft Product Owner each raised a Fix finding, all resolved). Grounded
+  directly against the Business Domain REST reference (Create/Update/Enumerate/Delete), the
+  governance-domains and business-concept-attributes portal docs, and Microsoft's own
+  Corporate→Sales sample data-governance walkthrough (full citation list in README.md §12).
+  **Real bug caught and fixed by the four-lens review, not just a documentation gap:** the first
+  draft only sent `isRestricted` when the definition file declared it, which — under this API's
+  full-replace-PUT semantics (already flagged once before in `curate-business-glossary/README.md`
+  §11) — would have silently cleared a portal-set restriction on any re-run whose file omitted the
+  field; fixed by seeding it from the live `Enumerate` snapshot like every other field. Also added
+  a missing **Governance Domain Owner** row to `docs/rbac-model.md` §5 (the role this scenario's
+  own Prerequisites table needed to cite, confirmed via Microsoft Learn but not previously listed).
+  **Explicitly deferred as VERIFY, not guessed:** the data estate mapping's
+  `domains[].relatedCollections[].parentCollection.refName` construction — this build's own
+  inference from field names/nesting, since Microsoft's REST reference gives that one nested
+  object no prose description and its worked examples use meaningless placeholder strings unlike
+  the rest of the same request body (design.md §5); the deploy script defaults to attempting it but
+  ships a `-SkipDataEstateMapping` switch and recommends it for a first pilot-tenant run.
 - [x] **`scenarios/dspm-for-ai/copilot-prompt-full-block/`** — commit `5e1548a` — 2026-09-10. Closes
   the `PROGRESS.md` follow-up carried from `copilot-sensitive-data-exposure/design.md` §6 ("needs a
   fresh grounding pass once Microsoft publishes an example or the feature reaches GA"). Full README

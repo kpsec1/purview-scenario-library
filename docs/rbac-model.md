@@ -101,6 +101,7 @@ Data Governance does **not** use the role groups in §4. It has its own three-ti
 | Tenant | **Data Source Administrators** role group | Manage data sources and scans in Data Map |
 | Tenant | **Purview Administrators** role group | Create/edit/delete domains, perform role assignments (Purview Domain Manager + Role Management roles) |
 | **Catalog** | **Governance Domain Creator** | Create governance domains; becomes domain owner by default |
+| **Governance domain** | **Governance Domain Owner** | Edit an existing domain (name, description, status, parent, custom attributes, data estate mapping) — required for any *edit*, distinct from the catalog-level Creator role needed to make a *new* domain; assigned automatically to whoever creates the domain, and to anyone added on the domain's **Roles** tab |
 | Catalog | **Global Catalog Reader** vs. **Local Catalog Reader** | Global = read published concepts across *all* domains without a local reader override; Local = restricts read access to one domain (use for regulatory/legal segregation — overuse defeats federated governance) |
 | Catalog | **Data Health Owner** / **Data Health Reader** | Create/edit vs. read-only on Health management (controls, data quality rules, actions, reports) |
 | Catalog | **Global Asset Curator** | Attach published glossary terms to assets/columns across domains |

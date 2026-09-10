@@ -1,0 +1,58 @@
+{
+  "hierarchy": {
+    "name": "Corporate",
+    "description": "Top-level governance domain for enterprise-wide, highly controlled business concepts and data products that every business unit shares.",
+    "type": "FunctionalUnit",
+    "attributes": [
+      { "name": "Data Classification Tier", "value": "Tier 1 - Enterprise-wide" }
+    ],
+    "dataEstateMapping": {
+      "dataMapDomainName": "Default domain",
+      "collectionReferenceName": "corporate-root",
+      "collectionFriendlyName": "Corporate Root Collection"
+    },
+    "children": [
+      {
+        "name": "Sales",
+        "description": "Business concepts and data products owned by the global Sales organization: pipeline, quota, and customer-facing revenue data.",
+        "type": "LineOfBusiness",
+        "attributes": [
+          { "name": "Data Classification Tier", "value": "Tier 2 - Line of business" }
+        ],
+        "dataEstateMapping": {
+          "dataMapDomainName": "Default domain",
+          "collectionReferenceName": "sales-global"
+        },
+        "children": [
+          {
+            "name": "Sales - EMEA",
+            "description": "Regional Sales sub-domain scoping EMEA-resident pipeline and customer data, ring-fenced for GDPR-driven data-residency review.",
+            "type": "Regulatory",
+            "isRestricted": true,
+            "attributes": [
+              { "name": "Data Classification Tier", "value": "Tier 3 - Regional/restricted" }
+            ],
+            "dataEstateMapping": {
+              "dataMapDomainName": "Default domain",
+              "collectionReferenceName": "sales-emea"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Marketing",
+        "description": "Business concepts and data products owned by the global Marketing organization: campaign performance, audience segments, and brand assets.",
+        "type": "LineOfBusiness",
+        "attributes": [
+          { "name": "Data Classification Tier", "value": "Tier 2 - Line of business" }
+        ],
+        "dataEstateMapping": {
+          "dataMapDomainName": "Default domain",
+          "collectionReferenceName": "marketing-global"
+        },
+        "children": []
+      }
+    ]
+  }
+}
