@@ -4300,7 +4300,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `MicrosoftDocs/office-docs-powershell` GitHub repository, and the SMTP AUTH deprecation timeline
   via WebSearch corroborated across multiple independent secondary sources. Two follow-ups
   recorded above under a new section (`### Follow-ups discovered while building the Exchange-side
-  legacy authentication block scenario`) rather than duplicated here. Date: 2026-09-10.
+  legacy authentication block scenario`) rather than duplicated here. Commit: `a9f29e7`. Date:
+  2026-09-10.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**
