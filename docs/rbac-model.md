@@ -87,7 +87,7 @@ separation of duties — pick the narrowest that covers the task. Full list: §9
 | **Information Barriers** | **Compliance Administrator** / **Compliance Data Administrator** / **Organization Management** / **Security Administrator** (IB Compliance Management role) — no dedicated IB role group | View-only variant: *View-Only IB Compliance Management*, held by the same groups plus Global Reader/Security Reader |
 | **Compliance Manager** | Compliance Manager Readers → Contributors → Assessors → **Compliance Manager Administrators** | Template creation/modification needs Administrators; assessment work needs only Contributor/Assessor |
 | **Privacy Management / Subject Rights Requests** | Privacy Management Viewers → Analysts → Investigators → Contributors → **Privacy Management Administrators**; **Subject Rights Request Administrators** / **Approvers** | Out of this library's default scope (Priva-adjacent) — see `AGENTS.md` §2 assumption |
-| **Data Security Investigations** | Data Security Investigation Reviewers → Investigators → **Data Security Investigation Admins** | New cross-solution investigation workspace spanning DLP/IRM/Communication Compliance evidence |
+| **Data Security Investigations** | **Data Security Investigations** Reviewers → Investigators → **Admins** (three dedicated role groups; note the group names are plural "Investigations," distinct from the singular "Data Security Investigation Admin/Contributor" *role* each grants) | AI-assisted post-breach/insider-leak triage spanning Defender XDR, Insider Risk Management, and DSPM-sourced investigations. Compliance Administrator/Organization Management/Data Security Management/Insider Risk Management role groups also carry implicit DSI access — see `scenarios/data-security-investigations/post-breach-investigation-and-purge/README.md` §3 for the full matrix (only Admins/Investigators can purge; Reviewers cannot) |
 
 ---
 
@@ -457,6 +457,9 @@ Each scenario README's **Prerequisites** section must state:
 - Configure Microsoft Defender for Endpoint with Intune and onboard devices (names **Security
   Administrator** or **"Manage security settings in Security Center"** as the two supported
   prerequisites for the adjacent Intune-connection toggle on the same Advanced features page) — <https://learn.microsoft.com/intune/device-security/microsoft-defender/configure-integration>
+- Assign permissions in Data Security Investigations (the three dedicated DSI role group names, the
+  full Admins/Investigators/Reviewers permission-by-action matrix, and the four role groups that
+  carry implicit DSI access) — <https://learn.microsoft.com/purview/data-security-investigations-permissions>
 
 > **Disclaimer:** role names, default role-group membership, and which system governs a given
 > feature change as Purview ships updates (e.g. the ongoing move toward Microsoft Defender

@@ -48,6 +48,7 @@ Cover all of the following. Each is a top-level area; scenarios live underneath.
 - Insider Risk Management (IRM)
 - Adaptive Protection
 - Data Security Posture Management for AI (DSPM for AI)
+- Data Security Investigations (AI-assisted post-breach/insider-leak investigation and purge)
 
 **Risk & Compliance**
 - Compliance Manager

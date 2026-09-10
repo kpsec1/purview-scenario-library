@@ -75,6 +75,7 @@ equivalents unless noted — always confirm against Product Terms for GCC/GCC-Hi
 | Data Lifecycle Management | **Priority cleanup** (delete content, overriding retention/holds/Preservation Lock — Exchange: permanent; SharePoint/OneDrive: to the second-stage Recycle Bin by default, or permanently with the separate permanent-deletion sub-option) | **E5** (or IP&G add-on) | Preview; confirmed on its own line in the service description, same tier as Records Management; one shared tenant-wide toggle covers both workloads — `scenarios/data-lifecycle-management/priority-cleanup-exchange-data-spillage/`, `scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/`. SharePoint/OneDrive **permanent deletion** is a separately-gated public preview (rollout begins 2026-08-24), same licensing tier, no separate meter — `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/` |
 | **Records Management** | Records declaration, disposition, file plan | **E5** (or IP&G add-on) | |
 | **Information Barriers** | Segment communication between groups | **E5**, Suite, or E5 add-on | Requires supported workloads (Teams, SPO, OneDrive, Exchange) |
+| **Data Security Investigations** | AI-assisted post-breach/insider-leak investigation, triage, and purge | **PAYG only** — no dedicated per-user license | Metered: **data storage** (GB/month across all investigations) **+ Data Security Investigations compute units** (AI processing); **not pausable** in the Usage center, unlike several other PAYG capabilities above [[15]](#sources-microsoft-learn--re-verify-before-quoting). A Defender XDR/Insider Risk Management/DSPM license unlocks those specific investigation-creation entry points, not DSI itself — `scenarios/data-security-investigations/post-breach-investigation-and-purge/README.md` §3/§10 |
 
 > **Underlying-workload licenses also grant rights.** For retention specifically, the *location*
 > matters: Exchange mailbox retention is also covered by Exchange Plan 2 / Exchange Online
@@ -263,6 +264,9 @@ before budgeting anything at all.
   P1/P2) — <https://learn.microsoft.com/entra/fundamentals/security-defaults>
 - [14] Microsoft Purview service description — Data Loss Prevention (DLP) for Microsoft Copilot
   licensing table (the "files and emails" vs. "prompts" tier split) — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-data-loss-prevention-dlp-for-microsoft-copilot>
+- [15] Manage pay-as-you-go and per-user licensing usage (Usage center pausable-features table —
+  Data Security Investigations listed as not pausable, unlike Communication Compliance/Audit/
+  Information Protection/Data Lifecycle Management) — <https://learn.microsoft.com/purview/purview-billing-usage>
 
 > **Disclaimer:** SKU names, tiers, and PAYG meters change. Nothing here is a licensing guarantee.
 > Validate every entitlement against Product Terms and the service description for the customer's

@@ -17,7 +17,7 @@ and Microsoft Product Owner** — so what ships is attack-tested, operable, fund
 ## Module coverage
 
 **Data Governance** — Data Map · Unified Catalog · Data Estate Insights · Data Quality · Data Lineage
-**Data Security** — Information Protection · DLP · Insider Risk Management · Adaptive Protection · DSPM for AI
+**Data Security** — Information Protection · DLP · Insider Risk Management · Adaptive Protection · DSPM for AI · Data Security Investigations
 **Risk & Compliance** — Compliance Manager · Communication Compliance · eDiscovery · Audit · Data Lifecycle Management · Records Management · Information Barriers
 **Cross-cutting** — Licensing matrix · RBAC model · Graph/PowerShell automation surface · Migration
 

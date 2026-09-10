@@ -863,10 +863,40 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `search-and-purge-teams-messages` deliberately left manual (`design.md` §3 goal 5) — a genuinely
   separate, larger scope (hold lifecycle management) than this fragment's own search-and-purge focus.
   — **built** (see DONE below) as `scenarios/ediscovery/teams-purge-hold-lifecycle-management/`.
-- [ ] Consider grounding Microsoft's newer **Data Security Investigations** purge-queue workflow
+- [x] Consider grounding Microsoft's newer **Data Security Investigations** purge-queue workflow
   (referenced as an alternative entry point on the "Find and delete Microsoft Teams chat messages"
   page) as its own future fragment — a different product surface this build didn't ground.
-  `search-and-purge-teams-messages/design.md` §9.
+  `search-and-purge-teams-messages/design.md` §9. — **built** (see DONE below) as
+  `scenarios/data-security-investigations/post-breach-investigation-and-purge/`: a new top-level
+  module (first DSI scenario in this library). Grounded that DSI's investigation/search/AI-analysis/
+  purge workflow has no documented write API (portal-only) — scripted the two genuinely automatable
+  surfaces instead: least-privilege RBAC for the three dedicated DSI role groups, and a
+  Search-UnifiedAuditLog-based audit trail covering all 28 documented DSI Operations, with
+  `DSIPurgeStarted` flagged as the scenario's highest-priority Blue Team signal. New follow-ups
+  recorded immediately below under their own section rather than duplicated here.
+
+### Follow-ups discovered while building the Data Security Investigations post-breach-investigation-and-purge scenario
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the `Search-UnifiedAuditLog`
+  `RecordType` enum value for Data Security Investigations records — Microsoft's audit-log-activities
+  reference lists all 28 `DSI*` Operations but never states the RecordType that carries them.
+  `deploy/Export-DsiActivityAuditTrail.ps1` queries by `-Operations` alone rather than guessing one;
+  see the script's `.NOTES`, `README.md` §11, and `design.md` §5.
+- [ ] Once the **Data Security Posture agent (preview)** — a related but separately-enabled DSI
+  feature surfaced during this fragment's grounding pass — reaches a more stable/GA state, consider
+  its own dedicated fragment; explicitly out of scope here (`design.md` §6).
+- [ ] Once a documented PowerShell/Graph configuration surface exists for DSI billing/AI-capacity
+  settings (compute-unit maximum, processing location) or the DSPM (preview) proactive-AI-insights
+  auto-investigation toggle, extend `deploy/New-DsiRoleGroupAssignments.ps1` or add a sibling script —
+  both are currently portal-only with no API found (`design.md` §6).
+- [ ] Consider wiring `deploy/Export-DsiActivityAuditTrail.ps1`'s CSV output into
+  `scenarios/audit/streaming-to-sentinel-or-management-api/` as a documented companion feed (the same
+  NDJSON/CSV-to-SIEM hand-off pattern that scenario already establishes) rather than leaving the two
+  scenarios' outputs unconnected.
+- [ ] Once Microsoft documents a job-status API for an AI-analysis job's completion or a purge job's
+  outcome (success/failure/partial), extend `validate/Test-DsiRoleGroupAssignments.ps1` (or a new
+  script) to check it — today the portal's per-investigation Activities tab is the only authoritative
+  source (`README.md` §7/§11).
+
 - [ ] Once `Get-MgSecurityCaseEdiscoveryCaseOperation`/`caseOperation` documents a way to identify
   which `ediscoverySearch` a completed `purgeData` (or `addToReviewSet`/export) operation targeted
   without an undocumented expand, revisit both `search-and-purge-data-spillage/deploy/
@@ -5348,6 +5378,33 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   documented default-display property list, though this repo's own established convention (the
   auto-apply sibling's unhedged `ApplyComplianceTag` read) is followed for consistency rather than
   introducing a one-off hedge.
+- [x] **`scenarios/data-security-investigations/post-breach-investigation-and-purge/`** — commit
+  `PENDING` — 2026-09-10. First scenario in a new top-level module: **Data Security Investigations**
+  (DSI), Microsoft's AI-assisted post-breach/insider-leak investigation and purge workspace. Full
+  README/design/deploy/validate/rollback/reviews. Grounded via the Microsoft Learn MCP tool
+  (available this run, contrary to this run's own starting instructions —
+  `microsoft_docs_search`/`microsoft_docs_fetch` used throughout, not WebSearch/WebFetch, though a
+  WebSearch pass confirmed DSI is real/current before committing to the fragment) against the full
+  `data-security-investigations-*` documentation set (overview, workflow, get-started, permissions,
+  billing, mitigation-actions, scope, ai-analysis, search, application-card), the
+  `audit-log-activities#data-security-investigations-activities` table (all 28 `DSI*` Operations,
+  reproduced verbatim), and the `dataSecurityInvestigationAuditRecord` Graph resource (confirmed
+  read-only — no management methods). Central finding: DSI's investigation/search/AI-analysis/
+  mitigation/purge workflow is entirely Microsoft Purview portal-only — no documented write API
+  exists (same shape as this library's prior Communication Compliance and IRM case-escalation
+  findings) — so rather than inventing one, this fragment scripts the two things that ARE genuinely
+  automatable: least-privilege RBAC for the three dedicated DSI role groups
+  (`deploy/New-DsiRoleGroupAssignments.ps1`, additive-safe by default, native `-WhatIf`) and a
+  rolling `Search-UnifiedAuditLog`-based audit trail (`deploy/Export-DsiActivityAuditTrail.ps1`,
+  `-Operations`-only — RecordType unconfirmed, flagged as VERIFY rather than guessed) that flags
+  every `DSIPurgeStarted` event, since hard purge is genuinely irreversible. Cross-cutting docs
+  updated in the same build: `docs/rbac-model.md` §4 (corrected the pre-existing placeholder DSI row
+  with the real, verbatim role-group names and permission matrix) and its Sources list; root
+  `README.md`'s module-coverage line; `AGENTS.md` §2's Data Security module list;
+  `docs/licensing-matrix.md` §2 (new PAYG-only, not-pausable row) and its Sources list. Five new
+  follow-ups recorded above under
+  `### Follow-ups discovered while building the Data Security Investigations
+  post-breach-investigation-and-purge scenario` rather than duplicated here.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

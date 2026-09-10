@@ -1,0 +1,8 @@
+{
+  "_comment": "Used with New-DsiRoleGroupAssignments.ps1 -RemoveExtraMembers to reconcile every dedicated DSI role group to empty membership - see rollback.md Section 1. Edit the arrays to leave specific members in place instead of removing everyone.",
+  "roleGroups": {
+    "Data Security Investigations Admins": [],
+    "Data Security Investigations Investigators": [],
+    "Data Security Investigations Reviewers": []
+  }
+}
