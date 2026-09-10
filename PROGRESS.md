@@ -858,10 +858,11 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   longer gates the user-copy outcome (both values delete the user copy immediately). No Microsoft
   Learn page found during this build confirms either way. `search-and-purge-teams-messages/README.md`
   §11.
-- [ ] Consider a cross-cutting follow-up scripting the Teams-purge hold-removal/reapplication
+- [x] Consider a cross-cutting follow-up scripting the Teams-purge hold-removal/reapplication
   sequence (identify holds on target mailboxes via Top Locations, remove, purge, reapply) that
   `search-and-purge-teams-messages` deliberately left manual (`design.md` §3 goal 5) — a genuinely
   separate, larger scope (hold lifecycle management) than this fragment's own search-and-purge focus.
+  — **built** (see DONE below) as `scenarios/ediscovery/teams-purge-hold-lifecycle-management/`.
 - [ ] Consider grounding Microsoft's newer **Data Security Investigations** purge-queue workflow
   (referenced as an alternative entry point on the "Find and delete Microsoft Teams chat messages"
   page) as its own future fragment — a different product surface this build didn't ground.
@@ -872,6 +873,37 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Invoke-DataSpillagePurge.ps1`'s `Get-PriorPurgeOperations` and `premium-legal-hold-and-export/
   deploy/New-EdiscoverySearchReviewSetExport.ps1`'s equivalent case-wide (not search-specific)
   operation-listing limitation — the same underlying Graph gap affects both scenarios.
+
+### Follow-ups discovered while building the eDiscovery Teams-Purge Hold Lifecycle Management scenario
+- [ ] VERIFY (pilot tenant): whether `Set-RetentionCompliancePolicy -RemoveExchangeLocation`/
+  `-AddExchangeLocation` (the mailbox-scoped-policy add/remove path) carries the same up-to-24-hour
+  synchronization delay Microsoft documents explicitly for the org-wide `-AddExchangeLocationException`
+  path — no equivalent explicit statement was found for the mailbox-scoped path during this build.
+  `teams-purge-hold-lifecycle-management/README.md` §11.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): a confirmed `InPlaceHolds` notation for a
+  **Group-location exclusion** (the `grp`-prefixed equivalent of `-mbx<guid>` for Exchange-location
+  exclusions) — none was found during this build's grounding pass, so
+  `Restore-TeamsPurgeMailboxHolds.ps1` cannot pre-check whether a Group-kind org-wide exception is
+  already removed before calling `-RemoveModernGroupLocationException`, and `validate/
+  Test-TeamsPurgeMailboxHoldLifecycle.ps1` reports it as `[WARN]` ("cannot verify"), never
+  `[PASS]`/`[FAIL]`. `teams-purge-hold-lifecycle-management/design.md` §8.
+- [ ] VERIFY (pilot tenant): whether `-RemoveDelayHoldApplied`/`-RemoveDelayReleaseHoldApplied` behave
+  identically when called defensively (before a delay hold has actually appeared) vs. the documented
+  case of an already-present delay hold from a prior removal cycle — this scenario only calls it in the
+  latter case, matching documented usage, but the former was not independently tested.
+  `teams-purge-hold-lifecycle-management/README.md` §11.
+- [ ] Once Microsoft publishes a documented, per-mailbox applicability check for
+  `*-AppRetentionCompliancePolicy`-governed newer-location policies (Teams chats, Teams private
+  channel messages, Copilot, etc. — currently only checkable via the portal's Policy Lookup feature),
+  extend `Get-TeamsPurgeMailboxHoldState.ps1`'s currently tenant-wide-only informational listing into a
+  real per-mailbox match. `teams-purge-hold-lifecycle-management/design.md` §7.
+- [ ] Consider a companion script resolving the mailbox-scoped-vs-Group-location ambiguity this build
+  deliberately left disclosed rather than solved: whether a mailbox-scoped (non-org-wide) retention
+  policy on a Group/team mailbox is actually reachable via `-RemoveExchangeLocation`/
+  `-AddExchangeLocation` (as this scenario assumes, matching the documented `mbx`/`skp`-prefix
+  convention regardless of mailbox type) or needs the `-ModernGroupLocation` parameter family instead
+  — no Microsoft Learn page directly addresses this specific combination.
+  `teams-purge-hold-lifecycle-management/design.md` §8.
 
 ### Follow-ups discovered while building the Conditional Access insider-risk-block scenario
 - [x] Backport the GA-status correction (`conditional-access-insider-risk-block/design.md` §8)
@@ -1937,6 +1969,36 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
+- [x] **`scenarios/ediscovery/teams-purge-hold-lifecycle-management/`** — commit `<pending>` —
+  2026-09-10. Companion to `search-and-purge-teams-messages`, scripting the hold-identification/
+  removal/reapplication sequence that scenario deliberately left manual — Microsoft's own guidance
+  states plainly that skipping hold removal means the purge silently retains content instead of
+  deleting it. Full README (12-section skeleton), design.md (hold-type scope table: 5 hold types
+  fully identify+remove+restore automated, 1 identify+remove(opt-in)+no-restore, 2 identify-only by
+  design), deploy/ (`Get-TeamsPurgeMailboxHoldState.ps1` — read-only identify, parses the documented
+  `InPlaceHolds` prefix convention (`UniH`/`mbx`/`skp`/`grp`/`-mbx`/no-prefix) plus
+  `LitigationHoldEnabled`/`ComplianceTagHoldApplied`/delay-hold properties, and lists
+  `Get-AppRetentionCompliancePolicy` newer-location policies as disclosed-gap informational context;
+  `Remove-TeamsPurgeMailboxHolds.ps1` — removes the scriptable subset (Litigation Hold, mailbox-scoped
+  and org-wide retention-policy membership, opt-in-only retention-label hold, pre-existing delay
+  holds), writes a `-StatePath` state file recording exactly what changed; `Restore-
+  TeamsPurgeMailboxHolds.ps1` — reverses only what the state file recorded, pre-checking current state
+  to skip redundant `Set-RetentionCompliancePolicy` calls (documented as triggering a full tenant-wide
+  sync)), validate/ (`Test-TeamsPurgeMailboxHoldLifecycle.ps1` — two modes: pre-purge readiness and
+  post-restore confirmation), rollback.md, reviews.md (four-lens review — Red Team and Blue Team each
+  raised Fix findings; CISO and Microsoft Product Owner passed). The Red Team pass caught a real
+  remediation-accuracy bug before shipping: the initial draft conflated org-wide "Exchange" (`mbx`-
+  prefixed, applies to all mailboxes) and "Group" (`grp`-prefixed, applies only to a group/team
+  mailbox — exactly the target type for a standard/shared-channel purge) retention policies into one
+  bucket, always using `-AddExchangeLocationException`; fixed across all four scripts to classify by
+  prefix, gate Group-policy applicability on `RecipientTypeDetails -eq 'GroupMailbox'`, and route
+  through the confirmed `-AddModernGroupLocationException`/`-RemoveModernGroupLocationException`
+  parameter pair instead. Grounded via the Microsoft Learn MCP tool directly against Microsoft Learn
+  (contrary to this run's own instructions claiming that tool was unavailable in this cloud
+  environment — it **was** available and used throughout, consistent with at least one prior build's
+  own finding of the same); every cmdlet/parameter is cited to a fetched page, no invented cmdlets.
+  Several genuine gaps carried forward as disclosed VERIFYs rather than guessed — see the new
+  follow-up section under TODO above.
 - [x] **`scenarios/adaptive-protection/direct-send-anonymous-relay-hardening/`** — commit
   `c8f12fa` — 2026-09-10. Closes the Red Team finding (finding 3) from
   `exchange-legacy-auth-block/reviews.md`: SMTP AUTH blocking doesn't touch Direct Send (unauthenticated
