@@ -1284,12 +1284,49 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   **built** (see DONE below).
 
 ### Follow-ups discovered while building the Data Quality rules-and-scorecards scenario
-- [ ] `scenarios/data-quality/connection-and-scorecard-alerts/` (or fold into a future Data Quality
+- [x] `scenarios/data-quality/connection-and-scorecard-alerts/` (or fold into a future Data Quality
   hardening pass) — script the DQ data-source connection (`Create Data Source`) and score-threshold
   alerts (`Get Alerts`/`Update Alert`), both deferred from `rules-and-scorecards` because
   `Create Data Source`'s `computeId` field has no documented provisioning endpoint this build could
-  find, and the Alerts operations weren't independently fetched/grounded in this build — see that
-  scenario's `README.md` §11.
+  find, and the Alerts operations weren't independently fetched/grounded in this build — **built**
+  (see DONE below): re-fetching Create/Get/Update Data Source directly found `computeId` present
+  only in the (VNet-enabled) Create example and absent from the non-VNet Get/Update examples,
+  narrowing the blocker to the managed-VNet path only; the non-VNet path is fully scripted with no
+  unconfirmed fields. Alerts (`Get Alert`/`Get Alerts`/`Update Alert`/`Update Alert Status`/
+  `Delete Alert`) were independently fetched and grounded this run.
+
+### Follow-ups discovered while building the Data Quality connection-and-scorecard-alerts scenario
+- [ ] VERIFY (pilot tenant): whether `computeId` is truly optional (not merely absent from the one
+  confirmed non-VNet worked example) for a non-VNet `Create Data Source` call — Microsoft's request-
+  body property table doesn't mark any field required/optional explicitly, unlike its URI-parameter
+  table, which does. `connection-and-scorecard-alerts/README.md` §11.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): Create Data Source's create-vs-replace
+  semantics against an already-existing `dataSourceId`, and Update Data Source's PATCH partial-
+  merge-vs-full-replace semantics. Doesn't affect `New-DataQualityConnection.ps1`'s idempotency (it
+  always `GET`s first and picks PUT/PATCH accordingly), but a direct caller of the raw API should
+  confirm both. Same open-question class as `rules-and-scorecards`' own Create Rules PUT-semantics
+  VERIFY.
+- [ ] VERIFY (pilot tenant): whether Data Quality Alert `receivers` accepts a raw SMTP address/UPN
+  string in addition to a Microsoft Entra object ID — every worked example in Microsoft's Alert REST
+  reference pages shows only GUIDs, but the portal's own conceptual doc calls the field a "recipient
+  alias" without stating the resolved type. `connection-and-scorecard-alerts/README.md` §11.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): `Update Alert`'s PUT semantics against
+  an already-existing `alertId` — its reference page states only "Creates an alert," with no
+  explicit create-vs-replace statement. Doesn't affect this scenario's idempotency (the ID is always
+  caller-chosen), but a direct caller should confirm.
+- [ ] Ground `Search-UnifiedAuditLog` `RecordType`/`Operations` coverage (if any) for Data Quality
+  connection/alert `Create`/`Update`/`Delete` actions, then add a dedicated audit-trail export
+  script to `connection-and-scorecard-alerts/deploy/` — same class of gap this repo's eDiscovery
+  scenarios already closed for their own object lifecycles. Currently the scenario's incident-
+  response runbook can only ask "did someone recently run the rollback," not query for it.
+  `connection-and-scorecard-alerts/README.md` §11.
+- [ ] Consider a companion example in `connection-and-scorecard-alerts/deploy/alerts/` demonstrating
+  the product-level (not just asset-level) `AlertScope` this build confirmed is supported (omit
+  `dataAssetId`) but didn't use in the shipped example — `README.md` §11.
+- [ ] Once the Schedule object's recurring-trigger-type VERIFY immediately below is closed, revisit
+  whether a recurring scan schedule changes any of this scenario's alert-cadence assumptions
+  (currently alerts fire per completed scan, whatever triggers it).
+
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the Data Quality Schedule object's
   trigger `type` values beyond the confirmed `RunOnce` shape — a `Recurrence` type with frequency/
   interval fields almost certainly exists (the portal's own Scheduled scans wizard supports daily/
@@ -1305,7 +1342,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   it) is a shared, still-unbuilt dependency both `curate-business-glossary`'s and
   `rules-and-scorecards`' non-goals point to — **built** as
   `scenarios/unified-catalog/manage-data-products/` (see DONE below). `rules-and-scorecards`'s own
-  `Create Data Source`/`computeId`-provisioning gap (above) is a separate, still-open item.
+  `Create Data Source`/`computeId`-provisioning gap (above) was a separate item, since resolved for
+  the non-VNet path by `scenarios/data-quality/connection-and-scorecard-alerts/` (see DONE below).
 
 ### Follow-ups discovered while building the Data Estate Insights classification-coverage-report scenario
 - [x] `scenarios/data-estate-insights/sensitivity-label-coverage-report/` — extends
@@ -2007,6 +2045,33 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
+- [x] **`scenarios/data-quality/connection-and-scorecard-alerts/`** — commit `PENDING` —
+  2026-09-10. Full scenario (README, design, deploy, validate, rollback, four-lens review) scripting
+  the two prerequisites `rules-and-scorecards` deliberately left portal-only: the Data Quality
+  data-source connection (`New-DataQualityConnection.ps1`) and score-threshold alerts
+  (`New-DataQualityAlert.ps1`). Re-fetched Create/Get/Update Data Source, the full Data Quality REST
+  operation-group index, and Get Alert/Get Alerts/Update Alert/Update Alert Status/Delete Alert
+  directly from Microsoft Learn rather than re-stating `rules-and-scorecards`' prior "no documented
+  `computeId` provisioning endpoint" finding as still fully blocking: the gap holds only for the
+  managed-VNet connection path (Create Data Source's own worked example is VNet-enabled; Get/Update
+  Data Source's own non-VNet worked examples omit `computeId` entirely, and no Get/List Compute
+  operation exists anywhere in the operation-group index — the VNet compute location remains a
+  Governance Domain Administrator-only portal action). `New-DataQualityConnection.ps1` scripts the
+  common non-VNet path fully with no unconfirmed fields, and supports the managed-VNet path via a
+  pass-through `-EnableManagedVNet -ComputeId` (never provisions the compute location itself).
+  `New-DataQualityAlert.ps1` reconciles score-threshold alerts using the two condition functions
+  confirmed in Microsoft's own worked examples (`score_threshold(GLOBAL_SCORE)`,
+  `score_variance(GLOBAL_SCORE)`) and a separate lightweight `-SetStatus Enabled|Disabled` path via
+  `Update Alert Status`. Reuses the same "Customer Experience"/"Customer 360"/"Customer" governance-
+  domain/data-product/data-asset narrative as `rules-and-scorecards` and `curate-business-glossary`.
+  Four-lens review raised and resolved: Red Team (alert-`receivers` redirection as a stealth bypass
+  of the domain-wide Data Quality Steward role — resolved by requiring the validate script run on a
+  recurring cadence, not just post-deploy), Blue Team (no confirmed Data Quality audit-log coverage
+  for connection/alert changes — flagged as a new VERIFY rather than assumed), Microsoft Product
+  Owner (alert scoping can be product-level, not just asset-level — documented as a supported,
+  unused-in-the-example option); CISO passed without findings. Five new VERIFY/follow-up items
+  recorded above. PowerShell syntax-parsed clean with a portable pwsh 7.4.6 (no live tenant call
+  made, per this repo's author-only-code rule).
 - [x] **`docs/licensing-matrix.md` — DLP-for-Copilot licensing-tier split** — commit `47f171e` —
   2026-09-10. Cross-cutting doc sub-task (no new scenario, no four-lens review required — same
   precedent as the earlier Intune-RBAC/`docs/rbac-model.md` backport). Added two new rows under the

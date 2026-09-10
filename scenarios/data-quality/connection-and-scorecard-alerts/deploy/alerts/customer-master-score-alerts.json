@@ -1,0 +1,32 @@
+{
+  "_comment": "Example values below. businessDomainId/dataProductId/dataAssetId must be the real GUIDs of a governance domain, data product, and data asset that already exist in Unified Catalog - this scenario does not create them. Reuses the same 'Customer' data asset (Azure SQL customerdb.dbo.Customers, 'Customer Experience' governance domain, 'Customer 360' data product) that scenarios/data-quality/rules-and-scorecards/ already scores, so a buyer evaluating this repo end to end sees rules, a scan schedule, a connection, and now alerting, all on one coherent asset. receivers must be the Microsoft Entra object ID of a user or mail-enabled security group - Microsoft's own Create/Get Alert REST examples show only GUIDs, never a raw SMTP address or UPN string, even though the portal's own conceptual documentation calls the field a 'recipient alias' (see README.md Section 11 VERIFY). condition only documents two functions in Microsoft's worked examples - score_threshold(GLOBAL_SCORE) and score_variance(GLOBAL_SCORE) - both used below; do not invent a third.",
+  "businessDomainId": "76be16f9-5cb3-4839-83d6-4e3829a8ab0c",
+  "alerts": [
+    {
+      "id": "customer-score-below-95",
+      "name": "Customer data quality score below 95%",
+      "description": "Fires when the Customer asset's rolled-up global data quality score drops below 95% on any completed scan - the primary go-live alert this scenario's README Section 8 treats as a mandatory gate.",
+      "condition": "score_threshold(GLOBAL_SCORE) < 95",
+      "receivers": [
+        "00000000-0000-0000-0000-000000000001"
+      ],
+      "dataProductId": "2a1d2087-09e2-4ecf-817d-1f5bfcbc31bf",
+      "dataAssetId": "fadb55b6-aa10-47d5-82c4-5e2723ba7869",
+      "enabledForFailedJobs": true,
+      "status": "Enabled"
+    },
+    {
+      "id": "customer-score-regression",
+      "name": "Customer data quality score regressed more than 10 points",
+      "description": "Fires when the Customer asset's score drops by more than 10 points versus the prior completed scan - catches a sudden upstream data-pipeline regression even if the absolute score is still above the 95% threshold alert.",
+      "condition": "score_variance(GLOBAL_SCORE) > 10",
+      "receivers": [
+        "00000000-0000-0000-0000-000000000001"
+      ],
+      "dataProductId": "2a1d2087-09e2-4ecf-817d-1f5bfcbc31bf",
+      "dataAssetId": "fadb55b6-aa10-47d5-82c4-5e2723ba7869",
+      "enabledForFailedJobs": true,
+      "status": "Enabled"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "_comment": "Example values below. businessDomainId must be the real GUID of a governance domain that already exists in Unified Catalog (this scenario does not create it). This example targets the same 'Customer Experience' governance domain and Azure SQL source as the sibling scenarios/data-quality/rules-and-scorecards/ fragment - one coherent 'Customer' data asset governed, cataloged, scored, and now connected/alerted end to end. dataSourceId is a caller-chosen string (not a GUID) - it becomes part of the REST path, so keep it short and stable.",
+  "businessDomainId": "76be16f9-5cb3-4839-83d6-4e3829a8ab0c",
+  "dataSourceId": "customerdb-sql-connection",
+  "name": "customerdb Azure SQL connection",
+  "type": "AzureSqlDatabase",
+  "dataSourceType": "sqlServer",
+  "region": "eastus2",
+  "server": "customerdb-sqlsrv.database.windows.net",
+  "database": "customerdb",
+  "isVNetEnabled": false,
+  "credential": {
+    "type": "ManagedServiceIdentity",
+    "scopeType": "Sql"
+  }
+}
