@@ -5407,7 +5407,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   follow-ups recorded above under
   `### Follow-ups discovered while building the Data Security Investigations
   post-breach-investigation-and-purge scenario` rather than duplicated here.
-- [x] **DSI audit-trail → audit-streaming SIEM companion feed** — commit `PENDING` — 2026-09-10.
+- [x] **DSI audit-trail → audit-streaming SIEM companion feed** — commit `a8a594a` — 2026-09-10.
   Scoped follow-up (not a new scenario) closing the item tracked under `### Follow-ups discovered
   while building the Data Security Investigations post-breach-investigation-and-purge scenario`.
   `scenarios/data-security-investigations/post-breach-investigation-and-purge/deploy/
