@@ -2211,7 +2211,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/audit/streaming-to-sentinel-or-management-api/` — continuous audit streaming to a
-  SIEM** — commit PENDING — 2026-09-10. Closes the `audit/premium-audit-investigation/design.md` §7
+  SIEM** — commit 25a5b3f — 2026-09-10. Closes the `audit/premium-audit-investigation/design.md` §7
   follow-up ("for continuous streaming use the Office 365 Management Activity API or a Sentinel
   connector"). Two contrasted, independently deployable paths, both grounded via the Microsoft Learn
   MCP tool (available this run): **(A)** a Bicep IaC template
