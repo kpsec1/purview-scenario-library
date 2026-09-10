@@ -1545,9 +1545,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Premium feature: create/manage custom retention durations per record type/user via SCC PowerShell
   `New-/Set-UnifiedAuditLogRetentionPolicy`), the configuration counterpart to this read-only
   investigation scenario — **built** (see DONE below).
-- [ ] `scenarios/audit/streaming-to-sentinel-or-management-api/` — continuous audit streaming via the
+- [x] `scenarios/audit/streaming-to-sentinel-or-management-api/` — continuous audit streaming via the
   Office 365 Management Activity API (or a Sentinel connector) for real-time detection, contrasted
-  with this on-demand investigation in `audit/premium-audit-investigation/design.md` §7.
+  with this on-demand investigation in `audit/premium-audit-investigation/design.md` §7 — **built**
+  (see DONE below): two contrasted paths — (A) the native Sentinel `Office365`-kind data connector
+  (Bicep IaC, `OfficeActivity` table, free, Exchange/SharePoint/Teams only) and (B) a
+  subscribe-and-poll pipeline against the raw Management Activity API (idempotent subscription
+  script + a checkpointed, retry-hardened poll/export script) for non-Sentinel SIEMs and the
+  `DLP.All`/Entra-audit coverage Path A doesn't carry.
 - [ ] VERIFY (pilot tenant): the exact `auditLogQueryStatus` terminal values (the runner polls
   defensively and flags this in `audit/premium-audit-investigation/README.md` §11), and the current
   crucial-events list / operation names for the compromise preset.
@@ -2174,7 +2179,66 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   guessing — update that list once the real property name is confirmed. `README.md` §11 and the
   script's own `.NOTES`/`validate/Test-FinraSupervisionEvidence.ps1` both flag this as an open item.
 
+### Follow-ups discovered while building the Audit continuous-streaming-to-a-SIEM scenario
+- [ ] Land Path B's NDJSON output (specifically the `DLP.All`/`Audit.AzureActiveDirectory` coverage
+  Path A's native Sentinel connector doesn't carry) into Sentinel itself via the **Log Analytics
+  Logs Ingestion API** + a Data Collection Rule/custom table — deliberately not built in this
+  fragment (`streaming-to-sentinel-or-management-api/design.md` §7, a documented non-goal): it needs
+  a Data Collection Endpoint/Rule and a destination-table-schema decision (custom table vs. Auxiliary
+  Logs) that belongs in a dedicated follow-up once a concrete buyer target is chosen.
+- [ ] Consider a dedicated **Microsoft Purview Information Protection (Preview)** Sentinel-connector
+  scenario — noted only for disambiguation in `streaming-to-sentinel-or-management-api/design.md` §3
+  and `README.md` §11 (a different connector, different destination table
+  `MicrosoftPurviewInformationProtection`, label/protection-event-specific, with documented
+  duplication against `OfficeActivity` and unpopulated label names) — not built here.
+- [ ] VERIFY (pilot tenant): the exact naming contract for a `Microsoft.SecurityInsights/
+  dataConnectors` resource of `kind: Office365` — Microsoft's ARM/Bicep reference page for this kind
+  doesn't state whether `name` must be a GUID (as several other connector kinds' samples use) or
+  accepts an arbitrary string. `streaming-to-sentinel-or-management-api/deploy/
+  office365-connector.bicep` defaults to a deterministic `guid()`-derived name so re-deployments
+  target the same resource regardless of the answer, flagged inline in the template's header comment
+  and `README.md` §11.
+- [ ] VERIFY (pilot tenant): the exact wall-clock enforcement of the Office 365 Management Activity
+  API's 15-minute cooldown between `/subscriptions/start` calls for the same content type — whether
+  it's measured from the previous call regardless of outcome, or only from a successful one.
+  `deploy/Enable-ManagementActivitySubscriptions.ps1` sidesteps the ambiguity (skips `/start`
+  whenever `/subscriptions/list` already shows `enabled`) rather than resolving it — see the script's
+  `.NOTES` and `README.md` §11.
+- [ ] Consider an **incident-response (mutating) companion** scenario wired to Path B's `DLP.All`/
+  `Audit.AzureActiveDirectory` stream (auto-disable account, revoke sessions on a detected pattern) —
+  the same deliberate non-goal already tracked above for `premium-audit-investigation`, now with a
+  continuous trigger source available once this scenario's pipeline is deployed.
+
 ## DONE
+- [x] **`scenarios/audit/streaming-to-sentinel-or-management-api/` — continuous audit streaming to a
+  SIEM** — commit PENDING — 2026-09-10. Closes the `audit/premium-audit-investigation/design.md` §7
+  follow-up ("for continuous streaming use the Office 365 Management Activity API or a Sentinel
+  connector"). Two contrasted, independently deployable paths, both grounded via the Microsoft Learn
+  MCP tool (available this run): **(A)** a Bicep IaC template
+  (`deploy/office365-connector.bicep`) deploying the native Sentinel `Microsoft.SecurityInsights/
+  dataConnectors` resource (`kind: Office365`, portal name "Microsoft 365 (formerly, Office 365)"),
+  streaming Exchange/SharePoint/Teams activity into the free `OfficeActivity` Log Analytics table —
+  idempotent via Bicep's declarative model, previewed with native `New-AzResourceGroupDeployment
+  -WhatIf`; **(B)** a subscribe-and-poll pipeline against the raw Office 365 Management Activity API
+  (a separate REST surface from Microsoft Graph, at `manage.office.com`) for any SIEM and for the
+  `DLP.All`/`Audit.AzureActiveDirectory` coverage Path A's connector kind doesn't carry —
+  `deploy/Enable-ManagementActivitySubscriptions.ps1` (idempotent subscription management, checks
+  `/subscriptions/list` before `/start` to respect the documented 15-minute per-content-type
+  cooldown) and `deploy/Invoke-ManagementActivityPoll.ps1` (checkpointed, resumable poll/export to
+  NDJSON, bounded by the API's 24-hour-per-call/7-day-lookback limits). Four-lens review (round 1)
+  caught and fixed two real gaps before this fragment was marked done: the poll script initially had
+  no 429/`Retry-After` handling on its raw REST calls (violating `docs/automation-surface.md` §5's
+  own standard for raw, non-SDK REST calls) and let one content type's failure abort the whole
+  scheduled run — both fixed (a shared `Invoke-WithRetry` helper with exponential-backoff fallback,
+  and per-content-type `try`/`catch` isolation with per-type checkpoint semantics preserved); a
+  further self-caught correctness bug (a raw `HttpResponseMessage.Headers` string-indexer access that
+  doesn't exist on that .NET type, unlike `Invoke-WebRequest`'s own response wrapper used elsewhere
+  in the same script) was fixed to use `TryGetValues` before this fragment was marked done. Two
+  VERIFYs recorded rather than guessed (the Bicep connector's exact resource-naming contract; the
+  15-minute cooldown's precise wall-clock semantics) — both carried into the follow-ups section above
+  and this scenario's own `README.md` §11. `docs/automation-surface.md` needed no edit — its existing
+  §4 routing-table row for "Audit search (API, high volume/bulk export)" already names this exact API
+  as an alternative to the Graph-based Audit Search API.
 - [x] **`scenarios/compliance-manager/entra-privileged-role-monitoring/` — role-assignable-group
   membership companion script** — commit `cf35b85` — 2026-09-10. Closes the disclosed Red Team gap
   (round 1, finding 1): a monitored role assigned to an Entra ID P1/P2 role-assignable group grants

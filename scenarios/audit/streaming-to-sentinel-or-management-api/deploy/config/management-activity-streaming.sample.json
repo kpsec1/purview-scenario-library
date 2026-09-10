@@ -1,0 +1,25 @@
+{
+  "_comment": "Config for deploy/Enable-ManagementActivitySubscriptions.ps1 and deploy/Invoke-ManagementActivityPoll.ps1 (Path B - custom Management Activity API streaming). Author-only reference data. This is a separate REST surface from Microsoft Graph - see docs/automation-surface.md Section 4 ('Audit search (API, high volume/bulk export)' row).",
+  "apiRoot": "https://manage.office.com",
+  "_apiRootNote": "Enterprise (commercial) cloud default. GCC: https://manage-gcc.office.com. GCC High: https://manage.office365.us. DoD: https://manage.protection.apps.mil. Pick the endpoint matching your tenant's cloud.",
+  "loginRoot": "https://login.microsoftonline.com",
+  "contentTypes": [
+    "Audit.AzureActiveDirectory",
+    "Audit.Exchange",
+    "Audit.SharePoint",
+    "Audit.General",
+    "DLP.All"
+  ],
+  "_contentTypesNote": "Audit.General covers Teams, Power Platform, and other workloads not in the three named Audit.* types. DLP.All requires the app registration also hold the separate 'Read DLP policy events' Application permission (only needed if you want DLP.All - see README.md Section 3) - omit DLP.All entirely if that permission isn't granted, or /start will fail for that content type. If you already run the Sentinel native connector (deploy/office365-connector.bicep) for Exchange/SharePoint/Teams, consider trimming this list to just Audit.AzureActiveDirectory and DLP.All to avoid collecting the same events twice through two different paths - see design.md Section 3.",
+  "checkpointDir": "./checkpoints",
+  "maxLookbackDays": 7,
+  "_maxLookbackDaysNote": "Hard API limit - content is retrievable for at most 7 days after it becomes available. Do not increase this value; it documents the API's own ceiling, not a tunable preference.",
+  "windowHours": 24,
+  "_windowHoursNote": "Hard API limit - startTime/endTime must be no more than 24 hours apart per /content call. Do not increase this value.",
+  "export": {
+    "outDir": "./out",
+    "_exportNote": "One NDJSON file per content type per run (<contentType>-<timestamp>.ndjson). Forward these files to your SIEM/log pipeline - this script does not forward them itself (design.md Section 6)."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-10"
+}
