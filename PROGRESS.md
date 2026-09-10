@@ -2007,7 +2007,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
-- [x] **`docs/licensing-matrix.md` — DLP-for-Copilot licensing-tier split** — commit `PENDING` —
+- [x] **`docs/licensing-matrix.md` — DLP-for-Copilot licensing-tier split** — commit `47f171e` —
   2026-09-10. Cross-cutting doc sub-task (no new scenario, no four-lens review required — same
   precedent as the earlier Intune-RBAC/`docs/rbac-model.md` backport). Added two new rows under the
   existing **DSPM for AI** module in §2's master matrix: DLP for Microsoft Copilot restricting
@@ -2028,7 +2028,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   earlier session) into the cross-cutting doc, rather than re-deriving the fact from scratch. Closed
   the loop on both scenarios that flagged this gap: `copilot-external-email-block/README.md` §3 and
   `reviews.md` (its Microsoft Product Owner "Fix" finding) updated in place to point at the now-
-  populated matrix instead of "not yet reflected."
+  populated matrix instead of "not yet reflected." **Recurring stale-ref note:** this run's
+  container started in a detached-HEAD state whose local `origin/main` remote-tracking ref was
+  stale (pointed at commit `7b7437e`, ~50 commits behind the actual `origin/main` tip this session
+  started on) — the same class of false alarm already diagnosed and retracted in commit `6690650`.
+  `git fetch origin main` before comparing refs resolved it immediately; no divergence, no lost
+  work. Noting it again here since it's now recurred at least twice — a future session hitting the
+  same appearance of divergence should fetch first, not assume history was lost.
 - [x] **`scenarios/data-lifecycle-management/event-based-retention-and-disposition/`** — commit
   `3659e77` — 2026-09-10. Event-based retention for departed-employee records: a retention event
   type (`New-ComplianceRetentionEventType`), an event-based label (`New-ComplianceTag -EventType`,
