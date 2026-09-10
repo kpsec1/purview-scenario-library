@@ -1,0 +1,31 @@
+{
+  "_comment": "Config for deploy/New-EventBasedRetentionAndDisposition.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Creates a retention EVENT TYPE, an event-based retention LABEL (KeepAndDelete + two-stage disposition review), and a PUBLISH label policy so Records/HR can manually apply the label to a departed employee's records. Read README.md Sections 2 and 11 before deploying.",
+  "eventType": {
+    "name": "Employee Departure",
+    "comment": "Retention event type for employee-departure-triggered record retention. Fired per employee via deploy/New-RetentionTriggerEvent.ps1 when the event actually occurs (HR/business-system driven) - not by this deploy script."
+  },
+  "label": {
+    "name": "Employee Records - Post-Departure Retention",
+    "comment": "Personnel/hiring/performance/termination records for a departed employee. Retention period starts on the employee-departure EVENT, not on content creation.",
+    "retentionAction": "KeepAndDelete",
+    "retentionDurationDays": 3650,
+    "retentionType": "EventAgeInDays",
+    "isRecordLabel": true,
+    "multiStageReview": [
+      { "stageName": "HR Records Review", "reviewers": ["hr-records-review@contoso.onmicrosoft.com"] },
+      { "stageName": "Legal Review", "reviewers": ["legal-disposition-review@contoso.onmicrosoft.com"] }
+    ],
+    "autoApprovalPeriodDays": null,
+    "_labelNote": "retentionAction MUST be KeepAndDelete or Delete to use reviewerEmail/multiStageReview (New-ComplianceTag reference). retentionType MUST be EventAgeInDays to pair with eventType.name - the retention clock does not start until New-RetentionTriggerEvent.ps1 fires a matching event for a given employee (README.md Section 5/Section 11). retentionDurationDays: 3650 (~10 years) mirrors Microsoft's own 'employee leaving the organization' event-based-retention example (README.md Section 12 ref 1) - set this to your organization's actual post-departure record-retention obligation, not this illustrative value. isRecordLabel=true marks labeled content as a record (locked - can't be edited/deleted until disposed); this is NOT a regulatory record (see the sibling retention-labels-financial-records scenario for that stronger, PowerShell-only control) - a Records Management-privileged user can still unlock/relabel a record if genuinely necessary. multiStageReview becomes -MultiStageReviewProperty (a JSON string built by the script) - two stages shown (HR, then Legal); mail-enabled security groups are also valid reviewer values per Microsoft's disposition documentation. autoApprovalPeriodDays: if set, must be 7-365 (portal-documented range/default 14 - README.md Section 11 VERIFY on the exact cmdlet-parameter mapping); null disables auto-approval so every stage requires an explicit human decision."
+  },
+  "policy": {
+    "name": "Publish Employee Records Retention - HR",
+    "comment": "Publishes the event-based label so Records/HR can manually apply it (and its required Asset ID) to a departed employee's records. Auto-apply is not used here - see README.md Section 11 for why.",
+    "enabled": true,
+    "sharePointLocation": ["https://contoso.sharepoint.com/sites/hr-employee-records"],
+    "exchangeLocation": [],
+    "_policyNote": "At least one location is required. This is a PUBLISH policy (New-RetentionComplianceRule -PublishComplianceTag), not auto-apply - event-based labels are normally applied per-employee by a records manager along with that employee's Asset ID (README.md Section 5/11)."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-10"
+}

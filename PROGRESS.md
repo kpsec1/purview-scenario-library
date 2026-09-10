@@ -1521,10 +1521,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   to complete in a future documentation pass, unlike a gap where no reference page exists at all.
 
 ### Follow-ups discovered while building the DLM retention-labels-financial-records scenario
-- [ ] `scenarios/data-lifecycle-management/event-based-retention-and-disposition/` — event-based
+- [x] `scenarios/data-lifecycle-management/event-based-retention-and-disposition/` — event-based
   retention (`New-ComplianceTag -EventType`), `KeepAndDelete` with disposition review
   (`-ReviewerEmail`, multi-stage), and the disposition workflow — powerful RM features layered on the
   same cmdlets, non-goals of this starter (`design.md` §7). Overlaps the records-management starter.
+  — **built** (see DONE below): event type + event-based label (`KeepAndDelete`, two-stage
+  `MultiStageReviewProperty`) + publish policy/rule, plus a separate per-employee
+  `New-RetentionTriggerEvent.ps1` that fires `New-ComplianceRetentionEvent` scoped to one employee's
+  `ComplianceAssetID`.
 - [ ] `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` — a **publish**
   label policy (`New-RetentionComplianceRule -PublishComplianceTag`) so users can manually apply the
   financial-records label, complementing this scenario's auto-apply.
@@ -1534,6 +1538,45 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] Consider **file plan descriptors** (`-FilePlanProperty`: categories, citations, authorities,
   provisions) for a formal records file plan, and bulk label/policy creation via the documented CSV
   script (`bulk-create-publish-labels-using-powershell`).
+
+### Follow-ups discovered while building the DLM event-based-retention-and-disposition scenario
+- [ ] Build an HR-feed connector (or a scheduled reconciliation script) for
+  `event-based-retention-and-disposition` that compares an HR termination export against fired
+  `Get-ComplianceRetentionEvent` events and reports departed employees with no matching event —
+  explicitly scoped out of the built fragment (`design.md` §7) as a distinct integration/reporting
+  problem, not a retention-policy one.
+- [ ] Build a dedicated `Export-EventBasedRetentionAuditTrail.ps1` for this scenario (the
+  `Search-UnifiedAuditLog` audit-trail pattern several other scenarios in this repo already use) once
+  the exact `RecordType`/`Operations` values for retention-event creation, label application, and
+  disposition-review decisions are grounded — not found/verified during this build; flagged in
+  `event-based-retention-and-disposition/README.md` §11 rather than fabricated.
+- [ ] VERIFY (pilot tenant): `-AutoApprovalPeriod` on `New-ComplianceTag` — the parameter's own
+  description on the official reference page is an unfilled Microsoft documentation stub; the 7-365
+  day range / 14-day default cited in `event-based-retention-and-disposition/README.md` §6/§11 come
+  from the separate conceptual disposition-review article, not a confirmed mapping to this exact
+  cmdlet parameter. Left disabled (`null`) in the sample config for this reason.
+- [ ] VERIFY (pilot tenant): the read-back property name/shape for `-MultiStageReviewProperty` and
+  `-ReviewerEmail` on `Get-ComplianceTag` — undocumented (no output-property list published for this
+  cmdlet); `validate/Test-EventBasedRetentionAndDisposition.ps1` checks for either being non-null and
+  reports `[WARN]`, not `[FAIL]`, rather than asserting an unconfirmed shape.
+- [ ] VERIFY (pilot tenant): whether `-ReviewerEmail` and `-MultiStageReviewProperty` can be set
+  together on the same label, or are mutually exclusive — undocumented either way. This scenario
+  always uses exactly one, never both, for this reason.
+- [ ] VERIFY (pilot tenant): whether firing a second `New-ComplianceRetentionEvent` under a
+  different `-Name` for an employee who already has a fired event causes any adverse effect beyond
+  redundancy (e.g., duplicate disposition-review notifications) — `New-RetentionTriggerEvent.ps1` can
+  only detect a duplicate by exact `-Name` match (no documented query-by-Asset-ID cmdlet was found).
+- [ ] **Cross-cutting doc-drift found, not fixed in this fragment:** `docs/automation-surface.md`'s
+  surface numbering has apparently been renumbered since several existing scenarios were written.
+  Two Records Management/DLM `README.md`s (`retention-labels-financial-records`,
+  `regulatory-records-disposition`) cite "surface 1 — Security & Compliance PowerShell," and
+  `records-management/graph-event-automation/README.md` cites "surface 2 — Microsoft Graph PowerShell
+  SDK; surface 3 — Graph REST" — but the current `docs/automation-surface.md` (dated 2026-09-08)
+  numbers Exchange Online PowerShell as surface 1, Security & Compliance PowerShell as surface 2, and
+  a single unified Microsoft Graph surface as surface 3. `event-based-retention-and-disposition`'s own
+  `README.md`/deploy scripts cite the current, correct "surface 2" throughout to avoid propagating the
+  error. A dedicated pass should grep every scenario `README.md` for "surface N" citations and correct
+  any that drifted from the current numbering.
 
 ### Follow-ups discovered while building the Information Barriers segregate-trading-and-research scenario
 - [ ] `scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/` — enable IB
@@ -1969,6 +2012,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
+- [x] **`scenarios/data-lifecycle-management/event-based-retention-and-disposition/`** — commit
+  `<pending>` — 2026-09-10. Event-based retention for departed-employee records: a retention event
+  type (`New-ComplianceRetentionEventType`), an event-based label (`New-ComplianceTag -EventType`,
+  `KeepAndDelete`, two-stage `MultiStageReviewProperty` disposition review: HR Records then Legal),
+  and a **publish** (not auto-apply) label policy/rule, plus a separate per-employee
+  `New-RetentionTriggerEvent.ps1` operational script that fires `New-ComplianceRetentionEvent` scoped
+  to one employee's `ComplianceAssetID` (required unless `-Force`, since an unscoped event retains
+  **all** content of that event type tenant-wide). All cmdlets fetched directly from their official
+  Microsoft Learn reference pages this build (2026-09-10) — no invented parameters. Four-lens review
+  surfaced and resolved a real gap (content isn't a locked record until someone applies the label;
+  README/design now recommend applying it at hire, not at offboarding, to close that window) plus
+  several honestly-disclosed documentation stubs (`-AutoApprovalPeriod`, `MultiStageReviewProperty`
+  read-back shape) rather than guessed values. Also found and avoided propagating a pre-existing
+  cross-cutting doc-drift: `docs/automation-surface.md`'s surface numbering has shifted since two
+  older DLM/Records Management scenarios were written (they cite "surface 1" for Security &
+  Compliance PowerShell; the current doc numbers it surface 2) — flagged as a follow-up above rather
+  than fixed in this fragment.
 - [x] **`scenarios/ediscovery/teams-purge-hold-lifecycle-management/`** — commit `3678852` —
   2026-09-10. Companion to `search-and-purge-teams-messages`, scripting the hold-identification/
   removal/reapplication sequence that scenario deliberately left manual — Microsoft's own guidance
