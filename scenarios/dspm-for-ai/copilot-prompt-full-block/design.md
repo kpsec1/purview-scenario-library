@@ -120,8 +120,9 @@ exists.
   CopilotSensitiveDataProtectionPolicy.ps1` rather than silently creating one.
 - This scenario does not attempt the "Block external email from being processed" preview action
   (a fourth, distinct Copilot-location action with its own condition type, `Email is received from
-  > External users`) — out of scope for this fragment, tracked as a separate potential follow-up if
-  needed.
+  > External users`) — out of scope for this fragment. **Built** as
+  `scenarios/dspm-for-ai/copilot-external-email-block/`, which adds it as Rule 3 on this same shared
+  policy.
 - This scenario does not resolve the open `-RestrictAccess` VERIFY definitively — that requires
   either a pilot tenant (permanently out of reach for this repo's build process) or a future
   Microsoft-published worked example. It closes the "should we build this at all" question (yes, with

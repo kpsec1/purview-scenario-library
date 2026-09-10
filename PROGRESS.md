@@ -990,11 +990,11 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   setting string specific to that condition/action combination. Flagged inline in
   `copilot-prompt-full-block/README.md` §5/§11, `design.md` §5, the deploy script's `.NOTES`, and
   checked as `[WARN]` (not `[FAIL]`) by `validate/Test-CopilotPromptFullBlockRule.ps1`.
-- [ ] Consider `scenarios/dspm-for-ai/copilot-external-email-block/` (or fold into a future
-  DSPM-for-AI pass) — script the fourth documented Copilot-location action, "Block external email
-  from being processed" (preview; `Email is received from > External users` condition), explicitly
-  left out of scope by `copilot-prompt-full-block/design.md` §7 to keep that fragment focused on the
-  SIT-in-prompt problem it was named for.
+- [x] `scenarios/dspm-for-ai/copilot-external-email-block/` — script the fourth documented
+  Copilot-location action, "Block external email from being processed" (preview; `Email is received
+  from > External users` condition), explicitly left out of scope by
+  `copilot-prompt-full-block/design.md` §7 and `copilot-sensitive-data-exposure/design.md` §7 to keep
+  those fragments focused on the problems they were named for — **built** (see DONE below).
 - [x] `scenarios/dspm-for-ai/third-party-ai-site-adaptive-block/` — the Adaptive-Protection-driven,
   risk-based DLP policies for **third-party** generative AI sites accessed via a browser
   (`DSPM for AI - Block sensitive info from AI sites`, `DSPM for AI - Block elevated risk users
@@ -1010,6 +1010,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (label-exclusion rule requires E5-tier; prompt-safeguard/web-grounding rule is available at all
   Copilot licensing tiers) as its own row/footnote — currently only cited inline in
   `copilot-sensitive-data-exposure/README.md` §3, not surfaced in the cross-cutting matrix.
+  `copilot-external-email-block/README.md` §3/§10 independently confirmed (via Microsoft's Purview
+  service description) that the external-email-block rule sits in the same higher "files and emails"
+  tier as the label-exclusion rule, not the broader "prompts" tier — fold that citation in too when
+  this item is picked up.
+
+### Follow-ups discovered while building the Copilot External Email Block scenario
+- [ ] VERIFY (pilot tenant, or a future Microsoft-published PowerShell worked example): whether the
+  Microsoft 365 Copilot and Copilot Chat DLP-location honors `-FromScope NotInOrganization` as a
+  rule condition at all — the parameter and its two allowed values are independently confirmed to
+  exist in `New-DlpComplianceRule`'s shared syntax, and its semantics match the Copilot-location
+  page's own prose description of "Email is received from > External users," but no Microsoft-
+  published example combines `-FromScope` with the `CopilotExperiences` enforcement plane for any
+  location. Flagged inline in `copilot-external-email-block/README.md` §5/§11 and `design.md` §4,
+  and checked as `[WARN]` (not `[FAIL]`) by `validate/Test-CopilotExternalEmailBlockRule.ps1`.
+- [ ] VERIFY (pilot tenant): whether `PATCH`-style reconciliation of this rule via `Set-
+  DlpComplianceRule -Force` (as `copilot-external-email-block/deploy/
+  Add-CopilotExternalEmailBlockRule.ps1` performs) correctly updates an already-live `FromScope`
+  condition, or silently no-ops it — the same class of replace-vs-merge uncertainty this repo has
+  already flagged for other PATCH-style reconciliation paths (e.g. the Intune device-control
+  scenarios' `omaSettings`/`payload` PATCH). Not independently tested during this build.
+- [ ] Consider a companion Blue Team-flagged control: an accepted-domains hygiene check script that
+  cross-references `Get-AcceptedDomain` against a known-partner-domains allowlist and flags any
+  legitimate partner domain missing accepted-domain status (a false-positive-exclusion risk for
+  `copilot-external-email-block`) or, in the other direction, any newly-added accepted domain that
+  doesn't match a known-partner-domains allowlist (a potential silent-bypass risk if an attacker or
+  a misconfiguration adds an external-controlled domain as accepted) — flagged as a Red Team finding
+  in `copilot-external-email-block/reviews.md` but not built in this fragment, since it's a general
+  Exchange-accepted-domains hygiene control outside this scenario's specific DLP-rule scope.
 
 ### Follow-ups discovered while building the Unified Catalog business-glossary scenario
 - [x] `scenarios/unified-catalog/link-glossary-terms-to-data-products/` — **superseded by**
@@ -1828,6 +1856,31 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
+- [x] **`scenarios/dspm-for-ai/copilot-external-email-block/`** — commit `PENDING` — 2026-09-10.
+  Closes the `PROGRESS.md` follow-up carried from `copilot-prompt-full-block/design.md` §7 and
+  `copilot-sensitive-data-exposure/design.md` §7 (the fourth and final documented Copilot-location
+  DLP condition/action pair). Full README (12-section skeleton), design.md, deploy/
+  (`Add-CopilotExternalEmailBlockRule.ps1` — adds a fourth rule, `Copilot-Exclude-ExternalEmail-
+  Processing`, to the parent scenario's existing DLP policy; `Remove-CopilotExternalEmailBlockRule.ps1`
+  — disable/`-Purge`, scoped to this one rule only), validate/
+  (`Test-CopilotExternalEmailBlockRule.ps1`), rollback.md, reviews.md (four-lens review — Red Team,
+  Blue Team, CISO, and Microsoft Product Owner each raised a Fix finding, all resolved).
+  **Grounding result:** the condition (`Email is received from > External users`) has no
+  Microsoft-published PowerShell parameter name on the dedicated Copilot-location page; grounded
+  instead via three independently-fetched Microsoft Learn sources converging on
+  `-FromScope NotInOrganization` (confirmed parameter/type in `New-DlpComplianceRule`'s full syntax;
+  confirmed portal-condition-to-parameter mapping via the Exchange conditions-and-actions reference;
+  confirmed allowed enum values via the Graph UTCM Exchange-resources reference) — disclosed as an
+  explicit VERIFY (no worked example combines `-FromScope` with the Copilot location specifically),
+  same class of gap as the `copilot-prompt-full-block` sibling's own `-RestrictAccess` VERIFY. The
+  **action** side, by contrast, is the *best*-grounded of any rule in this policy family: Microsoft's
+  own `New-DlpCompliancePolicy` Example 4 is a full worked example of this exact
+  `RestrictAccess`/`ExcludeContentProcessing`/`Block` pair for this exact top-level action text
+  ("Prevent Copilot from processing content", no sub-action). **New finding not carried from any
+  sibling:** Microsoft's Purview service description splits Copilot-DLP licensing into a "files and
+  emails" tier (E5-class only) vs. a "prompts" tier (available to any tenant with Copilot access) —
+  this rule falls in the higher tier, unlike its two prompt-facing siblings; flagged in `README.md`
+  §3/§10 and not yet backported into `docs/licensing-matrix.md` (new follow-up added below).
 - [x] **`scenarios/unified-catalog/governance-domain-hierarchy/`** — commit `f63b43e` — 2026-09-10. Full README (12-section skeleton), design.md, deploy/
   (`New-GovernanceDomainHierarchy.ps1` — recursive idempotent upsert of a domain tree, one shared
   paginated `Enumerate` pass, `(name, parentId)`-keyed matching, business-concept attribute values,

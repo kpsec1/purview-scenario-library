@@ -134,7 +134,8 @@ content-processing control, not an access control — see §7 (Non-goals) below.
   (the "Block external email from being processed" preview feature) — a related but distinct
   Copilot-location DLP action with its own condition type (`Email is received from > External
   users`), out of scope here to keep this fragment to the oversharing/labeled-content exposure
-  problem it is named for.
+  problem it is named for. **Built** as `scenarios/dspm-for-ai/copilot-external-email-block/`, which
+  adds it as a fourth rule on this same shared policy.
 - This scenario does not configure Adaptive Protection-driven, risk-based DLP for **third-party**
   generative AI sites accessed via a browser (a different location/enforcement plane from the
   first-party Microsoft 365 Copilot location this scenario covers). A dedicated grounding pass
