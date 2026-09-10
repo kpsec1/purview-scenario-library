@@ -78,8 +78,11 @@ flowchart TD
         RoleGroups[("Data Security Investigations<br/>Admins / Investigators / Reviewers")]
         Audit["Export-DsiActivityAuditTrail.ps1"]
         UAL[("Unified audit log<br/>28 DSI Operations")]
-        CSV[["out/dsi-audit-trail.csv<br/>-> SIEM"]]
+        CSV[["out/dsi-audit-trail.csv<br/>rolling history"]]
+        NDJSON[["-NdjsonOutDir<br/>DSI-Activity-*.ndjson"]]
     end
+
+    SiemOut[["audit/streaming-to-sentinel-or-management-api's<br/>out/ directory -> downstream forwarder"]]
 
     Cfg --> RB
     RB -->|"Add-/Remove-RoleGroupMember<br/>(-WhatIf first)"| RoleGroups
@@ -87,6 +90,8 @@ flowchart TD
     DSI -->|"every action logged automatically"| UAL
     Audit -->|"Search-UnifiedAuditLog -Operations"| UAL
     Audit --> CSV
+    Audit -.->|"optional companion feed<br/>(README.md Section 8)"| NDJSON
+    NDJSON -.-> SiemOut
 ```
 
 The DSI workflow itself (top box) is entirely Microsoft-portal-driven — no write API exists for any
@@ -151,6 +156,11 @@ Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDom
 
 # Schedule this daily (Task Scheduler / cron / Azure Automation)
 ./deploy/Export-DsiActivityAuditTrail.ps1 -OutputCsvPath ./out/dsi-audit-trail.csv
+
+# Optional: also land this run's new records as NDJSON in the audit streaming scenario's own
+# Path B output directory, so the same downstream forwarder picks up DSI activity too (Section 8)
+./deploy/Export-DsiActivityAuditTrail.ps1 -OutputCsvPath ./out/dsi-audit-trail.csv `
+    -NdjsonOutDir ../../audit/streaming-to-sentinel-or-management-api/out
 ```
 
 ## 6. Configuration reference
@@ -192,6 +202,7 @@ for what each dedicated DSI role group can do) [[4]](#references):
 | Billing model | Pay-as-you-go: storage meter (GB/month, all investigations) + Data Security Investigations compute units (AI processing) — **not** a pausable feature in the Purview Usage center | [[5]](#references)[[6]](#references)[[14]](#references) |
 | Compute-unit processing locations | ANZ, EU, UK, US (operator choice) | [[5]](#references) |
 | Audit — Operations logged | 28 distinct `DSI*` Operations covering investigation lifecycle, search, AI jobs, mitigation, and purge (`deploy/Export-DsiActivityAuditTrail.ps1`'s full list) | [[11]](#references) |
+| Audit — SIEM companion feed | `-NdjsonOutDir` (optional) writes each run's new records as `DSI-Activity-<runStamp>.ndjson` — same per-run-file convention as `audit/streaming-to-sentinel-or-management-api`'s own Path B exports; point it at that scenario's `-OutDir` to share one downstream forwarder | This repo (§8) |
 
 ## 7. Validation / how to prove it works
 
@@ -213,12 +224,33 @@ for what each dedicated DSI role group can do) [[4]](#references):
    authoritative status source — the audit script confirms an action was *initiated*
    (`DSIPurgeStarted`), not that it *completed successfully*. See §11.
 
+**SIEM companion feed (optional):**
+1. Run `./deploy/Export-DsiActivityAuditTrail.ps1` with `-NdjsonOutDir` pointed at a scratch
+   directory; confirm a `DSI-Activity-<runStamp>.ndjson` file is created only when `$rowsToAdd` is
+   non-empty (a run that merges zero new records writes no NDJSON file — matches Path B's own
+   "no records in this window" behavior).
+2. Confirm each line is valid, single-line JSON with `CreationDate`/`Operation`/`UserIds`/
+   `RecordType`/`AuditData` keys, and that `AuditData` is a nested JSON object (not an escaped
+   string) — e.g. `Get-Content <file> | ForEach-Object { $_ | ConvertFrom-Json }` should not throw.
+3. Run the script twice in a row over an overlapping window; confirm the second run's NDJSON file
+   (a new, later `runStamp`) contains **zero** records for anything already exported by the first
+   run — the same `$rowsToAdd` de-duplication the CSV merge already relies on.
+
 ## 8. Operations & tuning
 
 - **`DSIPurgeStarted` is this scenario's single highest-priority signal.** It's the one DSI action
   that can permanently, irreversibly delete tenant data (hard purge). `Export-DsiActivityAuditTrail.ps1`
   emits a console warning on every such row; wire the same filter into whatever SIEM ultimately
   ingests the exported CSV, and alert on it in real time, not on the next scheduled review.
+- **Landing this feed in a SIEM without building a second forwarder.** `-NdjsonOutDir` writes new
+  records as NDJSON using the exact same per-run-file convention `audit/
+  streaming-to-sentinel-or-management-api`'s Path B collector already uses for its own output —
+  point it at that scenario's `-OutDir` and whatever forwarder already watches that directory
+  (Splunk HEC, the Log Analytics Logs Ingestion API, a file-tail agent) picks up DSI activity too,
+  with no new pipeline to stand up. This script still does not forward the NDJSON anywhere itself
+  (same non-goal as `Invoke-ManagementActivityPoll.ps1` — `design.md` §6) — a downstream forwarder
+  is still required either way. The CSV output is unaffected and remains the primary record
+  regardless of whether `-NdjsonOutDir` is used.
 - **New-investigation creation is the second-priority signal**, especially
   `DSIInvestigationCreatedFromXDR`/`DSIInvestigationCreatedFromIRM` outside expected incident-response
   hours — confirm each is a recognized, in-progress incident, not credential misuse of a DSI
@@ -292,6 +324,12 @@ See `rollback.md`.
   billing) until the investigation itself is deleted [[7]](#references) — see `rollback.md`.
 - **Global Administrator alone is not sufficient** to access DSI — even a Global Admin must be
   explicitly assigned to a DSI role group [[4]](#references).
+- **`-NdjsonOutDir`'s "DSI-Activity" label is this repo's own convention, not a real Office 365
+  Management Activity API content type.** DSI audit records come from `Search-UnifiedAuditLog`
+  directly, not from the Management Activity API `audit/streaming-to-sentinel-or-management-api`
+  uses for its own Path B content types (`Audit.Exchange`, `DLP.All`, etc.) — the hyphenated name
+  is deliberate, to avoid implying otherwise. Sharing an output directory is a filesystem-level
+  convenience, not a claim that DSI events flow through that API.
 
 ## 12. References
 

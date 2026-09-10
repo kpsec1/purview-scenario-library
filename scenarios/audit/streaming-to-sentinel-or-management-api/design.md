@@ -134,3 +134,15 @@ Path B's `-OutDir` output is already record-per-line JSON, matching what that AP
 here — it needs a Data Collection Endpoint/Rule and a destination table schema decision that belongs
 in a dedicated follow-up scenario once a concrete buyer target (custom table vs. Auxiliary Logs)
 is chosen.
+
+## 8. Other scenarios feeding this same output directory
+
+Rather than every solution-specific scenario in this library building its own SIEM hand-off, a
+scenario whose own product surface has no Management Activity API path can instead emit NDJSON
+using this scenario's exact per-run-file convention (`<label>-<runStamp>.ndjson`) into Path B's own
+`-OutDir` — one shared directory, one downstream forwarder, no per-scenario pipeline duplication.
+`data-security-investigations/post-breach-investigation-and-purge/deploy/
+Export-DsiActivityAuditTrail.ps1`'s `-NdjsonOutDir` parameter is the first instance of this pattern
+(its own `design.md` §5); its `DSI-Activity` label is deliberately hyphenated, not dot-separated, to
+avoid being mistaken for a genuine Management Activity API content type (this scenario's own
+content types use dots — `Audit.Exchange`, `DLP.All`) — DSI records never pass through that API.

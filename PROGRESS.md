@@ -888,10 +888,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   settings (compute-unit maximum, processing location) or the DSPM (preview) proactive-AI-insights
   auto-investigation toggle, extend `deploy/New-DsiRoleGroupAssignments.ps1` or add a sibling script —
   both are currently portal-only with no API found (`design.md` §6).
-- [ ] Consider wiring `deploy/Export-DsiActivityAuditTrail.ps1`'s CSV output into
+- [x] Consider wiring `deploy/Export-DsiActivityAuditTrail.ps1`'s CSV output into
   `scenarios/audit/streaming-to-sentinel-or-management-api/` as a documented companion feed (the same
   NDJSON/CSV-to-SIEM hand-off pattern that scenario already establishes) rather than leaving the two
-  scenarios' outputs unconnected.
+  scenarios' outputs unconnected — **built** (see DONE below): a new opt-in `-NdjsonOutDir` parameter
+  writes new records using that scenario's exact per-run-file NDJSON convention into its own `-OutDir`,
+  so one downstream forwarder can pick up both feeds without a second pipeline.
 - [ ] Once Microsoft documents a job-status API for an AI-analysis job's completion or a purge job's
   outcome (success/failure/partial), extend `validate/Test-DsiRoleGroupAssignments.ps1` (or a new
   script) to check it — today the portal's per-investigation Activities tab is the only authoritative
@@ -5405,6 +5407,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   follow-ups recorded above under
   `### Follow-ups discovered while building the Data Security Investigations
   post-breach-investigation-and-purge scenario` rather than duplicated here.
+- [x] **DSI audit-trail → audit-streaming SIEM companion feed** — commit `PENDING` — 2026-09-10.
+  Scoped follow-up (not a new scenario) closing the item tracked under `### Follow-ups discovered
+  while building the Data Security Investigations post-breach-investigation-and-purge scenario`.
+  `scenarios/data-security-investigations/post-breach-investigation-and-purge/deploy/
+  Export-DsiActivityAuditTrail.ps1` gained an optional `-NdjsonOutDir` parameter: when supplied, each
+  run's already-de-duplicated new records (`$rowsToAdd`) are also written as
+  `DSI-Activity-<runStamp>.ndjson` — the identical per-run-file convention
+  `scenarios/audit/streaming-to-sentinel-or-management-api/deploy/Invoke-ManagementActivityPoll.ps1`
+  already uses for its own Path B `<contentType>-<runStamp>.ndjson` exports — so both scenarios can
+  point at one shared `-OutDir`/`-NdjsonOutDir` and one downstream forwarder picks up both feeds with
+  no new infrastructure. The label is deliberately hyphenated (`DSI-Activity`, not dot-separated) to
+  avoid implying DSI records pass through the Management Activity API (they come from
+  `Search-UnifiedAuditLog` directly and are not subject to that API's 24h/7-day window limits) —
+  disclosed explicitly rather than left ambiguous. Updated in the same fragment: DSI scenario's
+  `README.md` (§4 diagram, §5 script path, §6 config-reference row, §7 validation steps, §8 ops note,
+  §11 limitation), `design.md` (§5 key-decisions row, §6 non-goal reworded from "out of scope" to
+  "partially built," §4 sequence-diagram note), and `reviews.md` (a mini four-lens addendum — all four
+  lenses Pass, no Fix/Fail); the audit-streaming scenario's own `README.md` §8 and a new `design.md`
+  §8 cross-link back to it. No product facts needed re-grounding — this is pure repo-internal wiring
+  between two already-grounded scenarios, not a new Microsoft capability claim.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

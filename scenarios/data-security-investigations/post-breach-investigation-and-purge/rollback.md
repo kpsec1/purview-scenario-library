@@ -40,6 +40,11 @@ explicitly out of this scenario's scope (README.md §3).
   does contain `UserIds` and `AuditData` for every logged DSI action, including who ran every purge —
   treat it with the same handling discipline as this library's other audit-export scripts
   (`audit/premium-audit-investigation/rollback.md`).
+- **If `-NdjsonOutDir` was used**, secure or dispose of the `DSI-Activity-*.ndjson` files the same
+  way — same fields, same sensitivity, just a different location (README.md §8). If that directory is
+  shared with `audit/streaming-to-sentinel-or-management-api`'s own Path B output, only remove this
+  scenario's `DSI-Activity-*.ndjson` files — leave that scenario's own `<contentType>-*.ndjson` files
+  alone; its own `rollback.md` covers those.
 - Nothing about the unified audit log itself is affected — this script only reads from it.
 
 ## 3. What this rollback does NOT and CANNOT undo

@@ -156,3 +156,39 @@ All Fix items are resolved in the current state of `README.md`, `design.md`,
 `validate/Test-DsiRoleGroupAssignments.ps1`, and `rollback.md`. No Fail items were raised. This
 fragment meets the definition of done in `AGENTS.md` §9, with one open VERIFY recorded rather than
 guessed, per `AGENTS.md` §4.
+
+---
+
+## Addendum (2026-09-10) — `-NdjsonOutDir` SIEM companion feed
+
+A follow-up fragment (tracked in `PROGRESS.md`) closed the "Landing the audit-trail CSV in a SIEM"
+non-goal partially: `Export-DsiActivityAuditTrail.ps1` gained an optional `-NdjsonOutDir` parameter
+that writes new records as NDJSON using `audit/streaming-to-sentinel-or-management-api`'s own
+per-run-file convention, so both scenarios can share one downstream forwarder. Mini four-lens
+check on this addition only (the original round above is otherwise unchanged):
+
+- 🔴 **Red Team** — does an optional output path introduce a new risk? No new write surface against
+  the tenant (still read-only against `Search-UnifiedAuditLog`); the only new side effect is a local
+  file write, gated behind the same `ShouldProcess` check as the CSV merge. The NDJSON file inherits
+  the same sensitive-content profile as the CSV (`UserIds`/`AuditData` for every DSI action,
+  including purges) — README.md §8 and §11 both call this out rather than treating the new output
+  as lower-sensitivity just because it's a companion feed. **Verdict: Pass.**
+- 🔵 **Blue Team** — does this create a detection gap or a duplicate-alert risk? No: `-NdjsonOutDir`
+  only ever writes `$rowsToAdd` (already de-duplicated against the CSV), so a scheduled run with an
+  overlapping window can't emit the same `DSIPurgeStarted` event twice into a SIEM that's alerting
+  on the NDJSON feed. The console `Write-Warning` on every purge-start row is unchanged and remains
+  the primary real-time signal regardless of whether `-NdjsonOutDir` is used. **Verdict: Pass.**
+- 🟦 **Microsoft Product Owner** — does the "DSI-Activity" label misrepresent this as a real Office
+  365 Management Activity API content type? Deliberately avoided: the label is hyphenated (not
+  dot-separated like this API's genuine content types — `Audit.Exchange`, `DLP.All`), and both
+  README.md §11 and the script's own `.PARAMETER` doc state explicitly that DSI records reach this
+  feed via `Search-UnifiedAuditLog`, not the Management Activity API, and are not subject to that
+  API's 24-hour/7-day window limits. **Verdict: Pass.**
+- 🎩 **CISO** — is this worth shipping as opt-in rather than the new default? Yes: the CSV remains
+  the primary, always-on record; `-NdjsonOutDir` is a zero-cost convenience for a buyer who already
+  deployed `audit/streaming-to-sentinel-or-management-api`'s Path B collector, with no new license
+  or infrastructure requirement of its own. **Verdict: Pass.**
+
+No Fix/Fail raised by this addendum. `design.md` §6 (non-goals) and §5 (key decisions) updated to
+reflect the new parameter; a new `design.md` §8 in `audit/streaming-to-sentinel-or-management-api`
+(plus its README.md §8) cross-links back to it.

@@ -105,10 +105,11 @@ sequenceDiagram
 
     loop scheduled (e.g. daily)
         Op->>EXO: Connect-ExchangeOnline
-        Op->>EXO: Export-DsiActivityAuditTrail.ps1
+        Op->>EXO: Export-DsiActivityAuditTrail.ps1 [-NdjsonOutDir optional]
         EXO->>UAL: Search-UnifiedAuditLog -Operations <28 DSI ops>
         UAL-->>EXO: Matching records
         EXO-->>Op: Rolling CSV merged; DSIPurgeStarted rows flagged
+        Note over EXO,Op: If -NdjsonOutDir was supplied, new records are also<br/>written as DSI-Activity-<runStamp>.ndjson (Section 5 table)
     end
 ```
 
@@ -122,6 +123,7 @@ sequenceDiagram
 | `-Operations` only, no `-RecordType` | `Export-DsiActivityAuditTrail.ps1` omits `-RecordType` | The RecordType enum value for DSI records isn't stated anywhere in Microsoft's audit-log-activities reference (VERIFY, README.md §11) — `Search-UnifiedAuditLog` doesn't require it when `-Operations` is supplied, so this avoids guessing a value |
 | Purge-start events get a dedicated warning | Every `DSIPurgeStarted` row triggers `Write-Warning`, not just a CSV row | It's the one action in this entire workflow that's genuinely irreversible (hard purge) — the audit script's job is to make that impossible to miss in a log tail |
 | Native `-WhatIf` | Both scripts use `[CmdletBinding(SupportsShouldProcess)]` | `Add-RoleGroupMember`/`Remove-RoleGroupMember`/`Update-RoleGroupMember` all natively support `-WhatIf` (confirmed against the Exchange PowerShell reference) — unlike some Security & Compliance PowerShell cmdlets elsewhere in this library where `-WhatIf` is documented as non-functional and a custom dry-run flag was needed instead |
+| SIEM companion feed is opt-in, additive, and reuses an existing convention rather than inventing one | `-NdjsonOutDir` on `Export-DsiActivityAuditTrail.ps1`, off by default | Building a third bespoke output format would fragment this library's SIEM hand-off story; reusing `Invoke-ManagementActivityPoll.ps1`'s own per-run `<label>-<runStamp>.ndjson` file convention means one downstream forwarder can watch a single directory for both scenarios' output, with zero new infrastructure — `AGENTS.md` §4's reuse-over-reinvention discipline applied across scenarios, not just within one |
 
 ## 6. Non-goals
 
@@ -137,9 +139,12 @@ sequenceDiagram
   own future fragment once it's further along.
 - **DSPM (preview) proactive-AI-insights auto-investigation toggle.** Portal-only toggle, no API found;
   noted in README.md §11 rather than built.
-- **Landing the audit-trail CSV in a SIEM.** `Export-DsiActivityAuditTrail.ps1`'s CSV output is the
-  documented hand-off point — wiring a specific downstream forwarder follows this library's existing
-  `audit/streaming-to-sentinel-or-management-api` precedent (out of scope for a per-solution scenario).
+- **Building a dedicated SIEM forwarder.** `Export-DsiActivityAuditTrail.ps1`'s CSV output remains the
+  documented primary hand-off point. §8 below adds an *optional* `-NdjsonOutDir` companion output that
+  reuses `audit/streaming-to-sentinel-or-management-api`'s own Path B per-run NDJSON convention so the
+  two scenarios' outputs land in one directory — but this script still does not forward that NDJSON
+  anywhere itself, same non-goal as `Invoke-ManagementActivityPoll.ps1` (a downstream forwarder is
+  still required, and remains out of scope for a per-solution scenario like this one).
 - **A dedicated custodian/reviewer notification workflow.** Not part of DSI's documented feature set.
 
 ## 7. Relationship to this library's other purge-capable scenarios

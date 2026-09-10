@@ -181,6 +181,14 @@ the Graph-based Audit Search API used by `premium-audit-investigation`.
   `Audit.Exchange`/`Audit.SharePoint` content that duplicates what Path A already streams into
   `OfficeActivity`, unless the destination pipelines are genuinely separate and dedup is handled
   downstream (design.md §3).
+- **Other scenarios can share this scenario's `-OutDir`.** `data-security-investigations/
+  post-breach-investigation-and-purge/deploy/Export-DsiActivityAuditTrail.ps1`'s own
+  `-NdjsonOutDir` parameter writes `DSI-Activity-<runStamp>.ndjson` files using the exact same
+  per-run-file convention `Invoke-ManagementActivityPoll.ps1` uses here — point it at this
+  scenario's `-OutDir` to have one downstream forwarder pick up both feeds. DSI records reach that
+  directory via `Search-UnifiedAuditLog`, not the Management Activity API — they are not a Path B
+  content type and are not subject to this API's 24-hour/7-day window limits (that scenario's own
+  `README.md` §11).
 - **DLP.All is sensitive.** Detected sensitive-information events can themselves carry excerpts of
   matched content — treat Path B's `DLP.All` export files with the same handling discipline as the
   audit-investigation exports in this library's `premium-audit-investigation/rollback.md`.

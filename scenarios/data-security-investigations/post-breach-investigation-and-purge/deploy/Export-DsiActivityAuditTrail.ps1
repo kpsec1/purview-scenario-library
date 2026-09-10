@@ -52,6 +52,19 @@
     otherwise new, non-duplicate records are merged in and the file is rewritten sorted by
     CreationDate.
 
+.PARAMETER NdjsonOutDir
+    Optional. When supplied, every new (non-duplicate) record merged this run is ALSO written as
+    newline-delimited JSON to '<NdjsonOutDir>/DSI-Activity-<runStamp>.ndjson' - one file per run,
+    the same per-run-file convention scenarios/audit/streaming-to-sentinel-or-management-api's
+    Invoke-ManagementActivityPoll.ps1 already uses for its own Path B '<contentType>-<runStamp>.ndjson'
+    exports (README.md Section 6/Section 8). Point this at that scenario's own -OutDir (e.g. './out')
+    to land DSI activity in the same directory a downstream forwarder is already watching, without
+    building a second forwarder. 'DSI-Activity' (hyphenated) is this repo's own label, NOT a real
+    Office 365 Management Activity API content type - Data Security Investigations audit records
+    never pass through that API (they come from Search-UnifiedAuditLog directly); see README.md
+    Section 8 and design.md Section 6. Omit this parameter to keep using this script exactly as
+    before - the CSV output alone is unaffected either way.
+
 .PARAMETER ResultSize
     Passed to Search-UnifiedAuditLog's page size. Defaults to 5000 (the cmdlet's documented
     per-call maximum without paging).
@@ -79,6 +92,12 @@
     A one-time backfill covering the full default Audit (Standard) retention window before the
     first scheduled recurring run (README.md Section 11).
 
+.EXAMPLE
+    ./Export-DsiActivityAuditTrail.ps1 -OutputCsvPath './out/dsi-audit-trail.csv' -NdjsonOutDir '../../../audit/streaming-to-sentinel-or-management-api/out'
+
+    Merges the rolling CSV as usual, AND writes this run's new records as NDJSON into the audit
+    streaming scenario's own Path B output directory - README.md Section 8.
+
 .NOTES
     Every DSIPurgeStarted record is flagged with a console warning as this script runs - see
     README.md Section 8 for why purge starts are this scenario's single highest-priority Blue Team
@@ -87,6 +106,14 @@
     VERIFY - the RecordType enum value for DSI records is not stated in Microsoft's own reference
     (see .DESCRIPTION); this script relies on -Operations alone. If a future Microsoft Learn
     revision documents the RecordType, add it as an additional filter for defense in depth.
+
+    -NdjsonOutDir writes the exact same fields as the CSV (CreationDate/Operation/UserIds/
+    RecordType/AuditData), just re-shaped: AuditData is parsed from its JSON string into a nested
+    object (falling back to the raw string if parsing fails) so the NDJSON record is full-fidelity
+    JSON rather than a CSV cell holding escaped JSON text - the same shape
+    Invoke-ManagementActivityPoll.ps1 already produces for its own content-blob records. Only
+    $rowsToAdd (already de-duplicated against the CSV) is ever written, so a scheduled run with an
+    overlapping date window never produces duplicate NDJSON records either.
 
     Sources (Microsoft Learn, verify before production use):
     - Audit log activities - Data Security Investigations activities table (the 28 Operation values
@@ -113,6 +140,9 @@ param(
     [Parameter(Mandatory)]
     [ValidateNotNullOrEmpty()]
     [string]$OutputCsvPath,
+
+    [Parameter()]
+    [string]$NdjsonOutDir,
 
     [Parameter()]
     [ValidateRange(1, 5000)]
@@ -235,7 +265,12 @@ $rowsToAdd = @($newRows | Where-Object { -not $existingKeys.Contains($_.Composit
 
 Write-Host "$($rowsToAdd.Count) new, non-duplicate record(s) to merge (of $($newRows.Count) fetched)." -ForegroundColor Cyan
 
+$runStamp = (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmmss')
 $mergeDescription = "Merge $($rowsToAdd.Count) new record(s) into '$OutputCsvPath'"
+if ($NdjsonOutDir) {
+    $mergeDescription += " and write them as NDJSON to '$NdjsonOutDir'"
+}
+
 if ($rowsToAdd.Count -eq 0) {
     Write-Host "Nothing to merge - CSV already up to date for this window." -ForegroundColor Yellow
 }
@@ -243,6 +278,23 @@ elseif ($PSCmdlet.ShouldProcess($OutputCsvPath, $mergeDescription)) {
     $allRows = @($existingRows) + @($rowsToAdd)
     $allRows | Sort-Object CreationDate | Export-Csv -Path $OutputCsvPath -NoTypeInformation
     Write-Host "Audit trail updated: $OutputCsvPath ($($allRows.Count) total row(s))." -ForegroundColor Green
+
+    if ($NdjsonOutDir) {
+        if (-not (Test-Path -LiteralPath $NdjsonOutDir)) { New-Item -ItemType Directory -Path $NdjsonOutDir -Force | Out-Null }
+        $ndjsonFile = Join-Path $NdjsonOutDir "DSI-Activity-$runStamp.ndjson"
+        foreach ($row in $rowsToAdd) {
+            $auditDataObj = $row.AuditData
+            try { $auditDataObj = $row.AuditData | ConvertFrom-Json -ErrorAction Stop } catch { }
+            [pscustomobject]@{
+                CreationDate = $row.CreationDate
+                Operation    = $row.Operation
+                UserIds      = $row.UserIds
+                RecordType   = $row.RecordType
+                AuditData    = $auditDataObj
+            } | ConvertTo-Json -Depth 20 -Compress | Add-Content -LiteralPath $ndjsonFile -Encoding utf8
+        }
+        Write-Host "NDJSON companion feed written: $ndjsonFile ($($rowsToAdd.Count) record(s)) - see scenarios/audit/streaming-to-sentinel-or-management-api/README.md Section 8." -ForegroundColor Green
+    }
 
     $purgeRows = @($rowsToAdd | Where-Object { $_.Operation -eq 'DSIPurgeStarted' })
     foreach ($row in $purgeRows) {
