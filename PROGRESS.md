@@ -1903,7 +1903,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ## DONE
-- [x] **`scenarios/dlp/endpoint-dlp-usb-block-adaptive-protection/`** — commit PENDING — 2026-09-10.
+- [x] **`scenarios/dlp/endpoint-dlp-usb-block-adaptive-protection/`** — commit `9165046` — 2026-09-10.
   The Devices half of Adaptive Protection (companion to
   `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement`'s Exchange/Teams half), closing the
   device-channel bypass that sibling scenario's own Red Team review named explicitly. Full README
