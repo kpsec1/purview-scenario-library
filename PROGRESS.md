@@ -1153,14 +1153,53 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   condition, or silently no-ops it — the same class of replace-vs-merge uncertainty this repo has
   already flagged for other PATCH-style reconciliation paths (e.g. the Intune device-control
   scenarios' `omaSettings`/`payload` PATCH). Not independently tested during this build.
-- [ ] Consider a companion Blue Team-flagged control: an accepted-domains hygiene check script that
+- [x] Consider a companion Blue Team-flagged control: an accepted-domains hygiene check script that
   cross-references `Get-AcceptedDomain` against a known-partner-domains allowlist and flags any
   legitimate partner domain missing accepted-domain status (a false-positive-exclusion risk for
   `copilot-external-email-block`) or, in the other direction, any newly-added accepted domain that
   doesn't match a known-partner-domains allowlist (a potential silent-bypass risk if an attacker or
   a misconfiguration adds an external-controlled domain as accepted) — flagged as a Red Team finding
-  in `copilot-external-email-block/reviews.md` but not built in this fragment, since it's a general
-  Exchange-accepted-domains hygiene control outside this scenario's specific DLP-rule scope.
+  in `copilot-external-email-block/reviews.md` — **built** (see DONE below) as
+  `scenarios/dlp/accepted-domains-hygiene-check/`, a standalone scenario rather than nested under
+  `dspm-for-ai`, since the risk applies to every `FromScope`-consuming rule in a tenant, not just this
+  one. Checks both directions plus a `DomainType`-level trust-boundary model (Authoritative/
+  InternalRelay = in-organization, ExternalRelay = not) and a baseline/drift log for
+  Added/Removed/DomainTypeChanged/DefaultChanged/MatchSubDomainsChanged detection since the previous
+  run. Cross-linked back into `copilot-external-email-block/README.md` §3/§11 and `reviews.md`.
+
+### Follow-ups discovered while building the Accepted-Domains Hygiene Check scenario
+- [ ] Backport the `ExternalRelay`-is-on-premises-only correction into
+  `copilot-external-email-block/design.md` §4 — this build's direct fetches of Microsoft's
+  `Set-AcceptedDomain`/`New-AcceptedDomain`/`Remove-AcceptedDomain` reference pages confirmed
+  `ExternalRelay` is documented as "available only in on-premises Exchange organizations," and that
+  `New-`/`Remove-AcceptedDomain` are both on-premises-Exchange-only cmdlets with no Exchange Online
+  equivalent. `copilot-external-email-block/design.md` §4 currently cites the general
+  `UserScopeFrom`/"external relay domain" mechanism (via the Exchange 2013 mail-flow-rule predicate
+  reference) without this cloud-vs-on-premises qualifier — a reader could reasonably conclude
+  `ExternalRelay` is a live concern for the pure-cloud tenant that scenario targets. Not corrected in
+  that scenario's own files from this fragment, per `AGENTS.md` §6's one-fragment-per-turn discipline
+  — see `scenarios/dlp/accepted-domains-hygiene-check/design.md` §2 and `reviews.md` (Microsoft
+  Product Owner finding 1) for the full grounding.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples pass): whether `Set-
+  AcceptedDomain` is independently confirmed to appear under `Search-UnifiedAuditLog`'s `RecordType
+  ExchangeAdmin` / `Operations 'Set-AcceptedDomain'` — this build found the general documented
+  default (Exchange admin cmdlet executions are logged this way) but no worked example naming this
+  specific cmdlet. `accepted-domains-hygiene-check/deploy/Export-AcceptedDomainsHygieneReport.ps1`'s
+  `-IncludeAuditAttribution` switch is flagged `VERIFY` in its own `.NOTES` and `README.md` §11
+  rather than assumed correct.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether Microsoft Entra ID's `Add
+  verified domain`/`Remove verified domain`/`Add unverified domain`/`Remove unverified domain`
+  `DirectoryManagement`-category audit activities (confirmed to exist by name in Microsoft's
+  audit-activity reference) surface through `Search-UnifiedAuditLog -RecordType
+  AzureActiveDirectory` with an `Operations` value matching those names verbatim. Resolving this
+  would let `accepted-domains-hygiene-check` attribute a `DomainAddedSincePreviousRun`/
+  `DomainRemovedSincePreviousRun` finding to a specific admin action and timestamp — currently a
+  disclosed, unbuilt gap (`design.md` §5, `README.md` §11) because Exchange Online has no
+  `New-`/`Remove-AcceptedDomain` cmdlet to audit for the domain-addition/removal event itself.
+- [ ] Consider an on-premises Exchange companion check for `accepted-domains-hygiene-check`, for a
+  hybrid Exchange Online/on-premises tenant whose on-premises accepted domains (including any
+  genuine `ExternalRelay` domain) are invisible to the current Exchange-Online-only script — deferred
+  as a non-goal in `design.md` §7; not investigated further this build.
 
 ### Follow-ups discovered while building the Unified Catalog business-glossary scenario
 - [x] `scenarios/unified-catalog/link-glossary-terms-to-data-products/` — **superseded by**
@@ -5440,6 +5479,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   lenses Pass, no Fix/Fail); the audit-streaming scenario's own `README.md` §8 and a new `design.md`
   §8 cross-link back to it. No product facts needed re-grounding — this is pure repo-internal wiring
   between two already-grounded scenarios, not a new Microsoft capability claim.
+- [x] **`scenarios/dlp/accepted-domains-hygiene-check/` — accepted-domains hygiene check** — commit
+  PENDING_COMMIT_HASH — 2026-09-10. Full README/design/deploy/validate/rollback/reviews. Standalone,
+  read-only, scheduled compensating control for the accepted-domains trust boundary every
+  `FromScope`/`ExceptIfFromScope`-consuming DLP rule in this repo silently depends on — the follow-up
+  scoped from `copilot-external-email-block/reviews.md` Red Team finding 1. Cross-references live
+  `Get-AcceptedDomain` state against a buyer-curated known-domains config and the previous run's
+  baseline, checking both directions of hygiene risk (a reviewed domain silently excluded from trust;
+  an unreviewed domain silently granted it) plus a `DomainType`-based trust-boundary model
+  (Authoritative/InternalRelay = in-organization, ExternalRelay = not). New grounding this build
+  contributes to the repo, not carried over from any sibling scenario: `ExternalRelay` is documented
+  as on-premises-Exchange-only (confirmed via direct fetches of `Set-`/`New-AcceptedDomain` reference
+  pages), as are `New-`/`Remove-AcceptedDomain` themselves — meaning Exchange Online has no cmdlet to
+  add or remove an accepted domain at all, a real, disclosed limit on this scenario's own audit-log
+  attribution (`design.md` §5, `README.md` §11). Four-lens review caught and fixed a genuine detection
+  gap in the first draft (`MatchSubDomains` drift wasn't checked at all, and a related `elseif`-chain
+  bug would have silently dropped simultaneous multi-field changes on the same domain) before this
+  fragment was marked done — see `reviews.md` (Red Team finding 1). Cross-linked back into
+  `copilot-external-email-block/README.md` §3/§11 and `reviews.md`. Three follow-ups (an `ExternalRelay`
+  backport into `copilot-external-email-block/design.md` §4, two audit-log-attribution VERIFYs, and an
+  on-premises companion-check idea) added to TODO above rather than resolved by guessing.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

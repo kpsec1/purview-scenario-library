@@ -1,0 +1,29 @@
+{
+  "_comment": "Sample known-domains hygiene config. Copy to KnownDomains.json and edit for your tenant before running deploy/Export-AcceptedDomainsHygieneReport.ps1 - see README.md Sec 5/6. No Microsoft-documented source can auto-derive this list (design.md Sec 6): every entry is a human decision about which domains this tenant's admins have reviewed and expect to see as accepted, and with what DomainType.",
+  "knownDomains": [
+    {
+      "domainName": "contoso.com",
+      "expectedDomainType": "Authoritative",
+      "required": true,
+      "owner": "IT - primary tenant domain"
+    },
+    {
+      "domainName": "contoso.onmicrosoft.com",
+      "expectedDomainType": "Authoritative",
+      "required": true,
+      "owner": "IT - default tenant domain, always accepted, do not remove"
+    },
+    {
+      "domainName": "eu.contoso.com",
+      "expectedDomainType": "Authoritative",
+      "required": true,
+      "owner": "IT - EU subsidiary, multi-geo data residency scope"
+    },
+    {
+      "domainName": "hybrid.contoso.com",
+      "expectedDomainType": "InternalRelay",
+      "required": true,
+      "owner": "IT - on-premises Exchange hybrid coexistence domain, still under this organization's authority per Microsoft's InternalRelay definition (design.md Sec 2)"
+    }
+  ]
+}

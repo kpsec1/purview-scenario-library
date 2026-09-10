@@ -22,7 +22,11 @@ of findings below; all **Fix** items were applied to the scenario before this fi
      is a full bypass of this control, not a partial degradation, and cross-referenced it from §8's
      KPI guidance (treat unexpected external-email exclusions as a hygiene check first, but also
      treat an unexpected *lack* of exclusion from a domain that should be external as a potential
-     accepted-domains integrity question, not merely "the rule isn't matching").
+     accepted-domains integrity question, not merely "the rule isn't matching"). The concrete
+     compensating control this finding asked for — a scheduled check cross-referencing
+     `Get-AcceptedDomain` against a reviewed allowlist in both directions — was tracked in
+     `PROGRESS.md` as a follow-up rather than built inline here (out of this scenario's own scope,
+     `design.md` §7) and has since been built as `scenarios/dlp/accepted-domains-hygiene-check/`.
 2. **This control closes exactly one grounding vector, not the general prompt-injection problem.** A
    determined actor can still attempt prompt injection through any Copilot grounding source this
    rule doesn't touch — an external SharePoint guest share, a Teams message from a guest account, or

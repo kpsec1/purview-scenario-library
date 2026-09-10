@@ -59,7 +59,7 @@ scenario specifically:
 | **`copilot-sensitive-data-exposure` already deployed** | The named policy from that scenario must already exist | This scenario adds a fourth rule to that policy by name (default `Copilot DLP - Sensitive Data Exposure Protection`); it does not create a new policy. |
 | "Block external email from being processed" feature | **Preview** as of this writing | No fixed tenant-rollout date documented by Microsoft for this specific action — confirm it's selectable in the portal before relying on the script (see §5 step 1). |
 | DLP to author the Copilot-location policy | Same Copilot-location-specific role list as the parent scenario (Purview Data Security AI Admin(s), Compliance Administrator, Microsoft Entra AI Admin, etc.) | See parent scenario's `README.md` §3 and `docs/rbac-model.md` §3 — unchanged by this addition. |
-| Tenant accepted domains configured correctly | Every legitimate internal/partner sending domain must already be a correctly-configured accepted domain in Exchange Online | This rule's "external" determination is driven entirely by the tenant's Exchange accepted-domains list (`design.md` §4) — a misconfigured accepted domain (e.g. a legitimate subsidiary domain not yet added) would cause this rule to over-exclude that subsidiary's mail from Copilot grounding. Not a new prerequisite this scenario introduces, but one this scenario's correctness now directly depends on. |
+| Tenant accepted domains configured correctly | Every legitimate internal/partner sending domain must already be a correctly-configured accepted domain in Exchange Online | This rule's "external" determination is driven entirely by the tenant's Exchange accepted-domains list (`design.md` §4) — a misconfigured accepted domain (e.g. a legitimate subsidiary domain not yet added) would cause this rule to over-exclude that subsidiary's mail from Copilot grounding. Not a new prerequisite this scenario introduces, but one this scenario's correctness now directly depends on. Ongoing monitoring for this dependency: `scenarios/dlp/accepted-domains-hygiene-check/`. |
 
 **Licensing note specific to this action.** Microsoft's Purview service description draws a tier
 split between the two file/email-facing Copilot DLP capabilities and the prompt-facing one:
@@ -267,7 +267,10 @@ policy intact.
 - **Accepted-domains misconfiguration is a real, silent failure mode.** See §3 and §8 — a legitimate
   sending domain not yet added to (or wrongly removed from) the tenant's Exchange accepted-domains
   list will be treated as external by this rule, with no error or warning surfaced anywhere in this
-  scenario's own scripts (they don't independently re-derive or check the accepted-domains list).
+  scenario's own scripts (they don't independently re-derive or check the accepted-domains list). For
+  ongoing, automated monitoring of exactly this dependency (in both directions — a domain silently
+  excluded from trust, and a domain silently granted it), see `scenarios/dlp/
+  accepted-domains-hygiene-check/`, built as this finding's compensating control.
 - **No independent simulation mode for this one rule** — see §8. Adding it to an already-enforcing
   policy means it enforces on first propagation, with no per-rule staging option Microsoft documents.
 - **Higher licensing tier than its Rule 1/Rule 2 siblings.** See §3/§10 — do not assume this rule is
