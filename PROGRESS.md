@@ -2176,7 +2176,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/compliance-manager/entra-privileged-role-monitoring/` — role-assignable-group
-  membership companion script** — commit `PENDING` — 2026-09-10. Closes the disclosed Red Team gap
+  membership companion script** — commit `cf35b85` — 2026-09-10. Closes the disclosed Red Team gap
   (round 1, finding 1): a monitored role assigned to an Entra ID P1/P2 role-assignable group grants
   access via a `GroupManagement` "Add member to group" event, invisible to
   `Export-EntraPrivilegedRoleAuditTrail.ps1`'s `RoleManagement`-category filter. New companion
