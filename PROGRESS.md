@@ -2322,7 +2322,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/data-map/scan-azure-sql-and-classify/README.md` §8 — cross-link to the built
-  `classification-coverage-report` scenario** — commit PENDING — 2026-09-10. Small, scoped doc
+  `classification-coverage-report` scenario** — commit 798102c — 2026-09-10. Small, scoped doc
   fragment (not a new scenario): `classification-coverage-report` landed some time ago and already
   cross-links back into this scenario throughout its own README, but this scenario's own §8
   "Downstream use" note still described it only as "any future Data Estate Insights/
