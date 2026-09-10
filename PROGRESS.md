@@ -2099,7 +2099,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
-- [x] **`scenarios/compliance-manager/entra-privileged-role-monitoring/`** — commit `PENDING` —
+- [x] **`scenarios/compliance-manager/entra-privileged-role-monitoring/`** — commit `b4bb49d` —
   2026-09-10. Full scenario (README, design, deploy, validate, rollback, four-lens review) scripting
   a rolling audit trail of direct (non-PIM) Entra ID role-assignment changes for Global
   Administrator/Compliance Administrator/Compliance Data Administrator/Security Administrator, via
