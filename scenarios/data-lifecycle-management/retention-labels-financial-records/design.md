@@ -23,7 +23,7 @@ is irreversible once applied.
 5. **Narrow targeting.** Encourage a tightly-scoped location + match query, because over-scoping an
    irreversible label is the dominant risk.
 
-## 3. Why a regulatory record label (and when not to)
+## 3. Why a record label by default — and the auto-apply/regulatory-record correction
 
 Purview offers a ladder of retention strength:
 - **Retention label (Keep)** — retains content but an admin can still remove the label / change
@@ -33,11 +33,29 @@ Purview offers a ladder of retention strength:
 - **Regulatory record (`-Regulatory`)** — the strongest: **cannot** be removed, relabeled, unlocked, or
   shortened, and content **cannot** be edited/deleted, by anyone, for the full period.
 
-This scenario defaults to **regulatory record** because SEC 17a-4-class obligations demand WORM
-immutability that even admins can't override. `design.md`/`README.md` are explicit that regulatory
-immutability is a serious, irreversible commitment: teams whose obligation is met by a plain record
-label (which keeps some admin flexibility) should choose that instead — least-restrictive control that
-meets the rule.
+**Correction (this build's grounding pass):** this scenario originally defaulted to **regulatory
+record** and auto-applied it — matching the SEC 17a-4-class obligation's ideal strength, but a
+combination Microsoft's documentation does not support. A fresh Microsoft Learn pass found:
+
+> "This scenario isn't supported for regulatory records or default labels for an organizing
+> structure... These scenarios require a published retention label policy." — [Automatically apply a
+> retention label to retain or delete content](https://learn.microsoft.com/purview/apply-retention-labels-automatically)
+
+Corroborated by [Declare records by using retention labels](https://learn.microsoft.com/purview/declare-records):
+"...for labels that mark items as records (**but not regulatory records**), auto-apply those labels
+to content that you want to declare a record" — and by the "Will a label be overridden?" table in
+[Learn about retention policies and retention labels](https://learn.microsoft.com/purview/retention),
+whose **Applied with auto-apply retention label policy** row is **"Not applicable"** for labels that
+mark items as regulatory records.
+
+**Resulting design:** this scenario now defaults to a plain **record** label for its auto-apply path
+(fully supported), and still supports creating a **regulatory record** label via the same script — but
+the script detects `regulatory: true` and stops after label creation, never attempting the unsupported
+auto-apply combination. The sibling scenario `scenarios/data-lifecycle-management/
+publish-labels-for-manual-application/` is the documented, only-supported completion for that case.
+This preserves the original SEC 17a-4 driver honestly: a buyer who genuinely needs full WORM
+immutability still gets it, just via publish + manual application rather than auto-apply — which is
+what Microsoft's product actually requires, not a workaround this repo invented.
 
 ## 4. Object model
 
@@ -48,47 +66,55 @@ sequenceDiagram
 
     Script->>SCC: Get-ComplianceTag (label exists?) 
     alt not found
-        Script->>SCC: New-ComplianceTag -Regulatory $true -RetentionAction Keep -RetentionDuration 2555 -RetentionType CreationAgeInDays
+        Script->>SCC: New-ComplianceTag -RetentionAction Keep -RetentionDuration 2555 -RetentionType CreationAgeInDays (-IsRecordLabel $true, or -Regulatory $true)
     end
-    Script->>SCC: Get-RetentionCompliancePolicy (policy exists?)
-    alt not found
-        Script->>SCC: New-RetentionCompliancePolicy -SharePointLocation <finance sites> -Enabled $true
+    alt label.regulatory is true
+        Note over Script: STOP - skip policy/rule (not supported for regulatory records).<br/>Hand off to publish-labels-for-manual-application/
+    else label is a record (or standard) label
+        Script->>SCC: Get-RetentionCompliancePolicy (policy exists?)
+        alt not found
+            Script->>SCC: New-RetentionCompliancePolicy -SharePointLocation <finance sites> -Enabled $true
+        end
+        Script->>SCC: Get-RetentionComplianceRule -Policy (rule exists?)
+        alt not found
+            Script->>SCC: New-RetentionComplianceRule -Policy <name> -ApplyComplianceTag <label> -ContentMatchQuery <KQL>
+        end
+        Note over SCC: auto-apply runs asynchronously (up to 7 days) and stamps the label on matching content
     end
-    Script->>SCC: Get-RetentionComplianceRule -Policy (rule exists?)
-    alt not found
-        Script->>SCC: New-RetentionComplianceRule -Policy <name> -ApplyComplianceTag <label> -ContentMatchQuery <KQL>
-    end
-    Note over SCC: auto-apply runs asynchronously (up to 7 days) and stamps the label on matching content
 ```
 
 A policy is invalid until it has a rule; only **one rule per policy**. The label carries the durable
-settings; the policy/rule decide where and how it's auto-applied.
+settings; the policy/rule decide where and how it's auto-applied — but only ever get created for a
+record or standard label, never a regulatory record (§3).
 
 ## 5. Idempotency and safety posture
 
 Idempotency here is deliberately **create-or-report**, not create-or-update: the deploy locates each
 object by name and, if it exists, reports it and moves on rather than mutating it. Retention objects —
-especially a regulatory record label — are too consequential to silently reconcile from a file; a
-settings change must be a deliberate, reviewed action. Combined with `-DryRun`, loud regulatory
-warnings, and a rollback that never force-removes records, the safety posture is proportional to the
-irreversibility of the control.
+especially a record or regulatory record label — are too consequential to silently reconcile from a
+file; a settings change must be a deliberate, reviewed action. Combined with `-DryRun`, loud
+warnings, a hard product-constraint guard against the unsupported regulatory-record/auto-apply
+combination, and a rollback that never force-removes records, the safety posture is proportional to
+the irreversibility of the control.
 
 ## 6. Key decisions
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Immutability level | Regulatory record (`-Regulatory $true`) by default | Meets WORM/17a-4-class obligations; documented alternative is a plain record label |
-| Surface | Security & Compliance PowerShell | Regulatory records are PowerShell-only; DLM/RM cmdlets are the native surface |
+| Immutability level | **Record** (`-IsRecordLabel $true`) by default | The strongest level auto-apply actually supports; `regulatory: true` is available but stops the script before policy/rule creation (§3) |
+| Surface | Security & Compliance PowerShell | Regulatory records are PowerShell-only to create; DLM/RM cmdlets are the native surface either way |
 | Dry-run | Custom `-DryRun` | `-WhatIf` is non-functional in S&C PowerShell |
 | Idempotency | Create-or-report (no silent update) | Retention objects are high-consequence; edits must be deliberate |
 | Retention clock | `CreationAgeInDays`, 2555 days (~7y) | Common financial-records baseline; tune to the obligation |
-| Targeting | Static SharePoint location + narrow KQL | Precision over recall for an irreversible label; adaptive scopes are a follow-up |
-| Rollback | Disable/delete policy; never force-remove records | Regulatory records can't be released — the script refuses to pretend otherwise |
+| Targeting | Static SharePoint location + narrow KQL | Precision over recall for a lockable label; adaptive scopes are a follow-up |
+| Regulatory-record guard | Skip policy/rule creation; hand off to the publish sibling | Auto-apply is not supported for regulatory records — a hard Microsoft product constraint, not a style choice (§3) |
+| Rollback | Disable/delete policy; never force-remove records | A record label needs a records manager to release; a regulatory record label can't be released at all — the script refuses to pretend otherwise |
 
 ## 7. Non-goals
 
-- **Publishing labels for manual application** (`-PublishComplianceTag`) — this scenario auto-applies;
-  a publish policy for user-applied labels is a variant.
+- **Publishing labels for manual application** (`-PublishComplianceTag`) — **built** as the sibling
+  `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` scenario, which is now
+  the *required* completion for the regulatory-record case (§3), not merely an optional variant.
 - **Event-based retention / disposition review workflows** (`-EventType`, `KeepAndDelete`,
   `-ReviewerEmail`) — powerful RM features layered on the same cmdlets; candidate follow-ups.
 - **Adaptive scopes** — used for large/dynamic estates; this scenario uses static locations.
@@ -96,5 +122,5 @@ irreversibility of the control.
   formal file plans; out of scope for the starter.
 - **Editing/strengthening an existing label** — the deploy reports and does not mutate; changes are a
   deliberate, reviewed action.
-- **Releasing existing records** — impossible for regulatory records by design; rollback only stops
-  future auto-labeling.
+- **Releasing existing records** — impossible for a regulatory record by design, and requires
+  records-manager privilege for a plain record; rollback only stops future auto-labeling.

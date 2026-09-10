@@ -1,0 +1,19 @@
+{
+  "_comment": "Config for deploy/New-PublishRetentionLabelPolicy.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Publishes an EXISTING retention label to Exchange/SharePoint/OneDrive so finance and records users can manually apply it in Outlook/SharePoint/OneDrive. The label itself must already exist (create it first - e.g. scenarios/data-lifecycle-management/retention-labels-financial-records/). Read README.md Sections 2 and 11 before deploying.",
+  "label": {
+    "name": "Financial Records - 7yr Regulatory",
+    "_labelNote": "Must be the Name of an existing retention label (New-ComplianceTag). This script never creates the label - it only publishes it. For a REGULATORY RECORD label, publishing is the ONLY supported distribution mechanism (auto-apply does not support regulatory records - README.md Section 2/11). For a plain record or standard label, publishing is a manual-apply complement to auto-apply, not a substitute."
+  },
+  "policy": {
+    "name": "Publish Financial Records - Finance Locations",
+    "comment": "Publishes the Financial Records regulatory label to finance locations so users can manually apply it to individual emails/documents.",
+    "enabled": true,
+    "sharePointLocation": ["https://contoso.sharepoint.com/sites/finance"],
+    "exchangeLocation": ["Finance Team"],
+    "oneDriveLocation": [],
+    "modernGroupLocation": [],
+    "_policyNote": "At least one location is required. exchangeLocation accepts a mailbox, mail-enabled security group, or distribution group name/email/GUID (e.g. a 'Finance Team' distribution group), or the literal value 'All'. modernGroupLocation publishes the label into a Microsoft 365 Group's connected SharePoint team site and Teams Files tab (not the group mailbox by email client - see README.md Section 11)."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-10"
+}

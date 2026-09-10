@@ -2,18 +2,25 @@
 <#
 .SYNOPSIS
     Rolls back the financial-records retention deployment: disables (and optionally deletes) the
-    auto-apply policy/rule. The regulatory record LABEL itself is intentionally not force-removed.
+    auto-apply policy/rule. The retention LABEL itself is intentionally not force-removed.
 
 .DESCRIPTION
     Uses Security & Compliance PowerShell. Staged:
       Default    Disable the auto-apply policy (Set-RetentionCompliancePolicy -Enabled $false) so it
                  stops stamping the label on NEW content. Content already labeled keeps its label and
-                 retention (regulatory records are immutable).
+                 retention (records/regulatory records are immutable or near-immutable by design).
       -Delete    Additionally delete the policy (Remove-RetentionCompliancePolicy) and its rule.
 
-    The retention LABEL is NOT deleted by this script. A regulatory record label that has been applied
-    to content CANNOT be deleted, and its retention can't be shortened - that is the whole point of a
-    regulatory record (SEC 17a-4 immutability). Removing the policy stops future auto-labeling; it
+    Only applicable if an auto-apply policy/rule exists at all: this scenario's deploy script does
+    NOT create an auto-apply policy/rule for a label configured as a REGULATORY RECORD (Microsoft
+    doesn't support that combination - see README.md Section 2/11) - there's nothing here to roll
+    back for that case; see scenarios/data-lifecycle-management/publish-labels-for-manual-application/
+    rollback.md instead.
+
+    The retention LABEL is NOT deleted by this script. A record label that has been applied to
+    content can only be removed by an admin for the container (SharePoint/OneDrive) or with
+    write-access (Exchange), and a regulatory record label CANNOT be deleted at all once applied -
+    its retention can't be shortened either way. Removing the policy stops future auto-labeling; it
     does NOT release existing records. This is by design, not a limitation to work around.
 
     -WhatIf is non-functional in Security & Compliance PowerShell, so this script implements -DryRun.
@@ -96,7 +103,7 @@ if ($TryRemoveLabel -and $cfg.label.name) {
             Write-Host "  [delete] label '$($cfg.label.name)' removed (was not in use)." -ForegroundColor Red
         }
         catch {
-            Write-Warning "  Could not remove label '$($cfg.label.name)': $($_.Exception.Message). This is expected for a regulatory record label that has been applied - such labels are immutable and cannot be deleted while records exist. See rollback.md."
+            Write-Warning "  Could not remove label '$($cfg.label.name)': $($_.Exception.Message). This is expected for a record or regulatory record label that has been applied to content - such labels cannot be deleted while records exist (a regulatory record label never can, even if never applied). See rollback.md."
         }
     }
 }

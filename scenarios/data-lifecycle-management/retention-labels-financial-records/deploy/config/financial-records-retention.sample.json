@@ -1,19 +1,19 @@
 {
-  "_comment": "Config for deploy/New-FinancialRecordsRetention.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Creates a REGULATORY RECORD retention label for financial records (SEC 17a-4-style WORM immutability) and an auto-apply label policy that stamps it onto content in the finance locations. Read README.md Sections 2 and 11 before deploying - a regulatory record label is IRREVERSIBLE once applied.",
+  "_comment": "Config for deploy/New-FinancialRecordsRetention.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. CORRECTED (see README.md Section 2/11): Microsoft does not support auto-apply for REGULATORY RECORD labels, so this default config creates a plain RECORD label (locked, not regulatory-immutable) and auto-applies it. For a true regulatory record, use the '_regulatoryVariant' shape shown in README.md Section 5 instead - that variant makes this script stop after label creation, and hands off to scenarios/data-lifecycle-management/publish-labels-for-manual-application/ to actually distribute the label.",
   "label": {
-    "name": "Financial Records - 7yr Regulatory",
-    "comment": "Broker-dealer financial books-and-records retained 7 years, first 2 years accessible, as a non-rewriteable/non-erasable regulatory record (SEC 17a-4(b)/(f)).",
+    "name": "Financial Records - 7yr Record",
+    "comment": "Broker-dealer financial books-and-records retained 7 years, first 2 years accessible, as a locked record (SEC 17a-4(b)/(f)).",
     "retentionAction": "Keep",
     "retentionDurationDays": 2555,
     "retentionType": "CreationAgeInDays",
-    "regulatory": true,
+    "regulatory": false,
     "isRecordLabel": true,
     "reviewerEmail": [],
-    "_labelNote": "retentionAction: Keep | Delete | KeepAndDelete. retentionDurationDays: integer days (2555 ~= 7 years) or the string 'Unlimited'. retentionType: when the clock starts - CreationAgeInDays | ModificationAgeInDays | TaggedAgeInDays | EventAgeInDays. regulatory=true makes it a REGULATORY RECORD (strongest immutability: cannot be removed, relabeled, unlocked, or its retention shortened; content cannot be edited/deleted) - this option is only creatable in PowerShell, not the portal by default (README.md Section 5). isRecordLabel is implied by regulatory but kept explicit."
+    "_labelNote": "retentionAction: Keep | Delete | KeepAndDelete. retentionDurationDays: integer days (2555 ~= 7 years) or the string 'Unlimited'. retentionType: when the clock starts - CreationAgeInDays | ModificationAgeInDays | TaggedAgeInDays | EventAgeInDays. regulatory=true would make this a REGULATORY RECORD (strongest immutability: cannot be removed, relabeled, unlocked, or its retention shortened; content cannot be edited/deleted) - this option is only creatable in PowerShell, not the portal by default (README.md Section 5). CORRECTED default: this config uses regulatory=false / isRecordLabel=true (a plain, lockable record label) because Microsoft does NOT support auto-apply for regulatory records - see README.md Section 2/11. If regulatory=true is set instead, this script creates the label then REFUSES to auto-apply it (stops before policy/rule creation) - hand off to scenarios/data-lifecycle-management/publish-labels-for-manual-application/ to actually distribute a regulatory label."
   },
   "policy": {
     "name": "Auto-apply Financial Records - Finance sites",
-    "comment": "Auto-applies the Financial Records regulatory label to finance content.",
+    "comment": "Auto-applies the Financial Records (record) label to finance content.",
     "enabled": true,
     "sharePointLocation": ["https://contoso.sharepoint.com/sites/finance"],
     "exchangeLocation": [],
@@ -22,7 +22,7 @@
   },
   "rule": {
     "contentMatchQuery": "SensitiveType:\"Credit Card Number\" OR \"invoice\" OR \"general ledger\" OR \"trial balance\"",
-    "_ruleNote": "KQL for auto-apply matching (-ContentMatchQuery). Narrow this to your real financial-record signals - an over-broad query stamps an IRREVERSIBLE regulatory label onto non-records. Alternatively match sensitive information types via a -ContentContainsSensitiveInformation hashtable (not shown; see New-RetentionComplianceRule reference). Auto-apply can take up to 7 days to take effect."
+    "_ruleNote": "KQL for auto-apply matching (-ContentMatchQuery). Narrow this to your real financial-record signals - an over-broad query locks non-records as records (only a records manager can unlock/remove the label - see rollback.md). Alternatively match sensitive information types via a -ContentContainsSensitiveInformation hashtable (not shown; see New-RetentionComplianceRule reference). Auto-apply can take up to 7 days to take effect."
   },
   "schemaVersion": "1.0",
   "lastUpdated": "2026-09-03"

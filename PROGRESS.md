@@ -1659,15 +1659,55 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `MultiStageReviewProperty`) + publish policy/rule, plus a separate per-employee
   `New-RetentionTriggerEvent.ps1` that fires `New-ComplianceRetentionEvent` scoped to one employee's
   `ComplianceAssetID`.
-- [ ] `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` — a **publish**
+- [x] `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` — a **publish**
   label policy (`New-RetentionComplianceRule -PublishComplianceTag`) so users can manually apply the
-  financial-records label, complementing this scenario's auto-apply.
+  financial-records label, complementing this scenario's auto-apply. — **built** (see DONE below):
+  full README/design/deploy/validate/rollback/reviews. This item's own framing ("complementing...
+  auto-apply") turned out to be incomplete — a fresh grounding pass found Microsoft's auto-apply
+  retention label policies do **not** support regulatory records at all ("This scenario isn't
+  supported for regulatory records... require a published retention label policy"), corroborated by
+  "Declare records by using retention labels" and the "Will a label be overridden?" table in "Learn
+  about retention policies and retention labels" (auto-apply is "Not applicable" for regulatory
+  records). This scenario is therefore the *required*, only-supported distribution mechanism for the
+  regulatory-record case, not merely an optional complement. **Correction backported into the sibling**
+  `retention-labels-financial-records` in the same build (see its `reviews.md` correction addendum and
+  the new DONE entry below): that scenario's sample config now defaults to a plain **record** label
+  (`regulatory: false`/`isRecordLabel: true`, renamed `Financial Records - 7yr Record`) for its
+  auto-apply path, and its deploy script now creates a regulatory record label if configured but
+  **skips** auto-apply policy/rule creation for it (a hard product-constraint guard, not merely a
+  warning), pointing to this new scenario instead. `README.md`/`design.md`/`rollback.md`/
+  `validate/Test-FinancialRecordsRetention.ps1` in that sibling all updated to match; its README §3
+  automation-surface citation ("surface 1" → surface 2) was also corrected as a low-risk side effect of
+  already being in the file (the broader repo-wide "surface N" drift sweep below remains separately
+  tracked and unresolved).
 - [ ] `scenarios/data-lifecycle-management/adaptive-scope-retention/` — auto-apply/retention scoped by
   an **adaptive scope** (attribute-driven) instead of static locations, for large/dynamic estates
   (noted as out of scope here).
 - [ ] Consider **file plan descriptors** (`-FilePlanProperty`: categories, citations, authorities,
   provisions) for a formal records file plan, and bulk label/policy creation via the documented CSV
   script (`bulk-create-publish-labels-using-powershell`).
+
+### Follow-ups discovered while building the DLM publish-labels-for-manual-application scenario
+- [ ] VERIFY (pilot tenant): `Get-RetentionComplianceRule`'s `PublishComplianceTag` read-back property
+  name — Microsoft's reference lists only Name/Disabled/Mode/Comment as documented default-display
+  properties for this cmdlet. This repo already reads the parallel `ApplyComplianceTag` property
+  unhedged in the auto-apply sibling's own validate script; `publish-labels-for-manual-application/
+  validate/Test-PublishRetentionLabelPolicy.ps1` follows the same established convention for
+  `PublishComplianceTag` rather than introducing an inconsistent hedge — flagged in `README.md` §11.
+- [ ] Once a documented PowerShell/Graph cmdlet exists for setting a **default retention label** for a
+  SharePoint library/folder or Outlook folder (the related, portal-only capability layered on top of a
+  published label — `create-apply-retention-labels#default-labels-for-sharepoint-and-outlook`), add it
+  as a companion script here — none was found during this build's grounding pass; disclosed as a
+  portal-only gap in `README.md` §11 and `design.md` §7 rather than fabricated.
+- [ ] Consider a periodic content-search spot-check script (query known financial-record signals in
+  the scoped locations, cross-reference against labeled items) as the concrete tooling for the
+  compensating control `reviews.md`'s Red Team finding 1 recommends for this scenario's inherent
+  human-dependent coverage gap — not built in this fragment; the finding names the control but this
+  repo has no existing content-search automation pattern to adapt from yet.
+- [ ] Reconcile the private-channel-style location-support ambiguity for **Microsoft 365 Groups**
+  publish targeting once a Data Lifecycle Management scenario needs to distinguish "Group:Exchange" vs
+  "Group:SharePoint" `-Applications` scoping (`New-RetentionCompliancePolicy` parameter, documented but
+  not exercised by this scenario's `-ModernGroupLocation`-only worked example).
 
 ### Follow-ups discovered while building the DLM event-based-retention-and-disposition scenario
 - [ ] Build an HR-feed connector (or a scheduled reconciliation script) for
@@ -5222,6 +5262,43 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   handles both rather than guessing one. Four follow-ups recorded above under a new section
   (`### Follow-ups discovered while building the eDiscovery search-and-purge-data-spillage
   scenario`) rather than duplicated here. Commit: `fe612a9`. Date: 2026-09-10.
+- [x] **`scenarios/data-lifecycle-management/publish-labels-for-manual-application/`** — commit
+  `PENDING_HASH` — 2026-09-10. Full README/design/deploy/validate/rollback/reviews. Publishes an
+  *existing* retention label (`New-RetentionCompliancePolicy` + `New-RetentionComplianceRule
+  -PublishComplianceTag`) so admins/users can manually apply it in Outlook/SharePoint/OneDrive/Teams —
+  never creates or edits the label itself. Central grounding finding, made while researching this
+  fragment: Microsoft's auto-apply retention label policies do **not** support regulatory records at
+  all ("This scenario isn't supported for regulatory records... require a published retention label
+  policy," corroborated by "Declare records by using retention labels" and the "Will a label be
+  overridden?" table in "Learn about retention policies and retention labels" — auto-apply is "Not
+  applicable" for regulatory records). This makes the new scenario the *required*, only-supported
+  distribution mechanism for a regulatory record label, not merely a nice-to-have complement to
+  auto-apply as originally framed in the TODO item. **Backported a correction into the sibling**
+  `scenarios/data-lifecycle-management/retention-labels-financial-records/` in the same build (its
+  original draft auto-applied a regulatory record label by default — a configuration Microsoft
+  doesn't support): that scenario's sample config now defaults to a plain **record** label
+  (`regulatory: false`/`isRecordLabel: true`, renamed `Financial Records - 7yr Record`); its deploy
+  script still creates a regulatory record label if configured (a valid, standalone
+  `New-ComplianceTag -Regulatory $true` call) but now **skips** auto-apply policy/rule creation for
+  it with a clear message pointing to this new scenario, instead of silently building an unsupported
+  configuration; its validate script skips policy/rule checks for that case; `README.md`, `design.md`,
+  and `rollback.md` all corrected in place; `reviews.md` gained a correction addendum (targeted
+  lens re-check, not a full new four-lens round, since the object model/safety posture were
+  unaffected — only which objects get created for which config). That sibling's `README.md` §3
+  automation-surface citation ("surface 1" → surface 2) was also fixed as a low-risk side effect of
+  already editing the file — the broader repo-wide "surface N" drift sweep tracked elsewhere in this
+  file remains separately open. Four new follow-ups recorded above under
+  `### Follow-ups discovered while building the DLM publish-labels-for-manual-application scenario`
+  rather than duplicated here. Grounded via the Microsoft Learn MCP tool (available this run, contrary
+  to this run's own starting instructions — `microsoft_docs_search`/`microsoft_docs_fetch` used
+  throughout, not WebSearch/WebFetch) against `create-apply-retention-labels`,
+  `apply-retention-labels-automatically`, `declare-records`, `retention`,
+  `new-retentioncompliancerule`, `new-retentioncompliancepolicy`, and `get-retentioncompliancerule`.
+  One genuine gap disclosed as VERIFY rather than guessed (see follow-ups): the exact
+  `PublishComplianceTag` read-back property name on `Get-RetentionComplianceRule` is not in Microsoft's
+  documented default-display property list, though this repo's own established convention (the
+  auto-apply sibling's unhedged `ApplyComplianceTag` read) is followed for consistency rather than
+  introducing a one-off hedge.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

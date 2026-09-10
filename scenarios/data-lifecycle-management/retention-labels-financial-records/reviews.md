@@ -120,3 +120,62 @@ All Fix items are resolved in the current state of `README.md`, `design.md`,
 `validate/Test-FinancialRecordsRetention.ps1`. No Fail items were raised. This fragment meets the
 definition of done in `AGENTS.md` §9; product facts are grounded in Microsoft Learn (no invented
 cmdlets) and the irreversibility of regulatory records is treated as a first-class safety constraint.
+
+---
+
+## Correction addendum (2026-09-10)
+
+While building the sibling scenario `scenarios/data-lifecycle-management/
+publish-labels-for-manual-application/`, a fresh, dedicated Microsoft Learn grounding pass (direct
+`microsoft_docs_search`/`microsoft_docs_fetch`, not carried over from this scenario's original
+citations) found a page-level note this scenario's original draft had not accounted for:
+
+> "This scenario isn't supported for regulatory records or default labels for an organizing
+> structure... These scenarios require a published retention label policy." — "Automatically apply a
+> retention label to retain or delete content"
+
+Independently corroborated by "Declare records by using retention labels" ("...for labels that mark
+items as records (**but not regulatory records**), auto-apply those labels...") and by the "Will a
+label be overridden?" table in "Learn about retention policies and retention labels" (**Applied with
+auto-apply retention label policy** is **"Not applicable"** for labels marking regulatory records).
+
+**This scenario's original design auto-applied a regulatory record label by default** — a
+combination Microsoft's own documentation says isn't supported. This is a genuine correctness gap,
+not a stylistic preference: the original build's grounding pass did not independently verify the
+*auto-apply* page's own scenario-support note, only the *label creation* (`New-ComplianceTag
+-Regulatory`) and *publish* pages' notes.
+
+**Fix applied (re-running the relevant lens checks below, not a full new four-lens round since the
+object model and safety posture are unchanged — only which objects get created for which config):**
+
+- `deploy/config/financial-records-retention.sample.json` now defaults to `regulatory: false` /
+  `isRecordLabel: true` (label renamed `Financial Records - 7yr Record` to match) — a plain record
+  label, which auto-apply fully supports.
+- `deploy/New-FinancialRecordsRetention.ps1` now creates the label regardless of the `regulatory`
+  flag (a valid, standalone `New-ComplianceTag -Regulatory $true` call), but **skips** auto-apply
+  policy/rule creation with a clear warning when `regulatory: true`, rather than building the
+  unsupported configuration.
+- `validate/Test-FinancialRecordsRetention.ps1` skips its policy/rule checks (neither `[PASS]` nor
+  `[FAIL]`) when the label is a regulatory record, since their absence is now expected by design.
+- `README.md` (§1/§2/§3/§4/§5/§6/§7/§9/§10/§11/§12) and `design.md` (§3/§4/§6/§7) corrected in place;
+  `rollback.md` updated to describe both the record and regulatory-record cases accurately.
+- The new sibling scenario, `publish-labels-for-manual-application`, is now the documented, only-
+  supported completion for the regulatory-record case.
+
+**Re-checked lenses (targeted, not a full round):**
+- 🔴 **Red Team** — the original over-scoping/least-restrictive-control findings still hold and are
+  unaffected; the new regulatory-record guard *removes* a risk (an unsupported, silently-wrong
+  deployment) rather than introducing one.
+- 🔵 **Blue Team** — `validate`'s new skip-with-explanation behavior for the regulatory case is itself
+  a Blue Team improvement: previously the script would have attempted (and, per Microsoft's docs,
+  potentially failed or produced an unsupported policy) with no distinct signal.
+- 🟦 **Microsoft Product Owner** — this correction is exactly what this lens exists to catch; closing
+  it brings the scenario in line with Microsoft's actual, current product constraint.
+- 🎩 **CISO** — no change to cost/licensing/narrative; the regulatory-record case's compliance
+  narrative is, if anything, strengthened (the sibling scenario is now explicit that publishing is
+  required, not optional).
+
+Also fixed in the same pass: `README.md` §3's automation-surface citation ("surface 1" →
+**surface 2**), correcting drift against the current `docs/automation-surface.md` numbering — a
+pre-existing, separately-tracked issue (see `PROGRESS.md`) fixed here as a low-risk side effect of
+already editing this file, not a full repo-wide sweep.

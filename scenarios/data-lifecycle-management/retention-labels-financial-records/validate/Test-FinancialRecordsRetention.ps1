@@ -9,8 +9,12 @@
     Read-only - never modifies any object. Uses Security & Compliance PowerShell Get-* cmdlets to
     check, against the config file:
       1. The retention label exists with the expected RetentionAction/Duration and record flags.
-      2. The auto-apply policy exists and is enabled, with at least one location.
-      3. The policy's rule applies the expected label.
+      2. If the label is NOT a regulatory record: the auto-apply policy exists and is enabled, with
+         at least one location, and the policy's rule applies the expected label.
+      3. If the label IS a regulatory record: policy/rule checks are skipped by design (this
+         scenario's deploy script never creates them for a regulatory record - see README.md
+         Section 2/11) - validate distribution instead via the sibling
+         publish-labels-for-manual-application scenario's own validate script.
     Exits non-zero on any hard failure (safe for a CI-style pre-flight). Safe to re-run.
 
     Connect first with Connect-IPPSSession. A View-Only role that can read retention configuration is
@@ -67,22 +71,30 @@ if ($label) {
     }
 }
 
-# Policy
-$policy = Get-RetentionCompliancePolicy -Identity $cfg.policy.name -ErrorAction SilentlyContinue
-Test-Check -Description "Auto-apply policy '$($cfg.policy.name)' exists" -Condition ($null -ne $policy)
-if ($policy) {
-    Test-Check -Description "  Policy is enabled" -Condition ([bool]$policy.Enabled) -Warn
-    $hasLoc = (@($policy.SharePointLocation).Count -gt 0) -or (@($policy.ExchangeLocation).Count -gt 0) -or (@($policy.OneDriveLocation).Count -gt 0)
-    Test-Check -Description "  Policy has at least one location" -Condition $hasLoc
-    if ($policy.DistributionStatus) { Write-Host "    Distribution status: $($policy.DistributionStatus)" -ForegroundColor Cyan }
+if ($cfg.label.regulatory) {
+    Write-Host "`n  Label is configured as a REGULATORY RECORD - this scenario's deploy script does NOT create an" -ForegroundColor Cyan
+    Write-Host "  auto-apply policy/rule for it by design (Microsoft doesn't support that combination)." -ForegroundColor Cyan
+    Write-Host "  Skipping policy/rule checks. Validate distribution instead via" -ForegroundColor Cyan
+    Write-Host "  scenarios/data-lifecycle-management/publish-labels-for-manual-application/validate/Test-PublishRetentionLabelPolicy.ps1" -ForegroundColor Cyan
 }
+else {
+    # Policy
+    $policy = Get-RetentionCompliancePolicy -Identity $cfg.policy.name -ErrorAction SilentlyContinue
+    Test-Check -Description "Auto-apply policy '$($cfg.policy.name)' exists" -Condition ($null -ne $policy)
+    if ($policy) {
+        Test-Check -Description "  Policy is enabled" -Condition ([bool]$policy.Enabled) -Warn
+        $hasLoc = (@($policy.SharePointLocation).Count -gt 0) -or (@($policy.ExchangeLocation).Count -gt 0) -or (@($policy.OneDriveLocation).Count -gt 0)
+        Test-Check -Description "  Policy has at least one location" -Condition $hasLoc
+        if ($policy.DistributionStatus) { Write-Host "    Distribution status: $($policy.DistributionStatus)" -ForegroundColor Cyan }
+    }
 
-# Rule
-$rule = Get-RetentionComplianceRule -Policy $cfg.policy.name -ErrorAction SilentlyContinue | Select-Object -First 1
-Test-Check -Description "Auto-apply rule exists on the policy" -Condition ($null -ne $rule)
-if ($rule) {
-    Test-Check -Description "  Rule applies label '$($cfg.label.name)' (current: $($rule.ApplyComplianceTag))" `
-        -Condition ("$($rule.ApplyComplianceTag)" -eq "$($cfg.label.name)")
+    # Rule
+    $rule = Get-RetentionComplianceRule -Policy $cfg.policy.name -ErrorAction SilentlyContinue | Select-Object -First 1
+    Test-Check -Description "Auto-apply rule exists on the policy" -Condition ($null -ne $rule)
+    if ($rule) {
+        Test-Check -Description "  Rule applies label '$($cfg.label.name)' (current: $($rule.ApplyComplianceTag))" `
+            -Condition ("$($rule.ApplyComplianceTag)" -eq "$($cfg.label.name)")
+    }
 }
 
 Write-Host "`n  Note: auto-apply can take up to 7 days to label content; confirm actual labeling in the portal (Records Management / Data Lifecycle Management) and via content search." -ForegroundColor Cyan
