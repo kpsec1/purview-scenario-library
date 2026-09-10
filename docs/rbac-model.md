@@ -135,6 +135,12 @@ cmdlet:
   Exchange-data reports (footnote ¹ on the role-groups reference, source 1).
 - **Mail flow rules (transport rules), mailbox-level permissions** — manage in the Exchange admin
   center (`admin.exchange.microsoft.com`), not the Purview portal.
+- **Authentication Policies** (`New-/Set-/Get-/Remove-AuthenticationPolicy`,
+  `Set-OrganizationConfig -DefaultAuthenticationPolicy`, `Set-TransportConfig`/`Set-CASMailbox
+  -SmtpClientAuthenticationDisabled`) — a pure Exchange Online RBAC surface, no Purview role
+  involved at all. **Organization Management** is confirmed sufficient; Microsoft's own cmdlet
+  reference pages don't name a narrower least-privilege role for this specific surface — see
+  `scenarios/adaptive-protection/exchange-legacy-auth-block/README.md` §11.
 
 Every scenario that touches Audit or exports Exchange-sourced report data should call this out
 explicitly in its Prerequisites section.

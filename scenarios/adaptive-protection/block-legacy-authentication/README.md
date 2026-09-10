@@ -237,7 +237,9 @@ exclusions) is a Microsoft Entra admin center action outside this scenario's scr
   attempt itself — Microsoft's own community guidance confirms this does not prevent a
   credential-stuffing/password-spray attempt from confirming valid credentials, only from
   establishing a session with them. Exchange-side authentication policies are a separate,
-  workload-specific control that acts earlier — not scripted by this scenario (`design.md` §7).
+  workload-specific control that acts earlier — built as the companion scenario
+  `scenarios/adaptive-protection/exchange-legacy-auth-block/`, not scripted by this scenario itself
+  (`design.md` §7).
 - **This scenario does not script the "exclude guests/external users" nested Users condition**
   Microsoft's own guide's procedure also recommends for some Conditional Access scenarios — the
   same undocumented `excludeGuestsOrExternalUsers` shape this library's other Conditional-Access
@@ -285,7 +287,9 @@ exclusions) is a Microsoft Entra admin center action outside this scenario's scr
 8. Security defaults in Microsoft Entra ID (zero-cost alternative for tenants without P1/P2;
    mutual-exclusivity guidance with Conditional Access) — <https://learn.microsoft.com/entra/fundamentals/security-defaults>
 9. Block legacy authentication in Exchange 2019 hybrid (a separate, workload-specific,
-   earlier-in-the-flow control surface — not scripted by this scenario) — <https://learn.microsoft.com/exchange/hybrid-deployment/block-legacy-auth-2019-hybrid>
+   earlier-in-the-flow control surface — see the companion scenario
+   `scenarios/adaptive-protection/exchange-legacy-auth-block/`, which targets pure Exchange Online
+   instead) — <https://learn.microsoft.com/exchange/hybrid-deployment/block-legacy-auth-2019-hybrid>
 10. Manage emergency access (break-glass) accounts — <https://learn.microsoft.com/entra/identity/role-based-access-control/security-emergency-access>
 11. Sign-ins using legacy authentication workbook — <https://learn.microsoft.com/entra/identity/monitoring-health/workbook-legacy-authentication>
 12. New- / Update- / Get- / Remove-MgIdentityConditionalAccessPolicy (Microsoft.Graph.Identity.SignIns

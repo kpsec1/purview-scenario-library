@@ -834,18 +834,40 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (`design.md` §7), so this doesn't block use — it would only let a future revision offer a
   scripted "manage the Microsoft-managed policy's exclusions" path instead of directing the
   operator to the portal.
-- [ ] Consider a companion scenario scripting Exchange-side legacy-authentication blocking
+- [x] Consider a companion scenario scripting Exchange-side legacy-authentication blocking
   (`New-AuthenticationPolicy -BlockLegacyAuth*` / `Set-User -AuthenticationPolicy`, or the
   Exchange 2019 hybrid authentication-policy mechanism) — `design.md` §7 notes this is a separate,
   workload-specific control surface that acts *before* first-factor authentication completes,
   materially more effective against the credential-stuffing/password-spray lockout scenario
   Conditional Access's own documented Q&A guidance says it cannot stop (`design.md` §8). Deferred
-  from this fragment as a different admin surface (Exchange Online PowerShell, not Entra/Graph).
+  from this fragment as a different admin surface (Exchange Online PowerShell, not Entra/Graph). —
+  **built** (see DONE below) as `scenarios/adaptive-protection/exchange-legacy-auth-block/`.
+  Correction to this item's own original framing: `-BlockLegacyAuth*` is an **on-premises-only**
+  parameter family (Exchange 2019 CU2+/CU13+), not usable against Exchange Online at all — the
+  cloud-relevant mechanism is the `-AllowBasicAuth*` switch family on `New-/Set-AuthenticationPolicy`
+  (default-blocked per protocol), which this build uses instead.
 - [ ] Once Microsoft's `excludeGuestsOrExternalUsers` nested Users condition shape is confirmed
   against a worked example (the same open item already tracked near the top of this file for
   `conditional-access-insider-risk-block`), also add it to
   `block-legacy-authentication/deploy/New-BlockLegacyAuthenticationPolicy.ps1` — not a new,
   separate uncertainty, just a second consumer of the same unresolved VERIFY.
+
+### Follow-ups discovered while building the Exchange-side legacy authentication block scenario
+- [ ] Once the exact `Search-UnifiedAuditLog` `RecordType`/`Operations` values for a rejected SMTP
+  AUTH (Authenticated SMTP) attempt are grounded, add a dedicated `Export-*` companion script to
+  `scenarios/adaptive-protection/exchange-legacy-auth-block/deploy/` — the current scenario
+  validates *configuration* (is the gate closed) but has no event-level export for *who actually
+  got rejected and how often*, flagged as a Blue Team gap in that scenario's `reviews.md` (finding
+  1) and `README.md` §8, which points to `Search-UnifiedAuditLog` mail-flow/connector events and
+  the SMTP gateway's own logs as the actual (unscripted) event source in the meantime.
+- [ ] Consider a Direct Send / anonymous-relay hardening scenario (mail flow connector
+  configuration that accepts unauthenticated relay, a materially different abuse surface from the
+  authenticated legacy protocols `exchange-legacy-auth-block` covers) — flagged as a Red Team
+  finding in that scenario's `reviews.md` (finding 3): closing SMTP AUTH doesn't reduce the value
+  of a misconfigured connector that accepts anonymous relay from an allowed IP range, and a
+  determined attacker/legacy integration could be pushed toward that surface instead. No scenario
+  in this repo covers Direct Send today — explicitly out of scope for `exchange-legacy-auth-block`
+  (`design.md` §7).
 
 ### Follow-ups discovered while building the Data Map Azure SQL scan-and-classify scenario
 - [ ] VERIFY (pilot tenant or the Purview OpenAPI spec, before production use): the exact REST
@@ -4239,6 +4261,46 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   follow-ups recorded above (a DATACOLUMN/CRITICALDATACOLUMN VERIFY, a deferred related-terms
   companion, a deferred CDE-access-policy REST-surface re-check, and a deferred Get
   Facets/Count-based coverage-reporting companion). Commit: `d7e8860`. Date: 2026-09-09.
+
+- [x] **`scenarios/adaptive-protection/exchange-legacy-auth-block/`** — Exchange-side legacy
+  authentication block, the companion to `block-legacy-authentication` deferred from that
+  scenario's own `design.md` §7/`reviews.md` (Red Team: Conditional Access is a
+  post-first-factor-authentication control; Exchange-side authentication policies act earlier and
+  are materially more effective against credential-stuffing/password-spray lockouts). Full README
+  (12-section skeleton), design.md, deploy/ (`New-ExchangeLegacyAuthBlock.ps1` — creates a
+  fully-blocked baseline `AuthenticationPolicy`, with two separate opt-in live-impact stages,
+  `-SetAsOrgDefault` and `-DisableSmtpAuthTenantWide`, since Authentication Policies have no native
+  Report-only mode the way Conditional Access does; `Remove-ExchangeLegacyAuthBlock.ps1` for staged
+  rollback), validate/ (`Test-ExchangeLegacyAuthBlock.ps1`), rollback.md, reviews.md. Central
+  grounding finding: Microsoft has already **permanently** disabled Basic authentication
+  tenant-wide, with no re-enable option, for Exchange ActiveSync, POP, IMAP, Remote PowerShell,
+  Exchange Web Services, Offline Address Book, Autodiscover, and Outlook for Windows/Mac —
+  Authenticated SMTP (SMTP AUTH) is the one protocol Microsoft has deliberately left
+  admin-controlled, on an updated deprecation timeline (default-disable for existing tenants
+  scheduled end of December 2026, final removal date to be announced 2027 H2 — not yet in effect as
+  of this build's date, 2026-09-09), so this scenario's design and KPIs center on SMTP AUTH rather
+  than overselling coverage of protocols Microsoft has already closed for free. Also corrects an
+  inaccuracy in this item's own original `PROGRESS.md` framing: `-BlockLegacyAuth*` is
+  on-premises-only, not usable against Exchange Online — the cloud mechanism is `-AllowBasicAuth*`.
+  Found and grounded a second, undocumented-precedence gap: two independent SMTP AUTH gates exist
+  (the `AuthenticationPolicy`'s own `AllowBasicAuthSmtp` vs. the separate
+  `SmtpClientAuthenticationDisabled` transport setting) with no Microsoft page stating which wins if
+  only one is opened — this scenario's exception path closes both together rather than guessing.
+  Four-lens review caught and fixed a real script-safety bug before finalizing (see `reviews.md`,
+  Red Team finding 1 / Blue Team finding 2): the rollback script's `-Purge` safety check originally
+  used an unconfirmed `Get-User -Filter "AuthenticationPolicy -eq '...'"` OPATH expression that
+  could silently under-match and fail open; replaced with an unfiltered fetch plus a client-side
+  property comparison. `docs/licensing-matrix.md` §4 and `docs/rbac-model.md` §6 both updated with
+  a short cross-reference (no incremental license; Organization Management role group, with the
+  narrower least-privilege role name left an open VERIFY); `block-legacy-authentication/README.md`
+  §11 and `design.md` §7 backported to point at this new companion instead of the old
+  "tracked as a follow-up" language. Grounding note: `learn.microsoft.com` and
+  `techcommunity.microsoft.com` were not directly fetchable from this build's network environment;
+  cmdlet syntax was grounded via direct fetches of the equivalent pages mirrored in the public
+  `MicrosoftDocs/office-docs-powershell` GitHub repository, and the SMTP AUTH deprecation timeline
+  via WebSearch corroborated across multiple independent secondary sources. Two follow-ups
+  recorded above under a new section (`### Follow-ups discovered while building the Exchange-side
+  legacy authentication block scenario`) rather than duplicated here. Date: 2026-09-10.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

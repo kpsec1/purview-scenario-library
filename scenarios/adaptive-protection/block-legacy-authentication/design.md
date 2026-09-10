@@ -131,13 +131,14 @@ flowchart TD
   nested condition**, for the identical reason and identical unconfirmed-shape caveat as
   `conditional-access-insider-risk-block/design.md` §7 — not independently confirmed against a
   worked example during this build.
-- **This scenario does not attempt Exchange-side legacy-auth blocking** (`Set-AuthenticationPolicy
-  -BlockLegacyAuth*` / `Set-TransportConfig`, or the Exchange 2019 hybrid authentication-policy
-  mechanism [[9]](#references)) — a separate, workload-specific control surface Conditional
-  Access's own documented Q&A guidance notes is actually **more effective against brute-force/
-  credential-stuffing lockout attempts specifically**, since Conditional Access is evaluated only
-  *after* first-factor authentication succeeds (§8, `reviews.md` Red Team). Tracked as a
-  `PROGRESS.md` follow-up rather than folded into this fragment.
+- **This scenario does not attempt Exchange-side legacy-auth blocking** (`Set-AuthenticationPolicy`
+  / `Set-TransportConfig`, or the Exchange 2019 hybrid authentication-policy mechanism
+  [[9]](#references)) — a separate, workload-specific control surface Conditional Access's own
+  documented Q&A guidance notes is actually **more effective against brute-force/credential-
+  stuffing lockout attempts specifically**, since Conditional Access is evaluated only *after*
+  first-factor authentication succeeds (§8, `reviews.md` Red Team). **Built** as
+  `scenarios/adaptive-protection/exchange-legacy-auth-block/` — deploy that companion scenario
+  alongside this one for layered coverage.
 - **This scenario does not script Conditional Access for workload identities / service
   principals.** Service principal sign-ins are never subject to a user-scoped Conditional Access
   policy like this one's [[1]](#references) — a distinct, separate Conditional Access surface

@@ -106,6 +106,11 @@ Buyers on E3 frequently license Purview via targeted add-ons rather than upgradi
   data-governance flows still live in the classic governance portal.
 - **Data residency / CMK** — Purview metadata is encrypted at rest; customer-managed keys
   (Customer Key) are a separate opt-in.
+- **Exchange Online Authentication Policies, the `SmtpClientAuthenticationDisabled` transport
+  setting, and per-mailbox `CASMailbox` overrides** — core Exchange Online administration
+  surfaces, included in any plan that includes Exchange Online. **No incremental license** —
+  unlike this library's Conditional-Access-based scenarios (§8–§9), which need Entra ID P1/P2. See
+  `scenarios/adaptive-protection/exchange-legacy-auth-block/README.md` §3.
 
 ---
 
