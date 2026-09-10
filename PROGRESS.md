@@ -1969,7 +1969,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
-- [x] **`scenarios/ediscovery/teams-purge-hold-lifecycle-management/`** — commit `<pending>` —
+- [x] **`scenarios/ediscovery/teams-purge-hold-lifecycle-management/`** — commit `3678852` —
   2026-09-10. Companion to `search-and-purge-teams-messages`, scripting the hold-identification/
   removal/reapplication sequence that scenario deliberately left manual — Microsoft's own guidance
   states plainly that skipping hold removal means the purge silently retains content instead of
