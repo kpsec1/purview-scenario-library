@@ -2284,6 +2284,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-lifecycle-management/adaptive-scope-retention/` — adaptive-scope retention for
+  executive communications** — commit 36854a6 — 2026-09-10. Full README/design/deploy/validate/
+  rollback/reviews; models Microsoft's own documented "retain executives longer via the Title
+  attribute" adaptive-scope example (`New-AdaptiveScope`/`New-RetentionCompliancePolicy
+  -AdaptiveScopeLocation`/`New-RetentionComplianceRule`). Genuine gap disclosed as VERIFY rather than
+  guessed: no documented per-location parameter on `New-RetentionCompliancePolicy`'s
+  AdaptiveScopeLocation parameter set. Grounded via the Microsoft Learn MCP tool (available this run
+  despite this run's own starting instructions saying otherwise — `microsoft_docs_search`/
+  `microsoft_docs_fetch` used throughout) against `New-AdaptiveScope`, `purview-adaptive-scopes`,
+  `retention` (adaptive-or-static section), `New-RetentionCompliancePolicy`,
+  `New-RetentionComplianceRule`, `Remove-AdaptiveScope`, `Get-AdaptiveScopeMembers`,
+  `Remove-RetentionCompliancePolicy`/`Remove-RetentionComplianceRule`, and `audit-log-activities`.
+  Five follow-ups recorded above under
+  `### Follow-ups discovered while building the DLM adaptive-scope-retention scenario` rather than
+  duplicated here.
 - [x] **`scenarios/audit/streaming-to-sentinel-or-management-api/` — continuous audit streaming to a
   SIEM** — commit 25a5b3f — 2026-09-10. Closes the `audit/premium-audit-investigation/design.md` §7
   follow-up ("for continuous streaming use the Office 365 Management Activity API or a Sentinel
