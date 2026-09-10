@@ -5379,7 +5379,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   auto-apply sibling's unhedged `ApplyComplianceTag` read) is followed for consistency rather than
   introducing a one-off hedge.
 - [x] **`scenarios/data-security-investigations/post-breach-investigation-and-purge/`** — commit
-  `PENDING` — 2026-09-10. First scenario in a new top-level module: **Data Security Investigations**
+  `6ac858a` — 2026-09-10. First scenario in a new top-level module: **Data Security Investigations**
   (DSI), Microsoft's AI-assisted post-breach/insider-leak investigation and purge workspace. Full
   README/design/deploy/validate/rollback/reviews. Grounded via the Microsoft Learn MCP tool
   (available this run, contrary to this run's own starting instructions —
