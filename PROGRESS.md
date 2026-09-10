@@ -5480,7 +5480,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   §8 cross-link back to it. No product facts needed re-grounding — this is pure repo-internal wiring
   between two already-grounded scenarios, not a new Microsoft capability claim.
 - [x] **`scenarios/dlp/accepted-domains-hygiene-check/` — accepted-domains hygiene check** — commit
-  PENDING_COMMIT_HASH — 2026-09-10. Full README/design/deploy/validate/rollback/reviews. Standalone,
+  ba00f40 — 2026-09-10. Full README/design/deploy/validate/rollback/reviews. Standalone,
   read-only, scheduled compensating control for the accepted-domains trust boundary every
   `FromScope`/`ExceptIfFromScope`-consuming DLP rule in this repo silently depends on — the follow-up
   scoped from `copilot-external-email-block/reviews.md` Red Team finding 1. Cross-references live
