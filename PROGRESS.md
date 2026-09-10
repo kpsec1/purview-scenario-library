@@ -2080,7 +2080,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   IP-restricted.
 
 ## DONE
-- [x] **`scenarios/data-estate-insights/glossary-curation-coverage-report/`** — commit `PENDING` —
+- [x] **`scenarios/data-estate-insights/glossary-curation-coverage-report/`** — commit `bc447a2` —
   2026-09-10. Full scenario (README, design, deploy, validate, rollback, four-lens review) scripting
   an exportable, historical glossary-curation-coverage report against the Unified Catalog Terms REST
   API (`2026-03-20-preview`, same version `curate-business-glossary` pins) — status distribution
