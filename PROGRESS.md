@@ -2013,7 +2013,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/data-lifecycle-management/event-based-retention-and-disposition/`** — commit
-  `<pending>` — 2026-09-10. Event-based retention for departed-employee records: a retention event
+  `3659e77` — 2026-09-10. Event-based retention for departed-employee records: a retention event
   type (`New-ComplianceRetentionEventType`), an event-based label (`New-ComplianceTag -EventType`,
   `KeepAndDelete`, two-stage `MultiStageReviewProperty` disposition review: HR Records then Legal),
   and a **publish** (not auto-apply) label policy/rule, plus a separate per-employee
