@@ -1208,10 +1208,49 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `DomainRemovedSincePreviousRun` finding to a specific admin action and timestamp — currently a
   disclosed, unbuilt gap (`design.md` §5, `README.md` §11) because Exchange Online has no
   `New-`/`Remove-AcceptedDomain` cmdlet to audit for the domain-addition/removal event itself.
-- [ ] Consider an on-premises Exchange companion check for `accepted-domains-hygiene-check`, for a
+- [x] Consider an on-premises Exchange companion check for `accepted-domains-hygiene-check`, for a
   hybrid Exchange Online/on-premises tenant whose on-premises accepted domains (including any
-  genuine `ExternalRelay` domain) are invisible to the current Exchange-Online-only script — deferred
-  as a non-goal in `design.md` §7; not investigated further this build.
+  genuine `ExternalRelay` domain) are invisible to the current Exchange-Online-only script — **built**
+  (see DONE below) as `scenarios/dlp/accepted-domains-hygiene-check-on-premises/`: reuses the parent's
+  `KnownDomains.json` and mirrors its detection categories against an on-premises Exchange remote
+  PowerShell session, plus a new `CrossEnvironmentMismatch` category (optional `-CloudBaselinePath`,
+  a file read only — never a live combined session, since `Connect-ExchangeOnline` and the
+  on-premises `Import-PSSession` pattern both export a colliding `Get-AcceptedDomain` proxy cmdlet).
+  Also closes part of the parent's own disclosed attribution gap: `New-`/`Remove-AcceptedDomain` are
+  real, on-premises-auditable cmdlets (`Search-AdminAuditLog`), unlike Exchange Online which has
+  neither cmdlet to audit in the first place.
+
+### Follow-ups discovered while building the on-premises Accepted-Domains Hygiene Check companion
+- [ ] VERIFY (pilot on-premises Exchange server, or a future Microsoft Learn pass): the exact
+  *default* value of `-AdminAuditLogCmdlets` (which cmdlets a fresh on-premises install audits without
+  explicit configuration) — this build confirmed `-AdminAuditLogEnabled` defaults to `$true` and
+  `-AdminAuditLogAgeLimit` defaults to 90 days from `Set-AdminAuditLogConfig`'s own reference page, but
+  that page's fetched content did not state a default for `-AdminAuditLogCmdlets` itself (only that
+  `*` audits everything). `accepted-domains-hygiene-check-on-premises/deploy/
+  Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s `-IncludeAuditAttribution` switch tells the
+  buyer to confirm coverage via `Get-AdminAuditLogConfig` rather than assuming the common `*`-default
+  belief is correct — see that scenario's `design.md` §2 and `README.md` §11.
+- [ ] Re-verify the parent `accepted-domains-hygiene-check/deploy/KnownDomains.sample.json`'s
+  `hybrid.contoso.com` entry (`expectedDomainType: InternalRelay`) against a primary, authoritative
+  Microsoft Learn conceptual page once `learn.microsoft.com` is reachable (it was blocked by this
+  build's network egress policy) or a pilot tenant. `accepted-domains-hygiene-check-on-premises/
+  design.md` §4 found secondary/community guidance suggesting a shared-namespace hybrid domain with
+  Remote Mailbox objects is commonly left `Authoritative` on both sides instead (to support Directory
+  Based Edge Blocking), which would contradict that sample entry — not corrected in this build because
+  only secondary sources were reachable, per `AGENTS.md` §4's grounding discipline. Do not silently
+  "fix" the sample without a primary source confirming which hybrid topology it was meant to model.
+- [ ] Cross-reference on-premises Exchange RBAC (role groups like `Organization Management`, which
+  share a name but not an identity with their Exchange Online counterparts) into `docs/rbac-model.md`,
+  which currently documents Purview, Exchange Online, and Entra role systems only — same class of gap
+  `defender-device-control-usb-allowlist`'s Intune-RBAC follow-up closed for that surface (see the
+  DONE entry for that fragment, above). `accepted-domains-hygiene-check-on-premises/README.md` §3/§11
+  flags this as not-yet-cross-referenced rather than silently citing a doc section that doesn't cover
+  it.
+- [ ] Consider extending `CrossEnvironmentMismatch` (`accepted-domains-hygiene-check-on-premises/
+  deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1`) to also reconcile `MatchSubDomains`/
+  `Default` flags across environments, not just `DomainType` — explicitly deferred as a non-goal in
+  that scenario's `design.md` §9 pending a concrete buyer need, matching this repo's incremental-
+  scoping discipline.
 
 ### Follow-ups discovered while building the Unified Catalog business-glossary scenario
 - [x] `scenarios/unified-catalog/link-glossary-terms-to-data-products/` — **superseded by**
@@ -2366,6 +2405,35 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/dlp/accepted-domains-hygiene-check-on-premises/` — on-premises Exchange companion
+  to the Accepted-Domains Hygiene Check** — commit PENDING — 2026-09-11. Full README/design/deploy/
+  validate/rollback/reviews. Closes the parent scenario's disclosed cloud-only blind spot for a hybrid
+  Exchange Online/on-premises tenant: reuses the parent's `KnownDomains.json` and mirrors its four
+  core finding categories against an on-premises Exchange remote PowerShell session
+  (`Get-AcceptedDomain`, confirmed applicable on-premises and cloud), plus a new
+  `CrossEnvironmentMismatch` category (optional `-CloudBaselinePath`, a plain file read of the
+  parent's own baseline — never a live combined session, since `Connect-ExchangeOnline` and the
+  on-premises `Import-PSSession` pattern both export a colliding `Get-AcceptedDomain` proxy cmdlet,
+  confirmed from Microsoft's own `Import-PSSession` reference). Also closes part of the parent's own
+  disclosed attribution gap: `New-`/`Remove-AcceptedDomain` are real, on-premises-auditable cmdlets
+  (`Search-AdminAuditLog`, confirmed on-premises-only, `-AdminAuditLogEnabled` default `$true`,
+  `-AdminAuditLogAgeLimit` default 90 days), unlike Exchange Online which has neither cmdlet to audit
+  in the first place. Four-lens review found and fixed two real issues: (1) Red Team — the original
+  session check only confirmed `Get-AcceptedDomain` existed somewhere in the process, not that it
+  resolved to the on-premises session; a buyer running both a cloud and on-premises session at once
+  could get a silently wrong, false-negative-clean report. Fixed with `Get-Command Get-AcceptedDomain
+  -All` collision detection and a loud warning in both the deploy and validate scripts. (2) Blue
+  Team — the validate script had no way to verify `CrossEnvironmentMismatch` findings, the scenario's
+  own headline capability. Fixed by adding an optional `-CloudBaselinePath` parameter to the validate
+  script with a symmetric live-reconciliation check. `learn.microsoft.com` was unreachable from this
+  build's network egress policy; every cmdlet-reference citation was independently re-verified via the
+  canonical `MicrosoftDocs` GitHub source repositories Microsoft Learn itself renders from instead.
+  Three genuine open items carried forward as new TODO follow-ups (below), not resolved by guessing:
+  the default value of `-AdminAuditLogCmdlets`, whether the parent's own `KnownDomains.sample.json`
+  `hybrid.contoso.com`/`InternalRelay` entry matches current Microsoft hybrid best-practice guidance
+  (secondary sources suggest `Authoritative` may be more correct for a shared-namespace domain — not
+  corrected without a primary source), and on-premises Exchange RBAC not yet being cross-referenced in
+  `docs/rbac-model.md`.
 - [x] **`scenarios/data-map/scan-azure-sql-and-classify/README.md` §8 — cross-link to the built
   `classification-coverage-report` scenario** — commit 798102c — 2026-09-10. Small, scoped doc
   fragment (not a new scenario): `classification-coverage-report` landed some time ago and already

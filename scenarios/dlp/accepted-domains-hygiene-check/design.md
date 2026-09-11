@@ -158,8 +158,10 @@ follow-up in `PROGRESS.md`.
 - Does not manage, create, or remove any accepted domain, DLP rule, or any other Purview/Exchange
   object — purely a read-only detection control. See `rollback.md`.
 - Does not check on-premises Exchange accepted domains in a hybrid deployment — this script
-  authenticates to Exchange Online only (§2). A hybrid buyer needs a companion on-premises check
-  (out of scope; not built).
+  authenticates to Exchange Online only (§2). **Built as a companion scenario, not in this fragment:**
+  `scenarios/dlp/accepted-domains-hygiene-check-on-premises/`, which reuses this scenario's own
+  `KnownDomains.json` and baseline file rather than duplicating them (that scenario's `design.md`
+  §3/§7 explains why the two run as separate live sessions, not one combined script).
 - Does not attempt to attribute a domain **addition or removal** to a specific admin action — see
   §5's disclosed gap.
 - Does not replace `copilot-external-email-block`'s own `README.md` §3 prerequisite that the

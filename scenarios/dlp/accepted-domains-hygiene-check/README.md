@@ -272,10 +272,14 @@ nothing tenant-side to undo.
 
 ## 11. Known limitations & gotchas
 
-- **Cloud-only visibility.** This scenario authenticates to Exchange Online exclusively
-  (`Connect-ExchangeOnline`). A hybrid tenant's on-premises accepted domains — including the only
-  place `DomainType ExternalRelay` is actually reachable, see next bullet — are entirely invisible to
-  it. Not built in this fragment; see `design.md` §7 (non-goals).
+- **Cloud-only visibility — now closed by a companion scenario.** This scenario authenticates to
+  Exchange Online exclusively (`Connect-ExchangeOnline`). A hybrid tenant's on-premises accepted
+  domains — including the only place `DomainType ExternalRelay` is actually reachable, see next bullet
+  — are entirely invisible to it. `scenarios/dlp/accepted-domains-hygiene-check-on-premises/` is the
+  on-premises companion that closes this gap, reusing this scenario's own `KnownDomains.json` and
+  optionally cross-referencing this scenario's own baseline file to detect the two environments
+  drifting apart from each other — see that scenario's `README.md` for the full hybrid-specific
+  detection model. See `design.md` §7 (non-goals) for why this scenario itself stays cloud-only.
 - **`ExternalRelay` is on-premises Exchange only — a genuinely new finding from this build's
   grounding pass, not previously documented anywhere in this repo.** Microsoft's `Set-AcceptedDomain`
   reference states this explicitly. A pure Exchange Online tenant can never have an `ExternalRelay`
