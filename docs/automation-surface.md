@@ -24,7 +24,7 @@ doesn't this cmdlet exist" tickets (the first is RBAC — see `rbac-model.md`).
 | **2** | **Security & Compliance PowerShell** | Same `ExchangeOnlineManagement` module, `Connect-IPPSSession` (different endpoint) | DLP policies/rules, retention (DLM) policies & labels, sensitivity labels & auto-labeling policies, IRM policy config (partial), Communication Compliance, Records Management, some eDiscovery cmdlets |
 | **3** | **Microsoft Graph** | `Microsoft.Graph` PowerShell SDK (`Connect-MgGraph`) or raw REST (`https://graph.microsoft.com`) | eDiscovery cases/holds/review-sets (`Microsoft.Graph.Security` namespace), Teams DLP real-time evaluation & export, Audit Search Graph API, subject rights requests, DSPM-for-AI protection-scope/process-content APIs, Entra administrative units, Conditional Access policies (`Microsoft.Graph.Identity.SignIns` namespace — e.g. the Adaptive Protection Conditional Access Insider Risk scenario) |
 | **4** | **Microsoft Purview Data Map / Data Governance REST API** | `https://{account}.purview.azure.com` (data-plane) + `https://api.purview-service.microsoft.com` (audit) | Data Map scans, sources, collections; Data Map lineage (custom relationships); Unified Catalog governance domains, data products, data assets, glossary; Data Map history/audit query |
-| **5** | **SharePoint Online Management Shell** | `Microsoft.Online.SharePoint.PowerShell` module, `Connect-SPOService` (a separate tenant-admin endpoint from surfaces 1/2 and from site-level SharePoint/PnP automation) | Tenant-wide SharePoint/OneDrive **prerequisite toggles** that gate Information Protection scenarios — enabling sensitivity-label processing (`Set-SPOTenant -EnableAIPIntegration`), and the PDF/video (MP4) file-type extensions to that support |
+| **5** | **SharePoint Online Management Shell** | `Microsoft.Online.SharePoint.PowerShell` module, `Connect-SPOService` (a separate tenant-admin endpoint from surfaces 1/2 and from site-level SharePoint/PnP automation) | Tenant-wide SharePoint/OneDrive **prerequisite toggles** that gate Information Protection scenarios — enabling sensitivity-label processing (`Set-SPOTenant -EnableAIPIntegration`), and the PDF/video (MP4) file-type extensions to that support. Also: enabling Information Barriers for SharePoint/OneDrive (`Set-SPOTenant -InformationBarriersSuspension`) and a **per-site segment-association loop** (`Set-SPOSite -AddInformationSegment`/`-RemoveInformationSegment`) — see the note below on the latter as a second usage pattern |
 
 > **Rule of thumb for picking a surface:** if the task is a **policy that ships as a
 > Security & Compliance object** (DLP, retention, labels, IRM, records, comms compliance) →
@@ -41,6 +41,12 @@ doesn't this cmdlet exist" tickets (the first is RBAC — see `rbac-model.md`).
 > before a sensitivity-label auto-labeling policy on those locations can take effect (see
 > `scenarios/information-protection/auto-label-confidential-sharepoint/README.md` §5, which
 > flagged this as a manual/undocumented prerequisite before this surface was grounded here).
+> `scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/` adds a
+> second pattern on this same surface: a **per-site loop** over a human-curated site list
+> (`Set-SPOSite -AddInformationSegment`), not just a single tenant-wide toggle. §5's "not a
+> bulk-iteration surface" guidance below still holds — the site list is small and curated, not a
+> scan-and-iterate over thousands of objects — but don't assume every surface-5 script in this
+> library is a single `Set-SPOTenant` call going forward.
 
 ---
 
@@ -238,13 +244,15 @@ objects (mailboxes, users, cases, assets) follows these patterns:
 - **Purview Data Map / Data Governance REST (surface 4):** scan and collection operations are
   asynchronous (create/update returns immediately; poll the returned operation/run status) —
   scripts poll with backoff rather than assuming synchronous completion.
-- **SharePoint Online Management Shell (surface 5):** not a bulk-iteration surface in this
-  library — every current use is a single tenant-wide `Set-SPOTenant` toggle, not a per-object
-  loop, so the batching/pacing patterns above don't apply. Microsoft's own guidance notes tenant
-  configuration changes on this surface take about 15 minutes to propagate — scripts and their
-  paired `validate/` checks should account for that delay (e.g. a retry/poll loop against
-  `(Get-SPOTenant).<Property>`) rather than asserting the new value immediately after `Set-SPOTenant`
-  returns.
+- **SharePoint Online Management Shell (surface 5):** mostly single tenant-wide `Set-SPOTenant`
+  toggles in this library, so the batching/pacing patterns above don't usually apply. Microsoft's
+  own guidance notes tenant configuration changes on this surface take about 15 minutes to
+  propagate — scripts and their paired `validate/` checks should account for that delay (e.g. a
+  retry/poll loop against `(Get-SPOTenant).<Property>`) rather than asserting the new value
+  immediately after `Set-SPOTenant` returns. The one exception is
+  `scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/`, which
+  loops `Set-SPOSite` over a small, human-curated site list — still not a bulk-iteration surface
+  (no throttling/pacing pattern needed at that scale), but a per-object call, not a single toggle.
 
 ---
 

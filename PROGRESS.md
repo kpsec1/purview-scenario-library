@@ -1950,9 +1950,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   any that drifted from the current numbering.
 
 ### Follow-ups discovered while building the Information Barriers segregate-trading-and-research scenario
-- [ ] `scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/` — enable IB
-  for SharePoint/OneDrive (`Set-SPOTenant`) and associate segments to sites, the file-level half beyond
-  the Teams wall (noted as an extension in this scenario's `design.md` §6 / `README.md` §11).
+- [x] `scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/` — **built**
+  (see DONE below): tenant-wide `Set-SPOTenant -InformationBarriersSuspension` enablement plus a
+  per-site `Set-SPOSite -AddInformationSegment`/`-RemoveInformationSegment` reconciliation script for
+  standalone (non-Teams-connected) sites, closing the file-level gap this scenario's `design.md` §6 /
+  `README.md` §11 flagged. Two genuine documentation gaps carried forward as VERIFY rather than
+  resolved by guessing: whether `Get-SPOTenant` exposes `InformationBarriersSuspension` on read-back,
+  and whether `Get-OrganizationSegment` exposes `EXOSegmentId` (Microsoft's own SharePoint-association
+  worked example) or `.Guid` (this scenario's own S&C PowerShell scripts) for the same object — the new
+  scripts try both rather than assuming one. `docs/automation-surface.md` §1/§5 updated in the same
+  fragment to describe the new per-site surface-5 usage pattern.
 - [ ] `scenarios/information-barriers/allow-list-and-control-room-exceptions/` — model allow-list
   topologies (`-SegmentsAllowed`) and a control-room/compliance segment that must see both sides, the
   exception pattern real deployments need (non-goal here).
@@ -2451,6 +2458,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/`** —
+  commit PENDING — 2026-09-11. New scenario extending `segregate-trading-and-research`'s Teams-only
+  ethical wall to SharePoint and OneDrive: `deploy/Set-SharePointOneDriveIBEnablement.ps1` (tenant-wide
+  `Set-SPOTenant -InformationBarriersSuspension` toggle, idempotent, `-DryRun`/`-Suspend`) and
+  `deploy/Set-SiteInformationSegments.ps1` (per standalone-site `Set-SPOSite
+  -AddInformationSegment`/`-RemoveInformationSegment` reconciliation from
+  `deploy/config/sharepoint-site-segments.sample.json`, idempotent, `-DryRun`/`-RemoveConfigured`),
+  `validate/Test-SharePointOneDriveInformationBarrierSetup.ps1`, `rollback.md`, `reviews.md`
+  (four-lens, all Fix items resolved, no Fail). Grounded via the Microsoft Learn MCP tool (available
+  this run, unlike the WebSearch-only grounding several earlier entries in this file used) against
+  `purview/information-barriers-sharepoint`, `purview/information-barriers-onedrive`, and the
+  `Set-SPOTenant`/`Set-SPOSite`/`Get-SPOTenant` PowerShell references — direct page fetches, not just
+  search snippets. Two genuine gaps tagged `VERIFY (pilot tenant)` rather than guessed: whether
+  `Get-SPOTenant`'s returned object exposes `InformationBarriersSuspension` (its own reference page
+  documents no output properties beyond storage/site-creation settings) and whether
+  `Get-OrganizationSegment` exposes `EXOSegmentId` (Microsoft's own SharePoint-association worked
+  example) or `.Guid` (`segregate-trading-and-research`'s own S&C PowerShell scripts) for the same
+  object — both scripts here try `EXOSegmentId` first and fall back to `.Guid` rather than assuming
+  one. `docs/automation-surface.md` §1/§5 corrected in the same fragment: surface 5's row/blockquote
+  and the throttling note now describe this scenario's per-site `Set-SPOSite` loop as a second usage
+  pattern alongside the library's existing single-tenant-toggle uses, so that cross-cutting doc doesn't
+  go stale the moment this fragment ships.
 - [x] **Grounding follow-up: resolve the `hybrid.contoso.com` `InternalRelay`-vs-`Authoritative`
   open question in `accepted-domains-hygiene-check-on-premises`** — commit 3acbb0d — 2026-09-11.
   Doc-only fragment, no code changed. The original build of this scenario had no `learn.microsoft.com`

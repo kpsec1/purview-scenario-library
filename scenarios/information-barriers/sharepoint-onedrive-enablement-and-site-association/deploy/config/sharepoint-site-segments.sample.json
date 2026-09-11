@@ -1,0 +1,18 @@
+{
+  "_comment": "Config for deploy/Set-SiteInformationSegments.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Lists SharePoint sites that need EXPLICIT information-barrier segment association (typically standalone document libraries/portals, not Microsoft Teams-connected sites - those get segments automatically via Implicit mode within 24h of enablement, see README.md Section 11). Assumes the segregate-trading-and-research scenario's 'Trading' and 'Research' organization segments already exist, are Active, and have been applied (24h propagated) - README.md Section 3.",
+  "sites": [
+    {
+      "url": "https://contoso.sharepoint.com/sites/TradingDeskPortal",
+      "segments": ["Trading"],
+      "_note": "Standalone (non-Teams-connected) SharePoint site used by the Trading desk. Associating the Trading segment sets this site's IB mode to Explicit: only Trading-segment users can access or be added."
+    },
+    {
+      "url": "https://contoso.sharepoint.com/sites/ResearchPublications",
+      "segments": ["Research"],
+      "_note": "Standalone SharePoint site used by Research. Associating the Research segment sets this site's IB mode to Explicit."
+    }
+  ],
+  "_sitesNote": "Each site accepts one or more COMPATIBLE segment names (a site can hold multiple segments, up to 100, as long as none of them are mutually blocked by an active IB policy - README.md Section 6). Associating an INCOMPATIBLE pair (e.g. both 'Trading' and 'Research' on the same site, since segregate-trading-and-research blocks them both ways) is rejected by Set-SPOSite with an error - this script does not attempt to work around that, by design (design.md Section 5).",
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-11"
+}
