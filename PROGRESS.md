@@ -5512,20 +5512,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   it, nobody's written a second example yet" gaps elsewhere).
 
 - [x] **`scenarios/dspm-for-ai/copilot-external-email-block/design.md` §4 — backport the
-  `ExternalRelay`-is-on-premises-only correction** — commit `<pending>` — 2026-09-11. Scoped doc-only
+  `ExternalRelay`-is-on-premises-only correction** — commit `9b4f1b8` — 2026-09-11. Scoped doc-only
   follow-up (not a new scenario) closing the item tracked under `### Follow-ups discovered while
   building the Accepted-Domains Hygiene Check scenario`. `design.md` §4 previously cited the general
   Exchange 2013 mail-flow-rule predicate definition of "outside the organization" (not-in-an-accepted-
   domain, OR configured as an external relay domain) without noting that the external-relay clause is
   on-premises-Exchange-only — a reader could have concluded `ExternalRelay` was a live concern for the
   pure Exchange Online tenant this scenario targets. Added a corrective paragraph re-grounded against
-  Microsoft's `Set-AcceptedDomain` reference (independently re-cited, not just carried over from the
-  sibling's citation): a pure-cloud tenant can only reach `Authoritative`/`InternalRelay` (both
-  in-organization), so `NotInOrganization` there is driven by the "not an accepted domain" clause
-  alone; the external-relay clause only matters for a hybrid tenant, whose on-premises domains this
-  scenario's Exchange-Online-only tooling can't see regardless. `reviews.md` gained a matching
-  correction addendum. No code changed, so no new four-lens review round was run; no Microsoft product
-  behavior changed, only this scenario's own doc accuracy.
+  Microsoft's `Set-AcceptedDomain` reference (independently re-confirmed via WebSearch this run — the
+  Microsoft Learn MCP tool and direct `learn.microsoft.com` fetches were both unavailable/blocked in
+  this run's environment — not just carried over from the sibling's citation): a pure-cloud tenant can
+  only reach `Authoritative`/`InternalRelay` (both in-organization), so `NotInOrganization` there is
+  driven by the "not an accepted domain" clause alone; the external-relay clause only matters for a
+  hybrid tenant, whose on-premises domains this scenario's Exchange-Online-only tooling can't see
+  regardless. `reviews.md` gained a matching correction addendum. No code changed, so no new four-lens
+  review round was run; no Microsoft product behavior changed, only this scenario's own doc accuracy.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**
