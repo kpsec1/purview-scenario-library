@@ -5547,7 +5547,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 - [x] **`scenarios/adaptive-protection/conditional-access-insider-risk-block/deploy/
   New-InsiderRiskConditionalAccessPolicy.ps1` — script the `excludeGuestsOrExternalUsers` nested
-  Users condition** — commit `PENDING` — 2026-09-11. Scoped follow-up (not a new scenario) closing
+  Users condition** — commit `8812fb9` — 2026-09-11. Scoped follow-up (not a new scenario) closing
   the item tracked under `### Follow-ups discovered while building the Conditional Access
   insider-risk-block scenario`. Grounded via the Microsoft Learn MCP tool (available this run,
   contrary to this run's own starting instructions) rather than WebSearch: confirmed
