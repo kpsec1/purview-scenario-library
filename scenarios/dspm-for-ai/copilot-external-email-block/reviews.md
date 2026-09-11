@@ -173,3 +173,22 @@ not independently confirmed for the Microsoft 365 Copilot location. The second c
 raised — the "files and emails" Copilot-DLP licensing tier this rule requires not yet being
 reflected in `docs/licensing-matrix.md` — is now closed: `docs/licensing-matrix.md` §2 carries the
 same tier split as its own dedicated DSPM for AI rows (see `PROGRESS.md`).
+
+---
+
+## Correction addendum (2026-09-11)
+
+`design.md` §4's grounding for `-FromScope NotInOrganization` originally cited the Exchange 2013
+mail-flow-rule predicate reference's "isn't in an accepted domain, OR ... configured as an external
+relay domain" definition without qualifying that the second clause is on-premises-Exchange-only. The
+sibling scenario `scenarios/dlp/accepted-domains-hygiene-check/`, built after this one, independently
+re-grounded `Set-AcceptedDomain`/`New-AcceptedDomain` directly and found `ExternalRelay` is
+documented as *"available only in on-premises Exchange organizations,"* with no Exchange Online
+equivalent for creating or removing one. `design.md` §4 has been corrected in place with this
+qualifier: for the pure Exchange Online tenant this scenario targets, only `Authoritative`/
+`InternalRelay` accepted-domain types are reachable (both in-organization), so the external-relay
+clause is a real Exchange mechanism this tenant class's accepted-domains list cannot actually
+exercise — it matters only for a hybrid tenant, whose on-premises `ExternalRelay` domains this
+scenario's Exchange-Online-only tooling can't see regardless. This is a doc-only correction (backport
+tracked in `PROGRESS.md`); no code changed, so no new four-lens review round was run. Full grounding
+lives in `scenarios/dlp/accepted-domains-hygiene-check/design.md` §2.

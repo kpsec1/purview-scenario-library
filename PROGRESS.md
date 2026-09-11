@@ -1168,18 +1168,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   run. Cross-linked back into `copilot-external-email-block/README.md` §3/§11 and `reviews.md`.
 
 ### Follow-ups discovered while building the Accepted-Domains Hygiene Check scenario
-- [ ] Backport the `ExternalRelay`-is-on-premises-only correction into
-  `copilot-external-email-block/design.md` §4 — this build's direct fetches of Microsoft's
-  `Set-AcceptedDomain`/`New-AcceptedDomain`/`Remove-AcceptedDomain` reference pages confirmed
-  `ExternalRelay` is documented as "available only in on-premises Exchange organizations," and that
-  `New-`/`Remove-AcceptedDomain` are both on-premises-Exchange-only cmdlets with no Exchange Online
-  equivalent. `copilot-external-email-block/design.md` §4 currently cites the general
-  `UserScopeFrom`/"external relay domain" mechanism (via the Exchange 2013 mail-flow-rule predicate
-  reference) without this cloud-vs-on-premises qualifier — a reader could reasonably conclude
-  `ExternalRelay` is a live concern for the pure-cloud tenant that scenario targets. Not corrected in
-  that scenario's own files from this fragment, per `AGENTS.md` §6's one-fragment-per-turn discipline
-  — see `scenarios/dlp/accepted-domains-hygiene-check/design.md` §2 and `reviews.md` (Microsoft
-  Product Owner finding 1) for the full grounding.
+- [x] Backport the `ExternalRelay`-is-on-premises-only correction into
+  `copilot-external-email-block/design.md` §4 — **built** (see DONE below): `design.md` §4 now states
+  explicitly that `ExternalRelay` is on-premises-Exchange-only (Microsoft's `Set-AcceptedDomain`
+  reference, re-cited), that a pure Exchange Online tenant can only reach `Authoritative`/
+  `InternalRelay` (both in-organization), and that the external-relay clause matters only for a hybrid
+  tenant whose on-premises domains this scenario's tooling can't see. `reviews.md` carries a matching
+  correction addendum, doc-only per `AGENTS.md` §6, no new four-lens round run.
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples pass): whether `Set-
   AcceptedDomain` is independently confirmed to appear under `Search-UnifiedAuditLog`'s `RecordType
   ExchangeAdmin` / `Operations 'Set-AcceptedDomain'` — this build found the general documented
@@ -5515,6 +5510,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   file remains a separate, not-yet-built follow-up (not added back to TODO — no open question left,
   just unbuilt example content, consistent with this repo's treatment of similar "the code supports
   it, nobody's written a second example yet" gaps elsewhere).
+
+- [x] **`scenarios/dspm-for-ai/copilot-external-email-block/design.md` §4 — backport the
+  `ExternalRelay`-is-on-premises-only correction** — commit `<pending>` — 2026-09-11. Scoped doc-only
+  follow-up (not a new scenario) closing the item tracked under `### Follow-ups discovered while
+  building the Accepted-Domains Hygiene Check scenario`. `design.md` §4 previously cited the general
+  Exchange 2013 mail-flow-rule predicate definition of "outside the organization" (not-in-an-accepted-
+  domain, OR configured as an external relay domain) without noting that the external-relay clause is
+  on-premises-Exchange-only — a reader could have concluded `ExternalRelay` was a live concern for the
+  pure Exchange Online tenant this scenario targets. Added a corrective paragraph re-grounded against
+  Microsoft's `Set-AcceptedDomain` reference (independently re-cited, not just carried over from the
+  sibling's citation): a pure-cloud tenant can only reach `Authoritative`/`InternalRelay` (both
+  in-organization), so `NotInOrganization` there is driven by the "not an accepted domain" clause
+  alone; the external-relay clause only matters for a hybrid tenant, whose on-premises domains this
+  scenario's Exchange-Online-only tooling can't see regardless. `reviews.md` gained a matching
+  correction addendum. No code changed, so no new four-lens review round was run; no Microsoft product
+  behavior changed, only this scenario's own doc accuracy.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

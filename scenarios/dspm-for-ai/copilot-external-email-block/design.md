@@ -65,6 +65,23 @@ domains") [[1]](#references) — the two independently-sourced descriptions of "
 the same underlying comparison, which is meaningfully stronger corroboration than this repo's typical
 single-source VERIFY.
 
+**Correction (backported from `scenarios/dlp/accepted-domains-hygiene-check/design.md` §2, built in a
+later fragment):** the "configured as an external relay domain" clause above is **on-premises Exchange
+only.** Microsoft's `Set-AcceptedDomain` reference states this explicitly — `ExternalRelay` is *"a type
+of non-authoritative domain that's available only in on-premises Exchange organizations,"* and
+`New-`/`Remove-AcceptedDomain` are both on-premises-Exchange-only cmdlets with no Exchange Online
+equivalent. For the pure Exchange Online tenant this scenario targets (`docs/automation-surface.md`
+§1), only the `Authoritative` and `InternalRelay` accepted-domain types are reachable — both of which
+count as in-organization — so in practice this tenant class's `NotInOrganization` match is driven by
+the "isn't in an accepted domain" clause alone; the external-relay clause is a real mechanism in
+Exchange generally, but not one a pure-cloud buyer's accepted-domains list can actually exercise. A
+hybrid Exchange Online/on-premises tenant is the one case where an on-premises-configured
+`ExternalRelay` domain is real, but it is a separate on-premises Active Directory object this
+scenario's Exchange-Online-only tooling cannot see. See
+`scenarios/dlp/accepted-domains-hygiene-check/design.md` §2 for the full grounding and its
+`ExternalRelayObserved` finding, which flags exactly this rare case as `[INFO]` if it's ever observed
+against a cloud tenant.
+
 **What remains genuinely unconfirmed, and is carried forward as an explicit VERIFY** (not resolved by
 this reasoning): whether the **Microsoft 365 Copilot and Copilot Chat policy location specifically**
 accepts `-FromScope` as a condition at all. `-FromScope` is confirmed to exist in the cmdlet's shared
