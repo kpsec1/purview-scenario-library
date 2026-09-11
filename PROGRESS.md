@@ -2512,7 +2512,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/information-barriers/allow-list-and-control-room-exceptions/`** — commit
-  PENDING — 2026-09-11. New scenario, companion to `segregate-trading-and-research`: Allow-type
+  070e7ca — 2026-09-11. New scenario, companion to `segregate-trading-and-research`: Allow-type
   (`-SegmentsAllowed`) information-barrier topologies layered alongside the existing Block-type
   Trading/Research wall. `deploy/New-ControlRoomAllowException.ps1` (create-or-**reconcile** —
   segments are create-or-report, but each allow policy's live `SegmentsAllowed` set is compared to
