@@ -2444,7 +2444,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Grounding follow-up: resolve the `hybrid.contoso.com` `InternalRelay`-vs-`Authoritative`
-  open question in `accepted-domains-hygiene-check-on-premises`** — commit PENDING — 2026-09-11.
+  open question in `accepted-domains-hygiene-check-on-premises`** — commit 3acbb0d — 2026-09-11.
   Doc-only fragment, no code changed. The original build of this scenario had no `learn.microsoft.com`
   access at all and left open, via secondary community/Q&A guidance only, whether a shared-namespace
   hybrid domain should be `InternalRelay` (as the parent scenario's `KnownDomains.sample.json` models
