@@ -2459,7 +2459,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/`** —
-  commit PENDING — 2026-09-11. New scenario extending `segregate-trading-and-research`'s Teams-only
+  commit e6700d4 — 2026-09-11. New scenario extending `segregate-trading-and-research`'s Teams-only
   ethical wall to SharePoint and OneDrive: `deploy/Set-SharePointOneDriveIBEnablement.ps1` (tenant-wide
   `Set-SPOTenant -InformationBarriersSuspension` toggle, idempotent, `-DryRun`/`-Suspend`) and
   `deploy/Set-SiteInformationSegments.ps1` (per standalone-site `Set-SPOSite
