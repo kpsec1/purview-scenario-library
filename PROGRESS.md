@@ -2480,7 +2480,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/`** — commit PENDING —
+- [x] **`scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/`** — commit 08ec26d —
   2026-09-11. New scenario combining the two object models this repo already ships separately: the
   `adaptive-scope-retention` sibling's adaptive scope (Entra `Title` attribute, reused by name — a
   shared object) and the `retention-labels-financial-records` sibling's record-label auto-apply
