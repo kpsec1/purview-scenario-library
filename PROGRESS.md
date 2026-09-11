@@ -5636,7 +5636,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   evaluates). `rollback.md` and `deploy/Remove-InsiderRiskConditionalAccessPolicy.ps1` needed no
   change (rollback only touches the policy's `state`, untouched by this addition).
 
-- [x] **`docs/rbac-model.md` — cross-reference on-premises Exchange RBAC** — commit `<pending>` —
+- [x] **`docs/rbac-model.md` — cross-reference on-premises Exchange RBAC** — commit `26e236e` —
   2026-09-11. Scoped cross-cutting doc follow-up (not a new scenario) closing the item tracked
   under `### Follow-ups discovered while building the on-premises Accepted-Domains Hygiene Check
   companion`. Added new §13 ("Exchange Server on-premises RBAC — a ninth system, for
