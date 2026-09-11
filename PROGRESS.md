@@ -1982,11 +1982,42 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   worked example) or `.Guid` (this scenario's own S&C PowerShell scripts) for the same object — the new
   scripts try both rather than assuming one. `docs/automation-surface.md` §1/§5 updated in the same
   fragment to describe the new per-site surface-5 usage pattern.
-- [ ] `scenarios/information-barriers/allow-list-and-control-room-exceptions/` — model allow-list
-  topologies (`-SegmentsAllowed`) and a control-room/compliance segment that must see both sides, the
-  exception pattern real deployments need (non-goal here).
+- [x] `scenarios/information-barriers/allow-list-and-control-room-exceptions/` — **built** (see DONE
+  below): allow-list (`-SegmentsAllowed`) topologies as a companion to the Block-type wall — a
+  `ComplianceControlRoom` segment that sees both `Trading` and `Research`, plus a narrower, one-sided
+  `Legal` example (Research only) proving the pattern generalizes. Genuine grounding find along the
+  way, not merely executed as scoped: Legacy IB mode + an Allow policy hides ALL non-IB users/groups
+  from the assigned segment's members (not just unlisted segments) — SingleSegment/MultiSegment mode
+  don't have this restriction. Required SingleSegment mode explicitly and added a live
+  `Get-PolicyConfig` check to both the deploy and validate scripts rather than shipping the
+  originally-scoped "Legacy or SingleSegment" guidance uncorrected.
 - [ ] Consider a multi-segment-mode migration note/scenario (Legacy → SingleSegment/MultiSegment) and
   address-book-policy / GAL segmentation as companions.
+
+### Follow-ups discovered while building the allow-list-and-control-room-exceptions scenario
+- [ ] VERIFY (pilot tenant): the exact property name/values `Get-PolicyConfig` returns for
+  `InformationBarrierMode`. Grounded via the GitHub-mirrored `MicrosoftDocs/office-docs-powershell`
+  source for `Get-PolicyConfig`/`Set-PolicyConfig` (`Legacy`/`SingleSegment`/`MultiSegment`), not a
+  live tenant — `deploy/New-ControlRoomAllowException.ps1` and
+  `validate/Test-ControlRoomAllowException.ps1` both read the property defensively
+  (`PSObject.Properties['InformationBarrierMode']`) and degrade to a non-fatal `[WARN]` rather than
+  erroring if it's absent or differently named, but confirm the real property name/values before
+  relying on the Legacy-mode CAUTION firing correctly in production.
+- [ ] Consider an **audit-trail export** for allow-list membership changes (who was added to
+  `ComplianceControlRoom`/`Legal`'s allowed-segments list and when) — the same open item as
+  `segregate-trading-and-research`'s own untracked IB audit trail; ground the
+  `Search-UnifiedAuditLog` `RecordType`/`Operations` values for `New-`/`Set-InformationBarrierPolicy`
+  and `New-OrganizationSegment` before building.
+- [ ] Consider a **SharePoint/OneDrive site-association companion** for the exception segments (this
+  scenario's `ComplianceControlRoom`/`Legal`), mirroring
+  `sharepoint-onedrive-enablement-and-site-association`'s per-site `Set-SPOSite
+  -AddInformationSegment` pattern — not built here since that scenario only associates
+  `Trading`/`Research`.
+- [ ] Consider the **all-Allow-policy / MultiSegment rebuild** this scenario's `design.md` §6
+  documents as a non-goal: converting `Trading`/`Research` themselves to Allow-type policies so the
+  tenant can move to MultiSegment mode and let a person genuinely belong to more than one segment
+  (e.g. a person who is both a control-room analyst and, some days, embedded with Trading) — a
+  rebuild of the base scenario's policy types, not an extension of it, so scoped as its own fragment.
 
 ### Follow-ups discovered while building the Records Management regulatory-records-disposition scenario
 - [ ] `scenarios/records-management/file-plan-bulk-import/` — bulk create a full file plan (retention
@@ -2480,6 +2511,38 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/information-barriers/allow-list-and-control-room-exceptions/`** — commit
+  PENDING — 2026-09-11. New scenario, companion to `segregate-trading-and-research`: Allow-type
+  (`-SegmentsAllowed`) information-barrier topologies layered alongside the existing Block-type
+  Trading/Research wall. `deploy/New-ControlRoomAllowException.ps1` (create-or-**reconcile** —
+  segments are create-or-report, but each allow policy's live `SegmentsAllowed` set is compared to
+  config and corrected via `Set-InformationBarrierPolicy` on drift, deactivating first if the policy
+  was Active per Microsoft's documented edit workflow, then requiring an explicit re-`-Activate`
+  rather than silently reactivating; `-DryRun`; hard-fails if the `Trading`/`Research` prerequisite
+  segments are missing), `deploy/Remove-ControlRoomAllowException.ps1` (staged
+  deactivate/`-Apply`/`-Delete`, never touches the base wall), `deploy/config/control-room-allow-
+  exceptions.sample.json` (two allow-list shapes: `ComplianceControlRoom` → `[Trading, Research]`
+  and the narrower, asymmetric `Legal` → `[Research]`), `validate/Test-ControlRoomAllowException.ps1`
+  (segment/policy existence, assigned-segment correctness, order-independent `SegmentsAllowed`-vs-
+  config match, `-RequireActive`, application status), `rollback.md`, `reviews.md` (four-lens, all
+  Fix items resolved, no Fail). Grounded via `WebSearch` only (`WebFetch` to `learn.microsoft.com` is
+  blocked by this session's egress proxy, confirmed again this run) against
+  `purview/information-barriers-policies`, `purview/information-barriers-multi-segment`, and the
+  `New-`/`Set-InformationBarrierPolicy` and `Get-`/`Set-PolicyConfig` `ExchangePowerShell` cmdlet
+  references. **Genuine grounding find, not merely executed as scoped:** in **Legacy** IB mode
+  specifically, assigning an Allow policy to a segment hides **all** non-IB users/groups from that
+  segment's members (not just the segments left off the allow list) — a severe, easy-to-miss
+  collateral impact for a control-room/Legal role that still needs ordinary communication with
+  non-segmented colleagues. SingleSegment and MultiSegment mode do not have this restriction. This
+  scenario's originally-scoped backlog description assumed "Legacy or SingleSegment" were
+  interchangeable for this composition; corrected to require **SingleSegment** explicitly
+  (`README.md` §3/§11, `design.md` §5) and added a live, non-fatal `Get-PolicyConfig` check with a
+  loud `CAUTION` to both `deploy/New-ControlRoomAllowException.ps1` and
+  `validate/Test-ControlRoomAllowException.ps1` rather than leaving it as a documentation-only
+  caveat. One mechanic flagged VERIFY rather than guessed: whether
+  `Set-InformationBarrierPolicy -SegmentsAllowed` fully replaces or merges the allowed-segment list
+  (the script assumes replace and always sends the complete desired list) — `README.md` §11 and the
+  deploy script's own `.NOTES`.
 - [x] **`scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/`** — commit 08ec26d —
   2026-09-11. New scenario combining the two object models this repo already ships separately: the
   `adaptive-scope-retention` sibling's adaptive scope (Entra `Title` attribute, reused by name — a

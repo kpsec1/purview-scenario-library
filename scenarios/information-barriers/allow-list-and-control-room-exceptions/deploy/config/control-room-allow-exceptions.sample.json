@@ -1,0 +1,17 @@
+{
+  "_comment": "Config for deploy/New-ControlRoomAllowException.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Models ALLOW-LIST information-barrier topologies: a new segment gets a policy that names exactly which OTHER segments it may talk to, everything else stays blocked by default for that segment. Requires the 'Trading' and 'Research' segments from scenarios/information-barriers/segregate-trading-and-research/ to already exist. Read README.md Sections 2, 5, and 11 first.",
+  "prerequisiteSegments": ["Trading", "Research"],
+  "_prerequisiteSegmentsNote": "This scenario is a companion to segregate-trading-and-research, not a standalone wall - it does not create or modify the Trading/Research segments or their block policies. The deploy script hard-fails if either is missing.",
+  "segments": [
+    { "name": "ComplianceControlRoom", "userGroupFilter": "Department -eq 'ComplianceControlRoom'" },
+    { "name": "Legal", "userGroupFilter": "Department -eq 'Legal'" }
+  ],
+  "_segmentsNote": "One segment per exception group, attribute-driven like the base scenario. Confirm the attribute is populated only for the intended members and that no one in these segments also sits in Trading or Research (an exception member who is ALSO a walled-side member defeats both the wall and the exception's audit trail).",
+  "allowPolicies": [
+    { "assignedSegment": "ComplianceControlRoom", "allows": ["Trading", "Research"] },
+    { "assignedSegment": "Legal", "allows": ["Research"] }
+  ],
+  "_allowPoliciesNote": "Each entry is ONE New-InformationBarrierPolicy -SegmentsAllowed policy, named '<assignedSegment>-allow-<allows, joined by '-'>'. 'ComplianceControlRoom' is the control-room/compliance exception the wall needs to remain examinable from both sides (it may see BOTH Trading and Research even though those two may not see each other). 'Legal' is a narrower, asymmetric allow-list topology: Legal may consult Research but is not on Trading's allow list at all - Legal's own policy makes it default-deny for everything except Research, so it does NOT need a corresponding Trading entry to stay walled off. An Allow-type policy assigned to a segment restricts THAT segment to ONLY the segments listed - segments never mentioned in any of this scenario's policies (e.g. general staff outside Trading/Research/ComplianceControlRoom/Legal) are unaffected by these policies. Never assign more than one IB policy to the same segment; SegmentsAllowed and SegmentsBlocked cannot be combined on one policy.",
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-11"
+}
