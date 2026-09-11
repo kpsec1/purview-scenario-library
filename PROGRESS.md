@@ -1874,10 +1874,32 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   describes them in prose but doesn't name them. `adaptive-scope-retention/validate/
   Test-AdaptiveScopeRetention.ps1` prints the metadata object generically (`Format-List`) rather than
   guessing a property name like `TotalMemberCount`.
-- [ ] `scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/` (or fold into this
-  scenario as a `-part2`) — the auto-apply retention **label** variant of the same pattern
-  (`New-RetentionComplianceRule -ApplyComplianceTag` instead of `-RetentionComplianceAction`, same
-  `-AdaptiveScopeLocation` policy) — noted as a non-goal in `adaptive-scope-retention/design.md` §7.
+- [x] `scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/` — the auto-apply
+  retention **label** variant of the same pattern (`New-RetentionComplianceRule -ApplyComplianceTag`
+  instead of `-RetentionComplianceAction`, same `-AdaptiveScopeLocation` policy), noted as a non-goal
+  in `adaptive-scope-retention/design.md` §7 — **built** (see DONE below): reuses the Keep-only
+  sibling's adaptive scope by name (shared object), adds a `New-ComplianceTag` record label (not
+  regulatory — auto-apply doesn't support that), and the same `-AdaptiveScopeLocation` policy pattern
+  with an `-ApplyComplianceTag` rule. Grounding this fragment surfaced a real defect in the sibling
+  `retention-labels-financial-records` script — see the new follow-up immediately below.
+
+### Follow-up discovered while building the adaptive-scope-auto-apply-label scenario
+- [ ] **Fix a grounding defect in `scenarios/data-lifecycle-management/retention-labels-financial-
+  records/deploy/New-FinancialRecordsRetention.ps1`:** its `New-RetentionComplianceRule` call passes
+  both `-Name` and `-ApplyComplianceTag` in the same `$ruleParams` hashtable. Microsoft's current
+  Learn reference for `New-RetentionComplianceRule` documents these as mutually exclusive ("You can't
+  use this parameter with the ApplyComplianceTag or PublishComplianceTag parameters" — the `-Name`
+  parameter belongs only to the `Default` parameter set, not the `ComplianceTag` set that
+  `-ApplyComplianceTag` requires) — this combination does not match any documented parameter set and
+  would not resolve at runtime. Found while grounding the new `adaptive-scope-auto-apply-label`
+  scenario, whose own deploy script omits `-Name` when calling `-ApplyComplianceTag` instead of
+  repeating the defect (see that scenario's `design.md` §3). Fix: remove `Name =
+  "$($cfg.policy.name) - Rule"` from `New-FinancialRecordsRetention.ps1`'s `$ruleParams`; the
+  existing idempotency check (`Get-RetentionComplianceRule -Policy $cfg.policy.name`) already locates
+  the rule by policy, not by name, so nothing else depends on it having an explicit name. Update that
+  scenario's `README.md` §6 config-reference row and `.NOTES` accordingly; re-run its `reviews.md`
+  Microsoft Product Owner lens to record the correction. Source:
+  <https://learn.microsoft.com/powershell/module/exchangepowershell/new-retentioncompliancerule>
 - [ ] Consider `-LocationType Site` and `-LocationType Group` adaptive-scope variants (SharePoint site
   properties / KeyQL, and Microsoft 365 Group attributes respectively) as companions to this
   scenario's `User`-type example — `adaptive-scope-retention/design.md` §7.
@@ -2458,6 +2480,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/`** — commit PENDING —
+  2026-09-11. New scenario combining the two object models this repo already ships separately: the
+  `adaptive-scope-retention` sibling's adaptive scope (Entra `Title` attribute, reused by name — a
+  shared object) and the `retention-labels-financial-records` sibling's record-label auto-apply
+  pattern (`New-ComplianceTag` + `New-RetentionCompliancePolicy` + `New-RetentionComplianceRule
+  -ApplyComplianceTag`), instead of a Keep-only action. `deploy/New-AdaptiveScopeAutoApplyLabel.ps1`
+  (idempotent create-or-report for all four objects: scope, label, policy, rule; `-DryRun`; same
+  regulatory-record auto-apply guard as the financial-records sibling — creates the label but skips
+  policy/rule when `regulatory: true`), `deploy/Remove-AdaptiveScopeAutoApplyLabel.ps1` (staged
+  disable/delete/optional-scope-removal; never touches the label definition or already-labeled
+  content), `validate/Test-AdaptiveScopeAutoApplyLabel.ps1` (branches correctly on the
+  regulatory-record skip case), `rollback.md`, `reviews.md` (four-lens, all Fix items resolved, no
+  Fail). Grounded via `WebSearch` against `learn.microsoft.com` (direct `WebFetch` to that domain is
+  blocked by this session's egress proxy; the GitHub-mirrored source markdown for the two
+  `ExchangePowerShell` cmdlet reference pages was fetched directly instead, from the
+  `MicrosoftDocs/office-docs-powershell` repo) — confirmed Microsoft's "Automatically apply a
+  retention label" guidance explicitly documents adaptive scopes as a supported, production-
+  recommended input to a retention label policy (a more direct citation than the Keep-only sibling's
+  own parameter-compatibility inference), and confirmed the same-source restriction that auto-apply
+  does not support regulatory records. **Genuine grounding defect found and NOT propagated:**
+  `New-RetentionComplianceRule`'s `-Name` parameter is documented mutually exclusive with
+  `-ApplyComplianceTag`, but the sibling `retention-labels-financial-records` script passes both
+  together — this scenario's own script omits `-Name`; the sibling's defect is tracked as a new
+  follow-up above rather than fixed in this fragment (out of scope — a change to a different,
+  already-`DONE` fragment). One disclosed gap carried forward unchanged from the Keep-only sibling
+  rather than re-guessed: which of the adaptive scope's covered locations an
+  `AdaptiveScopeLocation`-scoped policy actually applies to has no documented PowerShell parameter —
+  tagged `VERIFY (pilot tenant)` in this scenario's `README.md` §11 and `design.md` §4.
 - [x] **`scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/`** —
   commit e6700d4 — 2026-09-11. New scenario extending `segregate-trading-and-research`'s Teams-only
   ethical wall to SharePoint and OneDrive: `deploy/Set-SharePointOneDriveIBEnablement.ps1` (tenant-wide

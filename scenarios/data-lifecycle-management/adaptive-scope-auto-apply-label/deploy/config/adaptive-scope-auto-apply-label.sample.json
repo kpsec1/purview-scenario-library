@@ -1,0 +1,42 @@
+{
+  "_comment": "Config for deploy/New-AdaptiveScopeAutoApplyLabel.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Companion to scenarios/data-lifecycle-management/adaptive-scope-retention/ (Keep-only) and scenarios/data-lifecycle-management/retention-labels-financial-records/ (static-scope record label): this scenario auto-applies a RECORD retention label to the same query-driven executive population instead of a plain Keep action, using the identical New-RetentionCompliancePolicy -AdaptiveScopeLocation object model. Same regulatory-record guard as the financial-records sibling: Microsoft does not support auto-apply for REGULATORY RECORD labels, so this config defaults to a plain (non-regulatory) record label. Reuses the sibling adaptive-scope-retention scenario's adaptive scope name by default so the two scenarios can share one scope if both are deployed - the deploy script detects and reuses it (Get-AdaptiveScope) rather than creating a duplicate.",
+  "adaptiveScope": {
+    "name": "Executives - US and Canada",
+    "comment": "User-type adaptive scope: Title matches a defined set of executive titles. Re-evaluated daily against Entra ID; no group to maintain. Shared by design with scenarios/data-lifecycle-management/adaptive-scope-retention/ - same name, same query, same object if both scenarios are deployed to one tenant.",
+    "locationType": "User",
+    "administrativeUnit": "",
+    "filterConditions": {
+      "conjunction": "Or",
+      "conditions": [
+        { "name": "Title", "operator": "Equals", "value": "Chief Executive Officer" },
+        { "name": "Title", "operator": "Equals", "value": "Chief Financial Officer" },
+        { "name": "Title", "operator": "Equals", "value": "Chief Operating Officer" },
+        { "name": "Title", "operator": "Equals", "value": "General Counsel" }
+      ]
+    },
+    "_scopeNote": "locationType: User | Group | Site (New-AdaptiveScope -LocationType). administrativeUnit: Entra administrative unit GUID to restrict scope membership to a delegated boundary; leave blank for Full directory. filterConditions maps to -FilterConditions (Conditions array of {Name,Operator,Value} + Conjunction And/Or; Operator: Equals/NotEquals/StartsWith/NotStartsWith). For the advanced query builder instead (OPATH for User/Group, KeyQL for Site), use -RawQuery - not shown here. Illustrative titles - set to your organization's real executive roster signal, validated by HR/Legal."
+  },
+  "label": {
+    "name": "Executive Communications - Record",
+    "comment": "Executives' Exchange email and OneDrive content, retained 10 years and locked as a record - population defined adaptively (Title attribute) instead of a static distribution list.",
+    "retentionAction": "Keep",
+    "retentionDurationDays": 3650,
+    "retentionType": "CreationAgeInDays",
+    "regulatory": false,
+    "isRecordLabel": true,
+    "reviewerEmail": [],
+    "_labelNote": "retentionAction: Keep | Delete | KeepAndDelete. retentionDurationDays: integer days (3650 ~= 10 years, matching the Keep-only adaptive-scope-retention sibling's duration) or the string 'Unlimited'. retentionType: when the clock starts - CreationAgeInDays | ModificationAgeInDays | TaggedAgeInDays | EventAgeInDays. regulatory=true would make this a REGULATORY RECORD (cannot be removed, relabeled, unlocked, or have its retention shortened by anyone) - PowerShell-only to create, and NOT supported for auto-apply (see README.md Section 2/11, same correction already applied in the retention-labels-financial-records sibling). If regulatory=true is set here, this script creates the label then STOPS - no adaptive-scope policy/rule is created - hand off to scenarios/data-lifecycle-management/publish-labels-for-manual-application/ instead. Default here is regulatory=false / isRecordLabel=true (a plain, lockable record label), which auto-apply fully supports."
+  },
+  "policy": {
+    "name": "Auto-apply Executive Communications Record - Adaptive",
+    "comment": "Auto-applies the Executive Communications (record) label to the adaptively-scoped executive population's Exchange mail and OneDrive content.",
+    "enabled": true,
+    "_policyNote": "Maps to New-RetentionCompliancePolicy -AdaptiveScopeLocation <adaptiveScope.name>. Same disclosed parameter-surface gap as the adaptive-scope-retention sibling: no -ExchangeLocation/-OneDriveLocation-equivalent toggle in this parameter set, so which of the scope's User-type locations the policy actually covers is not exposed as a documented parameter - VERIFY (pilot tenant) per README.md Section 11 / design.md Section 4 before assuming Exchange+OneDrive-only."
+  },
+  "rule": {
+    "contentMatchQuery": "",
+    "_ruleNote": "Maps to New-RetentionComplianceRule -Policy -ApplyComplianceTag -ContentMatchQuery. Left empty by default - unlike the financial-records sibling (which matches a content signal within a broad SharePoint site), this rule relies entirely on the adaptive scope for targeting: everything in the executive population's covered locations gets the record label, no separate content condition. Set a KQL query here only if you want to narrow further within the adaptively-scoped population. GROUNDING CORRECTION vs. the financial-records sibling script: New-RetentionComplianceRule's -Name parameter is DOCUMENTED as mutually exclusive with -ApplyComplianceTag ('You can't use this parameter with the ApplyComplianceTag or PublishComplianceTag parameters' - Microsoft Learn) - this scenario's deploy script does not pass -Name when using -ApplyComplianceTag; see README.md Section 11 and PROGRESS.md for the same defect flagged as an open follow-up against the sibling script."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-11"
+}
