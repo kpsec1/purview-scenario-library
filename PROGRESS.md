@@ -2406,7 +2406,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/dlp/accepted-domains-hygiene-check-on-premises/` — on-premises Exchange companion
-  to the Accepted-Domains Hygiene Check** — commit PENDING — 2026-09-11. Full README/design/deploy/
+  to the Accepted-Domains Hygiene Check** — commit 48143ae — 2026-09-11. Full README/design/deploy/
   validate/rollback/reviews. Closes the parent scenario's disclosed cloud-only blind spot for a hybrid
   Exchange Online/on-premises tenant: reuses the parent's `KnownDomains.json` and mirrors its four
   core finding categories against an on-premises Exchange remote PowerShell session
