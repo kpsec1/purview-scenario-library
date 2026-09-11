@@ -5716,8 +5716,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   different document, different numbering scheme) — not a claim that sweep covers it.
 
 - [x] **`scenarios/communication-compliance/copilot-interaction-detection/` — Microsoft 365 Copilot
-  interaction detection (Prompt Shields/Protected material)** — commit *(recorded in the next
-  commit)* — 2026-09-11. Full new scenario (README, design, deploy manifest + audit-trail script,
+  interaction detection (Prompt Shields/Protected material)** — commit `71e98d0` — 2026-09-11. Full new scenario (README, design, deploy manifest + audit-trail script,
   validate script, rollback, four-lens review), closing the "Detect Microsoft 365 Copilot and
   Microsoft 365 Copilot Chat interactions" half of the follow-up tracked under
   `harassment-and-code-of-conduct`'s own backlog (the preview LLM-based content-safety classifiers
