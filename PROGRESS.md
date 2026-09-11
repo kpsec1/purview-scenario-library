@@ -5495,7 +5495,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   on-premises companion-check idea) added to TODO above rather than resolved by guessing.
 
 - [x] **`scenarios/data-lineage/end-to-end-lineage-validation/validate/Test-EndToEndLineage.ps1` —
-  generalize the Check 2 column-mapping check to a multi-hop chain** — commit `PENDING` —
+  generalize the Check 2 column-mapping check to a multi-hop chain** — commit `a032957` —
   2026-09-11. Scoped follow-up (not a new scenario) closing the item tracked under `### Follow-ups
   discovered while building the Data Lineage end-to-end-lineage-validation scenario`, and formally
   the same limitation this scenario's own `reviews.md` recorded as Blue Team finding 4 (disclosed,
