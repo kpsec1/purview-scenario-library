@@ -153,7 +153,7 @@ least the propagation window in §11 before promoting. Once satisfied:
 |---|---|---|
 | Policy name | `Adaptive Protection - Block Elevated Insider Risk (Custom)` | Deliberately distinct from Microsoft's Quick-Setup-generated name — see §11 |
 | Target resources | `includeApplications = ['All']` | Matches Microsoft's own documented "All resources" step [[1]](#references) |
-| Users | `includeUsers = ['All']` minus `-ExcludeUserIds`/`-ExcludeGroupIds` | Excludes break-glass accounts/group; does **not** script Microsoft's additional documented "exclude guests/external user categories" nested condition — see §11 |
+| Users | `includeUsers = ['All']` minus `-ExcludeUserIds`/`-ExcludeGroupIds`/`-ExcludeGuestOrExternalUserTypes` | Excludes break-glass accounts/group **and**, by default, `b2bDirectConnectUser`/`serviceProvider`/`otherExternalUser` guest/external categories — Microsoft's own documented Users-step exclusion, now scripted (`conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes`) — see §11 for the one unconfirmed formatting detail |
 | Insider Risk condition | `insiderRiskLevels = ['elevated']` (default) | Configurable via `-RiskLevels`; adding `moderate`/`minor` applies the **same** block control to those levels too — see §6 note in `design.md` |
 | Grant control | `builtInControls = ['block']`, `operator = 'OR'` | Matches Microsoft's documented "Block access" choice [[1]](#references) |
 | Initial policy state | `enabledForReportingButNotEnforced` (Report-only) | Matches Microsoft's own documented Step 7 [[1]](#references) |
@@ -258,12 +258,18 @@ user's current insider risk level.
   Conditional Access policy's `id` is Graph-assigned on creation and cannot be pre-chosen —
   renaming this policy in the portal breaks this script's own idempotency detection on the next
   run (`design.md` §6, "Policy identity for idempotency" row).
-- **This scenario does not script the "exclude guests/external users" nested Users condition**
-  Microsoft's own guide's procedure also recommends [[1]](#references) — Graph's
-  `excludeGuestsOrExternalUsers` shape was not independently confirmed against a worked example
-  during this build. If your tenant has B2B guests who legitimately need continued access
-  regardless of a host-tenant insider risk level, add this exclusion manually in the portal until
-  a future revision scripts it — tracked in `PROGRESS.md`.
+- **The "exclude guests/external users" nested Users condition Microsoft's own guide's procedure
+  recommends** [[1]](#references) **is now scripted**, defaulting to the same three categories the
+  guide names (`b2bDirectConnectUser`, `serviceProvider`, `otherExternalUser` — Graph's
+  `excludeGuestsOrExternalUsers.guestOrExternalUserTypes`, confirmed on the
+  `conditionalAccessGuestsOrExternalUsers` resource reference [[12]](#references)[[13]](#references)).
+  Two things remain genuinely open rather than guessed at: (1) the exact separator between
+  multiple values on the wire when more than one is set — this script assumes a bare comma, not
+  independently confirmed against a worked multi-value example — **VERIFY** (pilot tenant) before
+  relying on this script's own idempotency (match/drift) detection for this one field in
+  production; and (2) this scenario does not script the sibling `externalTenants` property
+  (scoping the exclusion to specific external tenant IDs) — Microsoft's own guide doesn't scope by
+  tenant either, so this is a deliberate non-goal, not a gap — see `design.md` §7.
 - **Policy naming deliberately avoids asserting Microsoft's Quick Setup auto-generated name.**
   Unlike the DLP sibling scenario (which independently confirmed and explicitly avoided colliding
   with Microsoft's exact auto-generated DLP policy name), this build could **not** independently
@@ -329,6 +335,13 @@ user's current insider risk level.
     this build.
 11. `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` — the DLP sibling scenario this
     fragment complements; see `design.md` §3 for how the two differ.
+12. conditionalAccessUsers / conditionalAccessGuestsOrExternalUsers resource types
+    (`excludeGuestsOrExternalUsers.guestOrExternalUserTypes`/`externalTenants` properties this
+    build's `-ExcludeGuestOrExternalUserTypes` parameter scripts) — <https://learn.microsoft.com/graph/api/resources/conditionalaccessusers>, <https://learn.microsoft.com/graph/api/resources/conditionalaccessguestsorexternalusers>
+13. conditionalAccessGuestOrExternalUserTypes enum reference (the seven real, client-settable
+    values: `internalGuest`/`b2bCollaborationGuest`/`b2bCollaborationMember`/
+    `b2bDirectConnectUser`/`otherExternalUser`/`serviceProvider`, plus the server-only
+    `unknownFutureValue`) — <https://learn.microsoft.com/graph/api/resources/enums#conditionalaccessguestorexternalusertypes-values>
 
 > Re-verify all links, API behavior, and licensing terms against current Microsoft Learn before a
 > customer-facing assessment or sale — Adaptive Protection and its Conditional Access integration

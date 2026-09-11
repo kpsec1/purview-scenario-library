@@ -33,6 +33,13 @@
     default expectation matches the deploy script's own default -Mode ReportOnly - pass
     'enabled' once promoted to enforcement).
 
+.PARAMETER ExpectedExcludeGuestOrExternalUserTypes
+    Guest/external user categories expected on conditions.users.excludeGuestsOrExternalUsers.
+    guestOrExternalUserTypes. Defaults to @('b2bDirectConnectUser', 'serviceProvider',
+    'otherExternalUser'), matching deploy/New-InsiderRiskConditionalAccessPolicy.ps1's own
+    default. Pass @() if you deployed with -ExcludeGuestOrExternalUserTypes @() (exclusion
+    omitted).
+
 .EXAMPLE
     Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
     ./Test-InsiderRiskConditionalAccessPolicy.ps1
@@ -41,7 +48,8 @@
     ./Test-InsiderRiskConditionalAccessPolicy.ps1 -ExpectedState enabled
 
 .NOTES
-    Sources: same as deploy/New-InsiderRiskConditionalAccessPolicy.ps1's .NOTES block.
+    Sources: same as deploy/New-InsiderRiskConditionalAccessPolicy.ps1's .NOTES block, including
+    that script's disclosed VERIFY on the exact guestOrExternalUserTypes multi-value wire format.
 #>
 [CmdletBinding()]
 param(
@@ -54,7 +62,11 @@ param(
 
     [Parameter()]
     [ValidateSet('enabled', 'disabled', 'enabledForReportingButNotEnforced')]
-    [string]$ExpectedState = 'enabledForReportingButNotEnforced'
+    [string]$ExpectedState = 'enabledForReportingButNotEnforced',
+
+    [Parameter()]
+    [ValidateSet('internalGuest', 'b2bCollaborationGuest', 'b2bCollaborationMember', 'b2bDirectConnectUser', 'otherExternalUser', 'serviceProvider')]
+    [string[]]$ExpectedExcludeGuestOrExternalUserTypes = @('b2bDirectConnectUser', 'serviceProvider', 'otherExternalUser')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -67,6 +79,18 @@ function Write-Check {
     Write-Host "  [$Status] $Message" -ForegroundColor $color
     if ($Status -eq 'FAIL') { $script:FailCount++ }
     if ($Status -eq 'WARN') { $script:WarnCount++ }
+}
+
+function ConvertTo-GuestOrExternalUserTypeArray {
+    # Same normalization as deploy/New-InsiderRiskConditionalAccessPolicy.ps1's helper of the same
+    # name - see that script's .NOTES for why both shapes are handled.
+    param($Value)
+    if ($null -eq $Value) { return @() }
+    if ($Value -is [string]) {
+        if ([string]::IsNullOrWhiteSpace($Value)) { return @() }
+        return @($Value -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' })
+    }
+    return @($Value | ForEach-Object { $_.ToString() })
 }
 
 if (-not (Get-Command Get-MgIdentityConditionalAccessPolicy -ErrorAction SilentlyContinue)) {
@@ -131,6 +155,20 @@ else {
     }
     else {
         Write-Check PASS "Exclusions present ($($excludeUsers.Count) user(s), $($excludeGroups.Count) group(s))."
+    }
+
+    $actualExcludeGuestTypes = @(ConvertTo-GuestOrExternalUserTypeArray $policy.Conditions.Users.ExcludeGuestsOrExternalUsers.GuestOrExternalUserTypes | ForEach-Object { $_.ToLowerInvariant() } | Sort-Object)
+    $wantExcludeGuestTypes = @($ExpectedExcludeGuestOrExternalUserTypes | ForEach-Object { $_.ToLowerInvariant() } | Sort-Object)
+    if (@(Compare-Object $actualExcludeGuestTypes $wantExcludeGuestTypes).Count -eq 0) {
+        if ($wantExcludeGuestTypes.Count -gt 0) {
+            Write-Check PASS "excludeGuestsOrExternalUsers.guestOrExternalUserTypes = $($actualExcludeGuestTypes -join ', ')."
+        }
+        else {
+            Write-Check WARN 'No guest/external user categories excluded (matches -ExpectedExcludeGuestOrExternalUserTypes @() - confirm this is intentional for your tenant, since Microsoft''s own documented reference configuration excludes B2B direct connect / service provider / other external users).'
+        }
+    }
+    else {
+        Write-Check FAIL "excludeGuestsOrExternalUsers.guestOrExternalUserTypes = $($actualExcludeGuestTypes -join ', '); expected $($wantExcludeGuestTypes -join ', ')."
     }
 
     $builtInControls = @($policy.GrantControls.BuiltInControls)

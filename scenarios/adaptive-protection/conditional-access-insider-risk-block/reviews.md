@@ -151,3 +151,115 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/New-InsiderRiskConditionalAccessPolicy.ps1`, and
 `deploy/Remove-InsiderRiskConditionalAccessPolicy.ps1`. No Fail items were raised. This fragment
 meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Round 2 — scripting the `excludeGuestsOrExternalUsers` nested condition (PROGRESS.md follow-up)
+
+Reviewed after adding `-ExcludeGuestOrExternalUserTypes` to `deploy/
+New-InsiderRiskConditionalAccessPolicy.ps1` (and the matching validation check), closing the
+follow-up Round 1's Non-goals (§7) and `README.md` §11 originally deferred. One round of findings
+below; all **Fix** items were applied before this file was finalized. No **Fail** items were
+raised.
+
+### 🔴 Red Team
+
+**Verdict: Fix (resolved)**
+
+1. **A default that silently narrows coverage is worse than no default.** The original draft of
+   this change set `-ExcludeGuestOrExternalUserTypes`'s default without stating plainly, in the
+   same place a reader would look, that these three categories are *excluded from the block* —
+   i.e., a B2B direct-connect user, service-provider user, or "other external" user who is
+   assigned Elevated insider risk is **not** blocked by this policy by default, even though the
+   Insider Risk Management side may still flag them. A buyer skimming only the parameter name
+   could misread "Exclude" as "these get extra scrutiny" rather than "these are exempted."
+   - **Resolution:** `deploy/New-InsiderRiskConditionalAccessPolicy.ps1`'s `.PARAMETER
+     ExcludeGuestOrExternalUserTypes` block and `README.md` §11 both state the exemption directly
+     and name the escape hatch (`-ExcludeGuestOrExternalUserTypes @()`) for a buyer who wants no
+     guest/external carve-out at all — not just that the parameter exists.
+2. **The unconfirmed wire-format assumption (comma, no space) is a real, if narrow, correctness
+   risk for the *matching* control itself.** If Microsoft's actual serialization differs (e.g.
+   requires no whitespace variations, a different delimiter, or a specific member ordering) and
+   this script's idempotency check consequently never reports a match, `-Force` reconciliation
+   would PATCH the identical desired state on every run — harmless to the policy's actual
+   enforcement (the block condition itself would still evaluate correctly against Graph's side,
+   since Graph parses whatever it stores), but a false "drift" signal an operator could waste time
+   chasing.
+   - **Resolution:** Confirmed the risk is cosmetic to *this script's own drift reporting*, not to
+     the deployed policy's actual behavior (Graph is the source of truth for how the condition
+     evaluates, not this script's local string comparison) — stated explicitly in the deploy
+     script's `.NOTES` and `README.md` §11 rather than left implicit.
+
+No remaining Fix/Fail after resolution.
+
+### 🔵 Blue Team
+
+**Verdict: Pass**
+
+1. **The new automated check follows this scenario's own established two-part pattern** (automated
+   Graph-object check + manual checklist for what can't be queried) — no new manual-checklist item
+   was needed, since `excludeGuestsOrExternalUsers` is fully queryable via the same
+   `Get-MgIdentityConditionalAccessPolicy` call the rest of the script already uses. Confirmed
+   consistent, no gap.
+2. **A WARN, not a FAIL, when the exclusion is empty** — `validate/
+   Test-InsiderRiskConditionalAccessPolicy.ps1` treats `-ExpectedExcludeGuestOrExternalUserTypes
+   @()` as a WARN (not a silent PASS, not a hard FAIL) precisely because an intentionally-empty
+   exclusion is a valid buyer choice (§7 in `design.md`) but one worth surfacing to an operator
+   reviewing validation output, not burying. Checked and confirmed appropriate — matches this
+   library's existing severity convention for "correctly configured but worth a second look."
+
+No Fail items.
+
+### 🎩 CISO
+
+**Verdict: Pass**
+
+- **No new licensing, cost, or business-continuity dimension.** This change adds a narrower
+  *exclusion* to an already-reviewed block control — it does not expand what the policy blocks,
+  change its licensing prerequisite (still Entra ID P2, §10), or alter the service-desk/HR/Legal
+  rollout coordination Round 1 already established. No update needed to `README.md` §8 or §10.
+- **Risk framing:** narrowing the block's population (by exempting three external-user categories
+  Microsoft itself recommends exempting) is a *risk-reducing* change from a lockout/business-
+  continuity standpoint, at the cost of a correspondingly narrower insider-risk enforcement
+  surface for those specific external-user categories — an explicit, disclosed trade-off
+  (`design.md` §7), not a silent one. Would sign off on this as a low-risk refinement to an
+  already-funded control, not a decision requiring separate re-approval.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Pass**
+
+1. **`conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes` and its seven
+   real enum members are independently confirmed** on the `conditionalAccessUsers`,
+   `conditionalAccessGuestsOrExternalUsers`, and enum Microsoft Learn resource references — not
+   fabricated, not inferred by analogy to a differently-shaped property elsewhere in this library.
+2. **The default value set reproduces Microsoft's own documented procedure exactly** — the
+   `policy-risk-based-insider-block` guide's Users step names precisely `b2bDirectConnectUser`
+   (B2B direct connect users), `serviceProvider` (Service provider users), and `otherExternalUser`
+   (Other external users) as the categories to exclude; this build's default matches that list
+   member-for-member, not a superset or subset chosen by inference.
+3. **The one thing NOT scripted (`externalTenants`) is correctly scoped as a non-goal, not a
+   silent gap** — Microsoft's own guide does not scope this exclusion by external tenant, so
+   omitting that sibling property matches the guide's own reference configuration rather than
+   under-delivering against it. Checked and confirmed this distinction is stated plainly in
+   `design.md` §7, not conflated with the genuinely-unconfirmed wire-format detail.
+4. **The one remaining VERIFY (multi-value separator format) is narrowly scoped and honestly
+   labeled** — it affects only this script's own local idempotency/drift detection, not the
+   correctness of the deployed Conditional Access policy itself (confirmed in the Red Team
+   resolution above). Not overstated as a functional risk it isn't.
+
+No remaining Fix/Fail after resolution.
+
+### Round 2 summary
+
+| Lens | Initial verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Fix | 2 (both closed with documentation clarifications; no code-behavior change needed) | Closed |
+| 🔵 Blue Team | Pass | 2 (both confirmed consistent with existing library conventions) | Closed |
+| 🎩 CISO | Pass | 0 (confirmed no new cost/licensing/business-continuity dimension) | N/A |
+| 🟦 Microsoft Product Owner | Pass | 4 (all confirmed correct/well-grounded) | Closed |
+
+All Fix items from Round 2 are resolved in the current state of `README.md`, `design.md`,
+`deploy/New-InsiderRiskConditionalAccessPolicy.ps1`, and `validate/
+Test-InsiderRiskConditionalAccessPolicy.ps1`. No Fail items were raised. This follow-up fragment
+meets the definition of done in `AGENTS.md` §9.

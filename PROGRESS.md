@@ -955,11 +955,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Entra ID P2 license for the Insider Risk condition specifically — silently exempted, blocked
   outright, or another behavior. Flagged inline as VERIFY in `docs/licensing-matrix.md` §8 and
   `conditional-access-insider-risk-block/README.md` §11 rather than assumed.
-- [ ] Script Graph's `conditions.users.excludeGuestsOrExternalUsers` nested condition (the
+- [x] Script Graph's `conditions.users.excludeGuestsOrExternalUsers` nested condition (the
   "exclude B2B direct connect / service providers / other external" categories Microsoft's own
-  documented procedure also recommends) once its exact shape is confirmed against a worked
-  example — deferred in this build's v1 script, which only scripts `excludeUsers`/`excludeGroups`.
-  See `conditional-access-insider-risk-block/design.md` §7 and `README.md` §11.
+  documented procedure also recommends) — **built** (see DONE below): the resource shape
+  (`conditionalAccessUsers.excludeGuestsOrExternalUsers` → `conditionalAccessGuestsOrExternalUsers`
+  → `guestOrExternalUserTypes`/`externalTenants`) is independently confirmed on Microsoft Learn,
+  and Microsoft's own "Block access for users with insider risk" guide's Users step names the
+  exact three categories to exclude (`b2bDirectConnectUser`, `serviceProvider`,
+  `otherExternalUser`) — now the new `-ExcludeGuestOrExternalUserTypes` parameter's default on
+  `conditional-access-insider-risk-block/deploy/New-InsiderRiskConditionalAccessPolicy.ps1`, with
+  a matching automated check added to `validate/Test-InsiderRiskConditionalAccessPolicy.ps1`. One
+  narrower VERIFY carried forward rather than resolved by guessing — see the new item immediately
+  below. The `externalTenants` sibling property remains a deliberate non-goal (design.md §7):
+  Microsoft's own guide doesn't scope this exclusion by tenant either.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn/worked-example pass): the exact separator
+  Microsoft Graph uses between multiple `guestOrExternalUserTypes` flag values on the wire (this
+  scenario's script assumes a bare comma, e.g. `"b2bDirectConnectUser,serviceProvider"`) and
+  whether the Microsoft Graph PowerShell SDK's typed `Get-MgIdentityConditionalAccessPolicy`
+  read-back returns that same raw string or an already-split collection for this specific nested
+  property. Affects only this script's own local idempotency/drift detection, not the deployed
+  policy's actual enforcement behavior (Graph is the source of truth for how the condition
+  evaluates) — flagged inline in `conditional-access-insider-risk-block/deploy/
+  New-InsiderRiskConditionalAccessPolicy.ps1`'s `.NOTES` and `README.md` §11 rather than guessed.
 - [ ] VERIFY (pilot tenant): Microsoft Quick Setup's exact auto-generated Conditional Access
   policy display name, so `conditional-access-insider-risk-block`'s own `(Custom)`-suffixed name
   can be independently confirmed not to collide, the same confirmation the DLP sibling scenario
@@ -5527,6 +5544,32 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   hybrid tenant, whose on-premises domains this scenario's Exchange-Online-only tooling can't see
   regardless. `reviews.md` gained a matching correction addendum. No code changed, so no new four-lens
   review round was run; no Microsoft product behavior changed, only this scenario's own doc accuracy.
+
+- [x] **`scenarios/adaptive-protection/conditional-access-insider-risk-block/deploy/
+  New-InsiderRiskConditionalAccessPolicy.ps1` — script the `excludeGuestsOrExternalUsers` nested
+  Users condition** — commit `PENDING` — 2026-09-11. Scoped follow-up (not a new scenario) closing
+  the item tracked under `### Follow-ups discovered while building the Conditional Access
+  insider-risk-block scenario`. Grounded via the Microsoft Learn MCP tool (available this run,
+  contrary to this run's own starting instructions) rather than WebSearch: confirmed
+  `conditionalAccessUsers.excludeGuestsOrExternalUsers` → `conditionalAccessGuestsOrExternalUsers`
+  → `guestOrExternalUserTypes` (a comma-separated flags String on the wire, seven real enum
+  members) / `externalTenants` on the current v1.0, non-beta Graph resource references, and
+  independently re-fetched Microsoft's "Block access for users with insider risk" guide, whose
+  Users step names the exact three categories to exclude — B2B direct connect users, Service
+  provider users, Other external users (`b2bDirectConnectUser`/`serviceProvider`/
+  `otherExternalUser`) — reproduced as the new `-ExcludeGuestOrExternalUserTypes` parameter's
+  default on both the deploy script and `validate/Test-InsiderRiskConditionalAccessPolicy.ps1`'s
+  new matching automated check. `design.md` §6/§7, `README.md` §6/§11/§12 updated in place; a
+  second, Round 2 four-lens review recorded in `reviews.md` (2 Red Team findings closed with
+  documentation clarifications, no code-behavior change needed; Blue Team/CISO/Product Owner all
+  Pass). One genuine gap carried forward rather than resolved by guessing: the exact multi-value
+  wire separator (this script assumes a bare comma) and whether the Graph PowerShell SDK's typed
+  read-back for this specific nested property returns that same raw string or an already-split
+  collection — both flagged as a new VERIFY in TODO above and in the deploy script's `.NOTES`,
+  disclosed as affecting only this script's own local idempotency/drift detection, not the
+  deployed policy's actual enforcement (Graph itself is the source of truth for how the condition
+  evaluates). `rollback.md` and `deploy/Remove-InsiderRiskConditionalAccessPolicy.ps1` needed no
+  change (rollback only touches the policy's `state`, untouched by this addition).
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

@@ -26,6 +26,13 @@
       One conditionalAccessPolicy object:
         - conditions.applications.includeApplications = ["All"]   (Target resources: All resources)
         - conditions.users.includeUsers = ["All"], minus -ExcludeUserIds / -ExcludeGroupIds
+        - conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes =
+          -ExcludeGuestOrExternalUserTypes (Graph v1.0 conditionalAccessGuestsOrExternalUsers
+          nested condition - confirmed independently on Microsoft Learn; reproduces the exact
+          "B2B direct connect users / Service provider users / Other external users" exclusion
+          Microsoft's own "Block access for users with insider risk" guide's Users step
+          documents - see design.md Section 6 and .NOTES for the exact grounding and the one
+          byte-level format detail (multi-value separator) not independently confirmed)
         - conditions.insiderRiskLevels = -RiskLevels (Graph v1.0 conditionalAccessConditionSet
           property - confirmed independently on Microsoft Learn; distinct from, and NOT the same
           parameter as, the Purview DLP sibling's -SharedByIRMUserRisk GUID-based condition - see
@@ -73,6 +80,22 @@
     Microsoft's documented break-glass pattern - .NOTES). Combined with -ExcludeUserIds; either or
     both may be supplied.
 
+.PARAMETER ExcludeGuestOrExternalUserTypes
+    Zero or more of 'internalGuest', 'b2bCollaborationGuest', 'b2bCollaborationMember',
+    'b2bDirectConnectUser', 'otherExternalUser', 'serviceProvider' (Graph's
+    conditionalAccessGuestOrExternalUserTypes enum, minus 'none' and the server-only
+    'unknownFutureValue' member). Populates conditions.users.excludeGuestsOrExternalUsers.
+    guestOrExternalUserTypes. Defaults to @('b2bDirectConnectUser', 'serviceProvider',
+    'otherExternalUser') - the exact three categories Microsoft's own "Block access for users
+    with insider risk" guide's Users step documents excluding, reproduced deliberately (see
+    Sources). Pass an empty array (-ExcludeGuestOrExternalUserTypes @()) to omit this nested
+    condition entirely, e.g. for a tenant with no B2B guests where the exclusion would be a no-op.
+    This script does not script the sibling conditions.users.excludeGuestsOrExternalUsers.
+    externalTenants property (tenant-scoping this exclusion to specific external tenants rather
+    than all of them) - Microsoft's own guide does not scope by tenant either, and adding it
+    unrequested would risk narrowing a buyer's exclusion without being asked - see README.md
+    Section 11.
+
 .PARAMETER Mode
     'ReportOnly' (default - maps to Graph state 'enabledForReportingButNotEnforced', evaluates and
     logs sign-in events against this policy without blocking anyone), 'Enabled' (maps to 'enabled'
@@ -113,13 +136,37 @@
     policy in the portal breaks this script's idempotency detection - documented as a known
     limitation in README.md Section 11, not silently worked around.
 
+    EXCLUDE-GUESTS-OR-EXTERNAL-USERS FORMAT: the conditionalAccessGuestsOrExternalUsers resource's
+    guestOrExternalUserTypes property is documented as a single, multi-valued String on the wire
+    (its JSON representation shows "guestOrExternalUserTypes": "String", not a string collection),
+    and its seven real enum members (excluding the server-only unknownFutureValue) are confirmed on
+    the conditionalAccessGuestOrExternalUserTypes enum reference. What is NOT independently
+    confirmed against a worked multi-value request/response example: the exact separator between
+    values when more than one is set (this script assumes comma, no space) and whether the
+    Microsoft Graph PowerShell SDK's typed Get-MgIdentityConditionalAccessPolicy read-back returns
+    that same raw comma-separated string or an already-split collection for this specific nested
+    property - ConvertTo-GuestOrExternalUserTypeArray (above) handles either shape rather than
+    assuming one. VERIFY against a pilot tenant before relying on this script's idempotency
+    (match/drift) detection for this one field in production - see README.md Section 11.
+
     Sources (Microsoft Learn, verify before production use):
-    - Block access for users with elevated insider risk (portal steps, Users/Target
-      resources/Insider Risk condition/Grant/Report-only sequence this script automates):
+    - Block access for users with insider risk (portal steps, including the exact Users-step
+      guest/external exclusion - B2B direct connect users / Service provider users / Other
+      external users - this script's -ExcludeGuestOrExternalUserTypes default reproduces):
       https://learn.microsoft.com/entra/identity/conditional-access/policy-risk-based-insider-block
     - conditionalAccessConditionSet resource type (insiderRiskLevels property, v1.0, values
       minor/moderate/elevated/unknownFutureValue):
       https://learn.microsoft.com/graph/api/resources/conditionalaccessconditionset
+    - conditionalAccessUsers resource type (excludeGuestsOrExternalUsers property):
+      https://learn.microsoft.com/graph/api/resources/conditionalaccessusers
+    - conditionalAccessGuestsOrExternalUsers resource type (guestOrExternalUserTypes,
+      externalTenants properties; JSON representation showing guestOrExternalUserTypes as a
+      single String):
+      https://learn.microsoft.com/graph/api/resources/conditionalaccessguestsorexternalusers
+    - conditionalAccessGuestOrExternalUserTypes enum reference (none/internalGuest/
+      b2bCollaborationGuest/b2bCollaborationMember/b2bDirectConnectUser/otherExternalUser/
+      serviceProvider/unknownFutureValue):
+      https://learn.microsoft.com/graph/api/resources/enums#conditionalaccessguestorexternalusertypes-values
     - conditionalAccessPolicy resource type (state property: enabled/disabled/
       enabledForReportingButNotEnforced; conditions/grantControls properties):
       https://learn.microsoft.com/graph/api/resources/conditionalaccesspolicy
@@ -157,6 +204,10 @@ param(
 
     [Parameter()]
     [string[]]$ExcludeGroupIds = @(),
+
+    [Parameter()]
+    [ValidateSet('internalGuest', 'b2bCollaborationGuest', 'b2bCollaborationMember', 'b2bDirectConnectUser', 'otherExternalUser', 'serviceProvider')]
+    [string[]]$ExcludeGuestOrExternalUserTypes = @('b2bDirectConnectUser', 'serviceProvider', 'otherExternalUser'),
 
     [Parameter()]
     [ValidateSet('ReportOnly', 'Enabled', 'Disabled')]
@@ -201,6 +252,21 @@ function Test-SameStringSet {
     return $true
 }
 
+function ConvertTo-GuestOrExternalUserTypeArray {
+    # conditionalAccessGuestsOrExternalUsers.guestOrExternalUserTypes is documented as a single
+    # comma-separated flags String on the wire (Microsoft Learn JSON representation), but the
+    # Microsoft Graph PowerShell SDK's typed read-back for this nested, less-common property was
+    # not independently confirmed during this build to return that same raw string versus an
+    # already-split collection - handle both shapes rather than assuming one. See .NOTES.
+    param($Value)
+    if ($null -eq $Value) { return @() }
+    if ($Value -is [string]) {
+        if ([string]::IsNullOrWhiteSpace($Value)) { return @() }
+        return @($Value -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' })
+    }
+    return @($Value | ForEach-Object { $_.ToString() })
+}
+
 if ($ExcludeUserIds.Count -eq 0 -and $ExcludeGroupIds.Count -eq 0) {
     if ($Mode -eq 'Enabled') {
         Write-Warning 'No -ExcludeUserIds or -ExcludeGroupIds supplied while deploying in -Mode Enabled. A break-glass/emergency-access account with no exclusion could be blocked if it is ever assigned an insider risk level. Strongly recommended: exclude a dedicated emergency-access group before enforcing - see README.md Section 3 and Sources.'
@@ -211,7 +277,7 @@ if ($ExcludeUserIds.Count -eq 0 -and $ExcludeGroupIds.Count -eq 0) {
 }
 
 Assert-MgConnected
-Write-Host "Insider Risk Conditional Access policy: reconciling '$DisplayName' (Mode: $Mode, RiskLevels: $($RiskLevels -join ', '))." -ForegroundColor Cyan
+Write-Host "Insider Risk Conditional Access policy: reconciling '$DisplayName' (Mode: $Mode, RiskLevels: $($RiskLevels -join ', '), ExcludeGuestOrExternalUserTypes: $(if ($ExcludeGuestOrExternalUserTypes.Count -gt 0) { $ExcludeGuestOrExternalUserTypes -join ', ' } else { '(none)' }))." -ForegroundColor Cyan
 
 $desiredState = $script:StateMap[$Mode]
 $desiredUsers = [ordered]@{
@@ -219,6 +285,15 @@ $desiredUsers = [ordered]@{
 }
 if ($ExcludeUserIds.Count -gt 0) { $desiredUsers.excludeUsers = @($ExcludeUserIds) }
 if ($ExcludeGroupIds.Count -gt 0) { $desiredUsers.excludeGroups = @($ExcludeGroupIds) }
+if ($ExcludeGuestOrExternalUserTypes.Count -gt 0) {
+    # Comma, no space: the Microsoft Graph PowerShell SDK's own -BodyParameter examples for other
+    # flags-as-String properties elsewhere in this library's scripts use this convention; the
+    # exact separator was not independently confirmed against a worked example for THIS specific
+    # property - flagged in README.md Section 11 and .NOTES rather than asserted as certain.
+    $desiredUsers.excludeGuestsOrExternalUsers = [ordered]@{
+        guestOrExternalUserTypes = ($ExcludeGuestOrExternalUserTypes | ForEach-Object { $_.ToString() }) -join ','
+    }
+}
 
 $desiredBody = [ordered]@{
     displayName = $DisplayName
@@ -244,6 +319,7 @@ if ($existing) {
     $existingIncludeUsers = @($existing.Conditions.Users.IncludeUsers)
     $existingExcludeUsers = @($existing.Conditions.Users.ExcludeUsers)
     $existingExcludeGroups = @($existing.Conditions.Users.ExcludeGroups)
+    $existingExcludeGuestOrExternalUserTypes = @(ConvertTo-GuestOrExternalUserTypeArray $existing.Conditions.Users.ExcludeGuestsOrExternalUsers.GuestOrExternalUserTypes)
     $existingBuiltInControls = @($existing.GrantControls.BuiltInControls)
     $existingOperator = $existing.GrantControls.Operator
     $existingState = $existing.State
@@ -253,6 +329,7 @@ if ($existing) {
         -and (Test-SameStringSet $existingIncludeUsers @('All')) `
         -and (Test-SameStringSet $existingExcludeUsers $ExcludeUserIds) `
         -and (Test-SameStringSet $existingExcludeGroups $ExcludeGroupIds) `
+        -and (Test-SameStringSet $existingExcludeGuestOrExternalUserTypes $ExcludeGuestOrExternalUserTypes) `
         -and (Test-SameStringSet $existingBuiltInControls @('block')) `
         -and ($existingOperator -eq 'OR') `
         -and ($existingState -eq $desiredState)
