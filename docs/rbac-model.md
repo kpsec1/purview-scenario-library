@@ -6,7 +6,7 @@
 >
 > **Verify before you provision access.** Role names, default assignments, and role-group
 > membership change frequently. This matrix is a practitioner's summary grounded in Microsoft
-> Learn, current as of **2026-09-05**. Sources are linked at the bottom; re-check them before
+> Learn, current as of **2026-09-11**. Sources are linked at the bottom; re-check them before
 > granting production access.
 
 ---
@@ -397,15 +397,79 @@ split across two RBAC generations depending on when the tenant was provisioned.
   users/README.md` §3 and §5 already flag this; a human with one of the roles/permissions above
   must set it interactively, and no `deploy/` script in this repo attempts it.
 
-## 13. How scenarios should cite RBAC
+## 13. Exchange Server on-premises RBAC — a ninth system, for hybrid/on-premises scenarios
+
+`scenarios/dlp/accepted-domains-hygiene-check-on-premises/` is the first (and, as of this build,
+only) scenario in this library that authenticates to an **on-premises Exchange Server**
+organization via remote PowerShell instead of any cloud service (`docs/automation-surface.md`'s
+five connection surfaces are all-cloud) — a genuinely separate, ninth RBAC model from the eight in
+§1/§9/§10/§11/§12.
+
+- **Same vocabulary as Exchange Online's own RBAC (§1 #4), a structurally separate object model.**
+  On-premises Exchange RBAC uses the identical role → role-group → role-assignment-policy →
+  management-scope concepts Exchange Online's RBAC uses (source 27 below is Microsoft's own
+  on-premises role-groups reference; compare to source 9's Exchange Online equivalent). But a role
+  group is an **Active Directory-backed Universal Security Group scoped to that one on-premises
+  Exchange organization/forest** — a role group that shares a name with its Exchange Online
+  counterpart (**Organization Management**, **Compliance Management**, **Recipient Management**,
+  **View-Only Organization Management**) is a **distinct security principal on each side**.
+  Membership granted on one side grants nothing on the other — a hybrid buyer running both this
+  scenario and its Exchange Online-only parent, `scenarios/dlp/accepted-domains-hygiene-check/`,
+  must grant both role groups independently, exactly as
+  `accepted-domains-hygiene-check-on-premises/README.md` §3 already states for the scenario itself.
+- **Organization Management** — the on-premises superset administrative role group, with
+  administrative access to virtually the entire organization; also the only role group whose
+  members can, by default, add/remove members of *other* role groups (the **Role Management**
+  role) — the identical least-privilege-gatekeeper pattern §2 above states for the Purview model.
+  **Confirmed sufficient** for this scenario's minimum need (`Get-AcceptedDomain` read +
+  `Search-AdminAuditLog` read) — sources 27, 29.
+- **Narrower candidates this build could not fully confirm — recorded as leads, not guessed as
+  fact (per `AGENTS.md` §4):**
+  - **Compliance Management** — a narrower, compliance-focused role group, confirmed by source 28
+    to carry the **Audit Logs**/**View-Only Audit Logs** roles by default (the same two roles
+    Organization Management itself carries, per sources 30–31) — a plausible least-privilege home
+    for the `Search-AdminAuditLog` half of this scenario's need. This build found no confirmation
+    that Compliance Management also carries a role granting `Get-AcceptedDomain` read — **VERIFY**.
+  - **View-Only Organization Management** — a read-only role group carrying the **View-Only
+    Configuration** role (all non-recipient configuration, org-wide, per source 33) and, per
+    secondary/search-only corroboration only, **View-Only Audit Logs** — a candidate read-only
+    least-privilege fit, **not independently confirmed by a direct Microsoft Learn fetch**: this
+    run's network egress policy blocked `learn.microsoft.com` again, the same blocker
+    `accepted-domains-hygiene-check-on-premises/design.md` §2/§12 already disclosed for its own
+    grounding — **VERIFY** (source 32 is the role group's own reference page, fetched only via
+    WebSearch summary, not a direct WebFetch).
+  - **Recipient Management** — carries the **Mail Recipients** role (manage/view mailboxes, mail
+    users, mail contacts, per sources 34–35). One secondary source (not a direct Microsoft Learn fetch)
+    claims its members can read `Get-AcceptedDomain` but not write it — **VERIFY**; a buyer can
+    confirm directly against their own tenant with `Get-ManagementRoleEntry "*\Get-AcceptedDomain"`
+    (compare the role names returned to a candidate role group's own `Get-RoleGroup | Select
+    -ExpandProperty Roles`) rather than trusting this unconfirmed claim.
+  - **No single built-in on-premises role group narrower than Organization Management was confirmed
+    by this build to grant both halves of this scenario's minimum need together.** A custom role
+    group combining a `Get-AcceptedDomain`-capable role with **View-Only Audit Logs** is the
+    least-privilege construction worth investigating next — matching the gap
+    `accepted-domains-hygiene-check-on-premises/README.md` §11 already discloses ("No
+    independently-confirmed least-privilege on-premises role narrower than Organization
+    Management").
+- **This role/role-group system grants no Exchange Online or Purview access whatsoever** — the same
+  separation-of-concerns point §9–§12 make for Intune, Conditional Access, Entra app-registration,
+  and Defender for Endpoint portal RBAC. A hybrid buyer running both the Exchange Online-only parent
+  scenario (§1 #4) and this on-premises companion needs role assignments on **both** sides
+  independently; neither system's role groups are visible to, or usable from, the other.
+
+---
+
+## 14. How scenarios should cite RBAC
 
 Each scenario README's **Prerequisites** section must state:
 1. Which of the **four RBAC systems** (§1) the scenario touches — or, for an Intune-deployed
    scenario, that it uses the separate Intune RBAC model (§9) instead, for a Conditional
    Access-deployed scenario, that it uses the separate Entra Conditional Access model (§10), for
    a scenario whose own code creates an app registration, that it uses the separate Entra
-   app-registration RBAC model (§11), or, for a scenario that configures a Defender for Endpoint
-   tenant-wide setting, that it uses the separate Defender for Endpoint portal RBAC model (§12).
+   app-registration RBAC model (§11), for a scenario that configures a Defender for Endpoint
+   tenant-wide setting, that it uses the separate Defender for Endpoint portal RBAC model (§12),
+   or, for a scenario that authenticates to an on-premises Exchange Server organization, that it
+   uses the separate on-premises Exchange RBAC model (§13).
 2. The **narrowest built-in Purview role group** that covers it (name it exactly), or note that
    a **custom role group** is recommended for least privilege.
 3. Any **Exchange Online RBAC** dependency (§6) — call it out explicitly if the scenario searches
@@ -460,6 +524,32 @@ Each scenario README's **Prerequisites** section must state:
 - Assign permissions in Data Security Investigations (the three dedicated DSI role group names, the
   full Admins/Investigators/Reviewers permission-by-action matrix, and the four role groups that
   carry implicit DSI access) — <https://learn.microsoft.com/purview/data-security-investigations-permissions>
+- Manage role groups in Exchange Server (on-premises role-group/role/role-assignment-policy model)
+  — <https://learn.microsoft.com/exchange/permissions/role-groups>
+- Compliance Management (Exchange Server on-premises role group; carries the Audit Logs/View-Only
+  Audit Logs roles by default) — <https://learn.microsoft.com/exchange/compliance-management-exchange-2013-help>
+- Organization Management (Exchange Server on-premises superset role group) — <https://learn.microsoft.com/exchange/organization-management-exchange-2013-help>
+- Audit Logs role (Exchange Server on-premises — configure administrator audit logging) — <https://learn.microsoft.com/exchange/audit-logs-role-exchange-2013-help>
+- View-Only Audit Logs role (Exchange Server on-premises — search administrator audit logs) — <https://learn.microsoft.com/exchange/view-only-audit-logs-role-exchange-2013-help>
+- View-only Organization Management (Exchange Server on-premises read-only role group; fetched via
+  WebSearch summary only — `learn.microsoft.com` direct fetch was blocked this run, not independently
+  re-confirmed by a direct page fetch) — <https://learn.microsoft.com/exchange/view-only-organization-management-exchange-2013-help>
+- View-Only Configuration role (Exchange Server on-premises — view all non-recipient configuration,
+  org-wide) — <https://learn.microsoft.com/exchange/view-only-configuration-role-exchange-2013-help>
+- Recipient Management (Exchange Server on-premises role group) — <https://learn.microsoft.com/exchange/recipient-management-exchange-2013-help>
+- Mail Recipients role (Exchange Server on-premises — manage existing mailboxes, mail users, mail
+  contacts) — <https://learn.microsoft.com/exchange/mail-recipients-role-exchange-2013-help>
+
+> **Sources 27–35 grounding note:** this run's network egress policy blocked direct `WebFetch`
+> access to `learn.microsoft.com` (same blocker `accepted-domains-hygiene-check-on-premises/
+> design.md` §2/§12 already disclosed) and the Microsoft Learn MCP tool was not present in this
+> session's tool list — every fact in §13 above is grounded via `WebSearch` result summaries citing
+> these exact URLs, not a direct page fetch. Each summary independently named the same role/
+> role-group facts across multiple, differently-worded queries (cross-corroboration in place of a
+> direct fetch), except where §13 explicitly flags a narrower claim as **VERIFY** because only one
+> unconfirmed secondary source supported it. Re-verify against a direct fetch of these URLs, or a
+> pilot on-premises Exchange server, before relying on the VERIFY-flagged claims for a least-
+> privilege role-group decision.
 
 > **Disclaimer:** role names, default role-group membership, and which system governs a given
 > feature change as Purview ships updates (e.g. the ongoing move toward Microsoft Defender

@@ -23,7 +23,7 @@ nothing Exchange- or Purview-side to undo as part of this step.
 ## 2. Remove the automation identity's role assignment
 
 Remove whatever Exchange Online role/role group (`README.md` §3 — Organization Management or a
-narrower custom role group, per `docs/rbac-model.md` §6/§13) was assigned to the service principal or
+narrower custom role group, per `docs/rbac-model.md` §6/§14) was assigned to the service principal or
 account running this scenario's scripts. Standard Exchange Online role-group membership removal
 (`Remove-RoleGroupMember`, or the Exchange admin center equivalent) — no scenario-specific step. If
 `-IncludeAuditAttribution` was used, also confirm the identity has no residual audit-log-search role

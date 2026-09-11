@@ -207,3 +207,26 @@ and `design.md` §2/§4: the default value of `-AdminAuditLogCmdlets` is not ind
 which `DomainType` is "correct" for a shared-namespace hybrid domain is not resolved to a single rule.
 A `PROGRESS.md` follow-up tracks re-verifying the parent scenario's `KnownDomains.sample.json`
 `hybrid.contoso.com` entry against a primary Microsoft Learn source once reachable.
+
+---
+
+## Correction addendum — on-premises RBAC cross-reference closed (later build)
+
+**Scope:** doc-only follow-up, not a new four-lens round (no code changed). Closes the
+`PROGRESS.md` item this file's own Summary flagged as open: `docs/rbac-model.md` did not yet
+document on-premises Exchange RBAC as its own system. A later build added `docs/rbac-model.md`
+§13 (on-premises Exchange RBAC — a ninth system), grounded via `WebSearch` result summaries citing
+Microsoft Learn URLs (direct `WebFetch` to `learn.microsoft.com` was blocked again in that build's
+environment, the same recurring blocker this scenario's own `design.md` §2/§12 already disclosed).
+
+- **Confirms, does not weaken, this review's Red Team/Blue Team/Product Owner findings above.**
+  §13 documents **Organization Management** as the confirmed-sufficient role group (matching
+  `README.md` §3/§11 unchanged) and records three narrower candidates (**Compliance Management**,
+  **View-Only Organization Management**, **Recipient Management**) as explicit, source-cited
+  **VERIFY** leads rather than asserting any of them as a confirmed least-privilege alternative —
+  the same "state the genuine unknown, don't fill it in from common assumption" discipline
+  Product Owner finding 3 above required for `-AdminAuditLogCmdlets`'s default value.
+- **`README.md` §3/§11 updated in place** to point at `docs/rbac-model.md` §13 instead of stating
+  the gap as still open.
+- No new Fix/Fail: this closes a documentation cross-reference gap, not a defect in this
+  scenario's own docs/code.

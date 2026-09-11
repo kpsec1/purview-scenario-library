@@ -46,7 +46,7 @@ an **on-premises Exchange Server** the buyer already operates as part of their h
 | Requirement | Minimum | Notes |
 |---|---|---|
 | On-premises Exchange Server | Exchange Server 2010/2013/2016/2019/SE with a configured Hybrid Configuration Wizard coexistence | `Get-AcceptedDomain`, `New-AcceptedDomain`, `Remove-AcceptedDomain`, and `Search-AdminAuditLog` are all confirmed applicable to this range (`design.md` §2, §12). |
-| RBAC system | On-premises Exchange RBAC (a **separate** role-group system from `docs/rbac-model.md`'s Purview/Exchange Online/Entra models — not currently documented in that cross-cutting reference; see §11) | This scenario needs an on-premises role/role group granting `Get-AcceptedDomain`/`Search-AdminAuditLog` read rights at minimum — **Organization Management** (the on-premises Exchange superset administrative role group, same name as its Exchange Online counterpart but a distinct on-premises RBAC object) is confirmed sufficient; no narrower least-privilege role was independently confirmed by this build — see §11. |
+| RBAC system | On-premises Exchange RBAC (a **separate**, ninth role-group system from `docs/rbac-model.md`'s Purview/Exchange Online/Entra/Intune/Conditional-Access/app-registration/Defender-for-Endpoint models — see `docs/rbac-model.md` §13, and §11 below) | This scenario needs an on-premises role/role group granting `Get-AcceptedDomain`/`Search-AdminAuditLog` read rights at minimum — **Organization Management** (the on-premises Exchange superset administrative role group, same name as its Exchange Online counterpart but a distinct on-premises RBAC object) is confirmed sufficient; no narrower least-privilege role was independently confirmed by this build — see §11 and `docs/rbac-model.md` §13's disclosed **Compliance Management**/**View-Only Organization Management**/**Recipient Management** leads. |
 | Connection surface | On-premises Exchange remote PowerShell, **not** any of `docs/automation-surface.md`'s five (all-cloud) surfaces | `New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://<ServerFQDN>/PowerShell/ -Authentication Kerberos`, then `Import-PSSession` — §5, `design.md` §3/§8. Requires network line-of-sight to the on-premises Client Access/Mailbox server and a Kerberos-capable identity (typically a domain-joined machine or an account authenticating within the corporate network) — this cannot run from an arbitrary cloud-hosted runbook the way the parent scenario's certificate-based unattended auth can (`docs/automation-surface.md` §3), unless that runbook runs on a hybrid/self-hosted runner with that network access. |
 | PowerShell version | Windows PowerShell 5.1 (the on-premises Exchange remote-session pattern is confirmed for this and is the conventional platform for on-premises Exchange Management Shell automation) | This script itself has no PowerShell-7-specific syntax and runs under 5.1; see §11 for the platform note. |
 | Known-domains config | The **same** `KnownDomains.json` file the parent scenario uses (schema: `../accepted-domains-hygiene-check/deploy/KnownDomains.sample.json`) | Reused, not duplicated — `design.md` §7. |
@@ -314,16 +314,18 @@ the parent scenario.
   reference that sample — but flagged as a `PROGRESS.md` follow-up to re-verify against a primary
   Microsoft Learn source (once reachable) or a pilot tenant, rather than silently guessing which
   topology the sample was meant to represent.
-- **On-premises RBAC is not yet cross-referenced in `docs/rbac-model.md`.** That cross-cutting
-  reference currently documents Purview, Exchange Online, and Entra role systems only — on-premises
-  Exchange's own RBAC (role groups like `Organization Management` that share a name, but not an
-  identity, with their Exchange Online counterparts) isn't covered there yet. Tracked as a
-  `PROGRESS.md` follow-up rather than expanded here, per `AGENTS.md` §6's one-fragment-per-turn
-  discipline.
+- **On-premises RBAC is now cross-referenced in `docs/rbac-model.md` §13.** That cross-cutting
+  reference documents the on-premises Exchange RBAC model (role groups like `Organization
+  Management` that share a name, but not an identity, with their Exchange Online counterparts) as a
+  ninth system alongside Purview/Exchange Online/Entra/Intune/Conditional-Access/app-registration/
+  Defender-for-Endpoint RBAC — closed as a `PROGRESS.md` follow-up in a later build.
 - **No independently-confirmed least-privilege on-premises role narrower than Organization
   Management** was found for `Get-AcceptedDomain`/`Search-AdminAuditLog` read access during this
   build's grounding pass — same class of disclosed gap as the parent scenario's own RBAC note
-  (parent `README.md` §3).
+  (parent `README.md` §3). `docs/rbac-model.md` §13 records three unconfirmed narrower leads
+  (**Compliance Management**, **View-Only Organization Management**, **Recipient Management**) for
+  a future build or pilot tenant to close, rather than guessing which one actually covers both
+  `Get-AcceptedDomain` and `Search-AdminAuditLog` together.
 
 ## 12. References
 

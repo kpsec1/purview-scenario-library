@@ -354,7 +354,7 @@ nothing tenant-side to undo.
    review (`reviews.md`, finding 1) scoped this follow-up.
 9. `scenarios/data-estate-insights/classification-coverage-report/` — the sibling read-only reporting
    scenario this fragment's baseline/drift-log/idempotency model and `rollback.md` structure follow.
-10. `docs/rbac-model.md` §6 — Exchange Online RBAC dependency, and §13's citation convention this
+10. `docs/rbac-model.md` §6 — Exchange Online RBAC dependency, and §14's citation convention this
     scenario's §3 follows.
 
 > Verify current cmdlet availability (especially the on-premises-vs-cloud applicability statements in

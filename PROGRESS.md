@@ -1239,13 +1239,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Based Edge Blocking), which would contradict that sample entry — not corrected in this build because
   only secondary sources were reachable, per `AGENTS.md` §4's grounding discipline. Do not silently
   "fix" the sample without a primary source confirming which hybrid topology it was meant to model.
-- [ ] Cross-reference on-premises Exchange RBAC (role groups like `Organization Management`, which
-  share a name but not an identity with their Exchange Online counterparts) into `docs/rbac-model.md`,
-  which currently documents Purview, Exchange Online, and Entra role systems only — same class of gap
-  `defender-device-control-usb-allowlist`'s Intune-RBAC follow-up closed for that surface (see the
-  DONE entry for that fragment, above). `accepted-domains-hygiene-check-on-premises/README.md` §3/§11
-  flags this as not-yet-cross-referenced rather than silently citing a doc section that doesn't cover
-  it.
+- [x] Cross-reference on-premises Exchange RBAC (role groups like `Organization Management`, which
+  share a name but not an identity with their Exchange Online counterparts) into `docs/rbac-model.md`
+  — **built** (see DONE below): new §13 ("Exchange Server on-premises RBAC — a ninth system"),
+  renumbering the old §13 "How scenarios should cite RBAC" to §14.
 - [ ] Consider extending `CrossEnvironmentMismatch` (`accepted-domains-hygiene-check-on-premises/
   deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1`) to also reconcile `MatchSubDomains`/
   `Default` flags across environments, not just `DomainType` — explicitly deferred as a non-goal in
@@ -5638,6 +5635,46 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   deployed policy's actual enforcement (Graph itself is the source of truth for how the condition
   evaluates). `rollback.md` and `deploy/Remove-InsiderRiskConditionalAccessPolicy.ps1` needed no
   change (rollback only touches the policy's `state`, untouched by this addition).
+
+- [x] **`docs/rbac-model.md` — cross-reference on-premises Exchange RBAC** — commit `<pending>` —
+  2026-09-11. Scoped cross-cutting doc follow-up (not a new scenario) closing the item tracked
+  under `### Follow-ups discovered while building the on-premises Accepted-Domains Hygiene Check
+  companion`. Added new §13 ("Exchange Server on-premises RBAC — a ninth system, for
+  hybrid/on-premises scenarios"), renumbering the old §13 "How scenarios should cite RBAC" to §14
+  and updating its own point 1 to add the on-premises model as a citable option alongside
+  Intune/Conditional Access/app-registration/Defender-for-Endpoint (§9–§12). Documents the same
+  role/role-group/role-assignment-policy/scope vocabulary as Exchange Online's own RBAC (§1 #4)
+  but a structurally separate object model — on-premises role groups are Active Directory-backed
+  Universal Security Groups scoped to one on-premises organization/forest, so a role group sharing
+  a name with its Exchange Online counterpart (`Organization Management`, `Compliance Management`,
+  `Recipient Management`, `View-Only Organization Management`) is a distinct security principal on
+  each side. Confirms `Organization Management` as the sufficient role group already stated by
+  `accepted-domains-hygiene-check-on-premises/README.md` §3, and records three narrower candidates
+  (`Compliance Management`, `View-Only Organization Management`, `Recipient Management`) as
+  explicit, source-cited **VERIFY** leads rather than asserting any one of them as a confirmed
+  least-privilege alternative, since no built-in role group narrower than Organization Management
+  was independently confirmed to grant both `Get-AcceptedDomain` read and `Search-AdminAuditLog`
+  read together. Grounded via `WebSearch` result summaries citing Microsoft Learn URLs (nine new
+  Sources, #27–35) — direct `WebFetch` to `learn.microsoft.com` was blocked again in this run's
+  network egress policy (confirmed via `/root/.ccr/README.md`'s diagnostic endpoint, same
+  recurring blocker `accepted-domains-hygiene-check-on-premises/design.md` §2/§12 already
+  disclosed), and the Microsoft Learn MCP tool was not present in this run's tool list either, so
+  every fact is cross-corroborated across multiple independently-worded search queries rather than
+  confirmed by a single direct page fetch — flagged explicitly in a new grounding note directly
+  above the Sources list. `accepted-domains-hygiene-check-on-premises/README.md` §3/§11 updated in
+  place to point at the new §13 instead of stating the gap as still open; its own `reviews.md`
+  gained a correction addendum (no new four-lens round — no code changed). Also fixed two
+  now-stale `docs/rbac-model.md §13` citations in the parent `accepted-domains-hygiene-check/`
+  scenario's own `README.md` §12 and `rollback.md` (both meant the old "how scenarios should cite
+  RBAC" section) to point at the new §14 instead, so the renumbering doesn't silently break them.
+  Also found and fixed one pre-existing, unrelated `docs/rbac-model.md` citation drift while
+  sweeping for renumbering fallout: `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/
+  README.md` §11 cited §10 for the "how scenarios should cite RBAC" pattern, which was never
+  correct even before this build's renumbering (§10 has been "Microsoft Entra Conditional Access"
+  since that section was added) — corrected to §14 as a trivial, one-line, low-risk fix rather than
+  left in place or scoped out as a separate fragment. This is a distinct, smaller issue from the
+  already-tracked `docs/automation-surface.md` "surface N" drift sweep elsewhere in this file (a
+  different document, different numbering scheme) — not a claim that sweep covers it.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

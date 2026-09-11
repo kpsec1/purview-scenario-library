@@ -143,7 +143,7 @@ the retained classification types appear on newly classified columns.
   performance tweak — a scan under this ruleset will never surface a credential, key, or
   out-of-program data category that the System default would have caught. Microsoft's own audit
   event catalog lists **Scan rule set: Create / Update / Delete** under the Management category
-  (`docs/rbac-model.md` §10's "how scenarios should cite RBAC" pattern applies equally to audit
+  (`docs/rbac-model.md` §14's "how scenarios should cite RBAC" pattern applies equally to audit
   citations); pull these events into the same SIEM/Sentinel pipeline that already ingests this
   repo's other Purview audit activity via `PurviewDataMapOperation` (Microsoft Graph security
   audit log record type) so a ruleset narrowing is reviewed with the same rigor as a DLP policy
