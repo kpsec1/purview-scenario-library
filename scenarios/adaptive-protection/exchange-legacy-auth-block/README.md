@@ -199,12 +199,38 @@ how the two interact if only one is opened (§11 VERIFY).
 
 ## 8. Operations & tuning
 
-**KPIs to watch (first 90 days):** count of rejected SMTP AUTH attempts (`Get-CASMailbox`
-read-back is a config check, not an event log — cross-reference actual rejected attempts via
-`Search-UnifiedAuditLog` mail-flow/connector events or your SMTP gateway's own logs), help-desk
-tickets tied to a multifunction device or line-of-business app that stopped sending mail, and count
-of mailboxes on the `Allow-Smtp-Auth-Exception` policy (should shrink over time as devices/apps
-migrate to OAuth, not grow).
+**KPIs to watch (first 90 days):** count of rejected SMTP AUTH attempts, help-desk tickets tied to a
+multifunction device or line-of-business app that stopped sending mail, and count of mailboxes on
+the `Allow-Smtp-Auth-Exception` policy (should shrink over time as devices/apps migrate to OAuth,
+not grow).
+
+**Grounded, no scriptable source exists for the first KPI — read this before building anything
+against it.** A dedicated follow-up grounding pass (`reviews.md`, Blue Team finding 1) confirmed
+there is **no PowerShell/Graph-queryable event log for a rejected SMTP AUTH attempt**, for a
+disclosed structural reason, not a documentation gap this repo could close by trying harder:
+- `Search-UnifiedAuditLog` records mailbox/application **activity that happens after
+  authentication succeeds** (`MailItemsAccessed`, `Send`, etc.) — Microsoft's own "Audit log
+  activities" reference [[17]](#references) has no RecordType/Operation for a rejected or blocked
+  authentication attempt of any protocol.
+- Entra ID sign-in logs do record legacy-protocol authentication under a filterable
+  **"Authenticated SMTP"** client app [[18]](#references) (`clientAppUsed: SMTP` in the underlying
+  Microsoft Graph `signIn` schema [[19]](#references)) — but only for attempts that actually reach
+  Entra ID. Both of this scenario's blocking mechanisms reject the connection **before** that point:
+  Microsoft's "Disable Basic authentication in Exchange Online" reference states blocked Basic Auth
+  "is blocked at the first pre-authentication step ... before the request reaches Microsoft Entra
+  ID" [[10]](#references). A **rejected** attempt therefore never creates a sign-in log entry —
+  the sign-in-log legacy-authentication workbook is a *pre-deployment discovery* tool (find who
+  still uses SMTP AUTH before you block it), not a post-deployment rejection audit trail.
+- The Exchange admin center's **SMTP AUTH Clients report** (`Reports > Mail Flow`)
+  [[20]](#references) is built from actual message volume/TLS usage per sender — **successful
+  submissions only**; it cannot surface a rejected attempt either.
+
+**The real event source is the SMTP gateway itself.** Your SMTP AUTH-issuing device/app (or the
+sending client) will surface the connection failure locally — the wire-level signature is SMTP
+error code `535 5.7.139` [[9]](#references). Design your rejection-volume monitoring around that
+device/app's own logs (or a synthetic canary probe that attempts SMTP AUTH from a known-bad
+credential on a schedule and alerts on anything *other* than `535 5.7.139`), not around a
+Microsoft-side audit log — none exists for this event.
 
 **Tuning:** if a device/app cannot migrate to OAuth immediately, add it to
 `-ExceptionMailboxes` rather than re-enabling SMTP AUTH tenant-wide — narrow, named, mailbox-scoped
@@ -287,6 +313,13 @@ scenarios are independent, complementary controls (`design.md` §6).
   with pre-existing per-user policy sprawl should audit `Get-User -ResultSize Unlimited |
   Where-Object AuthenticationPolicy` (the same check `-CheckUserOverrides` runs) before relying on
   the org default alone.
+- **No Microsoft-side audit log exists for a rejected SMTP AUTH attempt — grounded and closed, not
+  a documentation gap.** See §8's KPIs section for the full grounding: neither
+  `Search-UnifiedAuditLog` nor Entra ID sign-in logs (nor the SMTP AUTH Clients report) capture a
+  connection this scenario's own gates reject at the pre-authentication step. Monitor rejection
+  volume via the affected device/app's own logs or a synthetic canary probe instead — there is no
+  Microsoft cmdlet or API this scenario (or any future companion script) could call to get this
+  signal.
 - **This scenario does not script Direct Send / unauthenticated relay controls.** Direct Send
   (anonymous relay via an Exchange Online mail flow connector, commonly used by
   scan-to-email/line-of-business apps as an *alternative* to SMTP AUTH) is a materially different,
@@ -335,6 +368,16 @@ scenarios are independent, complementary controls (`design.md` §6).
 15. `docs/rbac-model.md` §6 — Exchange Online RBAC dependency.
 16. `scenarios/adaptive-protection/block-legacy-authentication/` — the Conditional Access sibling
     scenario whose four-lens review and `design.md` §7 deferred this fragment.
+17. Audit log activities (Microsoft Purview) — the Exchange mailbox/admin activity reference
+    confirming no RecordType/Operation exists for a rejected authentication attempt of any protocol
+    — <https://learn.microsoft.com/purview/audit-log-activities>
+18. Customize and filter activity logs in Microsoft Entra ID — the "Authenticated SMTP" sign-in-log
+    client-app filter, documented as a pre-deployment discovery tool for legacy-auth usage —
+    <https://learn.microsoft.com/entra/identity/monitoring-health/howto-customize-filter-logs>
+19. signIn resource type (Microsoft Graph) — `clientAppUsed` schema (`SMTP` is the underlying value
+    behind the portal's "Authenticated SMTP" label) — <https://learn.microsoft.com/graph/api/resources/signin>
+20. SMTP AUTH clients report in the new EAC in Exchange Online — message-volume/TLS-usage report
+    scoped to successful submissions only, not rejected attempts — <https://learn.microsoft.com/exchange/monitoring/mail-flow-reports/mfr-smtp-auth-clients-report>
 
 > Re-verify all links, exact cmdlet parameter behavior, and the SMTP AUTH deprecation timeline
 > against current Microsoft Learn before a customer-facing assessment or sale — this is an

@@ -1047,13 +1047,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   separate uncertainty, just a second consumer of the same unresolved VERIFY.
 
 ### Follow-ups discovered while building the Exchange-side legacy authentication block scenario
-- [ ] Once the exact `Search-UnifiedAuditLog` `RecordType`/`Operations` values for a rejected SMTP
+- [x] Once the exact `Search-UnifiedAuditLog` `RecordType`/`Operations` values for a rejected SMTP
   AUTH (Authenticated SMTP) attempt are grounded, add a dedicated `Export-*` companion script to
   `scenarios/adaptive-protection/exchange-legacy-auth-block/deploy/` — the current scenario
   validates *configuration* (is the gate closed) but has no event-level export for *who actually
   got rejected and how often*, flagged as a Blue Team gap in that scenario's `reviews.md` (finding
   1) and `README.md` §8, which points to `Search-UnifiedAuditLog` mail-flow/connector events and
-  the SMTP gateway's own logs as the actual (unscripted) event source in the meantime.
+  the SMTP gateway's own logs as the actual (unscripted) event source in the meantime. —
+  **grounded and closed, not built** (see DONE below): dedicated grounding pass against Microsoft
+  Learn found no `Search-UnifiedAuditLog` RecordType/Operations pair exists for a rejected
+  authentication attempt of any protocol, and confirmed Entra ID sign-in logs can't substitute
+  either — this scenario's own blocking gates reject the connection at the pre-authentication step,
+  before Entra ID ever sees it. `reviews.md` (Blue Team finding 1 + new follow-up round),
+  `README.md` §8/§11/§12, and `design.md` §9 corrected in place with the grounded "no" and the
+  realistic substitute (the device/app's own logs or a synthetic canary probe). Re-open only if
+  Microsoft ever documents a RecordType/Operations pair or a rejection-specific report.
 - [x] Consider a Direct Send / anonymous-relay hardening scenario (mail flow connector
   configuration that accepts unauthenticated relay, a materially different abuse surface from the
   authenticated legacy protocols `exchange-legacy-auth-block` covers) — flagged as a Red Team
@@ -5771,6 +5779,46 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   classifier-definitions page and the general Azure AI Content Safety API docs for Prompt Shields,
   and (matching the parent scenario's own EEOC-guidance-currency caution) a jurisdiction-specific
   AI-governance regulatory-citation caveat.
+
+- [x] **Ground the rejected-SMTP-AUTH audit-trail follow-up for
+  `scenarios/adaptive-protection/exchange-legacy-auth-block/` — grounded and closed, not built.**
+  Follow-up expansion fragment (Data Security / Adaptive Protection), a correctness/precision
+  correction rather than a new scenario or script, closing the item logged during the original
+  `exchange-legacy-auth-block` build ("once the exact `Search-UnifiedAuditLog`
+  `RecordType`/`Operations` values for a rejected SMTP AUTH attempt are grounded, add a dedicated
+  `Export-*` companion script"). Investigated both plausible Microsoft-side event sources directly
+  against Microsoft Learn rather than guessing a RecordType/Operations pair by analogy to this
+  repo's other `Export-*.ps1` audit-trail scripts:
+  - `Search-UnifiedAuditLog` — Microsoft's "Audit log activities" Exchange mailbox/admin activity
+    tables (<https://learn.microsoft.com/purview/audit-log-activities>) list only successful,
+    post-authentication activity (`MailItemsAccessed`, `Send`, `MailboxLogin`, etc.); no
+    RecordType/Operation exists for a rejected or blocked authentication attempt of any protocol.
+  - Microsoft Entra ID sign-in logs — do record legacy-protocol authentication under a documented
+    "Authenticated SMTP" client-app filter (`clientAppUsed: SMTP` in the underlying Microsoft Graph
+    `signIn` schema), **but** Microsoft's "Disable Basic authentication in Exchange Online"
+    reference states a blocked Basic Auth connection "is blocked at the first pre-authentication
+    step ... before the request reaches Microsoft Entra ID" — exactly what this scenario's own
+    `AuthenticationPolicy`/`SmtpClientAuthenticationDisabled` gates do. A **rejected** attempt
+    therefore never creates a sign-in log entry; the sign-in-log legacy-auth workbook is a
+    pre-deployment discovery tool, not a post-deployment rejection audit trail.
+  - The Exchange admin center's SMTP AUTH Clients report
+    (<https://learn.microsoft.com/exchange/monitoring/mail-flow-reports/mfr-smtp-auth-clients-report>)
+    is built from actual message volume/TLS usage per sender — successful submissions only, no
+    rejection signal either.
+
+  Conclusion: **no Microsoft-side, scriptable audit trail exists for this event** — a structural
+  gap (the gates reject pre-authentication, before any Microsoft logging surface sees the attempt),
+  not a documentation gap this repo could close by searching harder. No `Export-*.ps1` was built.
+  `reviews.md` (Blue Team finding 1 resolution rewritten + a short follow-up four-lens round, all
+  four lenses Pass, no new Fix/Fail — a precision improvement to already-disclosed content, not a
+  new capability or risk surface), `README.md` §8 (KPIs — names the real substitute: the
+  device/app's own logs, or a synthetic canary probe watching for SMTP `535 5.7.139`), §11 (Known
+  limitations — new bullet), and §12 (four new references, [[17]]–[[20]]), and `design.md` §9
+  (Residual risk — new bullet) all corrected in place. Grounded via WebSearch/WebFetch against
+  learn.microsoft.com (the Microsoft Learn MCP tool was unavailable in this cloud run) — every claim
+  above traces to a fetched or searched official Microsoft page, none invented. Re-open the
+  original `PROGRESS.md` item only if Microsoft ever documents a RecordType/Operations pair or a
+  rejection-specific report for this event. — 2026-09-11
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

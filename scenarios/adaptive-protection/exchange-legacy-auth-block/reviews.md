@@ -63,13 +63,40 @@ No remaining Fix/Fail after resolution.
    *events* (who actually got rejected, and how often) — a real signal-to-noise gap for an on-call
    analyst trying to distinguish "expected, config just landed" from "a credential-stuffing
    campaign just lost its easiest path in and is now hammering the door."
-   - **Resolution:** `README.md` §8 KPIs section names `Search-UnifiedAuditLog` mail-flow/connector
-     events and the SMTP gateway's own logs as the actual event source, rather than implying the
-     config read-back scripts themselves surface rejection events — no dedicated export script was
-     built for this in this fragment (kept scoped to the deploy/validate/rollback core per
-     `AGENTS.md` §6); tracked as a `PROGRESS.md` follow-up for a future `Export-*` companion script
-     once the exact `Search-UnifiedAuditLog` `RecordType`/`Operations` values for a rejected SMTP
-     AUTH attempt are grounded.
+   - **Resolution (follow-up grounding pass, 2026-09-11): grounded and closed — no such event-level
+     audit trail exists to build against, so no `Export-*.ps1` companion script was built.** The
+     original resolution left this as a `PROGRESS.md` follow-up pending confirmation of a
+     `Search-UnifiedAuditLog` `RecordType`/`Operations` pair for a rejected SMTP AUTH attempt. This
+     pass grounded both plausible sources directly against Microsoft Learn and found neither
+     documents one:
+     - **`Search-UnifiedAuditLog` (unified audit log):** Microsoft's own "Audit log activities"
+       Exchange mailbox/admin activity tables list only *successful, completed* mailbox actions
+       (`MailItemsAccessed`, `Send`, `MailboxLogin`, etc.) — no RecordType or Operation for a
+       rejected or blocked authentication/connection attempt of any protocol. The unified audit log
+       records application/mailbox activity that happens *after* authentication succeeds; a
+       connection Exchange rejects before authentication completes never reaches it.
+     - **Microsoft Entra ID sign-in logs:** SMTP AUTH connections do authenticate against Entra ID
+       per-mailbox credentials in the unblocked case, and Entra's own sign-in log UI documents a
+       filterable "Authenticated SMTP" client-app value for exactly this traffic (the underlying
+       Microsoft Graph `signIn.clientAppUsed` schema lists the same protocol as `SMTP`). But
+       Microsoft's "Disable Basic authentication in Exchange Online" reference states plainly that
+       once blocked, "Basic authentication ... is blocked at the first pre-authentication step ...
+       before the request reaches Microsoft Entra ID" — which is exactly what this scenario's own
+       `AuthenticationPolicy`/`SmtpClientAuthenticationDisabled` gates do (§5 in `README.md`). A
+       **rejected** attempt therefore never reaches Entra ID and never creates a sign-in log entry;
+       the sign-in-log/legacy-authentication workbook Microsoft documents is a *pre-deployment
+       discovery* tool (find who still uses SMTP AUTH before blocking it), not a post-deployment
+       rejection audit trail.
+     - The closest real telemetry — the Exchange admin center's **SMTP AUTH Clients report**
+       (`Reports > Mail Flow`) — is built from actual message volume and TLS usage per sender, i.e.
+       **successful submissions only**; it cannot show a rejected attempt either.
+
+     `README.md` §8 (KPIs) and §11 (Known limitations & gotchas), and `design.md` §9 (Residual
+     risk), corrected in place to state this as a confirmed, grounded gap rather than an open
+     follow-up — see the citations added to `README.md` §12 (refs [[17]](#references)–
+     [[20]](#references)). Re-open this item in `PROGRESS.md` only if Microsoft ever documents a
+     RecordType/Operations pair or a rejection-specific report; until then there is nothing left to
+     ground or build here.
 2. **The original `-Purge` safety check (Red Team finding 1, above) was also a Blue Team
    operability gap** — an operator relying on it to prevent an accidental removal of a live policy
    had no way to know the check itself might silently under-match. Same fix as Red Team finding 1
@@ -157,7 +184,7 @@ No Fix/Fail raised.
 | Lens | Initial verdict | Findings | Resolution |
 |---|---|---|---|
 | 🔴 Red Team | Fix | 4 (1 closed with a real script-safety fix, 1 closed by disclosure/validate-script surfacing, 2 confirmed already correctly disclosed) | Closed |
-| 🔵 Blue Team | Fix | 3 (1 closed with the same script-safety fix as Red Team finding 1, 1 tracked as a `PROGRESS.md` follow-up, 1 closed with a checklist addition) | Closed |
+| 🔵 Blue Team | Fix | 3 (1 closed in a follow-up grounding pass — see below, 1 closed with the same script-safety fix as Red Team finding 1, 1 closed with a checklist addition) | Closed |
 | 🎩 CISO | Pass (1 Fix) | 1 closed with a `README.md` §10 rewrite; overall verdict Pass | Closed |
 | 🟦 Microsoft Product Owner | Pass | 5 confirmed correct/well-grounded, no fixes needed | Closed |
 
@@ -165,3 +192,30 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/New-ExchangeLegacyAuthBlock.ps1`, `deploy/Remove-ExchangeLegacyAuthBlock.ps1`, and
 `validate/Test-ExchangeLegacyAuthBlock.ps1`. No Fail items were raised. This fragment meets the
 definition of done in `AGENTS.md` §9.
+
+---
+
+## Follow-up round — 2026-09-11 (grounding-only, no new Fix/Fail)
+
+A `PROGRESS.md` follow-up asked to ground the exact `Search-UnifiedAuditLog` `RecordType`/
+`Operations` values for a rejected SMTP AUTH attempt and, once grounded, build a dedicated
+`Export-*.ps1` companion script closing Blue Team finding 1 above. The grounding pass (Microsoft
+Learn: "Audit log activities", "Disable Basic authentication in Exchange Online", Entra ID sign-in
+log filtering reference, Microsoft Graph `signIn` resource, and the Exchange "SMTP AUTH Clients
+report" reference — full citation list in `README.md` §12) found **no such event-level audit trail
+exists to build a script against** — see the corrected Blue Team finding 1 resolution above for the
+detail. All four lenses were re-checked against this finding and none reopen:
+
+- **🔴 Red Team:** unaffected — this closes a *detection-completeness* gap already disclosed, not a
+  bypass path; no new attack surface.
+- **🔵 Blue Team:** Pass on re-check. The finding is now closed with a grounded, disclosed "no"
+  instead of an open follow-up — an analyst reading `README.md` §8/§11 now gets an accurate,
+  actionable answer (use the SMTP gateway's own connection logs; the unified audit log and Entra
+  sign-in logs will not help) instead of a pointer to a script that was never buildable.
+- **🎩 CISO:** Pass, unaffected — no cost or licensing change.
+- **🟦 Microsoft Product Owner:** Pass, unaffected — confirms (rather than overturns) the original
+  build's product-surface choices; no cmdlet or capability was invented to close this.
+
+Verdict: **all four lenses Pass, no Fix/Fail** — a precision improvement to already-disclosed
+content, not a new capability or risk surface. `README.md` §8/§11/§12 and `design.md` §9 updated in
+place.

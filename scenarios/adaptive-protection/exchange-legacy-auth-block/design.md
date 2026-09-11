@@ -185,3 +185,11 @@ legacy-authentication risk:
   default** — `README.md` §8's quarterly review cadence is the only mitigation, the same
   point-in-time-check limitation the Conditional Access sibling's own Red Team finding raised
   about its Microsoft-managed-policy detection.
+- **No Microsoft-side audit trail exists for a rejected SMTP AUTH attempt — a grounded, structural
+  gap, not an unbuilt script.** A follow-up grounding pass (`reviews.md`, Blue Team finding 1)
+  confirmed neither `Search-UnifiedAuditLog` (activity-after-authentication only) nor Entra ID
+  sign-in logs (never reached — this scenario's gates reject the connection at the
+  pre-authentication step [[10]](README.md#references)) capture this event, and the Exchange SMTP
+  AUTH Clients report tracks successful submissions only. `README.md` §8 documents the realistic
+  substitute (the affected device/app's own logs, or a synthetic canary probe watching for `535
+  5.7.139`). No future `Export-*.ps1` companion script can close this gap — there is no API to call.
