@@ -1634,13 +1634,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   "Insider risk trigger" policy using the Threat/Harassment/Discrimination classifiers) — deferred
   from `harassment-and-code-of-conduct/design.md` §6 as a separate, deliberate opt-in rather than
   bundled into a standalone Communication Compliance policy.
-- [ ] `scenarios/dspm-for-ai/` or `scenarios/communication-compliance/` — the "Detect Microsoft 365
-  Copilot and Microsoft 365 Copilot Chat interactions" policy template (Prompt Shields/Protected
-  material classifiers) and the preview LLM-based content-safety classifiers (Hate/Sexual/Violence/
-  Self-harm, Teams/Viva Engage/Copilot-only) — both explicitly out of scope in
-  `harassment-and-code-of-conduct/design.md` §4/§7 since this scenario's Exchange-inclusive scope
-  needs the trainable-classifier family for full location coverage; the content-safety classifiers
-  are candidates for a higher-accuracy, Teams/Viva-Engage-specific follow-up.
+- [x] `scenarios/communication-compliance/copilot-interaction-detection/` — the "Detect Microsoft
+  365 Copilot and Microsoft 365 Copilot Chat interactions" policy template (Prompt Shields/
+  Protected material classifiers) — **built** (see DONE below): deployed as a template-based policy
+  (not custom, unlike the parent scenario — the template's fixed defaults already match this
+  scenario's target), with a reused, adapted `Export-CopilotInteractionAuditTrail.ps1` audit-trail
+  script (same 3-query `Search-UnifiedAuditLog` shape as the parent, plus a client-side
+  `-PolicyNameFilter` and a best-effort `CopilotContext` column). The preview LLM-based
+  content-safety classifiers (Hate/Sexual/Violence/Self-harm, Teams/Viva Engage/Copilot-only) remain
+  a separate, not-yet-built follow-up — tracked immediately below.
+- [ ] The preview LLM-based content-safety classifiers (Hate/Sexual/Violence/Self-harm,
+  Teams/Viva Engage/Copilot-only, via the built-in "Detect inappropriate content" template or as
+  conditions on a custom policy) — explicitly out of scope for both
+  `harassment-and-code-of-conduct` (needs Exchange, which these classifiers don't cover) and
+  `copilot-interaction-detection` (a distinct classifier family from Prompt Shields/Protected
+  material — `copilot-interaction-detection/design.md` §8). A candidate for its own
+  Teams/Viva-Engage/Copilot-specific fragment.
 - [ ] VERIFY (portal, at deploy time, before a customer-facing deployment): the exact current-UI
   label for the "Harassment"/"Targeted harassment" trainable classifier — Microsoft's own docs use
   both names for what reads as the same classifier across different pages
@@ -1657,6 +1666,36 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   January 23, 2026, mid-way through this build's own grounding pass; the scenario's driver rests on
   the underlying Title VII statute and *Faragher*/*Ellerth* case law instead, but this area is
   actively moving and should be re-verified before every future sale referencing it.
+
+### Follow-ups discovered while building the Communication Compliance copilot-interaction-detection scenario
+- [ ] VERIFY: whether this scenario's fixed template location ("Microsoft 365 Copilot and Microsoft
+  365 Copilot Chat") also reaches Copilot Studio-built or Microsoft Foundry agent interactions, or
+  only the core Microsoft 365 Copilot/Copilot Chat experience — Microsoft's general
+  channel-detection overview describes a same-sounding "Microsoft Copilot experiences" location as
+  covering Copilot Studio agents too, but no worked example in this build's grounding pass confirmed
+  the two phrasings denote the same underlying location. `copilot-interaction-detection/README.md`
+  §11 and `design.md` §8 flag this rather than asserting either way.
+- [ ] VERIFY (pilot tenant): the exact `AuditData` JSON shape for a `SupervisionRuleMatch` event
+  specific to the Prompt Shields/Protected material classifier pairing, to confirm or replace
+  `copilot-interaction-detection/deploy/Export-CopilotInteractionAuditTrail.ps1`'s best-effort
+  `CopilotContext` derived column (currently a non-blocking, string-match-based guess — see that
+  script's `.NOTES` and `README.md` §11).
+- [ ] Once `scenarios/insider-risk/` builds a Risky AI usage or Risky Agents policy template
+  scenario, wire the documented Communication Compliance → Insider Risk Management generative-AI
+  policy-indicators integration (Prompt Shields/Protected material feeding IRM risk scoring) —
+  deferred from `copilot-interaction-detection/design.md` §8 as a separate, deliberate opt-in,
+  matching the same pattern already deferred for `harassment-and-code-of-conduct`'s own IRM
+  integration above.
+- [ ] Consider a companion note or short script helper for the documented "add a generative AI app
+  as a location for an existing policy" alternative (`copilot-interaction-detection/README.md` §8) —
+  currently only documented as a manual portal edit; no script needed today since it's a one-time,
+  rarely-repeated configuration change, but revisit if a future scenario needs to audit which
+  existing policies have Copilot enabled as a location.
+- [ ] VERIFY (jurisdiction-specific, outside this build's grounding scope): confirm which specific
+  AI-governance regulatory obligations (EU AI Act deployer duties, sector-specific AI guidance, etc.)
+  actually apply before citing `copilot-interaction-detection` as satisfying a named regulatory
+  requirement in a customer-facing narrative (`README.md` §2/§11) — the Responsible-AI and IP
+  drivers are well-grounded; a specific regulatory citation needs counsel review.
 
 ### Follow-ups discovered while building the Audit premium-audit-investigation scenario
 - [x] `scenarios/audit/retention-policy-management/` — script **audit log retention policies** (a
@@ -5675,6 +5714,40 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   left in place or scoped out as a separate fragment. This is a distinct, smaller issue from the
   already-tracked `docs/automation-surface.md` "surface N" drift sweep elsewhere in this file (a
   different document, different numbering scheme) — not a claim that sweep covers it.
+
+- [x] **`scenarios/communication-compliance/copilot-interaction-detection/` — Microsoft 365 Copilot
+  interaction detection (Prompt Shields/Protected material)** — commit *(recorded in the next
+  commit)* — 2026-09-11. Full new scenario (README, design, deploy manifest + audit-trail script,
+  validate script, rollback, four-lens review), closing the "Detect Microsoft 365 Copilot and
+  Microsoft 365 Copilot Chat interactions" half of the follow-up tracked under
+  `harassment-and-code-of-conduct`'s own backlog (the preview LLM-based content-safety classifiers
+  remain open as a separate follow-up, immediately above). Deploys the built-in policy **template**
+  unmodified (not a custom policy like the parent scenario) since the template's fixed
+  Prompt-Shields/Protected-material pairing already matches this scenario's target — grounded via
+  the Microsoft Learn MCP tool (`microsoft_docs_search`/`microsoft_docs_fetch`, available this run)
+  against `communication-compliance-copilot`, `communication-compliance-policies` (policy-template
+  table, alert-policy threshold defaults, content-safety-classifier severity scoping),
+  `trainable-classifiers-definitions#prompt-shields` (Prompt Shields/Protected material scope and
+  language), the Azure AI Content Safety `jailbreak-detection`/`protected-material` concept pages,
+  `communication-compliance-reports-audits` (identical `Search-UnifiedAuditLog` 3-query shape as the
+  parent scenario), and the Insider Risk Management policy-templates page (Risky AI usage/Risky
+  Agents). Reused, not duplicated, the parent scenario's grounded audit-trail-script shape — added a
+  client-side `-PolicyNameFilter` (no server-side equivalent exists on `Search-UnifiedAuditLog`) and
+  a best-effort, non-blocking `CopilotContext` derived column. Four-lens review round 1 raised and
+  closed four Fix items across the lenses: a Copilot-Studio/Microsoft-Foundry agent location-scope
+  ambiguity (Red Team; new VERIFY), the default 4-activity/60-minute alert-aggregation threshold
+  being the wrong default for a security-sensitive Prompt Shields match (Blue Team; added a
+  recommendation to lower it to Microsoft's documented minimum of 3), a missing gating
+  triage-SLA prerequisite given that a logged-but-ignored jailbreak alert is a worse legal position
+  than no detection at all (CISO), and an undisclosed template-naming inconsistency across two
+  Microsoft Learn pages mirroring the parent scenario's own "Harassment"/"Targeted harassment"
+  precedent (Product Owner). No Fail items. Genuine gaps carried forward as VERIFY rather than
+  resolved by guessing, per `AGENTS.md` §4: the Copilot-Studio/Foundry location-scope question above,
+  the exact `AuditData` JSON shape for this specific classifier pairing (the `CopilotContext`
+  column's basis), a documented English-vs-eight-language discrepancy between the Purview-specific
+  classifier-definitions page and the general Azure AI Content Safety API docs for Prompt Shields,
+  and (matching the parent scenario's own EEOC-guidance-currency caution) a jurisdiction-specific
+  AI-governance regulatory-citation caveat.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

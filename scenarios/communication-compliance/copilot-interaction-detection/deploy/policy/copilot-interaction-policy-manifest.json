@@ -1,0 +1,72 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Communication Compliance has no documented REST, Graph, or PowerShell write API for policy creation or management as of this writing - including policies created from a built-in template. Microsoft's own communication-compliance-policies and communication-compliance-configure articles both state explicitly: 'PowerShell isn't supported for creating and managing Communication Compliance policies. To create and manage these policies, use the policy management controls in the Communication Compliance solution.' (docs/automation-surface.md has no routing-table row for Communication Compliance for the same reason.) No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal wizard in README.md Section 5, so the deployed policy can be diffed against intent during review instead of relying on institutional memory of what was clicked. This follows the identical precedent set by scenarios/communication-compliance/harassment-and-code-of-conduct/deploy/policy/communication-compliance-policy-manifest.json for the same no-write-API Purview surface.",
+  "policyType": "template",
+  "policyTemplate": "Detect Microsoft 365 Copilot and Microsoft 365 Copilot Chat interactions",
+  "policyName": "Microsoft 365 Copilot Interaction Detection - All Users",
+  "policyNameNote": "Policy names cannot be changed after creation (Microsoft Learn: communication-compliance-policies). Confirm before creating.",
+  "locations": [
+    "Microsoft 365 Copilot and Microsoft 365 Copilot Chat"
+  ],
+  "locationsNote": "Template-fixed location. Does NOT include Enterprise AI apps or Other AI apps - both require enabling pay-as-you-go billing, which this scenario deliberately keeps out of scope (design.md Section 8, README.md Section 3/10). Extending to those locations is a documented, separate follow-up (README.md Section 8, 'Add a generative AI app as a location for an existing policy').",
+  "direction": [
+    "Inbound",
+    "Outbound",
+    "Internal"
+  ],
+  "usersInScope": {
+    "option": "allUsers",
+    "note": "This scenario's default, matching the template's intent of reviewing all Copilot usage. Consider a time-boxed pilot scoped to Select users (the tenant's Copilot pilot cohort) before expanding to All users if this is the tenant's first Communication Compliance policy targeting Copilot - see README.md Section 8. Record any such exception here, don't let a 'temporary' pilot scope quietly become permanent."
+  },
+  "excludedUsersAndGroups": [],
+  "reviewers": {
+    "roleGroup": "Communication Compliance Investigators",
+    "note": "Investigators (not Analysts) because a credible jailbreak/protected-material assessment needs full prompt/response text, not metadata-only access (README.md Section 3, design.md Section 6, docs/rbac-model.md Section 4). This scenario's default reviewer pool is Security/Responsible-AI/Legal, not HR/Legal (the harassment-and-code-of-conduct scenario's pool) - populate with named stakeholders per README.md Section 5 step 2.",
+    "placeholderMembers": [
+      "responsible-ai-lead@contoso.example",
+      "security-operations@contoso.example"
+    ]
+  },
+  "conditions": {
+    "template": {
+      "note": "The template's fixed classifier pair is used unmodified - no custom keyword dictionary or additional classifier is added, unlike harassment-and-code-of-conduct's custom policy. See design.md Section 2 for why the template is the correct choice here rather than rebuilding the same configuration as a custom policy.",
+      "classifiers": [
+        {
+          "name": "Prompt Shields",
+          "evaluates": "Prompts only",
+          "detects": "User prompt-injection / jailbreak attempts",
+          "language": "English only"
+        },
+        {
+          "name": "Protected material",
+          "evaluates": "Responses only",
+          "detects": "Known copyrighted or branded text content reproduced by Copilot",
+          "language": "English only"
+        }
+      ]
+    }
+  },
+  "reviewPercentage": 100,
+  "reviewPercentageNote": "Template default. Lowering this is a documented alert-volume lever (README.md Section 8) - do not lower it silently without recording the decision here.",
+  "filterEmailBlasts": {
+    "applicable": false,
+    "note": "Email-blast filtering is an Exchange-mailbox-scoped setting; this policy's sole location is Microsoft 365 Copilot and Microsoft 365 Copilot Chat, which has no email-blast concept."
+  },
+  "ocrEnabled": {
+    "applicable": false,
+    "note": "OCR scans image attachments in Exchange/Teams; Copilot prompt/response body content is text, not an attachment-bearing location."
+  },
+  "privacySettings": {
+    "usernamePseudonymization": true,
+    "note": "Settings > Communication Compliance > Privacy tab > 'Show anonymized versions of usernames' - portal-only, tenant-wide setting, not per-policy. Shared with any other Communication Compliance policy in the tenant; skip this step if already enabled by harassment-and-code-of-conduct or another policy."
+  },
+  "payg": {
+    "required": false,
+    "note": "Microsoft 365 Copilot detection has no PAYG requirement. PAYG applies only to Enterprise AI apps / Other AI apps locations, which this manifest's locations list deliberately excludes (README.md Section 3/10)."
+  },
+  "relatedPolicies": {
+    "note": "Optional alternative/complement: adding 'Microsoft Copilot experiences' as a location to an existing Communication Compliance policy (e.g. harassment-and-code-of-conduct) applies THAT policy's own classifiers to Copilot too - a different condition set (Threat/Harassment/Discrimination/Profanity, not Prompt Shields/Protected material) achieved via a documented edit rather than this template. This scenario deploys a separate, dedicated policy instead - see design.md Section 8 for why the two are not merged.",
+    "irmIntegration": "Prompt Shields and Protected material detection can optionally feed Insider Risk Management's Risky AI usage (or Data leaks / Data leaks by risky/priority users) policy templates via the Policy indicators setting - a standalone IRM scenario this repo doesn't yet build (tracked in PROGRESS.md), not configured by this manifest."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-11"
+}
