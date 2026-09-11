@@ -302,18 +302,24 @@ the parent scenario.
   what actually happened, unless the buyer has widened the limit.
 - **`CrossEnvironmentMismatch` findings are not automatically misconfigurations.** Which `DomainType`
   is "correct" for a shared-namespace hybrid domain depends on that domain's actual migration/
-  coexistence state — a genuinely open design question this build could not resolve to a single rule
-  (`design.md` §4). Triage against the known-domains config's `owner` field, not against a blanket
-  assumption that the two sides must always match.
-- **The parent scenario's own `KnownDomains.sample.json` models a `hybrid.contoso.com` domain as
-  `expectedDomainType: InternalRelay`.** This build's grounding pass found community/Microsoft Q&A
-  guidance (not an authoritative Microsoft Learn conceptual page — `learn.microsoft.com` was
-  unreachable from this build's network egress policy, §12) suggesting a shared-namespace hybrid
-  domain with Remote Mailbox objects is commonly left `Authoritative` on both sides instead, to
-  support Directory Based Edge Blocking. **Not corrected here** — this scenario's own files don't
-  reference that sample — but flagged as a `PROGRESS.md` follow-up to re-verify against a primary
-  Microsoft Learn source (once reachable) or a pilot tenant, rather than silently guessing which
-  topology the sample was meant to represent.
+  coexistence state. Triage against the known-domains config's `owner` field, not against a blanket
+  assumption that the two sides must always match — a live tenant can legitimately be mid-migration
+  on one side and not the other.
+- **Resolved (later build): the parent scenario's `KnownDomains.sample.json` `hybrid.contoso.com`
+  entry (`expectedDomainType: InternalRelay`) is correct as written.** A prior build of this scenario
+  flagged this as an open question, having found only community/Microsoft Q&A guidance (not an
+  authoritative Microsoft Learn conceptual page) suggesting a shared-namespace hybrid domain is
+  commonly left `Authoritative` on both sides to support Directory Based Edge Blocking (DBEB). A later
+  `WebSearch` pass (direct `WebFetch` to `learn.microsoft.com` was blocked again, §12) found three
+  authoritative Microsoft Learn conceptual pages that resolve it: the "Accepted domains" page defines
+  `InternalRelay` as precisely the shared-namespace case; "Manage accepted domains in Exchange Online"
+  states a migration-in-progress domain must "remain configured as internal relay rather than
+  authoritative" to avoid mail loops for not-yet-migrated recipients; and the DBEB page confirms
+  `Authoritative`+DBEB is the state a domain reaches only *after* all recipients have been added to
+  Exchange Online and replicated — a later, different state than an active coexistence domain, not a
+  contradiction of it. The sample's own "hybrid ... coexistence domain" label already describes the
+  pre-migration-complete state `InternalRelay` is correct for. See `design.md` §4 for the full citation
+  trail. No code or sample change was needed.
 - **On-premises RBAC is now cross-referenced in `docs/rbac-model.md` §13.** That cross-cutting
   reference documents the on-premises Exchange RBAC model (role groups like `Organization
   Management` that share a name, but not an identity, with their Exchange Online counterparts) as a
@@ -360,11 +366,24 @@ the parent scenario.
     companion to; shares its `KnownDomains.json` config and baseline/drift-log/idempotency model.
 11. `docs/automation-surface.md` §1 — the five all-cloud automation surfaces this scenario's
     on-premises connection method deliberately sits outside of (§3, `design.md` §8).
+12. Accepted domains (conceptual) — defines `InternalRelay` as the shared-namespace case (domain
+    shared with a third-party system, or between Exchange organizations in different AD forests) —
+    <https://learn.microsoft.com/exchange/mail-flow/accepted-domains/accepted-domains>
+13. Manage accepted domains in Exchange Online — the shared-namespace `InternalRelay` procedure and
+    the "remains configured as internal relay rather than authoritative" migration guidance —
+    <https://learn.microsoft.com/exchange/mail-flow-best-practices/manage-accepted-domains/manage-accepted-domains>
+14. Use Directory-Based Edge Blocking to reject messages sent to invalid recipients — confirms
+    `Authoritative`+DBEB is reached only after all recipients are added to Exchange Online and
+    replicated, resolving `design.md` §4's now-closed open question —
+    <https://learn.microsoft.com/exchange/mail-flow-best-practices/use-directory-based-edge-blocking>
 
 > **Grounding note for this fragment:** `learn.microsoft.com` was unreachable from this build's
 > network egress policy. Every citation above was independently verified this build via the
 > canonical `MicrosoftDocs` GitHub source repositories that Microsoft Learn itself renders from
 > (`office-docs-powershell`, `OfficeDocs-Exchange`) rather than a search-engine summary alone, except
-> where noted in §11 (the hybrid `Authoritative`-vs-`InternalRelay` guidance, sourced from secondary
-> community/Q&A content, not a primary Microsoft Learn conceptual page). Re-verify all citations
-> against live `learn.microsoft.com` pages before a customer-facing deployment.
+> references 12-14, added in a later build once the original hybrid `Authoritative`-vs-`InternalRelay`
+> open question (previously sourced from secondary community/Q&A content only) was resolved via
+> `WebSearch` result summaries citing those three Microsoft Learn conceptual pages by name and URL —
+> direct `WebFetch` to `learn.microsoft.com` was blocked again in that build's environment, the same
+> recurring restriction, not a one-off. Re-verify all citations against live `learn.microsoft.com`
+> pages before a customer-facing deployment.

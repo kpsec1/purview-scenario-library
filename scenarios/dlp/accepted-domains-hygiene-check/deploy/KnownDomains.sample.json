@@ -23,7 +23,7 @@
       "domainName": "hybrid.contoso.com",
       "expectedDomainType": "InternalRelay",
       "required": true,
-      "owner": "IT - on-premises Exchange hybrid coexistence domain, still under this organization's authority per Microsoft's InternalRelay definition (design.md Sec 2)"
+      "owner": "IT - on-premises Exchange hybrid coexistence domain, still under this organization's authority per Microsoft's InternalRelay definition (design.md Sec 2). Confirmed correct for an active (not-yet-fully-migrated) coexistence domain - see accepted-domains-hygiene-check-on-premises/design.md Sec 4; revisit to Authoritative only once all recipients for this domain exist in Exchange Online."
     }
   ]
 }

@@ -230,3 +230,27 @@ environment, the same recurring blocker this scenario's own `design.md` §2/§12
   the gap as still open.
 - No new Fix/Fail: this closes a documentation cross-reference gap, not a defect in this
   scenario's own docs/code.
+
+## Correction addendum — shared-namespace `InternalRelay`-vs-`Authoritative` question closed (later build)
+
+**Scope:** doc-only follow-up, not a new four-lens round (no code changed). Closes the
+`PROGRESS.md` item this file's own Summary flagged as open: which `DomainType` is "correct" for a
+shared-namespace hybrid domain, and whether the parent scenario's `KnownDomains.sample.json`
+`hybrid.contoso.com` (`InternalRelay`) entry needed correcting. A later build's `WebSearch` pass
+(direct `WebFetch` to `learn.microsoft.com` was blocked again, the same recurring restriction
+already disclosed in `README.md` §12) found three authoritative Microsoft Learn conceptual pages —
+not secondary community/Q&A content this time — that resolve the question: `InternalRelay` is the
+documented shared-namespace case, and `Authoritative`+Directory-Based-Edge-Blocking is a domain's
+*later* state, reached only once all recipients are migrated to Exchange Online, not a contradiction
+of the sample's own "coexistence domain" label.
+
+- **Confirms, does not weaken, this review's findings above.** No sample or code correction was
+  needed — the ambiguity was in `design.md` §4's framing of the open question, not in the sample
+  itself, matching this repo's discipline of stating a genuine unknown rather than guessing (Product
+  Owner finding 3 above) but now updating that record once the unknown is actually resolved with a
+  primary source, rather than leaving it open indefinitely.
+- **`design.md` §4 and `README.md` §11/§12 updated in place** with the citation trail; the
+  `CrossEnvironmentMismatch` check's `WARN`-not-`FAIL` severity is unchanged (still correct — a live
+  tenant can legitimately be mid-migration on one side and not the other).
+- No new Fix/Fail: this closes a disclosed grounding gap with a primary source, not a defect in this
+  scenario's own docs/code.

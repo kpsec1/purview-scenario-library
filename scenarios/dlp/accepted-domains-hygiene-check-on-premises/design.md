@@ -104,25 +104,50 @@ parent scenario): `FAIL` if the two sides disagree on which side of the in-organ
 the domain falls on, `WARN` if both sides are in-organization types that simply differ
 (`Authoritative` vs. `InternalRelay`).
 
-**A genuinely open design question this build could not resolve with a single correct answer:**
-Microsoft's own guidance on which `DomainType` a **shared-namespace** hybrid domain (one with Remote
-Mailbox objects representing cloud-hosted recipients) should carry **differs by scenario** — community
-and Microsoft Q&A guidance found this build (not an authoritative Microsoft Learn conceptual page,
-which was unreachable — `learn.microsoft.com` blocked, §1) indicates a shared-namespace domain with
-Remote Mailbox objects present is commonly left `Authoritative` on **both** sides to support Directory
-Based Edge Blocking, while `InternalRelay` remains appropriate specifically when not all recipients for
-that domain are known to one side (e.g. a domain still mid-migration). This directly contradicts the
-parent scenario's own `deploy/KnownDomains.sample.json` sample entry, which models a
-`hybrid.contoso.com` domain as `expectedDomainType: InternalRelay` "on-premises Exchange hybrid
-coexistence domain" without this nuance. **This scenario does not resolve or silently correct that
-sample** (a `PROGRESS.md` follow-up tracks reviewing it against a primary, authoritative Microsoft
-Learn source once `learn.microsoft.com` is reachable, or a pilot tenant, rather than guessing which of
-several plausible hybrid topologies the sample was meant to represent) — but it does mean
-`CrossEnvironmentMismatch` findings must not be read as automatically wrong. A `WARN` (not `FAIL`) on
-an `Authoritative`-vs-`InternalRelay` split is the deliberately conservative choice: both are
-in-organization, and which one is "correct" for a given domain depends on that domain's actual
-migration/coexistence state, which only the buyer's own change-management record (the known-domains
-config's `owner` field) can settle. `README.md` §11 states this plainly.
+**Re-grounded in a later build — resolved, not still open.** The original build could not reach
+`learn.microsoft.com` at all and relied on community/Microsoft Q&A guidance alone. A later build's
+`WebSearch` pass (direct `WebFetch` to `learn.microsoft.com` was blocked again in that build's
+environment — the same recurring egress restriction, not a one-off) returned result summaries citing
+three authoritative Microsoft Learn **conceptual** pages by name and URL rather than secondary
+blogs/Q&A threads, and they resolve the question:
+
+- **"Accepted domains" (`exchange/mail-flow/accepted-domains/accepted-domains`)** — defines
+  `InternalRelay` precisely as the shared-namespace case: *"Some of the recipients in the internal
+  relay domain don't exist in the Exchange organization,"* citing as its own worked examples sharing
+  the domain "between the Exchange organization and a third-party messaging system" or "between
+  Exchange organizations in different Active Directory forests" — a hybrid Exchange
+  Online/on-premises coexistence deployment is exactly this shape (two separate directories/mail
+  systems sharing one SMTP namespace while migration is in progress).
+- **"Manage accepted domains in Exchange Online"
+  (`exchange/mail-flow-best-practices/manage-accepted-domains/manage-accepted-domains`)** — states
+  the shared-namespace procedure directly: create the accepted domain "with the type set to Internal
+  Relay," and for an in-progress migration, *"confirm that the accepted domain remains configured as
+  internal relay rather than authoritative because if the organization is authoritative for a domain,
+  unknown recipients will not be forwarded,"* which would cause mail loops/NDRs for the
+  not-yet-migrated recipients.
+- **"Use Directory-Based Edge Blocking..."
+  (`exchange/mail-flow-best-practices/use-directory-based-edge-blocking`)** — confirms the
+  `Authoritative`+DBEB combination the original community guidance described is a **different,
+  later** state than an active hybrid-coexistence domain: DBEB requires `Authoritative`, but *"until
+  all valid recipients have been added to Exchange Online and replicated,"* the domain "should be
+  left configured as Internal relay." A domain only becomes a good `Authoritative`+DBEB candidate
+  once migration is complete (or, for a domain fully cut over to Exchange Online, once on-premises no
+  longer holds any live recipients for it) — not while it's still an active coexistence domain with
+  Remote Mailbox objects on both sides.
+
+**Conclusion:** the parent scenario's `deploy/KnownDomains.sample.json` sample entry —
+`hybrid.contoso.com` as `expectedDomainType: InternalRelay`, labeled "on-premises Exchange hybrid
+coexistence domain" — is correct as written, precisely because it models an *active coexistence*
+domain, not a fully-migrated one. The original community guidance about `Authoritative`+DBEB was not
+wrong, it describes a domain in a different migration state than the sample's own label already says
+it's in. No code or sample change was needed; the ambiguity was in this design doc's framing of the
+open question, not in the sample. `CrossEnvironmentMismatch` findings on an
+`Authoritative`-vs-`InternalRelay` split remain `WARN`, not `FAIL` (both are in-organization types),
+because a live tenant could legitimately be mid-migration on one side and not the other — but the
+default expectation for an still-coexisting shared-namespace domain is now `InternalRelay` on both
+sides, not an open question. `README.md` §11/§12 record the citations; re-verify against a live
+`learn.microsoft.com` fetch before a customer-facing deployment, since this build's grounding was
+`WebSearch`-summary-only, not a direct primary-source page fetch (§1/§12).
 
 ## 5. Audit attribution — a real improvement over the parent's disclosed gap
 

@@ -1230,15 +1230,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s `-IncludeAuditAttribution` switch tells the
   buyer to confirm coverage via `Get-AdminAuditLogConfig` rather than assuming the common `*`-default
   belief is correct — see that scenario's `design.md` §2 and `README.md` §11.
-- [ ] Re-verify the parent `accepted-domains-hygiene-check/deploy/KnownDomains.sample.json`'s
+- [x] Re-verify the parent `accepted-domains-hygiene-check/deploy/KnownDomains.sample.json`'s
   `hybrid.contoso.com` entry (`expectedDomainType: InternalRelay`) against a primary, authoritative
-  Microsoft Learn conceptual page once `learn.microsoft.com` is reachable (it was blocked by this
-  build's network egress policy) or a pilot tenant. `accepted-domains-hygiene-check-on-premises/
-  design.md` §4 found secondary/community guidance suggesting a shared-namespace hybrid domain with
-  Remote Mailbox objects is commonly left `Authoritative` on both sides instead (to support Directory
-  Based Edge Blocking), which would contradict that sample entry — not corrected in this build because
-  only secondary sources were reachable, per `AGENTS.md` §4's grounding discipline. Do not silently
-  "fix" the sample without a primary source confirming which hybrid topology it was meant to model.
+  Microsoft Learn conceptual page — **re-grounded and closed, sample confirmed correct, not changed**
+  (see DONE below): a `WebSearch` pass (direct `WebFetch` to `learn.microsoft.com` still blocked by
+  this session's egress policy) found three authoritative Microsoft Learn conceptual pages — not the
+  secondary community/Q&A guidance the original build relied on — showing `InternalRelay` is exactly
+  the documented shared-namespace hybrid case, and that `Authoritative`+Directory-Based-Edge-Blocking
+  is a domain's later, post-full-migration state, not a contradiction of an active coexistence
+  domain. `accepted-domains-hygiene-check-on-premises/design.md` §4, `README.md` §11/§12, and
+  `reviews.md` (correction addendum) updated in place; `KnownDomains.sample.json`'s `owner` comment
+  annotated with the confirmation rather than left silent.
 - [x] Cross-reference on-premises Exchange RBAC (role groups like `Organization Management`, which
   share a name but not an identity with their Exchange Online counterparts) into `docs/rbac-model.md`
   — **built** (see DONE below): new §13 ("Exchange Server on-premises RBAC — a ninth system"),
@@ -2441,6 +2443,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Grounding follow-up: resolve the `hybrid.contoso.com` `InternalRelay`-vs-`Authoritative`
+  open question in `accepted-domains-hygiene-check-on-premises`** — commit PENDING — 2026-09-11.
+  Doc-only fragment, no code changed. The original build of this scenario had no `learn.microsoft.com`
+  access at all and left open, via secondary community/Q&A guidance only, whether a shared-namespace
+  hybrid domain should be `InternalRelay` (as the parent scenario's `KnownDomains.sample.json` models
+  `hybrid.contoso.com`) or `Authoritative` (to support Directory-Based Edge Blocking). This run's
+  `WebSearch` pass — direct `WebFetch` to `learn.microsoft.com` is still blocked by this session's
+  egress policy, confirmed again this run — returned result summaries citing three authoritative
+  Microsoft Learn conceptual pages by name and URL (not blogs/community threads): "Accepted domains"
+  (defines `InternalRelay` as precisely the shared-namespace case), "Manage accepted domains in
+  Exchange Online" (an in-progress migration domain must "remain configured as internal relay rather
+  than authoritative" to avoid mail loops), and "Use Directory-Based Edge Blocking..." (confirms
+  `Authoritative`+DBEB is reached only after all recipients are added to Exchange Online and
+  replicated — a later state, not a contradiction of an active coexistence domain). **Conclusion: the
+  sample's existing `InternalRelay` value was already correct** — the ambiguity was in the design
+  doc's framing, not the sample. Updated `accepted-domains-hygiene-check-on-premises/design.md` §4,
+  `README.md` §11/§12 (three new citations + updated grounding note), and `reviews.md` (a correction
+  addendum, following the same pattern used for the earlier on-premises-RBAC correction in the same
+  file) — plus the parent's `deploy/KnownDomains.sample.json` `owner` comment, annotated with the
+  confirmation and a forward-looking note to revisit to `Authoritative` once the domain's migration
+  completes. No four-lens re-review needed (doc-only correction with a citation trail, not a new
+  defect) — same standard this repo already applies to comparable closed corrections.
 - [x] **`scenarios/dlp/accepted-domains-hygiene-check-on-premises/` — on-premises Exchange companion
   to the Accepted-Domains Hygiene Check** — commit 48143ae — 2026-09-11. Full README/design/deploy/
   validate/rollback/reviews. Closes the parent scenario's disclosed cloud-only blind spot for a hybrid
