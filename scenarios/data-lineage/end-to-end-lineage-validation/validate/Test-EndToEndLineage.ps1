@@ -223,16 +223,32 @@ foreach ($expected in $definition.expectedDownstreamChain) {
 }
 
 # --- Check 2: each custom link's column-level mapping actually made it onto the relationship ---
-# Scope note: this check looks for the link's relation as an OUTPUT edge directly off the origin
-# asset (baseEntityGuid) - correct for the shipped example, where every customLineageLinks entry's
-# upstream IS the origin asset. A future definition file with a custom link further down a longer
-# chain (upstream != originAssetQualifiedName) would need this check generalized to look for the
-# relation from the link's own upstream node, not just the origin - tracked as a follow-up in
-# PROGRESS.md rather than built speculatively here.
+# Resolves the relation edge from the link's own declared upstream node, not always the origin
+# asset (baseEntityGuid) - this generalizes the check to a multi-hop chain where a
+# customLineageLinks entry's upstream sits further downstream than the origin's immediate output,
+# not just the shipped example's single-hop case where upstream IS the origin asset. The origin
+# asset resolves directly to the already-known baseEntityGuid (no lookup needed, no new API
+# assumption introduced); any other upstream node is resolved the same way Check 1 already
+# resolves expectedDownstreamChain entries - by matching guidEntityMap on qualifiedName.
 foreach ($link in $definition.customLineageLinks) {
+    if ($link.upstreamQualifiedName -eq $definition.originAssetQualifiedName) {
+        $upstreamGuid = $lineage.baseEntityGuid
+    }
+    else {
+        $upstreamGuid = $lineage.guidEntityMap.PSObject.Properties |
+            Where-Object { $_.Value.attributes.qualifiedName -eq $link.upstreamQualifiedName } |
+            Select-Object -First 1 -ExpandProperty Name
+    }
+
     $downstreamGuid = $lineage.guidEntityMap.PSObject.Properties |
         Where-Object { $_.Value.attributes.qualifiedName -eq $link.downstreamQualifiedName } |
         Select-Object -First 1 -ExpandProperty Name
+
+    if (-not $upstreamGuid) {
+        Test-Check -Description "Custom link '$($link.upstreamDisplayName)' -> '$($link.downstreamDisplayName)' exists" -Condition $false
+        Write-Host "         Upstream node '$($link.upstreamDisplayName)' is not present in the traversed graph - either it is not reachable from the origin within depth $MaxDepth (try increasing -MaxDepth), or its upstreamQualifiedName in '$LineageDefinitionPath' is stale." -ForegroundColor Yellow
+        continue
+    }
 
     if (-not $downstreamGuid) {
         Test-Check -Description "Custom link '$($link.upstreamDisplayName)' -> '$($link.downstreamDisplayName)' exists" -Condition $false
@@ -240,7 +256,7 @@ foreach ($link in $definition.customLineageLinks) {
     }
 
     $relation = $lineage.relations | Where-Object {
-        $_.fromEntityId -eq $lineage.baseEntityGuid -and $_.toEntityId -eq $downstreamGuid
+        $_.fromEntityId -eq $upstreamGuid -and $_.toEntityId -eq $downstreamGuid
     } | Select-Object -First 1
 
     Test-Check -Description "Custom link '$($link.upstreamDisplayName)' -> '$($link.downstreamDisplayName)' exists" `

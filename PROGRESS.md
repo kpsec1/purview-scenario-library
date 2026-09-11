@@ -1335,12 +1335,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Update, then `dataset_process_inputs`/`process_dataset_outputs` relationships; "Create New Custom
   Types": the custom-Process-type body). Composable with, not a replacement for, this scenario's
   own `direct_lineage_dataset_dataset` edge — see the new scenario's `design.md` §6.
-- [ ] Generalize `scenarios/data-lineage/end-to-end-lineage-validation/validate/
-  Test-EndToEndLineage.ps1`'s column-mapping check ("Check 2") to match each `customLineageLinks`
-  entry against its own declared upstream node rather than always the origin asset — needed before
-  that scenario's definition file can correctly model a multi-hop chain with a custom link further
-  downstream than the origin's immediate output. Currently correct only for the shipped
-  single-hop example; flagged inline in the script and in `design.md` §7.
 - [ ] VERIFY (pilot tenant): the exact qualifiedName string format Purview assigns to an
   `azure_sql_table` asset (e.g. whether it follows an `mssql://...` scheme) — not found during this
   build's grounding pass; `end-to-end-lineage-validation`'s definition file currently requires the
@@ -5499,6 +5493,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `copilot-external-email-block/README.md` §3/§11 and `reviews.md`. Three follow-ups (an `ExternalRelay`
   backport into `copilot-external-email-block/design.md` §4, two audit-log-attribution VERIFYs, and an
   on-premises companion-check idea) added to TODO above rather than resolved by guessing.
+
+- [x] **`scenarios/data-lineage/end-to-end-lineage-validation/validate/Test-EndToEndLineage.ps1` —
+  generalize the Check 2 column-mapping check to a multi-hop chain** — commit `PENDING` —
+  2026-09-11. Scoped follow-up (not a new scenario) closing the item tracked under `### Follow-ups
+  discovered while building the Data Lineage end-to-end-lineage-validation scenario`, and formally
+  the same limitation this scenario's own `reviews.md` recorded as Blue Team finding 4 (disclosed,
+  not fixed, in the original build round). Check 2 previously assumed every `customLineageLinks`
+  entry's upstream node was the origin asset (`baseEntityGuid`) — correct only for the shipped
+  single-hop example. It now resolves each link's relation edge against its own declared
+  `upstreamQualifiedName`: the origin-asset case still resolves directly to the already-known
+  `baseEntityGuid` (no behavior change, no new API assumption), and any other upstream node is
+  resolved by matching `guidEntityMap` on `qualifiedName` — the identical pattern Check 1 already
+  uses for `expectedDownstreamChain` entries, so no new REST assumption was introduced. A clear
+  `[FAIL]` + guidance line was added for the new case where the declared upstream node itself isn't
+  present in the traversed graph (too-shallow `-MaxDepth` or a stale `upstreamQualifiedName`).
+  `design.md` §7's non-goal bullet rewritten to record the generalization instead of the now-closed
+  limitation; `reviews.md` gained a correction addendum documenting Blue Team finding 4 as resolved.
+  Pure repo-internal logic fix — no new Microsoft product fact needed grounding, so no Microsoft
+  Learn/WebSearch citations were added or changed. Authoring an actual multi-hop example definition
+  file remains a separate, not-yet-built follow-up (not added back to TODO — no open question left,
+  just unbuilt example content, consistent with this repo's treatment of similar "the code supports
+  it, nobody's written a second example yet" gaps elsewhere).
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

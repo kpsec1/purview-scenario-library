@@ -159,3 +159,20 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/New-CustomLineageRelationship.ps1`, `deploy/Remove-CustomLineageRelationship.ps1`, and
 `validate/Test-EndToEndLineage.ps1`. No Fail items were raised. This fragment meets the definition
 of done in `AGENTS.md` §9.
+
+---
+
+## Correction addendum (follow-up fragment)
+
+**Blue Team finding 4 closed, not just disclosed.** The original round's Resolution for this
+finding added a scope-note comment disclosing that Check 2 only worked for the shipped
+single-hop example (upstream == origin asset); it did not generalize the check itself, and the
+gap was tracked as a `PROGRESS.md` follow-up instead. This follow-up fragment closes it:
+`validate/Test-EndToEndLineage.ps1`'s Check 2 now resolves each `customLineageLinks` entry's
+relation edge against its own declared `upstreamQualifiedName` (via the same `guidEntityMap`
+qualifiedName-matching pattern Check 1 already used, falling back to the already-known
+`baseEntityGuid` only when the link's upstream genuinely is the origin asset), so a longer,
+multi-hop definition file validates correctly without further script changes. No new REST
+assumption was introduced — the fallback path keeps the shipped example's behavior identical to
+before. `design.md` §7's non-goal bullet updated to record the generalization instead of the
+now-resolved limitation.

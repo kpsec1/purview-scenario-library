@@ -160,8 +160,11 @@ different and more useful question. Full grounding: `deploy/New-CustomLineageRel
   confirming `CustomerId` still exists as a column on both tables) - it only confirms the
   `columnMapping` attribute this scenario's own deploy script wrote is still present and non-empty.
   A schema-drift check is a different scenario, not duplicated here.
-- `validate/Test-EndToEndLineage.ps1`'s column-mapping check (its "Check 2") assumes every
-  `customLineageLinks` entry's upstream asset is the origin asset itself, which holds for the
-  shipped single-hop example but would need generalizing (matching each link against its own
-  declared upstream node, not always the origin) to correctly validate a longer chain with a
-  custom link further downstream - tracked as a follow-up in `PROGRESS.md`.
+- This scenario's shipped example (`deploy/lineage/customer-risk-summary-lineage.json`) models a
+  single hop only. `validate/Test-EndToEndLineage.ps1`'s Check 2 now resolves each
+  `customLineageLinks` entry's relation edge against its own declared upstream node (falling back
+  to the already-known `baseEntityGuid` only when that upstream node is the origin asset itself),
+  so a longer, multi-hop definition file with a custom link further downstream than the origin's
+  immediate output validates correctly without further script changes - the generalization
+  previously tracked as a follow-up in `PROGRESS.md` is resolved. Authoring a multi-hop example
+  definition file remains a separate, not-yet-built follow-up.
