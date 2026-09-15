@@ -2551,13 +2551,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   system ones — no continuation-token field is documented on the response shape, and
   `deploy/New-PiiOnlyScanRuleset.ps1` does not implement paging. Flagged inline in the script's
   `.NOTES` and `README.md` §11.
-- [ ] `scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/`,
-  `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/`, and
+- [x] `scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/` — **built** (see DONE
+  below): the same PII-only custom scan rule set pattern applied to Azure Synapse Analytics. This
+  build's own grounding pass (Az.Purview module GitHub source, `learn.microsoft.com` still
+  `EGRESS_BLOCKED` in this environment) found the actual ruleset `kind` is `AzureSynapseWorkspace`,
+  **not** the `AzureSynapse` shorthand this item originally guessed — corrected in place rather
+  than propagated. It also surfaced a genuine naming trap this source type has and the Azure SQL
+  Database sibling does not: the System default ruleset's **name** (`AzureSynapseSQL`) is a
+  different string from the custom ruleset's **kind** (`AzureSynapseWorkspace`), unlike the sibling
+  where both are the identical `AzureSqlDatabase` string — caught by this build's own Red Team pass
+  before shipping (`reviews.md` Red Team finding 1) rather than left as a latent rollback bug.
+- [ ] `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/` and
   `scenarios/data-map/scan-on-premises-sql-server-and-classify-pii-ruleset/` — the same PII-only
-  custom scan rule set pattern for this repo's three sibling Data Map source types, each with its
-  own `*ScanRuleset` `kind` (`AzureSynapse`/`AzureSqlDatabaseManagedInstance`/`SqlServerDatabase`,
-  all confirmed to exist in the Scan Rulesets - Create Or Replace body-shape table this build
-  direct-fetched) — not built this round to keep the fragment scoped to one source type.
+  custom scan rule set pattern for this repo's remaining two sibling Data Map source types (`kind`
+  values `AzureSqlDatabaseManagedInstance`/`SqlServerDatabase`, both confirmed to exist in the Scan
+  Rulesets - Create Or Replace body-shape table the original Azure SQL Database build
+  direct-fetched) — not built this round to keep the fragment scoped to one source type. Ground
+  each one's actual ruleset `kind` string independently before building (per the Synapse build's
+  own finding immediately above: do not assume it matches a shorthand guess or the sibling's
+  name-equals-kind shortcut without checking).
 - [ ] Consider a **credential-object creation** follow-up (Key Vault-backed, for the
   `AzureSqlDatabaseCredential` scan kind) becoming unblocked by the same Types/Scan-Rulesets REST
   grounding pass this build did — not investigated this round; the base scenario's `README.md` §11
@@ -2792,6 +2804,35 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/`** — commit PENDING —
+  2026-09-15. New full scenario (README, design, deploy, validate, rollback, four-lens review)
+  extending `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/`'s proven PII-only custom
+  scan rule set pattern to Azure Synapse Analytics — the second of the three sibling source types
+  that scenario's own follow-ups tracked. `deploy/New-PiiOnlyScanRuleset.ps1` reads the tenant's
+  live classification type definitions (Types API, tenant-wide/source-type-agnostic, reused
+  unchanged), computes an exclusion list, creates a Custom `AzureSynapseWorkspaceScanRuleset`
+  object, and reconciles `scan-azure-synapse-and-classify`'s existing scan onto it, preserving its
+  dedicated/serverless SQL pool endpoints and other properties untouched. `deploy/
+  Remove-PiiOnlyScanRuleset.ps1` reverts to the System default and optionally deletes the custom
+  ruleset. `learn.microsoft.com` REST reference pages returned `EGRESS_BLOCKED` in this build
+  environment (same restriction the base Synapse scenario's own build hit); grounded instead via
+  direct `raw.githubusercontent.com` fetch of the Az.Purview PowerShell module's own
+  `New-AzPurviewAzureSynapseWorkspaceScanRulesetObject.md` and
+  `New-AzPurviewAzureSynapseWorkspaceCredentialScanObject.md` source files, confirming the exact
+  `Kind` values verbatim rather than guessing by analogy. That grounding pass surfaced a genuine,
+  previously-undocumented naming trap this source type has and the Azure SQL Database sibling does
+  not: the System default ruleset's **name** (`AzureSynapseSQL`) and the custom ruleset's **kind**
+  (`AzureSynapseWorkspace`) are different strings — for the SQL Database sibling both are the
+  identical `AzureSqlDatabase` string, an easy pattern to over-generalize. Caught by this build's
+  own Red Team review (`reviews.md` finding 1) and fixed before shipping by hard-coding
+  `Remove-PiiOnlyScanRuleset.ps1`'s `-RevertToRulesetName` default to the independently-confirmed
+  correct value rather than deriving it from the ruleset-kind constant. Two VERIFYs remain open
+  (an independent direct fetch of the REST reference page itself once `learn.microsoft.com` is
+  reachable; Types API pagination behavior at scale, inherited unchanged from the sibling) — see
+  `README.md` §11. `PROGRESS.md`'s TODO backlog entry corrected in place: the original shorthand
+  guess (`AzureSynapse`) is now the confirmed `AzureSynapseWorkspace`, and the remaining two
+  sibling scenarios (Azure SQL Managed Instance, on-premises SQL Server) carry a note to ground
+  their own `kind` strings independently rather than assume the same shortcut.
 - [x] **`scenarios/data-map/verify-purview-entra-graph-prerequisites/`** — commit 7ba5661 —
   2026-09-15. New full scenario (README, design, deploy, validate, rollback, four-lens review)
   closing the Blue Team gap `scan-azure-sql-managed-instance-and-classify/reviews.md` flagged: that
