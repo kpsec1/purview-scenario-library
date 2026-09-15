@@ -14,9 +14,10 @@
          expected - either no role-assignable group currently holds a monitored role, or none of
          their memberships changed in every window run so far).
        - No duplicate Id rows.
-       - Every row's ActivityDisplayName is one of the two monitored activities ("Add member to
-         group" / "Remove member from group") and every row's RoleDisplayName is one of the
-         monitored role names.
+       - Every row's ActivityDisplayName is one of the four monitored activities ("Add member to
+         group" / "Remove member from group" / "Bulk import group members - finished (bulk)" /
+         "Bulk remove group members - finished (bulk)") and every row's RoleDisplayName is one of
+         the monitored role names.
        - ActivityDateTime values parse as valid timestamps and are monotonically non-decreasing
          after the deploy script's own Sort-Object.
        - GroupId values are non-empty (the field this script's matching logic depends on).
@@ -42,6 +43,13 @@
     A CSV with zero data rows is expected and healthy - most tenants don't use the role-assignable-
     group pattern for these four roles at all, and that is itself the safe default this script's
     Phase 1 discovery correctly reports as "nothing to monitor," not a sign the script is broken.
+
+    The 4-activity allowlist above includes the two bulk import/remove activities added to
+    deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1's $monitoredActivities - a row with
+    one of those two ActivityDisplayName values passing this check only confirms the deploy script's
+    fail-soft targetResources extraction found a matching Group-typed target for that record, not
+    that every bulk operation is now caught (see the new manual checklist item below and the deploy
+    script's .NOTES for the still-open VERIFY on the bulk activities' targetResources shape).
 
     Sources: see deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1 .NOTES for the Microsoft
     Learn references this scenario's grounding rests on.
@@ -108,9 +116,14 @@ else {
         Write-Host "         Duplicate Ids: $($duplicateIds.Name -join '; ')" -ForegroundColor Yellow
     }
 
-    $validActivities = @('Add member to group', 'Remove member from group')
+    $validActivities = @(
+        'Add member to group',
+        'Remove member from group',
+        'Bulk import group members - finished (bulk)',
+        'Bulk remove group members - finished (bulk)'
+    )
     $invalidActivityRows = $rows | Where-Object { $_.ActivityDisplayName -notin $validActivities }
-    Test-Check -Description "Every row's ActivityDisplayName is one of the 2 monitored activities" -Condition ($invalidActivityRows.Count -eq 0)
+    Test-Check -Description "Every row's ActivityDisplayName is one of the 4 monitored activities" -Condition ($invalidActivityRows.Count -eq 0)
     if ($invalidActivityRows.Count -gt 0) {
         Write-Host "         Unexpected activity value(s): $(($invalidActivityRows.ActivityDisplayName | Select-Object -Unique) -join ', ')" -ForegroundColor Yellow
     }
@@ -151,6 +164,7 @@ $manualChecklist = @(
     "Confirm InitiatedBy in this CSV matches the portal's 'Initiated by (actor)' column for the same event."
     "If this file shows 0 events but you know a monitored group's membership changed: confirm the group is still role-assignable (isAssignableToRole can't be changed after creation, so this should be stable) and still holds one of the four monitored roles at the time you check - Phase 1 discovery is current-state-only per run, so a role removed from the group before this run no longer includes that group's changes, even for events that happened while the role was still assigned."
     "Cross-reference any row here against deploy/out/entra-privileged-role-audit-trail.csv (the sibling script's own output) for the same time window and principal - confirming a change is visible here but NOT there is direct proof this companion is now covering a population the sibling script's RoleManagement-category filter alone cannot see."
+    "If your tenant supports it, perform a throwaway bulk add/remove (CSV-based bulk membership add/remove in the Entra admin center) against a non-privileged, quiet role-assignable group first. Confirm whether a 'Bulk import group members - finished (bulk)'/'Bulk remove group members - finished (bulk)' row appears in this CSV for that group at all (the deploy script's targetResources match may fail soft and silently skip it - see its .NOTES) - this is the concrete pilot-tenant test that resolves the still-open VERIFY on the bulk-activity targetResources shape (README.md Section 11)."
 )
 $manualChecklist | ForEach-Object { Write-Host "  [ ] $_" -ForegroundColor Yellow }
 

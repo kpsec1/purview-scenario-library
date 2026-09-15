@@ -179,7 +179,7 @@ and its `.NOTES` block cite the exact Microsoft Learn reference pages.
 | Phase 1 discovery filters | `isAssignableToRole eq true` (`Get-MgGroup`); `DisplayName eq '<role>'` (`Get-MgRoleManagementDirectoryRoleDefinition`); `roleDefinitionId eq '<id>'` (`Get-MgRoleManagementDirectoryRoleAssignment`) | All three directly confirmed by Microsoft worked examples — `design.md` §10 |
 | Phase 2 Graph resource | `/auditLogs/directoryAudits` (`Get-MgAuditLogDirectoryAudit`) — same resource as the sibling script | `design.md` §10 |
 | Phase 2 server-side filter | `category eq 'GroupManagement' and activityDateTime ge <start> and activityDateTime le <end>` | Same grounded shape as the sibling script's own filter, applied to a different category |
-| Monitored activities (client-side filter) | `Add member to group`, `Remove member from group` | Core Directory `GroupManagement` category — confirmed activity names, `design.md` §10 |
+| Monitored activities (client-side filter) | `Add member to group`, `Remove member from group` (Core Directory), `Bulk import group members - finished (bulk)`, `Bulk remove group members - finished (bulk)` (Microsoft Entra (AAD) Management UX) | All four are confirmed real `GroupManagement`-category activity names, `design.md` §10; the bulk pair's `targetResources` shape is a disclosed open VERIFY — §11 |
 | Monitored roles (`-PrivilegedRoleDisplayNames`) | Same 4 roles as the sibling script | Keep the two scripts' role lists in sync if customized |
 | Default lookback window | 24 hours (`-StartDate`/`-EndDate`) | Same reasoning as the sibling script |
 | Idempotency | De-duplicate by the record's own documented `Id` (GUID) on every merge | Same model as the sibling script — `design.md` §5/§10 |
@@ -329,14 +329,20 @@ CSVs' retention fate, and revoking the app registration's Graph permission grant
   trade-off every poll-based control in this scenario carries (§8's "run daily, not weekly"
   guidance) — a buyer with a lower risk tolerance can narrow this window with a shorter schedule
   interval (e.g. hourly). See `reviews.md` round 2, Red Team finding 2.
-- **The companion script does not monitor bulk group-membership import activities.** Microsoft's
-  `reference-audit-activities` page documents a separate `"Bulk import group members - finished
-  (bulk)"` activity (under the Microsoft Entra (AAD) Management UX audit source) distinct from the
-  two single-member activities (`Add member to group`/`Remove member from group`) this script's
-  `$monitoredActivities` filters on — a member added to a monitored group via a bulk import
-  operation is not confirmed to be covered. Not resolved by widening the filter to an unconfirmed
-  activity/`targetResources` shape (`AGENTS.md` §4) — tracked as a follow-up in `PROGRESS.md`. See
-  `reviews.md` round 2, Red Team finding 3.
+- **The companion script now also monitors bulk group-membership import/remove activities, with one
+  disclosed residual gap.** Microsoft's `reference-audit-activities` page documents
+  `"Bulk import group members - finished (bulk)"` and `"Bulk remove group members - finished
+  (bulk)"` (under the Microsoft Entra (AAD) Management UX audit source) as activity names distinct
+  from the two single-member activities (`Add member to group`/`Remove member from group`) —
+  confirmed via a direct fetch of Microsoft's docs source, so both are now in
+  `$monitoredActivities`. **Not yet confirmed:** whether a bulk activity's `targetResources` carries
+  the same Group-typed-plus-User-typed shape the two single-member activities are confirmed to use —
+  no Microsoft worked example addresses the bulk case specifically. The extraction logic fails soft
+  (skips the record) rather than guessing at an unconfirmed shape (`AGENTS.md` §4), so a bulk-added
+  member of a monitored role-assignable group could still go undetected by this script if the real
+  shape turns out to differ — confirming or refuting this needs a pilot-tenant test (see
+  `validate/Test-RoleAssignableGroupMembershipAuditTrail.ps1`'s manual checklist). See `reviews.md`
+  round 3, Red Team finding 3 (revisited).
 - **VERIFY (pilot tenant or a future Microsoft Learn pass):** Microsoft's own "Security operations
   for privileged accounts" guidance names a differently-suffixed activity ("Add member to role
   (permanent)", tagged `Service = PIM`) for detecting roles assigned outside PIM — not confirmed to

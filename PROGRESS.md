@@ -1629,14 +1629,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   example. `design.md` §4b/§10, `README.md`, `rollback.md`, and `reviews.md` (round 2, four-lens)
   all updated. Two new residual gaps disclosed rather than silently accepted — see the two new
   VERIFY/follow-up items below.
-- [ ] Ground the exact `targetResources` audit-log shape for the **bulk import group members**
-  activity (`"Bulk import group members - finished (bulk)"`, a distinct, differently-named activity
-  from `"Add member to group"` under the Microsoft Entra (AAD) Management UX audit source) and, if
-  it carries the same `Group`/`User`-typed `targetResources` shape, add it to
-  `Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s `$monitoredActivities` list — currently a
-  disclosed, unconfirmed gap (a member added to a monitored role-assignable group via bulk import
-  is not confirmed to be covered). `entra-privileged-role-monitoring/README.md` §11 and `reviews.md`
-  round 2, Red Team finding 3.
+- [x] Ground the exact `targetResources` audit-log shape for the **bulk import group members**
+  activity — **partially closed, not fully resolved by guessing** (see DONE below): a direct fetch
+  of Microsoft's `reference-audit-activities.md` docs source (learn.microsoft.com itself returns
+  `EGRESS_BLOCKED` in this build environment) confirmed `"Bulk import group members - finished
+  (bulk)"` and `"Bulk remove group members - finished (bulk)"` as real, distinct
+  `GroupManagement`-category activity names, so both are now in
+  `Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s `$monitoredActivities` list. The source page
+  does **not** document these two activities' `targetResources` shape, and no Microsoft worked
+  example was found confirming it — that half remains an open VERIFY (see immediately below), left
+  unresolved rather than guessed at (`AGENTS.md` §4). `entra-privileged-role-monitoring/README.md`
+  §11, `design.md`, and `reviews.md` round 3 updated.
+- [ ] VERIFY (pilot tenant, via a throwaway bulk add/remove on a non-privileged role-assignable
+  group): whether a `"Bulk import group members - finished (bulk)"`/`"Bulk remove group members -
+  finished (bulk)"` audit record actually carries a `Group`-typed `targetResources` entry (this
+  script's match key) at all, and if so how many `User`-typed entries it carries (one per affected
+  member, or some other shape). `Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s
+  `Get-GroupTargetFromTargetResources` fails soft (skips the record) if the assumed shape doesn't
+  hold, so a bulk-added privileged-group member could still go undetected until this is confirmed —
+  see the deploy script's `.NOTES`, `README.md` §11, and `validate/
+  Test-RoleAssignableGroupMembershipAuditTrail.ps1`'s new manual-checklist item.
 - [ ] VERIFY (pilot tenant): whether a `Get-MgAuditLogDirectoryAudit`-specific (not just
   `Get-EntraAuditDirectoryLog`-specific) worked example exists for combining `activityDisplayName
   eq` with two `targetResources/any(...)` lambda clauses in one server-side `$filter` — if
@@ -2804,6 +2816,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/compliance-manager/entra-privileged-role-monitoring/` (bulk group-membership-import
+  follow-up)** — commit PENDING — 2026-09-15. Closed the "not monitored at all" half of `reviews.md`
+  round 2 Red Team finding 3: grounded `"Bulk import group members - finished (bulk)"`/`"Bulk remove
+  group members - finished (bulk)"` as real, distinct `GroupManagement`-category activity names via a
+  direct fetch of Microsoft's `reference-audit-activities.md` docs source (`learn.microsoft.com`
+  itself returned `EGRESS_BLOCKED` in this build environment, consistent with prior builds' notes),
+  and added both to `Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s `$monitoredActivities`.
+  Safe by construction: the script's existing `Get-GroupTargetFromTargetResources` already fails soft
+  (skips a record with no `Group`-typed target) rather than assuming a shape, so the addition can only
+  gain coverage, never fabricate a match. Also widened `Get-PrincipalDisplayNameFromTargetResources`
+  to collect every `User`-typed target instead of only the first, since a bulk record may legitimately
+  affect more than one member. The `targetResources` shape for the two bulk activities specifically
+  (does a bulk record actually carry a `Group`-typed entry, and how many `User`-typed entries) is
+  **not** confirmed by any Microsoft worked example — left as an explicit, disclosed VERIFY (new item
+  above) rather than resolved by guessing, per `AGENTS.md` §4. `README.md` (§6 config table, §11),
+  `design.md`, `validate/Test-RoleAssignableGroupMembershipAuditTrail.ps1` (4-activity allowlist, new
+  manual-checklist item), and `reviews.md` (new Round 3, all four lenses) updated; Round 3 Red Team
+  finding closed, no Fail raised by any lens.
 - [x] **`scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/`** — commit abb8afe —
   2026-09-15. New full scenario (README, design, deploy, validate, rollback, four-lens review)
   extending `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/`'s proven PII-only custom

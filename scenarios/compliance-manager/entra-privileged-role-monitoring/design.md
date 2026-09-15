@@ -293,13 +293,24 @@ group's own **membership** (who's inside an already-role-assigned group) needed 
 separate `GroupManagement`-category watcher. The two scripts' coverage is complementary, not
 overlapping and not gapped, once this distinction is made explicit.
 
-**Two disclosed residual gaps, not closed by this fragment (reviews.md round 2, Red Team findings 2
-and 3), both carried into README.md §11 and PROGRESS.md rather than silently accepted:** (a) Phase 1
-discovery is a poll, not an event trigger — an attacker who completes the entire "create
-role-assignable group → assign it a monitored role → add self as member" sequence between two
-scheduled runs has a detection-window gap bounded by the run interval, the same class of trade-off
-this scenario's daily-cadence guidance already manages for direct role assignment; (b) a member
-added via a documented-but-differently-named **bulk import** activity
-(`"Bulk import group members - finished (bulk)"`) is not confirmed to be covered by this script's
-two single-member `$monitoredActivities` entries — not resolved by guessing at an unconfirmed
-activity/`targetResources` shape.
+**One disclosed residual gap, not closed by this fragment (reviews.md round 2, Red Team finding 2),
+carried into README.md §11 and PROGRESS.md rather than silently accepted:** Phase 1 discovery is a
+poll, not an event trigger — an attacker who completes the entire "create role-assignable group →
+assign it a monitored role → add self as member" sequence between two scheduled runs has a
+detection-window gap bounded by the run interval, the same class of trade-off this scenario's
+daily-cadence guidance already manages for direct role assignment.
+
+**Round 2 Red Team finding 3, partially closed by a later fragment:** a member added via a
+documented-but-differently-named **bulk import** activity (`"Bulk import group members - finished
+(bulk)"`, plus its `"Bulk remove group members - finished (bulk)"` counterpart) was not monitored at
+all as of round 2. A direct fetch of Microsoft's `reference-audit-activities.md` source (not just a
+web search) confirmed both as real, distinct `GroupManagement`-category activity names — an
+unambiguous fact no worked example was needed for — so both are now in `$monitoredActivities`
+(closing the "not monitored at all" half of the gap). What remains open, disclosed rather than
+guessed at: no Microsoft worked example confirms these two activities' `targetResources` carry the
+same Group-typed-plus-User-typed shape the singular activities are confirmed to use, so
+`Get-GroupTargetFromTargetResources` fails soft (skips the record) if that assumption doesn't hold
+for a given tenant/event. `Get-PrincipalDisplayNameFromTargetResources` was also widened to collect
+every User-typed target rather than only the first, since a bulk event may legitimately affect more
+than one member per record — a shape-agnostic improvement, not a guess about the bulk case
+specifically. See README.md §11 and the deploy script's `.NOTES` for the still-open VERIFY.

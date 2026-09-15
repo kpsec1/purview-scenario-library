@@ -41,16 +41,31 @@
       (Get-MgAuditLogDirectoryAudit) for GroupManagement-category events in the search window, using
       the SAME grounded category+date-range server-side filter shape the sibling script already uses
       (design.md Section 4 there). Narrows client-side to "Add member to group"/"Remove member from
-      group" events whose targetResources array contains a Group-typed entry matching one of the
-      monitored group Ids - a shape directly confirmed by Microsoft's own worked
-      Get-EntraAuditDirectoryLog example (.NOTES source 6), which is also the first confirmation in
-      this scenario that a GroupManagement targetResources entry carries a stable "id" (not just
-      displayName) - a materially stronger match key than the sibling script had available for its
-      own Role-typed targets.
+      group" events (plus the two bulk-import/remove variants - see below) whose targetResources
+      array contains a Group-typed entry matching one of the monitored group Ids - a shape directly
+      confirmed by Microsoft's own worked Get-EntraAuditDirectoryLog example (.NOTES source 6) for
+      the two single-member activities, which is also the first confirmation in this scenario that a
+      GroupManagement targetResources entry carries a stable "id" (not just displayName) - a
+      materially stronger match key than the sibling script had available for its own Role-typed
+      targets.
+
+      As of this revision, $monitoredActivities also includes "Bulk import group members - finished
+      (bulk)" and "Bulk remove group members - finished (bulk)" - confirmed as real, distinct
+      GroupManagement-category activity names by a direct fetch of Microsoft's own
+      reference-audit-activities source page (.NOTES source 7/12), closing the "not monitored at
+      all" half of reviews.md round 2 Red Team finding 3. Whether these two activities' records carry
+      the same Group-typed-plus-User-typed targetResources shape as the confirmed single-member
+      activities is NOT independently confirmed by a Microsoft worked example - the extraction
+      functions below fail soft (skip the record) rather than assume, so this remains a disclosed,
+      not-yet-pilot-tenant-verified residual gap rather than a silently-guessed fix (README.md
+      Section 11, AGENTS.md Section 4).
 
     Each output row carries the discovered RoleDisplayName the group held AT DISCOVERY TIME (this
     run), so the CSV is self-documenting about why each group was in scope - not just that a
-    membership change happened.
+    membership change happened. PrincipalDisplayName may contain more than one semicolon-separated
+    name on a single row for a bulk import/remove event that affects multiple members at once (see
+    Get-PrincipalDisplayNameFromTargetResources) - a single-member Add/Remove event always yields
+    exactly one name, unchanged from before this revision.
 
     Idempotency: de-duplicates on the record's own documented Id (GUID), identical to the sibling
     script (design.md Section 5) - the same API, same documented stable-Id guarantee.
@@ -135,6 +150,20 @@
     fails soft (empty column) rather than assuming, consistent with the sibling script's own handling
     of its unconfirmed Role-target array position.
 
+    VERIFY (pilot tenant or a future Microsoft Learn pass): whether "Bulk import group members -
+    finished (bulk)"/"Bulk remove group members - finished (bulk)" records carry a Group-typed
+    targetResources entry (this script's match key) at all, and if so whether they carry one
+    User-typed entry per affected member or some other shape (e.g. a count-only summary with no
+    per-member detail). Source 12 below (direct fetch of Microsoft's reference-audit-activities.md)
+    confirms both activity names and their GroupManagement category, but the source page does not
+    document targetResources contents for these two specifically, and source 6's worked example
+    covers only the singular "Add member to group" activity. Until confirmed, a bulk import/remove
+    that doesn't match this script's Group-typed-entry assumption is silently skipped (fails soft,
+    per Get-GroupTargetFromTargetResources above) rather than raising a false record - meaning a
+    bulk-added privileged-group member could still go undetected by this script even after this
+    revision, if the real shape turns out to differ. README.md Section 11 discloses this explicitly
+    rather than claiming the gap is fully closed.
+
     THROTTLING: all three Graph resources this script calls (groups, roleManagement/directory, and
     auditLogs/directoryAudits) are called through Microsoft Graph PowerShell SDK cmdlets, which
     implement automatic retry with exponential backoff honoring the Retry-After header - no custom
@@ -174,6 +203,13 @@
     11. directoryAudit resource type / targetResource resource type (shared with the sibling script):
         https://learn.microsoft.com/graph/api/resources/directoryaudit
         https://learn.microsoft.com/graph/api/resources/targetresource
+    12. Microsoft Entra audit log activity reference - GroupManagement category, Microsoft Entra
+        (AAD) Management UX audit source (confirms "Bulk import group members - finished (bulk)" and
+        "Bulk remove group members - finished (bulk)" as distinct, real activity names; does not
+        document their targetResources shape - see the VERIFY note above). Fetched directly from the
+        docs source (learn.microsoft.com returned EGRESS_BLOCKED in this build environment) at
+        https://raw.githubusercontent.com/MicrosoftDocs/entra-docs/main/docs/identity/monitoring-health/reference-audit-activities.md
+        - rendered page: https://learn.microsoft.com/entra/identity/monitoring-health/reference-audit-activities
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Low')]
 param(
@@ -258,25 +294,44 @@ Write-Host "Phase 1 complete: $($monitoredGroups.Count) group(s) in scope for th
 
 $monitoredActivities = @(
     'Add member to group',
-    'Remove member from group'
+    'Remove member from group',
+    # Confirmed as real, distinct GroupManagement-category activity names via a direct fetch of
+    # Microsoft's own reference-audit-activities source (.NOTES source 7/12) - NOT the same
+    # activity as the two single-member ones above (closes reviews.md round 2 Red Team finding 3's
+    # "not monitored at all" gap). The targetResources shape for these two specifically (does a
+    # Group-typed entry plus one-or-more User-typed entries appear, matching the singular events'
+    # confirmed shape?) is still not confirmed by a Microsoft worked example - see the VERIFY note
+    # below and README.md Section 11. Included here rather than left out entirely: the fail-soft
+    # extraction functions below skip any record that doesn't carry a matching Group-typed target,
+    # so adding these names can only gain coverage, never fabricate a false match.
+    'Bulk import group members - finished (bulk)',
+    'Bulk remove group members - finished (bulk)'
 )
 
 function Get-GroupTargetFromTargetResources {
     # Group-typed target's Id/DisplayName - confirmed present on "Add member to group" events by
     # Microsoft's own worked Get-EntraAuditDirectoryLog example (.NOTES source 6). Filters by .Type
-    # rather than assuming array position, consistent with the sibling script's own approach.
+    # rather than assuming array position, consistent with the sibling script's own approach. Not
+    # independently confirmed for the two bulk activities above - fails soft ($null) rather than
+    # assuming if no Group-typed entry is present, so an unconfirmed/different bulk shape is safely
+    # skipped (disclosed residual gap) instead of silently mismatched.
     param([Parameter(Mandatory)][AllowNull()]$TargetResources)
     return @($TargetResources) | Where-Object { $_.Type -eq 'Group' } | Select-Object -First 1
 }
 
 function Get-PrincipalDisplayNameFromTargetResources {
-    # The User-typed target on an "Add/Remove member to/from group" event is the affected member.
-    # Falls back to $null (empty CSV column) rather than assuming presence - README.md Section 11.
+    # The User-typed target(s) on a membership-change event are the affected member(s). Collects
+    # EVERY User-typed entry (not just the first) and joins them, rather than assuming exactly one -
+    # a single-member "Add/Remove member to/from group" event has exactly one, so this is unchanged
+    # for that case, but a "Bulk import/remove group members" event may legitimately carry more than
+    # one User-typed target per record (unconfirmed either way - no Microsoft worked example was
+    # found for the bulk activities' record shape). Falls back to $null (empty CSV column) rather
+    # than assuming presence - README.md Section 11.
     param([Parameter(Mandatory)][AllowNull()]$TargetResources)
-    $userTarget = @($TargetResources) | Where-Object { $_.Type -eq 'User' } | Select-Object -First 1
-    if ($userTarget) {
-        if ($userTarget.UserPrincipalName) { return $userTarget.UserPrincipalName }
-        return $userTarget.DisplayName
+    $userTargets = @($TargetResources) | Where-Object { $_.Type -eq 'User' }
+    if ($userTargets.Count -gt 0) {
+        $names = $userTargets | ForEach-Object { if ($_.UserPrincipalName) { $_.UserPrincipalName } else { $_.DisplayName } }
+        return ($names -join '; ')
     }
     return $null
 }

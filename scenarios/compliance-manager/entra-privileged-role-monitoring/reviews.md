@@ -342,3 +342,96 @@ No remaining Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`, and
 `deploy/`/`validate/`. No Fail items were raised. This fragment (the companion script closing round
 1's Red Team finding 1) meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Round 3 — revisiting round 2 Red Team finding 3 (bulk import group members)
+
+Reviewed after grounding `PROGRESS.md`'s open follow-up on whether "Bulk import group members -
+finished (bulk)"/"Bulk remove group members - finished (bulk)" are real, monitorable activities, and
+adding them to `Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s `$monitoredActivities`.
+
+### 🔴 Red Team
+
+**Verdict: Fix (resolved)**
+
+1. **Is "confirmed as a real activity name" enough to add it to `$monitoredActivities`, or does
+   doing so risk a false sense of coverage if the record shape doesn't match?** Round 2 correctly
+   declined to guess at the `targetResources` shape. Simply adding the two activity names without
+   also checking whether the existing shape-matching logic degrades safely would risk the opposite
+   failure mode — claiming coverage that silently isn't there.
+   - **Resolution:** Confirmed `Get-GroupTargetFromTargetResources` already fails soft (returns
+     nothing if no `Group`-typed entry is present) rather than assuming a shape — adding the two
+     activity names can only ever gain matches, never fabricate one, because a record that doesn't
+     carry a `Group`-typed target is filtered out by the same logic that already handles the
+     "Remove member from group" symmetry VERIFY. This is a strictly safe addition given that
+     existing invariant, not a new guess. `README.md` §11 and the deploy script's `.NOTES` state the
+     shape is still unconfirmed rather than declaring the gap fully closed.
+2. **A bulk operation can affect many members in one audit record — does the single
+   `PrincipalDisplayName` column silently under-report if only the first `User`-typed target is
+   captured?** The pre-existing `Get-PrincipalDisplayNameFromTargetResources` took only the first
+   match, which was harmless when every monitored activity was single-member, but would silently
+   drop members 2..N of a bulk record once bulk activities were added.
+   - **Resolution:** Widened the function to collect every `User`-typed target and join them
+     (semicolon-separated) rather than only the first. This is shape-agnostic (doesn't assume a bulk
+     record has more than one, or exactly how many) and doesn't change output for any single-member
+     event, which continues to yield exactly one name as before.
+
+No remaining Fail. The "not monitored at all" half of round 2 finding 3 is now closed; the
+`targetResources`-shape half remains open and is carried forward as a `PROGRESS.md` VERIFY
+(pilot-tenant test described in `validate/Test-RoleAssignableGroupMembershipAuditTrail.ps1`'s new
+manual-checklist item) rather than closed by assumption.
+
+### 🔵 Blue Team
+
+**Verdict: Pass**
+
+- The widened `PrincipalDisplayName` extraction is a strict improvement for an on-call responder
+  reading the CSV — a semicolon-separated list is still human-readable, and the column's meaning
+  ("who was affected") is unchanged for the pre-existing single-member activities.
+- `validate/Test-RoleAssignableGroupMembershipAuditTrail.ps1`'s automated check was widened from a
+  2-activity to a 4-activity allowlist, so a record with an unexpected `ActivityDisplayName` still
+  fails the same automated check as before — no coverage regression in the validation script itself.
+- The new manual-checklist item gives a responder a concrete, actionable pilot-tenant test (a
+  throwaway bulk add/remove) to close the remaining VERIFY, rather than leaving it as an abstract
+  research question with no way to act on it operationally.
+
+No Fix/Fail items from this lens.
+
+### 🎩 CISO
+
+**Verdict: Pass**
+
+- Same low-cost, no-new-license-tier profile as round 2's companion script — this is a same-day
+  refinement of already-funded automation, not a new spend decision.
+- Narrative improvement is incremental but real: "bulk group-membership changes are now in the
+  monitored activity list, with one disclosed, pilot-testable residual gap" is a stronger audit
+  answer than round 2's "not monitored at all."
+
+No Fix/Fail items from this lens.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Pass**
+
+- Both new activity names were confirmed against Microsoft's own `reference-audit-activities.md`
+  documentation source (fetched directly, not inferred from a search snippet), consistent with
+  `AGENTS.md` §4's grounding requirement — no invented activity name or cmdlet was introduced.
+- No native Microsoft alert or built-in report was found that already covers "bulk group-membership
+  change on a privileged role-assignable group" specifically — this remains a complementary control,
+  not a duplicate of an existing product capability.
+
+No Fix/Fail items from this lens.
+
+### Round 3 Summary
+
+| Lens | Initial verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Fix | 2 (safe-addition invariant confirmed; multi-member under-reporting closed by widened extraction) | Closed |
+| 🔵 Blue Team | Pass | 0 | — |
+| 🎩 CISO | Pass | 0 | — |
+| 🟦 Microsoft Product Owner | Pass | 0 | — |
+
+All Fix items from this round are resolved in the current state of `deploy/`, `validate/`,
+`README.md`, and `design.md`. No Fail items were raised. The residual `targetResources`-shape VERIFY
+is deliberately left open (not guessed at) and tracked in `PROGRESS.md`.
