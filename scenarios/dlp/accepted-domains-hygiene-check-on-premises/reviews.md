@@ -254,3 +254,153 @@ of the sample's own "coexistence domain" label.
   tenant can legitimately be mid-migration on one side and not the other).
 - No new Fix/Fail: this closes a disclosed grounding gap with a primary source, not a defect in this
   scenario's own docs/code.
+
+---
+
+## Follow-up four-lens review — `MatchSubDomains`/`Default` cross-environment reconciliation (later build)
+
+**Scope:** a real code change, not a doc-only correction addendum. Closes the `design.md` §9 non-goal
+("Does not attempt to reconcile `MatchSubDomains`/`Default` flags across environments... once a concrete
+buyer need surfaces one") once that follow-up was picked up from `PROGRESS.md`. Adds two new finding
+categories to `deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s cross-environment check
+(§4): `CrossEnvironmentMatchSubDomainsMismatch` and `CrossEnvironmentDefaultMismatch`, alongside the
+existing `CrossEnvironmentMismatch` (`DomainType`). A full four-lens round, not a correction addendum,
+because this is new detection logic shipping, not a documentation fix.
+
+### 🔴 Red Team
+
+**Verdict: Fix (resolved)**
+
+1. **The first draft folded all three fields into the single existing `CrossEnvironmentMismatch`
+   category.** For a domain diverging on both `MatchSubDomains` and `Default` in the same run, this
+   produces two rows sharing the same `(RunId, Category, DomainName)` key — the drift-log CSV's
+   documented uniqueness invariant (§6, matching the parent scenario's own model). This isn't a
+   cosmetic issue: `validate/Test-OnPremisesAcceptedDomainsHygieneReport.ps1`'s existing duplicate-row
+   check exists specifically to catch replace-by-`RunId` idempotency regressions, and a genuine,
+   intentional two-finding case would trip it as a false `[FAIL]`, training an operator to distrust or
+   ignore that check — the same "erodes trust in its own alerts" failure mode the CISO lens already
+   flagged for over-alerting in the original round.
+   - **Verified directly, not just reasoned about:** a mocked-`Get-AcceptedDomain` PowerShell 7.4.6 run
+     (two domains, one diverging on `MatchSubDomains`+`Default` simultaneously) reproduced the
+     collision exactly as predicted — `validate/...ps1` reported `[FAIL] No duplicate (RunId, Category,
+     DomainName) rows in the drift log` against the single-category draft.
+   - **Resolution:** Split into three separate categories (`CrossEnvironmentMismatch`/
+     `CrossEnvironmentMatchSubDomainsMismatch`/`CrossEnvironmentDefaultMismatch`), mirroring this
+     scenario's own baseline-diff block's existing per-field-category convention (§6). Re-ran the same
+     mocked scenario after the fix: 4 distinct findings, 5 total drift-log rows (including the
+     unrelated `UnexpectedTrustedDomain`), zero duplicate-key failures, confirmed by both the deploy
+     script's own summary and the validate script's symmetric reconciliation. Re-ran a second time with
+     an unchanged `-RunId` to confirm replace-by-`RunId` idempotency held (5 rows before, 5 after, no
+     duplication) — the exact regression class this finding was about.
+2. **`MatchSubDomains` severity: does the FAIL threshold actually catch the risk it claims to?** The
+   rule is FAIL if *either* side has `MatchSubDomains=$true`. Considered whether a narrower rule (FAIL
+   only if the *more permissive* side is the one a DLP `FromScope` condition doesn't see) would be more
+   precise. Rejected: which side a given DLP/mail-flow rule actually evaluates depends on where the
+   message currently routes, which this script cannot determine from two baseline snapshots alone —
+   the broader "either side" rule is the safe default, and the finding `Detail` text already tells the
+   operator to check which side is the more restrictive one before triaging (matches this scenario's
+   established pattern of disclosing interpretation limits rather than asserting more certainty than
+   the read-only data supports).
+
+No remaining Fix/Fail after resolution.
+
+### 🔵 Blue Team
+
+**Verdict: Fix (resolved)**
+
+1. **The validate script's original single-category symmetric check couldn't detect under-reporting on
+   the two new categories.** Before this round, `-CheckLive -CloudBaselinePath` only reconciled
+   `DomainType` disagreements — the exact "new finding category ships with no way to prove it isn't
+   silently under-reporting" gap the original round's own Blue Team finding 1 already fixed once for
+   `CrossEnvironmentMismatch`, now recurring for its two new siblings.
+   - **Resolution:** Extended the same reconciliation block to independently recompute
+     `MatchSubDomains`/`Default` disagreements and confirm each is reflected under its own category
+     name in the most recent drift-log run — verified live: the mocked functional test above exercised
+     `-CheckLive -CloudBaselinePath` end to end and every expected finding reconciled as `[PASS]`.
+2. **Exit-code alerting correctly covers both new categories without a separate switch.** Confirmed by
+   inspection: `Add-Finding` still routes every category through the same `$findings` list and
+   `$failCount`/exit-1 logic regardless of category name — no fix needed, and the mocked test's exit
+   code (1, driven by the `MatchSubDomains` `FAIL` rows) confirms it live, not just by reading the code.
+3. **`CrossEnvironmentDefaultMismatch` is always `WARN`, never `FAIL` — confirm this doesn't create a
+   silent blind spot.** Considered whether an attacker who could flip a domain's `Default` flag could
+   use it for anything actionable enough to warrant `FAIL`. `Default` governs new-recipient primary
+   SMTP address generation (§4), not mail acceptance or trust boundary — changing it doesn't grant an
+   attacker mail delivery for a domain they don't already control acceptance for. `WARN` is
+   proportionate to the actual risk, not a coverage gap.
+
+No remaining Fail. The new categories inherit the same drift-log CSV / findings-JSON evidentiary shape
+and the same scheduler exit-code contract as every other category in this scenario — no new alerting
+plumbing required at the buyer's SIEM/ticketing layer.
+
+### 🎩 CISO
+
+**Verdict: Pass**
+
+- **Incremental, not scope-creeping.** This closes a non-goal `design.md` §9 explicitly deferred
+  "pending a concrete buyer need" — the discipline that non-goal called for was followed: it stayed
+  deferred until picked up as a scoped `PROGRESS.md` follow-up, not built speculatively ahead of need.
+- **Cost:** zero incremental licensing or infrastructure — same deploy/validate scripts, same schedule,
+  same output files, three more field comparisons per already-read domain object. No new decision for
+  a CISO to fund separately; it rides the existing scenario's already-approved cost basis.
+- **Narrows a real, previously-silent gap without overclaiming.** Before this round, a hybrid buyer
+  could have `DomainType` parity across environments while silently diverging on subdomain-mail
+  acceptance — a gap the original scenario's own `README.md` never claimed to cover. The board
+  narrative ("we monitor accepted-domains configuration for drift across our hybrid estate") is now
+  actually true of all three fields Exchange exposes per domain, not just one.
+- **`CrossEnvironmentDefaultMismatch`'s permanent `WARN` severity is the right compliance posture** —
+  it avoids manufacturing false urgency around an operational-hygiene signal that isn't a trust-boundary
+  control, preserving the credibility of the `FAIL` signals that are.
+
+No Fix/Fail raised.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Fix (resolved)**
+
+1. **Are `MatchSubDomains` and `Default` grounded against a primary Microsoft source, not assumed from
+   naming convention?** `learn.microsoft.com` was blocked again in this build's network egress (the
+   same recurring restriction `README.md` §12 already discloses); fetched `Set-AcceptedDomain.md`
+   directly from the canonical `MicrosoftDocs/office-docs-powershell` GitHub source instead (the same
+   grounding method this scenario's original build used for its five core citations). Confirmed
+   verbatim: `-MatchSubDomains` "enables mail to be sent by and received from users on any subdomain of
+   this accepted domain," default `$false`; `-MakeDefault` "specifies whether the accepted domain is
+   the default domain."
+   - **Resolution:** No fabrication — both properties were already used, unexamined, by the *parent*
+     scenario's own baseline JSON shape and this scenario's baseline-diff block before this round; this
+     round is the first to cite their actual Microsoft-documented semantics directly (`README.md` §12
+     reference 4, updated).
+2. **Does `-MakeDefault $true` on one domain provably clear `Default` from whichever domain held it
+   previously?** Microsoft's own reference states what the parameter does but not this side effect.
+   Asserting a single-default invariant as fact would violate this repo's `AGENTS.md` §4 grounding
+   standard.
+   - **Resolution:** Not asserted as fact. `README.md` §8's remediation step and §11's limitations both
+     state this as an explicit VERIFY (pilot tenant) rather than an assumed behavior — the finding's own
+     severity (`WARN`, never `FAIL`) doesn't depend on the answer either way, so this doesn't block
+     shipping the check, only the specific one-step-fix remediation claim.
+3. **Is a three-category design the right shape, or should this have been a single category with a
+   `Field` column added to the CSV schema instead?** Considered both. A schema change (`Field` column)
+   would also fix the uniqueness-key collision, but would diverge the drift-log CSV shape from the
+   parent scenario's own (§6's stated "same shape" contract) and from this scenario's own baseline-diff
+   block, which already solves the identical structural problem with per-field categories, not an extra
+   column. Three categories is the smaller, more consistent change.
+   - **Resolution:** No change — three-category design confirmed as the better fit for this repo's
+     existing conventions on review, not just the first idea that worked.
+
+No remaining Fail.
+
+### Summary — follow-up round
+
+| Lens | Verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Fix | 2 (1 real drift-log row-collision bug found via direct functional testing and fixed with a three-category redesign, 1 severity-threshold choice reviewed and confirmed correct) | Closed |
+| 🔵 Blue Team | Fix | 3 (1 validate-script coverage gap for both new categories closed with a real code fix, 1 confirmed correct by inspection and live test, 1 severity-proportionality check confirmed no blind spot) | Closed |
+| 🎩 CISO | Pass | 0 | N/A |
+| 🟦 Microsoft Product Owner | Fix | 3 (1 confirmed primary-source grounding not naming-convention guessing, 1 confirmed a genuine unknown stayed disclosed as VERIFY rather than asserted, 1 confirmed the three-category design over a schema-change alternative) | Closed |
+
+The row-collision bug this round found and fixed was caught by actually running the modified scripts
+against a mocked on-premises session (PowerShell 7.4.6) with a domain deliberately diverging on
+multiple fields at once — not by static review alone — matching this repo's stated verification bar.
+Both the deploy and validate script changes were re-tested after the fix, including a same-`RunId`
+re-run to confirm replace-by-`RunId` idempotency held. One VERIFY carried forward rather than resolved
+by guessing: whether `-MakeDefault $true` clears the flag from the domain that previously held it
+(`README.md` §8/§11/§12). This follow-up meets the definition of done in `AGENTS.md` §9.

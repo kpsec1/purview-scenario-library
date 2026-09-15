@@ -27,14 +27,24 @@
          EXPECTED and normal on-premises (design.md Sec 2), unlike the parent's cloud-only context
          where it is inherently surprising.
 
-    Plus one finding category unique to this companion (design.md Sec 4), only computed when
-    -CloudBaselinePath is supplied:
-      5. CrossEnvironmentMismatch - a domain present in both this run's live on-premises state and the
-         cloud scenario's last-recorded baseline snapshot, with different DomainType values where
-         neither side is ExternalRelay (an on-premises-only value that is never expected to have a
-         cloud counterpart). FAIL if the two sides disagree on the in-organization trust boundary,
-         WARN if both are in-organization types that simply differ - design.md Sec 4 explains why this
-         is deliberately not resolved to a single "correct" answer by this script.
+    Plus three finding categories unique to this companion (design.md Sec 4), only computed when
+    -CloudBaselinePath is supplied - one per independently-checked field, the same per-field-category
+    convention the baseline-diff block below already uses for DomainTypeChangedSincePreviousRun/
+    DefaultChangedSincePreviousRun/MatchSubDomainsChangedSincePreviousRun, chosen deliberately (over a
+    single overloaded category) so the drift log's (RunId, Category, DomainName) row key stays unique
+    even when one domain diverges on more than one field in the same run:
+      5. CrossEnvironmentMismatch              - DomainType differs where neither side is ExternalRelay
+         (an on-premises-only value never expected to have a cloud counterpart). FAIL if the two sides
+         disagree on the in-organization trust boundary, WARN if both are in-organization types that
+         simply differ.
+      6. CrossEnvironmentMatchSubDomainsMismatch - MatchSubDomains differs where neither side's
+         DomainType is ExternalRelay. FAIL if either side has it set to $true (one environment silently
+         accepts mail for every subdomain of this domain while the other does not - an asymmetric
+         attack surface), WARN otherwise.
+      7. CrossEnvironmentDefaultMismatch         - Default differs where neither side's DomainType is
+         ExternalRelay. Always WARN - each environment computes its own default accepted domain
+         independently in a hybrid deployment (two separate organizations), so a difference alone is
+         not a misconfiguration, but is unreviewed drift worth a human confirming.
 
     Baseline/drift model: identical shape and replace-by-RunId idempotency to the parent scenario
     (parent design.md Sec 4), but written to entirely separate -BaselinePath/-DriftLogPath files -
@@ -144,11 +154,21 @@
     - Which DomainType (Authoritative vs. InternalRelay) is "correct" for a shared-namespace hybrid
       domain depends on that domain's actual migration/coexistence state and is not resolved to a
       single rule by this script - a CrossEnvironmentMismatch WARN is not automatically a misconfig.
+    - Set-AcceptedDomain's own reference documents -MakeDefault as "specifies whether the accepted
+      domain is the default domain" but never states outright that only one accepted domain can be
+      Default at a time in a given organization - this script's Default cross-environment check (added
+      in a later build, design.md Sec 4/9) treats each environment's Default flag as independently
+      computed rather than asserting a single-default invariant it could not confirm.
 
     Sources (Microsoft Learn, fetched via the canonical MicrosoftDocs GitHub source this build - see
     README.md Sec 12 for full citations; verify against learn.microsoft.com before production use):
     - Get-AcceptedDomain reference (on-premises + cloud applicability, -DomainController):
       https://learn.microsoft.com/powershell/module/exchangepowershell/get-accepteddomain
+    - Set-AcceptedDomain reference (-MatchSubDomains: "enables mail to be sent by and received from
+      users on any subdomain of this accepted domain," default $false; -MakeDefault: "specifies whether
+      the accepted domain is the default domain"), fetched directly from the canonical MicrosoftDocs
+      GitHub source in the build that added the MatchSubDomains/Default cross-environment checks:
+      https://learn.microsoft.com/powershell/module/exchangepowershell/set-accepteddomain
     - New-AcceptedDomain / Remove-AcceptedDomain references (on-premises-only applicability):
       https://learn.microsoft.com/powershell/module/exchangepowershell/new-accepteddomain
       https://learn.microsoft.com/powershell/module/exchangepowershell/remove-accepteddomain
@@ -356,12 +376,29 @@ if ($CloudBaselinePath) {
         $cloudEntry = $cloudByDomain[$key]
         if (-not $cloudEntry) { continue }
         if ($live.DomainType -eq 'ExternalRelay' -or $cloudEntry.DomainType -eq 'ExternalRelay') { continue }
+
         if ($live.DomainType -ne $cloudEntry.DomainType) {
             $onPremInOrg = $inOrganizationTypes -contains $live.DomainType
             $cloudInOrg = $inOrganizationTypes -contains $cloudEntry.DomainType
             $boundaryDisagreement = $onPremInOrg -ne $cloudInOrg
             Add-Finding -Category 'CrossEnvironmentMismatch' -Severity $(if ($boundaryDisagreement) { 'FAIL' } else { 'WARN' }) -DomainName $live.DomainName `
                 -Detail "On-premises DomainType '$($live.DomainType)' differs from the cloud baseline's recorded DomainType '$($cloudEntry.DomainType)' (cloud baseline: $($cloud.runId)).$(if ($boundaryDisagreement) { ' The two environments disagree on which side of the in-organization trust boundary this domain falls on - FromScope-consuming DLP rules in Exchange Online only ever see the CLOUD side of this disagreement.' } else { " Both sides are in-organization types that simply differ - not automatically a misconfiguration (design.md Sec 4); confirm against this domain's actual migration/coexistence state and the known-domains config's owner field." })"
+        }
+
+        # design.md Sec 4/Sec 9: adds two sibling categories to CrossEnvironmentMismatch, once a
+        # concrete buyer need surfaced (PROGRESS.md follow-up) - separate categories, not additional
+        # findings under the same 'CrossEnvironmentMismatch' name, so a domain that diverges on more
+        # than one field never collides on the drift log's (RunId, Category, DomainName) row key. Same
+        # ExternalRelay exclusion above applies to both new checks.
+        if ($live.MatchSubDomains -ne $cloudEntry.MatchSubDomains) {
+            $eitherExtendsSubdomainTrust = ($live.MatchSubDomains -eq $true) -or ($cloudEntry.MatchSubDomains -eq $true)
+            Add-Finding -Category 'CrossEnvironmentMatchSubDomainsMismatch' -Severity $(if ($eitherExtendsSubdomainTrust) { 'FAIL' } else { 'WARN' }) -DomainName $live.DomainName `
+                -Detail "On-premises MatchSubDomains '$($live.MatchSubDomains)' differs from the cloud baseline's recorded MatchSubDomains '$($cloudEntry.MatchSubDomains)' (cloud baseline: $($cloud.runId)).$(if ($eitherExtendsSubdomainTrust) { ' One environment silently accepts mail for every subdomain of this domain (Set-AcceptedDomain -MatchSubDomains reference) while the other does not - an attacker-registered subdomain would be treated as in-organization only on the side with MatchSubDomains=$true, an asymmetric attack surface the FromScope-consuming side cannot see if it is the more restrictive one.' } else { ' Both sides report the same effective non-extension of subdomain trust; this branch should be unreachable in practice but is evaluated defensively.' })"
+        }
+
+        if ($live.Default -ne $cloudEntry.Default) {
+            Add-Finding -Category 'CrossEnvironmentDefaultMismatch' -Severity 'WARN' -DomainName $live.DomainName `
+                -Detail "On-premises Default flag '$($live.Default)' differs from the cloud baseline's recorded Default flag '$($cloudEntry.Default)' (cloud baseline: $($cloud.runId)). Each environment computes its own default accepted domain independently (Set-AcceptedDomain -MakeDefault reference) - a hybrid deployment legitimately runs two separate organizations, each with its own default, so this alone is not a misconfiguration. Confirm which domain each side's new-recipient primary SMTP address generation actually targets is intentional before closing this finding."
         }
     }
     Write-Host "  Cross-environment reconciliation complete (cloud baseline recorded $($cloud.runId), $($cloud.domains.Count) domain(s))." -ForegroundColor Cyan

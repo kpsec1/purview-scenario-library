@@ -88,7 +88,7 @@ flowchart TD
 
     AD --> C5{"Cross-environment check<br/>(design.md Sec 4)"}
     CBL -. "file read only,<br/>no live cloud connection" .-> C5
-    C5 -- "DomainType disagrees<br/>between environments" --> F5["CrossEnvironmentMismatch finding"]
+    C5 -- "DomainType / MatchSubDomains /<br/>Default disagrees between environments" --> F5["CrossEnvironmentMismatch /<br/>CrossEnvironmentMatchSubDomainsMismatch /<br/>CrossEnvironmentDefaultMismatch finding<br/>(one category per field, Sec 6)"]
 
     AAL -.-> F6["Best-effort Set-/New-/Remove-AcceptedDomain<br/>audit attribution (Sec 5 — covers Add/Remove,<br/>unlike the parent's cloud-only gap)"]
 
@@ -188,6 +188,18 @@ fully reachable (and expected, §4/§11) on the on-premises side.
 | `DefaultChangedSincePreviousRun` | `INFO` | The default-domain flag changed on this domain since the on-premises baseline. |
 | `MatchSubDomainsChangedSincePreviousRun` | `FAIL` if flipped to `$true` on an in-organization domain, else `WARN` | A domain's `MatchSubDomains` flag changed since the on-premises baseline. |
 | `CrossEnvironmentMismatch` (only with `-CloudBaselinePath`) | `FAIL` if the trust boundary disagrees between environments, else `WARN` | A domain's on-premises `DomainType` differs from the cloud baseline's recorded `DomainType` for the same domain, and neither is `ExternalRelay` — `design.md` §4. |
+| `CrossEnvironmentMatchSubDomainsMismatch` (only with `-CloudBaselinePath`) | `FAIL` if either side has `MatchSubDomains` `$true`, else `WARN` | A domain's on-premises `MatchSubDomains` differs from the cloud baseline's recorded value, and neither side's `DomainType` is `ExternalRelay` — `design.md` §4. One environment silently accepting mail for every subdomain while the other does not is an asymmetric attack surface. |
+| `CrossEnvironmentDefaultMismatch` (only with `-CloudBaselinePath`) | `WARN` | A domain's on-premises `Default` flag differs from the cloud baseline's recorded value, and neither side's `DomainType` is `ExternalRelay` — `design.md` §4. Each environment computes its own default accepted domain independently in a hybrid deployment, so this is unreviewed drift, not automatically a misconfiguration. |
+
+**Why three separate categories, not one `CrossEnvironmentMismatch` covering all three fields:** the
+drift-log CSV's uniqueness key is `(RunId, Category, DomainName)` — the same replace-by-`RunId` model
+the parent scenario uses. A domain that diverges on more than one field in the same run (e.g. both
+`MatchSubDomains` and `Default`) needs one row per divergence, and one row per divergence needs a
+distinct category to stay unique under that key — the same reason this scenario's own baseline-diff
+block already uses three separate per-field categories (`DomainTypeChangedSincePreviousRun`/
+`DefaultChangedSincePreviousRun`/`MatchSubDomainsChangedSincePreviousRun`) rather than one overloaded
+`ChangedSincePreviousRun` category. Confirmed by this build's own functional test (§7 below), which
+caught the row-collision this design avoids before it shipped.
 
 Exit code: exits `1` if any `FAIL`-severity finding is present in the current run — same contract as
 the parent scenario. `WARN`/`INFO`-only findings exit `0`.
@@ -215,7 +227,17 @@ the parent scenario. `WARN`/`INFO`-only findings exit `0`.
    e.g. on-premises `InternalRelay` vs. cloud `Authoritative`). Run this scenario's deploy script with
    `-CloudBaselinePath` pointed at the (unchanged) cloud baseline. Expect: a `CrossEnvironmentMismatch`
    finding (`WARN`, since both remain in-organization types). Revert afterward.
-5. **Evidence** — the per-run findings JSON file and the on-premises drift-log CSV are the audit trail
+5. **Functional test — cross-environment `MatchSubDomains`/`Default` mismatch** — same lab pairing as
+   step 4, but instead (or in addition) diverge the test domain's `MatchSubDomains` or `Default` flag
+   between the two recorded states (`Set-AcceptedDomain -MatchSubDomains`/`-MakeDefault` on whichever
+   side). Run the deploy script with `-CloudBaselinePath`. Expect: a
+   `CrossEnvironmentMatchSubDomainsMismatch` (`FAIL` if either side is `$true`) and/or
+   `CrossEnvironmentDefaultMismatch` (`WARN`) finding, as its own drift-log row distinct from any
+   `CrossEnvironmentMismatch` row the same domain also produces — confirmed directly during this
+   scenario's own build via a mocked-`Get-AcceptedDomain` PowerShell 7.4.6 run producing all three
+   categories for two domains in one pass, then validated with `-CheckLive`'s symmetric reconciliation,
+   not just statically reviewed. Revert afterward.
+6. **Evidence** — the per-run findings JSON file and the on-premises drift-log CSV are the audit trail
    for this side of the hybrid deployment, same pattern as the parent scenario's own files.
 
 ## 8. Operations & tuning
@@ -234,10 +256,18 @@ independently to the on-premises side):
   Unlike the parent's `UnexpectedTrustedDomain`, a non-zero count here is not automatically an
   incident — triage against the known-domains config's `owner` field and the domain's actual
   migration state (`design.md` §4) before escalating.
+- **`CrossEnvironmentMatchSubDomainsMismatch` count, especially any `FAIL`-severity row, trending to
+  zero.** A `FAIL` here means one environment accepts mail for every subdomain of the domain while the
+  other does not — treat this with the same urgency as `UnexpectedTrustedDomain`, since it is an
+  asymmetric attack surface, not merely stylistic drift.
+- **`CrossEnvironmentDefaultMismatch` count** — lower urgency than the other two (always `WARN`), but
+  worth a periodic review to confirm each side's default accepted domain is still the one the buyer
+  intends new recipients' primary SMTP address to be generated against.
 - **`UnexpectedTrustedDomain` count on the on-premises side, trending to zero** — same interpretation
   as the parent scenario, now covering the environment the parent cannot see.
 
-**Incident-response runbook (`UnexpectedTrustedDomain` or `CrossEnvironmentMismatch` finding):**
+**Incident-response runbook (`UnexpectedTrustedDomain`, `CrossEnvironmentMismatch`,
+`CrossEnvironmentMatchSubDomainsMismatch`, or `CrossEnvironmentDefaultMismatch` finding):**
 1. **Confirm intent** — same first step as the parent scenario's runbook (`README.md` §8 there).
 2. **If legitimate** — add/correct the domain's entry in the shared `KnownDomains.json`, closing the
    finding on the next run of whichever scenario(s) it affects.
@@ -245,11 +275,18 @@ independently to the on-premises side):
    finding** — run with `-IncludeAuditAttribution` (after confirming `-AdminAuditLogCmdlets` coverage,
    §11) to attempt attribution via `Search-AdminAuditLog` — a real chance of success here, unlike the
    parent's equivalent finding (`design.md` §5). Escalate to the identity/security team.
-4. **For a `CrossEnvironmentMismatch` finding that turns out to be a genuine misconfiguration** —
-   correct the disagreeing side's `DomainType` via `Set-AcceptedDomain` on whichever environment is
-   wrong, informed by the known-domains config's intended value; re-run both scenarios' deploy scripts
-   to confirm the finding clears.
-5. **Document** — the on-premises findings JSON and drift-log CSV are the evidentiary record.
+4. **For a `CrossEnvironmentMismatch`/`CrossEnvironmentMatchSubDomainsMismatch` finding that turns out
+   to be a genuine misconfiguration** — correct the disagreeing side's `DomainType`/`MatchSubDomains`
+   via `Set-AcceptedDomain` on whichever environment is wrong, informed by the known-domains config's
+   intended value; re-run both scenarios' deploy scripts to confirm the finding clears.
+5. **For a `CrossEnvironmentDefaultMismatch` finding** — confirm with the messaging/identity team which
+   domain each environment's default accepted domain is *supposed* to be; if one side is wrong, correct
+   it with `Set-AcceptedDomain -MakeDefault $true` on the intended domain. VERIFY (pilot tenant, before
+   assuming this is a one-step fix): Microsoft's own `-MakeDefault` reference states it "specifies
+   whether the accepted domain is the default domain" but never states outright that setting it `$true`
+   on one domain automatically clears the flag from whichever domain previously held it — confirm the
+   old default domain's `Default` flag actually flips before treating the finding as closed.
+6. **Document** — the on-premises findings JSON and drift-log CSV are the evidentiary record.
 
 ## 9. Rollback / decommission
 
@@ -305,6 +342,16 @@ the parent scenario.
   coexistence state. Triage against the known-domains config's `owner` field, not against a blanket
   assumption that the two sides must always match — a live tenant can legitimately be mid-migration
   on one side and not the other.
+- **Resolved (later build): cross-environment reconciliation now also covers `MatchSubDomains` and
+  `Default`, not just `DomainType`.** `design.md` §9 originally deferred this as a non-goal pending a
+  concrete buyer need; closed via two new sibling finding categories,
+  `CrossEnvironmentMatchSubDomainsMismatch` and `CrossEnvironmentDefaultMismatch` (§6), each its own
+  category rather than folded into `CrossEnvironmentMismatch` so a domain diverging on more than one
+  field never collides on the drift log's `(RunId, Category, DomainName)` row key — a real bug this
+  build's own functional test caught in an earlier single-category draft before it shipped. One VERIFY
+  carried forward rather than guessed: whether `Set-AcceptedDomain -MakeDefault $true` on one domain
+  automatically clears `Default` from whichever domain previously held it — Microsoft's own reference
+  states what `-MakeDefault` does but not this side effect (§8 above, §12).
 - **Resolved (later build): the parent scenario's `KnownDomains.sample.json` `hybrid.contoso.com`
   entry (`expectedDomainType: InternalRelay`) is correct as written.** A prior build of this scenario
   flagged this as an open question, having found only community/Microsoft Q&A guidance (not an
@@ -343,7 +390,12 @@ the parent scenario.
 3. Remove-AcceptedDomain reference — on-premises-only applicability —
    <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-accepteddomain>
 4. Set-AcceptedDomain reference — `-DomainType` values and definitions (`ExternalRelay` "available
-   only in on-premises Exchange organizations") — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-accepteddomain>
+   only in on-premises Exchange organizations"); also `-MatchSubDomains` ("enables mail to be sent by
+   and received from users on any subdomain of this accepted domain," default `$false`) and
+   `-MakeDefault` ("specifies whether the accepted domain is the default domain") — the two fields the
+   `CrossEnvironmentMatchSubDomainsMismatch`/`CrossEnvironmentDefaultMismatch` checks (§6) reconcile
+   across environments, fetched directly from the canonical MicrosoftDocs GitHub source in the later
+   build that added those two checks — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-accepteddomain>
 5. Search-AdminAuditLog reference — applicable to Exchange Server 2010/2013/2016/2019/SE only (not
    listed for Exchange Online, which uses `Search-UnifiedAuditLog` instead), `-Cmdlets`,
    `-StartDate`/`-EndDate` parameters — <https://learn.microsoft.com/powershell/module/exchangepowershell/search-adminauditlog>

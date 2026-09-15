@@ -1253,11 +1253,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   share a name but not an identity with their Exchange Online counterparts) into `docs/rbac-model.md`
   — **built** (see DONE below): new §13 ("Exchange Server on-premises RBAC — a ninth system"),
   renumbering the old §13 "How scenarios should cite RBAC" to §14.
-- [ ] Consider extending `CrossEnvironmentMismatch` (`accepted-domains-hygiene-check-on-premises/
+- [x] Consider extending `CrossEnvironmentMismatch` (`accepted-domains-hygiene-check-on-premises/
   deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1`) to also reconcile `MatchSubDomains`/
   `Default` flags across environments, not just `DomainType` — explicitly deferred as a non-goal in
   that scenario's `design.md` §9 pending a concrete buyer need, matching this repo's incremental-
-  scoping discipline.
+  scoping discipline — **built** (see DONE below): two new sibling finding categories,
+  `CrossEnvironmentMatchSubDomainsMismatch`/`CrossEnvironmentDefaultMismatch`, not additional rows
+  under the existing category name, after direct functional testing caught a real drift-log
+  `(RunId, Category, DomainName)` row-collision bug in a single-category first draft.
 
 ### Follow-ups discovered while building the Unified Catalog business-glossary scenario
 - [x] `scenarios/unified-catalog/link-glossary-terms-to-data-products/` — **superseded by**
@@ -2758,6 +2761,32 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/dlp/accepted-domains-hygiene-check-on-premises/` (extension)** — commit
+  <pending, recorded in a follow-up commit> — 2026-09-15. Closed the `design.md` §9 non-goal deferring
+  cross-environment reconciliation of `MatchSubDomains`/`Default` (only `DomainType` was checked
+  before). Added two new finding categories to `deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s
+  cross-environment check — `CrossEnvironmentMatchSubDomainsMismatch` (`FAIL` if either environment has
+  `MatchSubDomains=$true` where the other doesn't — an asymmetric subdomain-mail-acceptance attack
+  surface) and `CrossEnvironmentDefaultMismatch` (always `WARN` — each hybrid side computes its own
+  default accepted domain independently) — grounded against `Set-AcceptedDomain`'s reference, fetched
+  from the canonical MicrosoftDocs GitHub source since `learn.microsoft.com` was blocked again from
+  this build's network egress. Deliberately shipped as two **separate** categories, not additional rows
+  under the existing `CrossEnvironmentMismatch` name: the first draft used one shared category, and a
+  functional test this build ran directly (PowerShell 7.4.6 installed temporarily, a mocked
+  `Get-AcceptedDomain` session with a domain diverging on both new fields at once) caught a real bug —
+  the drift-log CSV's `(RunId, Category, DomainName)` uniqueness key collided, and
+  `validate/Test-OnPremisesAcceptedDomainsHygieneReport.ps1`'s own duplicate-row check correctly flagged
+  it as `[FAIL]`. Fixed by mirroring this scenario's own baseline-diff block's existing per-field-category
+  convention instead. Re-tested after the fix (4 distinct findings across 2 domains, zero duplicate-key
+  failures, `-CheckLive -CloudBaselinePath` symmetric reconciliation all `[PASS]`) and confirmed
+  replace-by-`RunId` idempotency held on a same-`RunId` re-run (5 rows before, 5 after). `validate/`
+  script extended to reconcile both new categories independently, matching how the original
+  `CrossEnvironmentMismatch` category was already validated. Full follow-up four-lens review appended to
+  `reviews.md` (not a doc-only correction addendum, since this shipped new detection logic); one Fix
+  found and closed (the row-collision bug above), no Fail. One VERIFY carried forward rather than
+  guessed: whether `Set-AcceptedDomain -MakeDefault $true` on one domain provably clears `Default` from
+  whichever domain previously held it — Microsoft's reference states what the parameter does but not
+  this side effect (`README.md` §8/§11/§12, `design.md` §4).
 - [x] **`scenarios/records-management/disposition-proof-export/`** — commit a006888 — 2026-09-15.
   Full scenario (README, design, deploy, validate, rollback, four-lens review) closing the
   "proof of disposition" evidence loop `regulatory-records-disposition/README.md` §7 referenced.

@@ -40,13 +40,15 @@
 
 .PARAMETER CloudBaselinePath
     Optional, -CheckLive only. Path to the parent scenario's own -BaselinePath output file. When
-    supplied, additionally confirms every live on-premises/cloud-baseline DomainType disagreement
-    (excluding ExternalRelay pairs, design.md Sec 4) is reflected as a CrossEnvironmentMismatch
-    finding in the most recent drift-log run - the symmetric check for the deploy script's
-    cross-environment logic, matching how checks 2's other two directions are already validated. Added
-    after this build's own Blue Team review found the first draft validated the on-premises-only
-    finding categories but had no way to confirm CrossEnvironmentMismatch wasn't silently
-    under-reporting (reviews.md).
+    supplied, additionally confirms every live on-premises/cloud-baseline disagreement on DomainType,
+    MatchSubDomains, or Default (excluding ExternalRelay pairs, design.md Sec 4) is reflected as a
+    finding under its own category (CrossEnvironmentMismatch / CrossEnvironmentMatchSubDomainsMismatch /
+    CrossEnvironmentDefaultMismatch, design.md Sec 4/9) in the most recent drift-log run - the symmetric
+    check for the deploy script's cross-environment logic, matching how checks 2's other two directions
+    are already validated. Added after this build's own Blue Team review found the first draft
+    validated the on-premises-only finding categories but had no way to confirm CrossEnvironmentMismatch
+    wasn't silently under-reporting (reviews.md); extended to MatchSubDomains/Default as two sibling
+    categories in a later build (design.md Sec 9).
 
 .EXAMPLE
     ./Test-OnPremisesAcceptedDomainsHygieneReport.ps1 `
@@ -73,7 +75,8 @@
         -CloudBaselinePath '../../accepted-domains-hygiene-check/deploy/out/accepted-domains-baseline.json'
 
     Full check including cross-environment reconciliation: confirms any live on-premises/cloud-baseline
-    DomainType disagreement is reflected as a CrossEnvironmentMismatch finding.
+    DomainType, MatchSubDomains, or Default disagreement is reflected as a finding under the matching
+    Cross-Environment-*Mismatch category.
 
 .NOTES
     A [WARN] on the live domain-count reconciliation is not, by itself, proof of a bug - the same
@@ -164,7 +167,8 @@ else {
 
     $validCategories = 'MissingExpectedDomain', 'DomainTypeMismatch', 'UnexpectedTrustedDomain', 'ExternalRelayObserved',
         'DomainAddedSincePreviousRun', 'DomainRemovedSincePreviousRun', 'DomainTypeChangedSincePreviousRun',
-        'DefaultChangedSincePreviousRun', 'MatchSubDomainsChangedSincePreviousRun', 'CrossEnvironmentMismatch'
+        'DefaultChangedSincePreviousRun', 'MatchSubDomainsChangedSincePreviousRun', 'CrossEnvironmentMismatch',
+        'CrossEnvironmentMatchSubDomainsMismatch', 'CrossEnvironmentDefaultMismatch'
     $invalidCategoryRows = $driftRows | Where-Object { $validCategories -notcontains $_.Category }
     Test-Check -Description "Every drift-log row has a recognized Category" -Condition ($invalidCategoryRows.Count -eq 0)
 }
@@ -224,16 +228,31 @@ if ($CheckLive) {
         $cloud = Get-Content -Path $CloudBaselinePath -Raw | ConvertFrom-Json
         $cloudByDomain = @{}
         foreach ($entry in $cloud.domains) { $cloudByDomain[$entry.DomainName.ToLowerInvariant()] = $entry }
-        $latestCrossEnvMismatch = @($driftRows | Where-Object { $_.RunId -eq $latestRunId -and $_.Category -eq 'CrossEnvironmentMismatch' } | ForEach-Object { $_.DomainName.ToLowerInvariant() })
+        # design.md Sec 4/9: three separate categories, one per checked field - not one overloaded
+        # category - so a domain diverging on more than one field produces one row per category and
+        # never collides on the drift log's (RunId, Category, DomainName) key. Reconciled independently
+        # here, the same one-check-per-category pattern the rest of this block already uses.
+        $latestDomainTypeMismatch = @($driftRows | Where-Object { $_.RunId -eq $latestRunId -and $_.Category -eq 'CrossEnvironmentMismatch' } | ForEach-Object { $_.DomainName.ToLowerInvariant() })
+        $latestMatchSubDomainsMismatch = @($driftRows | Where-Object { $_.RunId -eq $latestRunId -and $_.Category -eq 'CrossEnvironmentMatchSubDomainsMismatch' } | ForEach-Object { $_.DomainName.ToLowerInvariant() })
+        $latestDefaultMismatch = @($driftRows | Where-Object { $_.RunId -eq $latestRunId -and $_.Category -eq 'CrossEnvironmentDefaultMismatch' } | ForEach-Object { $_.DomainName.ToLowerInvariant() })
 
         foreach ($live in $liveDomains) {
             $key = $live.DomainName.ToLowerInvariant()
             $cloudEntry = $cloudByDomain[$key]
             if (-not $cloudEntry) { continue }
             if ($live.DomainType -eq 'ExternalRelay' -or $cloudEntry.DomainType -eq 'ExternalRelay') { continue }
+
             if ($live.DomainType -ne $cloudEntry.DomainType) {
                 Test-Check -Description "Live on-premises/cloud-baseline DomainType disagreement for '$($live.DomainName)' (on-premises '$($live.DomainType)' vs. cloud baseline '$($cloudEntry.DomainType)') is reflected as a CrossEnvironmentMismatch finding in the most recent drift-log run ($latestRunId)" `
-                    -Condition ($latestCrossEnvMismatch -contains $key) -Warn
+                    -Condition ($latestDomainTypeMismatch -contains $key) -Warn
+            }
+            if ($live.MatchSubDomains -ne $cloudEntry.MatchSubDomains) {
+                Test-Check -Description "Live on-premises/cloud-baseline MatchSubDomains disagreement for '$($live.DomainName)' (on-premises '$($live.MatchSubDomains)' vs. cloud baseline '$($cloudEntry.MatchSubDomains)') is reflected as a CrossEnvironmentMatchSubDomainsMismatch finding in the most recent drift-log run ($latestRunId)" `
+                    -Condition ($latestMatchSubDomainsMismatch -contains $key) -Warn
+            }
+            if ($live.Default -ne $cloudEntry.Default) {
+                Test-Check -Description "Live on-premises/cloud-baseline Default disagreement for '$($live.DomainName)' (on-premises '$($live.Default)' vs. cloud baseline '$($cloudEntry.Default)') is reflected as a CrossEnvironmentDefaultMismatch finding in the most recent drift-log run ($latestRunId)" `
+                    -Condition ($latestDefaultMismatch -contains $key) -Warn
             }
         }
     }

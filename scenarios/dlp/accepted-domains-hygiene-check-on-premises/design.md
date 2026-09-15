@@ -135,6 +135,41 @@ blogs/Q&A threads, and they resolve the question:
   longer holds any live recipients for it) — not while it's still an active coexistence domain with
   Remote Mailbox objects on both sides.
 
+**Extended in a later build to cover `MatchSubDomains` and `Default`, not just `DomainType`** (closing
+the non-goal §9 originally deferred, once a concrete buyer need surfaced as a `PROGRESS.md`
+follow-up). Two new finding categories, `CrossEnvironmentMatchSubDomainsMismatch` and
+`CrossEnvironmentDefaultMismatch` — deliberately **separate categories**, not additional rows under the
+existing `CrossEnvironmentMismatch` name, mirroring this scenario's own baseline-diff block (§6), which
+already uses three distinct per-field categories (`DomainTypeChangedSincePreviousRun`/
+`DefaultChangedSincePreviousRun`/`MatchSubDomainsChangedSincePreviousRun`) rather than one overloaded
+category, for the identical structural reason: the drift-log CSV's uniqueness key is
+`(RunId, Category, DomainName)`, and a domain that diverges on two fields in the same run needs two
+distinct rows to stay unique under that key. **This is not a hypothetical concern** — the first draft of
+this extension used a single shared `CrossEnvironmentMismatch` category for all three fields, and this
+build's own functional test (a mocked-`Get-AcceptedDomain` run with a domain deliberately diverging on
+both `MatchSubDomains` and `Default`) caught the resulting `(RunId, Category, DomainName)` collision as
+a `[FAIL]` in `validate/Test-OnPremisesAcceptedDomainsHygieneReport.ps1`'s existing duplicate-row check
+before the design shipped — the three-category split was adopted specifically to fix that, not chosen
+speculatively.
+
+Same `ExternalRelay` exclusion as the `DomainType` check applies to both new checks (a domain that's
+`ExternalRelay` on either side is skipped entirely). Severity rules, grounded against
+`Set-AcceptedDomain`'s reference page (fetched directly from the canonical MicrosoftDocs GitHub source
+in this build, `README.md` §12):
+- **`MatchSubDomains`** ("enables mail to be sent by and received from users on any subdomain of this
+  accepted domain," default `$false`): `FAIL` if either side has it `$true` — one environment silently
+  accepting mail for every subdomain while the other does not is a real asymmetric attack surface (an
+  attacker-registered subdomain is in-organization mail on one side only), the same severity logic the
+  same-environment `MatchSubDomainsChangedSincePreviousRun` check already applies (§6) to a `$true`
+  value on an in-organization domain.
+- **`Default`** ("specifies whether the accepted domain is the default domain," via `-MakeDefault` —
+  Microsoft's reference does not explicitly state only one domain can hold this flag per organization,
+  though the surrounding documentation implies a singular default): always `WARN`, never `FAIL`. Each
+  environment computes and enforces its own default accepted domain independently — a hybrid deployment
+  is two separate organizations sharing a namespace, not one organization with one default — so a
+  difference here is expected, unreviewed drift, not a trust-boundary violation the way `DomainType`/
+  `MatchSubDomains` divergence is.
+
 **Conclusion:** the parent scenario's `deploy/KnownDomains.sample.json` sample entry —
 `hybrid.contoso.com` as `expectedDomainType: InternalRelay`, labeled "on-premises Exchange hybrid
 coexistence domain" — is correct as written, precisely because it models an *active coexistence*
@@ -190,6 +225,7 @@ including `ExternalRelay` (parent `README.md` §6), so no schema change was need
 | Connection surface | On-premises Exchange Management Shell via remote PowerShell (`New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://<ServerFQDN>/PowerShell/ -Authentication Kerberos`), **not** one of `docs/automation-surface.md`'s five surfaces | That doc's five surfaces are deliberately all-cloud (§1 there); on-premises Exchange Management Shell is a sixth, narrower connection method this one scenario needs and documents itself rather than widening that cross-cutting doc's scope for a single-scenario need. |
 | Live combined session | Not supported by default (§3) | Real PowerShell proxy-function name collision between two remoting-imported `Get-AcceptedDomain` cmdlets; sidestepped via separate processes/sessions plus an optional file-based cross-check (§4), not a runtime guard this script could not itself enforce. |
 | Cross-environment check | Optional `-CloudBaselinePath`, reads the parent's last-written baseline file only | Answers the hybrid-specific "did the two sides diverge" question without a second live connection (§3, §4). |
+| Cross-environment check scope | `DomainType`, `MatchSubDomains`, `Default` — three fields, three separate finding categories | §4 — mirrors the baseline-diff block's own per-field category pattern (§6) and avoids a `(RunId, Category, DomainName)` collision when a domain diverges on more than one field in the same run, a real bug this build's own functional test caught in a single-category draft. |
 | Known-domains config | Reused verbatim from the parent, no schema change | §7 — a domain's reviewed status isn't environment-specific. |
 | Audit attribution | `Search-AdminAuditLog`, all three of `Set-`/`New-`/`Remove-AcceptedDomain` | §5 — a real capability the parent structurally cannot offer for `New-`/`Remove-`. |
 | `DomainController` passthrough | Optional `-DomainControllerFqdn` parameter | An on-premises-only concern (multi-DC replication lag) the cloud-only parent never faces (§2). |
@@ -205,9 +241,10 @@ including `ExternalRelay` (parent `README.md` §6), so no schema change was need
   question (§4) — tracked as a `PROGRESS.md` follow-up, not guessed at here.
 - Does not manage, create, or remove any accepted domain, DLP rule, or any other Exchange/Purview
   object — purely a read-only detection control, same as the parent (`rollback.md`).
-- Does not attempt to reconcile `MatchSubDomains`/`Default` flags across environments — only
-  `DomainType` (§4). A future follow-up could extend `CrossEnvironmentMismatch` to cover those fields
-  too, once a concrete buyer need surfaces one (matching this repo's incremental-scoping discipline).
+- **Resolved (later build), no longer a non-goal:** cross-environment reconciliation of `MatchSubDomains`/
+  `Default`, once a concrete buyer need surfaced as a `PROGRESS.md` follow-up — see §4 for the design
+  and §8 for the key decision. Kept here as a record of the original scoping call, per this repo's
+  incremental-scoping discipline.
 
 ## 10. References
 
