@@ -1703,19 +1703,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1` (read-only readiness check for an arbitrary,
   operator-chosen parent DLP policy). Follow-up VERIFY items discovered during this build are
   tracked immediately below.
-- [ ] `scenarios/insider-risk/data-leaks-by-priority-users/` — not yet built anywhere in this repo;
-  the third, still-missing member of the `Data leaks…` template family (base now built above,
-  `…by risky users` already built). Distinct population mechanism (priority user groups, not an
-  HR/CC trigger).
+- [x] `scenarios/insider-risk/data-leaks-by-priority-users/` — **built** (see DONE below): the
+  third and last member of the `Data leaks…` template family. Distinct population mechanism
+  (priority user groups, required for this template) combined with the base template's own
+  two-trigger-option shape (DLP-policy match or exfiltration activity) — a materially different
+  shape from the `security-policy-violations-by-priority-users` sibling's fixed, single-trigger
+  template. Reused three existing scripts from two different siblings unmodified; wrote zero new
+  `deploy/` scripts, only a scenario-specific `validate/` script.
 
 ### Follow-ups discovered while building the Data leaks (base template) scenario
-- [ ] VERIFY (portal or a direct Microsoft Learn fetch): the base `Data leaks` template's own
-  actively-scored-user cap. This build's grounding tooling was WebSearch-only — every direct URL
-  fetch attempted in this session (not only `learn.microsoft.com`) returned `EGRESS_BLOCKED` from
-  the network environment — and could not retrieve this specific template's row from the `Limits
-  in Insider Risk Management` page. `data-leaks/README.md` §3/§6/§10/§11 and `design.md` §2 goal 7
-  disclose this rather than reusing a different template's number (1,000 or 7,500); both new
-  scripts' `-MaxUsers` parameters have no default for this reason.
+- [x] VERIFY (portal or a direct Microsoft Learn fetch): the base `Data leaks` template's own
+  actively-scored-user cap — **resolved during the `data-leaks-by-priority-users` build's direct
+  Microsoft Learn MCP grounding pass**: the Limits in Insider Risk Management table gives `Data
+  leaks` its own row at **15,000** (distinct from `Data leaks by priority users` at 1,000 and
+  `Data leaks by risky users` at 7,500) —
+  <https://learn.microsoft.com/purview/insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template>.
+  Not yet propagated into `data-leaks/README.md` §3/§6/§10/§11 or `design.md` §2 goal 7, or into
+  either script's `-MaxUsers` default — tracked as a new follow-up immediately below rather than
+  edited directly in this fragment (`AGENTS.md` §6 one-fragment-per-turn discipline).
 - [ ] VERIFY (pilot tenant): whether a parent DLP policy left in `TestWithNotifications`/
   `TestWithoutNotifications` mode still generates the High-severity alerts the "DLP alerts" IRM
   indicator consumes, or whether `Mode` must be `Enable`. Found during this fragment's own
@@ -1734,14 +1739,53 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   family's HR-connector/Communication-Compliance triggers have an explicit documented AND/OR
   prerequisite. `data-leaks/design.md` §6 discloses this as unresolved rather than assuming
   symmetry with that sibling.
-- [ ] Once the base `Data leaks` template's max-users cap (above) is confirmed, consider building
-  a second worked example for the "User performs an exfiltration activity" triggering event —
-  `data-leaks/design.md` §3/§7 deliberately scoped this fragment to the DLP-policy trigger only,
-  documenting the exfiltration-activity path as a configuration reference without a full
-  end-to-end implementation.
-- [ ] `scenarios/insider-risk/data-leaks-by-priority-users/` remains the last unbuilt member of
-  this template family — see the TODO item above (not a new item, cross-referenced here for
-  continuity with this build's own notes).
+- [ ] Now that the base `Data leaks` template's max-users cap is confirmed (above), consider
+  building a second worked example for the "User performs an exfiltration activity" triggering
+  event — `data-leaks/design.md` §3/§7 deliberately scoped this fragment to the DLP-policy trigger
+  only, documenting the exfiltration-activity path as a configuration reference without a full
+  end-to-end implementation. `data-leaks-by-priority-users` inherited and repeated the same scope
+  decision rather than resolving it.
+- [ ] Propagate the confirmed 15,000-user cap (above) into `data-leaks/README.md` §3/§6/§10/§11 and
+  `design.md` §2 goal 7, and give both scripts' `-MaxUsers` parameters a default of 15000 instead
+  of the current no-default VERIFY posture.
+- [ ] Add the newly-confirmed Microsoft 365 Copilot entry to `data-leaks/README.md` §6/§11's
+  DLP-alerts-indicator unsupported-workload list (currently: Endpoint DLP, Teams, on-premises
+  scanner, Power BI, third-party app locations) — `data-leaks-by-priority-users/README.md` §6's own
+  list, grounded via a direct Microsoft Learn fetch during that build, additionally confirms
+  Microsoft 365 Copilot as excluded.
+
+### Follow-ups discovered while building the Data leaks by priority users scenario
+- [ ] Correct `security-policy-violations-by-priority-users/README.md` §10's claim that its
+  1,000-actively-scored-user cap "is shared with the base template as well" — Microsoft's own
+  Policy template limits section states a cap applies "across all policies using a given policy
+  template" (i.e., per exact template, not per family), and the Limits table lists each template
+  as its own row. `data-leaks-by-priority-users/README.md` §6/§11 and `design.md` §2 goal 6/§3
+  state the corrected reading for its own (numerically identical, but separate) cap without editing
+  the sibling directly.
+- [ ] Add the newly-confirmed **"Add or edit priority user groups"** step name (Microsoft's own
+  Step 6 configuration guide states this option "appears only if you choose the *Data leaks by
+  priority users* template") and the separately-selectable **"User is a member of a priority user
+  group"** risk score booster distinction to `security-policy-violations-by-priority-users/
+  README.md` §5 Step 5 and §6 — that scenario currently states the "Users and groups" step's exact
+  acceptance rule as an open VERIFY and treats the likelihood/severity boost as though it were
+  automatic. Both facts were confirmed by a direct Microsoft Learn fetch during the
+  `data-leaks-by-priority-users` build (that scenario's own `README.md` §12 references 4–5) and
+  apply identically to this sibling template, which also requires a priority user group.
+- [ ] VERIFY (pilot tenant): what happens when a priority user group larger than 1,000 members is
+  assigned to a policy built from the `Data leaks by priority users` template specifically — not
+  documented either way by Microsoft. `data-leaks-by-priority-users/design.md` §3 and `README.md`
+  §11 disclose this as open rather than assuming the same (also unconfirmed) behavior as the
+  `security-policy-violations-by-priority-users` sibling.
+- [ ] VERIFY (live policy-creation workflow, at deploy time): whether the optional cloud storage/
+  cloud service indicator category (Box, Dropbox, Google Drive, Amazon S3, Azure) is offered when
+  the **Data leaks by priority users** template is selected — Microsoft's per-template description
+  text does not name "cloud indicators" for this template the way it does for the base `Data leaks`
+  template. `data-leaks-by-priority-users/README.md` §5 Step 5/§6/§11 flag this rather than
+  guessing, the same open question `data-leaks-by-risky-users` already carries for itself.
+- [ ] Once the base `Data leaks` template's "User performs an exfiltration activity" triggering
+  event gets a full worked example (tracked above), consider whether
+  `data-leaks-by-priority-users` should get the equivalent — this fragment repeated the base
+  template's own scope decision (DLP-policy trigger only) rather than resolving it independently.
 
 ### Follow-ups discovered while building the Communication Compliance teams-viva-engage-content-safety scenario
 - [x] `scenarios/insider-risk/data-leaks-by-risky-users/` — **built** (see DONE below): the
@@ -2685,6 +2729,33 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/insider-risk/data-leaks-by-priority-users/`** — commit PENDING (recorded in the
+  next commit) — 2026-09-15. Full scenario (README, design, deploy/policy manifest, validate,
+  rollback, four-lens review) for the third and last member of the **Data leaks…** template
+  family. Grounded via direct Microsoft Learn MCP fetch/search (not WebSearch-only), which
+  confirmed this template combines the base `Data leaks` template's own two-trigger-option shape
+  (DLP-policy match, up to 20 policies, or exfiltration activity) with the
+  `security-policy-violations-by-priority-users` sibling's priority-user-group population
+  mechanism — a materially different shape from that sibling's own fixed, single-trigger template.
+  Also confirmed and grounded: the template's own independently-documented 1,000-actively-scored
+  cap is a **separate, per-exact-template** ceiling (not shared with the numerically-identical
+  `security-policy-violations-by-priority-users` cap, correcting an overstatement in that sibling's
+  own README); a distinct **"Add or edit priority user groups"** scope-page option confirmed by
+  name; and a separately-selectable **"User is a member of a priority user group"** risk score
+  booster required for the scoring boost to actually apply (not automatic from population
+  assignment alone) — this build's own four-lens review named this its most operationally
+  significant finding. Wrote **zero new `deploy/` scripts** — reused
+  `../data-leaks/deploy/Test-DlpPolicyIrmTriggerReadiness.ps1`,
+  `../security-policy-violations-by-priority-users/deploy/Get-PriorityUserGroupScopeCandidates.ps1`,
+  and `../departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1` unmodified; the only
+  new artifact is a scenario-specific `validate/` script. Four-lens review found and resolved two
+  genuine gaps: reviewer-permission scoping is a property of the priority user group (shared across
+  every policy referencing it, not per-policy), and the validation script's DLP-related manual
+  checklist was split into three separately-trackable items to match the base template scenario's
+  own granularity. Several corrections/additions for sibling scenarios discovered during this
+  build's grounding pass were deliberately not applied to those scenarios directly (fragment
+  discipline) — tracked under "Follow-ups discovered while building the Data leaks by priority
+  users scenario" above.
 - [x] **`scenarios/insider-risk/data-leaks/`** — commit b9ee808 — 2026-09-15. Full scenario (README, design, deploy/policy manifest, validate, rollback,
   four-lens review) for the base **Data leaks** Insider Risk Management policy template — the
   "no employment-stressor or message-count gate" compensating control `data-leaks-by-risky-users/
