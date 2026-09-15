@@ -2685,8 +2685,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/insider-risk/data-leaks/`** — commit PENDING (recorded in the next commit) —
-  2026-09-15. Full scenario (README, design, deploy/policy manifest, validate, rollback,
+- [x] **`scenarios/insider-risk/data-leaks/`** — commit b9ee808 — 2026-09-15. Full scenario (README, design, deploy/policy manifest, validate, rollback,
   four-lens review) for the base **Data leaks** Insider Risk Management policy template — the
   "no employment-stressor or message-count gate" compensating control `data-leaks-by-risky-users/
   README.md` §11's own Red Team finding names as needed. Worked example uses the DLP-policy
