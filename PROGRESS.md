@@ -2762,7 +2762,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/dlp/accepted-domains-hygiene-check-on-premises/` (extension)** — commit
-  <pending, recorded in a follow-up commit> — 2026-09-15. Closed the `design.md` §9 non-goal deferring
+  d64f0ce — 2026-09-15. Closed the `design.md` §9 non-goal deferring
   cross-environment reconciliation of `MatchSubDomains`/`Default` (only `DomainType` was checked
   before). Added two new finding categories to `deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s
   cross-environment check — `CrossEnvironmentMatchSubDomainsMismatch` (`FAIL` if either environment has
