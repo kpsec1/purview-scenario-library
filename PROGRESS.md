@@ -2564,7 +2564,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/records-management/multi-stage-disposition-review/`** — commit
-  PENDING — 2026-09-15. New scenario, companion to `regulatory-records-disposition`: a
+  ae82f7e — 2026-09-15. New scenario, companion to `regulatory-records-disposition`: a
   **multi-stage disposition review** panel (`-MultiStageReviewProperty` on `New-ComplianceTag`) for
   records where a single reviewer isn't enough, built around employee-separation records requiring a
   3-stage HR Business Partner → Employment Counsel → Records Management sign-off chain before permanent
