@@ -2621,7 +2621,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Ground Data Quality connection/alert `Search-UnifiedAuditLog` coverage** (follow-up from
-  `connection-and-scorecard-alerts`) — commit PENDING — 2026-09-15. Grounded and closed, not built:
+  `connection-and-scorecard-alerts`) — commit 462851b — 2026-09-15. Grounded and closed, not built:
   found no audit-log or REST audit-endpoint coverage exists today for Unified Catalog Data Quality
   connection/alert lifecycle events (three independent, corroborating findings — see the TODO
   entry above for the full citation trail). `connection-and-scorecard-alerts/README.md` §8/§11,
