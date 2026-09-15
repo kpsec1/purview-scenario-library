@@ -2783,7 +2783,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/data-map/verify-purview-entra-graph-prerequisites/`** — commit PENDING —
+- [x] **`scenarios/data-map/verify-purview-entra-graph-prerequisites/`** — commit 7ba5661 —
   2026-09-15. New full scenario (README, design, deploy, validate, rollback, four-lens review)
   closing the Blue Team gap `scan-azure-sql-managed-instance-and-classify/reviews.md` flagged: that
   scenario's own `validate/Test-AzureSqlManagedInstanceDataMapScan.ps1` authenticates against the
