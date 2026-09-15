@@ -1,0 +1,64 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Insider Risk Management has no documented PowerShell or Graph write API for policy authoring as of this writing (docs/automation-surface.md §6; design.md §4). No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal steps in README.md §5, so the deployed policy can be diffed against intent during review instead of relying on institutional memory of what was clicked.",
+  "policyName": "Data Leaks",
+  "policyTemplate": "Data leaks",
+  "templateStatus": "Not found to be labeled preview in this build's WebSearch-only grounding - re-verify GA/preview status against the live portal before a customer-facing commitment. README.md §1/§3.",
+  "scope": {
+    "users": "A plain Entra security group (or groups), resolved via ../security-policy-violations/deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1 (reused unmodified) - this template has no HR-connector, priority-user-group, or employment-stressor requirement (design.md §2 goal 1).",
+    "maxUsersInScope": "VERIFY (portal or a direct Microsoft Learn fetch at deploy time) - this build's WebSearch-only grounding could not retrieve the base 'Data leaks' template's specific row from the Limits in Insider Risk Management page. DO NOT reuse the Security policy violations template's 1,000 or the risky/priority-users family's 7,500 - those are documented for DIFFERENT templates. design.md §2 goal 7; README.md §6.",
+    "note": "Cumulative tenant-wide across every policy built from THIS exact template, per the same limit-tracking model every other template in this library documents."
+  },
+  "triggeringEvents": [
+    {
+      "type": "User matches a data loss prevention (DLP) policy",
+      "primary": true,
+      "source": "One or more EXISTING Purview DLP policies, checked for readiness by deploy/Test-DlpPolicyIrmTriggerReadiness.ps1 (new script, this fragment's own contribution) before being added via Purview portal -> Insider Risk Management -> Settings -> Policy indicators -> DLP alerts indicators -> Add DLP policies.",
+      "requirements": "Policy must be scoped to Exchange Online, SharePoint Online, and/or OneDrive for Business (the only supported workloads for this indicator) and have at least one rule at ReportSeverityLevel = High. Up to 20 DLP policies may be assigned to one Data-leaks-template IRM policy.",
+      "criticalGotcha": "DOUBLE-SCOPING REQUIREMENT (design.md §2 goal 3): a user's alert is only processed if that user is in scope of BOTH the DLP policy's own rule scope AND this IRM policy's own 'Users and groups' scope. Matching either alone is not sufficient - this is not automatically cross-checked by any tool; confirm manually per README.md §5 Step 3."
+    },
+    {
+      "type": "User performs an exfiltration activity",
+      "primary": false,
+      "source": "Portal-only, built-in indicator thresholds (default or custom) - documented Microsoft-supported alternative, NOT given a full worked implementation in this fragment (design.md §3/§6/§7). Use if no qualifying DLP policy exists yet.",
+      "requirements": "Select one or more built-in exfiltration indicators (SharePoint Online downloads, file/folder sharing, printing files, copying data to personal cloud messaging/storage services) and choose default or custom thresholds."
+    }
+  ],
+  "indicators": {
+    "officeIndicators": {
+      "category": "Office indicators (built-in) - SharePoint Online downloads/syncing, sharing internal files/folders externally, printing files, copying data to personal cloud storage/messaging services",
+      "selected": true,
+      "note": "Primary scoring indicator category for this template. Requires no additional connector. README.md §5 Step 5/§6."
+    },
+    "cumulativeExfiltrationDetection": {
+      "selected": true,
+      "note": "ENABLED BY DEFAULT for this template per Microsoft Learn (already grounded in data-leaks-by-risky-users/README.md ref [6], which names this template explicitly) - confirm actually selected at policy creation rather than assumed."
+    },
+    "communicationComplianceScoringIndicators": {
+      "category": "Optional - Sending financial regulatory text that might be risky / Sending inappropriate images / Sending inappropriate content / Sending messages that contain specific sensitive info types",
+      "selected": "operator choice - not selected by default in this manifest",
+      "note": "Documented as selectable for this template specifically (also Data theft, Data leaks by risky users, Data leaks by priority users) - a SCORING indicator, not a trigger; this scenario uses no Communication Compliance TRIGGER at all (design.md §2 goal 1)."
+    },
+    "generativeAiIndicators": {
+      "category": "Optional - Prompt Shields, Protected material detection",
+      "selected": "operator choice - not selected by default in this manifest",
+      "note": "Documented as selectable for this template (also Data leaks by risky users, Data leaks by priority users, Risky AI usage)."
+    },
+    "cloudIndicators": {
+      "category": "Optional - Cloud storage (Box, Dropbox, Google Drive) / Cloud service (Amazon S3, Azure)",
+      "selected": "operator choice - not selected by default in this manifest",
+      "note": "Microsoft's per-template description text names 'cloud indicators' explicitly for the base Data leaks template (unlike data-leaks-by-risky-users, where this remains an open VERIFY) - confirmed applicable here. Requires Defender for Cloud Apps connections + pay-as-you-go billing."
+    }
+  },
+  "prerequisites": {
+    "dlpPolicy": "At least one existing Purview DLP policy scoped to Exchange/SharePoint/OneDrive with a High-severity rule, IF using the DLP-policy triggering event. Checked by deploy/Test-DlpPolicyIrmTriggerReadiness.ps1.",
+    "defenderForEndpoint": "NOT required for this template.",
+    "hrConnectorOrCommunicationComplianceTrigger": "NOT required for this template - the defining simplification versus the risky/priority-users family (design.md §2 goal 1).",
+    "payAsYouGoBilling": "Required ONLY if the optional cloud storage/cloud service indicator category is used."
+  },
+  "alertReview": {
+    "pseudonymizeUserNames": true,
+    "note": "Repo default - do not disable pseudonymization without an explicit, documented privacy/legal decision. Same as every IRM scenario in this library."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-15"
+}

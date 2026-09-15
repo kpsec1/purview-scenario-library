@@ -1695,17 +1695,53 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the general cloud-apps configuration article makes no template-specific restriction either way.
   Flagged inline in `data-leaks-by-risky-users/README.md` §5 Step 6/§6/§11 and `design.md` §2 goal
   5/§6 rather than resolved by guessing.
-- [ ] `scenarios/insider-risk/data-leaks/` (base template) — not yet built anywhere in this repo.
-  Would need its own DLP-policy-as-trigger scenario (Exchange Online/SharePoint Online/OneDrive for
+- [x] `scenarios/insider-risk/data-leaks/` (base template) — **built** (see DONE below): a
+  general-purpose DLP-policy-as-trigger scenario (Exchange Online/SharePoint Online/OneDrive for
   Business `High` severity alerts), distinct from every "risky/priority users" variant this repo
-  already covers, and is the natural companion control `data-leaks-by-risky-users/README.md` §8/§11
-  repeatedly cross-references as the "no trigger-count gate" compensating control for the CC
-  message-threshold and cumulative-exfiltration-baseline evasion vectors this scenario discloses.
+  already covers, and the "no trigger-count gate" compensating control
+  `data-leaks-by-risky-users/README.md` §8/§11 repeatedly cross-references. New contribution:
+  `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1` (read-only readiness check for an arbitrary,
+  operator-chosen parent DLP policy). Follow-up VERIFY items discovered during this build are
+  tracked immediately below.
 - [ ] `scenarios/insider-risk/data-leaks-by-priority-users/` — not yet built anywhere in this repo;
-  the third, still-missing member of the `Data leaks…` template family (base built above as a
-  follow-up item, `…by risky users` built in this fragment, `…by priority users` still open).
-  Distinct population mechanism (priority user groups, not an HR/CC trigger) from the fragment this
-  file just closed.
+  the third, still-missing member of the `Data leaks…` template family (base now built above,
+  `…by risky users` already built). Distinct population mechanism (priority user groups, not an
+  HR/CC trigger).
+
+### Follow-ups discovered while building the Data leaks (base template) scenario
+- [ ] VERIFY (portal or a direct Microsoft Learn fetch): the base `Data leaks` template's own
+  actively-scored-user cap. This build's grounding tooling was WebSearch-only — every direct URL
+  fetch attempted in this session (not only `learn.microsoft.com`) returned `EGRESS_BLOCKED` from
+  the network environment — and could not retrieve this specific template's row from the `Limits
+  in Insider Risk Management` page. `data-leaks/README.md` §3/§6/§10/§11 and `design.md` §2 goal 7
+  disclose this rather than reusing a different template's number (1,000 or 7,500); both new
+  scripts' `-MaxUsers` parameters have no default for this reason.
+- [ ] VERIFY (pilot tenant): whether a parent DLP policy left in `TestWithNotifications`/
+  `TestWithoutNotifications` mode still generates the High-severity alerts the "DLP alerts" IRM
+  indicator consumes, or whether `Mode` must be `Enable`. Found during this fragment's own
+  four-lens review (`data-leaks/reviews.md`, Red Team/Blue Team findings) — not stated either way
+  by Microsoft in this build's WebSearch-only grounding. `deploy/
+  Test-DlpPolicyIrmTriggerReadiness.ps1` WARNs (not FAILs) on `Mode -ne 'Enable'` rather than
+  guessing; `data-leaks/README.md` §5 Step 2/§11 and `design.md` §2 goal 6 flag this explicitly.
+- [ ] VERIFY (portal, at deploy time): whether a DLP policy that mixes a supported workload
+  (Exchange/SharePoint/OneDrive) with an unsupported one (e.g. Teams) on the SAME policy still has
+  its supported-workload rules' High-severity alerts processed correctly by the IRM indicator —
+  not stated either way by Microsoft in this build's WebSearch-only grounding.
+  `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1` WARNs rather than FAILs on this combination.
+- [ ] VERIFY (portal or a direct Microsoft Learn fetch): whether the base `Data leaks` template's
+  two triggering-event options ("User matches a DLP policy" and "User performs an exfiltration
+  activity") can be enabled simultaneously on one policy, the way the risky/priority-users
+  family's HR-connector/Communication-Compliance triggers have an explicit documented AND/OR
+  prerequisite. `data-leaks/design.md` §6 discloses this as unresolved rather than assuming
+  symmetry with that sibling.
+- [ ] Once the base `Data leaks` template's max-users cap (above) is confirmed, consider building
+  a second worked example for the "User performs an exfiltration activity" triggering event —
+  `data-leaks/design.md` §3/§7 deliberately scoped this fragment to the DLP-policy trigger only,
+  documenting the exfiltration-activity path as a configuration reference without a full
+  end-to-end implementation.
+- [ ] `scenarios/insider-risk/data-leaks-by-priority-users/` remains the last unbuilt member of
+  this template family — see the TODO item above (not a new item, cross-referenced here for
+  continuity with this build's own notes).
 
 ### Follow-ups discovered while building the Communication Compliance teams-viva-engage-content-safety scenario
 - [x] `scenarios/insider-risk/data-leaks-by-risky-users/` — **built** (see DONE below): the
@@ -2649,6 +2685,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/insider-risk/data-leaks/`** — commit PENDING (recorded in the next commit) —
+  2026-09-15. Full scenario (README, design, deploy/policy manifest, validate, rollback,
+  four-lens review) for the base **Data leaks** Insider Risk Management policy template — the
+  "no employment-stressor or message-count gate" compensating control `data-leaks-by-risky-users/
+  README.md` §11's own Red Team finding names as needed. Worked example uses the DLP-policy
+  triggering event (Exchange/SharePoint/OneDrive, High severity, up to 20 policies); the
+  exfiltration-activity triggering event is documented as a valid alternative but not given a
+  second full implementation. New contribution: `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1`, a
+  read-only readiness check for an arbitrary, operator-chosen parent DLP policy (workload support,
+  High-severity rule presence, the 20-policy ceiling, and — added during this fragment's own
+  four-lens review — the parent policy's `Mode`, since a Test-mode policy's ability to still
+  trigger this indicator is unconfirmed). Reuses `Get-SecurityPolicyViolationsScopeCandidates.ps1`
+  and `Export-InsiderRiskAlerts.ps1` unmodified. Grounded via WebSearch only — this session's
+  network environment returned `EGRESS_BLOCKED` for every direct URL fetch attempted (not only
+  `learn.microsoft.com`); the base template's own actively-scored-user cap could not be retrieved
+  and is disclosed as an open VERIFY rather than borrowed from a sibling template. Follow-up VERIFY
+  items recorded above under "Follow-ups discovered while building the Data leaks (base template)
+  scenario."
 - [x] **`scenarios/insider-risk/data-leaks-by-risky-users/`** — commit 18db32f — 2026-09-15. Full scenario (README, design, deploy/policy manifest, validate,
   rollback, four-lens review) for the **Data leaks by risky users** Insider Risk Management policy
   template. Shares its HR-connector/Communication-Compliance trigger mechanism with the already-
