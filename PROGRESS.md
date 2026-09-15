@@ -2023,10 +2023,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [x] `scenarios/records-management/file-plan-bulk-import/` — bulk create a full file plan (retention
   schedule with citations, departments, authorities across many record classes) via the documented CSV
   import, the multi-class complement to this single representative class — **built** (see DONE below).
-- [ ] `scenarios/records-management/multi-stage-disposition-review/` — model a multi-stage disposition
-  panel (up to 5 stages / 10 reviewers each) using `-MultiStageReviewProperty` /
-  `-ComplianceTagForNextStage`, for sign-off chains where one approver isn't enough (noted as a non-goal
-  in this scenario's `design.md` §7).
+- [x] `scenarios/records-management/multi-stage-disposition-review/` — **built** (see DONE below):
+  employee-separation records requiring a 3-stage HR → Employment Counsel → Records Management sign-off
+  chain via `-MultiStageReviewProperty`, instead of this scenario's single-reviewer `-ReviewerEmail`.
 - [x] `scenarios/records-management/graph-event-automation/` — **built** (see DONE): fire retention
   events from a business system via the Microsoft Graph records-management APIs
   (`retentionEvent`/`retentionEventType`, the modern path since the REST event API was deprecated), the
@@ -2037,6 +2036,37 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] Consider an adaptive-scope variant of the publish policy for large/dynamic estates (a cross-module
   follow-up shared with the DLM scenarios), and a records-vs-regulatory decision note linking this
   scenario with the DLM `retention-labels-financial-records` sibling.
+
+### Follow-ups discovered while building the multi-stage-disposition-review scenario
+- [ ] VERIFY (pilot tenant): `Get-ComplianceTag`'s read-back property name/shape for a label's multi-stage
+  reviewer chain. `MultiStageReviewerMetadata` (with `StageId`/`StageName`/`Reviewers`) is corroborated by
+  third-party worked examples of real `Get-ComplianceTag` output, not by Microsoft's own published
+  parameter reference, which doesn't document output properties for this feature at all.
+  `multi-stage-disposition-review/validate/Test-MultiStageDispositionReview.ps1` reads it defensively via
+  `PSObject.Properties[...]` and reports every check touching it as `[WARN]`, never `[FAIL]` — see that
+  scenario's `README.md` §11.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): `-ComplianceTagForNextStage`'s actual
+  behavior. Both `New-ComplianceTag` and `Set-ComplianceTag`'s own published parameter reference leave
+  its description as an unfilled placeholder. The Microsoft Graph records-management `retentionLabel`
+  resource's `labelToBeApplied` property ("the replacement label to be applied automatically after the
+  retention period of the current label ends") is the closest documented analog, cited as context only —
+  `multi-stage-disposition-review`'s deploy script passes the parameter through only if explicitly
+  configured (off by default) rather than assuming this behavior. See that scenario's `README.md` §11.
+- [ ] Ground the exact `Search-UnifiedAuditLog` `RecordType`/`Operations` values for
+  `New-ComplianceTag`/`Set-ComplianceTag` activity, then add a monitoring recommendation (or a dedicated
+  export/alerting script) to `multi-stage-disposition-review/deploy/` — a Red-Team-flagged gap: nothing
+  in that scenario detects a reviewer chain being altered outside its own scripts (e.g. `Set-ComplianceTag`
+  called directly to shorten `AutoApprovalPeriod` or repoint reviewers). Currently only a README §8
+  recommendation to restrict the config role and monitor audit logs, without a grounded `RecordType`.
+- [ ] Once Microsoft documents a PowerShell/Graph way to query **per-stage** disposition-review backlog
+  (pending-item count per stage, not just per label), add it to
+  `multi-stage-disposition-review/validate/Test-MultiStageDispositionReview.ps1` — no such surface was
+  found during this build's grounding pass; today it's a portal-only check (Records Management >
+  Disposition). See that scenario's `README.md` §8/§11.
+- [ ] Consider a companion scenario that deliberately **retrofits** a multi-stage reviewer chain onto an
+  existing, already-deployed single-reviewer label via `Set-ComplianceTag` (a real, documented, supported
+  operation) — explicitly out of scope for `multi-stage-disposition-review`'s own deploy script, which is
+  create-or-report only by this repo's records-object convention (`design.md` §7).
 
 ### Follow-ups discovered while building the Records Management file-plan-bulk-import scenario
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the exact `Search-UnifiedAuditLog`
@@ -2533,6 +2563,44 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/records-management/multi-stage-disposition-review/`** — commit
+  PENDING — 2026-09-15. New scenario, companion to `regulatory-records-disposition`: a
+  **multi-stage disposition review** panel (`-MultiStageReviewProperty` on `New-ComplianceTag`) for
+  records where a single reviewer isn't enough, built around employee-separation records requiring a
+  3-stage HR Business Partner → Employment Counsel → Records Management sign-off chain before permanent
+  deletion. `deploy/New-MultiStageDispositionReview.ps1` (same 5-object build as the parent scenario —
+  event type, record label, publish policy, publish rule, gated trigger event — plus a
+  `New-MultiStageReviewJson` helper that builds the `-MultiStageReviewProperty` payload with
+  `ConvertTo-Json`, not string concatenation, because Microsoft's own published example is not valid JSON
+  as literally shown (unquoted reviewer values); validates stage/reviewer-count limits — max 5 stages, max
+  10 reviewers/stage — before calling the cmdlet; `-DryRun` prints the exact JSON payload; optional
+  `-AutoApprovalPeriod` and `-ComplianceTagForNextStage` pass-through, both loudly flagged rather than
+  silently applied), `deploy/Remove-MultiStageDispositionReview.ps1` (same disable-then-attempt-delete
+  shape as the parent), `deploy/config/multi-stage-disposition-review.sample.json`,
+  `validate/Test-MultiStageDispositionReview.ps1` (reads the reviewer chain back via
+  `MultiStageReviewerMetadata`, defensively, `[WARN]`-only — see the VERIFY item below), `rollback.md`,
+  `reviews.md` (four-lens, all Fix items resolved in place, no Fail; Red Team flagged both the
+  `AutoApprovalPeriod` silent-disposal risk on the **final** stage specifically and unmonitored
+  `Set-ComplianceTag` chain-tampering outside this scenario's own scripts). Grounded via `WebSearch` plus
+  direct `WebFetch` of the `MicrosoftDocs/office-docs-powershell` GitHub mirror's `New-ComplianceTag.md`
+  and `Set-ComplianceTag.md` source (two independent fetches, same JSON syntax, same finding) and the
+  `microsoftgraph/microsoft-graph-docs-contrib` mirror's `security-retentionlabel.md` (`WebFetch` to
+  `learn.microsoft.com` and most third-party blogs is blocked by this session's egress proxy — confirmed
+  again this run; `raw.githubusercontent.com` is not). **Genuine grounding finds:**
+  (1) `-ComplianceTagForNextStage` is a real, accepted parameter whose own Microsoft reference leaves the
+  description as an unfilled placeholder on **both** `New-ComplianceTag` and `Set-ComplianceTag` — not
+  guessed at; the Graph `retentionLabel.labelToBeApplied` property is cited only as the closest documented
+  analog, explicitly not confirmed identical. (2) Microsoft's own published `-MultiStageReviewProperty`
+  JSON example shows reviewer email values unquoted inside the array, which is not valid JSON as literally
+  written — the deploy script always emits valid JSON via `ConvertTo-Json` and says why, rather than
+  silently "fixing" the doc without comment. (3) An early citation plan for this scenario's regulatory
+  driver included Executive Order 11246 (federal-contractor recordkeeping); further checking found EO
+  11246 was rescinded by EO 14173 (Jan 21, 2025) with OFCCP's implementing-regulation rescission taking
+  effect **October 26, 2026** — imminent as of this build — so it was deliberately dropped as a driver in
+  favor of EEOC 29 CFR 1602.14 and FLSA 29 CFR 516.5/516.6, both re-verified current via eCFR. Two items
+  disclosed as VERIFY rather than resolved by guessing: the `Get-ComplianceTag` read-back property name
+  for the reviewer chain (`MultiStageReviewerMetadata`, corroborated by third-party examples only), and
+  `-ComplianceTagForNextStage`'s actual behavior — both tracked in the follow-ups above.
 - [x] **`scenarios/information-barriers/allow-list-and-control-room-exceptions/`** — commit
   070e7ca — 2026-09-11. New scenario, companion to `segregate-trading-and-research`: Allow-type
   (`-SegmentsAllowed`) information-barrier topologies layered alongside the existing Block-type

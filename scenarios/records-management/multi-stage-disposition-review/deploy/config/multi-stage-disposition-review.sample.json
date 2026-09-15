@@ -1,0 +1,62 @@
+{
+  "_comment": "Config for deploy/New-MultiStageDispositionReview.ps1. Author-only reference data - NOT applied to any tenant unless passed to the deploy script without -DryRun. Builds an event-based, MULTI-STAGE disposition-review lifecycle for employee separation records: an event TYPE, a record label whose disposal requires sequential sign-off from up to 5 reviewer stages (-MultiStageReviewProperty), a PUBLISH policy, and an optional gated trigger EVENT. Placeholder values are illustrative - set them to your real records schedule, reviewer distribution lists, and locations, validated by Records/Legal/HR, before deploying. Read README.md Sections 2 and 11 first - a triggered event and an applied record label are IRREVERSIBLE, and a misconfigured autoApprovalPeriodDays can auto-approve a stage no human reviewed.",
+
+  "eventType": {
+    "name": "Employee Separation",
+    "comment": "Triggers the retention clock for an employee's records when their employment ends. Created via New-ComplianceRetentionEventType."
+  },
+
+  "label": {
+    "name": "Employee Records - Post-Separation Disposition",
+    "comment": "Record label for employee personnel/HR-file records. Retention starts on an Employee Separation event; disposal requires HR -> Legal -> Records Management sign-off (multi-stage disposition review) - one approver is not enough given wrongful-termination/discrimination-claim exposure.",
+    "retentionAction": "KeepAndDelete",
+    "retentionDurationDays": 1095,
+    "retentionType": "EventAgeInDays",
+    "isRecordLabel": true,
+    "autoApprovalPeriodDays": 30,
+    "complianceTagForNextStage": null,
+    "multiStageReview": {
+      "enabled": true,
+      "stages": [
+        {
+          "stageName": "Stage 1 - HR Business Partner review",
+          "reviewers": [
+            "hr-separations-review@contoso.com"
+          ]
+        },
+        {
+          "stageName": "Stage 2 - Employment Counsel review",
+          "reviewers": [
+            "employment-counsel@contoso.com"
+          ]
+        },
+        {
+          "stageName": "Stage 3 - Records Management final disposition",
+          "reviewers": [
+            "records-managers@contoso.com"
+          ]
+        }
+      ]
+    }
+  },
+
+  "policy": {
+    "name": "Publish - Employee Separation Records",
+    "comment": "Publishes the employee-records label so it can be applied (manually or as a default library label) in the target HR locations.",
+    "enabled": true,
+    "sharePointLocation": [
+      "https://contoso.sharepoint.com/sites/HR-EmployeeFiles"
+    ],
+    "exchangeLocation": [],
+    "oneDriveLocation": []
+  },
+
+  "event": {
+    "create": false,
+    "name": "Employee 30294 separated",
+    "comment": "Illustrative trigger event. create=false by default so deploy does NOT start a live retention clock. Set create=true (or run with -TriggerEvent) only for a real, dated separation, scoped to that employee's own records.",
+    "eventDateTime": "2026-09-08T00:00:00Z",
+    "sharePointAssetIdQuery": "ComplianceAssetID:EE-30294",
+    "exchangeAssetIdQuery": ""
+  }
+}
