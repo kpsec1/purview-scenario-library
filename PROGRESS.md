@@ -2020,9 +2020,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   rebuild of the base scenario's policy types, not an extension of it, so scoped as its own fragment.
 
 ### Follow-ups discovered while building the Records Management regulatory-records-disposition scenario
-- [ ] `scenarios/records-management/file-plan-bulk-import/` — bulk create a full file plan (retention
+- [x] `scenarios/records-management/file-plan-bulk-import/` — bulk create a full file plan (retention
   schedule with citations, departments, authorities across many record classes) via the documented CSV
-  import, the multi-class complement to this single representative class (non-goal here).
+  import, the multi-class complement to this single representative class — **built** (see DONE below).
 - [ ] `scenarios/records-management/multi-stage-disposition-review/` — model a multi-stage disposition
   panel (up to 5 stages / 10 reviewers each) using `-MultiStageReviewProperty` /
   `-ComplianceTagForNextStage`, for sign-off chains where one approver isn't enough (noted as a non-goal
@@ -2037,6 +2037,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] Consider an adaptive-scope variant of the publish policy for large/dynamic estates (a cross-module
   follow-up shared with the DLM scenarios), and a records-vs-regulatory decision note linking this
   scenario with the DLM `retention-labels-financial-records` sibling.
+
+### Follow-ups discovered while building the Records Management file-plan-bulk-import scenario
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the exact `Search-UnifiedAuditLog`
+  `RecordType`/`Operations` values for a retention-label **definition/creation** event (as distinct
+  from the already-documented label **application** events, `Changed retention label for a file` /
+  `Labeled message as a record`). Not found during this build; an `Export-*` audit-trail companion
+  for bulk-creation events is a genuine follow-up once grounded, not guessed.
+- [ ] VERIFY (pilot tenant): the property name(s) `Get-ComplianceTag` exposes for file-plan-descriptor
+  read-back (Department/Category/SubCategory/Citation/ReferenceId/Authority) — undocumented;
+  `file-plan-bulk-import/validate/Test-FilePlanBulkImport.ps1` reports them informationally rather
+  than asserting on a guessed property name.
+- [ ] VERIFY (pilot tenant): exact column order/header spelling of the live "Download a blank
+  template" file plan import template — a portal-generated artifact with no linked, fetchable copy
+  on Microsoft Learn; `file-plan-bulk-import`'s column set is grounded against the documented
+  property table but order is unconfirmed against a real download.
+- [ ] Once a documented way to set a file-plan citation's `CitationUrl`/`CitationJurisdiction` via
+  PowerShell exists (`New-FilePlanPropertyCitation`'s current syntax takes only `-Name`), extend
+  `file-plan-bulk-import/deploy/New-FilePlanBulkLabels.ps1` to set them instead of warning and
+  requiring the portal for that part.
+- [ ] Consider round-tripping an existing tenant's file plan **Export** back into this scenario's CSV
+  schema (a different shape than the Import template) — not built; a reconciliation/migration
+  follow-up.
 
 ### Follow-ups discovered while building the Data Map Azure SQL Managed Instance scenario
 - [x] **Backport two corrected REST shapes into `scenarios/data-map/scan-azure-sql-and-classify/`.**
@@ -5961,6 +5983,42 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   above traces to a fetched or searched official Microsoft page, none invented. Re-open the
   original `PROGRESS.md` item only if Microsoft ever documents a RecordType/Operations pair or a
   rejection-specific report for this event. — 2026-09-11
+- [x] **`scenarios/records-management/file-plan-bulk-import/`** — commit c68a9ca — 2026-09-15. New
+  scenario: the multi-class breadth complement to the sibling `regulatory-records-disposition`
+  scenario (one event-based class in depth) — builds a **whole file plan** (many retention-label
+  record classes across departments/categories/citations) from one versioned CSV schedule. Ships
+  two automation paths reading the same source file: (1) `deploy/New-FilePlanImportCsv.ps1` -
+  validates/prepares a file for Purview's own documented file-plan **CSV Import**, which is
+  portal-only (no API performs the upload itself - confirmed by direct Learn fetch, not assumed);
+  offline by default, `-TenantChecks` adds live LabelName-uniqueness/EventType-exists checks; (2)
+  `deploy/New-FilePlanBulkLabels.ps1` - a fully-scripted equivalent with no portal step at all
+  (`New-ComplianceTag -FilePlanProperty <json>` + the six `New-FilePlanProperty*` descriptor
+  cmdlets, all create-or-report, idempotent), plus `deploy/Remove-FilePlanBulkLabels.ps1` (attempts
+  removal per row, never forces, never touches shared descriptor objects). Both mutating paths and
+  the validator share one dot-sourced rule engine, `deploy/FilePlanRow.Validate.ps1`, reproducing
+  every documented import-property rule (required-ness, valid values, group dependencies, max
+  lengths, the `LabelName` character set) plus a hardening addition found during this build's own
+  Red Team pass: a CSV/formula-injection guard (rejects any free-text column starting with
+  `=`/`+`/`-`/`@` or containing a raw control character) since the documented workflow has a human
+  open the generated file in a spreadsheet app before uploading it. `deploy/config/file-plan-
+  schedule.sample.csv` ships 10 illustrative record classes spanning HR/Finance/Legal/IT/Sales/
+  Compliance (record and non-record labels, Keep/Delete/KeepAndDelete, reviewed and unreviewed
+  disposition), deliberately avoiding `Regulatory=TRUE` since that setting has an unverifiable
+  tenant-configuration prerequisite. `validate/Test-FilePlanBulkImport.ps1` (schema-only when
+  disconnected; tenant reconciliation when connected), `rollback.md`, `reviews.md` (four-lens, all
+  Fix items resolved, no Fail). **Grounded via the Microsoft Learn MCP tool directly** (available
+  and used this run, unlike several recent runs that recorded it as absent/blocked) - every cmdlet
+  and parameter (`New-ComplianceTag`'s full parameter set including `-FilePlanProperty`'s exact
+  `PSCustomObject`→JSON shape; all six `New-`/`Get-FilePlanProperty*` cmdlets individually) was
+  fetched and confirmed against its own Learn page, not assumed from naming convention. **All five
+  scripts were also parse-checked and the validator exercised live** (PowerShell 7.4.6, installed
+  temporarily in this session) against both the clean 10-row sample (all pass) and a deliberately
+  malformed CSV (correctly produced 15 errors across bad characters, missing group-dependency
+  fields, an invalid enum, a duplicate name, and the new formula-injection guard, with no file
+  written and a non-zero exit) - not just statically reviewed. Three items carried forward as
+  VERIFY rather than guessed (RecordType for label-creation audit events; Get-ComplianceTag's
+  file-plan-descriptor read-back property names; the live template's exact column order) - see the
+  new TODO section immediately above this entry.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**
