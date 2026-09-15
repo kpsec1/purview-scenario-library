@@ -53,10 +53,10 @@ No remaining Fix/Fail after resolution.
    original draft left this as a manual portal/PowerShell step in §7 without saying why it wasn't
    automated, reading like an oversight rather than a deliberate scope boundary.
    - **Resolution:** `README.md` §7 check 4 now states the reason (a different auth surface/
-     permission set than the rest of this script's checks) explicitly, and a dedicated
-     `scenarios/data-map/verify-purview-entra-graph-prerequisites/`-style Graph-permissioned checker
-     covering Directory Readers membership across every Managed-Instance-backed Purview source is
-     recorded as a follow-up in `PROGRESS.md` rather than silently left unautomated.
+     permission set than the rest of this script's checks) explicitly. This gap is now closed by
+     the dedicated companion scenario `scenarios/data-map/verify-purview-entra-graph-prerequisites/`,
+     which checks Directory Readers membership (and drift) across every Managed-Instance-backed
+     Purview source, not just this one — built as a separate fragment per `AGENTS.md` §6.
 2. **Incident-response runbook needed a Managed-Instance-specific branch, not just the sibling
    scenario's four causes.** The original draft's §8 pointed at the sibling scenario's runbook
    without naming the two failure causes unique to this data source (Directory Readers revoked;

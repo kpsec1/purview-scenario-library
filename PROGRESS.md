@@ -2305,13 +2305,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   via two directly-confirmed REST operations (`Integration Runtimes - Create Or Replace` and
   `- Regenerate Auth Key`) — a first for this repo's Data Map scenarios, none of which had scripted
   even that much of the portal-only credential/SHIR setup story before this build.
-- [ ] `scenarios/data-map/verify-purview-entra-graph-prerequisites/` (or fold into a future Data Map
-  hardening pass) — a Microsoft Graph-permissioned checker script confirming Directory Readers (or
-  equivalent fine-grained Graph permission) membership for every Managed-Instance-backed Purview
-  data source's managed identity, deferred from this scenario's `validate/
-  Test-AzureSqlManagedInstanceDataMapScan.ps1` because that script's own auth surface (the Purview
-  Data Map data-plane token) has no reason to also hold Graph directory-read permissions — flagged
-  as a Blue Team finding in this scenario's `reviews.md`.
+- [x] `scenarios/data-map/verify-purview-entra-graph-prerequisites/` — **built** (see DONE below):
+  a Microsoft Graph-permissioned checker (`Get-MgDirectoryRole`/`Get-MgDirectoryRoleMember`,
+  `RoleManagement.Read.Directory`) confirming Directory Readers membership for every
+  Managed-Instance-backed Purview data source's managed identity, taking a CSV inventory so it
+  scales to every instance in one run, plus drift detection (any *other* current Directory Readers
+  member not in the inventory, reported as non-fatal `WARN`) — closing the Blue Team finding this
+  item originally tracked, generalized beyond the single instance that finding was raised against.
 - [ ] VERIFY (pilot tenant): the exact TCP port a newly registered managed instance's public endpoint
   listens on. This scenario defaults `-Port` to `3342` (Microsoft's own worked *registration*
   example), but the actual port depends on the instance's connection-policy configuration
@@ -2322,6 +2322,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this build to keep the fragment scoped to the Data Map REST surface itself, consistent with this
   repo's existing precedent of not automating rare, high-privilege, one-time setup steps that sit
   outside the automation identity's own Purview/Azure IAM role scope (see `design.md` §8).
+
+### Follow-ups discovered while building the verify-purview-entra-graph-prerequisites scenario
+- [ ] VERIFY (pilot tenant): whether `Get-MgDirectoryRoleMember` returns users and groups (not just
+  service principals) as current members of the Directory Readers role in practice — this build's
+  grounding pass found only the generic, multi-type `directoryObject` schema for the cmdlet, no
+  worked example specific to *this* role confirming all three principal types actually coexist as
+  members. The drift-resolution logic in `verify-purview-entra-graph-prerequisites/deploy/
+  Confirm-DirectoryReadersMembership.ps1` handles all three regardless — flagged inline in
+  `README.md` §11 as a documentation/expectation gap, not a functional one.
+- [ ] Once `scenarios/data-map/verify-synapse-serverless-enumeration-grants/` (tracked below under
+  the Azure Synapse Analytics follow-ups) is built, decide whether to fold it into
+  `verify-purview-entra-graph-prerequisites` as a second check mode or keep it a fully separate
+  script — this build deliberately kept the new scenario Graph-only and Directory-Readers-scoped
+  (`design.md` §2 goal 1: auth-surface minimalism), so a SQL-permissioned serverless-grant checker
+  (a materially different auth surface — a live SQL connection, not Microsoft Graph) remains a
+  distinct, not-yet-built fragment rather than being pre-emptively merged in.
+- [ ] Consider a `-Remediate` switch (or a fully separate, explicitly higher-privilege companion
+  script) that calls `New-MgRoleManagementDirectoryRoleAssignment` to grant Directory Readers to a
+  FAILing instance's managed identity automatically — deliberately rejected as a non-goal in this
+  build (`design.md` §10) to stay consistent with this repo's established convention against
+  automating rare, high-privilege, one-time directory grants; re-open only if a future buyer
+  conversation specifically asks for it, since it's a deliberate scope boundary, not an oversight.
 
 ### Follow-ups discovered while building the Data Map on-premises SQL Server scenario
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the literal system scan rule set name
@@ -2761,6 +2783,45 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-map/verify-purview-entra-graph-prerequisites/`** — commit PENDING —
+  2026-09-15. New full scenario (README, design, deploy, validate, rollback, four-lens review)
+  closing the Blue Team gap `scan-azure-sql-managed-instance-and-classify/reviews.md` flagged: that
+  scenario's own `validate/Test-AzureSqlManagedInstanceDataMapScan.ps1` authenticates against the
+  Purview Data Map data-plane API and has no reason to also hold a Microsoft Graph directory-read
+  permission, so it could not check the one Microsoft Entra prerequisite (Directory Readers
+  membership for the instance's own managed identity) that scenario documents as required before
+  Microsoft Entra authentication works at all. This scenario is a standalone, Graph-only checker
+  (`Get-MgDirectoryRole`/`Get-MgDirectoryRoleMember`, least-privileged `RoleManagement.Read.Directory`
+  application permission — corroborated across independent search results for both the PowerShell
+  cmdlet references and their REST equivalents) that takes a CSV inventory so it scales to every
+  Managed-Instance-backed Purview source in one run, reports PASS/FAIL per instance, and separately
+  reports membership **drift** (any other current Directory Readers member not in the inventory) as
+  a non-fatal WARN — closing a second, related Red Team finding from the sibling scenario's own
+  review about undetected role-membership drift. Explicitly checked and documented as *not*
+  duplicating Microsoft's own broader `data-map-data-sources-check-azure-readiness` readiness
+  checklist script (a different identity, a different, narrower check, at a different cadence — see
+  `design.md` §8) — a genuine "reinventing a native capability" risk this build investigated rather
+  than assumed away. Read-only by design (never grants/revokes the role itself — `design.md` §10
+  Non-goal, consistent with this repo's established convention for high-privilege one-time directory
+  grants). Both scripts were parse-checked (PowerShell 7.4.6, installed temporarily in this session)
+  and functionally exercised, not just statically reviewed: the validate script against a clean
+  2-row CSV (all pass) and a deliberately malformed one (correctly produced 3 failures — empty
+  InstanceName, a duplicate PrincipalObjectId, and two non-GUID values — with a non-zero exit); the
+  deploy script's core logic against a mocked Microsoft Graph session covering all three real
+  branches (mixed pass/fail/drift with report-file generation; `-WhatIf` correctly suppressing the
+  report write while still reporting findings; the Directory-Readers-role-never-activated tenant
+  edge case correctly failing every row with an explicit warning rather than a false "0 members,
+  nothing wrong" pass). Four-lens review raised and resolved 7 Fix findings across all four lenses
+  (Red Team: the JSON report itself discloses privileged-role membership and needs access-control
+  discipline; the inventory CSV is an unguarded trust boundary for the drift check; Blue Team: exit
+  code alone under-reports new drift, and the report has no built-in history/trending; CISO: the
+  `RoleManagement.Read.Directory` permission name reads as higher-privilege than it is, risking a
+  slower security approval than warranted; Microsoft Product Owner: the native-capability overlap
+  above) — no Fail. The originating sibling scenario's `README.md` §7/§8 and `reviews.md` were also
+  updated in place to point at this new scenario instead of citing it as an open `PROGRESS.md`
+  follow-up. One VERIFY carried forward rather than guessed: whether `Get-MgDirectoryRoleMember`'s
+  documented multi-type (user/service principal/group) member schema is actually exercised by the
+  Directory Readers role specifically (see the new TODO item immediately above this entry).
 - [x] **`scenarios/dlp/accepted-domains-hygiene-check-on-premises/` (extension)** — commit
   d64f0ce — 2026-09-15. Closed the `design.md` §9 non-goal deferring
   cross-environment reconciliation of `MatchSubDomains`/`Default` (only `DomainType` was checked

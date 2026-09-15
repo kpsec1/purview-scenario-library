@@ -217,8 +217,9 @@ and its `.NOTES` block cite the exact Microsoft Learn reference pages.
    that script authenticates against the Purview Data Map data-plane resource with a Data
    Reader-scoped Purview role; confirming Directory Readers membership needs a separate Microsoft
    Graph token and a directory-read permission this scenario's automation identity has no other
-   reason to hold — a dedicated Graph-permissioned checker is recorded as a follow-up in
-   `PROGRESS.md` rather than silently left unautomated.
+   reason to hold — automated instead by the dedicated companion scenario
+   `scenarios/data-map/verify-purview-entra-graph-prerequisites/`, which checks Directory Readers
+   membership (and drift) across every Managed-Instance-backed Purview source, not just this one.
 5. **Access-path evidence** — confirm in the database (`SELECT * FROM sys.database_principals WHERE
    type = 'E'`) that the Purview account's SAMI appears as an external-provider database user with
    `db_datareader`.
@@ -241,10 +242,12 @@ self-hosted IR path (§11, not scripted by this scenario).
 **Review cadence:** same as the sibling scenario, plus two Managed-Instance-specific checks: (a)
 re-run `validate/Test-AzureSqlManagedInstanceDataMapScan.ps1` after any change to the instance's
 public-endpoint setting, connection type (Redirect/Proxy), or NSG rules — network levers with no
-equivalent on a logical server; (b) periodically run `Get-MgDirectoryRoleMember` against the
-Directory Readers role and confirm the instance's managed identity is still a member, and that no
-other, unrelated identity has been added to the same tenant-wide-flavored role since this scenario
-was deployed — nothing in this scenario's own tooling detects that drift automatically (§7 check 4).
+equivalent on a logical server; (b) run
+`scenarios/data-map/verify-purview-entra-graph-prerequisites/deploy/Confirm-DirectoryReadersMembership.ps1`
+on a schedule (that scenario's own README.md §8 recommends daily/weekly) to confirm the instance's
+managed identity is still a Directory Readers member, and to catch drift — a *different*,
+unrelated identity being added to the same tenant-wide-flavored role since this scenario was
+deployed — automatically, closing the gap this scenario's own tooling cannot see (§7 check 4).
 
 **Downstream use:** same as the sibling scenario — this scenario stops at "classify and make
 visible," feeding `scenarios/information-protection/`, `scenarios/dlp/`, and any future Data Estate
