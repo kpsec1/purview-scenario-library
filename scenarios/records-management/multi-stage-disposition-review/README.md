@@ -173,6 +173,11 @@ Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
 6. **Idempotency proof** — re-run the deploy; every object reports `exists` (not `created`); the reviewer
    chain is not re-sent or mutated on an existing label; no event is created without `-TriggerEvent` +
    `event.create`.
+7. **Evidence export for an auditor/examiner** —
+   `scenarios/records-management/disposition-proof-export/` adds a scriptable, schedulable rolling
+   audit trail of `AddReviewer`/`ApproveDisposal`/`ExtendRetention`/`RelabelItem`/`RecordDelete`
+   events (companion to the portal's own per-label Filter+Export `.csv`), applicable to this
+   scenario's multi-stage chain the same way it applies to the parent single-reviewer scenario.
 
 ## 8. Operations & tuning
 

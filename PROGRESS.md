@@ -2196,12 +2196,41 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   events from a business system via the Microsoft Graph records-management APIs
   (`retentionEvent`/`retentionEventType`, the modern path since the REST event API was deprecated), the
   automation complement to the PowerShell `New-ComplianceRetentionEvent` scenario (surface 2/3).
-- [ ] `scenarios/records-management/disposition-proof-export/` — export proof-of-disposition and the
-  disposition views for audit (Records Management → Disposition filter/export), closing the evidence
-  loop this scenario's §7 references.
 - [ ] Consider an adaptive-scope variant of the publish policy for large/dynamic estates (a cross-module
   follow-up shared with the DLM scenarios), and a records-vs-regulatory decision note linking this
   scenario with the DLM `retention-labels-financial-records` sibling.
+
+### Follow-ups discovered while building the disposition-proof-export scenario
+- [ ] VERIFY (pilot tenant): the `AuditData` JSON field that distinguishes a manually-approved
+  `ApproveDisposal` event from an autoapproved one. Microsoft states autoapproval reuses the same
+  event ("there's no new auditing event for autoapproval — instead, use the details in the existing
+  Approved disposal auditing event") without naming the field. `disposition-proof-export/deploy/
+  Export-DispositionProofEvidence.ps1` preserves the full `AuditData` JSON in every exported row so
+  this can be extracted from already-collected evidence once the field is identified, without a
+  re-query — flagged inline in the script's `.NOTES` and `README.md` §11.
+- [ ] VERIFY (pilot tenant): the `AuditData` JSON property name that carries the retention label's
+  display name on the disposition-review/`RecordDelete`/`LockRecord`/`UnlockRecord` Operations —
+  no worked Microsoft example was found. `-RetentionLabelName` on `Export-DispositionProofEvidence.ps1`
+  performs a best-effort scan of every top-level string property rather than asserting one property
+  name; resolving this would let a future revision target the exact property directly.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether `RecordType RecordsManagement`
+  or `MultiStageDisposition` (both confirmed members of Microsoft Graph's `auditLogRecordType` enum)
+  is the correct, narrower `RecordType` for the four Disposition review activities Operations, and
+  separately whether `RecordDelete`/`LockRecord`/`UnlockRecord` (documented under a SharePoint-
+  oriented "File and page activities" table but stated to apply to Exchange email too) carry a
+  single RecordType or split by workload. If confirmed, add `-RecordType` to
+  `disposition-proof-export/deploy/Export-DispositionProofEvidence.ps1` and `validate/
+  Test-DispositionProofExport.ps1` for defense-in-depth (Operations alone already fully scopes the
+  query, per `design.md` §2 item 3).
+- [ ] Once the manual-vs-autoapproval `AuditData` field above is identified, extend
+  `disposition-proof-export/validate/Test-DispositionProofExport.ps1` to report the two counts
+  separately rather than only as a combined `ApproveDisposal` total.
+- [ ] Consider wiring `disposition-proof-export`'s `-Operations` list (`AddReviewer`/
+  `ApproveDisposal`/`ExtendRetention`/`RelabelItem`/`RecordDelete`/`LockRecord`/`UnlockRecord`) into
+  `scenarios/audit/streaming-to-sentinel-or-management-api/` as a named, documented example
+  configuration — `disposition-proof-export/README.md` §8/§11 already recommends that scenario for
+  continuous, alerting-grade monitoring of the out-of-process-deletion pattern, but the streaming
+  scenario itself doesn't yet ship a disposition-specific worked example.
 
 ### Follow-ups discovered while building the multi-stage-disposition-review scenario
 - [ ] VERIFY (pilot tenant): `Get-ComplianceTag`'s read-back property name/shape for a label's multi-stage
@@ -2729,6 +2758,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/records-management/disposition-proof-export/`** — commit PENDING — 2026-09-15.
+  Full scenario (README, design, deploy, validate, rollback, four-lens review) closing the
+  "proof of disposition" evidence loop `regulatory-records-disposition/README.md` §7 referenced.
+  Documents the portal-native Records Management → Disposition page's Filter+Export `.csv`
+  workflow (grounded via a direct Microsoft Learn MCP fetch of the `disposition` reference page —
+  confirmed no PowerShell/Graph equivalent exists for that export) and adds a scriptable,
+  schedulable companion, `Export-DispositionProofEvidence.ps1`, built around
+  `Search-UnifiedAuditLog` against the four "Disposition review activities" Operations
+  (`AddReviewer`/`ApproveDisposal`/`ExtendRetention`/`RelabelItem`) plus `RecordDelete` — all five
+  confirmed verbatim against Microsoft's "Audit log activities" reference. Deliberately queries with
+  no `-RecordType` filter: Microsoft Graph's `auditLogRecordType` enum confirms plausibly-relevant
+  `RecordsManagement`/`MultiStageDisposition` members by name, but no worked example pairs either
+  with these Operations, and `RecordDelete` itself carries an unresolved cross-workload
+  (SharePoint-table vs. "documents and emails") ambiguity — the same class of gap, and the same
+  resolution (`-Operations` only), already established in this repo for
+  `adaptive-protection-deleted-content-preservation`'s own audit-trail script. Four-lens review (Red
+  Team) found a real blind spot in the initial draft — a record deleted outside the disposition
+  process entirely (unlock + direct delete) would have been indistinguishable from a properly
+  reviewed disposal — closed by adding `LockRecord`/`UnlockRecord` to both the deploy and validate
+  scripts' query set (not just documented as a limitation) plus an explicit out-of-process-deletion
+  reconciliation pattern in README §8. Also closed via review: the rolling CSV's lack of
+  tamper-evidence (CISO/Red Team finding — README §11 now states this plainly and recommends
+  immutable/access-controlled storage) and a disclosure of Microsoft's own stated preference for the
+  Management Activity API over `Search-UnifiedAuditLog` in production automation, cross-linking
+  `scenarios/audit/streaming-to-sentinel-or-management-api/` for that scale. Three genuine VERIFY
+  gaps disclosed rather than guessed: the `AuditData` field distinguishing manual vs. autoapproved
+  `ApproveDisposal`, the `AuditData` property carrying the retention-label name (handled defensively
+  via a best-effort property scan), and the `RecordType` question above.
 - [x] **`scenarios/insider-risk/data-leaks-by-priority-users/`** — commit e8105d8 — 2026-09-15.
   Full scenario (README, design, deploy/policy manifest, validate,
   rollback, four-lens review) for the third and last member of the **Data leaks…** template

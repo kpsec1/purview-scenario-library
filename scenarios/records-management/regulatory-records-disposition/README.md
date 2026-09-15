@@ -159,6 +159,11 @@ Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
    [[2]](#references).
 5. **Idempotency proof** — re-run the deploy; every object reports `exists` (not `created`); nothing is
    duplicated or silently mutated; no event is created without `-TriggerEvent` + `event.create`.
+6. **Evidence export for an auditor/examiner** —
+   `scenarios/records-management/disposition-proof-export/` documents the portal's own Filter+Export
+   `.csv` workflow for this evidence and adds a scriptable, schedulable rolling audit trail
+   (`Search-UnifiedAuditLog` against the disposition-review and record-deletion Operations) as a
+   companion to the manual per-label export above.
 
 ## 8. Operations & tuning
 
