@@ -2610,7 +2610,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/communication-compliance/teams-viva-engage-content-safety/`** — commit
-  PENDING — 2026-09-15. New scenario: deploys the built-in **Detect inappropriate content** policy
+  f95b240 — 2026-09-15. New scenario: deploys the built-in **Detect inappropriate content** policy
   template (Hate/Sexual/Violence/Self-harm Azure AI Content Safety LLM classifiers, preview; Teams +
   Viva Engage locations) — the first scenario in this repo to detect sexual content in text or
   employee self-harm risk signals, neither of which `harassment-and-code-of-conduct`'s
