@@ -1442,12 +1442,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   an already-existing `alertId` — its reference page states only "Creates an alert," with no
   explicit create-vs-replace statement. Doesn't affect this scenario's idempotency (the ID is always
   caller-chosen), but a direct caller should confirm.
-- [ ] Ground `Search-UnifiedAuditLog` `RecordType`/`Operations` coverage (if any) for Data Quality
+- [x] Ground `Search-UnifiedAuditLog` `RecordType`/`Operations` coverage (if any) for Data Quality
   connection/alert `Create`/`Update`/`Delete` actions, then add a dedicated audit-trail export
-  script to `connection-and-scorecard-alerts/deploy/` — same class of gap this repo's eDiscovery
-  scenarios already closed for their own object lifecycles. Currently the scenario's incident-
-  response runbook can only ask "did someone recently run the rollback," not query for it.
-  `connection-and-scorecard-alerts/README.md` §11.
+  script to `connection-and-scorecard-alerts/deploy/` — **grounded and closed, not built** (see
+  DONE below): the dedicated grounding pass this item asked for found no such coverage exists to
+  ground. Three independent findings: (1) Microsoft's "Audit log activities" reference has no
+  Unified Catalog/Data Quality/governance-domain section — its only Purview record type,
+  `PurviewDataMapOperation`, is the classic Data Map API's own; (2) the classic Data Map's
+  data-plane Audit - Query REST API covers Atlas-model Data Map entities, and a Data Quality
+  connection is a separate Unified Catalog object, not a Data Map Atlas entity; (3) an independent
+  third-party analysis (March 2026) states plainly that comprehensive Unified Catalog audit
+  logging "does not exist today." `connection-and-scorecard-alerts/README.md` §11, `design.md`'s
+  Non-goals, and `reviews.md`'s Blue Team finding 1 corrected in place instead of a script being
+  built against unconfirmed/non-existent endpoints. This build's environment blocked a direct
+  Microsoft Learn fetch (same limitation logged under "Blocked / needs user" on 2026-09-09); the
+  three findings rest on `WebSearch` snippets, not verbatim fetches — re-verify with a direct fetch
+  or the Microsoft Learn MCP tool when either is available, and re-open this item if Microsoft ever
+  ships a `RecordType`/`Operations` pair or dedicated audit endpoint for these objects.
 - [ ] Consider a companion example in `connection-and-scorecard-alerts/deploy/alerts/` demonstrating
   the product-level (not just asset-level) `AlertScope` this build confirmed is supported (omit
   `dataAssetId`) but didn't use in the shipped example — `README.md` §11.
@@ -2609,6 +2620,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Ground Data Quality connection/alert `Search-UnifiedAuditLog` coverage** (follow-up from
+  `connection-and-scorecard-alerts`) — commit PENDING — 2026-09-15. Grounded and closed, not built:
+  found no audit-log or REST audit-endpoint coverage exists today for Unified Catalog Data Quality
+  connection/alert lifecycle events (three independent, corroborating findings — see the TODO
+  entry above for the full citation trail). `connection-and-scorecard-alerts/README.md` §8/§11,
+  `design.md`'s Non-goals, and `reviews.md`'s Blue Team finding 1 corrected in place instead of a
+  script being built against unconfirmed or non-existent endpoints, matching this repo's existing
+  "investigated, not built" precedent (e.g. the IRM → eDiscovery Power Automate follow-up). This
+  build's environment again blocked a direct Microsoft Learn fetch (same limitation as
+  2026-09-09's "Blocked / needs user" entry) — grounded via `WebSearch` snippets of Microsoft Learn
+  pages plus one independent third-party analysis, not a verbatim fetch; flagged inline for
+  re-verification when a direct-fetch capability is available.
 - [x] **`scenarios/communication-compliance/teams-viva-engage-content-safety/`** — commit
   f95b240 — 2026-09-15. New scenario: deploys the built-in **Detect inappropriate content** policy
   template (Hate/Sexual/Violence/Self-harm Azure AI Content Safety LLM classifiers, preview; Teams +

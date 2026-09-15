@@ -159,3 +159,18 @@ scenario in this repo.
   the caller supplies the object ID directly in the definition file.
 - This scenario does not attempt AI-assisted alert-threshold recommendations or any other
   portal-only, model-driven feature with no documented REST equivalent.
+- **This scenario does not ship an audit-trail export script for connection/alert changes — not a
+  deferred non-goal, a closed one.** A dedicated follow-up (tracked in `PROGRESS.md`, resolved and
+  moved to `DONE`) set out to ground `Search-UnifiedAuditLog` coverage for these object lifecycles
+  and add a companion script matching this repo's eDiscovery/Communication Compliance audit-trail
+  scripts. It found, from three independent angles, that no such coverage exists yet for Unified
+  Catalog governance-domain objects: Microsoft's own "Audit log activities" reference has no
+  Unified Catalog section (Purview's only listed record type, `PurviewDataMapOperation`, is the
+  classic Data Map API's own); the classic Data Map's data-plane Audit - Query REST API covers
+  Atlas-model Data Map entities, which a Data Quality connection is not (§3); and an independent
+  third-party analysis (March 2026) states plainly that comprehensive Unified Catalog audit logging
+  "does not exist today." `README.md` §11 carries the full citation trail and the grounding-method
+  caveat (this build's environment blocked a direct Microsoft Learn fetch; findings rest on
+  `WebSearch` snippets of the cited pages, corroborated three ways). Re-open if Microsoft ships
+  either a `RecordType`/`Operations` pair for these objects or a dedicated Data Quality audit
+  endpoint.

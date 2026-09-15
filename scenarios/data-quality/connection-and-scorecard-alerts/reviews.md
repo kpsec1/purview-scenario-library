@@ -60,12 +60,15 @@ No remaining Fix/Fail after resolution.
    draft's incident-response runbook could tell an operator *that* a connection was misbehaving but
    had no way to query *whether a recent change* (this scenario's own rollback, or an out-of-band
    `Update Alert`/`Update Data Source` call) was the cause, short of asking around.
-   - **Resolution:** `README.md` §11 now carries an explicit VERIFY stating that no Data
-     Quality-specific `Search-UnifiedAuditLog` `RecordType`/`Operations` coverage was independently
-     confirmed for these object lifecycles in this build's grounding pass — named as a genuine gap
-     (unlike this repo's eDiscovery scenarios, which do have confirmed audit coverage) rather than
-     silently assumed to exist. The runbook's item (d) is phrased as "ask whether a teardown
-     happened" precisely because a programmatic check isn't available yet.
+   - **Resolution (updated by a later grounding pass, tracked in `PROGRESS.md`):** the original
+     round flagged this as an open VERIFY — not yet grounded. A dedicated follow-up pass has since
+     grounded it and found the gap is real, not just unresearched: no `Search-UnifiedAuditLog`
+     `RecordType`/`Operations` pair, and no other documented audit mechanism, covers Unified
+     Catalog Data Quality connection/alert lifecycle events today (three independent corroborating
+     findings — `README.md` §11, `design.md`'s Non-goals). `README.md` §11 no longer carries this
+     as an open VERIFY; it's a confirmed, cited finding. The runbook's item (d) stays phrased as
+     "ask whether a teardown happened" because that finding is what makes it stay a human question
+     rather than a query — not because the check was left ungrounded.
 2. **Validate script's error handling was checked for the same ambiguous-failure-mode class the
    sibling scenario's review found** (a wrong/stale ID looking identical to "doesn't exist yet").
    - **Resolution:** Confirmed **not present** here — both the connection and alert existence

@@ -218,9 +218,9 @@ is genuinely low"):**
    changed and needs **Import schema** re-run (same as `rules-and-scorecards/README.md` §8 item
    (b)); (d) **someone recently ran this scenario's own rollback** (`rollback.md` Stage 2) and the
    sibling scenario's schedule wasn't repointed or paused first — ask whether a teardown happened
-   recently before spending time on (a)-(c); no Data Quality-specific audit-log record for this
-   action was independently confirmed in this build's grounding pass to check programmatically
-   (see §11).
+   recently before spending time on (a)-(c). **This has to stay a human question, not a query, for
+   now** — a dedicated grounding pass (see §11) confirmed no programmatic audit trail exists yet for
+   this action.
 3. **Remediate** — re-apply the grant, re-approve the private endpoint, or re-import the schema,
    then re-run `validate/Test-DataQualityConnectionAndAlerts.ps1` before assuming the fix worked.
 4. **Escalate** if failures recur after confirming the connection, grant, and (if applicable)
@@ -287,12 +287,45 @@ See `rollback.md` for the full staged procedure. Quick reference:
   found in this build's grounding pass.
 - **This scenario does not create the governance domain, data product, or data asset it targets.**
   Same non-goal as `rules-and-scorecards` — see `design.md` §6/§7.
-- **VERIFY — no Data Quality-specific audit-log record was independently confirmed for connection
-  or alert changes.** `Search-UnifiedAuditLog`'s `RecordType`/`Operations` coverage for Data Quality
-  connection/alert `Create`/`Update`/`Delete` actions was not fetched or grounded in this build —
-  unlike this repo's eDiscovery scenarios, which do cite confirmed `RecordType`/`Operations` values
-  for their own object lifecycles. §8's incident-response runbook currently relies on asking
-  whether a recent teardown happened, not on a programmatic audit query, until this is closed.
+- **No audit trail for connection/alert changes exists today — grounded and closed, not a
+  remaining VERIFY.** A dedicated follow-up pass (tracked in `PROGRESS.md`) set out to ground
+  `Search-UnifiedAuditLog`'s `RecordType`/`Operations` coverage for Data Quality connection/alert
+  `Create`/`Update`/`Delete` actions and add a companion `Export-*AuditTrail.ps1` script matching
+  this repo's eDiscovery scenarios' own pattern (see e.g.
+  `scenarios/ediscovery/premium-legal-hold-and-export/deploy/Export-EdiscoveryAuditTrail.ps1`). That
+  pass found the opposite of a grounding gap: **no such coverage exists to ground.** Three
+  independent findings, none from a single source alone:
+  1. Microsoft's own "Audit log activities" reference (the same page this repo's eDiscovery/
+     Communication Compliance/Compliance Manager audit-trail scripts cite for their confirmed
+     `RecordType`/`Operations` values) has no Unified Catalog, Data Quality, or governance-domain
+     section — its Purview-related coverage is `PurviewDataMapOperation` (classic Data Map API
+     calls: search, entity CRUD, classification) [[11]](#references), a different object model from
+     the governance-domain-scoped Data Quality connection/alert objects this scenario's scripts
+     call.
+  2. The classic Data Map's own data-plane **Audit - Query** REST API (`POST
+     .../datamap/api/audit/query`, `category`/`operationType` values like `Asset`/`EntityUpdated`)
+     [[12]](#references) covers Atlas-model Data Map entities specifically — and Microsoft's own
+     connection-setup documentation confirms a Data Quality connection is its own Unified Catalog
+     object (optionally *pointing at* a Data Map-registered source) rather than a Data Map Atlas
+     entity itself [[4]](#references), so this API's coverage doesn't reach it either.
+  3. An independent, dated (March 2026) third-party analysis concludes plainly that comprehensive
+     audit logging for Purview Unified Catalog "does not exist today" [[13]](#references) —
+     corroborating (1) and (2) rather than standing alone.
+
+  > **VERIFY (grounding caveat specific to this build):** this cloud execution environment's
+  > egress policy blocks direct `WebFetch` access to `learn.microsoft.com` (same limitation
+  > `PROGRESS.md`'s "Blocked / needs user" log recorded on 2026-09-09) and the Microsoft Learn MCP
+  > tool was not present in this session's tool list either — findings 1 and 2 above are grounded
+  > through `WebSearch`'s synthesized snippets of the cited Microsoft Learn pages (titles and URLs
+  > confirmed real and on-topic), not a verbatim direct fetch. All three findings independently
+  > point the same direction, which is why this is written as a confirmed conclusion rather than a
+  > VERIFY — but re-confirm findings 1 and 2 with a direct fetch or the Microsoft Learn MCP tool
+  > when either is available, before treating "no coverage exists" as final.
+  No fourth, Unified-Catalog-specific audit mechanism was found. §8's incident-response runbook
+  item (d) is phrased as a question to ask, not a query to run, because of this — not because the
+  grounding was left incomplete. **Re-open this item** (in `PROGRESS.md`, not silently) if Microsoft
+  ever documents a `RecordType`/`Operations` pair for Unified Catalog/Data Quality objects, or a
+  dedicated Data Quality audit REST endpoint.
 - **Alert scope granularity — asset-level by default, product-level is also supported.** The
   example definition file scopes both alerts to the single "Customer" data asset (matching the
   sibling scenario's single-asset focus), but the confirmed `AlertScope` schema accepts a
@@ -316,7 +349,12 @@ See `rollback.md` for the full staged procedure. Quick reference:
 8. Purview Data Quality REST reference — Update Alert, Get Alert, Get Alerts, Update Alert Status, Delete Alert — <https://learn.microsoft.com/rest/api/purview/purviewdataquality/update-alert/update-alert?view=rest-purview-purviewdataquality-2026-01-12-preview>, <https://learn.microsoft.com/rest/api/purview/purviewdataquality/get-alert/get-alert?view=rest-purview-purviewdataquality-2026-01-12-preview>, <https://learn.microsoft.com/rest/api/purview/purviewdataquality/get-alerts/get-alerts?view=rest-purview-purviewdataquality-2026-01-12-preview>, <https://learn.microsoft.com/rest/api/purview/purviewdataquality/update-alert-status/update-alert-status?view=rest-purview-purviewdataquality-2026-01-12-preview>, <https://learn.microsoft.com/rest/api/purview/purviewdataquality/delete-alert/delete-alert?view=rest-purview-purviewdataquality-2026-01-12-preview>
 9. Purview Data Quality REST operation-groups index (2026-01-12-preview) — confirms no Get/List Compute operation exists — <https://learn.microsoft.com/rest/api/purview/purviewdataquality/operation-groups?view=rest-purview-purviewdataquality-2026-01-12-preview>
 10. Purview Data Quality REST reference — Delete Data Source — <https://learn.microsoft.com/rest/api/purview/purviewdataquality/delete-data-source/delete-data-source?view=rest-purview-purviewdataquality-2026-01-12-preview>
+11. Audit log activities (Microsoft Purview's confirmed `RecordType`/`Operations` reference; no Unified Catalog/Data Quality/governance-domain section — Purview coverage is `PurviewDataMapOperation`, the classic Data Map API's own record type) — <https://learn.microsoft.com/purview/audit-log-activities>
+12. Audit - Query - REST API (Azure Purview) — the classic Data Map's own data-plane audit-history endpoint (`category`/`operationType`, e.g. `Asset`/`EntityUpdated`), covering Atlas-model Data Map entities, not Unified Catalog governance-domain objects — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/audit/query>
+13. "Microsoft Purview Unified Catalog Needs Audit Logs. Here's Why." (independent third-party analysis, March 2026; corroborates references 11/12 rather than standing alone) — <https://medium.com/@marcoOesterlin/microsoft-purview-unified-catalog-needs-audit-logs-heres-why-b208e83e1b94>
 
 > Re-verify all links, API versions, and REST body shapes against current Microsoft Learn before a
 > customer-facing deployment — this entire feature is **Public Preview**, and the VERIFY items in
-> §11 should be closed against a pilot tenant first.
+> §11 should be closed against a pilot tenant first. References 11–12 could not be directly
+> fetched in this build's execution environment (`learn.microsoft.com` egress was blocked) — see
+> the VERIFY callout in §11 before treating the audit-coverage finding as pilot-tenant-confirmed.
