@@ -2804,7 +2804,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/`** — commit PENDING —
+- [x] **`scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/`** — commit abb8afe —
   2026-09-15. New full scenario (README, design, deploy, validate, rollback, four-lens review)
   extending `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/`'s proven PII-only custom
   scan rule set pattern to Azure Synapse Analytics — the second of the three sibling source types
