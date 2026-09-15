@@ -2649,8 +2649,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/insider-risk/data-leaks-by-risky-users/`** — commit PENDING (recorded in the
-  next commit) — 2026-09-15. Full scenario (README, design, deploy/policy manifest, validate,
+- [x] **`scenarios/insider-risk/data-leaks-by-risky-users/`** — commit 18db32f — 2026-09-15. Full scenario (README, design, deploy/policy manifest, validate,
   rollback, four-lens review) for the **Data leaks by risky users** Insider Risk Management policy
   template. Shares its HR-connector/Communication-Compliance trigger mechanism with the already-
   built `security-policy-violations-by-risky-users` sibling but scores built-in Office exfiltration
