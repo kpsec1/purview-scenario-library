@@ -1639,11 +1639,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Stock manipulation, Unauthorized disclosure), scoped to the firm's FINRA-registered-representative
   population rather than "All users" — a deliberate departure from this scenario's own all-users
   scoping, justified in the new fragment's `design.md` §3.
-- [ ] Consider a `scenarios/insider-risk/` or `scenarios/adaptive-protection/` follow-up wiring the
+- [x] Consider a `scenarios/insider-risk/` or `scenarios/adaptive-protection/` follow-up wiring the
   documented Communication Compliance → Insider Risk Management integration (the auto-created
-  "Insider risk trigger" policy using the Threat/Harassment/Discrimination classifiers) — deferred
-  from `harassment-and-code-of-conduct/design.md` §6 as a separate, deliberate opt-in rather than
-  bundled into a standalone Communication Compliance policy.
+  "Insider risk trigger" policy using the Threat/Harassment/Discrimination classifiers) — **already
+  covered, not a separate fragment** (checked during the 2026-09-15 session): `scenarios/
+  insider-risk/security-policy-violations-by-risky-users/README.md`/`design.md` (built earlier, see
+  DONE) already document this exact integration mechanism in full depth — the auto-created "Insider
+  risk trigger"/"Detect inappropriate text" dedicated policy, Threat/Harassment/Discrimination
+  classifiers, 5+ messages/24h in-scope threshold, up to 48h latency, automatic IRM Investigators
+  reviewer assignment — as an alternate/combined triggering event for that template. The underlying
+  CC→IRM mechanism this item asked to "wire up" is the same regardless of which IRM template
+  triggers it, so no separate fragment is needed for the generic integration itself. (A
+  template-specific gap — e.g. the distinct "Data leaks by risky users" IRM template, not yet built
+  in this repo at all — would be its own future fragment; not what this item asked for.)
 - [x] `scenarios/communication-compliance/copilot-interaction-detection/` — the "Detect Microsoft
   365 Copilot and Microsoft 365 Copilot Chat interactions" policy template (Prompt Shields/
   Protected material classifiers) — **built** (see DONE below): deployed as a template-based policy
@@ -1653,13 +1661,51 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `-PolicyNameFilter` and a best-effort `CopilotContext` column). The preview LLM-based
   content-safety classifiers (Hate/Sexual/Violence/Self-harm, Teams/Viva Engage/Copilot-only) remain
   a separate, not-yet-built follow-up — tracked immediately below.
-- [ ] The preview LLM-based content-safety classifiers (Hate/Sexual/Violence/Self-harm,
+- [x] The preview LLM-based content-safety classifiers (Hate/Sexual/Violence/Self-harm,
   Teams/Viva Engage/Copilot-only, via the built-in "Detect inappropriate content" template or as
   conditions on a custom policy) — explicitly out of scope for both
   `harassment-and-code-of-conduct` (needs Exchange, which these classifiers don't cover) and
   `copilot-interaction-detection` (a distinct classifier family from Prompt Shields/Protected
   material — `copilot-interaction-detection/design.md` §8). A candidate for its own
-  Teams/Viva-Engage/Copilot-specific fragment.
+  Teams/Viva-Engage/Copilot-specific fragment. — **built** (see DONE below) as
+  `scenarios/communication-compliance/teams-viva-engage-content-safety/`: deployed via the built-in
+  "Detect inappropriate content" template (Teams + Viva Engage locations, the template's fixed
+  location list — adding Copilot as a third location is documented as an optional, undeployed edit,
+  not the default), with a deliberate operational emphasis on the Self-harm classifier (the one risk
+  category no other scenario in this repo detects) via a documented duty-of-care escalation runbook,
+  since Communication Compliance itself has no capability to route a Self-harm match differently
+  from a Hate/Sexual/Violence match.
+### Follow-ups discovered while building the Communication Compliance teams-viva-engage-content-safety scenario
+- [ ] `scenarios/insider-risk/data-leaks-by-risky-users/` (or a similarly-named fragment) — the
+  distinct **Data leaks by risky users** Insider Risk Management policy template is not yet built
+  anywhere in this repo (only `security-policy-violations-by-risky-users` is), and is the other
+  documented template that supports the Communication Compliance → IRM "Insider risk trigger"
+  integration, with a different indicator set (`insider-risk-management-policy-templates#data-leaks-by-risky-users`)
+  than the one already covered. Distinct from — and not resolved by — the CC→IRM integration item
+  closed above.
+- [ ] Consider a companion follow-up scripting/documenting a compensating custom keyword dictionary
+  for `teams-viva-engage-content-safety` targeting known short-form crisis/threat phrasing (parallel
+  to `harassment-and-code-of-conduct/deploy/policy/code-of-conduct-evasion-phrases.txt`), for tenants
+  with a confirmed short-message evasion risk given the classifier family's disclosed 3-or-5-word
+  minimum (`teams-viva-engage-content-safety/README.md` §8/§11) — flagged as a recommended
+  **Customize policy** option in that scenario's docs but not built as a ready-to-use dictionary
+  file in this pass.
+- [ ] VERIFY (pilot tenant): the exact `AuditData` JSON shape for a `SupervisionRuleMatch` event
+  specific to the Hate/Sexual/Violence/Self-harm classifier pairing (needed to confirm or replace
+  `teams-viva-engage-content-safety/deploy/Export-ContentSafetyAuditTrail.ps1`'s best-effort
+  `ContentSafetyContext`/`SeverityHint` derived columns) — same disclosed-gap pattern as
+  `copilot-interaction-detection/README.md` §11's unconfirmed `CopilotContext` parse.
+- [ ] VERIFY (portal, at deploy time): whether Microsoft's live `communication-compliance-policies`
+  page's two conflicting minimum-word-count figures for the content-safety classifier family
+  ("three or more words" vs. "five or more words," both present verbatim on the same current page as
+  of this build) have since been reconciled to a single figure —
+  `teams-viva-engage-content-safety/README.md` §6/§11 currently documents both rather than guessing.
+- [ ] VERIFY (jurisdiction-specific, employment counsel): the applicable duty-of-care/psychosocial-
+  hazard obligations for employer self-harm-risk-signal handling that
+  `teams-viva-engage-content-safety/README.md` §2 flags as needing confirmation before a
+  customer-facing legal claim — same category of gap `harassment-and-code-of-conduct/README.md` §11
+  already carries for its own EEOC-guidance currency risk.
+
 - [ ] VERIFY (portal, at deploy time, before a customer-facing deployment): the exact current-UI
   label for the "Harassment"/"Targeted harassment" trainable classifier — Microsoft's own docs use
   both names for what reads as the same classifier across different pages
@@ -2563,6 +2609,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/communication-compliance/teams-viva-engage-content-safety/`** — commit
+  PENDING — 2026-09-15. New scenario: deploys the built-in **Detect inappropriate content** policy
+  template (Hate/Sexual/Violence/Self-harm Azure AI Content Safety LLM classifiers, preview; Teams +
+  Viva Engage locations) — the first scenario in this repo to detect sexual content in text or
+  employee self-harm risk signals, neither of which `harassment-and-code-of-conduct`'s
+  trainable-classifier set covers. `design.md` §4 gives a full overlap analysis against that sibling
+  scenario's Threat/Discrimination/Harassment classifiers (complementary detection technologies for
+  overlapping risk, not duplication) and deliberately reuses its HR/Legal reviewer pool rather than
+  standing up a second one. Central design decision: Communication Compliance has no product
+  capability to route a Self-harm match differently from a Hate/Sexual/Violence match, so this
+  scenario builds a **documented duty-of-care escalation runbook** (`README.md` §8) as a go-live
+  gating precondition instead — including, after the four-lens review's Red/Blue Team round, an
+  explicit after-hours/weekend coverage requirement (a real operability gap the initial draft only
+  implied). `deploy/Export-ContentSafetyAuditTrail.ps1` reuses the same grounded 3-query
+  `Search-UnifiedAuditLog` shape both sibling Communication Compliance scenarios already established,
+  adding `ContentSafetyContext`/`SeverityHint` best-effort derived columns and a distinct,
+  never-a-substitute-for-real-time-response warning on any newly-merged Self-harm-context row.
+  Also closed a stale TODO item (Communication Compliance → Insider Risk Management trigger
+  integration) discovered to already be fully documented in `security-policy-violations-by-risky-users`
+  — see the TODO section's own note. New follow-ups (IRM's distinct "Data leaks by risky users"
+  template gap, a compensating short-message keyword dictionary, two VERIFY items) added to TODO.
 - [x] **`scenarios/records-management/multi-stage-disposition-review/`** — commit
   ae82f7e — 2026-09-15. New scenario, companion to `regulatory-records-disposition`: a
   **multi-stage disposition review** panel (`-MultiStageReviewProperty` on `New-ComplianceTag`) for

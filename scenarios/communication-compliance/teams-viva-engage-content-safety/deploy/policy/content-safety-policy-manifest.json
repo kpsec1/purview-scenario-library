@@ -1,0 +1,80 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Communication Compliance has no documented REST, Graph, or PowerShell write API for policy creation or management as of this writing - including policies created from a built-in template. Microsoft's own communication-compliance-policies article states explicitly: 'PowerShell isn't supported for creating and managing Communication Compliance policies. To create and manage these policies, use the policy management controls in the Communication Compliance solution.' No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal wizard in README.md Section 5, so the deployed policy (and the duty-of-care escalation prerequisite) can be diffed against intent during review. Follows the identical precedent set by scenarios/communication-compliance/harassment-and-code-of-conduct/ and scenarios/communication-compliance/copilot-interaction-detection/ for the same no-write-API Purview surface.",
+  "policyType": "template",
+  "policyTemplate": "Detect inappropriate content",
+  "policyName": "Teams and Viva Engage Content Safety Detection - All Users",
+  "policyNameNote": "Policy names cannot be changed after creation (Microsoft Learn: communication-compliance-policies). Confirm before creating.",
+  "locations": [
+    "Microsoft Teams",
+    "Viva Engage"
+  ],
+  "locationsNote": "Template-fixed locations. Does NOT include Exchange (unsupported by this classifier family) or Microsoft Copilot experiences (supported by the classifiers in general, but not part of this template's fixed location list) - see README.md Section 8 for the documented, optional edit to add Copilot as a location to this or another policy.",
+  "direction": [
+    "Inbound",
+    "Outbound",
+    "Internal"
+  ],
+  "usersInScope": {
+    "option": "allUsers",
+    "note": "Deliberately not piloted on a subset - README.md Section 8 explains why narrowing scope here means narrowing self-harm-risk coverage, a materially different trade-off than narrowing a general conduct-monitoring policy's blast radius."
+  },
+  "excludedUsersAndGroups": [],
+  "reviewers": {
+    "roleGroup": "Communication Compliance Investigators",
+    "note": "Deliberately the SAME reviewer pool as scenarios/communication-compliance/harassment-and-code-of-conduct/ - one trained HR/Legal team handling both policies' overlapping risk categories rather than a duplicated pool (design.md Section 5). Populate with the same named stakeholders already assigned to that policy, plus confirm each has completed the duty-of-care runbook acknowledgment below.",
+    "placeholderMembers": [
+      "hr-compliance-lead@contoso.example",
+      "legal-employment-counsel@contoso.example"
+    ]
+  },
+  "dutyOfCareEscalationContact": {
+    "_comment": "THIS IS THIS SCENARIO'S CENTRAL GO-LIVE PRECONDITION, NOT AN OPTIONAL FIELD. Communication Compliance has no product capability to route a Self-harm-classifier match differently from a Hate/Sexual/Violence match (design.md Section 6) - this contact and the acknowledgment below are a process control this scenario's own runbook depends on entirely.",
+    "contactRole": "Employee Assistance Program (EAP) / HR duty-of-care contact - REPLACE with a named, reachable individual or team, not a generic mailbox with unmonitored response time",
+    "contactMethod": "REPLACE with the organization's actual escalation channel (phone, paging system, dedicated email with an SLA)",
+    "afterHoursCoverageConfirmed": false,
+    "afterHoursCoverageNote": "Set to true only once weekend/after-hours reachability is explicitly confirmed, not assumed. A business-hours-only contact means a Friday-evening message could go unaddressed until Monday - see README.md Section 8. If true after-hours coverage isn't available, document that as an accepted residual risk rather than leaving this implied.",
+    "runbookAcknowledged": false,
+    "runbookAcknowledgedNote": "Set to true only once the named contact and the full HR/Legal reviewer pool above have completed the README.md Section 7 tabletop drill and confirmed they understand the README.md Section 8 escalation runbook. Do NOT create the policy in the portal (README.md Section 5, step 10) until this is true."
+  },
+  "conditions": {
+    "template": {
+      "note": "The template's fixed classifier set is used unmodified - no custom keyword dictionary or additional classifier is added. See design.md Section 2.",
+      "classifiers": [
+        { "name": "Hate", "technology": "Azure AI Content Safety LLM classifier (preview)", "overlapsWith": "Discrimination/Harassment trainable classifiers in harassment-and-code-of-conduct - complementary, not redundant (design.md Section 4)" },
+        { "name": "Sexual", "technology": "Azure AI Content Safety LLM classifier (preview)", "overlapsWith": "No trainable-classifier equivalent for text - new coverage (design.md Section 4)" },
+        { "name": "Violence", "technology": "Azure AI Content Safety LLM classifier (preview)", "overlapsWith": "Threat trainable classifier in harassment-and-code-of-conduct - complementary, not redundant (design.md Section 4)" },
+        { "name": "Self-harm", "technology": "Azure AI Content Safety LLM classifier (preview)", "overlapsWith": "No trainable-classifier equivalent - new coverage; the primary reason this scenario exists (design.md Section 1)" }
+      ]
+    }
+  },
+  "reviewPercentage": 100,
+  "reviewPercentageNote": "Template default. Do not lower this silently - see README.md Section 8; a self-harm/violence risk control is a poor candidate for sampling below 100%.",
+  "severityThreshold": {
+    "value": 4,
+    "scale": "Azure AI Content Safety 0-7 scale, trimmed to 0/2/4/6 in the Communication Compliance Severity column",
+    "note": "A match below severity 4 does not populate the Severity column or necessarily surface as a standalone alert - see README.md Section 6/11 for the documented word-count-threshold inconsistency that also affects whether a short message is evaluated at all."
+  },
+  "filterEmailBlasts": {
+    "applicable": false,
+    "note": "Email-blast filtering is an Exchange-mailbox-scoped setting; this policy's locations (Teams, Viva Engage) have no email-blast concept."
+  },
+  "ocrEnabled": {
+    "applicable": false,
+    "note": "This classifier family does not evaluate OCR images or attachments (README.md Section 11)."
+  },
+  "privacySettings": {
+    "usernamePseudonymization": true,
+    "note": "Settings > Communication Compliance > Privacy tab > 'Show anonymized versions of usernames' - portal-only, tenant-wide setting, not per-policy. Skip this step if already enabled by harassment-and-code-of-conduct or copilot-interaction-detection."
+  },
+  "payg": {
+    "required": false,
+    "note": "No PAYG requirement documented for this scenario's scope (Teams, Viva Engage) during this build's grounding pass - distinct from the Enterprise AI apps/Other AI apps generative-AI locations. Confirm against the Product Terms before a sales commitment (README.md Section 3/10)."
+  },
+  "relatedPolicies": {
+    "harassmentAndCodeOfConduct": "Deliberately separate, complementary policy - see design.md Section 4 for the full overlap analysis (Threat vs. Violence, Discrimination/Harassment vs. Hate). Not merged into one custom policy.",
+    "copilotInteractionDetection": "Unrelated risk categories (jailbreak/IP exposure vs. this policy's conduct/welfare categories) - different reviewer pool, no overlap expected.",
+    "addCopilotLocationOption": "Documented, optional edit (README.md Section 8) to extend this policy's classifiers to the Microsoft Copilot experiences location - not part of this manifest's default configuration."
+  },
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-15"
+}
