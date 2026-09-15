@@ -6501,7 +6501,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   file-plan-descriptor read-back property names; the live template's exact column order) - see the
   new TODO section immediately above this entry.
 - [x] **`scenarios/data-quality/connection-and-scorecard-alerts/` — product-level `AlertScope`
-  companion example** — commit PENDING — 2026-09-15. Sub-task fragment (not a new scenario): closes
+  companion example** — commit 054e9e7 — 2026-09-15. Sub-task fragment (not a new scenario): closes
   the `PROGRESS.md` follow-up asking for a shipped example of the product-level (not just
   asset-level) alert scope this scenario's `New-DataQualityAlert.ps1` already supported but never
   demonstrated. Adds `deploy/alerts/customer-360-product-score-alert.json` (one alert, only
