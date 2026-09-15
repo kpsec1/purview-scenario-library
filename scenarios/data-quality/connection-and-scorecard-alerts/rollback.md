@@ -26,6 +26,11 @@ For a shorter pause where you intend to resume with the same alert definitions, 
 `New-DataQualityAlert.ps1 -SetStatus Disabled` instead (see below) — it's non-destructive and
 faster to reverse than a delete/recreate cycle.
 
+If the product-level companion example (`customer-360-product-score-alert.json`, README.md §11)
+was also deployed, run this same command a second time with
+`-AlertDefinitionPath './deploy/alerts/customer-360-product-score-alert.json'` — each definition
+file is removed independently, matching how each was deployed.
+
 ### Stage 2 — Also remove the data-source connection
 
 ```powershell

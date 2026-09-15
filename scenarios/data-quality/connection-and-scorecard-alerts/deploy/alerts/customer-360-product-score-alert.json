@@ -1,0 +1,18 @@
+{
+  "_comment": "Companion example demonstrating PRODUCT-level AlertScope (README.md Section 11) - the alert monitors every asset in the 'Customer 360' data product instead of one named asset. Achieved by omitting dataAssetId entirely from the alert entry (contrast with customer-master-score-alerts.json, which sets both dataProductId and dataAssetId for asset-level scope) - New-DataQualityAlert.ps1 already builds the scopes.dataProduct-only shape whenever dataAssetId is absent, no script change was needed to ship this file. Grounding status: Microsoft's own Update Alert REST worked example sets both dataProduct and dataAsset together (asset-level scope) - no REST worked example with dataAsset omitted was found. The AlertScope object's own schema reference lists dataAsset and dataProduct as two independent, separately-optional Reference fields (neither documented as mutually required), and the portal's 'Set up data quality alerts' conceptual doc's Scope-tab step describes choosing 'data products AND data assets that the alert will monitor' as separate selections, not a mandatory pairing - both corroborate, but do not independently confirm, that this shape is accepted. Same VERIFY class as the sibling receivers/UPN gap already tracked in README.md Section 11 - flagged, not guessed past. businessDomainId/dataProductId reuse the same 'Customer Experience' / 'Customer 360' GUIDs as customer-master-score-alerts.json so both example files target one coherent, already-governed data product.",
+  "businessDomainId": "76be16f9-5cb3-4839-83d6-4e3829a8ab0c",
+  "alerts": [
+    {
+      "id": "customer-360-product-score-below-95",
+      "name": "Customer 360 data product score below 95% (any asset)",
+      "description": "Fires when ANY asset in the 'Customer 360' data product drops below a 95% data quality score on a completed scan - a single alert covering the whole product instead of one alert per asset, for a buyer whose data product has more assets than they want individual per-asset alerts for. Complements, does not replace, customer-master-score-alerts.json's asset-level pair: a product-level alert tells you SOMETHING in the product regressed, not WHICH asset - see README.md Section 8 for the operational trade-off.",
+      "condition": "score_threshold(GLOBAL_SCORE) < 95",
+      "receivers": [
+        "00000000-0000-0000-0000-000000000001"
+      ],
+      "dataProductId": "2a1d2087-09e2-4ecf-817d-1f5bfcbc31bf",
+      "enabledForFailedJobs": true,
+      "status": "Enabled"
+    }
+  ]
+}

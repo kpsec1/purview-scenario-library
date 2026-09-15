@@ -172,3 +172,67 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Remove-DataQualityConnectionAndAlerts.ps1`, `rollback.md`, and
 `validate/Test-DataQualityConnectionAndAlerts.ps1`. No Fail items were raised. This fragment meets
 the definition of done in `AGENTS.md` §9.
+
+---
+
+## Round 2 — companion product-level alert example (`PROGRESS.md` follow-up)
+
+Round 1's Microsoft Product Owner finding 4 noted the product-level `AlertScope` shape was
+*documented* as supported but not *shipped* as a worked example. This round adds
+`deploy/alerts/customer-360-product-score-alert.json` (one alert, `dataProductId` only) and updates
+`README.md`/`design.md`/`rollback.md`/both scripts' `.EXAMPLE` blocks accordingly — no change to
+either script's logic, since `New-DataQualityAlert.ps1` already built this shape whenever
+`dataAssetId` was absent.
+
+### 🔴 Red Team — Verdict: Pass
+
+A product-level alert widens what one `receivers` list gets notified about (every asset in the
+product, not one), but does not widen who can *cause* a notification or *read* one — same
+**Data Quality Steward**/**Data Quality Reader** blast radius already documented in §3 and Round 1
+finding 1. No new bypass surface: an attacker who already holds Data Quality Steward could already
+repoint or delete an asset-level alert exactly as easily. No Fix/Fail.
+
+### 🔵 Blue Team — Verdict: Fix (resolved)
+
+1. **A product-level alert's notification doesn't say which asset regressed**, unlike an
+   asset-level one — an operator triaging the email has to go check the product's per-asset scores
+   in the portal before they know where to look, a slower first-triage step than the asset-level
+   alert provides today.
+   - **Resolution:** `README.md` §8 now states this trade-off directly ("Choosing asset-level vs.
+     product-level alert scope") and §11's rewritten scope-granularity bullet cross-references it,
+     rather than presenting the product-level file as a strictly better option.
+2. **Confirmed the new example doesn't weaken the recurring-validation guidance from Round 1
+   finding 1** (receivers-redirection detection) — `validate/Test-DataQualityConnectionAndAlerts.ps1`
+   needed no code change to check the new file, since its alert checks are already generic over
+   scope shape. No Fix needed.
+
+### 🎩 CISO — Verdict: Pass
+
+Zero net-new licensing or cost dimension — same PAYG/DGPU framing as Round 1 finding 3; a
+product-level alert is not separately metered any more than an asset-level one is (§10 unchanged).
+Gives a buyer with a multi-asset data product a lower-alert-count option than "one alert per asset,"
+which is itself a minor operational-cost (alert-fatigue) reduction the CISO lens welcomes, with the
+Blue Team's triage-speed trade-off disclosed rather than oversold. Would fund this addition; it's
+in scope of what was already funded for the parent scenario.
+
+### 🟦 Microsoft Product Owner — Verdict: Pass (Round 1 finding 4 now fully closed)
+
+The shape shipped matches what Round 1 already inferred from the `AlertScope` schema reference: no
+new field, no invented parameter. A direct re-fetch of the `Update Alert` REST reference this round
+confirmed the worked example still only shows the asset-level (`dataProduct` + `dataAsset` together)
+shape — no Microsoft worked example independently confirms `dataAsset` can be omitted — so the new
+file's own header comment and `README.md` §11 state this as inferred-from-schema-and-corroborated,
+not pilot-tenant-confirmed, consistent with this repo's grounding standard (`AGENTS.md` §4) rather
+than silently upgrading the claim now that a file ships. Re-open if a pilot-tenant run or a future
+Microsoft worked example either confirms or rejects the shape.
+
+### Round 2 summary
+
+| Lens | Verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Pass | 0 | — |
+| 🔵 Blue Team | Fix | 2 (1 closed via README §8/§11 trade-off note, 1 confirmed no change needed) | Closed |
+| 🎩 CISO | Pass | 0 | — |
+| 🟦 Microsoft Product Owner | Pass | 0 (grounding re-confirmed, framing unchanged) | — |
+
+No remaining Fix/Fail. This addition meets the definition of done in `AGENTS.md` §9.

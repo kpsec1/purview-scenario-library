@@ -127,11 +127,19 @@ rules — this scenario itself never triggers a scan. Full design rationale, inc
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `
     -ConnectionDefinitionPath './deploy/connection/customer-sql-connection.json'
 
-# 3. Alerts - deploy both example alerts (score threshold + score regression)
+# 3. Alerts - deploy both asset-level example alerts (score threshold + score regression)
 ./deploy/New-DataQualityAlert.ps1 `
     -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `
     -AlertDefinitionPath './deploy/alerts/customer-master-score-alerts.json'
+
+# 3b. (Optional) Alerts - deploy the product-level companion example instead of/alongside 3
+#     One alert covers every asset in the 'Customer 360' data product (dataAssetId omitted) -
+#     see the Configuration reference (Section 6) and Section 11 for the scope trade-off.
+./deploy/New-DataQualityAlert.ps1 `
+    -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
+    -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `
+    -AlertDefinitionPath './deploy/alerts/customer-360-product-score-alert.json'
 
 # 4. Validate (connection + alerts together, or pass only one -*DefinitionPath to check just that half)
 ./validate/Test-DataQualityConnectionAndAlerts.ps1 `
@@ -155,6 +163,7 @@ Preview) — automation surface 4 per `docs/automation-surface.md` §1, same sur
 | Alert `condition` functions | `score_threshold(GLOBAL_SCORE)`, `score_variance(GLOBAL_SCORE)` | The only two functions confirmed in Microsoft's own REST worked examples — `design.md` §5 |
 | Alert `receivers` value | Microsoft Entra object ID (GUID) of a user or mail-enabled security group | Every REST worked example uses a GUID, never a raw SMTP address/UPN — see §11 VERIFY |
 | Alert `enabledForFailedJobs` | `true` (example definition file default) | Also notifies receivers when the scan job itself fails (distinct from "scan succeeded, score is low") — matches the portal's "Turn on notifications for failed quality scan" option [[6]](#references) |
+| Alert scope granularity | Asset-level (`customer-master-score-alerts.json`, both `dataProductId` + `dataAssetId`) **or** product-level (`customer-360-product-score-alert.json`, `dataProductId` only) | Same `New-DataQualityAlert.ps1` script deploys either shape — product-level scope is built automatically whenever `dataAssetId` is absent from a definition-file entry; see §11 for the grounding status of the product-only shape and the operational trade-off |
 | API version pinned by both scripts | `2026-01-12-preview` | Confirmed current via direct fetch of Microsoft's REST reference at build time; **Public Preview** |
 
 Full REST-body grounding: each deploy/validate script's inline comments and `.NOTES` block cite the
@@ -178,6 +187,14 @@ exact Microsoft Learn reference pages.
    restore it — proof the pause/resume path works independently of the full reconcile path.
 
 ## 8. Operations & tuning
+
+**Choosing asset-level vs. product-level alert scope:** deploy `customer-master-score-alerts.json`
+(asset-level) when an operator needs to know *which* asset regressed without an extra lookup step;
+deploy `customer-360-product-score-alert.json` (product-level) when the data product has too many
+assets for one alert each to stay manageable, and a first-triage "something in this product
+regressed" notification is enough to start an investigation. The two are not mutually exclusive —
+run both, or scope several product-level alerts to different asset subsets, per §11's grounding
+caveat and trade-off note.
 
 **KPIs to watch (first 30 days):**
 - **Alert fire rate.** Zero fires in 30 days on a freshly deployed alert is ambiguous — it could
@@ -326,14 +343,26 @@ See `rollback.md` for the full staged procedure. Quick reference:
   grounding was left incomplete. **Re-open this item** (in `PROGRESS.md`, not silently) if Microsoft
   ever documents a `RecordType`/`Operations` pair for Unified Catalog/Data Quality objects, or a
   dedicated Data Quality audit REST endpoint.
-- **Alert scope granularity — asset-level by default, product-level is also supported.** The
-  example definition file scopes both alerts to the single "Customer" data asset (matching the
-  sibling scenario's single-asset focus), but the confirmed `AlertScope` schema accepts a
-  `dataProduct` reference with no `dataAsset` reference, which Microsoft's own object model
-  documents as covering every asset in that product. A buyer with many assets in one data product
-  may prefer product-level alert scoping over one alert per asset — not used in this scenario's
-  example to keep parity with `rules-and-scorecards`, but supported by `New-DataQualityAlert.ps1`
-  today (simply omit `dataAssetId` from an alert entry in the definition file).
+- **Alert scope granularity — asset-level and product-level example files both ship.**
+  `customer-master-score-alerts.json` scopes both example alerts to the single "Customer" data
+  asset (matching the sibling scenario's single-asset focus). `customer-360-product-score-alert.json`
+  is the product-level companion: one alert covering every asset in the "Customer 360" data product,
+  built by omitting `dataAssetId` from the alert entry — `New-DataQualityAlert.ps1` needed no code
+  change to support this, since its scope-construction logic already treats `dataProductId` and
+  `dataAssetId` as independently optional. **Grounding status:** Microsoft's own `Update Alert` REST
+  worked example sets `dataProduct` and `dataAsset` together (asset-level scope); no worked example
+  with `dataAsset` omitted was found. The `AlertScope` object's schema reference lists `dataAsset`
+  and `dataProduct` as two separately optional `Reference` fields (neither documented as requiring
+  the other), and the portal's own "Set up data quality alerts" conceptual doc describes the
+  Scope tab as choosing "data products and data assets that the alert will monitor" as distinct
+  selections — both corroborate but do not independently confirm the product-only shape a live
+  `PUT` would need to accept it. Treat as inferred-from-schema, not pilot-tenant-confirmed, the same
+  VERIFY class as the `receivers` UPN gap below.
+  **Operational trade-off (Blue Team finding, `reviews.md` round 2):** a product-level alert tells
+  an operator that *something* in "Customer 360" regressed, not *which* asset — for a product with
+  more than a handful of assets, pair it with the portal's own per-asset score view (or scope
+  additional product-level alerts more narrowly) rather than relying on it alone to localize a
+  regression during incident response.
 - **Public Preview.** The entire Data Quality REST API for Unified Catalog is Public Preview as of
   this build. Re-verify the operation set before a customer-facing deployment.
 

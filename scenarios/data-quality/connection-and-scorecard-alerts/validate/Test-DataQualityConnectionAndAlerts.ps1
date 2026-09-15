@@ -42,6 +42,15 @@
         -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `
         -ConnectionDefinitionPath '../deploy/connection/customer-sql-connection.json' `
         -AlertDefinitionPath '../deploy/alerts/customer-master-score-alerts.json'
+
+.EXAMPLE
+    ./Test-DataQualityConnectionAndAlerts.ps1 -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
+        -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `
+        -AlertDefinitionPath '../deploy/alerts/customer-360-product-score-alert.json'
+
+    Validates only the product-level companion alert (no -ConnectionDefinitionPath supplied, so the
+    connection check is skipped). The alert-existence/condition/status/receivers checks are generic
+    over the scope shape - no script change was needed to validate a product-scoped alert.
 #>
 [CmdletBinding()]
 param(

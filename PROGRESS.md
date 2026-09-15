@@ -1462,9 +1462,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   three findings rest on `WebSearch` snippets, not verbatim fetches — re-verify with a direct fetch
   or the Microsoft Learn MCP tool when either is available, and re-open this item if Microsoft ever
   ships a `RecordType`/`Operations` pair or dedicated audit endpoint for these objects.
-- [ ] Consider a companion example in `connection-and-scorecard-alerts/deploy/alerts/` demonstrating
+- [x] Consider a companion example in `connection-and-scorecard-alerts/deploy/alerts/` demonstrating
   the product-level (not just asset-level) `AlertScope` this build confirmed is supported (omit
-  `dataAssetId`) but didn't use in the shipped example — `README.md` §11.
+  `dataAssetId`) but didn't use in the shipped example — `README.md` §11 — **built** (see DONE
+  below): new `deploy/alerts/customer-360-product-score-alert.json` (one alert, `dataProductId`
+  only). No script change needed — `New-DataQualityAlert.ps1`'s scope-construction logic already
+  built this shape whenever `dataAssetId` is absent; live-exercised in this build (PowerShell 7.4.6)
+  to confirm the exact resulting REST body has a `scopes[0]` with only `dataProduct`, no `dataAsset`
+  key at all. Re-fetched `Update Alert`'s own REST reference directly this round: its worked example
+  still only shows the combined `dataProduct`+`dataAsset` (asset-level) shape, so the product-only
+  shape remains inferred-from-schema-and-corroborated, not pilot-tenant-confirmed — stated that way
+  in the new file's own header comment, `README.md` §11, and `design.md`, not upgraded to a firm
+  claim just because a file now ships it.
 - [ ] Once the Schedule object's recurring-trigger-type VERIFY immediately below is closed, revisit
   whether a recurring scan schedule changes any of this scenario's alert-cadence assumptions
   (currently alerts fire per completed scan, whatever triggers it).
@@ -6491,6 +6500,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   VERIFY rather than guessed (RecordType for label-creation audit events; Get-ComplianceTag's
   file-plan-descriptor read-back property names; the live template's exact column order) - see the
   new TODO section immediately above this entry.
+- [x] **`scenarios/data-quality/connection-and-scorecard-alerts/` — product-level `AlertScope`
+  companion example** — commit PENDING — 2026-09-15. Sub-task fragment (not a new scenario): closes
+  the `PROGRESS.md` follow-up asking for a shipped example of the product-level (not just
+  asset-level) alert scope this scenario's `New-DataQualityAlert.ps1` already supported but never
+  demonstrated. Adds `deploy/alerts/customer-360-product-score-alert.json` (one alert, only
+  `dataProductId`, `dataAssetId` omitted) alongside the existing asset-level
+  `customer-master-score-alerts.json`. **No script change needed** — the deploy script's
+  scope-construction logic already treats `dataProductId`/`dataAssetId` as independently optional;
+  confirmed live in this build (PowerShell 7.4.6, temporarily installed) by simulating the script's
+  own scope-building logic against the new file and inspecting the resulting REST body: `scopes[0]`
+  contains only a `dataProduct` reference, no `dataAsset` key at all. **Grounded via the Microsoft
+  Learn MCP tool directly** (available this run): re-fetched `Update Alert`'s REST reference in
+  full — its own worked example still only shows the combined `dataProduct`+`dataAsset` shape, so
+  the product-only shape stays flagged as inferred-from-schema-and-corroborated (the `AlertScope`
+  schema lists both fields as independently optional; the portal's "Set up data quality alerts"
+  conceptual doc describes choosing products and assets as distinct Scope-tab selections), not
+  pilot-tenant-confirmed — stated that way in the new file's own header comment rather than
+  upgraded to a firm claim now that a file ships it. `README.md` §5/§6/§8/§11, `design.md` (Key
+  decisions table), `rollback.md`, both scripts' `.EXAMPLE` blocks, and `reviews.md` (new Round 2,
+  four-lens: Blue Team raised one Fix — the product-level alert doesn't identify which asset
+  regressed — resolved via a new README §8 scope-choice note and §11 trade-off callout; Red Team,
+  CISO, and Product Owner all Pass) all updated. All four scripts in the scenario folder
+  parse-checked clean (`[System.Management.Automation.Language.Parser]::ParseFile`, zero errors).
+  No new VERIFY items introduced beyond the one already tracked (product-only scope shape).
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**

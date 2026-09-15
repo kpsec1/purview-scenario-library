@@ -83,6 +83,17 @@
     Pauses both alerts (Update Alert Status only - condition/receivers/scope untouched) without
     deleting them, e.g. during a planned data-migration change freeze.
 
+.EXAMPLE
+    ./New-DataQualityAlert.ps1 -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
+        -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `
+        -AlertDefinitionPath './alerts/customer-360-product-score-alert.json'
+
+    Creates (or updates) the product-level companion alert - one alert covering every asset in the
+    "Customer 360" data product instead of a single named asset. No difference in script behavior
+    from the asset-level example: this file simply omits dataAssetId from its one alert entry, which
+    the scope-construction logic below already treats as an independently optional field. See
+    README.md Section 11 for this shape's grounding status.
+
 .NOTES
     VERIFY before production use (see README.md Section 11 for full detail):
     - Whether `receivers` accepts a raw SMTP address/UPN string in addition to a Microsoft Entra
