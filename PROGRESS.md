@@ -1686,14 +1686,43 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   category no other scenario in this repo detects) via a documented duty-of-care escalation runbook,
   since Communication Compliance itself has no capability to route a Self-harm match differently
   from a Hate/Sexual/Violence match.
+### Follow-ups discovered while building the Data leaks by risky users scenario
+- [ ] VERIFY (live policy-creation workflow, at deploy time): whether the optional cloud storage/
+  cloud service indicator category (Box, Dropbox, Google Drive, Amazon S3, Azure) is actually
+  offered when the **Data leaks by risky users** template is selected. Microsoft's per-template
+  description text names "cloud indicators" explicitly for `Data theft by departing users` and the
+  base `Data leaks` template, but not, in the same descriptive paragraph, for this template — while
+  the general cloud-apps configuration article makes no template-specific restriction either way.
+  Flagged inline in `data-leaks-by-risky-users/README.md` §5 Step 6/§6/§11 and `design.md` §2 goal
+  5/§6 rather than resolved by guessing.
+- [ ] `scenarios/insider-risk/data-leaks/` (base template) — not yet built anywhere in this repo.
+  Would need its own DLP-policy-as-trigger scenario (Exchange Online/SharePoint Online/OneDrive for
+  Business `High` severity alerts), distinct from every "risky/priority users" variant this repo
+  already covers, and is the natural companion control `data-leaks-by-risky-users/README.md` §8/§11
+  repeatedly cross-references as the "no trigger-count gate" compensating control for the CC
+  message-threshold and cumulative-exfiltration-baseline evasion vectors this scenario discloses.
+- [ ] `scenarios/insider-risk/data-leaks-by-priority-users/` — not yet built anywhere in this repo;
+  the third, still-missing member of the `Data leaks…` template family (base built above as a
+  follow-up item, `…by risky users` built in this fragment, `…by priority users` still open).
+  Distinct population mechanism (priority user groups, not an HR/CC trigger) from the fragment this
+  file just closed.
+
 ### Follow-ups discovered while building the Communication Compliance teams-viva-engage-content-safety scenario
-- [ ] `scenarios/insider-risk/data-leaks-by-risky-users/` (or a similarly-named fragment) — the
-  distinct **Data leaks by risky users** Insider Risk Management policy template is not yet built
-  anywhere in this repo (only `security-policy-violations-by-risky-users` is), and is the other
-  documented template that supports the Communication Compliance → IRM "Insider risk trigger"
-  integration, with a different indicator set (`insider-risk-management-policy-templates#data-leaks-by-risky-users`)
-  than the one already covered. Distinct from — and not resolved by — the CC→IRM integration item
-  closed above.
+- [x] `scenarios/insider-risk/data-leaks-by-risky-users/` — **built** (see DONE below): the
+  distinct **Data leaks by risky users** Insider Risk Management policy template, sharing the
+  `security-policy-violations-by-risky-users` sibling's HR-connector/Communication-Compliance
+  trigger mechanism but scoring a materially different indicator set (built-in Office exfiltration
+  indicators + cumulative exfiltration detection, default-on, plus optional Communication
+  Compliance content/generative-AI/cloud indicators) with **no Microsoft Defender for Endpoint
+  dependency** — grounded directly against `insider-risk-management-policy-templates`,
+  `communication-compliance-policies`, `insider-risk-management-policies`, and
+  `insider-risk-management-configure` via the Microsoft Learn MCP tool. Reuses the sibling's
+  `Send-HrRiskIndicatorRecord.ps1` (already generalized for both templates), the base template's
+  scope-candidate script, and the departing-employee-data-theft sibling's plain (non-MDE-joining)
+  alert-export script — no new PowerShell was needed beyond a new policy manifest and validate
+  script. One open VERIFY carried into the scenario's own docs rather than guessed: whether the
+  optional cloud-indicator category is actually offered for this specific template in the live
+  policy-creation workflow (`data-leaks-by-risky-users/README.md` §5 Step 6/§6/§11).
 - [ ] Consider a companion follow-up scripting/documenting a compensating custom keyword dictionary
   for `teams-viva-engage-content-safety` targeting known short-form crisis/threat phrasing (parallel
   to `harassment-and-code-of-conduct/deploy/policy/code-of-conduct-evasion-phrases.txt`), for tenants
@@ -2620,6 +2649,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/insider-risk/data-leaks-by-risky-users/`** — commit PENDING (recorded in the
+  next commit) — 2026-09-15. Full scenario (README, design, deploy/policy manifest, validate,
+  rollback, four-lens review) for the **Data leaks by risky users** Insider Risk Management policy
+  template. Shares its HR-connector/Communication-Compliance trigger mechanism with the already-
+  built `security-policy-violations-by-risky-users` sibling but scores built-in Office exfiltration
+  indicators + cumulative exfiltration detection (default-on) instead of a Defender for Endpoint
+  signal — no Defender for Endpoint dependency at all, the scenario's key differentiator. Reuses
+  three existing scripts unmodified (`Send-HrRiskIndicatorRecord.ps1`,
+  `Get-SecurityPolicyViolationsScopeCandidates.ps1`, `Export-InsiderRiskAlerts.ps1`) rather than
+  forking any of them. Four-lens review raised and closed 3 Fix findings (Red Team: channel-
+  coverage and cumulative-exfiltration-baseline evasion vectors; Blue Team: an operator-error risk
+  now that three near-identical HR-connector upload invocations exist in this library, closed with
+  a new validate-script checklist item; CISO: template-overlap cost/complexity guidance). Follow-up
+  items discovered while building this fragment are filed under "Follow-ups discovered while
+  building the Data leaks by risky users scenario" below.
 - [x] **Ground Data Quality connection/alert `Search-UnifiedAuditLog` coverage** (follow-up from
   `connection-and-scorecard-alerts`) — commit 462851b — 2026-09-15. Grounded and closed, not built:
   found no audit-log or REST audit-endpoint coverage exists today for Unified Catalog Data Quality
