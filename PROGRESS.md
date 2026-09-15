@@ -2817,7 +2817,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/compliance-manager/entra-privileged-role-monitoring/` (bulk group-membership-import
-  follow-up)** — commit PENDING — 2026-09-15. Closed the "not monitored at all" half of `reviews.md`
+  follow-up)** — commit bafcbd2 — 2026-09-15. Closed the "not monitored at all" half of `reviews.md`
   round 2 Red Team finding 3: grounded `"Bulk import group members - finished (bulk)"`/`"Bulk remove
   group members - finished (bulk)"` as real, distinct `GroupManagement`-category activity names via a
   direct fetch of Microsoft's `reference-audit-activities.md` docs source (`learn.microsoft.com`
