@@ -2729,8 +2729,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/insider-risk/data-leaks-by-priority-users/`** — commit PENDING (recorded in the
-  next commit) — 2026-09-15. Full scenario (README, design, deploy/policy manifest, validate,
+- [x] **`scenarios/insider-risk/data-leaks-by-priority-users/`** — commit e8105d8 — 2026-09-15.
+  Full scenario (README, design, deploy/policy manifest, validate,
   rollback, four-lens review) for the third and last member of the **Data leaks…** template
   family. Grounded via direct Microsoft Learn MCP fetch/search (not WebSearch-only), which
   confirmed this template combines the base `Data leaks` template's own two-trigger-option shape
