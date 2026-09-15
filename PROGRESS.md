@@ -2758,7 +2758,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/records-management/disposition-proof-export/`** — commit PENDING — 2026-09-15.
+- [x] **`scenarios/records-management/disposition-proof-export/`** — commit a006888 — 2026-09-15.
   Full scenario (README, design, deploy, validate, rollback, four-lens review) closing the
   "proof of disposition" evidence loop `regulatory-records-disposition/README.md` §7 referenced.
   Documents the portal-native Records Management → Disposition page's Filter+Export `.csv`
