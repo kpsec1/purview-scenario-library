@@ -5983,7 +5983,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   above traces to a fetched or searched official Microsoft page, none invented. Re-open the
   original `PROGRESS.md` item only if Microsoft ever documents a RecordType/Operations pair or a
   rejection-specific report for this event. — 2026-09-11
-- [x] **`scenarios/records-management/file-plan-bulk-import/`** — commit c68a9ca — 2026-09-15. New
+- [x] **`scenarios/records-management/file-plan-bulk-import/`** — commit b17faf9 — 2026-09-15. New
   scenario: the multi-class breadth complement to the sibling `regulatory-records-disposition`
   scenario (one event-based class in depth) — builds a **whole file plan** (many retention-label
   record classes across departments/categories/citations) from one versioned CSV schedule. Ships
