@@ -2173,17 +2173,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   without building a dedicated cross-reference or companion this run.
 
 ### Follow-ups discovered while building the Audit retention-policy-management scenario
-- [ ] Backport the **Organization Configuration vs. Audit Manager** role distinction into
-  `docs/rbac-model.md`'s existing Audit row (currently "Audit Reader (View-Only Audit Logs) →
-  Audit Manager (configure + search + export)", which doesn't mention retention-policy management
-  at all). Confirmed this build: creating/editing audit log retention policies requires the
-  **Organization Configuration** role (per `audit-log-retention-policies`), which is included by
-  default in the **Compliance Data Administrator** Purview role group — a *different* grant from
-  the Audit Manager role group `rbac-model.md` already documents for search/export configuration.
-  Deferred from `retention-policy-management/README.md` §3/§11 (which carries the finding inline)
-  to avoid re-opening the cross-cutting doc mid-fragment, consistent with this repo's established
-  precedent (e.g. the `auto-label-confidential-exchange` role-prerequisite backport, still open
-  above).
+- [x] Backport the **Organization Configuration vs. Audit Manager** role distinction into
+  `docs/rbac-model.md`'s existing Audit row — **built** (see DONE below).
 - [ ] VERIFY (pilot tenant): the retroactive-vs-forward-only behavior of editing a live retention
   policy's `RetentionDuration` — Microsoft's own `audit-log-retention-policies` page states both
   that a change "changes the expiration time of the audit data after updating" and, in the same
@@ -3239,6 +3230,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Backport: Organization Configuration vs. Audit Manager role distinction into
+  `docs/rbac-model.md`'s Audit row** — doc-only correction fragment (not a new scenario), commit
+  <pending, see next `docs(progress)` commit> — 2026-09-16. `docs/rbac-model.md` §4's Audit row
+  previously read "Audit Reader (View-Only Audit Logs) → **Audit Manager** (configure + search +
+  export)" with no mention of retention-policy management. Added: creating/editing an audit log
+  retention policy needs the **Organization Configuration** role, not Audit Manager — independently
+  re-confirmed this run (not just carried over from the source scenario's citation) via a direct
+  fetch of the raw `defender-docs` GitHub source behind
+  `learn.microsoft.com/defender-office-365/scc-permissions` (direct `WebFetch` to `learn.microsoft.com`
+  itself was egress-blocked again this run, the same blocker several earlier fragments logged),
+  which lists **Organization Configuration** among the Compliance Data Administrator role group's
+  default roles and confirms Audit Manager's default roles are limited to Audit Logs/View-Only
+  Audit Logs — and via `WebSearch` corroboration that the Organization Configuration role is what
+  `audit-log-retention-policies` itself names as the requirement. Also bumped the doc's "current as
+  of" date to 2026-09-16, added the `audit-log-retention-policies` URL to the Sources list (appended
+  at the end, not inserted mid-list, to avoid breaking the existing ordinal `source N`/`sources
+  27–35` cross-references in §13), and closed the loop in
+  `scenarios/audit/retention-policy-management/README.md` §3/§11, which had deferred this backport
+  rather than re-opening the cross-cutting doc mid-fragment.
 - [x] **`scenarios/data-map/scan-credential-key-vault-backed/`** — commit 21d17d0 — 2026-09-16.
   Scripts the Azure **Key Vault connection** (`PUT /scan/azureKeyVaults/{azureKeyVaultName}`) and
   the Key Vault-backed **credential object** (`PUT /scan/credentials/{credentialName}`, kinds

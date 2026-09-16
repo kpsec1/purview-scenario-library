@@ -49,7 +49,7 @@ Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. A
 | Audit tier | **Audit (Premium)** for the concept of custom retention policies at all; per-user retention beyond 180 days additionally requires that specific user hold an Audit (Premium)-qualifying license | Microsoft 365/Office 365 E5, Purview Suite, or the E5 eDiscovery & Audit add-on [[1]](#references) |
 | 10-year retention | A separate **10-Year Audit Log Retention add-on** license, per user, in addition to the E5-family license | Only needed for `TenYears` policies; this scenario's scripts cannot verify the add-on is assigned — confirm manually (§11) [[2]](#references) |
 | Role to create/edit retention policies | **Organization Configuration** role in the Microsoft Purview portal | Confirmed included by default in the **Compliance Data Administrator** Purview role group; likely also covered by broader groups (Organization Management) — this build independently confirmed only the Compliance Data Administrator grant [[3]](#references)[[4]](#references) |
-| **Not sufficient alone** | The **Audit Manager** role group (`docs/rbac-model.md`'s existing Audit row) grants audit **search/export** configuration, not retention-policy creation — these are two distinct roles/role groups for two distinct Audit capabilities | See §11 and the follow-up filed in `PROGRESS.md` to reconcile this into `docs/rbac-model.md`'s Audit row |
+| **Not sufficient alone** | The **Audit Manager** role group (`docs/rbac-model.md`'s Audit row) grants audit **search/export** configuration, not retention-policy creation — these are two distinct roles/role groups for two distinct Audit capabilities | See §11; this distinction is now also reflected directly in `docs/rbac-model.md`'s Audit row |
 | Automation identity | App registration with Security & Compliance PowerShell access (certificate app-only), granted a role group containing Organization Configuration | `docs/automation-surface.md` §3 — surface 2, same `Connect-IPPSSession` pattern as every DLP/DLM scenario in this repo |
 | Tenant-wide caps | Up to **50** custom audit log retention policies per organization; **Priority** (1–10000) must be globally unique across all of them | Enforced pre-flight by `deploy/New-AuditRetentionPolicy.ps1` before any write — see §6 [[3]](#references) |
 
@@ -236,7 +236,7 @@ retained audit records or the tenant's default policy.
   Configuration** (confirmed included in the **Compliance Data Administrator** role group);
   configuring/running audit **search** needs the separate **Audit Manager** role group. A buyer's
   existing Audit Manager assignees cannot manage retention policies without an additional role —
-  filed as a follow-up to backport this distinction into `docs/rbac-model.md`'s Audit row.
+  this distinction has been backported into `docs/rbac-model.md`'s Audit row (§4).
 - **`$null`-clearing extrapolated from one documented example.** This scenario's scripts pass
   `$null` (not an empty array) to clear a previously-set `RecordTypes`/`Operations`/`UserIds`
   value on update. Microsoft's own worked example documents this convention only for `-UserIds`;
