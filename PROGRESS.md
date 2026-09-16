@@ -3041,8 +3041,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/compliance-manager/gdpr-assessment/`** — commit PENDING (see the immediately
-  following "record commit hash" entry) — 2026-09-16. Fifth Compliance Manager scenario: full
+- [x] **`scenarios/compliance-manager/gdpr-assessment/`** — commit 271a877 — 2026-09-16. Fifth Compliance Manager scenario: full
   deliverable (README.md, design.md, deploy/policy manifest, reused audit-trail export script,
   validate script, rollback.md, reviews.md) mirroring `assess-against-iso27001/`,
   `pci-dss-assessment/`, `soc2-assessment/`, and `hipaa-hitech-assessment/`'s shape. Grounded via the
