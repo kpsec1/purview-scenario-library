@@ -1,0 +1,27 @@
+{
+  "_comment": "Config for deploy/Invoke-CompromisedAccountResponse.ps1. Author-only reference data. Drives the mutating containment response to a CONFIRMED compromised mailbox: disable account, revoke sessions, reset password, clear forwarding, remove Inbox rules, remove delegate grants. Do not point this at an account until compromise is confirmed - see README.md Section 8.",
+  "targetUserPrincipalName": "jdoe@contoso.example",
+  "actions": {
+    "disableAccount": true,
+    "revokeSessions": true,
+    "resetPassword": true,
+    "clearForwarding": true
+  },
+  "_actionsNote": "Each action is independently toggleable and idempotent - set to false to skip a step this run (e.g. if another team already handled it). Every action maps to a step in Microsoft's compromised-account playbook (README.md Section 5/12 ref 1) except the delegate-permission cleanup below, which is this scenario's own extension (design.md Section 5).",
+  "newPassword": null,
+  "_newPasswordNote": "Leave null to have the script generate a random strong password. The password is printed ONCE to the console and never written to the backup file or any other artifact - relay it to the user out-of-band, never through the mailbox you just locked down.",
+  "inboxRules": {
+    "mode": "All",
+    "identities": []
+  },
+  "_inboxRulesNote": "'All' removes every Inbox rule found (including hidden ones) - the recommended default for a confirmed compromise (design.md Section 4). Use 'ByIdentity' with the 'identities' array (exact Get-InboxRule Identity values) for a surgical response once the investigation has pinpointed the specific malicious rule(s).",
+  "delegatePermissions": {
+    "fullAccess": "All",
+    "sendAs": "All"
+  },
+  "_delegatePermissionsNote": "'All' removes every non-owner FullAccess and SendAs grant found. Use 'None' to skip, or an array of trustee identities (e.g. UPNs) for a surgical response. This scenario's own extension beyond Microsoft's documented Step 6 - see design.md Section 5.",
+  "backupDir": "./out",
+  "_backupDirNote": "Every run writes a timestamped JSON snapshot of pre-removal state here BEFORE making any change - the evidence record and the only practical rollback input (rollback.md). Treat as sensitive: it lists every Inbox rule and delegate grant found, but never the reset password.",
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-16"
+}

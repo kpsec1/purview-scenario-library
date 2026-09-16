@@ -1986,9 +1986,43 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] VERIFY (pilot tenant): the exact `auditLogQueryStatus` terminal values (the runner polls
   defensively and flags this in `audit/premium-audit-investigation/README.md` §11), and the current
   crucial-events list / operation names for the compromise preset.
-- [ ] Consider an **incident-response (mutating) companion** scenario — disable account, revoke
+- [x] Consider an **incident-response (mutating) companion** scenario — disable account, revoke
   sessions, remove malicious inbox rules — the deliberate response workflow this read-only
-  investigation explicitly scopes out (`audit/premium-audit-investigation/design.md` §7).
+  investigation explicitly scopes out (`audit/premium-audit-investigation/design.md` §7) — **built**
+  (see DONE below) as `scenarios/audit/compromised-account-incident-response/`: automates Steps 1/2/6
+  of Microsoft's own "Respond to a compromised cloud email account" playbook (disable, revoke
+  sessions, reset password, clear forwarding, remove Inbox rules incl. hidden), plus a
+  delegate-permission (FullAccess/SendAs) cleanup this new scenario adds on top. Pre-removal state is
+  backed up to timestamped JSON before any removal. Follow-ups this build discovered are tracked
+  immediately below.
+
+### Follow-ups discovered while building the Compromised Account Incident Response scenario
+- [ ] VERIFY (your tenant): the exact Exchange Online RBAC role for `Remove-InboxRule`/`Set-Mailbox`/
+  `Remove-MailboxPermission`/`Remove-RecipientPermission` — none of these cmdlets' own Microsoft Learn
+  reference pages name a specific role, only "you need to be assigned permissions." This scenario's
+  `README.md` §3/§11 names **Mail Recipients** (Recipient Management/Organization Management role
+  groups) as the documented least-privilege candidate based on that role's general "modify existing
+  mail users and mail contacts" description, not a per-cmdlet confirmation, and gives the
+  `Get-ManagementRoleEntry "*\<CmdletName>"` command to confirm directly against a tenant.
+- [ ] Consider scripting Microsoft's documented Steps 3–5 (MFA-registered-device review, OAuth app
+  consent review, admin-role review) once a safe, non-judgment-call automation shape is found for at
+  least the *detection* half (e.g., list an account's registered auth methods/app consents/admin
+  roles for the investigator to review, without auto-removing any of them) — explicitly deferred as a
+  non-goal in `compromised-account-incident-response/design.md` §8 because *deciding* which
+  device/app/role is attacker-added is a human judgment call, but a read-only enumeration script
+  would still speed up that human review the same way this scenario's own detection-before-backup
+  step does for mailbox artifacts.
+- [ ] Consider a full-fidelity Inbox-rule backup (`Get-InboxRule -IncludeHidden | Select-Object *`
+  instead of the current name/enabled/redirect-forward-only fields) so `rollback.md`'s restoration
+  path can recreate a removed rule's complete condition/action set, not just its forwarding behavior —
+  explicitly disclosed as a known gap in `compromised-account-incident-response/rollback.md` §4 rather
+  than silently accepted; not built this run to keep the fragment scoped to detecting the
+  attacker-relevant fields Microsoft's own detection guidance names.
+- [ ] Consider an organization-wide mail-flow persistence companion (tenant-wide transport rules,
+  inbound connectors) for a compromise that reaches beyond one mailbox — explicitly out of scope for
+  `compromised-account-incident-response` (`design.md` §8, `README.md` §11), which points at this
+  library's existing connector-hardening scenarios (`dlp/`, `adaptive-protection/`) for that surface
+  without building a dedicated cross-reference or companion this run.
 
 ### Follow-ups discovered while building the Audit retention-policy-management scenario
 - [ ] Backport the **Organization Configuration vs. Audit Manager** role distinction into
@@ -2906,6 +2940,33 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/audit/compromised-account-incident-response/`** — commit PENDING — 2026-09-16.
+  The mutating incident-response companion `audit/premium-audit-investigation/design.md` §7
+  explicitly scoped out. Automates Steps 1, 2, and 6 of Microsoft's own "Respond to a compromised
+  cloud email account" playbook — disable the Entra ID account (`Update-MgUser -AccountEnabled
+  $false`), revoke all sign-in sessions (`Revoke-MgUserSignInSession`), reset the password
+  (generated, printed once, never persisted), clear mailbox forwarding, and remove Inbox rules
+  including hidden ones (`Get-InboxRule -IncludeHidden`/`Remove-InboxRule`) — plus a
+  delegate-permission (`FullAccess`/`SendAs`) cleanup this scenario adds on top of Microsoft's own
+  documented steps (grounded independently, labeled as an extension, not misattributed to
+  Microsoft's Step 6). Every mutating action is idempotent (reads current state first) and gated by
+  `-WhatIf`/`ShouldProcess`; a timestamped JSON backup of pre-removal state is written before any
+  removal, doubling as evidence and the rollback input. Two automation surfaces (Microsoft Graph +
+  Exchange Online PowerShell) in one script — a first for this library's `audit/` module. Full
+  deliverable per `AGENTS.md` §4 (`README.md`, `design.md`, `deploy/
+  Invoke-CompromisedAccountResponse.ps1`, `deploy/config/compromised-account-response.sample.json`,
+  `validate/Test-CompromisedAccountResponse.ps1`, `rollback.md`, `reviews.md`). Grounded via the
+  Microsoft Learn MCP tool (available and used directly in this session, same as the two most
+  recent prior fragments, despite this scenario's own standing instructions assuming otherwise)
+  directly against Microsoft's `responding-to-a-compromised-email-account` playbook page (the
+  primary source for the whole scenario shape) plus the `user-update`, `user-revokesigninsessions`,
+  `remove-inboxrule`, `set-mailbox`, `remove-mailboxpermission`/`manage-permissions-for-recipients`,
+  `remove-recipientpermission`, `permissions-exo`, `privileged-roles-permissions`, and
+  `concept-identity-protection-policies` reference pages. Four-lens review found and closed 4 Red
+  Team, 1 Blue Team (plus 2 confirmed-correct), 1 CISO (plus 4 confirmed-correct/pass), and 1
+  Microsoft Product Owner (plus 3 confirmed-correct) finding — see `reviews.md`. One VERIFY carried
+  forward rather than guessed: the exact Exchange Online RBAC role for the mailbox cmdlets, since none
+  of their own reference pages name one.
 - [x] **`scenarios/compliance-manager/soc2-assessment/`** — commit 70e15fd — 2026-09-16. Third
   Compliance Manager assessment scenario (alongside `assess-against-iso27001/` and
   `pci-dss-assessment/`), against the SOC 2 premium template. Full deliverable per `AGENTS.md` §4
