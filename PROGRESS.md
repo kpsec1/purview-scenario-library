@@ -2676,23 +2676,65 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   New-AzureSynapseDataMapScan.ps1` omits the property entirely rather than guess a shape that could
   silently mis-scope the scan between dedicated and serverless pools. Flagged inline in the deploy
   script's `.NOTES`, `README.md` §6/§11, and `design.md` §5/§7.
-- [ ] `scenarios/data-map/bulk-grant-synapse-serverless-access/` (or fold into a future Data Map
+- [x] `scenarios/data-map/bulk-grant-synapse-serverless-access/` (or fold into a future Data Map
   hardening pass) — script to bulk-apply the per-serverless-database `CREATE LOGIN`/`CREATE USER`/
   `db_datareader` grants across every database in a workspace (e.g. iterating `sys.databases` via
   `Invoke-Sqlcmd`), closing the CISO-flagged per-database prerequisite-cost scaling noted in
-  `scan-azure-synapse-and-classify/README.md` §3 and `reviews.md`.
-- [ ] `scenarios/data-map/verify-synapse-serverless-enumeration-grants/` (or combine with the Managed
+  `scan-azure-synapse-and-classify/README.md` §3 and `reviews.md`. — **built** (see DONE below):
+  `deploy/Grant-SynapseServerlessDatabaseAccess.ps1` enumerates serverless databases via
+  `sys.databases` and idempotently reconciles the login/user/role-membership grants, continuing past
+  a single database's failure rather than aborting the batch. This build's own deeper grounding pass
+  (two independent, directly-fetched Microsoft Learn pages) found the parent scenario's "repeat
+  `CREATE LOGIN` for every serverless database" framing overstates the actual requirement — it is a
+  server-scoped statement, run once against `master`, not once per database (see this new scenario's
+  `design.md` §4). Implemented correctly here; **not** backported into the parent scenario's own
+  README/design in this fragment — tracked as a fresh follow-up immediately below. Also closes the
+  `verify-synapse-serverless-enumeration-grants` item immediately below in the same build (its own
+  `validate/Test-SynapseServerlessDatabaseAccess.ps1`), and surfaced two cross-cutting doc gaps
+  (also tracked below) rather than silently assuming coverage.
+- [x] `scenarios/data-map/verify-synapse-serverless-enumeration-grants/` (or combine with the Managed
   Instance sibling's already-tracked `verify-purview-entra-graph-prerequisites/` follow-up into one
   broader SQL/Graph-permissioned checker) — a SQL-permissioned checker script confirming the serverless
   `CREATE LOGIN` and `db_datareader` grants exist per database, deferred from `scan-azure-synapse-and-
   classify/validate/Test-AzureSynapseDataMapScan.ps1` because that script's own auth surface (the
   Purview Data Map data-plane token) has no reason to also hold a SQL connection to the serverless
-  endpoint — flagged as a Blue Team finding in that scenario's `reviews.md`.
+  endpoint — flagged as a Blue Team finding in that scenario's `reviews.md`. — **closed by**
+  `scenarios/data-map/bulk-grant-synapse-serverless-access/validate/
+  Test-SynapseServerlessDatabaseAccess.ps1` (see DONE below): a dedicated, lower-privileged,
+  read-only SQL-permissioned checker confirming the server-level login and per-database
+  user/`db_datareader` membership, built as part of the same fragment as the bulk-grant script above
+  rather than as a separate turn (the two are one cohesive deliverable — a script and its own
+  validation script, per `AGENTS.md` §4 — not two fragments).
 - [ ] Consider scripting the **REST API + SQL Auth fallback** for a Synapse workspace whose "Allow
   Azure services and resources to access this workspace" firewall control cannot be enabled — deferred
   from `scan-azure-synapse-and-classify/design.md` §8 as a materially different auth/credential story
   (a Key Vault-backed SQL credential object, the same open portal-only credential-object gap both
   sibling Data Map scenarios already carry).
+
+### Follow-ups discovered while building the bulk-grant Synapse serverless access scenario
+- [ ] Backport the server-scoped-vs-per-database `CREATE LOGIN` correction (see
+  `bulk-grant-synapse-serverless-access/design.md` §4) into `scan-azure-synapse-and-classify/README.md`
+  §5 step 3c and `design.md` §4, which still describe it as a per-database step — deliberately not
+  edited in the bulk-grant scenario's own fragment (`AGENTS.md` §6, one fragment per turn).
+- [ ] Add a **sixth automation surface** to `docs/automation-surface.md` — direct T-SQL/Azure SQL
+  connections via `Invoke-Sqlcmd -AccessToken` (resource `https://database.windows.net/`), the surface
+  `bulk-grant-synapse-serverless-access/deploy/Grant-SynapseServerlessDatabaseAccess.ps1` introduces
+  and none of the existing five surfaces cover. Follows the same precedent as this doc's own surface-5
+  (SharePoint Online Management Shell) addition.
+- [ ] Add a **tenth system** to `docs/rbac-model.md` — Azure Synapse Analytics workspace RBAC (Synapse
+  Administrator / Synapse SQL Administrator / SQL Active Directory Admin), the role system
+  `bulk-grant-synapse-serverless-access/README.md` §3 depends on and none of the doc's existing nine
+  systems cover.
+- [ ] Consider an estate-wide login/grant inventory-drift report for Azure Synapse serverless SQL pools
+  (which external logins exist, which databases they're members of `db_datareader` in) — the same
+  estate-wide shape `scenarios/data-map/scan-credential-inventory-report/` already applies to Data Map
+  credentials — deferred here because `bulk-grant-synapse-serverless-access/validate/` only checks the
+  one named `-PrincipalName`, not a full inventory; flagged as a Blue Team finding in that scenario's
+  `reviews.md`.
+- [ ] Consider a scenario scripting/documenting Azure SQL/Synapse workspace **SQL auditing** (diagnostic
+  logs) as the durable, tamper-evident record of `CREATE LOGIN`/`CREATE USER`/`ALTER ROLE` changes this
+  repo's Synapse scenarios don't otherwise capture — flagged as a Blue Team finding in
+  `bulk-grant-synapse-serverless-access/reviews.md` and as a gap in that scenario's own `README.md` §8.
 
 ### Follow-ups discovered while building the PCI Teams Part 2 (drip-exfiltration) scenario
 - [ ] VERIFY (pilot tenant): run the full end-to-end composition this fragment designs but does
@@ -3242,6 +3284,31 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-map/bulk-grant-synapse-serverless-access/`** — commit (recorded in a
+  follow-up commit immediately after this one, per this repo's own convention) — 2026-09-16. Full
+  scenario (README.md, design.md, deploy/Grant-SynapseServerlessDatabaseAccess.ps1,
+  validate/Test-SynapseServerlessDatabaseAccess.ps1, rollback.md, reviews.md) automating the
+  per-serverless-database `CREATE LOGIN`/`CREATE USER`/`db_datareader` grants
+  `scan-azure-synapse-and-classify/`'s serverless scanning path needs, closing that scenario's own
+  CISO-flagged per-database prerequisite-cost-scaling gap. Grounded via the Microsoft Learn MCP
+  documentation tool, which was directly reachable this run (both search and full-page fetch, no
+  `EGRESS_BLOCKED`) — every T-SQL statement and catalog query is confirmed against a directly-fetched
+  Microsoft Learn page, not inferred. Notable correction surfaced during grounding: the parent
+  scenario's own README/design describe the serverless `CREATE LOGIN` step as per-database (following
+  Microsoft's portal walkthrough literally); two independently-fetched Microsoft Learn pages confirm
+  it is actually a server-scoped statement, run once against `master` — implemented correctly here
+  (see this scenario's `design.md` §4), not backported into the parent scenario in this same fragment
+  (`AGENTS.md` §6). Four-lens review surfaced and resolved: a Red Team blast-radius concern (bulk
+  automation removes the manual walkthrough's natural per-database review friction — resolved with
+  explicit `-WhatIf`-first/`-Database`-allow-list guidance), a Red Team name-collision idempotency
+  edge case (disclosed, not fixed — no stable-identifier pinning mechanism is documented), a Blue Team
+  audit-trail gap (resolved by naming Azure SQL/Synapse's own auditing as the actual detective control,
+  not built here), and a CISO change-management fit note (resolved with guidance to treat a `-WhatIf`
+  preview as the change-approval artifact). Also closes the separately-tracked
+  `verify-synapse-serverless-enumeration-grants` follow-up via this scenario's own `validate/` script.
+  Surfaced two cross-cutting doc gaps (a sixth `docs/automation-surface.md` surface for direct T-SQL
+  connections; a tenth `docs/rbac-model.md` system for Azure Synapse workspace RBAC) — recorded as
+  follow-ups rather than edited into those docs in this same fragment.
 - [x] **Backport: Organization Configuration vs. Audit Manager role distinction into
   `docs/rbac-model.md`'s Audit row** — doc-only correction fragment (not a new scenario), commit
   `c7c146b` — 2026-09-16. `docs/rbac-model.md` §4's Audit row
