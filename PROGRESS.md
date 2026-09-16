@@ -2906,7 +2906,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/compliance-manager/soc2-assessment/`** — commit PENDING — 2026-09-16. Third
+- [x] **`scenarios/compliance-manager/soc2-assessment/`** — commit 70e15fd — 2026-09-16. Third
   Compliance Manager assessment scenario (alongside `assess-against-iso27001/` and
   `pci-dss-assessment/`), against the SOC 2 premium template. Full deliverable per `AGENTS.md` §4
   (`README.md`, `design.md`, `deploy/policy/soc2-assessment-manifest.json`, `deploy/
