@@ -1,0 +1,95 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+// Personal details (defined in the frontmatter, rendered as HTML below).
+const name = 'Krunal';
+const role = 'Cyber Security Consultant';
+const location = 'Regina, Saskatchewan';
+const focusAreas = ['Microsoft Purview', 'Sentinel', 'Defender XDR', 'Entra ID'];
+
+// Only the Purview scenario library is published to this site.
+const scenarios = await getCollection('scenarios');
+const categoryCount = new Set(scenarios.map((s) => s.data.categorySlug)).size;
+---
+
+<Base
+  title={`${name} — ${role}`}
+  description={`${name}, ${role} based in ${location}. Focus: ${focusAreas.join(', ')}.`}
+>
+  <section class="hero">
+    <h1>{name}</h1>
+    <p class="role">{role}</p>
+    <p class="location">📍 {location}</p>
+
+    <h2>Focus areas</h2>
+    <ul class="focus">
+      {focusAreas.map((area) => <li>{area}</li>)}
+    </ul>
+
+    <div class="cta">
+      <a class="button" href="/scenarios/">
+        Browse the Purview Scenario Library →
+      </a>
+      <p class="count">{scenarios.length} scenarios across {categoryCount} Purview solution areas</p>
+    </div>
+  </section>
+
+  <style>
+    .hero {
+      padding: 8px 0 16px;
+    }
+    h1 {
+      font-size: clamp(2.2rem, 6vw, 3.2rem);
+      margin: 0 0 4px;
+    }
+    .role {
+      font-size: 1.25rem;
+      margin: 0 0 4px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .location {
+      color: var(--muted);
+      margin: 0 0 28px;
+    }
+    h2 {
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .focus {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 8px 0 36px;
+    }
+    .focus li {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-weight: 600;
+    }
+    .button {
+      display: inline-block;
+      background: var(--accent);
+      color: #06152b;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 10px;
+    }
+    .button:hover {
+      text-decoration: none;
+      filter: brightness(1.08);
+    }
+    .count {
+      color: var(--muted);
+      margin-top: 12px;
+      font-size: 0.95rem;
+    }
+  </style>
+</Base>

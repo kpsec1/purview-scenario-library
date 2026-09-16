@@ -1,0 +1,15 @@
+{
+  "name": "kpsec1-github-io",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node ./scripts/sync-scenarios.mjs && astro build",
+    "preview": "astro preview",
+    "sync-content": "node ./scripts/sync-scenarios.mjs"
+  },
+  "dependencies": {
+    "astro": "^7.3.3"
+  }
+}

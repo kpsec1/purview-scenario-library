@@ -1,0 +1,83 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const scenarios = await getCollection('scenarios');
+
+// Group scenarios by category, sorted alphabetically.
+const groups = new Map<string, { category: string; items: typeof scenarios }>();
+for (const entry of scenarios) {
+  const key = entry.data.categorySlug;
+  if (!groups.has(key)) groups.set(key, { category: entry.data.category, items: [] as typeof scenarios });
+  groups.get(key)!.items.push(entry);
+}
+const sortedGroups = [...groups.entries()]
+  .sort((a, b) => a[1].category.localeCompare(b[1].category))
+  .map(([slug, g]) => ({
+    slug,
+    category: g.category,
+    items: g.items.sort((a, b) => a.data.title.localeCompare(b.data.title)),
+  }));
+---
+
+<Base title="Purview Scenario Library" description="Browse the Microsoft Purview scenario library.">
+  <h1>Purview Scenario Library</h1>
+  <p class="lead">
+    {scenarios.length} end-to-end Microsoft Purview scenarios across {sortedGroups.length} solution
+    areas — each with design notes, deployment steps, validation, and rollback in the
+    <a href="https://github.com/kpsec1/purview-scenario-library">source repository</a>.
+  </p>
+
+  <nav class="toc" aria-label="Solution areas">
+    {sortedGroups.map((g) => <a href={`#${g.slug}`}>{g.category} ({g.items.length})</a>)}
+  </nav>
+
+  {
+    sortedGroups.map((g) => (
+      <section class="group" id={g.slug}>
+        <h2>{g.category}</h2>
+        <ul>
+          {g.items.map((entry) => (
+            <li>
+              <a href={`/scenarios/${entry.id}/`}>{entry.data.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  <style>
+    h1 {
+      margin-bottom: 4px;
+    }
+    .lead {
+      color: var(--muted);
+      max-width: 60ch;
+    }
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin: 24px 0 8px;
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .group {
+      margin-top: 36px;
+      scroll-margin-top: 80px;
+    }
+    .group h2 {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+    .group ul {
+      padding-left: 20px;
+    }
+    .group li {
+      margin: 6px 0;
+    }
+  </style>
+</Base>

@@ -1,0 +1,58 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('scenarios');
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const githubUrl = `https://github.com/kpsec1/purview-scenario-library/tree/main/${entry.data.repoPath}`;
+---
+
+<Base title={`${entry.data.title} — ${entry.data.category}`}>
+  <p class="crumbs">
+    <a href="/scenarios/">Scenarios</a> <span>/</span>
+    <a href={`/scenarios/#${entry.data.categorySlug}`}>{entry.data.category}</a>
+  </p>
+  <h1>{entry.data.fullTitle}</h1>
+  <p class="source">
+    <a href={githubUrl} rel="noopener" target="_blank">View source, deploy & validate scripts on GitHub →</a>
+  </p>
+
+  <article class="scenario">
+    <Content />
+  </article>
+
+  <style>
+    .crumbs {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .crumbs span {
+      margin: 0 4px;
+    }
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.1rem);
+    }
+    .source {
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+    }
+    .scenario :global(h2) {
+      margin-top: 2em;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+    }
+    .scenario :global(hr) {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2em 0;
+    }
+  </style>
+</Base>
