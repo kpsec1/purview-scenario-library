@@ -3157,7 +3157,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/insider-risk/data-leaks-custom-indicator-trigger/`** — commit PENDING — 2026-09-16.
+- [x] **`scenarios/insider-risk/data-leaks-custom-indicator-trigger/`** — commit b2f70e6 — 2026-09-16.
   Third and final documented triggering-event mechanism for the base `Data leaks` Insider Risk
   Management policy template (siblings: `data-leaks/` — DLP-policy trigger;
   `data-leaks-exfiltration-activity-trigger/` — built-in-indicator trigger), closing the follow-up
