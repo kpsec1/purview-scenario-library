@@ -2615,10 +2615,49 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Compliance Manager scenarios now sharing the `Security & Compliance Assessments` group
   (`assess-against-iso27001`, `pci-dss-assessment`, `soc2-assessment`) simultaneously, not just
   pairwise — `soc2-assessment/README.md` §7 item 4 only describes a pairwise spot-check.
-- [ ] Consider a fourth Compliance Manager scenario for a regulation this library hasn't covered yet
+- [x] Consider a fourth Compliance Manager scenario for a regulation this library hasn't covered yet
   (e.g. HIPAA/HITECH or GDPR, both explicitly named in `AGENTS.md` §3's regulatory-driver axis and
-  both listed in Compliance Manager's premium regulations catalog) — would be the natural next
-  addition to the same shared-group pattern these three scenarios now establish.
+  both listed in Compliance Manager's premium regulations catalog) — **built** (see DONE below):
+  `scenarios/compliance-manager/hipaa-hitech-assessment/`, picked over GDPR per this item's own
+  tie-break rule (a common enterprise/regulatory driver pairing naturally with the existing PCI
+  DSS + SOC 2 + ISO 27001 trio) after confirming both HIPAA/HITECH and GDPR are real, currently
+  listed premium templates. Crosswalk uses HIPAA/HITECH's own published rule structure (Privacy
+  Rule, Security Rule's 3 safeguard categories, Breach Notification Rule) rather than a numbered-
+  goal or Trust-Services-Criteria shape, plus a HIPAA-specific "addressable ≠ optional" structural
+  flag with no analog in the other three siblings' crosswalks.
+
+### Follow-ups discovered while building the Compliance Manager HIPAA/HITECH assessment scenario
+- [ ] Consider a fifth Compliance Manager scenario for **GDPR** (the regulation this item's own
+  tie-break rule deferred in favor of HIPAA/HITECH) — Compliance Manager's regulation catalog lists
+  "EU GDPR (General Data Protection Regulation)" as a premium template under the EMEA regional
+  category, with its own dedicated `compliance/regulatory/gdpr` Microsoft Learn page (confirmed
+  during this build's grounding pass, not yet deep-grounded into a full scenario). GDPR's own
+  published structure (data-subject rights, lawful-basis/consent, cross-border-transfer mechanisms,
+  72-hour breach notification to a Data Protection Authority) is a materially different shape from
+  any of the four regulations this library now covers and would need its own crosswalk, not a copy
+  of the HIPAA/HITECH one.
+- [ ] Consider a dedicated PHI-classification/DLP scenario using Microsoft Purview's built-in
+  "U.S. Health Insurance Act (HIPAA) Enhanced" DLP policy template (confirmed via
+  `dlp-policy-templates-include` during this build: SSN + DEA Number + U.S. Physical Addresses +
+  All Full Names sensitive information types AND ICD-9-CM/ICD-10-CM keyword terms AND the
+  Healthcare/Health-Medical-Forms trainable classifiers, scoped to Exchange/SharePoint/OneDrive/
+  Teams/Devices/on-premises repositories) — `hipaa-hitech-assessment/README.md` §11 and its
+  manifest's Privacy Rule `coverage` field disclose this as an unbuilt gap rather than claiming
+  coverage that doesn't exist; this would be the natural scenario to close it, and would also give
+  the HIPAA/HITECH assessment's Privacy Rule crosswalk row genuine technical coverage it currently
+  lacks.
+- [ ] VERIFY (pilot tenant): whether Compliance Manager's Controls/Improvement actions views expose
+  which specific improvement actions correspond to "required" vs. "addressable" HIPAA Security Rule
+  implementation specifications anywhere in the UI itself (only the underlying 45 CFR rule text was
+  confirmed during this build's grounding pass, via `entra/standards/hipaa-configure-for-
+  compliance`) — would materially help a Contributor/Assessor prioritize evidence-quality review on
+  the addressable specifications this scenario's manifest and validate script flag as
+  not-optional-despite-the-name (`hipaa-hitech-assessment/README.md` §11).
+- [ ] Once a live tenant is available: run the "Group-sharing functional test" across all four
+  Compliance Manager scenarios now sharing the `Security & Compliance Assessments` group
+  (`assess-against-iso27001`, `pci-dss-assessment`, `soc2-assessment`, `hipaa-hitech-assessment`)
+  simultaneously, not just pairwise — extends the identical open item `soc2-assessment` left behind
+  for its own three-way case.
 
 ### Follow-ups discovered while building the Data Lineage custom-process-lineage scenario
 - [ ] VERIFY (pilot tenant): whether a relationship end's `typeName` must be the entity's own
@@ -2940,6 +2979,43 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/compliance-manager/hipaa-hitech-assessment/`** — commit PLACEHOLDER — 2026-09-16.
+  Fourth Compliance Manager assessment scenario (alongside `assess-against-iso27001/`, `pci-dss-
+  assessment/`, and `soc2-assessment/`), against the HIPAA/HITECH premium template. Closes the
+  `### Follow-ups discovered while building the Compliance Manager SOC 2 assessment scenario` item
+  "Consider a fourth Compliance Manager scenario for a regulation this library hasn't covered yet."
+  Before building, ran a quick WebSearch/Microsoft Learn MCP pass against `compliance-manager-
+  regulations-list` to confirm both HIPAA/HITECH and GDPR are real, currently-listed premium
+  templates (HIPAA/HITECH under the US Government category with its own `offering-hipaa-hitech`
+  page; GDPR under EMEA with its own `compliance/regulatory/gdpr` page) before picking HIPAA/HITECH
+  per the follow-up item's own stated tie-break rule (a common enterprise/regulatory driver pairing
+  naturally with the existing PCI DSS + SOC 2 + ISO 27001 trio) — GDPR is tracked as a new
+  follow-up below rather than also built in this fragment (`AGENTS.md` §6, one fragment per turn).
+  Full deliverable per `AGENTS.md` §4 (`README.md`, `design.md`, `deploy/policy/
+  hipaa-hitech-assessment-manifest.json`, `deploy/Export-ComplianceManagerAuditTrail.ps1` — reused,
+  not duplicated, from `assess-against-iso27001/` — `validate/Test-ComplianceManagerAuditTrail.ps1`,
+  `rollback.md`, `reviews.md`). Grounded via the Microsoft Learn MCP tool (available and used
+  directly in this session, same as the four most recent prior Compliance Manager fragments,
+  despite this scenario's own standing instructions assuming otherwise) directly against
+  `compliance-manager-regulations-list` (confirmed "HIPAA/HITECH" as the exact current catalog name,
+  distinct from the separately-listed "HITRUST" template), `offering-hipaa-hitech` (three-rule
+  structure — Privacy Rule/Security Rule/Breach Notification Rule; Microsoft's own explicit FAQ
+  statement that no HHS-approved HIPAA certification standard exists for anyone), `azure/compliance/
+  offerings/offering-hipaa-us`, `entra/standards/hipaa-configure-for-compliance` (45 CFR
+  §164.308/164.310/164.312 safeguard structure; the "addressable is not optional" Security Rule
+  distinction, quoted verbatim rather than paraphrased), `dlp-policy-templates-include` (confirmed
+  the built-in "U.S. Health Insurance Act (HIPAA) Enhanced" DLP policy template exists, cited as a
+  disclosed gap rather than claimed as built), and eCFR §164.316 (six-year Security Rule
+  documentation-retention requirement, cited to motivate this scenario's operations guidance).
+  Crosswalk uses HIPAA/HITECH's own 5-part rule structure (Privacy Rule; Administrative, Physical,
+  and Technical Safeguards; Breach Notification Rule) rather than PCI DSS's numbered goals or
+  SOC 2's Trust Services Criteria categories — a structurally different manifest shape the validate
+  script's manifest checks were written to match, plus a new `hasAddressableSpecifications`
+  structural flag on the three Security Rule categories with no analog in any sibling scenario's
+  crosswalk. One VERIFY carried forward rather than guessed: whether Compliance Manager's UI exposes
+  a per-improvement-action required-vs-addressable indicator (only the underlying 45 CFR rule text
+  was confirmed). Four-lens review found and closed 4 Red Team, 4 Blue Team, and 7 Microsoft
+  Product Owner findings (0 from CISO) — see `reviews.md`.
 - [x] **`scenarios/audit/compromised-account-incident-response/`** — commit a52d3a4 — 2026-09-16.
   The mutating incident-response companion `audit/premium-audit-investigation/design.md` §7
   explicitly scoped out. Automates Steps 1, 2, and 6 of Microsoft's own "Respond to a compromised
