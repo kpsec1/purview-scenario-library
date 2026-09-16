@@ -3284,9 +3284,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/data-map/bulk-grant-synapse-serverless-access/`** — commit (recorded in a
-  follow-up commit immediately after this one, per this repo's own convention) — 2026-09-16. Full
-  scenario (README.md, design.md, deploy/Grant-SynapseServerlessDatabaseAccess.ps1,
+- [x] **`scenarios/data-map/bulk-grant-synapse-serverless-access/`** — commit `18e4248` —
+  2026-09-16. Full scenario (README.md, design.md, deploy/Grant-SynapseServerlessDatabaseAccess.ps1,
   validate/Test-SynapseServerlessDatabaseAccess.ps1, rollback.md, reviews.md) automating the
   per-serverless-database `CREATE LOGIN`/`CREATE USER`/`db_datareader` grants
   `scan-azure-synapse-and-classify/`'s serverless scanning path needs, closing that scenario's own
