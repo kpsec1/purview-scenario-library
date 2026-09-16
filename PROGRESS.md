@@ -2889,7 +2889,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/insider-risk/data-leaks-exfiltration-activity-trigger/`** — commit PENDING —
+- [x] **`scenarios/insider-risk/data-leaks-exfiltration-activity-trigger/`** — commit 333f18d —
   2026-09-16. Second full worked example for the base `Data leaks` policy template — the "User
   performs an exfiltration activity" triggering event, `data-leaks/design.md` §7's own disclosed
   non-goal. Full deliverable per `AGENTS.md` §4 (`README.md`, `design.md`, `deploy/policy/
