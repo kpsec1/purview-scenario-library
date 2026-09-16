@@ -156,3 +156,110 @@ No remaining Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`,
 `deploy/New-Okr.ps1`, `deploy/Remove-Okr.ps1`, and `validate/Test-Okr.ps1`. No Fail items were
 raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Round 2 — progress-trend companion (`PROGRESS.md` follow-up)
+
+Round 1's Blue Team finding 2 named the lack of any staleness-detection mechanism for a key
+result's `progress` value as a real, unfixed-in-tooling operational gap. This round closes the
+`PROGRESS.md` follow-up that named the workaround: adds `deploy/Export-OkrProgressTrend.ps1` (a
+read-only, local-trend-log-producing companion) and `validate/Test-OkrProgressTrend.ps1` (its
+file-integrity/staleness-gate/live-reconciliation companion), plus `README.md` §5/§7/§8/§11/§12 and
+`design.md` §8 updates (see design.md §8 for why this departs from the follow-up's literal wording
+in two ways, and why each departure is an improvement).
+
+### 🔴 Red Team — Verdict: Fix (resolved)
+
+1. **The trend-log CSV is the sole historical record of a key result's progress over time — losing
+   or resetting it silently un-flags every previously-stale entity as freshly "Baseline" on the
+   next run, with no warning that history was lost.** An operator who deletes the file (accidentally,
+   or during a workstation/CI-runner rebuild) gets no signal that staleness tracking has reset to
+   zero, and a key result that was genuinely stale for months would start a fresh staleness clock
+   with no trace of the gap.
+   - **Resolution:** `rollback.md`'s new "progress-trend companion needs no rollback of its own"
+     section states this explicitly (deleting the file is a real, disclosed reset, not silent data
+     loss the operator wasn't told about), and `README.md` §11's new bullet on the missing
+     Microsoft-side change history states the same consequence. Not fixable in tooling without a
+     durable, tenant-side history this object type doesn't have (design.md §8's audit-log
+     grounding pass) — documented as a named limitation rather than worked around with unfounded
+     complexity (e.g. a second, redundant local backup file this script would then also need to
+     keep in sync).
+2. **A `-ClientSecret` compromise against this script's own service principal is a lower-value
+   target than against `New-Okr.ps1`'s, precisely because design.md §8 deliberately scoped it to no
+   Graph permission and the same read-only bar `Test-Okr.ps1` already has — but it still runs
+   unattended on a schedule, which is a different threat model (a scheduled task's stored credential
+   is a more persistent, more discoverable target than one a human types in interactively) from
+   every other script in this scenario.**
+   - **Resolution:** `README.md` §3's existing service-principal/role guidance and
+     `docs/rbac-model.md` already cover credential-storage hygiene for unattended automation
+     generally; this finding doesn't reveal a scenario-specific gap beyond what design.md §8
+     already discloses (the least-privilege scoping is itself the mitigation, not a residual risk
+     needing a new control). Confirmed as adequately covered, not a new Fix beyond the disclosure
+     already made.
+
+### 🔵 Blue Team — Verdict: Fix (resolved)
+
+1. **Mixing Objective rows (no `progress`/`goal`/`max`) and KeyResult rows (all three) in one
+   `Export-Csv` call would have silently truncated those three columns from every row in the file,
+   not just Objective rows** — `Export-Csv` derives its column set from the first pipeline object
+   only. This is exactly the kind of quiet data-loss bug that would have made the whole companion
+   worthless (a trend log that can't actually show progress trending) without erroring or warning
+   anywhere.
+   - **Resolution:** Confirmed already fixed at design time, not left for review to catch: both
+     entity types are built with the identical field set (`Definition`/`Progress`/`Goal`/`Max`/
+     `Status`, blank for the three Objective doesn't have) in `Export-OkrProgressTrend.ps1`'s
+     `New-TrendRow` construction — design.md §8 documents the reasoning. This review independently
+     re-derived the same bug before finding it was already handled, and records that verification
+     here rather than silently trusting the inline comment.
+2. **A numeric value's string representation could theoretically differ between two API responses
+   for the same underlying number** (e.g. `45` vs `45.0`), which the plain `[string]` comparison in
+   `New-TrendRow` would misread as a change, muddying the staleness signal with false "Changed"
+   rows.
+   - **Resolution:** Not independently verified against a live tenant (no pilot tenant exists — see
+     `PROGRESS.md`'s own backlog policy on VERIFY items). `README.md` §11 now states this as an
+     explicit, named VERIFY rather than an implicit assumption the script's logic silently makes.
+3. **`validate/Test-OkrProgressTrend.ps1`'s live-reconciliation check confirms the most recent
+   run's rows cover every currently-live entity, but does not (and cannot, from file data alone)
+   confirm the reverse — that a row claiming `ChangeState: Unchanged` genuinely matches what the
+   live entity says right now**, since that would require re-running the full comparison logic
+   `Export-OkrProgressTrend.ps1` already owns.
+   - **Resolution:** Confirmed as intentional scope, not a gap: the live-reconciliation check's job
+     is completeness (nothing missing from the report), not re-verifying the diff engine itself —
+     re-running `Export-OkrProgressTrend.ps1` itself is how an operator gets a fresh, authoritative
+     comparison. `validate/Test-OkrProgressTrend.ps1`'s own header comment already scopes check 3
+     this way; no change needed.
+
+### 🎩 CISO — Verdict: Pass
+
+Zero incremental licensing cost — this companion calls only the same Okr - Get / Get Key Result
+operations already in scope for `validate/Test-Okr.ps1`, and (design.md §8) needs a narrower
+role than `New-Okr.ps1` already requires. Directly strengthens the board-narrative pitch README.md
+§2 makes: an OKR frozen at "on track" for months while the underlying metric actually regressed is
+a false-assurance risk to a board-level claim, and this companion is the first concrete, shippable
+mitigation for exactly that risk in this scenario. Operational cost is one more scheduled job to
+own (same class of ask as every other scheduled companion already in this repo — e.g.
+`scan-credential-inventory-report`) — reasonable for the risk reduction. Would fund this addition.
+
+### 🟦 Microsoft Product Owner — Verdict: Pass
+
+Calls only already-grounded operations (`Okr - Get`/`Get Key Result`, cited in Round 1 and reused
+here) — no new cmdlet, endpoint, or field shape invented. The new "no OKR-specific audit category"
+finding is grounded directly against the "Audit log activities" reference's own "Microsoft Purview
+governance activities" table (fetched this round, not inferred), and is stated with the correct
+epistemic precision (corroborating, not conclusive — the category describes a different, older data
+model) rather than overclaimed now that a citation exists for it. Correctly scoped to a companion
+that extends an already-shipped scenario in place, per `AGENTS.md` §4's guidance for a companion
+script to an existing scenario, rather than duplicating the scenario's boilerplate into a new
+folder.
+
+### Round 2 summary
+
+| Lens | Verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Fix | 2 (trend-log-loss silent-reset risk documented in rollback.md/README §11; unattended-credential threat model confirmed already covered by existing least-privilege scoping and RBAC guidance) | Closed |
+| 🔵 Blue Team | Fix | 3 (mixed-schema CSV truncation bug confirmed already fixed at design time; numeric string-format comparison sensitivity flagged as a new VERIFY; live-reconciliation scope confirmed intentional) | Closed |
+| 🎩 CISO | Pass | 0 | — |
+| 🟦 Microsoft Product Owner | Pass | 0 (new audit-category grounding independently re-checked and stated with correct precision) | — |
+
+No remaining Fix/Fail. This addition meets the definition of done in `AGENTS.md` §9.

@@ -145,3 +145,68 @@ send regardless of which of the two documented shapes is the real one — flagge
   operations.
 - **Managed-attribute filtering on `Okr - Query`.** This scenario's scripts never call `Query` at
   all (Section 3) — Query's own `managedAttributes` filter parameter is unexercised.
+
+## 8. Progress-trend companion (`PROGRESS.md` follow-up)
+
+`PROGRESS.md`'s own follow-up asked for "a small scheduled companion script that re-runs
+`validate/Test-Okr.ps1` on a cadence and diffs its output against a prior run" — the only
+unattended staleness-detection workaround Section 6/`README.md` §8 name for a key result's
+`progress` value going stale (frozen at "on track" while the real metric moves). This section
+records why the shipped implementation (`deploy/Export-OkrProgressTrend.ps1` +
+`validate/Test-OkrProgressTrend.ps1`) departs from the follow-up's literal wording in two ways, and
+why each departure is an improvement rather than scope creep:
+
+1. **It re-derives structured data instead of literally invoking `Test-Okr.ps1` and diffing its
+   console text.** Two independent problems with the literal reading, either of which alone would
+   have been disqualifying: (a) `Test-Okr.ps1` calls `exit 1` on a hard failure, and PowerShell's
+   `exit` inside a script invoked via the call operator (`&`) terminates the **entire host
+   process**, not just that script's own scope — a wrapper that ran `& ./Test-Okr.ps1 @params`
+   in-process would never reach its own staleness-diff logic on any run where Test-Okr.ps1 found a
+   problem, which is exactly the run an operator most needs the diff for. (b) Running it instead as
+   an isolated child process (`pwsh -File ...`) to sidestep that would require passing the
+   `-ClientSecret` `SecureString` across a process boundary, which means serializing it to
+   plaintext on a command line — a real secret-handling regression this repo does not accept
+   anywhere else. Diffing **structured, named fields** (`definition`/`progress`/`goal`/`max`/
+   `status`, fetched directly by this script's own minimal GET calls) run-over-run avoids both
+   problems and is a stronger, machine-comparable signal than text-diffing colorized console
+   output would have been regardless — the same "structured over textual" preference
+   `scan-credential-inventory-report`'s own per-kind fingerprint extraction already established for
+   a different drift-detection problem in this repo.
+2. **It diffs against this entity's own most recent PRIOR run, not a checked-in expected-state
+   file.** `scan-credential-inventory-report`'s drift model (the closest existing precedent in this
+   repo) compares live state to a human-authored, checked-in "what SHOULD this be" file — the right
+   model for a credential inventory, where drift from an approved baseline is itself the risk. An
+   OKR's `progress` value is expected to change over its lifetime (that's the point of tracking it)
+   — there is no "correct" checked-in progress number to drift-check against, only the question of
+   *whether anyone has updated it lately*. Run-over-run comparison is the correct model for that
+   different question.
+
+**Why the Export script needs no Graph token, unlike `New-Okr.ps1`.** It never resolves an owner
+identity — it only re-fetches the objective/key-result objects already created, so `AppId` needs
+only the same read-only Data Steward / Governance Domain Reader bar `validate/Test-Okr.ps1` already
+requires, not the `User.Read.All` Graph application permission `New-Okr.ps1` needs. A narrower
+credential for a script that runs unattended on a schedule (and is therefore a higher-value target
+for a compromised-credential scenario than a human-triggered deploy) is a deliberate, disclosed
+least-privilege choice, not an oversight.
+
+**A uniform CSV schema across both entity types (Objective and KeyResult), by design, not by
+accident.** `Export-Csv` derives its column headers from the *first* object in the pipeline only —
+an Objective row (which has no `progress`/`goal`/`max`) and a KeyResult row (which has all three)
+would, if given their natural narrower/wider shapes, silently truncate `progress`/`goal`/`max`
+from every row in the file, including KeyResult rows, whichever type happened to sort first. Both
+row types are built with the identical field set (`Definition`/`Progress`/`Goal`/`Max`/`Status`,
+blank for the three Objective doesn't have) specifically to avoid this — a correctness fix applied
+at design time, not discovered as a review finding (though the four-lens review below did
+independently re-derive and confirm the same reasoning — see the Blue Team section).
+
+**No audit/change-history surface exists for this object type, re-checked, not just carried
+forward.** Rather than repeat reviews.md Round 1's Blue Team finding 2 unexamined, this build
+independently re-checked the "Audit log activities" reference's own "Microsoft Purview governance
+activities" category and found it lists `EntityCreated`/`EntityUpdated`/`EntityDeleted`,
+`Classification*`, `GlossaryTerm*`, and `SensitivityLabelChanged` — the classic Atlas-model entity
+event set — with **no** Objective/KeyResult/OKR-specific operation. This corroborates, but does not
+conclusively prove, the original finding: that audit category describes a distinct, older data
+model from the Unified Catalog OKR REST API this scenario actually calls, so an OKR change routed
+through some other, unrecognized mechanism is not fully ruled out. `README.md` §11 and this
+script's own `.NOTES` state the finding with that precision rather than upgrading it to a flat
+"confirmed no audit trail" claim now that a citation exists for it.

@@ -158,6 +158,15 @@ other Unified Catalog scenarios:
     -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `
     -DefinitionPath './deploy/config/customer-data-trust-okr.sample.json'
+
+# 5. Optional, on a recurring schedule (Windows Task Scheduler / cron / Azure Automation runbook -
+#    see Section 8): trend progress over time and flag a key result that has stopped changing.
+./deploy/Export-OkrProgressTrend.ps1 `
+    -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
+    -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `
+    -DefinitionPath './deploy/config/customer-data-trust-okr.sample.json' `
+    -TrendLogPath './deploy/out/okr-progress-trend.csv'
+./validate/Test-OkrProgressTrend.ps1 -TrendLogPath './deploy/out/okr-progress-trend.csv' -FailOnStale
 ```
 
 ## 6. Configuration reference
@@ -183,6 +192,9 @@ exact Microsoft Learn REST reference pages for every operation used.
    expected definition text/owner/domain, confirms each key result exists with matching
    progress/goal/max/status, and reports (does not fail on) whether each named data product is
    linked. Exits non-zero on any hard failure (safe for a CI-style pre-flight).
+   `./validate/Test-OkrProgressTrend.ps1` checks a different thing — the progress-trend companion's
+   own trend-log file integrity, plus (with `-FailOnStale`) whether the most recent run flagged any
+   entity as stale — see §8.
 2. **Portal check** — Purview portal → Unified Catalog → **Discovery** → **Enterprise glossary** →
    **OKRs** tab → open the objective → confirm both key results and, if `manage-data-products` has
    already run, `Customer Master Data` under linked data products [[2]](#12-references).
@@ -218,6 +230,17 @@ against the underlying data (e.g. an actual duplicate-rate calculation from
 real metric lives) must update `progress` in the definition file and re-run `New-Okr.ps1` for the
 key result to reflect reality — treat a stale, un-refreshed OKR as worse than no OKR for the
 board-legible-narrative goal in §2, since a stale "on track" reads as false assurance.
+
+**Detecting that staleness, unattended:** run `deploy/Export-OkrProgressTrend.ps1` on the same
+cadence as your business review (weekly/monthly) — it re-fetches the objective and every key
+result, appends a row per entity to a local trend-log CSV, and flags any entity whose
+definition/progress/goal/max/status has stayed **completely unchanged** for `-StalenessThresholdDays`
+(default 30) or more. It does not compute or validate progress against any real metric (no such
+source exists to check against — see the paragraph above); it only detects the absence of any
+recorded change, which is the best unattended proxy available today for "has anyone actually looked
+at this key result lately." Pair it with `validate/Test-OkrProgressTrend.ps1 -FailOnStale` as the
+pipeline gate, and `validate/Test-Okr.ps1` for existence/definition drift on the same schedule —
+the two validate scripts check different things and neither replaces the other.
 
 **Compliance-evidence caution:** this feature is Microsoft-labeled preview (§3, §11) — do not cite
 an OKR's own progress tracking as a compliance control in a formal audit response; it is a
@@ -278,7 +301,26 @@ objective itself.
   (design.md §4), so this scenario doesn't guess at what it's for.
 - **This scenario does not compute or refresh a key result's `progress` from any live data
   source.** See `README.md` §8 — progress is whatever the definition file says until an operator
-  (or a separate script this repo does not build) updates it and re-runs `New-Okr.ps1`.
+  updates it and re-runs `New-Okr.ps1`. `deploy/Export-OkrProgressTrend.ps1` (§8) detects the
+  *absence* of a change over time; it cannot detect a *wrong* or *stalled* underlying metric that
+  happens to still be getting re-entered on a cadence.
+- **No Microsoft-side change history exists for an Okr/Key Result object.** Re-confirmed by this
+  companion's own build: the "Audit log activities" reference's "Microsoft Purview governance
+  activities" category (`EntityCreated`/`EntityUpdated`/`EntityDeleted`, `Classification*`,
+  `GlossaryTerm*`, `SensitivityLabelChanged`) lists no Objective/KeyResult/OKR-specific operation —
+  corroborating, but not conclusively proving (that category describes the classic Atlas-based
+  entity model, a different, older surface than the Unified Catalog OKR REST API), the original
+  "no notification surface" finding from `reviews.md` Round 1's Blue Team section.
+  `deploy/Export-OkrProgressTrend.ps1`'s own local
+  trend-log CSV is therefore the only historical record of an OKR's progress this repo can
+  produce — a client-side compensating control, not a read of any Microsoft-side audit trail. Losing
+  or resetting that CSV file loses all staleness history (every remaining entity re-baselines on the
+  next run, silently un-flagging anything that was previously stale).
+- **The staleness comparison is a plain string/value match, not a semantic one.** A progress value
+  that round-trips through the API with a different but numerically-equal string representation
+  (e.g. `45` vs `45.0`) would be misread as "changed" when nothing meaningful did. Not observed in
+  this scenario's own testing, but not independently verified against a live tenant either — VERIFY
+  (pilot tenant).
 - **Deleting the linked data product does not automatically unlink the objective** — this
   scenario's rollback and validate scripts re-resolve the product by name on every run; if it no
   longer exists, `Add-ObjectiveToDataProduct`/the validate check both report the condition rather
@@ -321,6 +363,10 @@ objective itself.
     <https://learn.microsoft.com/purview/data-governance-billing-faq>
 13. Get a user (Microsoft Graph) — `User.Read.All` application permission —
     <https://learn.microsoft.com/graph/api/user-get>
+14. Audit log activities — "Microsoft Purview governance activities" category, checked for an
+    Objective/KeyResult/OKR-specific operation (none found; supports but does not conclusively prove
+    the no-notification-surface finding §11 discloses for the progress-trend companion) —
+    <https://learn.microsoft.com/purview/audit-log-activities#microsoft-purview-governance-activities>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing engagement — this
 > scenario targets Unified Catalog's **preview** REST API surface (`2026-03-20-preview`), and the

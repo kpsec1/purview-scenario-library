@@ -3076,10 +3076,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   either — no worked example was found pairing `scanRulesetName: "SqlServerDatabase"` with
   `scanRulesetType: "System"` — and stays open, flagged inline rather than silently treated as
   resolved just because the related `kind` question was.
-- [ ] Consider a **credential-object creation** follow-up (Key Vault-backed, for the
+- [x] Consider a **credential-object creation** follow-up (Key Vault-backed, for the
   `AzureSqlDatabaseCredential` scan kind) becoming unblocked by the same Types/Scan-Rulesets REST
   grounding pass this build did — not investigated this round; the base scenario's `README.md` §11
   VERIFY on this point was left as-is (out of scope for a scan-rule-set-focused fragment).
+  **STALE — already closed by `scenarios/data-map/scan-credential-key-vault-backed/`** (extended by
+  `scan-credential-remaining-kinds/` and `scan-credential-inventory-report/`); confirmed via
+  `grep -rl AzureSqlDatabaseCredential scenarios/data-map/scan-credential-key-vault-backed/`.
 
 ### Follow-ups discovered while building the Data Map on-premises SQL Server PII-only scan rule set scenario
 - [ ] VERIFY (pilot tenant, or a future pass): the on-premises SQL Server System default scan rule
@@ -3199,11 +3202,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] Once Microsoft documents a portal action or REST caller for `entityType=KEYRESULT` on the
   Data Products relationship operations (a documented enum value with no discoverable portal
   action as of this build), extend `manage-okrs` to script it — `design.md` §4/§7.
-- [ ] Consider a small scheduled companion script that re-runs `validate/Test-Okr.ps1` on a cadence
+- [x] Consider a small scheduled companion script that re-runs `validate/Test-Okr.ps1` on a cadence
   and diffs its output against a prior run, as the only unattended staleness-detection workaround
   for a key result's `progress` value (`manage-okrs/README.md` §8, Blue Team finding 2 in
   `reviews.md`) — not built this run to keep this fragment scoped to the create/link capability
-  `PROGRESS.md` asked for.
+  `PROGRESS.md` asked for. **Built** (see DONE below): `deploy/Export-OkrProgressTrend.ps1` +
+  `validate/Test-OkrProgressTrend.ps1` — a structured run-over-run progress/status diff, not a
+  literal text-diff of `Test-Okr.ps1`'s own console output (design.md §8 explains why).
 
 ### Follow-ups discovered while building the Priority Cleanup Permanent Deletion scenario
 - [ ] VERIFY (pilot tenant): whether a policy provisioned via
@@ -7643,6 +7648,51 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   companion. No cmdlet, endpoint, or field shape was invented; the one open point (whether `nextLink`
   behaves as a directly-callable URL for this specific endpoint — no populated multi-page worked
   example exists in Microsoft's reference) is flagged inline as VERIFY rather than guessed.
+- [x] **`scenarios/unified-catalog/manage-okrs/` — progress-trend/staleness-detection companion**
+  — commit PENDING — 2026-09-16. Companion fragment (not a new scenario folder) closing the
+  "Consider a small scheduled companion script that re-runs `validate/Test-Okr.ps1` on a cadence and
+  diffs its output against a prior run" follow-up tracked under "Follow-ups discovered while building
+  the Unified Catalog manage-okrs scenario" — picked over three other equally-live candidates
+  (the Defender for Endpoint macOS Apple/Portable zero-`serialNumber` baseline-group build, an
+  eDiscovery-search-and-purge chaining companion, and an `InboundConnector` connector-risk-audit
+  extension) as the most concretely scoped and least VERIFY-shaped of the four, and by this repo's
+  own cross-cutting → Data Governance → Data Security → Risk & Compliance backlog-order tiebreaker
+  (Data Governance ranks above the other three candidates' Data Security/Risk & Compliance modules).
+  Adds `deploy/Export-OkrProgressTrend.ps1` (read-only against Purview — calls only `Okr - Get`/
+  `Okr - Get Key Result`, no Graph token needed unlike `New-Okr.ps1`) and
+  `validate/Test-OkrProgressTrend.ps1` (file-integrity + `-FailOnStale` gate + optional live
+  reconciliation, mirroring `scan-credential-inventory-report/validate/
+  Test-CredentialInventoryReport.ps1`'s own two-script shape). Deliberately does **not** implement
+  the follow-up's literal wording (re-invoking `Test-Okr.ps1` and text-diffing its console output):
+  design.md §8 explains why — an in-process `&` call would be killed by `Test-Okr.ps1`'s own `exit 1`
+  on failure before any diff logic ran, and an out-of-process child invocation would require
+  serializing the `SecureString` `-ClientSecret` to plaintext on a command line. Instead the new
+  script re-derives structured objective/key-result fields itself and diffs those, run-over-run,
+  against each entity's own most recent prior row in a local trend-log CSV (not a checked-in
+  expected-state file — a deliberately different drift model from `scan-credential-inventory-report`'s
+  own, since an OKR's `progress` is *expected* to change over its lifetime; the question is only
+  whether anyone has updated it lately). Caught and fixed one genuine correctness bug before it ever
+  reached review: mixing Objective rows (no `progress`/`goal`/`max`) and KeyResult rows (all three)
+  in one `Export-Csv` call would have silently truncated those three columns from **every** row in
+  the file (`Export-Csv` derives its header from the first pipeline object only) — fixed by giving
+  every row the identical field set, blank where inapplicable. **Grounded via the Microsoft Learn
+  MCP tool directly** (available and used this run): re-confirmed the `Okr - Get`/`Get Key Result`
+  operations this companion calls, and searched the "Audit log activities" reference's own
+  "Microsoft Purview governance activities" category fresh (new grounding, not carried forward) —
+  found no Objective/KeyResult/OKR-specific operation there, corroborating but not conclusively
+  proving Round 1's existing "no notification surface" finding, since that audit category describes
+  the older, classic Atlas-based entity model rather than the Unified Catalog OKR REST API this
+  scenario actually calls; stated with that precision in `README.md` §11/design.md §8 rather than
+  upgraded to a flat "confirmed" claim. Four-lens review (`reviews.md` Round 2) found and resolved
+  five real Fix items across Red Team (2: trend-log-loss silently resets staleness history with no
+  warning, documented in `rollback.md`/`README.md` §11 rather than fixed with an unfounded redundant
+  backup; unattended-credential threat model confirmed already covered by the script's own
+  least-privilege Graph-free scoping) and Blue Team (3: the CSV-truncation bug above, confirmed
+  already fixed at design time and independently re-derived by the review rather than trusted from
+  the inline comment alone; a numeric string-format comparison-sensitivity gap added as a new VERIFY;
+  the live-reconciliation check's scope confirmed intentional, not a gap) — CISO and Product Owner
+  both Pass with no findings. No cmdlet, endpoint, or field shape was invented; the numeric
+  string-format VERIFY above is the only new open item this fragment adds.
 
 ## Blocked / needs user
 - **Git note (2026-09-16, not a blocker — a distinct variant of the 2026-09-09 incident below,

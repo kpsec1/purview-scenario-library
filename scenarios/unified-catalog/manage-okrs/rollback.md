@@ -74,6 +74,16 @@ back to **Create**, which re-creates the objective **using that same id** rather
 new one (design.md §3). This is different from `manage-data-products`/`manage-critical-data-
 elements`, where a purge-then-recreate always produces a new id.
 
+## The progress-trend companion needs no rollback of its own
+
+`deploy/Export-OkrProgressTrend.ps1` never mutates the tenant (README.md §8/design.md §8) — its
+only output is the local trend-log CSV (default `deploy/out/okr-progress-trend.csv`, inside the
+repo-gitignored `out/` directory). Deleting that file is the entire "rollback": there is nothing to
+undo server-side, and the next `Export-OkrProgressTrend.ps1` run simply re-baselines every entity
+(every row reports `ChangeState: Baseline` again — see design.md §8) rather than failing. Do this
+whenever the trend log's staleness history is no longer wanted (e.g. after a long pause in this
+scenario's use), not as part of Stage 1–3 above.
+
 ## What rollback does **not** undo
 
 - **The underlying data product(s).** `scenarios/unified-catalog/manage-data-products/` owns
