@@ -1795,12 +1795,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   family's HR-connector/Communication-Compliance triggers have an explicit documented AND/OR
   prerequisite. `data-leaks/design.md` §6 discloses this as unresolved rather than assuming
   symmetry with that sibling.
-- [ ] Now that the base `Data leaks` template's max-users cap is confirmed (above), consider
+- [x] Now that the base `Data leaks` template's max-users cap is confirmed (above), consider
   building a second worked example for the "User performs an exfiltration activity" triggering
   event — `data-leaks/design.md` §3/§7 deliberately scoped this fragment to the DLP-policy trigger
   only, documenting the exfiltration-activity path as a configuration reference without a full
   end-to-end implementation. `data-leaks-by-priority-users` inherited and repeated the same scope
-  decision rather than resolving it.
+  decision rather than resolving it. — **built** (see DONE below) as
+  `scenarios/insider-risk/data-leaks-exfiltration-activity-trigger/`: full worked example for the
+  same base `Data leaks` template's alternative trigger, grounded via a direct Microsoft Learn
+  fetch that also surfaced a previously-undocumented distinction in this library — the
+  trigger-indicator threshold (brings a user into scope) and the policy/scoring-indicator threshold
+  (scores an already-in-scope user) are two separate decisions in the same policy-creation
+  workflow, not one. New follow-ups this build discovered are tracked immediately below.
 - [x] Propagate the confirmed 15,000-user cap (above) into `data-leaks/README.md` §3/§6/§10/§11 and
   `design.md` §2 goal 7, and give both scripts' `-MaxUsers` parameters a default of 15000 instead
   of the current no-default VERIFY posture — **done** (see DONE below).
@@ -1819,6 +1825,31 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   reference page confirming its exact shape on read. `deploy/
   Test-DlpPolicyIrmTriggerReadiness.ps1`'s new Copilot-scoping check (step 2a) WARNs rather than
   FAILs for this reason — flagged inline in the script's `.NOTES` and `data-leaks/README.md` §11.
+
+### Follow-ups discovered while building the Data leaks exfiltration-activity-trigger scenario
+- [ ] VERIFY (portal): the specific numeric default threshold values behind "Use default thresholds
+  (Recommended)" for each built-in trigger/scoring indicator — Microsoft's own documentation gives
+  only one fully worked *custom*-threshold example (SharePoint downloads, 10+/20+/30+ events per
+  day for low/medium/high) and states it's illustrative, not a universal default.
+  `data-leaks-exfiltration-activity-trigger/README.md` §6/§11 and the deploy manifest flag this
+  rather than guessing a number.
+- [ ] Re-open and re-check `data-leaks/design.md` §6 and `README.md` §6/§11's own combinability
+  VERIFY (whether the DLP-policy trigger and the exfiltration-activity trigger can be enabled on
+  one policy simultaneously) against this fragment's own stronger — but still not conclusive —
+  direct-fetch finding: the "Get started" page's Step 6 phrases the two options as alternative "if
+  you select X... if you select Y..." branches. Not applied to the sibling's own files in this
+  turn (`AGENTS.md` §6 one-fragment-per-turn discipline) —
+  `data-leaks-exfiltration-activity-trigger/design.md` §2 goal 6 records the finding.
+- [ ] Once Microsoft documents a Graph/PowerShell read API for a policy's configured trigger
+  indicators, trigger threshold mode, or scoring indicator threshold mode, add an automated check
+  to `data-leaks-exfiltration-activity-trigger/validate/
+  Test-DataLeaksExfiltrationActivityTriggerSetup.ps1` in place of the current manual checklist
+  items for those two independent decisions.
+- [ ] Consider a companion scenario or script using the **Insider Risk Indicators (preview)**
+  connector to bring a non-Microsoft-workload detection (e.g. a third-party DLP or CASB alert) in
+  as a custom trigger for this same base `Data leaks` template — explicitly out of scope for this
+  fragment (`design.md` §7); a materially different building block (a new data connector) from
+  either existing worked example (DLP-policy trigger, built-in exfiltration-activity trigger).
 
 ### Follow-ups discovered while building the Data leaks by priority users scenario
 - [ ] Correct `security-policy-violations-by-priority-users/README.md` §10's claim that its
@@ -2858,6 +2889,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/insider-risk/data-leaks-exfiltration-activity-trigger/`** — commit PENDING —
+  2026-09-16. Second full worked example for the base `Data leaks` policy template — the "User
+  performs an exfiltration activity" triggering event, `data-leaks/design.md` §7's own disclosed
+  non-goal. Full deliverable per `AGENTS.md` §4 (`README.md`, `design.md`, `deploy/policy/
+  data-leaks-exfiltration-activity-trigger-policy-manifest.json`, `validate/
+  Test-DataLeaksExfiltrationActivityTriggerSetup.ps1`, `rollback.md`, `reviews.md`). Grounded via a
+  direct Microsoft Learn MCP fetch (this session's network environment did not block it), which
+  surfaced a previously-undocumented mechanic in this library: the trigger-indicator threshold
+  (brings a user into scope) and the policy/scoring-indicator threshold (scores an already-in-scope
+  user) are two independent decisions in the same policy-creation workflow, not one — and a
+  Microsoft-published worked example (SharePoint downloads, 10+/20+/30+ events/day →
+  low/medium/high) for the latter, explicitly illustrative rather than a stated default. Reuses the
+  base template's scope-candidate and alert-export scripts unmodified (same 15,000-user cap,
+  shared cumulatively with the `data-leaks/` DLP-trigger sibling); no DLP-readiness-style script was
+  needed since this trigger path has no DLP-policy dependency. Four-lens review found and resolved
+  two Fix items (Red Team: a channel scored but not selected as a trigger indicator never brings a
+  user into scope; Blue Team: a trigger indicator disabled tenant-wide by another team silently
+  breaks this policy) via `README.md` §8/§11 doc additions — no code fix needed since the one new
+  script is read-only by design. New follow-ups tracked above under "Follow-ups discovered while
+  building the Data leaks exfiltration-activity-trigger scenario."
 - [x] **`scenarios/insider-risk/data-leaks/` (confirmed max-users cap, Copilot workload exclusion,
   mixed-workload grounding)** — commit 695b4b1 — 2026-09-16. Follow-up grounding/propagation
   fragment (not a new scenario): re-confirmed three previously-open VERIFY items via a direct
