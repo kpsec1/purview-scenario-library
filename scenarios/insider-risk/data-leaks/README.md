@@ -79,7 +79,7 @@ flowchart TD
     ReadyScript -->|"pass/fail/warn report"| GlobalInd["Purview portal: Insider Risk Management ->\nSettings -> Policy indicators ->\nDLP alerts indicators -> Add DLP policy\n(up to 20 policies)\n[portal-only]"]
     DlpPolicy -->|"High severity DLP alert\n(only for users in BOTH\nDLP policy scope AND IRM policy scope -\ndesign.md §2 goal 3)"| Policy["IRM Policy: 'Data Leaks'\n[portal-authored - no API]\nTrigger: User matches a DLP policy"]
     GlobalInd -.->|enables the indicator tenant-wide| Policy
-    Group["Entra security group\n(operator-chosen population,\nno HR/CC/priority-user requirement)"] -->|"Get-MgGroupTransitiveMemberAsUser"| ScopeScript["../security-policy-violations/deploy/\nGet-SecurityPolicyViolationsScopeCandidates.ps1\n(reused, -MaxUsers = operator-confirmed cap)"]
+    Group["Entra security group\n(operator-chosen population,\nno HR/CC/priority-user requirement)"] -->|"Get-MgGroupTransitiveMemberAsUser"| ScopeScript["../security-policy-violations/deploy/\nGet-SecurityPolicyViolationsScopeCandidates.ps1\n(reused, -MaxUsers = 15000 confirmed cap)"]
     ScopeScript -->|"policy scope\n(portal manual-add)"| Policy
     OfficeAct["SharePoint/OneDrive activity:\ndownloads, external sharing,\nprinting, copy to personal cloud"] -->|"Office indicators\n(built-in, no extra connector)"| Policy
     CumExfil["Cumulative exfiltration detection\n(ENABLED BY DEFAULT for this template)"] --> Policy
@@ -132,18 +132,20 @@ Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thu
 
 # Dry run
 ../security-policy-violations/deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1 `
-    -GroupId $ScopeGroupId -MaxUsers $ConfirmedCap -WhatIf
+    -GroupId $ScopeGroupId -MaxUsers 15000 -WhatIf
 
 # Resolve, dedupe, filter to enabled accounts, check against the confirmed cap
 ../security-policy-violations/deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1 `
-    -GroupId $ScopeGroupId -MaxUsers $ConfirmedCap -OutputPath ./data-leaks-scope-candidates.csv
+    -GroupId $ScopeGroupId -MaxUsers 15000 -OutputPath ./data-leaks-scope-candidates.csv
 ```
 
-**`-MaxUsers` has no safe default here** — confirm the base `Data leaks` template's actual
-actively-scored-user cap from the live portal or a direct Microsoft Learn fetch before running
-this for real; do not reuse the `security-policy-violations` (1,000) or risky/priority-users
-family (7,500) numbers, which are documented for different templates (§6/§11, `design.md` §2
-goal 7).
+**`-MaxUsers` is 15,000 for this template** — Microsoft's own "Limits in Insider Risk
+Management" table gives the base `Data leaks` template its own row at 15,000, confirmed via a
+direct Microsoft Learn fetch (§6/§12 ref 6, `design.md` §2 goal 7). This cap is cumulative
+**tenant-wide across every policy built from this exact template** — pass a lower value if
+another `Data leaks`-template policy already consumes part of it. Do not reuse the
+`security-policy-violations` (1,000) or risky/priority-users family (7,500) numbers, which are
+documented for different templates.
 
 ### Step 4 — Create the Insider Risk Management policy (portal, not scriptable)
 
@@ -203,8 +205,11 @@ given alert — `AlertPolicyId` has no documented way to map back to a named Pur
 ### Step 7 — Validate
 
 ```powershell
-./validate/Test-DataLeaksIrmSetup.ps1 -GroupId $ScopeGroupId -MaxUsers $ConfirmedCap -DlpTriggerConfigured
+./validate/Test-DataLeaksIrmSetup.ps1 -GroupId $ScopeGroupId -DlpTriggerConfigured
 ```
+
+Checks the resolved scope against the default 15,000-user cap; pass `-MaxUsers` to override if
+another policy built from this exact template already consumes part of that shared cap.
 
 ## 6. Configuration reference
 
@@ -219,8 +224,8 @@ given alert — `AlertPolicyId` has no documented way to map back to a named Pur
 | Optional scoring indicators | Communication Compliance content indicators; generative AI app indicators (Prompt Shields, Protected material detection) | Both documented as selectable for this template |
 | Optional cloud indicators | Cloud storage (Box, Dropbox, Google Drive) / cloud service (Amazon S3, Azure) indicators | Confirmed applicable to this specific template (unlike the open question `data-leaks-by-risky-users` carries for itself); requires Defender for Cloud Apps + pay-as-you-go billing |
 | Population mechanism | A plain Entra group (or groups), resolved via the reused base-template scope script | No HR-connector, Communication-Compliance-trigger, or priority-user-group requirement |
-| Maximum actively-scored users for this template | **VERIFY (portal or a direct Learn fetch at deploy time)** — not confirmed by this build's WebSearch-only grounding | Do not reuse the `security-policy-violations` (1,000) or risky/priority-users family (7,500) numbers — different templates |
-| DLP-policy trigger workload support | Exchange Online, SharePoint Online, OneDrive for Business only | Teams, Endpoint DLP, on-premises scanner, Power BI, third-party app locations are NOT supported for this indicator |
+| Maximum actively-scored users for this template | **15,000** — confirmed via a direct Microsoft Learn fetch, cumulative tenant-wide across every policy built from this exact template | Do not reuse the `security-policy-violations` (1,000) or risky/priority-users family (7,500) numbers — different templates |
+| DLP-policy trigger workload support | Exchange Online, SharePoint Online, OneDrive for Business only | Endpoint DLP, Microsoft Teams, **Microsoft 365 Copilot**, on-premises repositories, and Power BI are explicitly NOT supported for this indicator — confirmed via a direct Microsoft Learn fetch. A policy that mixes a supported and an unsupported workload still has its supported-workload rules' alerts processed correctly (Microsoft states this explicitly) |
 | DLP-policy trigger severity requirement | At least one rule at **High** severity on the parent DLP policy | Lower-severity-only policies never fire this trigger |
 | Defender for Endpoint dependency | **None** | |
 | User-identity privacy | Pseudonymized (Microsoft default) | Not disabled by this scenario |
@@ -303,21 +308,31 @@ the policy or revoking an app registration's certificate is not.
 - **Pay-as-you-go billing, if cloud storage/cloud service indicators are used** —
   `docs/licensing-matrix.md` §2's "Cloud/GenAI indicators on non-M365 → PAYG" note applies
   directly. **Not** required for this template's core built-in Office indicators.
-- **Sizing note:** confirm the current actively-scored-user cap for this specific template
-  (§6/§11) before sizing a population — no Graph/REST usage-count API exists to check current
-  cumulative usage, same disclosed gap as every sibling template.
+- **Sizing note:** this template's actively-scored-user cap is 15,000, cumulative tenant-wide
+  across every policy built from this exact template (§6/§11) — no Graph/REST usage-count API
+  exists to check current cumulative usage against that cap, same disclosed gap as every sibling
+  template.
 - **No additional cost for the readiness check, scope-candidate resolution, or alert-export
   automation** — all scripts use application permissions already covered by the base Microsoft
   Graph SDK, Security & Compliance PowerShell, or no metered API.
 
 ## 11. Known limitations & gotchas
 
-- **This template's specific actively-scored-user cap is unconfirmed** — this build's grounding
-  tooling was WebSearch-only in this session's network environment; every direct URL fetch
-  attempted (not only `learn.microsoft.com`) returned `EGRESS_BLOCKED`. Confirm the current number
-  from the live portal or a direct Microsoft Learn fetch before sizing a population — do not
-  assume it matches the `security-policy-violations` (1,000) or risky/priority-users family
-  (7,500) numbers, which are documented for different templates. `design.md` §2 goal 7.
+- **This template's actively-scored-user cap is 15,000**, confirmed via a direct Microsoft Learn
+  fetch during a follow-up grounding pass (a prior build session's WebSearch-only grounding, whose
+  network environment blocked every direct `learn.microsoft.com` fetch, could not confirm it) —
+  cumulative tenant-wide across every policy built from this exact template. Do not assume it
+  matches the `security-policy-violations` (1,000) or risky/priority-users family (7,500) numbers,
+  which are documented for different templates. `design.md` §2 goal 7.
+- **Microsoft 365 Copilot is explicitly not a supported workload for the DLP-alerts indicator**,
+  confirmed via the same direct fetch (§6/§12 ref 4/9) — a DLP policy scoped only to the Copilot
+  location never triggers this template, even though its rules may still carry a High-severity
+  tag. Because Copilot-scoped policies use `-EnforcementPlanes CopilotExperiences`/`-Locations`
+  rather than a dedicated `...Location` array parameter, `deploy/
+  Test-DlpPolicyIrmTriggerReadiness.ps1`'s Copilot check reads a property
+  (`EnforcementPlanes`) whose exact shape on `Get-DlpCompliancePolicy`'s output was not
+  independently confirmed by a dedicated Get- reference page — VERIFY against a pilot tenant
+  before relying on that specific check catching every Copilot-scoped policy.
 - **The double-scoping requirement is the most likely silent misconfiguration for this
   scenario.** A user in the IRM policy's "Users and groups" scope but NOT in the parent DLP
   policy's own scope (or vice versa) never has an alert processed, with no error surfaced by
@@ -331,10 +346,12 @@ the policy or revoking an app registration's certificate is not.
 - **The DLP-alerts indicator is a global, tenant-wide setting**, not scoped to one IRM policy —
   adding or removing a DLP policy from it can affect other Insider Risk Management policies in the
   tenant that also use it. §8.
-- **Whether a policy that mixes a supported workload (e.g. Exchange) with an unsupported one
-  (e.g. Teams) on the SAME DLP policy still has its supported-workload rules' alerts processed
-  correctly is unconfirmed** — `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1` WARNs rather than
-  FAILs on this combination; see the script's own `.NOTES`.
+- **A policy that mixes a supported workload (e.g. Exchange) with an unsupported one (e.g. Teams)
+  on the SAME DLP policy is confirmed safe** — Microsoft states directly that only the
+  supported-workload rules' alerts are processed in that case. `deploy/
+  Test-DlpPolicyIrmTriggerReadiness.ps1` still prints an informational `[WARN]` on this
+  combination (not a `[FAIL]`) so the operator is aware which rules on a mixed policy actually
+  feed this trigger; see the script's own `.NOTES` for the citation.
 - **Whether a parent DLP policy left in `TestWithNotifications`/`TestWithoutNotifications` mode
   still generates the High-severity alerts this indicator consumes is unconfirmed** — found during
   this scenario's own four-lens review (`reviews.md`). This library's own DLP scenarios commonly
@@ -392,20 +409,21 @@ the policy or revoking an app registration's certificate is not.
    matches a data loss prevention (DLP) policy" vs. "User performs an exfiltration activity"
    triggering-event choice; default vs. custom thresholds for the exfiltration-activity option) —
    <https://learn.microsoft.com/purview/insider-risk-management-configure>
-4. Configure policy indicators in Insider Risk Management — "Data loss prevention (DLP) alerts
-   indicators," supported workloads (Exchange Online, SharePoint Online, OneDrive for Business
-   only) —
-   <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#data-loss-prevention-alerts-indicators>
+4. Configure policy indicators in Insider Risk Management — "Supported DLP workloads": Exchange
+   Online, SharePoint Online, OneDrive for Business are supported; Endpoint DLP, Microsoft Teams,
+   Microsoft 365 Copilot, on-premises repositories, and Power BI are explicitly listed as NOT
+   currently supported, and "if your DLP policy spans multiple workloads... only the alerts from
+   the supported workloads... are processed" — confirmed via a direct Microsoft Learn fetch —
+   <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#supported-dlp-workloads>
 5. Create and manage Insider Risk Management policies — Cumulative exfiltration detection
    (enabled by default for Data leaks / Data leaks by priority users / Data leaks by risky users /
    Data theft by departing users) and template/name immutability after creation —
    <https://learn.microsoft.com/purview/insider-risk-management-policies>
-6. Limits in Insider Risk Management — maximum users in scope per policy template. **This
-   session's WebSearch-only grounding could not retrieve the base `Data leaks` template's specific
-   row** — every direct fetch of this URL (and of every other external URL attempted, not only
-   Microsoft's domain) returned `EGRESS_BLOCKED` from this session's network environment. VERIFY
-   against the live page or portal before sizing a population —
-   <https://learn.microsoft.com/purview/insider-risk-management-limits>
+6. Limits in Insider Risk Management — "Maximum number of users in scope for a policy template":
+   Data leaks = **15,000** (Data leaks by priority users = 1,000; Data leaks by risky users =
+   7,500; Security policy violations by priority users = 1,000, a separate row/cap) — confirmed
+   via a direct Microsoft Learn fetch —
+   <https://learn.microsoft.com/purview/insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template>
 7. `data-leaks-by-risky-users/README.md` and `design.md` — this scenario's closest cousin in this
    library, whose own Red Team finding (§11) names the base `Data leaks` template as the
    compensating control this fragment builds. `exchange-pii-exfil-block-part2-obfuscation-
@@ -426,11 +444,17 @@ the policy or revoking an app registration's certificate is not.
     <https://learn.microsoft.com/graph/api/group-list-transitivemembers?view=graph-rest-1.0>
 11. Microsoft Graph permissions reference (`GroupMember.Read.All`, `SecurityAlert.Read.All`) —
     <https://learn.microsoft.com/graph/permissions-reference>
+12. New-DlpCompliancePolicy / Set-DlpCompliancePolicy reference (`-EnforcementPlanes`,
+    `-Locations`) and "Learn about using Microsoft Purview Data Loss Prevention to protect
+    interactions with Microsoft 365 Copilot and Copilot Chat" (the Copilot-scoping mechanism
+    `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1`'s Copilot check is grounded against) —
+    <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy>,
+    <https://learn.microsoft.com/purview/dlp-microsoft365-copilot-location-learn-about>
 
 > Re-verify all links, cmdlet/API behavior, and licensing terms against current Microsoft Learn
-> before a customer-facing assessment or sale. This build's citations were grounded via WebSearch
-> only — this session's network environment blocked every direct URL fetch attempted (returning
-> `EGRESS_BLOCKED`), not only for `learn.microsoft.com`, so no citation in this scenario was
-> confirmed by a direct page fetch. Facts that could not be corroborated with reasonable
-> confidence via WebSearch snippets are explicitly flagged `VERIFY` above and in `design.md`
-> rather than asserted.
+> before a customer-facing assessment or sale. This scenario's original build session's citations
+> were grounded via WebSearch only, in a network environment that blocked every direct URL fetch
+> attempted (`EGRESS_BLOCKED`); a later follow-up fragment re-confirmed refs 4, 6, and 12 above via
+> a direct Microsoft Learn fetch from a session whose network environment did not block it — those
+> facts are no longer open VERIFYs. Remaining facts that could not be corroborated with reasonable
+> confidence are still explicitly flagged `VERIFY` above and in `design.md` rather than asserted.

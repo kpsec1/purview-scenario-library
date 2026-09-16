@@ -66,17 +66,20 @@ population, general trigger, not tied to any one parent DLP policy or narrowly-s
    test-mode policies are documented to still generate incident reports for their own purpose) on
    `Mode -ne 'Enable'`, and `README.md` §5 Step 2/§11 disclose the open question rather than
    silently assuming test-mode policies work identically to enforced ones.
-7. **Disclose, don't assert, the max-users cap for this specific template.** Every sibling
+7. **Ground, don't guess, the max-users cap for this specific template.** Every sibling
    Insider-Risk-Management scenario in this library states a specific, Microsoft-documented
    actively-scored-user cap (1,000 for `security-policy-violations`; 7,500 for the
-   risky/priority-users family). This build's grounding tooling — WebSearch only; direct
-   `learn.microsoft.com` fetch returned `EGRESS_BLOCKED` from this session's network environment
-   for every URL attempted, not just Microsoft's domain — could not retrieve the `Limits in
-   Insider Risk Management` page's specific row for the base `Data leaks` template. Rather than
-   reuse a sibling template's number (which would misrepresent a different template's documented
-   cap as this one's), `README.md` §3/§6/§11 and both scripts' `-MaxUsers` parameters treat this as
-   an explicit, unresolved VERIFY the operator must fill in from the live portal or a direct Learn
-   fetch at deploy time, per `AGENTS.md` §4.
+   risky/priority-users family). This scenario's original build session's grounding tooling —
+   WebSearch only; direct `learn.microsoft.com` fetch returned `EGRESS_BLOCKED` from that
+   session's network environment for every URL attempted, not just Microsoft's domain — could not
+   retrieve the `Limits in Insider Risk Management` page's specific row for the base `Data leaks`
+   template, so this cap was left as an explicit, unresolved VERIFY. A later follow-up fragment,
+   from a session whose network environment did not block a direct Microsoft Learn fetch,
+   confirmed the base `Data leaks` template's own row at **15,000** (distinct from `Data leaks by
+   priority users` at 1,000 and `Data leaks by risky users` at 7,500) —
+   <https://learn.microsoft.com/purview/insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template>.
+   `README.md` §3/§6/§11 and both scripts' `-MaxUsers` parameters now state/default to this
+   confirmed number rather than an unresolved VERIFY.
 
 ## 3. Why the DLP-policy trigger, not the exfiltration-activity trigger, is this fragment's worked example
 
@@ -135,7 +138,7 @@ by name, unlike the open question that sibling's own README carries for itself).
 | Whether both triggering events can be combined on one policy | **Not resolved — disclosed as an open VERIFY**, unlike the risky-users family's own explicit documented AND/OR prerequisite | Microsoft's own per-template guidance frames the choice as "DLP policy **or** exfiltration activity" without the risky-users family's explicit both-together statement; guessing symmetry with that sibling would misrepresent an unconfirmed detail as settled, per `AGENTS.md` §4 |
 | New script scope | Read-only readiness CHECK, not a policy-creation script | The DLP policies this fragment wires up are pre-existing, operator-owned policies from elsewhere in the tenant (or this library) — this fragment's job is to confirm they qualify, not to create or modify them |
 | Parent DLP policy `Mode` check | WARN (not FAIL) if `Mode -ne 'Enable'` | §2 goal 6, found during this scenario's own four-lens review (`reviews.md`) — whether a Test-mode policy still generates the alerts this indicator consumes is unconfirmed; WARN rather than FAIL because test-mode policies are documented to still generate incident reports for their own purpose, which is suggestive but not confirmed for this specific indicator |
-| Max-users cap | Left as an explicit, unfilled parameter — not defaulted to a sibling template's number | §2 goal 7 — this session's network environment blocked every direct Learn fetch attempted (not only `learn.microsoft.com`); WebSearch snippets did not surface this specific template's row in the Limits table |
+| Max-users cap | **15,000** — both scripts now default `-MaxUsers` to this confirmed value, overridable | §2 goal 7 — confirmed via a follow-up fragment's direct Microsoft Learn fetch, after the original build session's WebSearch-only grounding (blocked from a direct `learn.microsoft.com` fetch) left it as an open VERIFY |
 | Population mechanism | A plain Entra group (or groups), resolved via the reused base-template scope script | Identical reasoning to every other "no priority/HR-connector requirement" template in this library |
 | Alert-export script | Reuse the plain, non-MDE-joining `departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1` | This template has no Defender for Endpoint signal to join against — same reasoning as `data-leaks-by-risky-users/design.md` §6 |
 

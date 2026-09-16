@@ -16,10 +16,19 @@
       2. The policy is scoped to at least one of the three workloads the "Data loss prevention
          (DLP) alerts" Insider Risk Management indicator actually supports - Exchange Online,
          SharePoint Online, or OneDrive for Business (ExchangeLocation / SharePointLocation /
-         OneDriveLocation). Teams, Endpoint DLP, on-premises scanner, Power BI, and third-party
-         app locations are NOT supported workloads for this indicator - a policy scoped ONLY to
-         one of those generates DLP alerts that this Insider Risk Management template will never
-         see, regardless of severity.
+         OneDriveLocation). Teams, Endpoint DLP, on-premises scanner, Power BI, third-party
+         app locations, and Microsoft 365 Copilot are NOT supported workloads for this
+         indicator - a policy scoped ONLY to one of those generates DLP alerts that this Insider
+         Risk Management template will never see, regardless of severity. Confirmed directly
+         against Microsoft Learn during this fragment's grounding pass - see .NOTES; the
+         Copilot exclusion is checked separately (step 2a) since Copilot-scoped policies use the
+         EnforcementPlanes property, not one of the *Location array properties the other
+         unsupported workloads use.
+      2a. (WARN, not FAIL) The policy's EnforcementPlanes does not include 'CopilotExperiences' -
+          a policy scoped to the Microsoft 365 Copilot location uses a materially different
+          scoping mechanism (-Locations plus -EnforcementPlanes CopilotExperiences, not a
+          Microsoft365CopilotLocation-style array parameter) and is explicitly excluded from this
+          indicator regardless of any other workload also scoped on the same policy - see .NOTES.
       3. At least one rule on the policy has ReportSeverityLevel = High - this template's own
          triggering event is explicitly "a DLP policy configured for High severity alerts"; a
          policy with only Low/Medium-severity rules never fires this trigger at all.
@@ -73,13 +82,23 @@
     to cross-reference against the IRM policy's own "Users and groups" scope.
 
 .NOTES
-    Grounded in Microsoft Learn via WebSearch only in this build - direct fetch of
-    learn.microsoft.com (and every other external URL attempted, not Microsoft-specific) returned
-    EGRESS_BLOCKED from this session's network environment. Re-verify against a direct Learn fetch
-    or the live portal before a customer-facing commitment:
-    - Configure policy indicators in Insider Risk Management - "Data loss prevention (DLP) alerts
-      indicators", supported workloads (Exchange Online, SharePoint Online, OneDrive for
-      Business): https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#data-loss-prevention-alerts-indicators
+    Originally grounded in Microsoft Learn via WebSearch only (direct fetch of learn.microsoft.com
+    returned EGRESS_BLOCKED from that build's network environment). A follow-up fragment
+    re-confirmed the facts below via a direct Microsoft Learn MCP fetch (this session's network
+    environment did not block it):
+    - Configure policy indicators in Insider Risk Management - "Supported DLP workloads": the
+      High Severity DLP Alert indicator supports only Exchange Online, SharePoint Online, and
+      OneDrive for Business. Endpoint DLP, Microsoft Teams, Microsoft 365 Copilot, on-premises
+      repositories, and Power BI are explicitly listed as NOT currently supported -
+      https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#supported-dlp-workloads
+    - The same article, immediately following the unsupported-workload list, states verbatim:
+      "If your DLP policy spans multiple workloads (for example, Exchange + Endpoint), only the
+      alerts from the supported workloads (Exchange Online, SharePoint Online, and OneDrive for
+      Business) are processed" - CONFIRMED, resolving the mixed-workload VERIFY this script
+      previously carried (see the removed VERIFY immediately below this note in prior revisions):
+      a policy scoped to both a supported and an unsupported workload still has its
+      supported-workload rules' alerts processed correctly. The WARN this script prints for that
+      combination is now purely informational (confirmed-safe), not an open question.
     - Learn about Insider Risk Management policy templates - Data leaks template: "configure at
       least one Microsoft Purview Data Loss Prevention (DLP) policy... to receive insider risk
       alerts for High Severity DLP policy alerts", up to 20 DLP policies assignable, and the
@@ -90,14 +109,23 @@
     - Get started with Insider Risk Management - Step 6, "Triggers for this policy" ("User matches
       a data loss prevention (DLP) policy" vs. "User performs an exfiltration activity"):
       https://learn.microsoft.com/purview/insider-risk-management-configure
+    - New-DlpCompliancePolicy / Set-DlpCompliancePolicy reference - `-EnforcementPlanes`
+      (MultiValuedProperty) and `-Locations` (generic JSON string keyed by a location GUID) are
+      the parameters Microsoft's own worked example uses to scope a DLP policy to the Microsoft
+      365 Copilot location (`-EnforcementPlanes @('CopilotExperiences')`) - there is no
+      Microsoft365CopilotLocation-style array parameter analogous to ExchangeLocation/
+      TeamsLocation/etc.:
+      https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy,
+      https://learn.microsoft.com/purview/dlp-microsoft365-copilot-location-learn-about
 
-    VERIFY (portal, at deploy time): whether a policy that ALSO includes an unsupported workload
-    (e.g. TeamsLocation) alongside a supported one still has its supported-workload rules' High
-    severity alerts processed correctly - not stated either way by Microsoft in this build's
-    WebSearch-only grounding. This script WARNs on the presence of an unsupported workload rather
-    than treating it as an automatic FAIL, since the supported-workload locations are still
-    present and (per the documentation found) the restriction is described at the indicator/
-    workload level, not stated as a whole-policy exclusion.
+    VERIFY (pilot tenant, at deploy time): whether Get-DlpCompliancePolicy's returned object
+    actually exposes EnforcementPlanes as a readable property with the same values New-/
+    Set-DlpCompliancePolicy accept for it - this fragment's grounding confirmed EnforcementPlanes
+    as a New-/Set- (write) parameter but did not find a dedicated Get-DlpCompliancePolicy
+    reference page confirming its exact shape on read. Step 2a below is a WARN, not a FAIL, for
+    this reason: if the property is absent or empty on a genuinely Copilot-scoped policy, this
+    script's Copilot check silently no-ops rather than falsely passing a policy it could not
+    actually classify.
 
     VERIFY (pilot tenant, before relying on a Test-mode policy as this trigger's source): whether
     a DLP policy in Mode = TestWithNotifications or TestWithoutNotifications still generates the
@@ -125,6 +153,7 @@ $ErrorActionPreference = 'Stop'
 $maxDlpPoliciesPerIrmPolicy = 20
 $supportedWorkloadProperties = @('ExchangeLocation', 'SharePointLocation', 'OneDriveLocation')
 $unsupportedWorkloadProperties = @('TeamsLocation', 'EndpointDlpLocation', 'OnPremisesScannerDlpLocation', 'ThirdPartyAppDlpLocation', 'PowerBIDlpLocation')
+$copilotEnforcementPlaneValue = 'CopilotExperiences'
 
 function Assert-IppsSession {
     if (-not (Get-Command Get-DlpCompliancePolicy -ErrorAction SilentlyContinue)) {
@@ -150,6 +179,7 @@ $results = foreach ($name in $DlpPolicyName) {
             Mode                = $null
             SupportedWorkloads  = @()
             UnsupportedWorkloads = @()
+            CopilotScoped       = $false
             HighSeverityRules   = @()
             Ready               = $false
         }
@@ -158,6 +188,7 @@ $results = foreach ($name in $DlpPolicyName) {
 
     $supportedFound = @($supportedWorkloadProperties | Where-Object { $policy.$_ -and @($policy.$_).Count -gt 0 })
     $unsupportedFound = @($unsupportedWorkloadProperties | Where-Object { $policy.$_ -and @($policy.$_).Count -gt 0 })
+    $copilotScoped = @($policy.EnforcementPlanes) -contains $copilotEnforcementPlaneValue
 
     $rules = @(Get-DlpComplianceRule -Policy $name -ErrorAction SilentlyContinue)
     $matchingSeverityRules = @($rules | Where-Object { $_.ReportSeverityLevel -eq $RequiredSeverity })
@@ -168,6 +199,7 @@ $results = foreach ($name in $DlpPolicyName) {
         Mode                 = $policy.Mode
         SupportedWorkloads   = $supportedFound
         UnsupportedWorkloads = $unsupportedFound
+        CopilotScoped        = $copilotScoped
         # @(...) forces array semantics even when exactly one or zero rules match - PowerShell
         # would otherwise unwrap a single-element result to a bare string or $null, breaking the
         # .Count check below (same gotcha documented in
@@ -192,7 +224,11 @@ foreach ($r in $results) {
     }
 
     if ($r.UnsupportedWorkloads.Count -gt 0) {
-        Write-Host "  [WARN] Also scoped to unsupported workload(s) $($r.UnsupportedWorkloads -join ', ') on the SAME policy - whether this affects the supported workload's own alert processing is unconfirmed (see .NOTES VERIFY)." -ForegroundColor Yellow
+        Write-Host "  [WARN] Also scoped to unsupported workload(s) $($r.UnsupportedWorkloads -join ', ') on the SAME policy - CONFIRMED safe: Microsoft documents that only the supported-workload rules' alerts are processed by this indicator when a policy spans both (see .NOTES)." -ForegroundColor Yellow
+    }
+
+    if ($r.CopilotScoped) {
+        Write-Host "  [WARN] Policy is also scoped to the Microsoft 365 Copilot location (EnforcementPlanes contains 'CopilotExperiences') - Copilot is explicitly NOT a supported workload for this indicator; this policy's supported-workload rules are still processed, but any rule that ONLY covers Copilot interactions will never trigger this indicator (see .NOTES)." -ForegroundColor Yellow
     }
 
     if ($r.Mode -ne 'Enable') {

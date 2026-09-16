@@ -189,3 +189,28 @@ to confirm the WebSearch-only grounding limitation — a consequence of this bui
 environment blocking every direct URL fetch attempted — is disclosed consistently rather than
 presented with false confidence. No Fail items were raised. This fragment meets the definition of
 done in `AGENTS.md` §9.
+
+---
+
+## Addendum — follow-up grounding pass
+
+A later fragment, running in a network environment that did not block a direct Microsoft Learn
+fetch, resolved two of the open VERIFY items this review round left standing:
+
+- **Max-users cap (Red/Blue/CISO finding above; `design.md` §2 goal 7):** confirmed at 15,000 —
+  both `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1`'s (`Get-SecurityPolicyViolationsScopeCandidates.ps1`
+  caller in `README.md` §5 Step 3) and `validate/Test-DataLeaksIrmSetup.ps1`'s `-MaxUsers` now
+  default to this value instead of requiring the operator to supply an unconfirmed number.
+- **Unsupported-workload mixing (`README.md` §11):** confirmed safe — Microsoft states directly
+  that a DLP policy spanning both a supported and an unsupported workload still has its
+  supported-workload rules' alerts processed. The readiness script's `[WARN]` for this combination
+  is now informational, not a flag for an open question.
+
+The same grounding pass also newly identified **Microsoft 365 Copilot** as an additional
+unsupported workload for this indicator (not previously disclosed anywhere in this scenario), and
+added a best-effort `EnforcementPlanes`-based detection check for it — itself carrying a new,
+narrower VERIFY (whether `Get-DlpCompliancePolicy` exposes `EnforcementPlanes` on read in the same
+shape `New-`/`Set-DlpCompliancePolicy` accept it on write). No four-lens re-review was run for this
+narrow, citation-only/default-value change; the Microsoft Product Owner lens's original "Pass" is
+unaffected since these changes only remove or narrow previously-disclosed VERIFYs and correct
+citations, without altering the scenario's control design.

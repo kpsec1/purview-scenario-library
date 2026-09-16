@@ -1781,11 +1781,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   by Microsoft in this build's WebSearch-only grounding. `deploy/
   Test-DlpPolicyIrmTriggerReadiness.ps1` WARNs (not FAILs) on `Mode -ne 'Enable'` rather than
   guessing; `data-leaks/README.md` §5 Step 2/§11 and `design.md` §2 goal 6 flag this explicitly.
-- [ ] VERIFY (portal, at deploy time): whether a DLP policy that mixes a supported workload
+- [x] VERIFY (portal, at deploy time): whether a DLP policy that mixes a supported workload
   (Exchange/SharePoint/OneDrive) with an unsupported one (e.g. Teams) on the SAME policy still has
   its supported-workload rules' High-severity alerts processed correctly by the IRM indicator —
-  not stated either way by Microsoft in this build's WebSearch-only grounding.
-  `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1` WARNs rather than FAILs on this combination.
+  **resolved** (see DONE below): confirmed via a direct Microsoft Learn fetch of "Configure policy
+  indicators in Insider Risk Management" §Supported DLP workloads, which states verbatim "If your
+  DLP policy spans multiple workloads (for example, Exchange + Endpoint), only the alerts from the
+  supported workloads... are processed." `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1`'s WARN for
+  this combination is now informational (confirmed-safe), not an open question.
 - [ ] VERIFY (portal or a direct Microsoft Learn fetch): whether the base `Data leaks` template's
   two triggering-event options ("User matches a DLP policy" and "User performs an exfiltration
   activity") can be enabled simultaneously on one policy, the way the risky/priority-users
@@ -1798,14 +1801,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   only, documenting the exfiltration-activity path as a configuration reference without a full
   end-to-end implementation. `data-leaks-by-priority-users` inherited and repeated the same scope
   decision rather than resolving it.
-- [ ] Propagate the confirmed 15,000-user cap (above) into `data-leaks/README.md` §3/§6/§10/§11 and
+- [x] Propagate the confirmed 15,000-user cap (above) into `data-leaks/README.md` §3/§6/§10/§11 and
   `design.md` §2 goal 7, and give both scripts' `-MaxUsers` parameters a default of 15000 instead
-  of the current no-default VERIFY posture.
-- [ ] Add the newly-confirmed Microsoft 365 Copilot entry to `data-leaks/README.md` §6/§11's
+  of the current no-default VERIFY posture — **done** (see DONE below).
+- [x] Add the newly-confirmed Microsoft 365 Copilot entry to `data-leaks/README.md` §6/§11's
   DLP-alerts-indicator unsupported-workload list (currently: Endpoint DLP, Teams, on-premises
   scanner, Power BI, third-party app locations) — `data-leaks-by-priority-users/README.md` §6's own
   list, grounded via a direct Microsoft Learn fetch during that build, additionally confirms
-  Microsoft 365 Copilot as excluded.
+  Microsoft 365 Copilot as excluded — **done** (see DONE below). Also added a new, narrower
+  best-effort `EnforcementPlanes`-based Copilot-scoping detection check to `deploy/
+  Test-DlpPolicyIrmTriggerReadiness.ps1`, itself carrying a new VERIFY (below).
+- [ ] VERIFY (pilot tenant, at deploy time): whether `Get-DlpCompliancePolicy`'s returned object
+  exposes `EnforcementPlanes` as a readable property with the same values `New-`/
+  `Set-DlpCompliancePolicy` accept for it on write — this fragment's grounding confirmed
+  `EnforcementPlanes` as a write parameter (Microsoft's own worked example:
+  `-EnforcementPlanes @('CopilotExperiences')`) but found no dedicated `Get-DlpCompliancePolicy`
+  reference page confirming its exact shape on read. `deploy/
+  Test-DlpPolicyIrmTriggerReadiness.ps1`'s new Copilot-scoping check (step 2a) WARNs rather than
+  FAILs for this reason — flagged inline in the script's `.NOTES` and `data-leaks/README.md` §11.
 
 ### Follow-ups discovered while building the Data leaks by priority users scenario
 - [ ] Correct `security-policy-violations-by-priority-users/README.md` §10's claim that its
@@ -2845,6 +2858,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/insider-risk/data-leaks/` (confirmed max-users cap, Copilot workload exclusion,
+  mixed-workload grounding)** — commit PENDING_HASH — 2026-09-16. Follow-up grounding/propagation
+  fragment (not a new scenario): re-confirmed three previously-open VERIFY items via a direct
+  Microsoft Learn fetch (this session's network environment did not block it, unlike the original
+  build's) and propagated the results into the scenario's docs and scripts. (1) The base `Data
+  leaks` template's actively-scored-user cap is **15,000**
+  (`insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template`) —
+  `README.md` §3/§6/§10/§11, `design.md` §2 goal 7/§6, and both `deploy/
+  Test-DlpPolicyIrmTriggerReadiness.ps1`-adjacent (`-MaxUsers` call sites) and
+  `validate/Test-DataLeaksIrmSetup.ps1` (`-MaxUsers` now defaults to 15000 instead of no default)
+  updated. (2) A DLP policy mixing a supported and an unsupported workload on the SAME policy is
+  **confirmed safe** — Microsoft states directly that only the supported-workload rules' alerts
+  are processed (`insider-risk-management-settings-policy-indicators#supported-dlp-workloads`);
+  the readiness script's `[WARN]` for this combination is now informational, not an open question.
+  (3) **Microsoft 365 Copilot** is newly confirmed as an additional unsupported workload for this
+  indicator (not previously disclosed) — added to `README.md` §6/§11, and a new best-effort
+  `EnforcementPlanes`-based Copilot-scoping detection check (step 2a) added to `deploy/
+  Test-DlpPolicyIrmTriggerReadiness.ps1`, grounded against `New-`/`Set-DlpCompliancePolicy`'s
+  `-EnforcementPlanes`/`-Locations` parameters and the dedicated Copilot-DLP-location Learn
+  article (Copilot has no `...Location`-style array parameter analogous to `TeamsLocation` etc.).
+  This new check itself carries a new, narrower VERIFY (whether `Get-DlpCompliancePolicy` exposes
+  `EnforcementPlanes` on read the same way `New-`/`Set-` accept it on write) rather than asserting
+  read-shape parity by guess. `reviews.md` given a short addendum recording this follow-up
+  resolution rather than rewriting the original four-lens round's historical text.
 - [x] **`scenarios/ediscovery/teams-purge-hold-lifecycle-management/` (mailbox-scoped Exchange-vs-Group-
   location conflation fix)** — commit dff04ae — 2026-09-16. Fixed a real remediation-accuracy bug this
   scenario's own PROGRESS.md follow-up flagged as an open ambiguity: `ConvertTo-ParsedInPlaceHolds` in

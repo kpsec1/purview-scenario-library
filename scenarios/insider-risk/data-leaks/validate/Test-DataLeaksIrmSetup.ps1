@@ -9,12 +9,11 @@
 
     1. AUTOMATED (hard pass/fail, contributes to exit code) - a Microsoft Graph session is active
        with the GroupMember.Read.All permission (probed with a minimal
-       Get-MgGroupTransitiveMemberAsUser call against -GroupId), and - if -GroupId and -MaxUsers
-       are both supplied - the resulting enabled-user count is checked against the operator-
-       confirmed cap. -MaxUsers has NO default: this template's specific cap could not be
-       confirmed via this build's WebSearch-only grounding (design.md §2 goal 7) - if omitted,
-       that one sub-check is skipped with an explicit message rather than silently reusing a
-       different template's number.
+       Get-MgGroupTransitiveMemberAsUser call against -GroupId), and - if -GroupId is supplied -
+       the resulting enabled-user count is checked against -MaxUsers (defaults to 15,000, the
+       base 'Data leaks' template's own Microsoft-documented cap, confirmed via a direct
+       Microsoft Learn fetch - design.md §2 goal 7; override if another policy already built from
+       this exact template shares part of that cumulative cap).
 
     2. MANUAL (printed as a checklist, never fails the script) - the portal-only configuration
        (DLP-alerts indicator wiring, IRM policy existence/template/scope, indicator selection,
@@ -35,11 +34,11 @@
     check runs.
 
 .PARAMETER MaxUsers
-    The template's actively-scored-user cap to check the resolved count against. NO DEFAULT -
-    Microsoft's specific limit for the base 'Data leaks' template could not be confirmed via this
-    build's WebSearch-only grounding (design.md §2 goal 7). Supply the number you confirmed from
-    the live portal or a direct Microsoft Learn fetch; if omitted, the scope-sizing sub-check is
-    skipped rather than silently checked against a wrong number.
+    The template's actively-scored-user cap to check the resolved count against. Defaults to
+    15,000 - the base 'Data leaks' template's own row in Microsoft's "Limits in Insider Risk
+    Management" table, confirmed via a direct Microsoft Learn fetch (design.md §2 goal 7); this
+    cap is cumulative across every policy built from this exact template tenant-wide, so override
+    this value if another Data-leaks-template policy already consumes part of it.
 
 .PARAMETER PolicyName
     Display name used for the manual-checklist output only (no API call is made against it - there
@@ -58,13 +57,23 @@
 
 .EXAMPLE
     Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
-    ./Test-DataLeaksIrmSetup.ps1 -GroupId $ScopeGroupId -MaxUsers 25000 -DlpTriggerConfigured
+    ./Test-DataLeaksIrmSetup.ps1 -GroupId $ScopeGroupId -DlpTriggerConfigured
+
+    Checks the resolved scope against the default 15,000-user cap.
+
+.EXAMPLE
+    ./Test-DataLeaksIrmSetup.ps1 -GroupId $ScopeGroupId -MaxUsers 10000 -DlpTriggerConfigured
+
+    Overrides the default to check against a reduced cap, e.g. because another policy built from
+    this exact template already consumes part of the shared 15,000-user limit.
 
 .NOTES
-    Grounded in Microsoft Learn via WebSearch only in this build - see
-    ../deploy/Test-DlpPolicyIrmTriggerReadiness.ps1 .NOTES and
+    Limits in Insider Risk Management - "Maximum number of users in scope for a policy template":
+    Data leaks = 15,000 (confirmed via a direct Microsoft Learn fetch) -
+    https://learn.microsoft.com/purview/insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template.
+    See ../deploy/Test-DlpPolicyIrmTriggerReadiness.ps1 .NOTES and
     ../../security-policy-violations/deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1
-    .NOTES for the Graph API references this script's automated check relies on.
+    .NOTES for the remaining Graph API references this script's automated check relies on.
 #>
 [CmdletBinding()]
 param(
@@ -72,7 +81,7 @@ param(
     [string[]]$GroupId,
 
     [Parameter()]
-    [Nullable[int]]$MaxUsers,
+    [int]$MaxUsers = 15000,
 
     [Parameter()]
     [string]$PolicyName = 'Data Leaks',
@@ -116,13 +125,8 @@ if ($graphContext -and $GroupId) {
         }
         Test-Check -Description "Get-MgGroupTransitiveMemberAsUser call succeeds against $($GroupId.Count) supplied group(s) (permission is actually granted, not just requested)" -Condition $true
 
-        if ($null -ne $MaxUsers) {
-            Test-Check -Description "Combined enabled-member count across supplied group(s) ($enabledCount) is within the operator-confirmed $MaxUsers-user cap - NOTE: cumulative tenant-wide across every policy built from this exact template" `
-                -Condition ($enabledCount -le $MaxUsers) -Warn
-        }
-        else {
-            Write-Host "  [SKIP] -MaxUsers not supplied - this template's specific cap could not be confirmed via this build's WebSearch-only grounding (design.md §2 goal 7). Confirm the current limit from the portal or a direct Microsoft Learn fetch, then re-run with -MaxUsers to check the resolved count ($enabledCount) against it." -ForegroundColor Yellow
-        }
+        Test-Check -Description "Combined enabled-member count across supplied group(s) ($enabledCount) is within the $MaxUsers-user cap - NOTE: cumulative tenant-wide across every policy built from this exact template" `
+            -Condition ($enabledCount -le $MaxUsers) -Warn
     }
     catch {
         Test-Check -Description "Get-MgGroupTransitiveMemberAsUser call succeeds - FAILED: $($_.Exception.Message)" -Condition $false
@@ -141,7 +145,7 @@ $manualChecklist = @(
     "Policy's Indicators page has 'Office indicators' selected AND 'Cumulative exfiltration detection' selected (default-on for this template - confirm it wasn't inadvertently deselected)."
     "If optional Communication Compliance content indicators, generative-AI indicators, or cloud indicators are intended, confirm they are selected on the Indicators page - none is selected by default."
     $(if ($CloudIndicatorsEnabled) { "Microsoft Defender portal > Settings > Cloud Apps > App Connectors: the Box/Dropbox/Google Drive/Amazon S3/Azure connector(s) this policy's cloud indicators depend on show status 'Connected', and pay-as-you-go billing remains enabled in Purview billing." })
-    "Purview portal > Insider Risk Management > Policies > this policy's 'Users in scope' column: confirm the actively-scored count against the cap you separately confirmed for this specific template (design.md §2 goal 7) - no API exists to check this automatically, and no other policy sharing this template's cumulative cap already exists that would push the combined count over the limit."
+    "Purview portal > Insider Risk Management > Policies > this policy's 'Users in scope' column: confirm the actively-scored count against the 15,000-user cap for this template (design.md §2 goal 7) - no API exists to check this automatically, and no other policy built from this exact template already exists that would push the combined count over the limit."
     "Purview portal > Settings > Roles and groups: at least one user is a member of 'Insider Risk Management' or 'Insider Risk Management Admins' (docs/rbac-model.md §4)."
     "If using the alternative exfiltration-activity triggering event instead of (or in addition to) the DLP-policy trigger: confirm the selected built-in indicators and threshold mode (default vs. custom) match what was intended - portal-only, no read API."
     "Deployed configuration matches deploy/policy/data-leaks-policy-manifest.json (diff manually - the manifest is a reference, not a live query)."
