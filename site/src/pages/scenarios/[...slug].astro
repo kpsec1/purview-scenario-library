@@ -16,43 +16,89 @@ const githubUrl = `https://github.com/kpsec1/purview-scenario-library/tree/main/
 ---
 
 <Base title={`${entry.data.title} — ${entry.data.category}`}>
-  <p class="crumbs">
-    <a href="/scenarios/">Scenarios</a> <span>/</span>
-    <a href={`/scenarios/#${entry.data.categorySlug}`}>{entry.data.category}</a>
-  </p>
-  <h1>{entry.data.fullTitle}</h1>
-  <p class="source">
-    <a href={githubUrl} rel="noopener" target="_blank">View source, deploy & validate scripts on GitHub →</a>
-  </p>
+  <div class="scenario-header">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/scenarios/">Library</a>
+        <span>/</span>
+        <a href={`/scenarios/#${entry.data.categorySlug}`}>{entry.data.category}</a>
+      </nav>
+      <p class="area-tag">{entry.data.category}</p>
+      <h1>{entry.data.fullTitle}</h1>
+      <div class="header-actions">
+        <a class="src-link" href={githubUrl} rel="noopener" target="_blank">
+          Source, deploy &amp; validate scripts on GitHub ↗
+        </a>
+      </div>
+    </div>
+  </div>
 
-  <article class="scenario">
+  <article class="wrap prose">
     <Content />
   </article>
 
+  <div class="wrap next-nav">
+    <a href="/scenarios/">← Back to the full library</a>
+  </div>
+
   <style>
+    .scenario-header {
+      background: linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 34px 0 30px;
+      margin-bottom: 36px;
+    }
     .crumbs {
+      font-size: 13.5px;
       color: var(--muted);
-      font-size: 0.9rem;
+      margin-bottom: 14px;
     }
     .crumbs span {
-      margin: 0 4px;
+      margin: 0 7px;
+      color: var(--border-strong);
+    }
+    .area-tag {
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--bg-tint);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      margin: 0 0 12px;
     }
     h1 {
-      font-size: clamp(1.6rem, 4vw, 2.1rem);
+      font-size: clamp(1.7rem, 4vw, 2.3rem);
+      margin: 0 0 18px;
+      max-width: 24ch;
     }
-    .source {
-      margin-bottom: 32px;
-      font-size: 0.95rem;
+    .src-link {
+      display: inline-block;
+      font-weight: 600;
+      font-size: 14.5px;
+      padding: 9px 16px;
+      border: 1px solid var(--border-strong);
+      border-radius: 9px;
+      background: #fff;
+      color: var(--ink);
     }
-    .scenario :global(h2) {
-      margin-top: 2em;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 4px;
+    .src-link:hover {
+      text-decoration: none;
+      border-color: var(--accent);
+      color: var(--accent);
     }
-    .scenario :global(hr) {
-      border: none;
+    .prose :global(h1:first-of-type) {
+      /* Full title already shown in the header. */
+      display: none;
+    }
+    .next-nav {
+      margin-top: 48px;
+      padding-top: 24px;
       border-top: 1px solid var(--border);
-      margin: 2em 0;
+      font-weight: 600;
     }
   </style>
 </Base>

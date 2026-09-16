@@ -4,7 +4,29 @@ import { getCollection } from 'astro:content';
 
 const scenarios = await getCollection('scenarios');
 
-// Group scenarios by category, sorted alphabetically.
+// Short descriptions per solution area (keyed by folder slug).
+const AREA_BLURBS: Record<string, string> = {
+  'adaptive-protection': 'Risk-based controls that tighten enforcement automatically as user risk rises.',
+  audit: 'Audit log search, retention, and streaming to Sentinel for investigations.',
+  'communication-compliance': 'Detect risky or non-compliant messages across Teams, email, and Copilot.',
+  'compliance-manager': 'Assess and evidence control posture against ISO, SOC 2, HIPAA, PCI, GDPR.',
+  'data-estate-insights': 'Coverage reporting across classification, labels, and glossary curation.',
+  'data-lifecycle-management': 'Retention, disposition, and adaptive-scope cleanup of aging data.',
+  'data-lineage': 'Trace how data moves and transforms across the estate.',
+  'data-map': 'Scan, classify, and catalog sources across cloud and on-premises.',
+  'data-quality': 'Rules and scorecards that measure and enforce data quality.',
+  'data-security-investigations': 'Investigate data-security incidents involving priority and risky users.',
+  dlp: 'Prevent regulated-data exfiltration across endpoint, email, Teams, and SharePoint.',
+  'dspm-for-ai': 'Data security posture management for AI and Copilot interactions.',
+  ediscovery: 'Legal hold, collection, review, and defensible search-and-purge.',
+  'information-barriers': 'Enforce ethical walls between conflicting groups.',
+  'information-protection': 'Sensitivity labels and auto-labeling to classify and protect content.',
+  'insider-risk': 'Detect and manage risky insider activity with graduated response.',
+  'records-management': 'Declare, retain, and dispose of regulatory records.',
+  'unified-catalog': 'Govern data products, critical data elements, and OKRs.',
+};
+
+// Group scenarios by category, sorted alphabetically by label.
 const groups = new Map<string, { category: string; items: typeof scenarios }>();
 for (const entry of scenarios) {
   const key = entry.data.categorySlug;
@@ -16,68 +38,187 @@ const sortedGroups = [...groups.entries()]
   .map(([slug, g]) => ({
     slug,
     category: g.category,
+    blurb: AREA_BLURBS[slug],
     items: g.items.sort((a, b) => a.data.title.localeCompare(b.data.title)),
   }));
 ---
 
-<Base title="Purview Scenario Library" description="Browse the Microsoft Purview scenario library.">
-  <h1>Purview Scenario Library</h1>
-  <p class="lead">
-    {scenarios.length} end-to-end Microsoft Purview scenarios across {sortedGroups.length} solution
-    areas — each with design notes, deployment steps, validation, and rollback in the
-    <a href="https://github.com/kpsec1/purview-scenario-library">source repository</a>.
-  </p>
+<Base
+  title="Purview Scenario Library"
+  description={`${scenarios.length} production-ready Microsoft Purview scenarios across ${sortedGroups.length} solution areas.`}
+>
+  <section class="wrap page-head">
+    <p class="eyebrow">Microsoft Purview</p>
+    <h1>Scenario Library</h1>
+    <p class="lead">
+      {scenarios.length} production-ready scenarios across {sortedGroups.length} solution areas. Each
+      scenario is documented end to end — business driver, architecture (with flow diagram),
+      deployment, validation, and rollback — with source and scripts in the
+      <a href="https://github.com/kpsec1/purview-scenario-library">GitHub repository</a>.
+    </p>
 
-  <nav class="toc" aria-label="Solution areas">
-    {sortedGroups.map((g) => <a href={`#${g.slug}`}>{g.category} ({g.items.length})</a>)}
-  </nav>
+    <nav class="toc" aria-label="Solution areas">
+      {sortedGroups.map((g) => <a href={`#${g.slug}`}>{g.category} <span>{g.items.length}</span></a>)}
+    </nav>
+  </section>
 
-  {
-    sortedGroups.map((g) => (
-      <section class="group" id={g.slug}>
-        <h2>{g.category}</h2>
-        <ul>
-          {g.items.map((entry) => (
-            <li>
-              <a href={`/scenarios/${entry.id}/`}>{entry.data.title}</a>
-            </li>
-          ))}
-        </ul>
-      </section>
-    ))
-  }
+  <section class="wrap">
+    {
+      sortedGroups.map((g) => (
+        <section class="group" id={g.slug}>
+          <div class="group-head">
+            <div>
+              <h2>{g.category}</h2>
+              {g.blurb && <p class="blurb">{g.blurb}</p>}
+            </div>
+            <span class="pill">{g.items.length}</span>
+          </div>
+          <ul class="cards">
+            {g.items.map((entry) => (
+              <li>
+                <a href={`/scenarios/${entry.id}/`}>
+                  <span class="card-title">{entry.data.title}</span>
+                  <span class="card-go" aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </section>
 
   <style>
+    .page-head {
+      padding-top: 48px;
+    }
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 0 0 10px;
+    }
     h1 {
-      margin-bottom: 4px;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      font-weight: 900;
+      margin: 0 0 14px;
     }
     .lead {
-      color: var(--muted);
-      max-width: 60ch;
+      max-width: 68ch;
+      color: var(--body);
+      font-size: 1.08rem;
     }
     .toc {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px 14px;
-      margin: 24px 0 8px;
-      padding: 16px;
-      background: var(--panel);
+      gap: 8px;
+      margin-top: 26px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .toc a {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--bg-soft);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 999px;
+      padding: 6px 8px 6px 13px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--body);
     }
+    .toc a:hover {
+      text-decoration: none;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .toc a span {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
     .group {
-      margin-top: 36px;
-      scroll-margin-top: 80px;
+      margin-top: 52px;
+      scroll-margin-top: 84px;
     }
-    .group h2 {
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 6px;
+    .group-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--ink);
+      margin-bottom: 18px;
     }
-    .group ul {
-      padding-left: 20px;
+    .group-head h2 {
+      font-size: 1.45rem;
+      margin: 0;
     }
-    .group li {
-      margin: 6px 0;
+    .blurb {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14.5px;
+      max-width: 70ch;
+    }
+    .pill {
+      flex: none;
+      background: var(--accent-ink);
+      color: #fff;
+      border-radius: 999px;
+      padding: 3px 12px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .cards {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+    }
+    .cards a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      height: 100%;
+      padding: 15px 17px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--ink);
+      font-weight: 600;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
+    }
+    .cards a:hover {
+      text-decoration: none;
+      border-color: var(--accent);
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
+    .card-title {
+      line-height: 1.35;
+    }
+    .card-go {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    @media (max-width: 640px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </Base>

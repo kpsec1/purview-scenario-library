@@ -10,6 +10,9 @@
     "sync-content": "node ./scripts/sync-scenarios.mjs"
   },
   "dependencies": {
-    "astro": "^7.3.3"
+    "@astrojs/markdown-remark": "^7.3.1",
+    "astro": "^7.3.3",
+    "mermaid": "^12.0.0",
+    "unist-util-visit": "^5.1.0"
   }
 }

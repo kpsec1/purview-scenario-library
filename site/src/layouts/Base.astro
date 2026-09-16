@@ -4,7 +4,8 @@ interface Props {
   description?: string;
 }
 const { title, description } = Astro.props;
-const site = 'Purview Scenario Library';
+const path = Astro.url.pathname;
+const isHome = path === '/';
 ---
 
 <!doctype html>
@@ -14,64 +15,124 @@ const site = 'Purview Scenario Library';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     {description && <meta name="description" content={description} />}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <title>{title}</title>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
-      <nav class="wrap">
-        <a class="brand" href="/">Krunal · {site}</a>
-        <div class="links">
-          <a href="/">Home</a>
-          <a href="/scenarios/">Scenarios</a>
-          <a
-            href="https://github.com/kpsec1/purview-scenario-library"
-            rel="noopener"
-            target="_blank">GitHub</a
+      <div class="wrap bar">
+        <a class="brand" href="/">
+          <span class="brand-mark">K</span>
+          <span class="brand-text">
+            <strong>Krunal</strong>
+            <em>Cyber Security Consultant</em>
+          </span>
+        </a>
+        <nav class="links" aria-label="Primary">
+          <a href="/" class={isHome ? 'active' : ''}>Home</a>
+          <a href="/scenarios/" class={path.startsWith('/scenarios') ? 'active' : ''}>Library</a>
+          <a href="https://github.com/kpsec1/purview-scenario-library" rel="noopener" target="_blank"
+            >GitHub ↗</a
           >
-        </div>
-      </nav>
+        </nav>
+      </div>
     </header>
-    <main id="main" class="wrap">
+
+    <main id="main">
       <slot />
     </main>
+
     <footer class="site-footer">
-      <div class="wrap">
-        <p>
-          Built with Astro · Content from the
-          <a href="https://github.com/kpsec1/purview-scenario-library">Purview Scenario Library</a>
-        </p>
+      <div class="wrap foot">
+        <div>
+          <strong>Krunal</strong> · Cyber Security Consultant · Regina, Saskatchewan
+        </div>
+        <div class="foot-meta">
+          A growing library of Microsoft Purview &amp; security scenarios ·
+          <a href="https://github.com/kpsec1/purview-scenario-library">Source on GitHub</a>
+        </div>
       </div>
     </footer>
+
+    <!-- Render Mermaid flowcharts client-side, themed to match the site.
+         If the runtime can't load, reveal the diagram source instead of hiding it. -->
+    <script>
+      async function renderDiagrams() {
+        if (!document.querySelector('pre.mermaid')) return;
+        try {
+          const { default: mermaid } = await import('mermaid');
+          mermaid.initialize({
+            startOnLoad: false,
+            securityLevel: 'strict',
+            theme: 'base',
+            fontFamily: 'Inter, system-ui, sans-serif',
+            themeVariables: {
+              primaryColor: '#eef4ff',
+              primaryBorderColor: '#1e3a8a',
+              primaryTextColor: '#0f172a',
+              secondaryColor: '#f1f5f9',
+              tertiaryColor: '#f8fafc',
+              lineColor: '#64748b',
+              fontSize: '15px',
+              clusterBkg: '#f8fafc',
+              clusterBorder: '#cbd5e1',
+            },
+          });
+          await mermaid.run({ querySelector: 'pre.mermaid' });
+        } catch (err) {
+          // Fallback: show the flowchart source so no content is lost.
+          document
+            .querySelectorAll('pre.mermaid')
+            .forEach((el) => el.classList.add('mermaid-failed'));
+          console.error('Mermaid failed to load; showing diagram source.', err);
+        }
+      }
+      renderDiagrams();
+    </script>
+
     <style is:global>
       :root {
-        --bg: #0b1020;
-        --panel: #121933;
-        --text: #e7ecf5;
-        --muted: #9aa6bf;
-        --accent: #4da3ff;
-        --border: #24304f;
-        --code-bg: #0d1428;
-        color-scheme: dark;
+        --bg: #ffffff;
+        --bg-soft: #f6f8fc;
+        --bg-tint: #eef3fb;
+        --ink: #0f172a;
+        --body: #334155;
+        --muted: #64748b;
+        --accent: #1d4ed8;
+        --accent-ink: #1e3a8a;
+        --border: #e2e8f0;
+        --border-strong: #cbd5e1;
+        --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+        --radius: 14px;
+        color-scheme: light;
       }
       * {
         box-sizing: border-box;
       }
       html {
         scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
       }
       body {
         margin: 0;
         background: var(--bg);
-        color: var(--text);
-        font: 16px/1.65 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
-          sans-serif;
+        color: var(--body);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 17px;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
       }
       .wrap {
         width: 100%;
-        max-width: 900px;
+        max-width: 960px;
         margin: 0 auto;
-        padding: 0 20px;
+        padding: 0 24px;
       }
       a {
         color: var(--accent);
@@ -80,26 +141,39 @@ const site = 'Purview Scenario Library';
       a:hover {
         text-decoration: underline;
       }
+      h1,
+      h2,
+      h3,
+      h4 {
+        color: var(--ink);
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        font-weight: 800;
+      }
       .skip-link {
         position: absolute;
         left: -9999px;
       }
       .skip-link:focus {
-        left: 12px;
-        top: 12px;
-        background: var(--panel);
-        padding: 8px 12px;
+        left: 16px;
+        top: 16px;
+        background: var(--ink);
+        color: #fff;
+        padding: 10px 14px;
         border-radius: 8px;
+        z-index: 20;
       }
+
+      /* Header */
       .site-header {
-        border-bottom: 1px solid var(--border);
-        background: rgba(11, 16, 32, 0.85);
-        backdrop-filter: blur(6px);
         position: sticky;
         top: 0;
-        z-index: 5;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: saturate(180%) blur(10px);
+        border-bottom: 1px solid var(--border);
       }
-      .site-header nav {
+      .bar {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -109,65 +183,193 @@ const site = 'Purview Scenario Library';
         flex-wrap: wrap;
       }
       .brand {
-        font-weight: 700;
-        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--ink);
+      }
+      .brand:hover {
+        text-decoration: none;
+      }
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-ink));
+        color: #fff;
+        font-weight: 900;
+        font-size: 20px;
+      }
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.15;
+      }
+      .brand-text strong {
+        font-size: 16px;
+        color: var(--ink);
+      }
+      .brand-text em {
+        font-style: normal;
+        font-size: 12.5px;
+        color: var(--muted);
       }
       .links {
         display: flex;
-        gap: 18px;
+        gap: 22px;
+        font-weight: 600;
+        font-size: 15px;
       }
+      .links a {
+        color: var(--body);
+      }
+      .links a.active {
+        color: var(--accent);
+      }
+
       main {
-        padding-top: 40px;
-        padding-bottom: 64px;
+        min-height: 60vh;
       }
+
+      /* Footer */
       .site-footer {
+        margin-top: 80px;
         border-top: 1px solid var(--border);
+        background: var(--bg-soft);
+        padding: 32px 0;
+        font-size: 14.5px;
         color: var(--muted);
-        padding: 24px 0;
-        font-size: 14px;
       }
-      h1,
-      h2,
-      h3 {
-        line-height: 1.25;
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .foot strong {
+        color: var(--ink);
+      }
+
+      /* Long-form article (scenario pages) */
+      .prose {
+        font-size: 17px;
+      }
+      .prose h2 {
+        font-size: 1.5rem;
+        margin-top: 2.2em;
+        padding-bottom: 0.35em;
+        border-bottom: 1px solid var(--border);
+      }
+      .prose h3 {
+        font-size: 1.18rem;
+        margin-top: 1.8em;
+      }
+      .prose p,
+      .prose li {
+        color: var(--body);
+      }
+      .prose a {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      .prose hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 2.5em 0;
+      }
+      .prose img {
+        max-width: 100%;
+      }
+      .prose blockquote {
+        margin: 1.5em 0;
+        padding: 4px 20px;
+        border-left: 4px solid var(--accent);
+        background: var(--bg-tint);
+        border-radius: 0 8px 8px 0;
+        color: var(--ink);
       }
       pre {
-        background: var(--code-bg);
+        background: var(--bg-soft);
         border: 1px solid var(--border);
-        padding: 14px 16px;
-        border-radius: 10px;
+        border-radius: 12px;
+        padding: 16px 18px;
         overflow: auto;
+        font-size: 14px;
+      }
+      pre.astro-code {
+        background: #f8fafc !important;
       }
       code {
-        font-family: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
-        font-size: 0.92em;
+        font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.88em;
       }
       :not(pre) > code {
-        background: var(--code-bg);
-        border: 1px solid var(--border);
-        padding: 1px 5px;
-        border-radius: 5px;
+        background: var(--bg-tint);
+        color: var(--accent-ink);
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.85em;
       }
       table {
         border-collapse: collapse;
         width: 100%;
         display: block;
         overflow-x: auto;
+        font-size: 15px;
+        margin: 1.2em 0;
       }
       th,
       td {
         border: 1px solid var(--border);
-        padding: 8px 10px;
+        padding: 9px 12px;
         text-align: left;
       }
-      blockquote {
-        border-left: 3px solid var(--accent);
-        margin: 1em 0;
-        padding: 2px 16px;
-        color: var(--muted);
+      th {
+        background: var(--bg-soft);
+        color: var(--ink);
+        font-weight: 700;
       }
-      img {
+
+      /* Mermaid diagrams */
+      pre.mermaid {
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px;
+        margin: 1.6em 0;
+        text-align: center;
+        overflow-x: auto;
+        box-shadow: var(--shadow);
+        /* Hide the raw source until Mermaid replaces it with an SVG. */
+        color: transparent;
+        font-size: 0;
+        min-height: 60px;
+      }
+      pre.mermaid[data-processed='true'],
+      pre.mermaid.mermaid-failed {
+        color: inherit;
+      }
+      pre.mermaid.mermaid-failed {
+        font-size: 13px;
+        text-align: left;
+        white-space: pre;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        color: var(--body);
+      }
+      pre.mermaid svg {
         max-width: 100%;
+        height: auto;
+      }
+
+      @media (max-width: 640px) {
+        body {
+          font-size: 16px;
+        }
+        .wrap {
+          padding: 0 18px;
+        }
       }
     </style>
   </body>
