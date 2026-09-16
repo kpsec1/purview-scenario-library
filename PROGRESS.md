@@ -7185,7 +7185,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   no cmdlet, enum value, or blade path was invented, and every unconfirmed point is flagged inline
   as VERIFY rather than guessed.
 - [x] **`scenarios/data-map/scan-on-premises-sql-server-and-classify-pii-ruleset/`** — commit
-  a9b7555 — 2026-09-16. New scenario closing the last of the two remaining Data Map
+  29bbd2e — 2026-09-16. New scenario closing the last of the two remaining Data Map
   PII-only scan-rule-set follow-ups tracked under "Follow-ups discovered while building the Data
   Map PII-only scan rule set (Azure SQL Database) scenario" — the fourth and final Data Map source
   type in this repo to receive a PII-only scan rule set companion scenario. Applies the proven
