@@ -6,6 +6,11 @@ interface Props {
 const { title, description } = Astro.props;
 const path = Astro.url.pathname;
 const isHome = path === '/';
+const buildDate = new Date().toLocaleDateString('en-CA', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
 ---
 
 <!doctype html>
@@ -56,6 +61,8 @@ const isHome = path === '/';
         <div class="foot-meta">
           A growing library of Microsoft Purview &amp; security scenarios ·
           <a href="https://github.com/kpsec1/purview-scenario-library">Source on GitHub</a>
+          <br />
+          <span class="foot-updated">Last updated {buildDate}</span>
         </div>
       </div>
     </footer>
