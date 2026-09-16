@@ -13,6 +13,13 @@ secrets/
 *.local.ps1
 tenant-*.json
 
+# GDPR DSR fulfillment — real data-subject PII, never commit
+# (scenarios/ediscovery/gdpr-dsr-fulfillment/README.md Section 11)
+dsr-ledger.json
+dsr-ledger.*.json
+**/gdpr-dsr-fulfillment/deploy/policy/*.json
+!**/gdpr-dsr-fulfillment/deploy/policy/*.sample.json
+
 # OS / editor
 .DS_Store
 Thumbs.db

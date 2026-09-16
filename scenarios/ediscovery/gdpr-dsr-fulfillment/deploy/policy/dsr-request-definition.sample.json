@@ -1,0 +1,17 @@
+{
+  "_comment": "Illustrative values only -- replace before use. This file identifies a real data subject (email, display name) and, once New-DsrRequest.ps1 runs, becomes the definition behind a live eDiscovery case and ledger entry. Treat it and the ledger file (dsr-ledger.json) as confidential for the life of the request -- same discipline this repo's search-and-purge-data-spillage/deploy/policy/data-spillage-search-definition.sample.json applies to its own sensitive query text.",
+  "requestId": "DSR-2026-0001",
+  "requestType": "Access",
+  "_requestTypeComment": "One of: Access, Portability, Erasure, Rectification, Restriction, Objection. See README.md Section 6 for what this scenario's scripts do (and don't do) for each value.",
+  "dataSubject": {
+    "email": "ada.lovelace@contoso.com",
+    "displayName": "Ada Lovelace"
+  },
+  "receivedDate": "2026-09-16",
+  "_receivedDateComment": "The date the organization received the request (not the date this script runs) -- New-DsrRequest.ps1 computes the GDPR Article 12(3) one-month/three-month SLA dates from this value. Format: yyyy-MM-dd.",
+  "caseDisplayName": "DSR-2026-0001 - Access",
+  "_caseDisplayNameComment": "Avoid putting the data subject's name or email directly in the case DisplayName if your organization's case-naming convention is itself visible to a broader audience than the request warrants (e.g. a shared case list) -- the requestId alone is enough for this scenario's scripts to reconcile the case.",
+  "contentQuery": "",
+  "_contentQueryComment": "KQL (optional -- Microsoft's Create searches reference documents contentQuery as optional). Empty string returns everything in the custodian's mailbox + OneDrive/SharePoint site (README.md Section 6) -- the right default for an Access/Portability/Erasure request, which is about ALL of the person's data, not a keyword subset. Narrow this only for a Rectification/Restriction/Objection request scoped to specific, already-identified records.",
+  "notes": "Optional free-text context: intake channel, identity-verification method used, or other case-management detail not otherwise captured."
+}

@@ -2684,13 +2684,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   for its own three-way case.
 
 ### Follow-ups discovered while building the Compliance Manager EU GDPR assessment scenario
-- [ ] A dedicated **GDPR Data Subject Request (DSR) fulfillment** scenario — the closest existing
+- [x] A dedicated **GDPR Data Subject Request (DSR) fulfillment** scenario — the closest existing
   technical building block, `scenarios/ediscovery/search-and-purge-data-spillage/`, was built for
   inadvertent data-spillage remediation, not purpose-built DSR case management: it has no
   request-tracking, no per-request SLA timer against GDPR's own Article 12(3) one-month (extendable
   by two further months) response deadline, and no rectification/restriction workflow (only
   discovery/export/deletion). `gdpr-assessment/README.md` §11, `design.md` §7, and `reviews.md` Red
-  Team finding 4 all disclose this gap rather than overclaim DSR coverage that doesn't exist.
+  Team finding 4 all disclose this gap rather than overclaim DSR coverage that doesn't exist. —
+  **built** (see DONE below) as `scenarios/ediscovery/gdpr-dsr-fulfillment/`: custodian-scoped
+  eDiscovery case/search per data subject (not a tenant-wide sweep), an Article 12(3) SLA ledger,
+  and a hand-off (not a duplicate) to `premium-legal-hold-and-export` (Access/Portability) and
+  `search-and-purge-data-spillage` (Erasure). Rectification/Restriction/Objection remain
+  ledger-tracked only — no Purview-native technical control exists for any of the three (that
+  scenario's `design.md` §6). `gdpr-assessment/README.md` §8/§11, `design.md` §7, and the manifest's
+  `controlCrosswalk` updated in place to point at the new scenario instead of repeating the gap.
 - [ ] A **cross-border data transfer / data residency** scenario scoping Standard Contractual
   Clauses-relevant technical controls (e.g. Data Map/Purview data-residency-aware scanning or
   storage-location reporting) for GDPR Article 46 purposes — `gdpr-assessment/deploy/policy/
@@ -2713,6 +2720,36 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the Regulations page, or simply sees it counted against the 3-free-premium-template allotment with
   no further notice — `gdpr-assessment/README.md` §3/§10 states the current model but this
   transition-period UX detail wasn't independently confirmed.
+
+### Follow-ups discovered while building the GDPR DSR fulfillment scenario
+- [ ] VERIFY (pilot tenant): whether the `IncludedSources: 'mailbox, site'` combined-string form
+  `Confirm-SubjectUserSource` sends is accepted by the current v1.0 `custodians/{id}/userSources`
+  endpoint, or only a single value at a time — inherited unresolved from
+  `premium-legal-hold-and-export`'s own open VERIFY on the same call shape; no new evidence surfaced
+  during this build's grounding pass either way.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether `dataSourceScopes` accepts a
+  comma-combined value (the way `IncludedSources` does) or requires one call per scope — this
+  scenario's script only ever passes a single value (`allCaseCustodians` or, separately,
+  `allTenantMailboxes`) and was never tested against a combined-scope request.
+- [ ] No KQL property equivalent to `participants:` was found for "SharePoint/OneDrive content
+  *about* a person who isn't its author/owner" — `-IncludeParticipantSearch` (built this fragment)
+  closes the analogous Exchange-side gap but SharePoint/OneDrive content mentioning a data subject
+  without their authorship remains invisible to both of this scenario's searches. Re-open if
+  Microsoft documents a workable property (`referencedUsers`-style or similar) for this.
+- [ ] Consider a lightweight file-lock (or a documented "one writer at a time" operational
+  convention beyond the README's own disclosure) for `dsr-ledger.json` if a pilot deployment's DSR
+  volume grows enough that concurrent `New-DsrRequest.ps1` runs become realistic — deferred as
+  out of scope for the low-to-moderate volume this fragment is sized for (`README.md` §10/§11).
+- [ ] VERIFY (portal or Microsoft Learn): confirm whether Microsoft Purview eDiscovery's review-set
+  export can be configured to produce a CSV/JSON metadata companion (not just PST/native files) that
+  would more comfortably satisfy Article 20's "structured, commonly used, machine-readable format"
+  wording for a Portability request — `README.md` §11 currently just flags the PST/native-format gap
+  without a confirmed alternative.
+- [ ] Once `scenarios/compliance-manager/gdpr-assessment/`'s own still-open follow-up (a
+  cross-border data transfer / data residency scenario, immediately above) is built, cross-check
+  whether it should link back to this scenario's ledger for any DSR that also triggers a
+  cross-border-transfer question (e.g., an Access request where the data resides outside the
+  data subject's own region) — not evaluated in this build.
 
 ### Follow-ups discovered while building the Data Lineage custom-process-lineage scenario
 - [ ] VERIFY (pilot tenant): whether a relationship end's `typeName` must be the entity's own
@@ -7036,8 +7073,50 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   fragments, and more) had been committed but never pushed. Fast-forwarded local `main` to that
   HEAD and pushed all 37 commits plus this fragment's own commit to `origin/main` in one push
   (`382bd89..f1c2cbe`) — a plain fast-forward, no rebase or force needed.
+- [x] **`scenarios/ediscovery/gdpr-dsr-fulfillment/`** — commit PENDING (see the immediately
+  following `docs(progress)` commit for the hash) — 2026-09-16. New scenario closing the
+  DSR-fulfillment gap `gdpr-assessment/README.md` §8/§11 and `reviews.md` Red Team finding 4 had
+  disclosed. Adds request-intake, an Article 12(3) SLA ledger (`dsr-ledger.json`, upserted by
+  `requestId`), and a custodian-scoped (not tenant-wide) eDiscovery case/search per data subject —
+  reusing `premium-legal-hold-and-export`'s already-grounded custodian/userSource cmdlet sequence
+  rather than re-deriving one. Access/Portability and Erasure fulfillment are hand-offs to
+  `premium-legal-hold-and-export` and `search-and-purge-data-spillage` respectively (their own
+  cmdlets, reviews, and known-gaps carry over unchanged); Rectification/Restriction/Objection get a
+  tracked Discovery search only — `design.md` §6 grounds why no Purview-native technical control
+  exists for any of the three, rather than inventing one. Two grounding traps avoided: confirmed the
+  classic "User Data Search" DSR case tool was retired/merged into eDiscovery (Standard) on
+  **August 30, 2023** (a year before the broader classic-eDiscovery retirement this repo's other
+  eDiscovery siblings already found), and confirmed Microsoft Priva Subject Rights Requests — a
+  materially different, purpose-built product surface `docs/automation-surface.md` §4 already lists
+  as out of scope for this library — is not this scenario's mechanism either. Four-lens review
+  (`reviews.md`) found and resolved two real Fix items: (1) the default custodian-scoped search
+  cannot see content *about* the data subject sitting in someone else's mailbox — fixed with an
+  opt-in `-IncludeParticipantSearch` tenant-wide participant search, disclosed rather than silently
+  left as a completeness gap; (2) a populated request-definition file or the ledger could be
+  accidentally committed to source control, permanently exposing a real person's DSR history — fixed
+  with new root `.gitignore` patterns (verified via `git add -n` that the sample file stays tracked
+  and a populated one would not be). `gdpr-assessment/README.md` §8/§11, `design.md` §7, and its
+  manifest's `controlCrosswalk` updated in place to point at this new scenario instead of repeating
+  the now-closed gap. **Grounding method note:** the Microsoft Learn MCP tool was unavailable in
+  this run's execution environment, and `WebFetch` against `learn.microsoft.com` (and every other
+  external domain tested) returned `EGRESS_BLOCKED` from this session's network egress proxy — every
+  citation in this fragment was grounded via `WebSearch` result excerpts instead (several
+  cross-checked against this repo's own already-fetched sibling-scenario grounding for the same
+  cmdlets), disclosed explicitly in `README.md` §12 and `reviews.md`'s Product Owner section rather
+  than silently presented as equivalent to a direct-fetch grounding pass. No cmdlet, enum value, or
+  blade path was invented.
 
 ## Blocked / needs user
+- **Environment note (2026-09-16, not a question needing a user decision — informational for future
+  runs of this loop):** in this run's execution environment, `WebFetch` returned `EGRESS_BLOCKED`
+  for **every** domain tested (`learn.microsoft.com`, `docs.azure.cn`, `techcommunity.microsoft.com`,
+  even `example.com`) — a session-wide network-egress-proxy restriction, not a Microsoft-Learn-
+  specific block. The Microsoft Learn MCP tool was also unavailable, matching this loop's own
+  instructions. Only `WebSearch` worked. A future run in an environment where `WebFetch` or the
+  Microsoft Learn MCP tool *is* available should prefer those for grounding (direct-fetch is
+  stronger evidence than a search-result excerpt) and, time permitting, re-verify this run's
+  WebSearch-only citations (`scenarios/ediscovery/gdpr-dsr-fulfillment/`) against the full source
+  pages. No action needed if this is just how this loop's environment is normally configured.
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**
   Earlier in this run, this session found local `origin/main` (a remote-tracking ref last fetched
   before this session started, hash `7b7437e`) shared no common ancestor with the detached `HEAD`

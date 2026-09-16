@@ -279,13 +279,12 @@ scenario:
   `assess-against-iso27001`/`pci-dss-assessment`/`soc2-assessment`/`hipaa-hitech-assessment` is
   updated in one but the update doesn't appear in the other(s) within a reasonable time, treat it as
   a signal the assessments may no longer share a group, not as a Compliance Manager bug.
-- **Data Subject Request volume and SLA** — this assessment's crosswalk points at
-  `scenarios/ediscovery/search-and-purge-data-spillage/` as the closest existing technical building
-  block for DSR discovery/export/deletion, but that scenario has no built-in request-tracking or SLA
-  timer (§11, `design.md` §7). If DSR volume grows past what ad hoc Content Search runs can handle
-  within GDPR's own response-timeliness expectations, treat that as a signal a dedicated DSR-intake
-  process (or the follow-up tracked in `PROGRESS.md`) is needed, not something this assessment's
-  score will surface on its own.
+- **Data Subject Request volume and SLA** — `scenarios/ediscovery/gdpr-dsr-fulfillment/` now
+  provides the request-tracking/SLA layer this section originally flagged as missing (§11,
+  `design.md` §7 updated accordingly). If DSR volume grows past what that scenario's flat-file
+  ledger can support (its own README.md §10/§11 name the point at which Microsoft Priva's
+  purpose-built Subject Rights Requests workflow becomes the better answer), treat that as a signal
+  this assessment's score will not surface on its own.
 
 **Incident-response runbook (automation-trust change detected):** identical to
 `assess-against-iso27001/README.md` §8 steps 1–5 — triage the `AuditData` JSON, classify
@@ -372,14 +371,14 @@ it.
   §11 for the full statement of both limitations, which apply here without modification.
 - **The `controlCrosswalk` in `deploy/policy/gdpr-assessment-manifest.json` is this library's own
   scenario-to-article correlation, not Microsoft's published improvement-action mapping** — see
-  `design.md` §7. The Data Subject Rights category's technical building block
-  (`scenarios/ediscovery/search-and-purge-data-spillage/`) was built for data-spillage remediation,
-  not purpose-built DSR case management — it has no request-tracking, no per-request SLA timer, and
-  no rectification/restriction workflow. A dedicated DSR-fulfillment scenario is tracked as a
-  follow-up in `PROGRESS.md` rather than fabricated here. The Cross-Border Data Transfers category has
-  little to no direct technical coverage from this Microsoft 365/Purview-only library — cross-border
-  transfer safeguards are contractual instruments between the organization and Microsoft, not a
-  Purview policy.
+  `design.md` §7. The Data Subject Rights category's technical building block is now
+  `scenarios/ediscovery/gdpr-dsr-fulfillment/`, which adds the request-tracking/SLA layer this
+  section previously flagged as missing on top of the same eDiscovery mechanics — it still has no
+  rectification/restriction technical fulfillment, because no Purview-native control exists for
+  either (that sibling's `design.md` §6 states why, rather than this assessment repeating an
+  unresolved gap). The Cross-Border Data Transfers category has little to no direct technical
+  coverage from this Microsoft 365/Purview-only library — cross-border transfer safeguards are
+  contractual instruments between the organization and Microsoft, not a Purview policy.
 - **Audit (Standard) default retention is 180 days** (1 year for Entra ID/Exchange/OneDrive/
   SharePoint under an E5-tier license; up to 10 years with Audit Premium retention policies)
   [[18]](#references). Unlike HIPAA's specific 6-year documentation-retention citation, GDPR imposes

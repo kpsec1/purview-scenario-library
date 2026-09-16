@@ -193,14 +193,16 @@ goals, ISO 27001's Annex A domains, or HIPAA's rule-with-safeguard-categories st
    Security Rule categories share `hasAddressableSpecifications`.** GDPR has no equivalent
    "required vs. addressable" trap in its own text — its own structural risk is different (item 3
    below).
-2. **Data Subject Rights has a real, if incomplete, technical building block already in this
-   library** (`scenarios/ediscovery/search-and-purge-data-spillage/`'s Content Search + purge
-   mechanism) — a stronger starting position than HIPAA's Privacy Rule or GDPR's own Cross-Border
-   Data Transfers category, both of which this library states plainly have little to no direct
-   technical coverage. The honest caveat: that eDiscovery scenario was built for data-spillage
-   remediation, not purpose-built DSR case management (no per-request SLA timer, no rectification/
-   restriction workflow) — stated directly in the manifest rather than presented as complete DSR
-   tooling.
+2. **Data Subject Rights has a real, if still incomplete, technical building block in this
+   library**: `scenarios/ediscovery/gdpr-dsr-fulfillment/`, which composes this library's
+   `premium-legal-hold-and-export` and `search-and-purge-data-spillage` eDiscovery scenarios into a
+   purpose-built DSR intake/SLA/fulfillment-hand-off workflow — a stronger starting position than
+   HIPAA's Privacy Rule or GDPR's own Cross-Border Data Transfers category, both of which this
+   library states plainly have little to no direct technical coverage. The honest caveat carries
+   forward, narrower than before: that scenario still has no technical fulfillment for
+   Rectification/Restriction/Objection, because (per its own `design.md` §6) no Purview-native
+   control exists for any of the three — stated directly in the manifest rather than presented as
+   complete DSR tooling.
 3. **The structural risk this crosswalk guards against is different from HIPAA's "addressable ≠
    optional" trap.** Here it is: mistaking a high Compliance Manager score, or completion of the
    improvement actions Microsoft's built-in automation surfaces, for having a documented Article 6
