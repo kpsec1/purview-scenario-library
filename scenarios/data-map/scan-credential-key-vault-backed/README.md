@@ -327,8 +327,8 @@ to "latest" is itself a VERIFY — §11.)
 |---|---|---|---|
 | Scan runs using this credential | Purview portal → **Data Map → Monitoring** | `Succeeded` | Any authentication-class failure — go to the runbook below |
 | Secret expiry | `validate/... -CheckKeyVaultSecret` | No expiry, or > 30 days out | Warned at ≤ 30 days; rotate before it lapses |
-| Credential inventory drift | `GET /scan/credentials` (paged; `{ count, nextLink, value[] }`) [[2]](#references) | Matches your deployed set | An unexpected credential appears — investigate who created it |
-| Credential **re-point** (same name, different target) | `validate/...` run with **all** `-Expected*` parameters supplied, from a checked-in parameter file | All `[PASS]` | Any `[FAIL]` on secret name, connection, or kind — the object was re-pointed without being renamed; see §11 |
+| Credential inventory drift, estate-wide | `scenarios/data-map/scan-credential-inventory-report/` — scripted, scheduled, diffed against a checked-in expected-state file, all eight documented credential kinds | `Match` (or `NotTracked` for legitimate new onboarding) for every credential | Any `Drift`/`Missing` status — the estate-wide version of the single-credential check below, built specifically to close this section's compensating-control gap |
+| Credential **re-point** (same name, different target) | `validate/...` run with **all** `-Expected*` parameters supplied, from a checked-in parameter file — or the estate-wide report above | All `[PASS]` | Any `[FAIL]` on secret name, connection, or kind — the object was re-pointed without being renamed; see §11 |
 | Key Vault secret reads by Purview | Key Vault **diagnostic logs** (`AuditEvent`) | Reads correlate with scan schedule | Reads outside scan windows, or from an unexpected identity |
 
 Run `validate/` on a schedule (weekly, or in the same pipeline that deploys scans) rather than
@@ -444,10 +444,12 @@ credential *first*, or that scan silently starts failing at its next run — `ro
   `PurviewSecurityLogs` in practice emits an event for a credential create/replace/delete despite
   not being documented to. Until that is settled, the compensating controls are (a) run
   `validate/` on a schedule with **all** `-Expected*` parameters supplied from a checked-in
-  parameter file — a re-point then surfaces as a `[FAIL]` (§8); (b) enable Key Vault
-  **`AuditEvent`** diagnostic logging, which does record which identity read which secret, so a
-  re-point at a secret *outside* the expected set is visible from the vault side; and (c) treat
-  Data Source Administrator as a privileged role in your access reviews.
+  parameter file — a re-point then surfaces as a `[FAIL]` (§8), now built as a scheduled,
+  estate-wide control rather than a single-credential manual invocation:
+  `scenarios/data-map/scan-credential-inventory-report/`; (b) enable Key Vault **`AuditEvent`**
+  diagnostic logging, which does record which identity read which secret, so a re-point at a
+  secret *outside* the expected set is visible from the vault side; and (c) treat Data Source
+  Administrator as a privileged role in your access reviews.
 - **Vault-wide secret access is the real blast radius.** Neither Key Vault grant Purview supports
   (access-policy Get/List on secrets, or **Key Vault Secrets User**) can be scoped to individual
   secrets, so the Purview managed identity can read **every** secret in whichever vault you
@@ -504,5 +506,7 @@ Related scenarios in this library:
   scenario creates.
 - `scenarios/data-map/scan-azure-sql-and-classify/` — the SAMI-based default path; use that unless
   you specifically cannot.
+- `scenarios/data-map/scan-credential-inventory-report/` — the estate-wide, scheduled drift-detection
+  companion that closes this section's "no documented detective control" gap.
 - `docs/rbac-model.md` §5 — Data Map collection roles.
 - `docs/automation-surface.md` — surface 4 (Purview data-plane REST).

@@ -1202,13 +1202,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `AccountKey` with a future Azure Storage/Cosmos DB scan scenario, `AmazonARN` with an Amazon
   S3/RDS one, `ManagedIdentity` with a user-assigned-managed-identity variant of the existing Azure
   SQL scan scenarios.
-- [ ] Consider a small **credential inventory/drift report** companion (`GET /scan/credentials`,
+- [x] Consider a small **credential inventory/drift report** companion (`GET /scan/credentials`,
   paged via `{ count, nextLink, value[] }`) that reconciles a tenant's live credential set against a
   checked-in parameter file — the same shape as `data-estate-insights`'
   `classification-coverage-report`/`sensitivity-label-coverage-report`. Would generalize
   `scan-credential-key-vault-backed/validate/`'s per-credential `-Expected*` assertions into an
   estate-wide control, and is currently the only detective mechanism available for the
-  silent-re-point risk above.
+  silent-re-point risk above. — **built** (see DONE below) as
+  `scenarios/data-map/scan-credential-inventory-report/`: full per-kind fingerprint extraction for
+  all eight documented `CredentialType` kinds (not just the three `scan-credential-key-vault-backed`
+  creates), a generic kind-agnostic diff engine against a checked-in expected-state JSON file, and a
+  `Match`/`Drift`/`Missing`/`NotTracked` status model. `scan-credential-key-vault-backed/README.md`
+  §8/§11 updated in place to point at this scenario as the estate-wide version of its own
+  single-credential `-Expected*` check. Two Red Team findings surfaced and resolved during this
+  build's own four-lens review (see that scenario's `reviews.md`): (1) a wholly new, unauthorized
+  credential only ever shows as `NotTracked`, which the drift gate ignores by default — resolved
+  with a new, independent `-FailOnUntracked` validate-script switch; (2) the expected-state file's
+  own trustworthiness depends on a review process this scenario cannot enforce from inside Purview or
+  the script — resolved by documentation (a named prerequisite: a distinct approver for changes to
+  that file), not by code, since no code-only fix exists.
 - [ ] Once a documented reverse lookup from a credential to the scans that reference it exists (none
   today), replace `scan-credential-key-vault-backed/rollback.md`'s **Stage 0** manual
   enumerate-data-sources-then-scans procedure — and the matching disclosed limitation in
@@ -7441,6 +7453,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   type). No cmdlet, enum value, or blade path was invented; the one point this build could not
   independently confirm (the System ruleset's literal `name`) is flagged inline as VERIFY, inherited
   unresolved from the base scenario, rather than guessed.
+- [x] **`scenarios/data-map/scan-credential-inventory-report/`** — commit f598a3a —
+  2026-09-16. New scenario closing the "Consider a small credential inventory/drift report
+  companion" follow-up tracked under "Follow-ups discovered while building the Key Vault-backed scan
+  credential scenario." Generalizes `scan-credential-key-vault-backed/validate/`'s per-credential
+  `-Expected*` assertions into an estate-wide, scheduled, checked-in-file-driven detective control —
+  the compensating control that scenario's own `README.md` §11 named as the only mitigation available
+  for Purview's undocumented credential-re-point audit gap. Grounded directly against the full
+  Credential - List and Credential - Create Or Replace REST reference pages (fetched in full this
+  build, not summarized) to build a genuine per-kind fingerprint-extraction table covering all eight
+  documented `CredentialType` kinds — including the two structurally distinct ones
+  (`AmazonARN`/`ManagedIdentity`) that carry no Key Vault secret reference at all, correctly
+  preserved rather than forced through an assumed common shape. Four-lens review surfaced and
+  resolved two genuine Red Team findings before this fragment was marked done: (1) the original draft
+  gated `-FailOnDrift` on `Drift`/`Missing` status only, silently missing a wholly new, unauthorized
+  credential (which only ever shows as `NotTracked`) — resolved with an independent
+  `-FailOnUntracked` validate-script switch, not folded into the same flag, since the two answer
+  different questions and a tenant with routine legitimate onboarding needs to disable only one; (2)
+  the expected-state file's own integrity depends on a source-control review process this scenario
+  cannot enforce from code — resolved by documentation (a named prerequisite for a distinct approver
+  on changes to that file) rather than a false code-only fix. `scan-credential-key-vault-backed/
+  README.md` §8/§11/references updated in place to point at this scenario as its estate-wide
+  companion. No cmdlet, endpoint, or field shape was invented; the one open point (whether `nextLink`
+  behaves as a directly-callable URL for this specific endpoint — no populated multi-page worked
+  example exists in Microsoft's reference) is flagged inline as VERIFY rather than guessed.
 
 ## Blocked / needs user
 - **Git note (2026-09-16, not a blocker — a distinct variant of the 2026-09-09 incident below,
