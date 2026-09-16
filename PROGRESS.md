@@ -7113,7 +7113,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   than silently presented as equivalent to a direct-fetch grounding pass. No cmdlet, enum value, or
   blade path was invented.
 - [x] **`scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/`** — commit
-  PENDING — 2026-09-16. New scenario closing the second of the two remaining Data Map PII-only
+  916903f — 2026-09-16. New scenario closing the second of the two remaining Data Map PII-only
   scan-rule-set follow-ups tracked under "Follow-ups discovered while building the Data Map Azure
   Synapse Analytics scenario." Applies the proven live-Types-API exclusion-list pattern (already
   shipped for Azure SQL Database and Azure Synapse Analytics) to Azure SQL Managed Instance. Per
