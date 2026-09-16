@@ -2845,6 +2845,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/ediscovery/teams-purge-hold-lifecycle-management/` (mailbox-scoped Exchange-vs-Group-
+  location conflation fix)** — commit dff04ae — 2026-09-16. Fixed a real remediation-accuracy bug this
+  scenario's own PROGRESS.md follow-up flagged as an open ambiguity: `ConvertTo-ParsedInPlaceHolds` in
+  all four scripts (`Get-/Remove-/Restore-TeamsPurgeMailboxHolds.ps1`,
+  `validate/Test-TeamsPurgeMailboxHoldLifecycle.ps1`) treated any `mbx`/`skp`/`grp`-prefixed
+  mailbox-scoped `InPlaceHolds` entry as interchangeable, always routing removal/restore through
+  `-RemoveExchangeLocation`/`-AddExchangeLocation`. Two Microsoft Learn pages fetched in full this run
+  prove that's wrong for a group/team mailbox target: `purview/retention-settings` states the
+  Exchange-mailboxes location (org-wide or specific-location) flatly rejects a Microsoft 365 Group
+  mailbox ("RemoteGroupMailbox isn't a valid selection" at save time), and `purview/
+  edisc-hold-types-mailboxes` documents the `Get-Mailbox`-visible specific-location prefix table as
+  `mbx`/`skp` only — never `grp`. A `grp`-prefixed, non-org-wide entry is now routed through
+  `-RemoveModernGroupLocation`/`-AddModernGroupLocation` (confirmed real `Set-RetentionCompliancePolicy`
+  parameters) when the target is a confirmed group/team mailbox, or reported as an unrecognized,
+  never-acted-on anomaly otherwise; the sibling bug this surfaced (org-wide Exchange-policy
+  applicability not gated on `-not $isGroupMailbox`, unlike its already-correct Group-side counterpart)
+  was fixed alongside it. One VERIFY carried forward rather than guessed: the exact `InPlaceHolds`
+  notation this mechanism stamps for the non-org-wide Group case isn't explicitly confirmed by
+  Microsoft. `design.md` §8.1 (new), `README.md` §6/§11/§12, and `reviews.md` Round 2 record the full
+  grounding and four-lens review of the fix.
 - [x] **`scenarios/compliance-manager/entra-privileged-role-monitoring/` (bulk group-membership-import
   follow-up)** — commit bafcbd2 — 2026-09-15. Closed the "not monitored at all" half of `reviews.md`
   round 2 Red Team finding 3: grounded `"Bulk import group members - finished (bulk)"`/`"Bulk remove
