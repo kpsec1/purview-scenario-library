@@ -3232,7 +3232,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## DONE
 - [x] **Backport: Organization Configuration vs. Audit Manager role distinction into
   `docs/rbac-model.md`'s Audit row** — doc-only correction fragment (not a new scenario), commit
-  <pending, see next `docs(progress)` commit> — 2026-09-16. `docs/rbac-model.md` §4's Audit row
+  `c7c146b` — 2026-09-16. `docs/rbac-model.md` §4's Audit row
   previously read "Audit Reader (View-Only Audit Logs) → **Audit Manager** (configure + search +
   export)" with no mention of retention-policy management. Added: creating/editing an audit log
   retention policy needs the **Organization Configuration** role, not Audit Manager — independently
