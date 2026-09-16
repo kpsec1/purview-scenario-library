@@ -2837,18 +2837,57 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Synapse sibling's naming trap), and disclosed that finding as independently confirmed rather than
   inherited, with an explicit warning not to assume it forward onto the still-unbuilt
   `SqlServerDatabase` sibling below.
-- [ ] `scenarios/data-map/scan-on-premises-sql-server-and-classify-pii-ruleset/` — the same
-  PII-only custom scan rule set pattern for this repo's one remaining sibling Data Map source type
-  (`kind: SqlServerDatabase`, confirmed to exist in the Scan Rulesets - Create Or Replace body-shape
-  table the original Azure SQL Database build direct-fetched) — not built this round to keep the
-  fragment scoped to one source type. Ground its actual ruleset `kind` string independently before
-  building — per both the Synapse and Managed Instance builds' own findings immediately above, do
-  not assume it matches a shorthand guess or either prior sibling's name-equals-kind relationship
-  (one matches its own System-ruleset name, one doesn't) without an independent direct-fetch check.
+- [x] `scenarios/data-map/scan-on-premises-sql-server-and-classify-pii-ruleset/` — **built** (see
+  DONE below): the same PII-only custom scan rule set pattern applied to on-premises SQL Server —
+  the fourth and last of this repo's Data Map PII-ruleset sibling scenarios. Per this item's own
+  instruction, independently grounded the ruleset `kind` rather than assuming either prior
+  sibling's name-vs-kind pattern — and, with `learn.microsoft.com` directly reachable in this
+  build's environment (unlike the Synapse/Managed Instance builds), confirmed it via THREE
+  converging first-party sources (Az.Purview PowerShell reference, Scan Rulesets - Get REST
+  reference, `@azure-rest/purview-scanning` JS SDK) rather than one: the custom ruleset `kind` is
+  the literal string `SqlServerDatabase` — identical to the base scenario's own already-shipped
+  `-ScanRulesetName` default and to the data source `kind` itself (the Azure SQL Database/Managed
+  Instance siblings' simpler pattern, not the Synapse naming trap). This build deliberately did
+  NOT over-claim: the base scenario's own separate, already-open VERIFY on the System ruleset's
+  literal resource *name* (as opposed to its `kind`) could not be closed by this grounding pass
+  either — no worked example was found pairing `scanRulesetName: "SqlServerDatabase"` with
+  `scanRulesetType: "System"` — and stays open, flagged inline rather than silently treated as
+  resolved just because the related `kind` question was.
 - [ ] Consider a **credential-object creation** follow-up (Key Vault-backed, for the
   `AzureSqlDatabaseCredential` scan kind) becoming unblocked by the same Types/Scan-Rulesets REST
   grounding pass this build did — not investigated this round; the base scenario's `README.md` §11
   VERIFY on this point was left as-is (out of scope for a scan-rule-set-focused fragment).
+
+### Follow-ups discovered while building the Data Map on-premises SQL Server PII-only scan rule set scenario
+- [ ] VERIFY (pilot tenant, or a future pass): the on-premises SQL Server System default scan rule
+  set's literal resource **`name`** (as opposed to its `kind`, which this build confirmed is
+  `SqlServerDatabase` via three converging Microsoft sources). No worked example was found anywhere
+  — despite this build specifically searching for one — pairing a literal `scanRulesetName:
+  "SqlServerDatabase"` with `scanRulesetType: "System"` in a live scan object; the one worked scan
+  example found (`New-AzPurviewSqlServerDatabaseCredentialScanObject`) uses an arbitrary custom
+  ruleset name, `'SqlServer'`, not the System default. This is the same VERIFY the base scenario
+  (`scan-on-premises-sql-server-and-classify/README.md` §11) already carried — this build could not
+  close it, only narrow what remains unconfirmed. Flagged inline in this scenario's
+  `deploy/Remove-PiiOnlyScanRuleset.ps1` `.NOTES`, `README.md` §11, and `rollback.md` Stage 1.
+- [ ] Now that this build found `learn.microsoft.com` directly reachable (no `EGRESS_BLOCKED`) via
+  the Microsoft Learn MCP tool — unlike the Azure Synapse Analytics and Azure SQL Managed Instance
+  PII-ruleset builds, both of which fell back to `raw.githubusercontent.com` fetches of the
+  Az.Purview PowerShell module's GitHub source — consider a low-priority pass re-verifying those two
+  siblings' GitHub-raw-source-only citations against the full `learn.microsoft.com` REST reference
+  pages now that access appears to have been restored, and closing their own carried-forward "REST
+  reference page not independently confirmed for this specific source type" VERIFYs
+  (`scan-azure-sql-managed-instance-and-classify-pii-ruleset/README.md` §11 second bullet;
+  `scan-azure-synapse-and-classify-pii-ruleset/README.md` §11 has an analogous item) if a future
+  run also has this access. Not attempted in this build — out of scope for a fragment about a
+  different source type, and network-access availability is environment-dependent, not guaranteed
+  to persist across runs.
+- [ ] This closes the last item in this repo's "apply the PII-only custom scan rule set pattern to
+  Data Map source type X" follow-up chain — all four Data Map source types with a base scan
+  scenario in this repo (Azure SQL Database, Azure Synapse Analytics, Azure SQL Managed Instance,
+  on-premises SQL Server) now have a PII-only companion scenario. No further fragment of this exact
+  shape remains to pick up; a future Data Map source type (e.g. a new connector Microsoft ships) that
+  gets a base scan scenario added to this repo would be the next natural candidate for the same
+  pattern, but none is currently tracked.
 
 ### Follow-ups discovered while building the Defender for Endpoint device control macOS Apple/Portable vendorId/productId compound-matching scenario
 - [ ] Build the Apple/Portable `ApprovedAppleDevices`/`ApprovedPortableDevices` group + its
@@ -7145,6 +7184,62 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Azure Synapse Analytics sibling scenarios' own builds (both direct-fetched in earlier sessions);
   no cmdlet, enum value, or blade path was invented, and every unconfirmed point is flagged inline
   as VERIFY rather than guessed.
+- [x] **`scenarios/data-map/scan-on-premises-sql-server-and-classify-pii-ruleset/`** — commit
+  TBD-COMMIT-HASH — 2026-09-16. New scenario closing the last of the two remaining Data Map
+  PII-only scan-rule-set follow-ups tracked under "Follow-ups discovered while building the Data
+  Map PII-only scan rule set (Azure SQL Database) scenario" — the fourth and final Data Map source
+  type in this repo to receive a PII-only scan rule set companion scenario. Applies the proven
+  live-Types-API exclusion-list pattern (already shipped for Azure SQL Database, Azure Synapse
+  Analytics, and Azure SQL Managed Instance) to on-premises SQL Server. Per that follow-up's own
+  repeated instruction, independently grounded this source type's ruleset `kind` rather than
+  assuming either prior sibling's name-vs-kind pattern — and, unlike the Synapse and Managed
+  Instance builds (both of which hit `EGRESS_BLOCKED` against `learn.microsoft.com` and fell back
+  to `raw.githubusercontent.com`), this build reached `learn.microsoft.com` directly via the
+  Microsoft Learn MCP tool with no egress restriction encountered, so the finding rests on THREE
+  converging first-party Microsoft sources instead of one: the
+  `New-AzPurviewSqlServerDatabaseScanRulesetObject` PowerShell reference's own worked example
+  (`Kind: SqlServerDatabase`), the Scan Rulesets - Get REST API reference's
+  `SqlServerDatabaseScanRuleset` object definition, and the `@azure-rest/purview-scanning` JS SDK's
+  `SqlServerDatabaseScanRuleset`/`SqlServerDatabaseSystemScanRuleset` TypeScript interfaces — all
+  three agree the custom ruleset `Kind` is the literal string `"SqlServerDatabase"`, identical to
+  the base scenario's own already-shipped (but itself still `VERIFY`-flagged) `-ScanRulesetName`
+  default and to the data source `kind` itself: the Azure SQL Database/Managed Instance siblings'
+  simpler name-equals-kind pattern, not the Azure Synapse Analytics sibling's naming trap. This
+  build deliberately did not over-claim from that finding: the base scenario's own separate,
+  already-open VERIFY on the System default ruleset's literal resource **name** (as opposed to its
+  `kind`) remains unresolved — no worked example was found anywhere pairing a literal
+  `scanRulesetName: "SqlServerDatabase"` with `scanRulesetType: "System"` in a live scan object —
+  and `design.md`/`README.md`/`rollback.md` all state that distinction explicitly rather than
+  letting the confirmed `kind` finding imply the adjacent, still-open `name` question was also
+  resolved. Four-lens review (`reviews.md`) found real Fix items from two lenses, both resolved
+  without deploy/validate script logic changes (the scripts already carried every sibling's
+  already-reviewed guards — single-kind scan-compatibility check since no managed-identity variant
+  exists for this source type, shared-object clobber warning — from the first draft): (1) Red Team
+  — the original draft's `kind`-confirmed / `name`-still-open distinction wasn't stated sharply
+  enough to stop a skimming reader (or a future automated re-run) from conflating the two; fixed by
+  making the distinction explicit everywhere `-RevertToRulesetName`'s default is discussed, plus a
+  new finding specific to this source type: a narrowed classification scope compounds with the
+  self-hosted integration runtime's own distinctive silent-failure mode (a SHIR node going
+  `Disconnected` produces no new classifications at all, a different and easier-to-miss failure
+  than "ran but under-classified"), addressed by having `README.md` §8 correlate ruleset-change
+  audit events with SHIR node health explicitly, and by having `validate/Test-PiiOnlyScanRuleset.ps1`
+  print an explicit reminder that it cannot check SHIR node health even on a fully-passing run. (2)
+  Blue Team — the original Prerequisites table didn't disclaim as sharply as it should have that
+  this scenario assumes the base scenario's own unusually long on-premises prerequisite list (SHIR
+  resource + software install + node registration, SQL/Windows login + grant, Key Vault secret,
+  Purview credential object) is already satisfied; fixed with an explicit disclaimer row and a
+  `design.md` §6 non-goals entry. CISO and Product Owner passed without required changes, both
+  specifically calling out the stronger-than-usual three-source grounding and this build's
+  precision about exactly what it did and did not resolve. **Grounding method note (repo-wide
+  relevance):** this build's execution environment had direct, unrestricted `learn.microsoft.com`
+  access via the Microsoft Learn MCP tool — the first fragment in several sessions' worth of
+  `PROGRESS.md` entries not to hit `EGRESS_BLOCKED`; flagged in `README.md` §11 as informational for
+  future runs, including the option to re-verify the Synapse/Managed Instance siblings' own
+  GitHub-raw-source-only citations against the full REST reference now that access appears
+  restored (not attempted in this build — out of scope for a fragment about a different source
+  type). No cmdlet, enum value, or blade path was invented; the one point this build could not
+  independently confirm (the System ruleset's literal `name`) is flagged inline as VERIFY, inherited
+  unresolved from the base scenario, rather than guessed.
 
 ## Blocked / needs user
 - **Environment note (2026-09-16, not a question needing a user decision — informational for future
