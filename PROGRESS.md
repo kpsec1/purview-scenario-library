@@ -7453,7 +7453,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   type). No cmdlet, enum value, or blade path was invented; the one point this build could not
   independently confirm (the System ruleset's literal `name`) is flagged inline as VERIFY, inherited
   unresolved from the base scenario, rather than guessed.
-- [x] **`scenarios/data-map/scan-credential-inventory-report/`** — commit f598a3a —
+- [x] **`scenarios/data-map/scan-credential-inventory-report/`** — commit 948f529 —
   2026-09-16. New scenario closing the "Consider a small credential inventory/drift report
   companion" follow-up tracked under "Follow-ups discovered while building the Key Vault-backed scan
   credential scenario." Generalizes `scan-credential-key-vault-backed/validate/`'s per-credential
