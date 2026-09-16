@@ -459,12 +459,12 @@ credential *first*, or that scan silently starts failing at its next run — `ro
   version. This is the documented API contract [[1]](#references), and the same behavior the
   sibling scan scenarios rely on, but it makes a parameter file (not ad-hoc command lines) the
   right way to operate this script.
-- **Five credential kinds are out of scope.** `AccountKey`, `AmazonARN`, `ConsumerKeyAuth`,
-  `DelegatedAuth`, and `ManagedIdentity` (user-assigned) are documented [[1]](#references) but not
-  scripted here — this fragment is scoped to the kinds the SQL-family scans in this repo consume.
-  `ManagedIdentity` (user-assigned) in particular is a reasonable future fragment: its
-  `typeProperties` shape (`principalId`, `resourceId`, `tenantId`) carries no Key Vault reference
-  at all, so it is a structurally different build, not a parameter tweak.
+- **RESOLVED — the other five credential kinds are now scripted.** This fragment was originally
+  scoped to the three kinds the SQL-family scans in this repo consume, leaving `AccountKey`,
+  `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, and `ManagedIdentity` (user-assigned) out of
+  scope [[1]](#references). `scenarios/data-map/scan-credential-remaining-kinds/` now creates all
+  five, closing this gap — see that scenario for the (structurally different, not a parameter
+  tweak) request bodies each one uses.
 - **Purview's own definition name is misspelled.** `KeyVaultSecretServicePrinipalCredentialTypeProperties`
   (missing the second `c`) is Microsoft's spelling of the definition [[1]](#references); the wire
   property names (`servicePrincipalId`, `servicePrincipalKey`) are correct. Noted so a reader
@@ -508,5 +508,8 @@ Related scenarios in this library:
   you specifically cannot.
 - `scenarios/data-map/scan-credential-inventory-report/` — the estate-wide, scheduled drift-detection
   companion that closes this section's "no documented detective control" gap.
+- `scenarios/data-map/scan-credential-remaining-kinds/` — scripts the five credential kinds this
+  scenario leaves out (`AccountKey`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`,
+  `ManagedIdentity`), reusing this scenario's `Remove-PurviewScanCredential.ps1` for deletion.
 - `docs/rbac-model.md` §5 — Data Map collection roles.
 - `docs/automation-surface.md` — surface 4 (Purview data-plane REST).

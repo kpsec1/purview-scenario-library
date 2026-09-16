@@ -343,6 +343,9 @@ the already-produced trend-log/drift-report files and the checked-in expected-st
 Related scenarios in this library:
 - `scenarios/data-map/scan-credential-key-vault-backed/` — creates the credentials this scenario
   reports on; its `README.md` §11 names the silent-re-point gap this scenario closes.
+- `scenarios/data-map/scan-credential-remaining-kinds/` — creates the other five credential kinds
+  (`AccountKey`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, `ManagedIdentity`) this scenario's
+  fingerprint table already covers; no change was needed here to support them.
 - `scenarios/data-estate-insights/classification-coverage-report/` — the sibling reporting scenario
   this fragment's trend-log/replace-by-RunId idempotency pattern is reused from verbatim.
 - `docs/rbac-model.md` §5 — Data Map collection roles.

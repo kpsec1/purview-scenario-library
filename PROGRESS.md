@@ -1192,16 +1192,70 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   table is on a page written for the *classic* governance portal, and it states more categories
   "will be added." If an event does exist, that scenario's §8 monitoring table should recommend it
   over the current scheduled-`validate/` compensating control.
-- [ ] Consider scripting the remaining five documented credential kinds — `AccountKey`,
+- [x] Consider scripting the remaining five documented credential kinds — `AccountKey`,
   `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, and `ManagedIdentity` (user-assigned) — as a
   second fragment or an extension. `scan-credential-key-vault-backed` deliberately scopes to the
   three the SQL-family scan kinds in this repo consume. Note these are **not** a parameter tweak:
   `ManagedIdentity`'s `typeProperties` (`principalId`, `resourceId`, `tenantId`) carries **no Key
   Vault reference at all**, and `ConsumerKeyAuth`'s carries *two* secret references
-  (`consumerSecret` **and** `password`) — both are structurally different bodies. Natural pairings:
-  `AccountKey` with a future Azure Storage/Cosmos DB scan scenario, `AmazonARN` with an Amazon
-  S3/RDS one, `ManagedIdentity` with a user-assigned-managed-identity variant of the existing Azure
-  SQL scan scenarios.
+  (`consumerSecret` **and** `password`) — both are structurally different bodies. — **built** (see
+  DONE below) as `scenarios/data-map/scan-credential-remaining-kinds/`: one `-CredentialType`-
+  dispatched deploy script covering all five kinds, grounded directly against the Scanning-data-
+  plane REST reference (fetched live via the Microsoft Learn MCP tool — available this run, contrary
+  to this repo's usual `EGRESS_BLOCKED` default) and cross-checked against
+  `scan-credential-inventory-report`'s independently-built fingerprint table, which reached
+  identical shapes from the read side. Each kind's real-world source pairing confirmed against a
+  dedicated Microsoft Learn connector page rather than inferred from the schema alone: `AccountKey`
+  → Azure Blob/ADLS Gen1+2/Azure Files/Cosmos DB, `AmazonARN` → Amazon S3 (its *only* documented
+  auth method), `ConsumerKeyAuth` → Salesforce (also its only documented method), `DelegatedAuth` →
+  Microsoft Fabric/Power BI, `ManagedIdentity` → six source types incl. three this repo already
+  scans (Azure SQL DB/MI, Synapse dedicated pools) — a directly actionable future pairing, not
+  built here. Reuses the parent scenario's `Remove-PurviewScanCredential.ps1` unmodified for
+  deletion (confirmed kind-agnostic). Four-lens review surfaced and fixed two real issues: (1) a
+  `-WhatIf -Verbose` dry run could have printed `ConsumerKeyAuth`'s plain-text `consumerKey` to a
+  console/log — fixed with a redacted log-body path in `Invoke-PurviewPut`; (2) `AmazonARN`/
+  `ManagedIdentity` have **no** Key Vault-side detective backstop at all (unlike the three
+  secret-bearing kinds), since they hold no secret to audit — `README.md` §8 now states this
+  plainly and recommends a daily inventory-report cadence for tenants relying on either. Corrected
+  the parent scenario's now-stale "five credential kinds are out of scope" §11 bullet in place
+  (the same Product-Owner-Fail pattern the parent's own review applied to its siblings), with
+  cross-links added in both directions plus from `scan-credential-inventory-report`. Two new
+  VERIFYs recorded below rather than guessed at.
+
+### Follow-ups discovered while building the scan-credential-remaining-kinds scenario
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether any documented REST endpoint
+  returns the Microsoft account ID / external ID pair a Role ARN credential's AWS-side IAM role must
+  trust. Microsoft's Amazon S3 connector walkthrough shows both values surfacing only in the
+  **portal's** "New credential" pane; `RoleARNCredentialTypeProperties` itself contains only
+  `roleARN` (confirmed directly from the Scanning-data-plane reference). Until this is resolved, a
+  fully scripted Amazon S3 onboarding still requires at least one portal visit upstream of
+  `scenarios/data-map/scan-credential-remaining-kinds/deploy/New-PurviewScanCredentialExtended.ps1`
+  — flagged inline in that scenario's `README.md` §3/§11 and `design.md` §4 rather than guessed at.
+- [ ] Periodically re-check the GA/preview status of the `ManagedIdentity` (user-assigned) credential
+  kind. Microsoft's "Credentials for source authentication" page currently labels it "(preview)";
+  the Scanning-data-plane REST reference carries no preview annotation of its own for the same kind.
+  `scenarios/data-map/scan-credential-remaining-kinds/README.md` §3/§10/§11 and the deploy script's
+  runtime `Write-Warning` all disclose this; re-open only if Microsoft's documentation changes.
+- [ ] Make `scenarios/data-map/scan-credential-remaining-kinds/validate/
+  Test-PurviewScanCredentialExtended.ps1`'s `-CheckKeyVaultSecret` vault-name derivation
+  authoritative. It currently assumes the Purview Key Vault **connection** name equals the Azure
+  Key Vault's own name (common, not guaranteed); the parent scenario's equivalent check instead
+  `GET`s the connection object first and derives the vault name from its `baseUrl`. Fixing this means
+  duplicating that same GET-then-derive sequence here (today only issued for the three secret-bearing
+  kinds, never for `AmazonARN`/`ManagedIdentity`, which don't need it) — deferred rather than
+  expanding this fragment's scope; see that scenario's `reviews.md` (Blue Team finding 2).
+- [ ] Once any of the four natural consumer scan scenarios this fragment identified are prioritized —
+  Amazon S3 (`AmazonARN`), Salesforce (`ConsumerKeyAuth`), Microsoft Fabric/Power BI
+  (`DelegatedAuth`), or a `ManagedIdentity`(UAMI) variant of `scan-azure-sql-and-classify`/
+  `scan-azure-sql-managed-instance-and-classify`/`scan-azure-synapse-and-classify` — wire it to
+  `scenarios/data-map/scan-credential-remaining-kinds/`. The UAMI variant is the most directly
+  actionable: the three target scan scenarios already exist in this repo, and Microsoft's own
+  credential priority order ranks user-assigned managed identity above the service-principal/
+  SQL-authentication paths those scenarios currently document as their non-SAMI fallback.
+  `AccountKey`'s four source types (Azure Blob Storage, ADLS Gen1, ADLS Gen2, Azure Files) have no
+  scan scenario of any kind in this library yet — a bigger fragment, since it would need its own new
+  base scan scenario, not just a credential variant of an existing one.
+
 - [x] Consider a small **credential inventory/drift report** companion (`GET /scan/credentials`,
   paged via `{ count, nextLink, value[] }`) that reconciles a tenant's live credential set against a
   checked-in parameter file — the same shape as `data-estate-insights`'
