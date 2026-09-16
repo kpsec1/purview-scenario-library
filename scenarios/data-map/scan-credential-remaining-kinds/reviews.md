@@ -72,21 +72,23 @@ No remaining Fix/Fail after resolution.
    - **Resolution:** `README.md` §8 gained the two-row runbook table described in Red Team finding
      1's resolution — first check, then where to escalate, for each of the two kinds specifically.
 
-2. **`validate/`'s `-CheckKeyVaultSecret` derives the Azure Key Vault name from
+2. **`validate/`'s `-CheckKeyVaultSecret` derived the Azure Key Vault name from
    `store.referenceName` (the Purview *connection* name), which is not guaranteed to equal the
    Azure vault's actual name.** The parent scenario's equivalent check derives the vault name from
    the Key Vault connection object's own `baseUrl` (a `GET` it already issued for check 1), which is
-   authoritative. This fragment's `Test-KeyVaultSecretReference` helper takes a narrower path — it
-   doesn't re-fetch the connection object, so it falls back to assuming the connection name and the
-   vault name match, which is the common case but not a documented guarantee.
-   - **Resolution:** Not silently assumed — the helper's inline comment and its `catch` block's
-     warning message both state the assumption explicitly and name the likely failure mode (a
-     mismatch between the two names) rather than reporting a confusing "secret not found." Not
-     escalated to a code fix in this round because doing so correctly means the same GET-then-derive
-     sequence the parent script already performs at check 1, which this fragment's script does not
-     currently duplicate for every credential kind (`AmazonARN`/`ManagedIdentity` never call it at
-     all). Tracked as a `PROGRESS.md` follow-up rather than expanding this fragment's scope to
-     re-plumb the check now.
+   authoritative. This fragment's `Test-KeyVaultSecretReference` helper originally took a narrower
+   path — it didn't re-fetch the connection object, so it fell back to assuming the connection name
+   and the vault name match, which is the common case but not a documented guarantee.
+   - **Resolution (code fix, applied in a follow-up pass):** `Test-KeyVaultSecretReference` now
+     takes `-Endpoint`/`-Token`/`-ApiVersion` and calls a new `Get-KeyVaultNameForConnection` helper
+     that duplicates the parent script's own check-1 `GET .../scan/azureKeyVaults/{connectionName}`
+     → derive-from-`baseUrl` sequence exactly, cached per connection name (`$script:
+     KeyVaultConnectionCache`) so `ConsumerKeyAuth`'s two secret references — which commonly, but not
+     necessarily, share a connection — only trigger one GET each. If the connection can't be found or
+     carries no `baseUrl`, the check is skipped with an explicit `[WARN]` naming the connection,
+     instead of guessing. Only the three secret-bearing kinds (`AccountKey`, `ConsumerKeyAuth`,
+     `DelegatedAuth`) call this path; `AmazonARN`/`ManagedIdentity` never reference a Key Vault
+     secret at all (Red Team finding 1), so there is nothing to derive for them.
 
 3. **The two discriminator-literal `[WARN]`-not-`[FAIL]` severity, and the "structural verification
    only, the real proof is a scan run" closing disclaimer, are both inherited unchanged from the
@@ -190,15 +192,16 @@ No remaining Fix/Fail after resolution.
 | Lens | Verdict | Fix/Fail items | Status |
 |---|---|---|---|
 | 🔴 Red Team | Fix | 2 (Key Vault-side detection gap for two kinds, plaintext-consumerKey WhatIf-verbose leak) | Both resolved |
-| 🔵 Blue Team | Fix | 2 (missing runbook for two kinds, vault-name-derivation assumption in `-CheckKeyVaultSecret`) | Runbook resolved; vault-name assumption disclosed and tracked, not code-fixed this round |
+| 🔵 Blue Team | Fix | 2 (missing runbook for two kinds, vault-name-derivation assumption in `-CheckKeyVaultSecret`) | Both resolved (vault-name derivation code-fixed in a follow-up pass — see finding 2's Resolution) |
 | 🎩 CISO | Pass | 1 (cross-team/cross-cloud coordination cost unstated) | Resolved |
 | 🟦 Microsoft Product Owner | **Fail** | 1 (parent scenario's stale "out of scope" claim left uncorrected) | Resolved — corrected in place, cross-linked both directions |
 
 Carried forward as `PROGRESS.md` follow-ups (not resolvable without a pilot tenant, or out of this
 fragment's scope): whether the `AmazonARN` Microsoft account ID/external ID pair has any REST
-source; `ManagedIdentity`'s current GA/preview status, to be periodically re-checked; making
-`-CheckKeyVaultSecret`'s vault-name derivation authoritative (GET the connection's `baseUrl` first,
-matching the parent scenario's own check 1) instead of assuming the Purview connection name equals
-the Azure vault name; and every VERIFY the parent scenario already carries for the three
-secret-bearing kinds here (the two `KeyVaultSecret` discriminator literals; omitted-`secretVersion`
-semantics).
+source; `ManagedIdentity`'s current GA/preview status, to be periodically re-checked; and every
+VERIFY the parent scenario already carries for the three secret-bearing kinds here (the two
+`KeyVaultSecret` discriminator literals; omitted-`secretVersion` semantics).
+
+**Update:** `-CheckKeyVaultSecret`'s vault-name derivation (Blue Team finding 2) has since been
+code-fixed — see the Resolution under that finding above and `PROGRESS.md`'s DONE entry for this
+follow-up. It no longer appears in the carried-forward list.

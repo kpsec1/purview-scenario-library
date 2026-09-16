@@ -29,7 +29,10 @@
          -ExpectedSecretStoreReferenceType. [WARN] only, never [FAIL] - same open VERIFY as the
          parent scenario.
       5. (-CheckKeyVaultSecret) every secret the kind carries (both, for ConsumerKeyAuth) resolved
-         via Get-AzKeyVaultSecret without -AsPlainText.
+         via Get-AzKeyVaultSecret without -AsPlainText. The Azure Key Vault name is derived the same
+         authoritative way as the parent scenario's check 1 - a GET against the Key Vault connection
+         object first, then reading the real vault name out of its baseUrl - not assumed to equal the
+         Purview connection name (store.referenceName).
 
     WHAT THIS SCRIPT CANNOT CHECK:
       - For AmazonARN: whether the AWS-side IAM role trust policy is actually configured correctly.
@@ -97,6 +100,10 @@
     - Credential - Create Or Replace (typeProperties definitions used to build the per-kind
       completeness checks below):
       https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace
+    - Key Vault Connections - Get (AzureKeyVault { id, name, properties.baseUrl }; same endpoint the
+      parent scenario's Test-PurviewScanCredential.ps1 check 1 uses, reused here by
+      Get-KeyVaultNameForConnection for the same authoritative vault-name derivation):
+      https://learn.microsoft.com/rest/api/purview/scanningdataplane/key-vault-connections
     - Get-AzKeyVaultSecret (metadata read; never -AsPlainText):
       https://learn.microsoft.com/powershell/module/az.keyvault/get-azkeyvaultsecret
 #>
@@ -200,6 +207,37 @@ function Get-PurviewObjectOrNull {
     }
 }
 
+# Purview connection name -> real Azure Key Vault name (or $null if it can't be derived), keyed so a
+# ConsumerKeyAuth credential's two secret references - which commonly, but not necessarily, point at
+# the same Key Vault connection - only trigger one GET each.
+$script:KeyVaultConnectionCache = @{}
+
+function Get-KeyVaultNameForConnection {
+    <#
+        Authoritative vault-name derivation, matching the parent scenario's Test-PurviewScanCredential.ps1
+        check 1 exactly: GET the Key Vault connection object and read the real Azure Key Vault name out
+        of its baseUrl (https://<vault>.vault.azure.net/), rather than assuming the Purview connection
+        name and the Azure vault name are the same string.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$ConnectionName,
+        [Parameter(Mandatory)][string]$Endpoint,
+        [Parameter(Mandatory)][string]$Token,
+        [Parameter(Mandatory)][string]$ApiVersion
+    )
+    if ($script:KeyVaultConnectionCache.ContainsKey($ConnectionName)) {
+        return $script:KeyVaultConnectionCache[$ConnectionName]
+    }
+    $kvUri = "$Endpoint/scan/azureKeyVaults/$ConnectionName`?api-version=$ApiVersion"
+    $kv = Get-PurviewObjectOrNull -Uri $kvUri -Token $Token
+    $vaultName = $null
+    if ($kv -and $kv.properties.baseUrl) {
+        $vaultName = ([uri]$kv.properties.baseUrl).Host.Split('.')[0]
+    }
+    $script:KeyVaultConnectionCache[$ConnectionName] = $vaultName
+    return $vaultName
+}
+
 function Test-KeyVaultSecretReference {
     <#
         Runs checks 4 (discriminator literals) and, optionally, 5 (live secret existence) against
@@ -211,6 +249,9 @@ function Test-KeyVaultSecretReference {
         [Parameter(Mandatory)]$SecretRef,
         [Parameter(Mandatory)][string]$ExpectedSecretReferenceType,
         [Parameter(Mandatory)][string]$ExpectedSecretStoreReferenceType,
+        [Parameter(Mandatory)][string]$Endpoint,
+        [Parameter(Mandatory)][string]$Token,
+        [Parameter(Mandatory)][string]$ApiVersion,
         [switch]$CheckKeyVaultSecret
     )
     if ($null -eq $SecretRef -or -not $SecretRef.secretName) {
@@ -243,12 +284,16 @@ function Test-KeyVaultSecretReference {
             Write-Check WARN "$FieldLabel -CheckKeyVaultSecret skipped: the Az.KeyVault module is not installed."
             return
         }
-        $vaultName = $SecretRef.store.referenceName
+        # Authoritative vault-name derivation (matches the parent scenario's check 1): GET the Key
+        # Vault connection object named by store.referenceName and read the real Azure Key Vault name
+        # out of its baseUrl, rather than assuming the Purview connection name equals the vault name.
+        $vaultName = Get-KeyVaultNameForConnection -ConnectionName $SecretRef.store.referenceName `
+            -Endpoint $Endpoint -Token $Token -ApiVersion $ApiVersion
+        if (-not $vaultName) {
+            Write-Check WARN "$FieldLabel -CheckKeyVaultSecret skipped: Key Vault connection '$($SecretRef.store.referenceName)' was not found or reports no baseUrl, so the Azure Key Vault name cannot be derived."
+            return
+        }
         try {
-            # The KeyVaultSecret reference itself does not carry the vault's DNS name, only the
-            # Purview connection name (store.referenceName). Az.KeyVault's -VaultName expects the
-            # AZURE vault name, which is commonly - but not necessarily - the same string as the
-            # Purview connection name. This is a best-effort check for that reason.
             $secret = Get-AzKeyVaultSecret -VaultName $vaultName -Name $SecretRef.secretName -ErrorAction Stop
             if ($null -eq $secret) {
                 Write-Check FAIL "$FieldLabel secret '$($SecretRef.secretName)' was not found in Key Vault '$vaultName'."
@@ -267,7 +312,7 @@ function Test-KeyVaultSecretReference {
             }
         }
         catch {
-            Write-Check WARN "$FieldLabel - could not read secret metadata from Key Vault '$vaultName': $($_.Exception.Message). This may mean YOUR identity lacks Get on the vault's secrets, or that the Purview connection name and the Azure Key Vault name differ - it does not by itself prove the Purview managed identity cannot read it."
+            Write-Check WARN "$FieldLabel - could not read secret metadata from Key Vault '$vaultName': $($_.Exception.Message). This may mean YOUR identity lacks Get on the vault's secrets - it does not by itself prove the Purview managed identity cannot read it."
         }
     }
 }
@@ -310,7 +355,7 @@ switch ($cred.kind) {
     'AccountKey' {
         Test-KeyVaultSecretReference -FieldLabel 'typeProperties.accountKey' -SecretRef $tp.accountKey `
             -ExpectedSecretReferenceType $ExpectedSecretReferenceType -ExpectedSecretStoreReferenceType $ExpectedSecretStoreReferenceType `
-            -CheckKeyVaultSecret:$CheckKeyVaultSecret
+            -Endpoint $endpoint -Token $token -ApiVersion $ApiVersion -CheckKeyVaultSecret:$CheckKeyVaultSecret
     }
     'AmazonARN' {
         if (-not $tp.roleARN) {
@@ -333,10 +378,10 @@ switch ($cred.kind) {
 
         Test-KeyVaultSecretReference -FieldLabel 'typeProperties.consumerSecret' -SecretRef $tp.consumerSecret `
             -ExpectedSecretReferenceType $ExpectedSecretReferenceType -ExpectedSecretStoreReferenceType $ExpectedSecretStoreReferenceType `
-            -CheckKeyVaultSecret:$CheckKeyVaultSecret
+            -Endpoint $endpoint -Token $token -ApiVersion $ApiVersion -CheckKeyVaultSecret:$CheckKeyVaultSecret
         Test-KeyVaultSecretReference -FieldLabel 'typeProperties.password' -SecretRef $tp.password `
             -ExpectedSecretReferenceType $ExpectedSecretReferenceType -ExpectedSecretStoreReferenceType $ExpectedSecretStoreReferenceType `
-            -CheckKeyVaultSecret:$CheckKeyVaultSecret
+            -Endpoint $endpoint -Token $token -ApiVersion $ApiVersion -CheckKeyVaultSecret:$CheckKeyVaultSecret
     }
     'DelegatedAuth' {
         if ($tp.clientId) { Write-Check PASS "typeProperties.clientId is set ('$($tp.clientId)')." }
@@ -346,7 +391,7 @@ switch ($cred.kind) {
 
         Test-KeyVaultSecretReference -FieldLabel 'typeProperties.password' -SecretRef $tp.password `
             -ExpectedSecretReferenceType $ExpectedSecretReferenceType -ExpectedSecretStoreReferenceType $ExpectedSecretStoreReferenceType `
-            -CheckKeyVaultSecret:$CheckKeyVaultSecret
+            -Endpoint $endpoint -Token $token -ApiVersion $ApiVersion -CheckKeyVaultSecret:$CheckKeyVaultSecret
     }
     'ManagedIdentity' {
         if ($tp.principalId) { Write-Check PASS "typeProperties.principalId is set ('$($tp.principalId)')." }

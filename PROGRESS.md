@@ -1236,14 +1236,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the Scanning-data-plane REST reference carries no preview annotation of its own for the same kind.
   `scenarios/data-map/scan-credential-remaining-kinds/README.md` §3/§10/§11 and the deploy script's
   runtime `Write-Warning` all disclose this; re-open only if Microsoft's documentation changes.
-- [ ] Make `scenarios/data-map/scan-credential-remaining-kinds/validate/
+- [x] Make `scenarios/data-map/scan-credential-remaining-kinds/validate/
   Test-PurviewScanCredentialExtended.ps1`'s `-CheckKeyVaultSecret` vault-name derivation
-  authoritative. It currently assumes the Purview Key Vault **connection** name equals the Azure
-  Key Vault's own name (common, not guaranteed); the parent scenario's equivalent check instead
-  `GET`s the connection object first and derives the vault name from its `baseUrl`. Fixing this means
-  duplicating that same GET-then-derive sequence here (today only issued for the three secret-bearing
-  kinds, never for `AmazonARN`/`ManagedIdentity`, which don't need it) — deferred rather than
-  expanding this fragment's scope; see that scenario's `reviews.md` (Blue Team finding 2).
+  authoritative — **built** (see DONE below): it previously assumed the Purview Key Vault
+  **connection** name equals the Azure Key Vault's own name (common, not guaranteed); the parent
+  scenario's equivalent check instead `GET`s the connection object first and derives the vault name
+  from its `baseUrl`. Fixed by duplicating that same GET-then-derive sequence here via a new
+  `Get-KeyVaultNameForConnection` helper (cached per connection name so `ConsumerKeyAuth`'s two
+  secret references only trigger one GET each), issued only for the three secret-bearing kinds
+  (`AccountKey`/`ConsumerKeyAuth`/`DelegatedAuth`) — `AmazonARN`/`ManagedIdentity` still never call
+  it, since neither carries a Key Vault secret. `reviews.md` Blue Team finding 2 and the round-summary
+  table updated in place to reflect the resolution.
 - [ ] Once any of the four natural consumer scan scenarios this fragment identified are prioritized —
   Amazon S3 (`AmazonARN`), Salesforce (`ConsumerKeyAuth`), Microsoft Fabric/Power BI
   (`DelegatedAuth`), or a `ManagedIdentity`(UAMI) variant of `scan-azure-sql-and-classify`/
@@ -3338,6 +3341,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-map/scan-credential-remaining-kinds/` (follow-up fix)** — commit `PENDING` —
+  2026-09-16. Closed the Blue Team finding 2 follow-up from this scenario's own four-lens review:
+  made `validate/Test-PurviewScanCredentialExtended.ps1`'s `-CheckKeyVaultSecret` Azure Key Vault
+  name derivation authoritative instead of assuming the Purview Key Vault connection name equals the
+  vault's own name. Added a `Get-KeyVaultNameForConnection` helper that duplicates the parent
+  scenario (`scan-credential-key-vault-backed`)'s `Test-PurviewScanCredential.ps1` check-1 sequence
+  exactly — `GET /scan/azureKeyVaults/{connectionName}`, then derive the vault name from the response
+  `properties.baseUrl` — cached per connection name (`$script:KeyVaultConnectionCache`) so
+  `ConsumerKeyAuth`'s two independent secret references only trigger one GET each when they share a
+  connection. `Test-KeyVaultSecretReference` gained `-Endpoint`/`-Token`/`-ApiVersion` parameters to
+  support the lookup; all four call sites (`AccountKey`, `ConsumerKeyAuth` x2, `DelegatedAuth`)
+  updated. If the connection can't be found or carries no `baseUrl`, the check now skips with an
+  explicit `[WARN]` naming the connection rather than guessing. No Purview REST surface change beyond
+  reusing the already-grounded Key Vault Connections - Get endpoint
+  (https://learn.microsoft.com/rest/api/purview/scanningdataplane/key-vault-connections), which the
+  parent scenario's script already cites and calls for the identical purpose — no new grounding
+  needed. Updated `reviews.md` (Blue Team finding 2's Resolution, the round-summary table, and the
+  carried-forward-follow-ups paragraph) and `README.md` §7 to describe the new behavior; `design.md`
+  required no change (it never described the old assumption). Read-only/idempotent property
+  preserved: the new code issues only GET requests, same as every other check in this script.
 - [x] **`scenarios/data-map/scan-credential-remaining-kinds/`** — commit `7257a26` — 2026-09-16.
   Full scenario (README.md, design.md, deploy/New-PurviewScanCredentialExtended.ps1,
   deploy/policy/scan-credential-extended-definitions.json,

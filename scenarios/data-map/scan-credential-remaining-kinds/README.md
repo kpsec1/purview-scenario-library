@@ -245,7 +245,10 @@ with a per-kind completeness table instead of the parent's single three-kind `sw
    **two** for `ConsumerKeyAuth`, zero for `AmazonARN`/`ManagedIdentity`): the two discriminator
    literals are compared the same `[WARN]`-only way as the parent scenario.
 4. `-CheckKeyVaultSecret`: resolves every secret the kind carries (both, for `ConsumerKeyAuth`) via
-   `Get-AzKeyVaultSecret` without `-AsPlainText`.
+   `Get-AzKeyVaultSecret` without `-AsPlainText`. The Azure Key Vault name is derived the same
+   authoritative way as the parent scenario's check 1 — a `GET` against the Key Vault connection
+   object, then reading the real vault name out of its `baseUrl` — never assumed to equal the
+   Purview connection name.
 5. `AmazonARN`-specific: warns (never fails — this is a format sanity check, not an AWS-side call)
    if `-RoleArn`'s value doesn't match the `arn:aws:iam::\d{12}:role/.+` shape Microsoft's own worked
    example uses [[6]](#references).
