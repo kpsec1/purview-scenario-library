@@ -2564,10 +2564,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   v3.2.1 and v4.0 are currently listed side by side in the public `compliance-manager-regulations-
   list` documentation, but a pilot-tenant check would confirm what the live **Regulations** page
   actually offers today.
-- [ ] `scenarios/compliance-manager/soc2-assessment/` or a similar SOC 2 Type II premium-template
-  scenario — SOC 2 is a common companion ask alongside PCI DSS for a SaaS/fintech buyer and is
-  already listed as a Compliance Manager premium template (`compliance-manager-regulations-list`);
-  not built in this turn to keep the backlog breadth-first across modules per `AGENTS.md` §3.
+- [x] `scenarios/compliance-manager/soc2-assessment/` or a similar SOC 2 Type II premium-template
+  scenario — **built** (see DONE below): full deliverable mirroring `assess-against-iso27001/` and
+  `pci-dss-assessment/`'s shape, with a 5-category AICPA Trust Services Criteria crosswalk (not a
+  6-numbered-goal one — SOC 2's own published structure is categorical) and explicit Type I/Type II
+  operational guidance neither sibling scenario needed.
+
+### Follow-ups discovered while building the Compliance Manager SOC 2 assessment scenario
+- [ ] VERIFY (pilot tenant): whether Compliance Manager's Controls/Improvement actions views let you
+  filter or tag improvement actions by AICPA Trust Services Criteria category (Security/
+  Availability/Processing Integrity/Confidentiality/Privacy) after assessment creation — no
+  documented wizard step or worked example surfaced during this build's WebSearch/Microsoft Learn
+  MCP grounding pass. `soc2-assessment/README.md` §11 flags this as an open item rather than
+  assuming the capability exists or doesn't.
+- [ ] Once a live tenant is available: run the "Group-sharing functional test" across all three
+  Compliance Manager scenarios now sharing the `Security & Compliance Assessments` group
+  (`assess-against-iso27001`, `pci-dss-assessment`, `soc2-assessment`) simultaneously, not just
+  pairwise — `soc2-assessment/README.md` §7 item 4 only describes a pairwise spot-check.
+- [ ] Consider a fourth Compliance Manager scenario for a regulation this library hasn't covered yet
+  (e.g. HIPAA/HITECH or GDPR, both explicitly named in `AGENTS.md` §3's regulatory-driver axis and
+  both listed in Compliance Manager's premium regulations catalog) — would be the natural next
+  addition to the same shared-group pattern these three scenarios now establish.
 
 ### Follow-ups discovered while building the Data Lineage custom-process-lineage scenario
 - [ ] VERIFY (pilot tenant): whether a relationship end's `typeName` must be the entity's own
@@ -2889,6 +2906,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/compliance-manager/soc2-assessment/`** — commit PENDING — 2026-09-16. Third
+  Compliance Manager assessment scenario (alongside `assess-against-iso27001/` and
+  `pci-dss-assessment/`), against the SOC 2 premium template. Full deliverable per `AGENTS.md` §4
+  (`README.md`, `design.md`, `deploy/policy/soc2-assessment-manifest.json`, `deploy/
+  Export-ComplianceManagerAuditTrail.ps1` — reused, not duplicated, from `assess-against-iso27001/`
+  — `validate/Test-ComplianceManagerAuditTrail.ps1`, `rollback.md`, `reviews.md`). Grounded via the
+  Microsoft Learn MCP tool (available and used directly in this session despite this scenario's own
+  standing instructions assuming otherwise) against `compliance-manager-regulations-list` (confirmed
+  "System and Organization Controls (SOC) 2" as the exact current catalog name, distinct from the
+  sibling "SOC 1" template) and `offering-soc-2` (Trust Services Criteria, Type I vs. Type II, AICPA
+  SSAE 18 basis). Crosswalk uses the AICPA's 5 Trust Services Criteria categories (Security flagged
+  mandatory) rather than PCI DSS's 6 numbered goals — a structurally different manifest shape the
+  validate script's manifest checks were written to match rather than reusing PCI's goal-numbering
+  check as-is. Four-lens review found and closed 3 Red Team, 4 Blue Team, and 6 Microsoft Product
+  Owner findings (0 from CISO) — see `reviews.md`.
 - [x] **`scenarios/insider-risk/data-leaks-exfiltration-activity-trigger/`** — commit 333f18d —
   2026-09-16. Second full worked example for the base `Data leaks` policy template — the "User
   performs an exfiltration activity" triggering event, `data-leaks/design.md` §7's own disclosed

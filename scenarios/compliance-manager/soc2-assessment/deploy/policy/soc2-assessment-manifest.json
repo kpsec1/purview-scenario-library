@@ -1,0 +1,58 @@
+{
+  "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Microsoft Purview Compliance Manager has no documented REST, Graph, or PowerShell write API for assessment creation, control mapping, or improvement-action status/evidence updates as of this writing (docs/automation-surface.md has no routing-table row for Compliance Manager; see design.md Section 2 - identical grounding to scenarios/compliance-manager/assess-against-iso27001/ and scenarios/compliance-manager/pci-dss-assessment/). No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal wizard in README.md Section 5, so the deployed assessment can be diffed against intent during review instead of relying on institutional memory of what was clicked.",
+  "regulation": "System and Organization Controls (SOC) 2",
+  "regulationTier": "Premium template - counts against the tenant's purchased or A5/E5/G5 3-free-premium-template allotment. See README.md Section 3.",
+  "regulationVersionNote": "Compliance Manager's regulation catalog lists 'System and Organization Controls (SOC) 1' and 'System and Organization Controls (SOC) 2' as two SEPARATE premium templates in the same Global category - SOC 1 covers controls relevant to a service organization's effect on a customer's financial reporting (SSAE 18/ICFR-focused); SOC 2 covers the AICPA 2017 Trust Services Criteria (Security, Availability, Processing Integrity, Confidentiality, Privacy). Select 'System and Organization Controls (SOC) 2' only. There is no separately-selectable 'SOC 2 Type I' vs 'SOC 2 Type II' template in the catalog - the same template supports readiness work for either report type; see README.md Section 11.",
+  "assessmentName": "SOC 2 - Microsoft 365 Estate",
+  "assessmentNameNote": "Assessment names must be unique tenant-wide (Microsoft Learn: compliance-manager-assessments). Cannot be changed after creation without deleting and recreating.",
+  "group": {
+    "strategy": "joinExistingIfPresent",
+    "name": "Security & Compliance Assessments",
+    "note": "If scenarios/compliance-manager/assess-against-iso27001/ and/or scenarios/compliance-manager/pci-dss-assessment/ are already deployed in this tenant using this same group name, ADD this SOC 2 assessment to that existing group rather than creating a new one. If this is the tenant's first Compliance Manager assessment, create a new group with this name so future assessments join it. See design.md Section 6 for exactly what group membership does and does not buy you - the benefit is narrower than 'shared credit for every control.'",
+    "groupingRule": "Microsoft documents that a group can contain multiple assessments for the SAME product only if each one is for a DIFFERENT regulation (compliance-manager-assessments, 'Groups for assessments'). ISO/IEC 27001:2022 + PCI DSS v4.0 + SOC 2 in one group is three different regulations against the same Microsoft 365 product - an explicitly supported combination, not an edge case."
+  },
+  "servicesInScope": [
+    "Microsoft 365"
+  ],
+  "servicesInScopeNote": "Multicloud (AWS/GCP/Azure via Defender for Cloud) scoping is out of scope for this scenario, matching scenarios/compliance-manager/assess-against-iso27001/design.md Section 7 and scenarios/compliance-manager/pci-dss-assessment/design.md Section 8's identical non-goal, and this library's tenant-only scope (AGENTS.md Section 5).",
+  "roleAssignments": {
+    "note": "Identical role model to every other Compliance Manager assessment in this library - assign the narrowest role that does the job. See README.md Section 3.",
+    "recommendedStarter": [
+      { "role": "Compliance Manager Administration", "assignTo": "The person creating and owning this assessment (1-2 people, not the whole security team)" },
+      { "role": "Compliance Manager Assessor", "assignTo": "Control owners across IT/Security/Engineering/HR (SOC 2's Trust Services Criteria span technical, operational, and personnel controls) who will test and update improvement actions but should not create new assessments" },
+      { "role": "Compliance Manager Reader", "assignTo": "Internal auditors, the engaged AICPA-accredited CPA firm if one has started fieldwork, and leadership who need visibility without edit rights" }
+    ]
+  },
+  "recommendedDeploymentOrder": [
+    "scenarios/information-protection/auto-label-confidential-sharepoint/ and .../auto-label-confidential-exchange/ (confidentiality of business-confidential data at rest - Confidentiality TSC)",
+    "scenarios/information-protection/auto-label-eu-personal-data-sharepoint/ and .../auto-label-eu-personal-data-exchange/ (personal-data identification/handling - Privacy TSC)",
+    "scenarios/dlp/exchange-pii-exfil-block/ (+ Part 2) and scenarios/dlp/pci-teams-exfil-block/ (+ Part 2) (data exfiltration prevention - Security Common Criteria CC6)",
+    "scenarios/dlp/endpoint-dlp-usb-block/ (+ Adaptive Protection variant) (removable-media data-loss prevention - Security Common Criteria CC6.7)",
+    "scenarios/adaptive-protection/block-legacy-authentication/ and .../exchange-legacy-auth-block/ (logical access control - Security Common Criteria CC6.1/CC6.6)",
+    "scenarios/insider-risk/departing-employee-data-theft/ (personnel security - Security Common Criteria CC1.4)",
+    "scenarios/audit/premium-audit-investigation/ (monitoring activities and log review - Security Common Criteria CC7.2)",
+    "scenarios/information-barriers/segregate-trading-and-research/ (logical segregation between groups - Confidentiality TSC, where applicable to the org's service commitments)",
+    "THEN create this assessment - built-in automation (design.md Section 4) picks up signals from controls already in place, reducing the manual-testing backlog a Contributor/Assessor faces on day one."
+  ],
+  "controlCrosswalk": {
+    "_comment": "This is THIS LIBRARY'S OWN correlation of its scenarios to the AICPA 2017 Trust Services Criteria (TSC) categories SOC 2 is built on - it is NOT a reproduction of Microsoft's proprietary per-improvement-action automation mapping (which isn't published in a form this scenario can fetch and cite - see design.md Section 4, same constraint scenarios/compliance-manager/assess-against-iso27001/design.md Section 6 and scenarios/compliance-manager/pci-dss-assessment/design.md Section 7 document for their own regulations). Use it to decide deployment order and to brief an engaged CPA firm on what this tenant's Microsoft 365 controls contribute - do not present it to an auditor as Microsoft's own control mapping, and do not present it as proof the org's OWN SOC 2 report criteria selection is complete (that selection is the org's, made with its auditor - see README.md Section 2/Section 11).",
+    "categories": [
+      { "category": "Security", "aicpaCode": "Common Criteria (CC1-CC9)", "mandatory": true, "coverage": "scenarios/dlp/exchange-pii-exfil-block/, .../pci-teams-exfil-block/ (+ Part 2 siblings - CC6 logical/data-transmission access), scenarios/dlp/endpoint-dlp-usb-block/ (CC6.7 removable media), scenarios/adaptive-protection/block-legacy-authentication/, .../exchange-legacy-auth-block/ (CC6.1/CC6.6 authentication), scenarios/insider-risk/departing-employee-data-theft/ (CC1.4 personnel security), scenarios/audit/premium-audit-investigation/ (CC7.2 monitoring). Security is the only TSC category present in EVERY SOC 2 report - Microsoft's AICPA-based criteria require it regardless of which other categories an org selects." },
+      { "category": "Availability", "aicpaCode": "A1", "coverage": "Out of scope for this Microsoft 365/Purview-only library - system uptime, capacity monitoring, and disaster recovery are an Azure infrastructure/service-continuity concern, not a Purview one." },
+      { "category": "Processing Integrity", "aicpaCode": "PI1", "coverage": "Out of scope - completeness/accuracy/timeliness of application data processing is an application-layer concern outside Purview's data governance/security scope." },
+      { "category": "Confidentiality", "aicpaCode": "C1", "coverage": "scenarios/information-protection/auto-label-confidential-sharepoint/, .../auto-label-confidential-exchange/ (labeling/encrypting confidential data at rest and in transit), scenarios/information-barriers/segregate-trading-and-research/ (logical segregation of confidential information between groups, where the org's service commitments call for it)." },
+      { "category": "Privacy", "aicpaCode": "P1-P8", "coverage": "scenarios/information-protection/auto-label-eu-personal-data-sharepoint/, .../auto-label-eu-personal-data-exchange/ (identifying and labeling personal data). Full Privacy-category coverage also depends on notice/consent/data-subject-request processes outside this library's Purview-only scope." }
+    ]
+  },
+  "auditMonitoring": {
+    "operations": [
+      "ComplianceManagerRolesChange",
+      "ComplianceManagerAutomationLevelChange",
+      "ComplianceManagerAutomationChange"
+    ],
+    "note": "These 3 operations are TENANT-WIDE Compliance Manager events, not scoped to a single assessment. This scenario deliberately REUSES scenarios/compliance-manager/assess-against-iso27001/deploy/Export-ComplianceManagerAuditTrail.ps1 (also copied into scenarios/compliance-manager/pci-dss-assessment/deploy/) rather than shipping a third, functionally-identical copy - run ONE instance against a shared CSV path if more than one of these scenarios is deployed. See design.md Section 2 and README.md Section 5."
+  },
+  "notAValidSoc2Report": "A Compliance Manager assessment - however complete - is an internal readiness-tracking and evidence tool. It is NOT a SOC 2 report (Type I or Type II) and cannot substitute for one; only an independent AICPA-accredited CPA firm performing an actual SSAE 18 attestation engagement can issue a SOC 2 report. See README.md Section 2/Section 11.",
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-09-16"
+}
