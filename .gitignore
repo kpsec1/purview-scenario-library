@@ -28,6 +28,9 @@ desktop.ini
 .idea/
 *.swp
 
+# Claude Code local tooling (agent worktrees, session state)
+.claude/
+
 # Build / logs
 *.log
 out/
