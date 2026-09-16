@@ -2979,7 +2979,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/compliance-manager/hipaa-hitech-assessment/`** — commit PLACEHOLDER — 2026-09-16.
+- [x] **`scenarios/compliance-manager/hipaa-hitech-assessment/`** — commit ca749a2 — 2026-09-16.
   Fourth Compliance Manager assessment scenario (alongside `assess-against-iso27001/`, `pci-dss-
   assessment/`, and `soc2-assessment/`), against the HIPAA/HITECH premium template. Closes the
   `### Follow-ups discovered while building the Compliance Manager SOC 2 assessment scenario` item
