@@ -3341,7 +3341,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/data-map/scan-credential-remaining-kinds/` (follow-up fix)** — commit `49e967f` —
+- [x] **`scenarios/data-map/scan-credential-remaining-kinds/` (follow-up fix)** — commit `232dc37` —
   2026-09-16. Closed the Blue Team finding 2 follow-up from this scenario's own four-lens review:
   made `validate/Test-PurviewScanCredentialExtended.ps1`'s `-CheckKeyVaultSecret` Azure Key Vault
   name derivation authoritative instead of assuming the Purview Key Vault connection name equals the
