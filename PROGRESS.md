@@ -3239,7 +3239,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/data-map/scan-credential-key-vault-backed/`** — commit COMMIT_HASH — 2026-09-16.
+- [x] **`scenarios/data-map/scan-credential-key-vault-backed/`** — commit 21d17d0 — 2026-09-16.
   Scripts the Azure **Key Vault connection** (`PUT /scan/azureKeyVaults/{azureKeyVaultName}`) and
   the Key Vault-backed **credential object** (`PUT /scan/credentials/{credentialName}`, kinds
   `SqlAuth`/`BasicAuth`/`ServicePrincipal`) that every credential-authenticated Data Map scan
