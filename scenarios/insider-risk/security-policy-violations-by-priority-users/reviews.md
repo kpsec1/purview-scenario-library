@@ -134,11 +134,16 @@ No Fix/Fail items from this lens.
    10,000-member cap and the `user principal name` CSV column requirement are each corroborated by
    more than one independent description of the same Microsoft documentation, not a single
    unverified source.
-3. **The 1,000-actively-scored cap and its cumulative sharing with the base template is reused from
-   the base template scenario's own, separately-grounded citation** (`security-policy-violations/
-   README.md` §12 reference 6, itself fetched during that scenario's build) rather than re-derived
-   from a weaker secondary source — the strongest-available grounding path for a fact this
-   scenario's core design decision (`design.md` §3) rests on.
+3. **The 1,000-actively-scored cap itself was reused from the base template scenario's own,
+   separately-grounded citation** (`security-policy-violations/README.md` §12 reference 6, itself
+   fetched during that scenario's build) rather than re-derived from a weaker secondary source.
+   **Correction (re-verification pass, see Addendum below): this finding originally also endorsed
+   the draft's claim that the cap is "shared, cumulatively, with the base template" — a direct
+   Microsoft Learn fetch during a later fragment found that claim to be wrong.** The cap is its own,
+   independently-tracked pool per exact template, not a shared pool across the two templates that
+   happen to document the identical number. This finding's approval of the *citation* stands; its
+   implicit endorsement of the *sharing* claim did not survive re-verification and has been
+   corrected in `README.md` §6/§10 and `design.md` §2/§3.
 4. **No fabricated priority-user-group authoring or CSV-upload API.** This build searched
    specifically for a documented Graph/PowerShell write surface for priority user groups and found
    none — `deploy/Get-PriorityUserGroupScopeCandidates.ps1` is explicit in its own `.DESCRIPTION`
@@ -174,3 +179,33 @@ was resolved with a single coherent change rather than two competing patches. Th
 Red Team finding (silent exclusion of no-`mail` candidates) was resolved with a disclosure, not a
 fabricated workaround. No Fail items were raised. This fragment meets the definition of done in
 `AGENTS.md` §9.
+
+---
+
+## Addendum — re-verification pass
+
+A later backlog fragment (`PROGRESS.md` "Follow-ups discovered while building the Data leaks by
+priority users scenario") flagged that this scenario's own claim — the 1,000-actively-scored cap
+"is shared with the base template as well" — was an overstatement of what Microsoft's Policy
+template limits reference actually says. That fragment had direct Microsoft Learn fetch access
+(this scenario's original build did not) and used it to fetch
+`insider-risk-management-policy-templates#policy-template-limits` and
+`insider-risk-management-configure` verbatim, confirming two corrections:
+
+1. **The 1,000-user cap is its own, independently-tracked pool per exact policy template — not
+   shared with the base template.** Microsoft's own text: "These maximum limits apply to users
+   across all policies using a given policy template." The base and "…by priority users" templates
+   coincidentally document the identical number; that is not evidence of a shared pool.
+   Microsoft Product Owner finding 3 above is corrected in place rather than rewritten from scratch,
+   so the original review record and its correction are both visible.
+2. **The "Add or edit priority user groups" UI option Microsoft names in its "Get started" workflow
+   guide is documented as appearing "only if you choose the *Data leaks by priority users*
+   template"** — not confirmed for this scenario's own template. `README.md` §5 Step 3 and §6 were
+   sharpened from a generic "no worked example found" VERIFY to this more specific, verbatim-quoted
+   caveat, and a related, previously-unstated open question about "Risk score boosters" availability
+   for a Defender-for-Endpoint-only indicator selection was added to §5 Step 5 and §6.
+
+No new Red Team, Blue Team, or CISO findings resulted from this pass — the corrections are
+Microsoft Product Owner-lens accuracy fixes (stating a fact the original build got wrong, or was
+less precise than it could have been, about product behavior), not new operability, attack-surface,
+or cost/risk findings. Verdict for this addendum: **Fix (resolved)** — no remaining Fix/Fail.

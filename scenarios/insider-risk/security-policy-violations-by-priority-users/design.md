@@ -40,11 +40,16 @@ settings, with its own bulk-membership workflow and its own reviewer-permission 
 3. **Disclose, don't guess at, the interaction between this template's two independently-documented
    caps.** §3 below is the core of this design — Microsoft documents a 10,000-member ceiling on a
    priority user group itself, and, separately, a 1,000-actively-scored-user ceiling on this exact
-   policy template (shared, cumulatively, with the base template per the same limits reference the
-   base template scenario already grounded [[6]](README.md#references)). No Microsoft Learn page
-   found during this build states what happens when a priority user group larger than 1,000 is
-   assigned to a "…by priority users" policy — whether Microsoft scores the first 1,000 by some
-   order, warns at assignment time, or something else. This design treats that gap as the single
+   policy template — **its own, independently-tracked pool, confirmed (by a direct fetch of the same
+   limits reference the base template scenario grounded [[6]](README.md#references), plus the
+   Policy templates page's own "Policy template limits" section [[13]](README.md#references)) to
+   NOT be shared, cumulatively or otherwise, with the base template**, even though both document the
+   identical number (1,000) — an earlier draft of this design stated the two caps as shared, which
+   this fragment's re-verification pass found incorrect (see `PROGRESS.md` "DONE"). No Microsoft
+   Learn page found during this build states what happens when a priority user group larger than
+   1,000 is assigned to a "…by priority users" policy — whether Microsoft scores the first 1,000 by
+   some order, warns at assignment time, or something else. This design treats that gap (a
+   *different* open question from the now-resolved shared/not-shared question above) as the single
    most consequential open question for anyone sizing this template's population, not a footnote.
 4. **Reuse, don't duplicate, the alert-export script.** Identical reasoning to the base template
    scenario (`security-policy-violations/design.md` §2 goal 3): the sibling's
@@ -72,7 +77,7 @@ settings, with its own bulk-membership workflow and its own reviewer-permission 
 | Cap | Value | Scope | Source |
 |---|---|---|---|
 | Priority user group membership | **10,000** members | Per priority user group object | [[2]](README.md#references) |
-| "Security policy violations by priority users" actively-scored population | **1,000** users | Cumulative, tenant-wide, across **every** policy built from this exact template (identical cap and scoping rule to the base template) | [[6]](README.md#references) |
+| "Security policy violations by priority users" actively-scored population | **1,000** users | Cumulative, tenant-wide, across **every** policy built from this exact template — an independently-tracked pool, confirmed **not** shared with the base template, which documents the identical number (1,000) as its own, separate cap | [[6]](README.md#references)[[13]](README.md#references) |
 
 These are two different Microsoft-documented ceilings, checked against two different objects (the
 priority user group itself, vs. the policy template's own scoring capacity), and this build found
@@ -102,7 +107,7 @@ tenant).**
 flowchart TD
     Group["Entra security group\n(operator-chosen priority population -\nnot yet a priority user group object)"] -->|"Get-MgGroupTransitiveMemberAsUser"| Script["deploy/Get-PriorityUserGroup\nScopeCandidates.ps1\n(sizes against BOTH caps)"]
     Script -->|"user principal name-headed CSV\n(manual bulk upload - no API)"| PUG["Priority user group\n(IRM Settings - Priority user groups)\n[portal-authored - no API]\nmax 10,000 members"]
-    PUG -->|"assigned to policy's\nUsers and groups step"| Policy["IRM Policy:\n'Security Policy Violations by\nPriority Users' (preview template)\n[portal-authored - no API]\nmax 1,000 actively scored\n(cumulative w/ base template)"]
+    PUG -->|"assigned to policy's\nUsers and groups step"| Policy["IRM Policy:\n'Security Policy Violations by\nPriority Users' (preview template)\n[portal-authored - no API]\nmax 1,000 actively scored\n(own cap - NOT shared\nwith base template)"]
     MDE["Microsoft Defender for Endpoint\nsecurity alerts: defense evasion of\nsecurity controls, unwanted software"] -->|"Advanced feature:\n'Share endpoint alerts with\nMicrosoft Compliance Center'\n[Defender portal - no API]"| Policy
     Policy -->|"MDE alert on a priority-group\nmember IS the triggering event"| Alert["IRM Alert\n(pseudonymized by default,\nhigher likelihood/severity for\npriority-group members)\ndetectionSource = microsoftInsiderRiskManagement"]
     MDEAlert["Underlying Defender for Endpoint alert\ndetectionSource = microsoftDefenderForEndpoint"] -.->|"same incidentId?\n(VERIFY - same open question\nas the base/departing-users siblings)"| Alert

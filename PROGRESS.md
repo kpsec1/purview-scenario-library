@@ -1852,22 +1852,47 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   either existing worked example (DLP-policy trigger, built-in exfiltration-activity trigger).
 
 ### Follow-ups discovered while building the Data leaks by priority users scenario
-- [ ] Correct `security-policy-violations-by-priority-users/README.md` §10's claim that its
-  1,000-actively-scored-user cap "is shared with the base template as well" — Microsoft's own
-  Policy template limits section states a cap applies "across all policies using a given policy
-  template" (i.e., per exact template, not per family), and the Limits table lists each template
-  as its own row. `data-leaks-by-priority-users/README.md` §6/§11 and `design.md` §2 goal 6/§3
-  state the corrected reading for its own (numerically identical, but separate) cap without editing
-  the sibling directly.
-- [ ] Add the newly-confirmed **"Add or edit priority user groups"** step name (Microsoft's own
-  Step 6 configuration guide states this option "appears only if you choose the *Data leaks by
-  priority users* template") and the separately-selectable **"User is a member of a priority user
-  group"** risk score booster distinction to `security-policy-violations-by-priority-users/
-  README.md` §5 Step 5 and §6 — that scenario currently states the "Users and groups" step's exact
-  acceptance rule as an open VERIFY and treats the likelihood/severity boost as though it were
-  automatic. Both facts were confirmed by a direct Microsoft Learn fetch during the
-  `data-leaks-by-priority-users` build (that scenario's own `README.md` §12 references 4–5) and
-  apply identically to this sibling template, which also requires a priority user group.
+- [x] Correct `security-policy-violations-by-priority-users/README.md` §10's claim that its
+  1,000-actively-scored-user cap "is shared with the base template as well" — **built** (see DONE
+  below): re-verified with a direct Microsoft Learn fetch (this fragment had fetch access; the
+  original build did not) of `insider-risk-management-policy-templates#policy-template-limits`,
+  confirming Microsoft's own text — "These maximum limits apply to users across all policies using
+  a given policy template" — and that the Limits table lists each template as its own row. The cap
+  is corrected in `README.md` §4 (diagram)/§6/§10/§11 and `design.md` §2 goal 3/§3/§4 (diagram) to
+  state it as its own, independently-tracked pool, **not** shared with the base template despite
+  the identical number (1,000). `reviews.md`'s Microsoft Product Owner finding 3 (which had
+  endorsed the now-corrected claim) and its Addendum record the correction rather than silently
+  rewriting the original review.
+- [x] Add the newly-confirmed **"Add or edit priority user groups"** step name and the
+  **"User is a member of a priority user group"** risk score booster to
+  `security-policy-violations-by-priority-users/README.md` §5 Step 5 and §6 — **investigated, built
+  differently than originally scoped** (see DONE below): this item's own premise did not survive a
+  direct Microsoft Learn fetch of the Step 6 workflow guide during this fragment. Microsoft's text
+  states the "Add or edit priority user groups" option "appears only if you choose the *Data leaks
+  by priority users* template" — the opposite of "applies identically" to this sibling template, not
+  a confirmation of it. Rather than propagate the incorrect generalization, `README.md` §5 Step 3
+  and §6 were sharpened with the verbatim Microsoft quote as a *more specific* open VERIFY (this
+  template's own "Users and groups" control name is unconfirmed, not assumed to match the sibling's
+  confirmed name). Likewise, the risk score booster is documented generically by Microsoft (not
+  scoped to one template), but the same Step 6 guide ties booster availability to selecting "at
+  least one Office or Device indicator" — a condition this template's sole indicator category
+  (Microsoft Defender for Endpoint indicators (preview), a third, separately-documented category)
+  doesn't obviously satisfy. `README.md` §5 Step 5 and §6 flag this as a new, unresolved VERIFY
+  rather than asserting the booster applies automatically. New references 13–14 added to
+  `README.md` §12.
+- [ ] VERIFY (live policy-creation workflow, at deploy time): the actual control name/label shown
+  on `security-policy-violations-by-priority-users`'s own "Users and groups" page for assigning a
+  priority user group — Microsoft's "Get started" guide names "Add or edit priority user groups"
+  only for the `Data leaks by priority users` sibling, and does not name an equivalent control for
+  this template. `README.md` §5 Step 3 and §6 flag this rather than assuming the sibling's label
+  carries over.
+- [ ] VERIFY (live policy-creation workflow, at deploy time): whether the "Risk score boosters"
+  section — specifically "User is a member of a priority user group" — is offered at all for a
+  `security-policy-violations-by-priority-users` policy, whose only selectable indicator category
+  is Microsoft Defender for Endpoint indicators (preview). Microsoft's "Get started" guide ties
+  Risk score booster availability to selecting "at least one Office or Device indicator," neither
+  of which this template's indicator category is. `README.md` §5 Step 5 and §6 flag this as open
+  rather than assuming the priority-group scoring boost (§6) is automatically active.
 - [ ] VERIFY (pilot tenant): what happens when a priority user group larger than 1,000 members is
   assigned to a policy built from the `Data leaks by priority users` template specifically — not
   documented either way by Microsoft. `data-leaks-by-priority-users/design.md` §3 and `README.md`
@@ -2979,6 +3004,39 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/insider-risk/security-policy-violations-by-priority-users/` — re-verification
+  fragment** — commit PENDING — 2026-09-16. Closed the two top TODO items under "Follow-ups
+  discovered while building the Data leaks by priority users scenario". This fragment had direct
+  Microsoft Learn fetch access (`mcp__Microsoft_Learn__microsoft_docs_fetch`), which the scenario's
+  original build did not, and used it to fetch `insider-risk-management-policy-templates` and
+  `insider-risk-management-configure` verbatim. Two outcomes:
+  1. **Confirmed and fixed** the mis-stated claim that the 1,000-actively-scored-user cap "is
+     shared with the base template as well" — Microsoft's own Policy template limits text
+     ("These maximum limits apply to users across all policies using a given policy template")
+     confirms the cap is its own, independently-tracked pool per exact template. Corrected in
+     `README.md` §4 (Mermaid diagram)/§6/§10/§11 and `design.md` §2 goal 3/§3/§4 (Mermaid diagram).
+  2. **Found the second item's own premise wrong on re-grounding, and built a more accurate fix
+     instead of the one originally scoped.** The follow-up item assumed the "Add or edit priority
+     user groups" UI option name (confirmed for the `data-leaks-by-priority-users` sibling)
+     "applies identically" to this template — but the same Microsoft Step 6 workflow guide states,
+     verbatim, that the option "appears only if you choose the *Data leaks by priority users*
+     template," directly contradicting that generalization. Rather than propagate the error,
+     `README.md` §5 Step 3/§6 now carry the verbatim Microsoft quote as a sharper, more specific
+     open VERIFY (this template's own control name is unconfirmed, not assumed). Similarly, the
+     "User is a member of a priority user group" risk score booster is documented generically by
+     Microsoft (not template-scoped), but the same guide ties booster-section availability to
+     selecting "at least one Office or Device indicator" — a condition this template's sole
+     indicator category (Microsoft Defender for Endpoint indicators (preview), a separately
+     documented third category) doesn't obviously meet. Flagged as a new, unresolved VERIFY in
+     `README.md` §5 Step 5/§6 rather than asserting the booster applies automatically.
+  `reviews.md` Microsoft Product Owner finding 3 (which had endorsed the now-corrected "shared cap"
+  claim) is corrected in place with an inline note, plus a new "Addendum — re-verification pass"
+  section recording both outcomes and their Pass/Fix disposition, per `AGENTS.md` §5's rule that
+  reviews cite specifics and any Fix feeds back into the scenario. New references 13–14 added to
+  `README.md` §12. No new script/deploy/validate changes were needed — this was a docs-accuracy
+  fragment, not a new capability. Two new VERIFY items (this template's actual "Users and groups"
+  control name; Risk-score-booster availability for a Defender-for-Endpoint-only indicator
+  selection) added to TODO below as follow-ups discovered by this fragment.
 - [x] **`scenarios/compliance-manager/hipaa-hitech-assessment/`** — commit ca749a2 — 2026-09-16.
   Fourth Compliance Manager assessment scenario (alongside `assess-against-iso27001/`, `pci-dss-
   assessment/`, and `soc2-assessment/`), against the HIPAA/HITECH premium template. Closes the
