@@ -7,6 +7,13 @@ const name = 'Krunal';
 const role = 'Cyber Security Consultant';
 const location = 'Regina, Saskatchewan';
 const focusAreas = ['Microsoft Purview', 'Sentinel', 'Defender XDR', 'Entra ID'];
+const yearsExperience = '9+';
+
+// Professional bio, rendered as HTML in the About section below.
+const bioLead =
+  'Microsoft 365 security consultant with 9+ years of client delivery across government, utility, and regulated enterprise environments.';
+const bioBody =
+  'My hands-on work spans the full E5 security stack — Purview information protection, DLP and insider risk; the Defender family; Sentinel; Entra ID with Conditional Access and PIM; and Intune and SCCM. I run engagements end to end: first assessment through design, phased rollout, testing, and handover.';
 
 // Only the Purview scenario library is published to this site.
 const scenarios = await getCollection('scenarios');
@@ -65,6 +72,10 @@ const areaList = [...areas.entries()]
   <section class="wrap stats-wrap">
     <div class="stats">
       <div class="stat">
+        <span class="num">{yearsExperience}</span>
+        <span class="lbl">Years of client delivery</span>
+      </div>
+      <div class="stat">
         <span class="num">{scenarios.length}</span>
         <span class="lbl">Documented scenarios</span>
       </div>
@@ -76,6 +87,22 @@ const areaList = [...areas.entries()]
         <span class="num">4</span>
         <span class="lbl">Artifacts each: design · deploy · validate · rollback</span>
       </div>
+    </div>
+  </section>
+
+  <section class="wrap about" aria-labelledby="about-heading">
+    <div class="about-card">
+      <span class="about-kicker">About</span>
+      <h2 id="about-heading">{bioLead}</h2>
+      <p>{bioBody}</p>
+      <ul class="about-tags" aria-label="Platforms">
+        <li>Microsoft E5 security</li>
+        <li>Purview</li>
+        <li>Defender XDR</li>
+        <li>Sentinel</li>
+        <li>Entra ID · CA · PIM</li>
+        <li>Intune · SCCM</li>
+      </ul>
     </div>
   </section>
 
@@ -193,7 +220,7 @@ const areaList = [...areas.entries()]
     }
     .stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 1px;
       background: var(--border);
       border: 1px solid var(--border);
@@ -219,6 +246,57 @@ const areaList = [...areas.entries()]
       font-size: 13.5px;
       color: var(--muted);
       font-weight: 500;
+    }
+
+    .about {
+      margin-top: 56px;
+    }
+    .about-card {
+      position: relative;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 30px 32px;
+      box-shadow: var(--shadow);
+    }
+    .about-kicker {
+      display: inline-block;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .about-card h2 {
+      font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+      line-height: 1.35;
+      margin: 0 0 14px;
+      max-width: 46ch;
+    }
+    .about-card p {
+      color: var(--body);
+      font-size: 1.05rem;
+      margin: 0 0 20px;
+      max-width: 68ch;
+    }
+    .about-tags {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .about-tags li {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-ink);
+      background: var(--bg-tint);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 12px;
     }
 
     .areas-section {
@@ -282,10 +360,20 @@ const areaList = [...areas.entries()]
       font-size: 15.5px;
     }
 
+    @media (max-width: 820px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
     @media (max-width: 640px) {
       .hero {
         padding: 44px 0 40px;
       }
+      .about-card {
+        padding: 24px 22px;
+      }
+    }
+    @media (max-width: 460px) {
       .stats {
         grid-template-columns: 1fr;
       }
