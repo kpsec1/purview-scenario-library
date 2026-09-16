@@ -28,6 +28,18 @@
     objects," so this script cannot confirm whether any one of them applies to a specific mailbox
     (design.md Section 7). Do not treat an empty per-mailbox report as proof no such policy applies.
 
+    IMPORTANT -- "mbx"/"skp"/"grp" are NOT interchangeable for a mailbox-scoped (specific-location)
+    retention policy. Microsoft's own "Identify Exchange mailbox hold types" reference documents ONLY
+    "mbx"/"skp" for a Get-Mailbox-visible specific-location stamp; "grp" is documented ONLY under the
+    separate Get-OrganizationConfig (org-wide) table, and Microsoft's retention-settings reference
+    confirms a Microsoft 365 Group mailbox is flatly rejected ("RemoteGroupMailbox isn't a valid
+    selection") from the Exchange-mailboxes location a "mbx"/"skp" stamp implies -- design.md Section 8.
+    This script therefore classifies a "grp"-prefixed entry NOT found in Get-OrganizationConfig's own
+    org-wide list as a distinct, undocumented case -- MailboxScopedGroupPolicyNames when the mailbox IS
+    a group/team mailbox (the only mechanism that could plausibly have produced it,
+    -AddModernGroupLocation), or UnrecognizedPolicyGuids when it is NOT (an anomaly no citation this
+    scenario carries explains) -- rather than silently reusing the Exchange-location classification.
+
     Connect first: Connect-ExchangeOnline AND Connect-IPPSSession (both certificate app-only --
     docs/automation-surface.md Section 3). This script does not open either session.
 
@@ -118,14 +130,22 @@ function Resolve-RetentionPolicyName {
 }
 
 function ConvertTo-ParsedInPlaceHolds {
-    param([string[]]$InPlaceHolds, [string[]]$OrgWideGuids)
+    # "mbx"/"skp" are the ONLY prefixes Microsoft documents for a Get-Mailbox-visible specific-location
+    # (mailbox-scoped) retention policy stamp -- "grp" is documented only under the separate
+    # Get-OrganizationConfig (org-wide) table (README.md Section 12 source 5). A "grp"-prefixed entry
+    # not found in $OrgWideGroupGuids is therefore an undocumented case, kept in its own bucket rather
+    # than merged into MailboxScopedPolicyNames and processed with an Exchange-location call that
+    # Microsoft's retention-settings reference proves cannot ever have targeted a Group mailbox
+    # (design.md Section 8).
+    param([string[]]$InPlaceHolds, [string[]]$OrgWideExchangeGuids, [string[]]$OrgWideGroupGuids)
 
     $result = [ordered]@{
-        EDiscoveryHoldGuids       = @()
-        LegacyInPlaceHoldGuids    = @()
-        MailboxScopedPolicyNames  = @()
-        OrgWidePolicyNamesOnMbx   = @()   # org-wide GUID that also happened to stamp this mailbox
-        OrgWideExclusionPolicyNames = @()
+        EDiscoveryHoldGuids            = @()
+        LegacyInPlaceHoldGuids         = @()
+        MailboxScopedPolicyNames       = @()   # "mbx"/"skp" only
+        MailboxScopedGroupPolicyNames  = @()   # "grp", not org-wide -- undocumented notation, disclosed
+        OrgWidePolicyNamesOnMbx        = @()   # org-wide GUID that also happened to stamp this mailbox
+        OrgWideExclusionPolicyNames    = @()
     }
     foreach ($h in @($InPlaceHolds)) {
         if ([string]::IsNullOrWhiteSpace($h)) { continue }
@@ -135,13 +155,22 @@ function ConvertTo-ParsedInPlaceHolds {
         elseif ($h -match '^-mbx([0-9a-fA-F]{32})$') {
             $result.OrgWideExclusionPolicyNames += (Resolve-RetentionPolicyName -Guid $Matches[1])
         }
-        elseif ($h -match '^(mbx|skp|grp)([0-9a-fA-F]{32}):(\d)$') {
+        elseif ($h -match '^(mbx|skp)([0-9a-fA-F]{32}):(\d)$') {
             $guid = $Matches[2]
             $name = Resolve-RetentionPolicyName -Guid $guid
-            if ($OrgWideGuids -contains $guid) {
+            if ($OrgWideExchangeGuids -contains $guid) {
                 $result.OrgWidePolicyNamesOnMbx += $name
             } else {
                 $result.MailboxScopedPolicyNames += $name
+            }
+        }
+        elseif ($h -match '^grp([0-9a-fA-F]{32}):(\d)$') {
+            $guid = $Matches[1]
+            $name = Resolve-RetentionPolicyName -Guid $guid
+            if ($OrgWideGroupGuids -contains $guid) {
+                $result.OrgWidePolicyNamesOnMbx += $name
+            } else {
+                $result.MailboxScopedGroupPolicyNames += $name
             }
         }
         else {
@@ -172,7 +201,6 @@ $orgConfig = Get-OrganizationConfig
 $orgHoldEntries = @($orgConfig.InPlaceHolds)
 $orgWideExchangeGuids = @($orgHoldEntries | ForEach-Object { if ($_ -match '^mbx([0-9a-fA-F]{32}):(\d)$') { $Matches[1] } } | Where-Object { $_ })
 $orgWideGroupGuids = @($orgHoldEntries | ForEach-Object { if ($_ -match '^grp([0-9a-fA-F]{32}):(\d)$') { $Matches[1] } } | Where-Object { $_ })
-$orgWideGuids = @($orgWideExchangeGuids + $orgWideGroupGuids)  # combined set, used only to classify mailbox-scoped vs org-wide in ConvertTo-ParsedInPlaceHolds
 $orgWideExchangePolicyNames = @($orgWideExchangeGuids | Select-Object -Unique | ForEach-Object { Resolve-RetentionPolicyName -Guid $_ })
 $orgWideGroupPolicyNames = @($orgWideGroupGuids | Select-Object -Unique | ForEach-Object { Resolve-RetentionPolicyName -Guid $_ })
 
@@ -194,21 +222,33 @@ foreach ($mbx in $mailboxes) {
         Write-Warning "Mailbox not found: $mbx -- skipping."
         continue
     }
-    $parsed = ConvertTo-ParsedInPlaceHolds -InPlaceHolds $m.InPlaceHolds -OrgWideGuids $orgWideGuids
+    $parsed = ConvertTo-ParsedInPlaceHolds -InPlaceHolds $m.InPlaceHolds -OrgWideExchangeGuids $orgWideExchangeGuids -OrgWideGroupGuids $orgWideGroupGuids
     $isGroupMailbox = $m.RecipientTypeDetails -eq 'GroupMailbox'
 
-    # Org-wide Exchange policies apply to every mailbox type; org-wide Group policies apply only to a
-    # group/team mailbox (design.md Section 4/8).
-    $applicableOrgWideExchange = @($orgWideExchangePolicyNames | Where-Object { $parsed.OrgWideExclusionPolicyNames -notcontains $_ })
+    # Org-wide Exchange policies apply to Exchange mailboxes, Exchange public folders, and 1xN Teams
+    # chats (participant mailboxes) -- Microsoft's retention-settings reference confirms the Exchange-
+    # mailboxes location as a whole (org-wide included) never covers a Microsoft 365 Group mailbox, so
+    # this must be gated the same way the Group-policy applicability already is (design.md Section 8).
+    $applicableOrgWideExchange = if (-not $isGroupMailbox) {
+        @($orgWideExchangePolicyNames | Where-Object { $parsed.OrgWideExclusionPolicyNames -notcontains $_ })
+    } else { @() }
     $applicableOrgWideGroup = if ($isGroupMailbox) {
         @($orgWideGroupPolicyNames | Where-Object { $parsed.OrgWideExclusionPolicyNames -notcontains $_ })
     } else { @() }
     $applicableOrgWide = @($applicableOrgWideExchange + $applicableOrgWideGroup)
 
+    # A "grp"-prefixed, non-org-wide entry is only plausible on a group/team mailbox itself (the only
+    # mechanism that could have produced it, -AddModernGroupLocation); on any other mailbox it's an
+    # anomaly no citation this scenario carries explains -- never silently merged into either bucket.
+    $mailboxScopedGroup = if ($isGroupMailbox) { $parsed.MailboxScopedGroupPolicyNames } else { @() }
+    $unrecognizedPolicyNames = if (-not $isGroupMailbox) { $parsed.MailboxScopedGroupPolicyNames } else { @() }
+
     $blocksPurge = $m.LitigationHoldEnabled -or
         ($parsed.EDiscoveryHoldGuids.Count -gt 0) -or
         ($parsed.LegacyInPlaceHoldGuids.Count -gt 0) -or
         ($parsed.MailboxScopedPolicyNames.Count -gt 0) -or
+        ($mailboxScopedGroup.Count -gt 0) -or
+        ($unrecognizedPolicyNames.Count -gt 0) -or
         ($parsed.OrgWidePolicyNamesOnMbx.Count -gt 0) -or
         ($applicableOrgWide.Count -gt 0) -or
         [bool]$m.ComplianceTagHoldApplied -or
@@ -223,6 +263,8 @@ foreach ($mbx in $mailboxes) {
         EDiscoveryHoldGuids        = $parsed.EDiscoveryHoldGuids
         LegacyInPlaceHoldGuids     = $parsed.LegacyInPlaceHoldGuids
         MailboxScopedPolicyNames   = @($parsed.MailboxScopedPolicyNames + $parsed.OrgWidePolicyNamesOnMbx | Select-Object -Unique)
+        MailboxScopedGroupPolicyNames = $mailboxScopedGroup
+        UnrecognizedPolicyNames    = $unrecognizedPolicyNames
         ApplicableOrgWideExchangePolicyNames = $applicableOrgWideExchange
         ApplicableOrgWideGroupPolicyNames = $applicableOrgWideGroup
         OrgWideExclusionPolicyNames = $parsed.OrgWideExclusionPolicyNames
@@ -238,6 +280,8 @@ foreach ($mbx in $mailboxes) {
     if ($entry.EDiscoveryHoldGuids.Count -gt 0) { Write-Host "  - eDiscovery case hold(s) [identify-only, design.md Section 6]: $($entry.EDiscoveryHoldGuids -join ', ')" -ForegroundColor Yellow }
     if ($entry.LegacyInPlaceHoldGuids.Count -gt 0) { Write-Host "  - Legacy In-Place Hold(s) [identify-only, design.md Section 2]: $($entry.LegacyInPlaceHoldGuids -join ', ')" -ForegroundColor Yellow }
     if ($entry.MailboxScopedPolicyNames.Count -gt 0) { Write-Host "  - Retention polic(y/ies) stamped on this mailbox: $($entry.MailboxScopedPolicyNames -join ', ')" }
+    if ($entry.MailboxScopedGroupPolicyNames.Count -gt 0) { Write-Host "  - Mailbox-scoped Group-location polic(y/ies) stamped on this group/team mailbox [undocumented InPlaceHolds notation -- design.md Section 8]: $($entry.MailboxScopedGroupPolicyNames -join ', ')" -ForegroundColor Yellow }
+    if ($entry.UnrecognizedPolicyNames.Count -gt 0) { Write-Host "  - UNRECOGNIZED 'grp'-prefixed polic(y/ies) on a non-group mailbox [identify-only, no citation explains this case -- design.md Section 8]: $($entry.UnrecognizedPolicyNames -join ', ')" -ForegroundColor Yellow }
     if ($entry.ApplicableOrgWideExchangePolicyNames.Count -gt 0) { Write-Host "  - Organization-wide Exchange polic(y/ies) applicable (not excluded): $($entry.ApplicableOrgWideExchangePolicyNames -join ', ')" }
     if ($entry.ApplicableOrgWideGroupPolicyNames.Count -gt 0) { Write-Host "  - Organization-wide Group polic(y/ies) applicable (not excluded): $($entry.ApplicableOrgWideGroupPolicyNames -join ', ')" }
     if ($entry.ComplianceTagHoldApplied) { Write-Host '  - Retention-label hold (ComplianceTagHoldApplied): TRUE [one-way clear -- design.md Section 5]' -ForegroundColor Yellow }

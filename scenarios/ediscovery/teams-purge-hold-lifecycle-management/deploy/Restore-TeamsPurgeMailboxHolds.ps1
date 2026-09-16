@@ -11,7 +11,14 @@
 
       litigationHoldRemoved        -> Set-Mailbox -LitigationHoldEnabled $true
       mailboxScopedPoliciesRemoved -> Set-RetentionCompliancePolicy -AddExchangeLocation (per policy)
+      mailboxScopedGroupPoliciesRemoved -> Set-RetentionCompliancePolicy -AddModernGroupLocation (per
+                                            policy -- "grp"-prefixed, not org-wide, group/team mailbox
+                                            only; design.md Section 8)
       orgWideExceptionsAdded       -> Set-RetentionCompliancePolicy -RemoveExchangeLocationException (per policy)
+
+    unrecognizedPolicyGuidsNotRemoved was never removed by this scenario (a "grp"-prefixed InPlaceHolds
+    entry on a non-group mailbox no citation explains -- design.md Section 8), so there is nothing to
+    restore for it -- printed as a reminder only.
 
     Before each Add/Remove call, checks the mailbox's current InPlaceHolds state and skips (with a
     message, not silently) if it's already in the target state -- Set-RetentionCompliancePolicy causes
@@ -88,15 +95,19 @@ function Get-CurrentPolicyMembership {
     # Parses a mailbox's live InPlaceHolds into policy-name sets, the same prefix convention used by
     # Get-/Remove-TeamsPurgeMailboxHolds.ps1 (design.md Section 4) -- deliberately NOT relying on an
     # unconfirmed .Guid property on Get-RetentionCompliancePolicy's output (Microsoft's own reference
-    # documents only Name/Workload/Enabled/Mode as default-displayed properties).
+    # documents only Name/Workload/Enabled/Mode as default-displayed properties). "mbx"/"skp" (Exchange-
+    # location) and "grp" (Group-location) are tracked in separate sets -- never merged, matching the
+    # same distinction Get-/Remove- already draw (design.md Section 8).
     param($Mailbox)
     $scoped = @()
+    $scopedGroup = @()
     $excluded = @()
     foreach ($h in @($Mailbox.InPlaceHolds)) {
         if ($h -match '^-mbx([0-9a-fA-F]{32})$') { $excluded += (Resolve-RetentionPolicyName -Guid $Matches[1]) }
         elseif ($h -match '^(mbx|skp)([0-9a-fA-F]{32}):(\d)$') { $scoped += (Resolve-RetentionPolicyName -Guid $Matches[2]) }
+        elseif ($h -match '^grp([0-9a-fA-F]{32}):(\d)$') { $scopedGroup += (Resolve-RetentionPolicyName -Guid $Matches[1]) }
     }
-    return [pscustomobject]@{ ScopedPolicyNames = $scoped; ExcludedPolicyNames = $excluded }
+    return [pscustomobject]@{ ScopedPolicyNames = $scoped; ScopedGroupPolicyNames = $scopedGroup; ExcludedPolicyNames = $excluded }
 }
 
 # --- main ---
@@ -139,6 +150,16 @@ foreach ($entry in $state.mailboxes) {
         }
     }
 
+    foreach ($policyName in @($entry.mailboxScopedGroupPoliciesRemoved)) {
+        if ($current.ScopedGroupPolicyNames -contains $policyName) {
+            Write-Host "  Mailbox already back in Group-location policy '$policyName' -- skipping."
+        }
+        elseif ($PSCmdlet.ShouldProcess($entry.mailbox, "Set-RetentionCompliancePolicy -Identity '$policyName' -AddModernGroupLocation")) {
+            Set-RetentionCompliancePolicy -Identity $policyName -AddModernGroupLocation $entry.mailbox -Confirm:$false | Out-Null
+            Write-Host "  [restored] mailbox-scoped Group-location retention policy '$policyName'"
+        }
+    }
+
     foreach ($exception in @($entry.orgWideExceptionsAdded)) {
         # Remove-TeamsPurgeMailboxHolds.ps1 records { name, kind: 'Exchange'|'Group' } -- 'grp'-prefixed
         # org-wide Group policies use -RemoveModernGroupLocationException, not the Exchange-location
@@ -170,6 +191,9 @@ foreach ($entry in $state.mailboxes) {
     }
     if (@($entry.ediscoveryHoldsNotRemoved).Count -gt 0) {
         Write-Host "  $($entry.mailbox): eDiscovery case hold(s) were never removed by this scenario ($($entry.ediscoveryHoldsNotRemoved -join ', ')) -- if you separately turned one off in the portal, remember to turn it back on there." -ForegroundColor Yellow
+    }
+    if (@($entry.unrecognizedPolicyGuidsNotRemoved).Count -gt 0) {
+        Write-Host "  $($entry.mailbox): unrecognized 'grp'-prefixed polic(y/ies) were never removed by this scenario ($($entry.unrecognizedPolicyGuidsNotRemoved -join ', ')) -- design.md Section 8; nothing to restore." -ForegroundColor Yellow
     }
 }
 

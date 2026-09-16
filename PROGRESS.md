@@ -929,13 +929,42 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   channel messages, Copilot, etc. — currently only checkable via the portal's Policy Lookup feature),
   extend `Get-TeamsPurgeMailboxHoldState.ps1`'s currently tenant-wide-only informational listing into a
   real per-mailbox match. `teams-purge-hold-lifecycle-management/design.md` §7.
-- [ ] Consider a companion script resolving the mailbox-scoped-vs-Group-location ambiguity this build
+- [x] Consider a companion script resolving the mailbox-scoped-vs-Group-location ambiguity this build
   deliberately left disclosed rather than solved: whether a mailbox-scoped (non-org-wide) retention
   policy on a Group/team mailbox is actually reachable via `-RemoveExchangeLocation`/
   `-AddExchangeLocation` (as this scenario assumes, matching the documented `mbx`/`skp`-prefix
   convention regardless of mailbox type) or needs the `-ModernGroupLocation` parameter family instead
   — no Microsoft Learn page directly addresses this specific combination.
-  `teams-purge-hold-lifecycle-management/design.md` §8.
+  `teams-purge-hold-lifecycle-management/design.md` §8. — **built** (see DONE below): resolved, not by
+  a separate companion script but by fixing the existing scenario's own four scripts in place, which is
+  where the ambiguity actually lived. Two Microsoft Learn pages fetched in full this round confirm the
+  Exchange-mailboxes location (org-wide **or** specific-location) categorically rejects a Microsoft 365
+  Group mailbox (`retention-settings.md`'s "RemoteGroupMailbox isn't a valid selection" save-time
+  error), and the specific-location `InPlaceHolds` prefix table documents only `mbx`/`skp`, never `grp`
+  (`edisc-hold-types-mailboxes.md`). `ConvertTo-ParsedInPlaceHolds` now parses `grp` separately in all
+  four scripts; a mailbox-scoped Group-location policy on a confirmed group/team mailbox is now removed/
+  restored via `-RemoveModernGroupLocation`/`-AddModernGroupLocation` (confirmed real
+  `Set-RetentionCompliancePolicy` parameters) instead of the Exchange-location pair that could never
+  have applied to it; the same org-wide-Exchange-applicability gating bug (not gated on
+  `-not $isGroupMailbox`, unlike its already-correct Group-side counterpart) was fixed alongside it. One
+  new VERIFY carried forward, not guessed away: the exact `InPlaceHolds` notation this mechanism stamps
+  for the non-org-wide case isn't explicitly confirmed by Microsoft. `design.md` §8.1 (new),
+  `README.md` §6/§11/§12, and `reviews.md` Round 2 record the full grounding and fix.
+
+### Follow-ups discovered while fixing the Teams-Purge Hold Lifecycle Management mailbox-scoped/Group-location conflation
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the exact `InPlaceHolds` notation a
+  mailbox-scoped (non-org-wide) Group-location retention policy stamps on a group/team mailbox —
+  `-AddModernGroupLocation`/`-RemoveModernGroupLocation` are confirmed real `Set-RetentionCompliancePolicy`
+  parameters, but no Microsoft Learn page states what, if anything, shows up in `InPlaceHolds` for this
+  specific case (as opposed to the org-wide `grp<guid>:n` notation, which Microsoft's own
+  `Get-OrganizationConfig` reference does confirm). `teams-purge-hold-lifecycle-management/design.md`
+  §8.1, `README.md` §11.
+- [ ] If a Microsoft Learn source or pilot-tenant test ever surfaces a real, confirmed case of a `grp`-
+  prefixed, non-org-wide `InPlaceHolds` entry on a mailbox that is genuinely NOT a group/team mailbox
+  (the `UnrecognizedPolicyGuids`/`unrecognizedPolicyGuidsNotRemoved` bucket
+  `teams-purge-hold-lifecycle-management`'s scripts currently only identify and never act on), ground
+  what produced it and extend the scripts' removal logic accordingly — deliberately left unactioned in
+  this round because no citation explains that combination (`design.md` §8.1).
 
 ### Follow-ups discovered while building the Conditional Access insider-risk-block scenario
 - [x] Backport the GA-status correction (`conditional-access-insider-risk-block/design.md` §8)

@@ -90,23 +90,34 @@ function Resolve-RetentionPolicyName {
 }
 
 function ConvertTo-ParsedInPlaceHolds {
-    param([string[]]$InPlaceHolds, [string[]]$OrgWideGuids)
+    # "mbx"/"skp" are the ONLY prefixes Microsoft documents for a Get-Mailbox-visible specific-location
+    # (mailbox-scoped) retention policy stamp -- "grp" is documented only under the separate
+    # Get-OrganizationConfig (org-wide) table. A "grp"-prefixed entry not found in $OrgWideGroupGuids is
+    # kept in its own bucket rather than merged into MailboxScopedPolicyNames (design.md Section 8).
+    param([string[]]$InPlaceHolds, [string[]]$OrgWideExchangeGuids, [string[]]$OrgWideGroupGuids)
     $result = [ordered]@{
-        EDiscoveryHoldGuids         = @()
-        LegacyInPlaceHoldGuids      = @()
-        MailboxScopedPolicyNames    = @()
-        OrgWidePolicyNamesOnMbx     = @()
-        OrgWideExclusionPolicyNames = @()
+        EDiscoveryHoldGuids            = @()
+        LegacyInPlaceHoldGuids         = @()
+        MailboxScopedPolicyNames       = @()   # "mbx"/"skp" only
+        MailboxScopedGroupPolicyNames  = @()   # "grp", not org-wide -- undocumented notation, disclosed
+        OrgWidePolicyNamesOnMbx        = @()
+        OrgWideExclusionPolicyNames    = @()
     }
     foreach ($h in @($InPlaceHolds)) {
         if ([string]::IsNullOrWhiteSpace($h)) { continue }
         if ($h -match '^UniH(.+)$') { $result.EDiscoveryHoldGuids += $Matches[1] }
         elseif ($h -match '^-mbx([0-9a-fA-F]{32})$') { $result.OrgWideExclusionPolicyNames += (Resolve-RetentionPolicyName -Guid $Matches[1]) }
-        elseif ($h -match '^(mbx|skp|grp)([0-9a-fA-F]{32}):(\d)$') {
+        elseif ($h -match '^(mbx|skp)([0-9a-fA-F]{32}):(\d)$') {
             $guid = $Matches[2]
             $name = Resolve-RetentionPolicyName -Guid $guid
-            if ($OrgWideGuids -contains $guid) { $result.OrgWidePolicyNamesOnMbx += $name }
+            if ($OrgWideExchangeGuids -contains $guid) { $result.OrgWidePolicyNamesOnMbx += $name }
             else { $result.MailboxScopedPolicyNames += $name }
+        }
+        elseif ($h -match '^grp([0-9a-fA-F]{32}):(\d)$') {
+            $guid = $Matches[1]
+            $name = Resolve-RetentionPolicyName -Guid $guid
+            if ($OrgWideGroupGuids -contains $guid) { $result.OrgWidePolicyNamesOnMbx += $name }
+            else { $result.MailboxScopedGroupPolicyNames += $name }
         }
         else { $result.LegacyInPlaceHoldGuids += $h }
     }
@@ -118,7 +129,6 @@ $orgConfig = Get-OrganizationConfig
 # Microsoft 365 Group mailboxes -- never conflate the two (design.md Section 4/8).
 $orgWideExchangeGuids = @(@($orgConfig.InPlaceHolds) | ForEach-Object { if ($_ -match '^mbx([0-9a-fA-F]{32}):(\d)$') { $Matches[1] } } | Where-Object { $_ })
 $orgWideGroupGuids = @(@($orgConfig.InPlaceHolds) | ForEach-Object { if ($_ -match '^grp([0-9a-fA-F]{32}):(\d)$') { $Matches[1] } } | Where-Object { $_ })
-$orgWideGuids = @($orgWideExchangeGuids + $orgWideGroupGuids)
 
 if ($PSCmdlet.ParameterSetName -eq 'State') {
     # --- Mode 2: post-restore validation ---
@@ -129,7 +139,7 @@ if ($PSCmdlet.ParameterSetName -eq 'State') {
         Write-Host "`n--- $($entry.mailbox) ---" -ForegroundColor Cyan
         $m = Get-Mailbox -Identity $entry.mailbox -ErrorAction SilentlyContinue
         if (-not $m) { Write-Check "Mailbox not found: $($entry.mailbox)" -Level FAIL; continue }
-        $parsed = ConvertTo-ParsedInPlaceHolds -InPlaceHolds $m.InPlaceHolds -OrgWideGuids $orgWideGuids
+        $parsed = ConvertTo-ParsedInPlaceHolds -InPlaceHolds $m.InPlaceHolds -OrgWideExchangeGuids $orgWideExchangeGuids -OrgWideGroupGuids $orgWideGroupGuids
 
         if ($entry.litigationHoldRemoved) {
             if ($m.LitigationHoldEnabled) { Write-Check 'Litigation Hold restored.' -Level PASS }
@@ -141,6 +151,16 @@ if ($PSCmdlet.ParameterSetName -eq 'State') {
             } else {
                 Write-Check "Mailbox-scoped retention policy '$policyName' NOT restored." -Level FAIL
             }
+        }
+        foreach ($policyName in @($entry.mailboxScopedGroupPoliciesRemoved)) {
+            if ($parsed.MailboxScopedGroupPolicyNames -contains $policyName -or $parsed.OrgWidePolicyNamesOnMbx -contains $policyName) {
+                Write-Check "Mailbox-scoped Group-location retention policy '$policyName' restored." -Level PASS
+            } else {
+                Write-Check "Mailbox-scoped Group-location retention policy '$policyName' NOT restored." -Level FAIL
+            }
+        }
+        if (@($entry.unrecognizedPolicyGuidsNotRemoved).Count -gt 0) {
+            Write-Check "This mailbox had 'grp'-prefixed InPlaceHolds entry/entries this scenario never touched (design.md Section 8) -- confirm their state separately." -Level WARN
         }
         foreach ($exception in @($entry.orgWideExceptionsAdded)) {
             $policyName = $exception.name
@@ -177,21 +197,30 @@ if ($PSCmdlet.ParameterSetName -eq 'State') {
         Write-Host "`n--- $mbx ---" -ForegroundColor Cyan
         $m = Get-Mailbox -Identity $mbx -ErrorAction SilentlyContinue
         if (-not $m) { Write-Check "Mailbox not found: $mbx" -Level FAIL; continue }
-        $parsed = ConvertTo-ParsedInPlaceHolds -InPlaceHolds $m.InPlaceHolds -OrgWideGuids $orgWideGuids
+        $parsed = ConvertTo-ParsedInPlaceHolds -InPlaceHolds $m.InPlaceHolds -OrgWideExchangeGuids $orgWideExchangeGuids -OrgWideGroupGuids $orgWideGroupGuids
         $isGroupMailbox = $m.RecipientTypeDetails -eq 'GroupMailbox'
-        $applicableOrgWideExchange = @($orgWideExchangeGuids | Select-Object -Unique | ForEach-Object { Resolve-RetentionPolicyName -Guid $_ } |
-            Where-Object { $parsed.OrgWideExclusionPolicyNames -notcontains $_ })
+        # Org-wide Exchange applicability is gated the same way org-wide Group applicability already is
+        # -- the Exchange-mailboxes location (org-wide included) never covers a Microsoft 365 Group
+        # mailbox (design.md Section 8).
+        $applicableOrgWideExchange = if (-not $isGroupMailbox) {
+            @($orgWideExchangeGuids | Select-Object -Unique | ForEach-Object { Resolve-RetentionPolicyName -Guid $_ } |
+                Where-Object { $parsed.OrgWideExclusionPolicyNames -notcontains $_ })
+        } else { @() }
         $applicableOrgWideGroup = if ($isGroupMailbox) {
             @($orgWideGroupGuids | Select-Object -Unique | ForEach-Object { Resolve-RetentionPolicyName -Guid $_ } |
                 Where-Object { $parsed.OrgWideExclusionPolicyNames -notcontains $_ })
         } else { @() }
         $applicableOrgWide = @($applicableOrgWideExchange + $applicableOrgWideGroup)
+        $mailboxScopedGroup = if ($isGroupMailbox) { $parsed.MailboxScopedGroupPolicyNames } else { @() }
+        $unrecognizedPolicyNames = if (-not $isGroupMailbox) { $parsed.MailboxScopedGroupPolicyNames } else { @() }
 
         $blockers = @()
         if ($m.LitigationHoldEnabled) { $blockers += 'Litigation Hold' }
         if ($parsed.EDiscoveryHoldGuids.Count -gt 0) { $blockers += "eDiscovery case hold(s): $($parsed.EDiscoveryHoldGuids -join ', ')" }
         if ($parsed.LegacyInPlaceHoldGuids.Count -gt 0) { $blockers += "legacy In-Place Hold(s): $($parsed.LegacyInPlaceHoldGuids -join ', ')" }
         if ($parsed.MailboxScopedPolicyNames.Count -gt 0) { $blockers += "mailbox-scoped polic(y/ies): $($parsed.MailboxScopedPolicyNames -join ', ')" }
+        if ($mailboxScopedGroup.Count -gt 0) { $blockers += "mailbox-scoped Group-location polic(y/ies): $($mailboxScopedGroup -join ', ')" }
+        if ($unrecognizedPolicyNames.Count -gt 0) { $blockers += "UNRECOGNIZED 'grp'-prefixed polic(y/ies) on a non-group mailbox: $($unrecognizedPolicyNames -join ', ')" }
         if ($parsed.OrgWidePolicyNamesOnMbx.Count -gt 0) { $blockers += "org-wide polic(y/ies) stamped on mailbox: $($parsed.OrgWidePolicyNamesOnMbx -join ', ')" }
         if ($applicableOrgWide.Count -gt 0) { $blockers += "applicable org-wide polic(y/ies): $($applicableOrgWide -join ', ')" }
         if ($m.ComplianceTagHoldApplied) { $blockers += 'retention-label hold (ComplianceTagHoldApplied)' }

@@ -25,16 +25,19 @@ scenario's `deploy/` scripts handle each differently, by design:
 | Hold type | Identify | Remove | Reapply | Why |
 |---|---|---|---|---|
 | **Litigation Hold** | Yes (`LitigationHoldEnabled`) | Yes (`Set-Mailbox -LitigationHoldEnabled $false`) | Yes (`$true`) | Fully documented, Exchange Online PowerShell (app-only supported) [[3]](#references) |
-| **Mailbox-scoped Microsoft Purview retention policy** (`InPlaceHolds` `mbx`/`skp` prefix) | Yes (GUID resolved via `Get-RetentionCompliancePolicy`) | Yes (`Set-RetentionCompliancePolicy -RemoveExchangeLocation`) | Yes (`-AddExchangeLocation`) | Documented Security & Compliance PowerShell cmdlet, non-eDiscovery (app-only supported — §3) [[2]](#references)[[4]](#references) |
+| **Mailbox-scoped Microsoft Purview retention policy** (`InPlaceHolds` `mbx`/`skp` prefix — a regular mailbox only) | Yes (GUID resolved via `Get-RetentionCompliancePolicy`) | Yes (`Set-RetentionCompliancePolicy -RemoveExchangeLocation`) | Yes (`-AddExchangeLocation`) | Documented Security & Compliance PowerShell cmdlet, non-eDiscovery (app-only supported — §3) [[2]](#references)[[4]](#references) |
+| **Mailbox-scoped Group-location retention policy** (`InPlaceHolds` `grp` prefix, not org-wide — a group/team mailbox only) | Yes (GUID resolved via `Get-RetentionCompliancePolicy`) | Yes (`Set-RetentionCompliancePolicy -RemoveModernGroupLocation`) | Yes (`-AddModernGroupLocation`) | `-AddModernGroupLocation`/`-RemoveModernGroupLocation` are confirmed real `Set-RetentionCompliancePolicy` parameters [[4]](#references), but the resulting `InPlaceHolds` notation for this specific, non-org-wide case is **not** explicitly confirmed by Microsoft's own identify-hold-types reference (§8) — flagged as a VERIFY, not guessed |
 | **Organization-wide Microsoft Purview retention policy** (`Get-OrganizationConfig` `InPlaceHolds` `mbx`/`grp` prefix) | Yes | Yes, via **exception**, not removal (`-AddExchangeLocationException`) | Yes (`-RemoveExchangeLocationException`) | Microsoft's own documented mechanism excludes the one mailbox rather than editing the org-wide policy itself [[1]](#references)[[4]](#references) |
+| **Unrecognized `grp`-prefixed entry on a non-group mailbox** | Yes (GUID only) | **No** — identify-only | N/A | No Microsoft Learn citation this scenario carries explains a `grp`-prefixed stamp on a mailbox that isn't a group/team mailbox (§8) — disclosed as an anomaly, never guessed at |
 | **Retention label hold** (`ComplianceTagHoldApplied`) | Yes | **Opt-in only**, `-IncludeComplianceTagHold` (`Set-Mailbox -RemoveComplianceTagHoldApplied -ProvideConsent`) | **No** — no documented "set back to true" cmdlet exists | One-way flag; clearing it doesn't remove the underlying item-level labels, and Microsoft's own docs describe no reverse cmdlet — §5 |
 | **Delay hold** (`DelayHoldApplied`/`DelayReleaseHoldApplied`) | Yes | Yes, if already present from a prior removal cycle (`-RemoveDelayHoldApplied`/`-RemoveDelayReleaseHoldApplied`) | **N/A** — system-managed, re-applied automatically by the Managed Folder Assistant | Not a hold this scenario itself creates; only relevant if a previous, unrelated hold-removal already triggered one — §5 |
 | **eDiscovery case hold** (`InPlaceHolds` `UniH` prefix) | Yes (GUID only) | **No** — identify-only, manual/portal action required | N/A | Resolving/removing it needs `Get-CaseHoldPolicy`/`Get-ComplianceCase`, both eDiscovery cmdlets in Security & Compliance PowerShell — the one documented **app-only-unsupported** exception this repo's `docs/automation-surface.md` §3 already carries — §6 |
 | **Legacy In-Place Hold** (`InPlaceHolds` entry with **no** recognized prefix) | Yes (GUID only) | **No** | N/A | Microsoft's own retirement guidance: "the hold duration of in-place holds can no longer be changed. You can only remove an In-Place Hold that results in the deletion of the inactive mailbox" [[1]](#references) — not a scriptable removal path for an active mailbox |
 | **Newer-location retention policy** (Teams chats/private-channel messages via `*-AppRetentionCompliancePolicy`) | **Informational only** — tenant-wide list, not matched to a mailbox | No | No | Microsoft's own docs state these policies "don't stamp directly on organization configuration or Exchange Online objects" — no documented per-mailbox applicability check exists [[5]](#references) — §7 |
 
-This table is the scenario's actual definition of done: five hold types are fully identify+remove+
-restore automated, one is identify+remove(opt-in)+no-restore (disclosed asymmetry), and two are
+This table is the scenario's actual definition of done: six hold types are fully identify+remove+
+restore automated (the Group-location row carries a disclosed notation VERIFY, not a removal-mechanism
+guess — §8), one is identify+remove(opt-in)+no-restore (disclosed asymmetry), and three are
 identify-only by design (disclosed gaps, not silently ignored).
 
 ## 3. Design goals
@@ -78,9 +81,8 @@ scenario parses `InPlaceHolds` values using the same, Microsoft-documented prefi
 | *(not an `InPlaceHolds` value — a separate `True`/`False` property)* | Litigation Hold — via the `LitigationHoldEnabled` mailbox property, not `InPlaceHolds` itself | `Get-Mailbox` |
 | `UniH` | eDiscovery case hold (Unified Hold) | `Get-Mailbox` |
 | *(an `InPlaceHolds` entry with none of the prefixes below)* | Legacy **In-Place Hold** — deprecated, not removable for an active mailbox (§2) | `Get-Mailbox` |
-| `mbx<guid>:<suffix>` | Retention policy applied to this specific mailbox, **or** an organization-wide policy (distinguish by cross-checking the same GUID against `Get-OrganizationConfig`'s own `InPlaceHolds` list) | `Get-Mailbox` / `Get-OrganizationConfig` |
-| `skp<guid>:<suffix>` | Retention policy applied to Skype for Business (and Teams 1:N chat) conversations in this mailbox | `Get-Mailbox` |
-| `grp<guid>:<suffix>` | Organization-wide retention policy applied to Microsoft 365 Groups / Teams channel messages | `Get-OrganizationConfig` only |
+| `mbx<guid>:<suffix>` / `skp<guid>:<suffix>` | Retention policy applied to this **specific-location** (mailbox-scoped) target, **or** an organization-wide policy (distinguish by cross-checking the same GUID against `Get-OrganizationConfig`'s own `InPlaceHolds` list). Microsoft's own "Identify Exchange mailbox hold types" reference documents `mbx`/`skp` as the **only** two prefixes for a `Get-Mailbox`-visible specific-location stamp — never `grp` (§8) | `Get-Mailbox` / `Get-OrganizationConfig` |
+| `grp<guid>:<suffix>` | Organization-wide retention policy applied to Microsoft 365 Groups / Teams channel messages, when the GUID matches `Get-OrganizationConfig`'s own `InPlaceHolds` list. A `grp`-prefixed entry that does **not** match an org-wide GUID is a distinct, undocumented case (§8) — never merged into the `mbx`/`skp` bucket above | `Get-OrganizationConfig` (org-wide); undocumented for any other case |
 | `-mbx<guid>` (leading `-`) | This mailbox is **excluded** from an organization-wide policy | `Get-Mailbox` |
 | *(no `InPlaceHolds` entry for a mailbox already in an org-wide policy)* | Org-wide policies don't always stamp `InPlaceHolds` on the mailbox at all — cross-check `Get-OrganizationConfig` unconditionally, never infer "no `InPlaceHolds` entries" as "no applicable policy" | `Get-OrganizationConfig` |
 
@@ -147,7 +149,7 @@ policy created via the *older* `Set-RetentionCompliancePolicy -Applications
 `InPlaceHolds`-based detection (that path still stamps `InPlaceHolds`); only the newer cmdlet family's
 policies are the disclosed gap.
 
-## 8. Exchange-location vs. Group-location org-wide policies
+## 8. Exchange-location vs. Group-location policies — org-wide AND mailbox-scoped
 
 An org-wide `InPlaceHolds` GUID's prefix (§4) is not just cosmetic — Microsoft's own reference draws a
 hard functional line between the two org-wide prefixes that matters directly for which removal
@@ -182,6 +184,58 @@ current state first (the way it does for the confirmed Exchange-location exclusi
 `validate/Test-TeamsPurgeMailboxHoldLifecycle.ps1` reports a Group-kind exception as `[WARN]`
 ("cannot verify"), never `[PASS]`/`[FAIL]` — README.md §11.
 
+### 8.1 The same distinction, re-grounded for the mailbox-scoped (specific-location) case
+
+A follow-up grounding pass (this build) found that the Exchange-vs-Group split above is **not** unique
+to org-wide policies — it applies just as hard to a mailbox-scoped (specific-location) policy, and the
+initial draft's `mailboxScoped` handling had not carried the distinction across:
+
+- **Microsoft's retention-settings reference states plainly that the "Exchange mailboxes" location —
+  org-wide or specific-location, it doesn't distinguish — never covers a Microsoft 365 Group mailbox.**
+  "Email contacts and Microsoft 365 group mailboxes aren't supported for Exchange email." For a
+  specific-location (static-scope) policy specifically: "Although the Exchange location initially
+  allows a group mailbox to be selected for a static scope, when you try to save the retention policy,
+  you receive an error that 'RemoteGroupMailbox' isn't a valid selection for this location."
+  [[10]](#references)
+- **Microsoft's own "Identify Exchange mailbox hold types in eDiscovery" reference documents the
+  `Get-Mailbox`-visible specific-location prefix table as `mbx`/`skp` only** — the `grp` prefix appears
+  exclusively under the separate `Get-OrganizationConfig` (org-wide) table [[5]](#references). No
+  specific-location Group-mailbox `InPlaceHolds` notation is documented anywhere in this reference.
+
+Combining these: a Group/team mailbox can **never** carry an `mbx`/`skp`-prefixed specific-location
+stamp (the Exchange-mailboxes location rejects it outright), and the `grp` prefix Microsoft documents is
+scoped to the org-wide table only. The initial draft's `ConvertTo-ParsedInPlaceHolds` function, however,
+classified **any** unmatched `mbx`/`skp`/`grp`-prefixed entry as generically "mailbox-scoped" and routed
+all three through `-RemoveExchangeLocation`/`-AddExchangeLocation` — a call that, per the citation above,
+can never have targeted a group/team mailbox in the first place, and would misfire if it ever tried.
+The same conflation also left `applicableOrgWideExchange`'s gating asymmetric with its Group
+counterpart: only the Group side was gated on `RecipientTypeDetails -eq 'GroupMailbox'`, when the
+Exchange side needed the identical, inverse gate.
+
+**Fix applied across all four scripts** (`Get-/Remove-/Restore-TeamsPurgeMailboxHolds.ps1`,
+`validate/Test-TeamsPurgeMailboxHoldLifecycle.ps1`):
+
+1. `ConvertTo-ParsedInPlaceHolds` now parses `grp` separately from `mbx`/`skp`. A `grp`-prefixed entry
+   matching an org-wide GUID is (as before) org-wide; one that doesn't is put in a new
+   `MailboxScopedGroupPolicyNames` bucket, never merged into `MailboxScopedPolicyNames`.
+2. A mailbox is classified as the recipient of a Group-location policy (`MailboxScopedGroupPolicyNames`
+   → act on it) only when `Get-Mailbox`'s own `RecipientTypeDetails -eq 'GroupMailbox'` — the only
+   mechanism (`-AddModernGroupLocation`) that could plausibly have produced the entry. On any other
+   mailbox, the same bucket is renamed `UnrecognizedPolicyGuids`/`unrecognizedPolicyGuidsNotRemoved`:
+   identify-only, reported loudly, **never** acted on — no citation explains that case, so this scenario
+   doesn't guess at one (`AGENTS.md` §4).
+3. `Remove-/Restore-TeamsPurgeMailboxHolds.ps1` route the recognized Group-location bucket through
+   `-RemoveModernGroupLocation`/`-AddModernGroupLocation` — confirmed real `Set-RetentionCompliancePolicy`
+   parameters [[4]](#references) — instead of the Exchange-location pair. The `InPlaceHolds` notation
+   this produces on the mailbox is disclosed as an open VERIFY (README.md §11), not asserted with the
+   same confidence as the `mbx`/`skp` case, because Microsoft's reference doesn't explicitly cover it.
+4. `applicableOrgWideExchange` is now gated on `-not $isGroupMailbox`, mirroring the pre-existing
+   `applicableOrgWideGroup` gate on `$isGroupMailbox` — closing the asymmetry described above.
+
+This mirrors the exact class of bug `reviews.md`'s Round 1 Red Team finding 1 already caught for the
+org-wide case (§8 above) — the same conflation risk simply hadn't been re-checked for the mailbox-scoped
+path until this pass. See `reviews.md`'s new round for the four-lens review of this specific fix.
+
 ## 9. Key decisions
 
 | Decision | Choice | Rationale |
@@ -189,6 +243,7 @@ current state first (the way it does for the confirmed Exchange-location exclusi
 | Scope | Companion to `search-and-purge-teams-messages`, reusing its definition-file schema | Design goal 1; avoids re-deriving target-mailbox resolution this repo already covers |
 | Org-wide policy removal mechanism | Per-mailbox exception, not editing the policy's own location list | Matches Microsoft's own documented remediation for this exact case [[1]](#references) |
 | Org-wide Exchange vs. Group policies | Tracked and remediated separately (`-AddExchangeLocationException` vs. `-AddModernGroupLocationException`), gated on `Get-Mailbox`'s `RecipientTypeDetails` | Conflating the two would silently misfire against a group/team mailbox — §8 |
+| Mailbox-scoped Exchange vs. Group-location policies | Tracked and remediated separately (`-RemoveExchangeLocation`/`-AddExchangeLocation` vs. `-RemoveModernGroupLocation`/`-AddModernGroupLocation`), gated on `Get-Mailbox`'s `RecipientTypeDetails`; a `grp`-prefixed entry on a non-group mailbox is reported as `UnrecognizedPolicyGuids` and never acted on | Same conflation risk as the org-wide row, re-grounded for the mailbox-scoped case — §8.1 |
 | Retention-label hold | Opt-in only (`-IncludeComplianceTagHold`), never restored | One-way, disclosed clearly rather than silently defaulted on — §5 |
 | eDiscovery case hold | Identify-only, never removed by this scenario | App-only auth unsupported for the resolving cmdlets — §6 |
 | Newer-location policies | Informational listing only, never mailbox-matched | No documented per-mailbox applicability check exists — §7 |

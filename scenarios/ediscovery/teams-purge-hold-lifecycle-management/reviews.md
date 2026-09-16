@@ -175,3 +175,118 @@ every `Set-Mailbox`/`Set-RetentionCompliancePolicy` parameter this scenario call
 Group-location pair, was confirmed against a direct Microsoft Learn fetch before use), and every
 disclosed gap (eDiscovery case holds, legacy In-Place Holds, newer-location policies, the
 Group-location-exclusion notation) is stated as such rather than guessed around.
+
+---
+
+## Round 2 — the mailbox-scoped Exchange-vs-Group-location conflation (PROGRESS.md follow-up)
+
+Reviewed after grounding a `PROGRESS.md` follow-up asking whether a mailbox-scoped (non-org-wide)
+retention policy on a Group/team mailbox is reachable via `-RemoveExchangeLocation`/`-AddExchangeLocation`
+(as the initial draft assumed) or needs the `-ModernGroupLocation` parameter family instead — see
+`design.md` §8.1 for the full grounding and fix.
+
+### 🔴 Red Team
+
+**Verdict: Fix (resolved)**
+
+1. **The initial draft's `ConvertTo-ParsedInPlaceHolds` classified `mbx`/`skp`/`grp`-prefixed
+   mailbox-scoped entries as one interchangeable bucket, always remediated with
+   `-RemoveExchangeLocation`/`-AddExchangeLocation`.** This is the exact same class of bug Round 1's
+   Red Team finding 1 caught for the org-wide case — it simply hadn't been re-checked for the
+   mailbox-scoped path. Two freshly-fetched Microsoft Learn pages this round confirm it's real: the
+   "Exchange mailboxes" location (org-wide **or** specific-location) flatly rejects a Microsoft 365
+   Group mailbox ("RemoteGroupMailbox isn't a valid selection"), and the specific-location `InPlaceHolds`
+   prefix table documents only `mbx`/`skp`, never `grp`. Had this scenario ever encountered a group/team
+   mailbox carrying a mailbox-scoped Group-location policy, `Remove-TeamsPurgeMailboxHolds.ps1` would
+   have issued a call Microsoft's own documentation proves cannot succeed against that location — a real
+   remediation-accuracy bug for exactly the target-mailbox type (`sourceType` standard/shared channel)
+   this scenario exists to support, the same failure mode Round 1 already fixed for the org-wide sibling.
+   - **Resolution:** `grp` is now parsed separately from `mbx`/`skp` in all four scripts. A `grp`-prefixed,
+     non-org-wide entry on a confirmed group/team mailbox is removed/restored via
+     `-RemoveModernGroupLocation`/`-AddModernGroupLocation`; the identical entry on any other mailbox is
+     reported as `UnrecognizedPolicyGuids` and never acted on. `applicableOrgWideExchange`'s gating was
+     also corrected to exclude group/team mailboxes, mirroring the pre-existing Group-side gate.
+2. **Is `-RemoveModernGroupLocation` actually the right mechanism, or a second guess replacing the
+   first one?** Simply swapping one assumed parameter for another without confirming it exists would
+   just move the bug, not fix it.
+   - **Resolution:** `-AddModernGroupLocation`/`-RemoveModernGroupLocation` were directly confirmed
+     against `New-/Set-RetentionCompliancePolicy`'s own Microsoft Learn syntax (fetched this round, not
+     inferred by analogy with the already-confirmed exception-parameter pair). What is **not** confirmed
+     — the exact `InPlaceHolds` notation this mechanism stamps on the mailbox — is disclosed as an open
+     VERIFY (`README.md` §11, this script's `.NOTES`) rather than asserted with false confidence.
+3. **Could the fix silently drop coverage for a mailbox that legitimately needs the anomaly bucket
+   acted on?** `UnrecognizedPolicyGuids` is identify-only by design — does that leave a real purge
+   blocker unresolved with no path forward?
+   - **Resolution:** Yes, and that's stated plainly, not hidden — `Remove-TeamsPurgeMailboxHolds.ps1`
+     sets `$anyUnresolvedBlockers = $true` and warns loudly per mailbox; `Get-`/`validate/Test-` surface
+     it as a blocker in `BlocksPurge`/`[FAIL]`. The alternative (guessing a removal mechanism for a case
+     no citation explains) risks a worse outcome — an API call against the wrong location parameter, or
+     silently claiming success for content that's still on hold — which is exactly the bug this round
+     fixes for the confirmed case. No worse than Round 1's own eDiscovery-hold/legacy-hold precedent for
+     "real blocker, disclosed as identify-only."
+
+No remaining Fail.
+
+### 🔵 Blue Team
+
+**Verdict: Pass**
+
+- `Get-TeamsPurgeMailboxHoldState.ps1`'s per-mailbox output and JSON report now distinguish
+  `MailboxScopedGroupPolicyNames` from `UnrecognizedPolicyNames` — an operator reading the console
+  output (or a SIEM ingesting the JSON) can tell "scriptable Group-location policy, handled" apart from
+  "anomaly, needs manual investigation" instead of both collapsing into one ambiguous bucket.
+- `validate/Test-TeamsPurgeMailboxHoldLifecycle.ps1`'s Mode 2 check for
+  `mailboxScopedGroupPoliciesRemoved` follows the same `[PASS]`/`[FAIL]` pattern as the pre-existing
+  Exchange-location check — no new verdict semantics for an on-call responder to learn.
+- The new `Write-Warning` in `Remove-TeamsPurgeMailboxHolds.ps1` names the VERIFY inline, at the moment
+  it matters (right before the mutating call), not buried only in `.NOTES` — a responder running this
+  interactively sees the caveat in real time.
+
+No Fix/Fail items from this lens.
+
+### 🎩 CISO
+
+**Verdict: Pass**
+
+- Same no-new-license-tier, same-scenario-scope profile as Round 1 — this is a same-day correctness
+  fix to already-funded automation, not a new spend decision.
+- Materially reduces a real operational risk: without this fix, an incident responder running this
+  scenario against a standard/shared Teams channel with its own mailbox-scoped retention policy would
+  have hit a silent or confusing failure mid-incident, under time pressure, for exactly the target type
+  this scenario was built to support.
+- The disclosed VERIFY (unconfirmed `InPlaceHolds` notation for the Group-location mailbox-scoped case)
+  is a narrower, better-understood gap than the bug it replaces — "we act on the only plausible
+  mechanism and flag the one open question" is a stronger audit answer than "we call a parameter that
+  provably cannot work."
+
+No Fix/Fail items from this lens.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Pass**
+
+- Both newly-cited Microsoft Learn pages (`retention-settings`, the specific-location half of
+  `edisc-hold-types-mailboxes`) were fetched directly and in full this round, not inferred from a search
+  snippet, consistent with `AGENTS.md` §4.
+- `-AddModernGroupLocation`/`-RemoveModernGroupLocation` are the Microsoft-documented, current mechanism
+  for this exact location — no deprecated or reinvented path introduced.
+- The fix correctly distinguishes a *confirmed* fact (Exchange-location categorically rejects group
+  mailboxes) from an *unconfirmed* one (the resulting notation for the Group-location mailbox-scoped
+  case) rather than treating both with the same certainty — the disclosed VERIFY is accurate, not
+  overclaimed.
+
+No Fix/Fail items from this lens.
+
+### Round 2 Summary
+
+| Lens | Initial verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Fix | 3 (Exchange/Group mailbox-scoped conflation — a real remediation-accuracy bug, fixed across all four scripts; confirmed the replacement mechanism is grounded, not a second guess; disclosed rather than hid the residual `UnrecognizedPolicyGuids` gap) | Closed |
+| 🔵 Blue Team | Pass | 0 new findings; distinguishable report buckets and inline VERIFY warning confirmed | — |
+| 🎩 CISO | Pass | 0 new findings; low-cost correctness fix with real operational-risk reduction confirmed | — |
+| 🟦 Microsoft Product Owner | Pass | 0 new findings; both new citations fetched directly, current (non-deprecated) mechanism used, confidence levels accurately disclosed | — |
+
+All Fix items from this round are resolved in the current state of `deploy/`, `validate/`, `README.md`,
+and `design.md`. No Fail items were raised. The residual `InPlaceHolds`-notation VERIFY for the
+Group-location mailbox-scoped case is deliberately left open (not guessed at) and tracked in
+`PROGRESS.md`.
