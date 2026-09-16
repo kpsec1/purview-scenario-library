@@ -3005,7 +3005,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/insider-risk/security-policy-violations-by-priority-users/` — re-verification
-  fragment** — commit PENDING — 2026-09-16. Closed the two top TODO items under "Follow-ups
+  fragment** — commit c6945ae — 2026-09-16. Closed the two top TODO items under "Follow-ups
   discovered while building the Data leaks by priority users scenario". This fragment had direct
   Microsoft Learn fetch access (`mcp__Microsoft_Learn__microsoft_docs_fetch`), which the scenario's
   original build did not, and used it to fetch `insider-risk-management-policy-templates` and
