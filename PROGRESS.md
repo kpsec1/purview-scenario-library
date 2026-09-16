@@ -3338,6 +3338,29 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-map/scan-credential-remaining-kinds/`** — commit `7257a26` — 2026-09-16.
+  Full scenario (README.md, design.md, deploy/New-PurviewScanCredentialExtended.ps1,
+  deploy/policy/scan-credential-extended-definitions.json,
+  validate/Test-PurviewScanCredentialExtended.ps1, rollback.md, reviews.md) extending
+  `scan-credential-key-vault-backed` to the five `CredentialType` kinds it left out — `AccountKey`,
+  `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, `ManagedIdentity` (user-assigned) — completing
+  all eight documented kinds. Grounded live against the Scanning-data-plane REST reference via the
+  Microsoft Learn MCP tool (available this run, contrary to this repo's usual `EGRESS_BLOCKED`
+  default noted elsewhere in this file) and cross-checked against
+  `scan-credential-inventory-report`'s independently-built fingerprint table, which reached
+  identical shapes from the read side — no discrepancy found. Each kind's real-world source pairing
+  confirmed against a dedicated Microsoft Learn connector page (Azure Storage/Cosmos DB, Amazon S3,
+  Salesforce, Microsoft Fabric/Power BI, six UAMI-eligible sources incl. three already scanned by
+  this repo). Reuses `Remove-PurviewScanCredential.ps1` unmodified for deletion after confirming it
+  is genuinely kind-agnostic. Four-lens review resolved two real Red/Blue Team findings (a
+  `-WhatIf -Verbose` plaintext-leak risk for `ConsumerKeyAuth`'s `consumerKey`, fixed with a
+  redacted log-body path; the total absence of a Key Vault-side detective control for
+  `AmazonARN`/`ManagedIdentity`, disclosed with a revised monitoring cadence) and one Product-Owner
+  Fail (the parent scenario's stale "out of scope" claim, corrected in place with bidirectional
+  cross-links). Four new follow-ups recorded above rather than resolved by guessing: the `AmazonARN`
+  account-ID/external-ID REST-source VERIFY, `ManagedIdentity`'s preview-status recheck, the
+  `-CheckKeyVaultSecret` vault-name-derivation gap, and the four natural consumer-scan fragments
+  this build identified but did not build.
 - [x] **`scenarios/data-map/bulk-grant-synapse-serverless-access/`** — commit `18e4248` —
   2026-09-16. Full scenario (README.md, design.md, deploy/Grant-SynapseServerlessDatabaseAccess.ps1,
   validate/Test-SynapseServerlessDatabaseAccess.ps1, rollback.md, reviews.md) automating the
