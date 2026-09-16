@@ -2208,21 +2208,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `retention-labels-financial-records` script — see the new follow-up immediately below.
 
 ### Follow-up discovered while building the adaptive-scope-auto-apply-label scenario
-- [ ] **Fix a grounding defect in `scenarios/data-lifecycle-management/retention-labels-financial-
+- [x] **Fix a grounding defect in `scenarios/data-lifecycle-management/retention-labels-financial-
   records/deploy/New-FinancialRecordsRetention.ps1`:** its `New-RetentionComplianceRule` call passes
-  both `-Name` and `-ApplyComplianceTag` in the same `$ruleParams` hashtable. Microsoft's current
-  Learn reference for `New-RetentionComplianceRule` documents these as mutually exclusive ("You can't
-  use this parameter with the ApplyComplianceTag or PublishComplianceTag parameters" — the `-Name`
-  parameter belongs only to the `Default` parameter set, not the `ComplianceTag` set that
-  `-ApplyComplianceTag` requires) — this combination does not match any documented parameter set and
-  would not resolve at runtime. Found while grounding the new `adaptive-scope-auto-apply-label`
-  scenario, whose own deploy script omits `-Name` when calling `-ApplyComplianceTag` instead of
-  repeating the defect (see that scenario's `design.md` §3). Fix: remove `Name =
-  "$($cfg.policy.name) - Rule"` from `New-FinancialRecordsRetention.ps1`'s `$ruleParams`; the
-  existing idempotency check (`Get-RetentionComplianceRule -Policy $cfg.policy.name`) already locates
-  the rule by policy, not by name, so nothing else depends on it having an explicit name. Update that
-  scenario's `README.md` §6 config-reference row and `.NOTES` accordingly; re-run its `reviews.md`
-  Microsoft Product Owner lens to record the correction. Source:
+  both `-Name` and `-ApplyComplianceTag` in the same `$ruleParams` hashtable — **fixed** (see DONE
+  below): `Name = "$($cfg.policy.name) - Rule"` removed from `$ruleParams`; `.NOTES`, `README.md`
+  §6/§11, `design.md` §4, and `reviews.md` (new correction addendum, targeted Microsoft Product Owner
+  re-check) all updated in place. Source:
   <https://learn.microsoft.com/powershell/module/exchangepowershell/new-retentioncompliancerule>
 - [ ] Consider `-LocationType Site` and `-LocationType Group` adaptive-scope variants (SharePoint site
   properties / KeyQL, and Microsoft 365 Group attributes respectively) as companions to this
@@ -3043,6 +3034,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-lifecycle-management/retention-labels-financial-records/` — grounding-defect
+  fix fragment** — commit PENDING — 2026-09-16. Fixed the `New-RetentionComplianceRule -Name` +
+  `-ApplyComplianceTag` invalid-parameter-combination defect flagged under "Follow-up discovered while
+  building the adaptive-scope-auto-apply-label scenario" above: Microsoft's current
+  `New-RetentionComplianceRule` reference documents `-Name` as mutually exclusive with
+  `-ApplyComplianceTag`/`-PublishComplianceTag` (confirmed via WebSearch against the Learn reference
+  page — direct `learn.microsoft.com` fetch is blocked by this environment's network egress proxy, so
+  WebSearch-derived quotes were used instead, consistent with this repo's established fallback when the
+  Microsoft Learn MCP tool isn't available). `deploy/New-FinancialRecordsRetention.ps1`'s `$ruleParams`
+  no longer sets `Name`; `.NOTES`, `README.md` §6 (config-reference row) and §11 (new known-limitations
+  entry with full provenance), `design.md` §4, and `reviews.md` (new targeted correction addendum,
+  Microsoft Product Owner lens re-check only — no other lens affected since the fix changes no
+  behavior, only makes the call resolve at runtime) all updated in place. No live-tenant access was
+  used or attempted. No new follow-ups discovered; this closes the item cleanly.
 - [x] **`scenarios/compliance-manager/gdpr-assessment/`** — commit 271a877 — 2026-09-16. Fifth Compliance Manager scenario: full
   deliverable (README.md, design.md, deploy/policy manifest, reused audit-trail export script,
   validate script, rollback.md, reviews.md) mirroring `assess-against-iso27001/`,

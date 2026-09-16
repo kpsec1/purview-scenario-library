@@ -135,7 +135,7 @@ the deploy/remove scripts ship a `-DryRun` instead.
 | `IsRecordLabel` | `$true` (default) | A plain **record** label — lockable, and the only one of the two auto-apply supports [[2]](#references) |
 | Policy cmdlet | `New-RetentionCompliancePolicy` | Auto-apply label policy; needs ≥1 location; **only created when `Regulatory` is false** [[5]](#references) |
 | Locations | `SharePointLocation` (finance site) | Also `ExchangeLocation`, `OneDriveLocation`, etc. |
-| Rule cmdlet | `New-RetentionComplianceRule -ApplyComplianceTag` | One rule per policy; `-ContentMatchQuery` (KQL) or `-ContentContainsSensitiveInformation` [[7]](#references) |
+| Rule cmdlet | `New-RetentionComplianceRule -ApplyComplianceTag` | One rule per policy; `-ContentMatchQuery` (KQL) or `-ContentContainsSensitiveInformation`; **no `-Name`** — documented mutually exclusive with `-ApplyComplianceTag` [[7]](#references) |
 | Retry stuck distribution | `Set-RetentionCompliancePolicy -RetryDistribution` | If the policy status shows Off (Error) [[3]](#references) |
 
 Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
@@ -194,6 +194,15 @@ never releases content already labeled.
 
 ## 11. Known limitations & gotchas
 
+- **Fixed grounding defect (2026-09-16):** the deploy script's `New-RetentionComplianceRule` call
+  previously passed both `-Name` and `-ApplyComplianceTag`. Microsoft's current reference documents
+  `-Name` as mutually exclusive with `-ApplyComplianceTag`/`-PublishComplianceTag` — the `ComplianceTag`
+  parameter set `-ApplyComplianceTag` belongs to has no `-Name` parameter at all — so that combination
+  would not have resolved at runtime. `deploy/New-FinancialRecordsRetention.ps1` now omits `-Name`; the
+  existing idempotency check (`Get-RetentionComplianceRule -Policy`) already locates the rule by policy,
+  not by name, so nothing else depended on it. Found while grounding the sibling
+  `scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/` scenario, whose own script
+  never repeated the defect. See §6 and `reviews.md`'s correction addendum.
 - **Auto-apply does not support regulatory records — this is a hard product limitation, not a bug in
   this scenario.** Microsoft: "This scenario isn't supported for regulatory records... These scenarios
   require a published retention label policy" [[3]](#references). This script creates the label

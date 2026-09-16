@@ -87,6 +87,16 @@ A policy is invalid until it has a rule; only **one rule per policy**. The label
 settings; the policy/rule decide where and how it's auto-applied — but only ever get created for a
 record or standard label, never a regulatory record (§3).
 
+**Grounding correction (2026-09-16):** the `New-RetentionComplianceRule` call above passes only
+`-Policy`/`-ApplyComplianceTag`/`-ContentMatchQuery`. An earlier draft also passed `-Name`; Microsoft's
+current reference documents `-Name` as mutually exclusive with `-ApplyComplianceTag`/
+`-PublishComplianceTag` — the `ComplianceTag` parameter set `-ApplyComplianceTag` belongs to has no
+`-Name` parameter — so that combination would not have resolved at runtime. Found and corrected while
+grounding the sibling `scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/` scenario,
+whose own rule call never included `-Name`. The existing idempotency check
+(`Get-RetentionComplianceRule -Policy`) already locates the rule by policy, so dropping the name has no
+other effect. See `README.md` §6/§11 and `reviews.md`'s correction addendum.
+
 ## 5. Idempotency and safety posture
 
 Idempotency here is deliberately **create-or-report**, not create-or-update: the deploy locates each

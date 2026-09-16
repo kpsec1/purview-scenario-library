@@ -12,6 +12,13 @@
       2. New-RetentionCompliancePolicy -> the auto-apply label policy (locations)
       3. New-RetentionComplianceRule   -> the rule binding the label to the policy with a match query
 
+    CORRECTED (see README.md Section 6/11 and reviews.md's correction addenda): the auto-apply rule
+    call omits -Name. New-RetentionComplianceRule's -Name parameter is documented mutually exclusive
+    with -ApplyComplianceTag ("You can't use this parameter with the ApplyComplianceTag or
+    PublishComplianceTag parameters" - Microsoft Learn); the ComplianceTag parameter set -ApplyComplianceTag
+    belongs to does not list -Name at all. The existing idempotency check (Get-RetentionComplianceRule
+    -Policy) already locates the rule by policy, not by name, so nothing depends on an explicit name.
+
     CORRECTED (see README.md Section 2/11 and reviews.md's correction addendum): Microsoft's
     auto-apply retention label policies do NOT support labels that mark items as a REGULATORY
     RECORD - publishing is the only supported distribution mechanism for those. This script
@@ -60,7 +67,9 @@
     Grounded in Microsoft Learn (verify before production use):
     - New-ComplianceTag (retention label; -RetentionAction/-RetentionDuration/-RetentionType/
       -IsRecordLabel/-Regulatory): https://learn.microsoft.com/powershell/module/exchangepowershell/new-compliancetag
-    - New-RetentionCompliancePolicy / New-RetentionComplianceRule (-ApplyComplianceTag):
+    - New-RetentionCompliancePolicy / New-RetentionComplianceRule (-ApplyComplianceTag; -Name
+      documented mutually exclusive with -ApplyComplianceTag/-PublishComplianceTag - the source of the
+      -Name omission correction above):
       https://learn.microsoft.com/powershell/module/exchangepowershell/new-retentioncompliancepolicy
       https://learn.microsoft.com/powershell/module/exchangepowershell/new-retentioncompliancerule
     - Declare records / regulatory records:
@@ -163,8 +172,10 @@ if ($existingRule) {
     Write-Host "  [rule] exists on policy '$($cfg.policy.name)' (one rule per policy - not modified)." -ForegroundColor DarkGreen
 }
 else {
+    # -Name is documented mutually exclusive with -ApplyComplianceTag (ComplianceTag parameter set) -
+    # see .NOTES and README.md Section 6/11. Omitted here; the existing idempotency check above
+    # locates the rule by -Policy, not by name.
     $ruleParams = @{
-        Name              = "$($cfg.policy.name) - Rule"
         Policy            = $cfg.policy.name
         ApplyComplianceTag = $cfg.label.name
     }

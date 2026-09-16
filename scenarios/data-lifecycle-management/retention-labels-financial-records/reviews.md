@@ -179,3 +179,42 @@ Also fixed in the same pass: `README.md` §3's automation-surface citation ("sur
 **surface 2**), correcting drift against the current `docs/automation-surface.md` numbering — a
 pre-existing, separately-tracked issue (see `PROGRESS.md`) fixed here as a low-risk side effect of
 already editing this file, not a full repo-wide sweep.
+
+---
+
+## Correction addendum (2026-09-16)
+
+While building the sibling scenario `scenarios/data-lifecycle-management/
+adaptive-scope-auto-apply-label/`, grounding `New-RetentionComplianceRule`'s current Microsoft Learn
+reference surfaced a defect in this scenario's own deploy script:
+`deploy/New-FinancialRecordsRetention.ps1`'s `New-RetentionComplianceRule` call passed **both**
+`-Name` and `-ApplyComplianceTag` in the same `$ruleParams` hashtable. Microsoft's reference documents
+`-Name` as belonging only to the `Default` parameter set and states plainly: **"You can't use this
+parameter with the `ApplyComplianceTag` or `PublishComplianceTag` parameters."** The `ComplianceTag`
+parameter set `-ApplyComplianceTag` requires does not list `-Name` at all — this combination does not
+match any documented parameter set and would not have resolved at runtime.
+Source: <https://learn.microsoft.com/powershell/module/exchangepowershell/new-retentioncompliancerule>
+
+**This is a genuine correctness defect, not a stylistic preference:** the original build's grounding
+pass confirmed `-ApplyComplianceTag` itself but did not independently check `-Name`'s parameter-set
+membership against the same cmdlet reference. The sibling scenario's own rule call never repeated the
+defect (it omits `-Name` when calling `-ApplyComplianceTag`), which is how the discrepancy surfaced.
+
+**Fix applied (targeted re-check, not a full new four-lens round — the object model, safety posture,
+and every other cmdlet call are unchanged; only the rule call's parameter list is corrected):**
+
+- `deploy/New-FinancialRecordsRetention.ps1`'s `$ruleParams` no longer sets `Name`; a comment at the
+  call site and an added `.NOTES` entry cite the correction and source.
+- `README.md` §6's "Rule cmdlet" row now states "no `-Name`" explicitly; §11 records the fix as a
+  known-limitations entry with full provenance.
+- `design.md` §4 records the same correction immediately after the object-model diagram.
+- The existing idempotency check (`Get-RetentionComplianceRule -Policy $cfg.policy.name`) already
+  locates the rule by policy, not by name, so no other script, the validate script, or `rollback.md`
+  depended on the rule having an explicit name — none required changes.
+
+**Re-checked lens (targeted):**
+- 🟦 **Microsoft Product Owner** — this is precisely the class of defect this lens exists to catch: an
+  invented/incorrect parameter combination that doesn't match the documented cmdlet surface. Closing it
+  brings the script in line with Microsoft's actual, current parameter-set constraints. No other lens's
+  findings are affected — the fix changes no behavior, risk posture, detectability, or cost; it only
+  makes the script resolve at runtime as originally intended.
