@@ -1119,12 +1119,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this item was waiting on (the exclusion list itself is derived live from the tenant's Types API
   rather than a hard-coded snapshot — the `data-map-classification-supported-list` page turned out
   to list classifications by name only, with no exact `MICROSOFT.*` identifiers anywhere on it).
-- [ ] Consider scripting **credential-object creation** (Key Vault-backed, for the
+- [x] Consider scripting **credential-object creation** (Key Vault-backed, for the
   `AzureSqlDatabaseCredential` scan kind — SQL authentication or service principal) once a
   documented REST endpoint for it is found; deferred from `scan-azure-sql-and-classify` because no
   such endpoint was located during that build (Microsoft's own docs show credential creation only
   via the portal UI). Needed for any buyer whose target SQL Server can't use SAMI (e.g. reachable
-  only via a self-hosted integration runtime, which doesn't support managed-identity auth).
+  only via a self-hosted integration runtime, which doesn't support managed-identity auth) —
+  **built** (see DONE below) as `scenarios/data-map/scan-credential-key-vault-backed/`. **The
+  precondition this item was waiting on turned out to already be satisfied, and the original
+  premise was wrong:** the Purview **Scanning data plane** documents **Credential**
+  (`PUT /scan/credentials/{credentialName}`) and **Key Vault Connections**
+  (`PUT /scan/azureKeyVaults/{azureKeyVaultName}`) as first-class operation groups at
+  `api-version=2023-09-01`, both direct-fetched in full this run via the Microsoft Learn MCP tool.
+  The earlier builds' "portal-only" conclusion came partly from over-reading Microsoft's
+  disaster-recovery statement that "there's no API to extract credentials" — that is about
+  **exporting existing secret material** (true, and by design: a credential object only ever holds
+  a *reference*), not about **creating the object**. Both affected scenarios corrected in place
+  (`scan-azure-sql-and-classify` README §6/§11 + `design.md` §7;
+  `scan-on-premises-sql-server-and-classify` README §3/§11 + its deploy script's `.NOTES`/
+  `.PARAMETER`), dated rather than quietly rewritten.
 - [x] Sibling Data Map scan scenarios for **Azure SQL Managed Instance**, **Azure Synapse
   Analytics** (dedicated + serverless SQL pools), and **on-premises SQL Server** (via self-hosted
   IR) — each has its own registration/authentication nuances Microsoft documents separately;
@@ -1143,6 +1156,75 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   reporting fragment in this library." Replaced with a direct
   `scenarios/data-estate-insights/classification-coverage-report/` cross-link in
   `scan-azure-sql-and-classify/README.md` §8.
+
+### Follow-ups discovered while building the Key Vault-backed scan credential scenario
+- [ ] VERIFY (pilot tenant — the single cheapest, highest-value check in this scenario): the two
+  `KeyVaultSecret` discriminator literals `type` and `store.type` in a Purview credential body.
+  Microsoft's Credential reference defines `KeyVaultSecret` as
+  `{ secretName, secretVersion, store: { referenceName, type }, type }` but types **both** `type`
+  fields as an open `string` with no enumerated values, and its **only** worked request example is a
+  `BasicAuth` credential carrying `description` alone — **no populated secret reference appears
+  anywhere in the Purview documentation set**. Three candidate sources were checked and eliminated
+  this build: the `@azure-rest/purview-scanning` SDK types both as `string`; `Az.Purview` ships no
+  credential-object cmdlet at all (only *scan* objects); no Learn article shows the JSON.
+  `scan-credential-key-vault-backed` defaults to `AzureKeyVaultSecret` / `LinkedServiceReference`,
+  derived from Data Factory's identically-shaped `AzureKeyVaultSecretReference` plus Purview's own
+  Key Vault Connections worked *response* returning an `id` ending in `/linkedservices/...`
+  (converging but indirect). Both ship as **parameters** (`-SecretReferenceType` /
+  `-SecretStoreReferenceType`), and `validate/` reports a mismatch as `[WARN]` while printing the
+  observed values. **To close: create one credential in the portal, `GET /scan/credentials/{name}`,
+  record the two values.** That single read settles it permanently.
+- [ ] VERIFY (pilot tenant): whether omitting `secretVersion` in a Purview credential resolves to
+  the Key Vault secret's latest version. Microsoft's Purview reference documents the property but
+  never states the omitted-version behavior; the Data Factory equivalent is documented as defaulting
+  to latest, and Purview's own troubleshooting page says to use "the right secret name **and
+  version**" without saying whether the version is optional. `scan-credential-key-vault-backed`
+  README §8's rotation guidance (omit the version → rotation needs no Purview change) depends on
+  this.
+- [ ] VERIFY (pilot tenant): whether the `PurviewSecurityLogs` diagnostic-log category emits an
+  event for credential-object create/replace/delete despite not being documented to. Microsoft's
+  enumerated Purview audit-event category table covers Collections, Role assignments, Scan rule
+  sets, Classification rules, Scans, and Data sources — **credentials and Key Vault connections are
+  absent** — and the `Security` category's own description is scoped to role assignments and
+  collection create/delete. This leaves the silent-credential-re-point attack in
+  `scan-credential-key-vault-backed/README.md` §11 (Red Team finding 1) with no documented Purview
+  detective control. Two honest caveats kept this from being asserted as impossible: that category
+  table is on a page written for the *classic* governance portal, and it states more categories
+  "will be added." If an event does exist, that scenario's §8 monitoring table should recommend it
+  over the current scheduled-`validate/` compensating control.
+- [ ] Consider scripting the remaining five documented credential kinds — `AccountKey`,
+  `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, and `ManagedIdentity` (user-assigned) — as a
+  second fragment or an extension. `scan-credential-key-vault-backed` deliberately scopes to the
+  three the SQL-family scan kinds in this repo consume. Note these are **not** a parameter tweak:
+  `ManagedIdentity`'s `typeProperties` (`principalId`, `resourceId`, `tenantId`) carries **no Key
+  Vault reference at all**, and `ConsumerKeyAuth`'s carries *two* secret references
+  (`consumerSecret` **and** `password`) — both are structurally different bodies. Natural pairings:
+  `AccountKey` with a future Azure Storage/Cosmos DB scan scenario, `AmazonARN` with an Amazon
+  S3/RDS one, `ManagedIdentity` with a user-assigned-managed-identity variant of the existing Azure
+  SQL scan scenarios.
+- [ ] Consider a small **credential inventory/drift report** companion (`GET /scan/credentials`,
+  paged via `{ count, nextLink, value[] }`) that reconciles a tenant's live credential set against a
+  checked-in parameter file — the same shape as `data-estate-insights`'
+  `classification-coverage-report`/`sensitivity-label-coverage-report`. Would generalize
+  `scan-credential-key-vault-backed/validate/`'s per-credential `-Expected*` assertions into an
+  estate-wide control, and is currently the only detective mechanism available for the
+  silent-re-point risk above.
+- [ ] Once a documented reverse lookup from a credential to the scans that reference it exists (none
+  today), replace `scan-credential-key-vault-backed/rollback.md`'s **Stage 0** manual
+  enumerate-data-sources-then-scans procedure — and the matching disclosed limitation in
+  `Remove-PurviewScanCredential.ps1`'s `.NOTES` and README §11 — with a real consumer check inside
+  the removal script.
+- [ ] Re-check the Key Vault grant scope question in a future pass: whether Microsoft ever adds
+  per-secret scoping for the Purview managed identity's vault access. Today both supported models
+  (access-policy Get/List on secrets, and the **Key Vault Secrets User** role) are **vault-wide over
+  secrets**, which is why `scan-credential-key-vault-backed` README §3/§5/§11 recommends a
+  *dedicated* scan-credential Key Vault (Red Team finding 2). If per-secret scoping appears, that
+  recommendation can be softened to a narrower grant instead.
+- [ ] Cross-cutting: `docs/automation-surface.md` surface 4 (Purview data-plane REST) does not
+  mention the Scanning plane's **Credential** or **Key Vault Connections** operation groups, and
+  `docs/rbac-model.md` §5 does not state which Data Map collection role is required to create a
+  credential (this build assumed Data Source Administrator by analogy with data sources/scans —
+  itself worth confirming). Backport both once another Data Map fragment touches those docs.
 
 ### Follow-ups discovered while building the DSPM for AI Copilot sensitive-data-exposure scenario
 - [ ] VERIFY (pilot tenant): whether a `{"Type":"Group","Identity":"..."}` `Inclusions` entry in
@@ -3157,6 +3239,45 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-map/scan-credential-key-vault-backed/`** — commit COMMIT_HASH — 2026-09-16.
+  Scripts the Azure **Key Vault connection** (`PUT /scan/azureKeyVaults/{azureKeyVaultName}`) and
+  the Key Vault-backed **credential object** (`PUT /scan/credentials/{credentialName}`, kinds
+  `SqlAuth`/`BasicAuth`/`ServicePrincipal`) that every credential-authenticated Data Map scan
+  requires — closing the long-standing follow-up that had been waiting on "a documented REST
+  endpoint for credential-object creation." **That endpoint already existed**: the Purview Scanning
+  data plane documents **Credential** and **Key Vault Connections** as first-class operation groups
+  at `api-version=2023-09-01`, both direct-fetched in full this run (see the Blocked/needs-user note
+  below — the Microsoft Learn MCP tool *was* available this session, unlike what this loop's
+  scheduled instructions assumed). Two earlier scenarios had asserted the opposite; the Product
+  Owner lens raised that self-contradiction as this build's only **Fail**, resolved by correcting
+  both **in place**, dated: `scan-azure-sql-and-classify` (README §6/§11, `design.md` §7) and
+  `scan-on-premises-sql-server-and-classify` (README §3/§11, deploy script `.NOTES`/`.PARAMETER`).
+  The original error was partly an over-read of Microsoft's disaster-recovery line that "there's no
+  API to extract credentials" — that concerns **exporting existing secret material** (true, and by
+  design), not **creating the object**.
+  Central design property: the deploy script is *structurally* incapable of leaking a scan secret —
+  it takes no plaintext/SecureString parameter for the target data source at all, only Key Vault
+  coordinates, because a credential object stores only a *reference*. That keeps three trust
+  boundaries separate (Purview Data Source Administrator / Key Vault Secrets Officer / Purview
+  managed identity), which `design.md` §3 documents as the reason a "convenient" one-script version
+  that also writes the secret and grants vault access was rejected.
+  Four-lens review produced three Red Team fixes (silent credential **re-point** with no documented
+  Purview detective control — Microsoft's own enumerated audit-event category table omits
+  credentials entirely; the Key Vault grant being **vault-wide over secrets** with no per-secret
+  scoping, hence a dedicated-vault recommendation; and the unpinned-`secretVersion` tradeoff), three
+  Blue Team fixes (404 meaning "absent **or** not visible to this identity" — the most likely
+  first-run failure, whose original message pointed away from the cause; scheduled validation plus a
+  five-step runbook; and a `rollback.md` **Stage 0** consumer inventory compensating for the absent
+  credential→scan reverse lookup), and one CISO fix (the unstated org-change cost of the separation
+  of duties). Four honest VERIFYs carried rather than guessed — most importantly the two
+  `KeyVaultSecret` discriminator literals (`type`, `store.type`), which **no** Purview source pins:
+  the reference types both as open `string`, its only worked example is a `BasicAuth` credential
+  with a description and no `typeProperties`, the JS SDK types them as `string`, and `Az.Purview`
+  has no credential cmdlet at all. Shipped as **parameters** with defaults derived from Data
+  Factory's identically-shaped `AzureKeyVaultSecretReference` plus Purview's own Key Vault
+  connection response `id` ending in `/linkedservices/...`, with `validate/` reporting a mismatch as
+  `[WARN]` (never `[FAIL]`) and printing the observed values — one pilot-tenant
+  portal-create-then-`GET` closes it permanently.
 - [x] **`scenarios/insider-risk/data-leaks-custom-indicator-trigger/`** — commit b2f70e6 — 2026-09-16.
   Third and final documented triggering-event mechanism for the base `Data leaks` Insider Risk
   Management policy template (siblings: `data-leaks/` — DLP-policy trigger;
@@ -7312,6 +7433,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   unresolved from the base scenario, rather than guessed.
 
 ## Blocked / needs user
+- **Environment note (2026-09-16, second run of the day — PARTIALLY SUPERSEDES the note immediately
+  below):** in *this* run's environment the two grounding capabilities came apart, and the
+  difference mattered enough to record. `WebFetch` to `learn.microsoft.com` is **still**
+  `EGRESS_BLOCKED` (re-tested directly this run). But the **Microsoft Learn MCP tool
+  (`mcp__Microsoft_Learn__microsoft_docs_search` / `microsoft_docs_fetch`) WAS available** — it is
+  surfaced as a *deferred* tool that must first be loaded with `ToolSearch`
+  (`select:mcp__Microsoft_Learn__microsoft_docs_search,...`), which is presumably why earlier runs
+  concluded it was "not present in this session's tool list." **Future runs: always try
+  `ToolSearch` for the Learn MCP tools before falling back to WebSearch-only grounding.** It works
+  even while `WebFetch` is blocked, and it is the difference between a search-snippet citation and
+  a verbatim full-page fetch. Concretely, this run used it to direct-fetch the Purview Scanning
+  data plane's Credential and Key Vault Connections reference pages in full — which overturned a
+  "no documented REST endpoint exists" conclusion that two prior scenarios had shipped and that had
+  blocked a backlog item for several builds. Worth a targeted re-verification pass over any
+  remaining WebSearch-only citations (notably `scenarios/ediscovery/gdpr-dsr-fulfillment/`) and over
+  other "no documented endpoint/API was found" claims elsewhere in this repo, which may be similarly
+  wrong rather than merely unconfirmed.
 - **Environment note (2026-09-16, not a question needing a user decision — informational for future
   runs of this loop):** in this run's execution environment, `WebFetch` returned `EGRESS_BLOCKED`
   for **every** domain tested (`learn.microsoft.com`, `docs.azure.cn`, `techcommunity.microsoft.com`,

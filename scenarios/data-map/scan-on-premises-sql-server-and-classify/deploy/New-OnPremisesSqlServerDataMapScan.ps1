@@ -45,13 +45,15 @@
       - The SHIR software installation and node registration on a Windows host (uses the auth key
         this script prints - a manual, physical step)
       - The SQL/Windows login and its db_datareader grant on the target SQL Server instance
-      - The Key Vault secret holding that login's password, or the Key Vault-to-Purview connection
-      - The Purview credential object itself (-CredentialReferenceName must already exist - no
-        documented REST endpoint for credential-object creation was found during this build, same
-        open gap every Data Map sibling scenario in this repo already carries)
-    All are documented as manual portal/PowerShell steps in README.md Sections 3 and 5 - complete
-    them before running this script with -RunNow, or the scan will register successfully but fail
-    on its first run.
+      - The Key Vault secret holding that login's password
+      - The Key Vault-to-Purview connection and the Purview credential object itself
+        (-CredentialReferenceName must already exist). CORRECTED 2026-09-16: this script originally
+        noted that no documented REST endpoint for credential-object creation existed. It does -
+        PUT /scan/credentials/{credentialName} and PUT /scan/azureKeyVaults/{azureKeyVaultName},
+        both documented operation groups at api-version 2023-09-01. Script them with
+        scenarios/data-map/scan-credential-key-vault-backed/, then pass the resulting name here.
+    All are documented in README.md Sections 3 and 5 - complete them before running this script
+    with -RunNow, or the scan will register successfully but fail on its first run.
 
     Author-only reference code. Never connects to a live tenant unless you supply real credentials
     and omit -WhatIf. Nothing in this script runs a scan or creates a trigger unless you explicitly
@@ -97,8 +99,10 @@
 
 .PARAMETER CredentialReferenceName
     Name of a Purview credential object that already exists in this collection's domain, holding the
-    SQL/Windows login's password (Key Vault-backed). This script does not create it - see README.md
-    Section 5 step 4 and design.md Section 8.
+    SQL/Windows login's password (Key Vault-backed). This script does not create it - build it with
+    scenarios/data-map/scan-credential-key-vault-backed/deploy/New-PurviewScanCredential.ps1 (its
+    -CredentialName becomes this parameter's value), or see README.md Section 5 step 4 for the
+    portal equivalent.
 
 .PARAMETER CredentialType
     'SqlAuth' (default) or 'BasicAuth'. Microsoft's portal documents both "SQL Authentication" and

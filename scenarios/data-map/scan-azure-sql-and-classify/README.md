@@ -177,7 +177,7 @@ acquisition follows `docs/automation-surface.md` §3's client-credentials patter
 |---|---|---|
 | Data source `kind` | `AzureSqlDatabase` | [[5]](#references) |
 | Scan `kind` (default) | `AzureSqlDatabaseMsi` | SAMI-authenticated — no credential object to create or rotate |
-| Scan `kind` (alternative) | `AzureSqlDatabaseCredential` | SQL authentication or service principal, both requiring a Key Vault-backed credential object created **via the Purview portal** — no documented REST endpoint for credential creation was found during this build; see §11 VERIFY |
+| Scan `kind` (alternative) | `AzureSqlDatabaseCredential` | SQL authentication or service principal, both requiring a Key Vault-backed credential object. Create it with `scenarios/data-map/scan-credential-key-vault-backed/` (scripted via `PUT /scan/credentials/{name}`) and reference it by name — the "portal-only" claim this scenario originally carried here was incorrect; see §11 |
 | Collection reference | `{ "referenceName": "<5-char collection ID>", "type": "CollectionReference" }` | The ID is **not** the collection's friendly name — read it from the collection's URL in the portal or the `List Collections` API [[6]](#references) |
 | Scan rule set (this scenario's default) | `scanRulesetName: "AzureSqlDatabase"`, `scanRulesetType: "System"` | Microsoft's system rule set — every classification available for this source type, roughly 200 built-in SITs including **U.S. Social Security Number (SSN)** and **Credit Card Number**, the same pair already established in `scenarios/information-protection/auto-label-confidential-sharepoint/` and `scenarios/dlp/pci-teams-exfil-block/` [[11]](#references) |
 | Scan rule set (narrower, PII-only) | A **custom** rule set built from the system default with unwanted classifications excluded | Supported by the product (portal, and the `Az.Purview` module's `New-AzPurviewAzureSqlDatabaseScanRulesetObject -ExcludedSystemClassification`) — this scenario's script does not create one programmatically; see §11 VERIFY |
@@ -353,12 +353,19 @@ data source registration.
   the exact REST JSON body for the "Scan Rulesets - Create Or Update" operation was not
   independently confirmed during this build. Follow-up: script that call once grounded, or use the
   `Az.Purview` PowerShell module directly for this one object type.
-- **VERIFY — credential-object REST creation.** No documented REST endpoint for creating a
-  Key Vault-backed credential object (needed for the `AzureSqlDatabaseCredential` scan kind) was
-  found during this build; Microsoft's own documentation shows credential creation only via the
-  Purview portal UI. This scenario's script therefore supports only the SAMI (`AzureSqlDatabaseMsi`)
-  path end-to-end; a buyer needing SQL-auth or service-principal scanning must create the
-  credential object via the portal first, then reference it by name — see §6.
+- **~~VERIFY — credential-object REST creation.~~ RESOLVED 2026-09-16 — this scenario's original
+  claim was wrong.** This scenario's build concluded that no documented REST endpoint existed for
+  creating a Key Vault-backed credential object (needed for the `AzureSqlDatabaseCredential` scan
+  kind), and that credential creation was portal-only. **It is not.** The Purview Scanning
+  data-plane API exposes **Credential** (`PUT /scan/credentials/{credentialName}`) and **Key Vault
+  Connections** (`PUT /scan/azureKeyVaults/{azureKeyVaultName}`) as first-class documented
+  operation groups at `api-version=2023-09-01`. Both are now scripted end-to-end by
+  `scenarios/data-map/scan-credential-key-vault-backed/`, which also documents the one field shape
+  that genuinely remains unconfirmed (the two `KeyVaultSecret` discriminator literals). A buyer
+  needing SQL-auth or service-principal scanning should build the credential with that scenario and
+  reference it by name here — no portal step required. This scenario's own script still defaults to
+  the SAMI (`AzureSqlDatabaseMsi`) path, which remains Microsoft's recommended option where it is
+  available.
 
 ## 12. References
 

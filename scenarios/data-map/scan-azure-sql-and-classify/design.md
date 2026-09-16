@@ -131,10 +131,14 @@ distinction.
   §11 VERIFY. This scenario ships the system default rule set instead, which already includes the
   SSN/Credit Card Number pair this repo standardizes on.
 - This scenario does not create the Key Vault-backed credential object needed for
-  `AzureSqlDatabaseCredential` (SQL auth or service-principal) scanning — no documented REST
-  endpoint for credential creation was found during this build (`README.md` §11 VERIFY). A buyer
-  needing that path creates the credential via the portal, then can adapt this script's `-Kind`
-  parameter (documented but not exercised end-to-end by the default flow).
+  `AzureSqlDatabaseCredential` (SQL auth or service-principal) scanning. **Corrected 2026-09-16:**
+  this build originally concluded no documented REST endpoint existed for credential creation and
+  that the portal was the only path — that was wrong. `PUT /scan/credentials/{credentialName}` and
+  `PUT /scan/azureKeyVaults/{azureKeyVaultName}` are documented operation groups at
+  `api-version=2023-09-01`, and `scenarios/data-map/scan-credential-key-vault-backed/` now scripts
+  both. Creating that object stays out of scope *here* (it is a separate, reusable object shared
+  across many scans, not a per-scan concern), but it is no longer a manual step anywhere in this
+  repo. A buyer needing that path builds the credential there and passes its name in.
 - This scenario does not act on the classification results it produces — no auto-labeling, no DLP
   policy targeting, no access-policy authoring. Those are the concern of
   `scenarios/information-protection/`, `scenarios/dlp/`, and a future Data Owner/DevOps-policy
