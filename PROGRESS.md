@@ -7433,6 +7433,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   unresolved from the base scenario, rather than guessed.
 
 ## Blocked / needs user
+- **Git note (2026-09-16, not a blocker — a distinct variant of the 2026-09-09 incident below,
+  recorded so the next run recognizes it in seconds instead of misdiagnosing it):** this session
+  started on a **detached HEAD** ("HEAD detached from refs/heads/main") while the **local `main`
+  branch ref was stale at `18273e0`, 49 commits behind `origin/main`**. Committing work put it on
+  the detached HEAD, not on `main` — so `git push origin main` pushed the *stale local `main`
+  branch* and was rejected with **"Updates were rejected because a pushed branch tip is behind its
+  remote counterpart."** Note this is **not** the usual non-fast-forward "remote has work you don't
+  have" message, and it is **not** the 2026-09-09 stale-remote-tracking-ref false alarm either: here
+  `origin/main` was genuinely current and correctly fetched, and the new work was a clean descendant
+  of it. The wrong *local ref* was being pushed. **Diagnosis in one command:** `git branch -vv` —
+  if it shows `* (HEAD detached ...)` plus a `main` marked `[origin/main: behind N]`, this is it.
+  **Fix (safe, and what this run did):** verify containment first —
+  `git merge-base --is-ancestor <stale-local-main> HEAD` (confirms the stale branch has no unique
+  commits to lose) and `git merge-base --is-ancestor origin/main HEAD` (confirms a clean
+  fast-forward) — then `git branch -f main HEAD && git checkout main && git push origin main`. No
+  force-push, no rebase, no branch/PR detour needed. **Do not** interpret this rejection as
+  divergence or as another run having pushed over you; check which ref you are actually on first.
 - **Environment note (2026-09-16, second run of the day — PARTIALLY SUPERSEDES the note immediately
   below):** in *this* run's environment the two grounding capabilities came apart, and the
   difference mattered enough to record. `WebFetch` to `learn.microsoft.com` is **still**
