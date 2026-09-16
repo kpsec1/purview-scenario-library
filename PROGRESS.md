@@ -7073,8 +7073,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   fragments, and more) had been committed but never pushed. Fast-forwarded local `main` to that
   HEAD and pushed all 37 commits plus this fragment's own commit to `origin/main` in one push
   (`382bd89..f1c2cbe`) — a plain fast-forward, no rebase or force needed.
-- [x] **`scenarios/ediscovery/gdpr-dsr-fulfillment/`** — commit PENDING (see the immediately
-  following `docs(progress)` commit for the hash) — 2026-09-16. New scenario closing the
+- [x] **`scenarios/ediscovery/gdpr-dsr-fulfillment/`** — commit a144028 — 2026-09-16. New scenario closing the
   DSR-fulfillment gap `gdpr-assessment/README.md` §8/§11 and `reviews.md` Red Team finding 4 had
   disclosed. Adds request-intake, an Article 12(3) SLA ledger (`dsr-ledger.json`, upserted by
   `requestId`), and a custodian-scoped (not tenant-wide) eDiscovery case/search per data subject —
