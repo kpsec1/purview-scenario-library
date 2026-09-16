@@ -2828,15 +2828,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   different string from the custom ruleset's **kind** (`AzureSynapseWorkspace`), unlike the sibling
   where both are the identical `AzureSqlDatabase` string — caught by this build's own Red Team pass
   before shipping (`reviews.md` Red Team finding 1) rather than left as a latent rollback bug.
-- [ ] `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/` and
-  `scenarios/data-map/scan-on-premises-sql-server-and-classify-pii-ruleset/` — the same PII-only
-  custom scan rule set pattern for this repo's remaining two sibling Data Map source types (`kind`
-  values `AzureSqlDatabaseManagedInstance`/`SqlServerDatabase`, both confirmed to exist in the Scan
-  Rulesets - Create Or Replace body-shape table the original Azure SQL Database build
-  direct-fetched) — not built this round to keep the fragment scoped to one source type. Ground
-  each one's actual ruleset `kind` string independently before building (per the Synapse build's
-  own finding immediately above: do not assume it matches a shorthand guess or the sibling's
-  name-equals-kind shortcut without checking).
+- [x] `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/` — **built**
+  (see DONE below): the same PII-only custom scan rule set pattern applied to Azure SQL Managed
+  Instance. Independently direct-fetched `New-AzPurviewAzureSqlDatabaseManagedInstanceScanRulesetObject`
+  per this item's own instruction rather than assuming either prior sibling's name-vs-kind pattern —
+  found the custom ruleset `kind` (`AzureSqlDatabaseManagedInstance`) is the IDENTICAL string to the
+  System default ruleset's own name (the Azure SQL Database sibling's simpler pattern, not the
+  Synapse sibling's naming trap), and disclosed that finding as independently confirmed rather than
+  inherited, with an explicit warning not to assume it forward onto the still-unbuilt
+  `SqlServerDatabase` sibling below.
+- [ ] `scenarios/data-map/scan-on-premises-sql-server-and-classify-pii-ruleset/` — the same
+  PII-only custom scan rule set pattern for this repo's one remaining sibling Data Map source type
+  (`kind: SqlServerDatabase`, confirmed to exist in the Scan Rulesets - Create Or Replace body-shape
+  table the original Azure SQL Database build direct-fetched) — not built this round to keep the
+  fragment scoped to one source type. Ground its actual ruleset `kind` string independently before
+  building — per both the Synapse and Managed Instance builds' own findings immediately above, do
+  not assume it matches a shorthand guess or either prior sibling's name-equals-kind relationship
+  (one matches its own System-ruleset name, one doesn't) without an independent direct-fetch check.
 - [ ] Consider a **credential-object creation** follow-up (Key Vault-backed, for the
   `AzureSqlDatabaseCredential` scan kind) becoming unblocked by the same Types/Scan-Rulesets REST
   grounding pass this build did — not investigated this round; the base scenario's `README.md` §11
@@ -7104,6 +7112,39 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   cmdlets), disclosed explicitly in `README.md` §12 and `reviews.md`'s Product Owner section rather
   than silently presented as equivalent to a direct-fetch grounding pass. No cmdlet, enum value, or
   blade path was invented.
+- [x] **`scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/`** — commit
+  PENDING — 2026-09-16. New scenario closing the second of the two remaining Data Map PII-only
+  scan-rule-set follow-ups tracked under "Follow-ups discovered while building the Data Map Azure
+  Synapse Analytics scenario." Applies the proven live-Types-API exclusion-list pattern (already
+  shipped for Azure SQL Database and Azure Synapse Analytics) to Azure SQL Managed Instance. Per
+  that follow-up's own instruction, independently direct-fetched
+  `New-AzPurviewAzureSqlDatabaseManagedInstanceScanRulesetObject.md` (via `raw.githubusercontent.com`
+  — `learn.microsoft.com` again returned `EGRESS_BLOCKED` in this build environment, the same
+  restriction every recent fragment in this log has hit) rather than assuming either prior sibling's
+  name-vs-kind relationship: confirmed the custom ruleset `Kind` is the literal string
+  `"AzureSqlDatabaseManagedInstance"` — identical to the System default ruleset's own name (the
+  Azure SQL Database sibling's simpler pattern), **not** the Azure Synapse Analytics sibling's
+  naming trap (where the System ruleset name and the custom `kind` are two different strings).
+  `design.md` §2 goal 6 and `README.md` §11 disclose this as independently confirmed for this
+  source type specifically, and explicitly warn against assuming it forward onto the one remaining,
+  still-unbuilt sibling (`scan-on-premises-sql-server-and-classify-pii-ruleset`, `kind:
+  SqlServerDatabase`) without its own direct-fetch check — that item is re-added to TODO above with
+  the same warning repeated. Four-lens review (`reviews.md`) found two real Fix items, both resolved
+  without code changes (the deploy/validate scripts already carried both sibling scenarios'
+  already-reviewed guards — scan-kind compatibility check, shared-object clobber warning — from the
+  first draft): (1) Red Team — the original draft's `design.md` didn't yet state clearly enough that
+  this scenario's name-vs-kind finding was independently confirmed rather than pattern-matched,
+  risking a future copy-paste mistake onto the unbuilt `SqlServerDatabase` sibling; fixed by making
+  the independent-verification framing explicit in `design.md`/`README.md`/`rollback.md`. (2) Blue
+  Team — the original Prerequisites table didn't disclaim that this scenario assumes the base
+  scenario's own unusually long prerequisite list (public endpoint, Microsoft Entra admin, Directory
+  Readers role, NSG rule, `db_datareader` grant) is already satisfied; fixed with an explicit
+  disclaimer row and a `design.md` §5 non-goals entry. CISO and Product Owner passed without
+  required changes. **Grounding method note:** all citations except the one GitHub raw-source fetch
+  above are unchanged, already-confirmed references carried forward from the Azure SQL Database and
+  Azure Synapse Analytics sibling scenarios' own builds (both direct-fetched in earlier sessions);
+  no cmdlet, enum value, or blade path was invented, and every unconfirmed point is flagged inline
+  as VERIFY rather than guessed.
 
 ## Blocked / needs user
 - **Environment note (2026-09-16, not a question needing a user decision — informational for future
