@@ -13,7 +13,7 @@ const yearsExperience = '9+';
 const bioLead =
   'Microsoft 365 security consultant with 9+ years of client delivery across government, utility, and regulated enterprise environments.';
 const bioBody =
-  'My hands-on work spans the full E5 security stack — Purview information protection, DLP and insider risk; the Defender family; Sentinel; Entra ID with Conditional Access and PIM; and Intune and SCCM. I run engagements end to end: first assessment through design, phased rollout, testing, and handover.';
+  'My hands-on work covers the full E5 security stack, including Purview information protection, DLP and insider risk, the Defender family, Sentinel, Entra ID with Conditional Access and PIM, plus Intune and SCCM. I stay with an engagement the whole way, from the first assessment through design, phased rollout, testing, and handover.';
 
 // Only the Purview scenario library is published to this site.
 const scenarios = await getCollection('scenarios');
@@ -30,7 +30,7 @@ const areaList = [...areas.entries()]
 ---
 
 <Base
-  title={`${name} — ${role}`}
+  title={`${name} · ${role}`}
   description={`${name}, ${role} in ${location}. A growing library of production-ready Microsoft Purview and security scenarios: ${focusAreas.join(', ')}.`}
 >
   <section class="hero">
@@ -49,8 +49,9 @@ const areaList = [...areas.entries()]
       </p>
 
       <p class="lead">
-        A growing, hands-on library of production-ready Microsoft Purview scenarios — each taken
-        end to end: business driver, architecture, deployment, validation, and rollback.
+        A growing, hands-on library of production-ready Microsoft Purview scenarios. Every one is
+        taken from start to finish, covering the business driver, architecture, deployment,
+        validation, and rollback.
       </p>
 
       <ul class="chips" aria-label="Focus areas">
@@ -85,7 +86,7 @@ const areaList = [...areas.entries()]
       </div>
       <div class="stat">
         <span class="num">4</span>
-        <span class="lbl">Artifacts each: design · deploy · validate · rollback</span>
+        <span class="lbl">Docs per scenario: design, deploy, validate, rollback</span>
       </div>
     </div>
   </section>
@@ -122,8 +123,8 @@ const areaList = [...areas.entries()]
       }
     </div>
     <p class="roadmap">
-      <strong>This library keeps growing.</strong> New Microsoft Purview use cases — and scenarios
-      spanning the wider Microsoft security and compliance stack — are added step by step.
+      <strong>This library keeps growing.</strong> I add new Microsoft Purview use cases regularly,
+      along with scenarios that reach into the wider Microsoft security and compliance stack.
     </p>
   </section>
 
