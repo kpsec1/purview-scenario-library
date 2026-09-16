@@ -7649,7 +7649,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   behaves as a directly-callable URL for this specific endpoint — no populated multi-page worked
   example exists in Microsoft's reference) is flagged inline as VERIFY rather than guessed.
 - [x] **`scenarios/unified-catalog/manage-okrs/` — progress-trend/staleness-detection companion**
-  — commit PENDING — 2026-09-16. Companion fragment (not a new scenario folder) closing the
+  — commit b59902c — 2026-09-16. Companion fragment (not a new scenario folder) closing the
   "Consider a small scheduled companion script that re-runs `validate/Test-Okr.ps1` on a cadence and
   diffs its output against a prior run" follow-up tracked under "Follow-ups discovered while building
   the Unified Catalog manage-okrs scenario" — picked over three other equally-live candidates
