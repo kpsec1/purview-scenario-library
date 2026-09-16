@@ -1833,13 +1833,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   day for low/medium/high) and states it's illustrative, not a universal default.
   `data-leaks-exfiltration-activity-trigger/README.md` §6/§11 and the deploy manifest flag this
   rather than guessing a number.
-- [ ] Re-open and re-check `data-leaks/design.md` §6 and `README.md` §6/§11's own combinability
+- [x] Re-open and re-check `data-leaks/design.md` §6 and `README.md` §6/§11's own combinability
   VERIFY (whether the DLP-policy trigger and the exfiltration-activity trigger can be enabled on
   one policy simultaneously) against this fragment's own stronger — but still not conclusive —
   direct-fetch finding: the "Get started" page's Step 6 phrases the two options as alternative "if
-  you select X... if you select Y..." branches. Not applied to the sibling's own files in this
-  turn (`AGENTS.md` §6 one-fragment-per-turn discipline) —
-  `data-leaks-exfiltration-activity-trigger/design.md` §2 goal 6 records the finding.
+  you select X... if you select Y..." branches — **applied** (see DONE below): `data-leaks/
+  design.md` §6 and `README.md` §11 now cross-link the sibling's stronger single-select signal
+  in place of the original weaker "no equivalent explicit statement found" framing, still
+  disclosed as an open VERIFY rather than resolved (Microsoft never publishes an explicit
+  "cannot combine" statement either way).
 - [ ] Once Microsoft documents a Graph/PowerShell read API for a policy's configured trigger
   indicators, trigger threshold mode, or scoring indicator threshold mode, add an automated check
   to `data-leaks-exfiltration-activity-trigger/validate/
@@ -7008,6 +7010,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   CISO, and Product Owner all Pass) all updated. All four scripts in the scenario folder
   parse-checked clean (`[System.Management.Automation.Language.Parser]::ParseFile`, zero errors).
   No new VERIFY items introduced beyond the one already tracked (product-only scope shape).
+- [x] **`scenarios/insider-risk/data-leaks/` — propagate the stronger single-select signal into the
+  combinability VERIFY** — commit f1c2cbe — 2026-09-16. Sub-task fragment (not a new scenario):
+  closes the `PROGRESS.md` follow-up asking to re-check `data-leaks/design.md` §6 and `README.md`
+  §11's own "can both triggering events be combined on one policy?" VERIFY against the sibling
+  `data-leaks-exfiltration-activity-trigger` scenario's own stronger (but still not conclusive)
+  direct Microsoft Learn fetch: the "Get started with Insider Risk Management" Step 6 workflow
+  words the two triggering-event options ("User matches a DLP policy" vs. "User performs an
+  exfiltration activity") as alternative "if you select X... if you select Y..." branches, not an
+  explicit "select either or both" statement. Updated `design.md` §6 (Key decisions table) and
+  `README.md` §11 (Known limitations) to cross-link the sibling's finding and drop the now-stale
+  "no equivalent explicit statement found" framing, while keeping the question disclosed as an open
+  VERIFY rather than resolved either way — Microsoft never publishes an explicit "cannot combine"
+  statement. No code changes; `reviews.md`'s existing "open questions surfaced as open, not
+  resolved by optimistic assumption" framing already covers this item, so it was left unchanged.
+  **Also fixed this run (not the fragment itself, but required before any commit could land):**
+  this container's working tree was a detached HEAD sitting 37 commits ahead of the local `main`
+  branch ref and `origin/main` — a prior session's completed fragments (data-leaks-by-risky-users,
+  data-leaks-by-priority-users, the GDPR/HIPAA/SOC 2/compromised-account-incident-response
+  fragments, and more) had been committed but never pushed. Fast-forwarded local `main` to that
+  HEAD and pushed all 37 commits plus this fragment's own commit to `origin/main` in one push
+  (`382bd89..f1c2cbe`) — a plain fast-forward, no rebase or force needed.
 
 ## Blocked / needs user
 - **CORRECTED, false alarm (2026-09-09) — retracting an earlier entry from this same run.**
