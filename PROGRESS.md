@@ -2859,7 +2859,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/insider-risk/data-leaks/` (confirmed max-users cap, Copilot workload exclusion,
-  mixed-workload grounding)** — commit PENDING_HASH — 2026-09-16. Follow-up grounding/propagation
+  mixed-workload grounding)** — commit 695b4b1 — 2026-09-16. Follow-up grounding/propagation
   fragment (not a new scenario): re-confirmed three previously-open VERIFY items via a direct
   Microsoft Learn fetch (this session's network environment did not block it, unlike the original
   build's) and propagated the results into the scenario's docs and scripts. (1) The base `Data
