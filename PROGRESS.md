@@ -2652,15 +2652,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   flag with no analog in the other three siblings' crosswalks.
 
 ### Follow-ups discovered while building the Compliance Manager HIPAA/HITECH assessment scenario
-- [ ] Consider a fifth Compliance Manager scenario for **GDPR** (the regulation this item's own
-  tie-break rule deferred in favor of HIPAA/HITECH) — Compliance Manager's regulation catalog lists
-  "EU GDPR (General Data Protection Regulation)" as a premium template under the EMEA regional
-  category, with its own dedicated `compliance/regulatory/gdpr` Microsoft Learn page (confirmed
-  during this build's grounding pass, not yet deep-grounded into a full scenario). GDPR's own
-  published structure (data-subject rights, lawful-basis/consent, cross-border-transfer mechanisms,
-  72-hour breach notification to a Data Protection Authority) is a materially different shape from
-  any of the four regulations this library now covers and would need its own crosswalk, not a copy
-  of the HIPAA/HITECH one.
+- [x] Consider a fifth Compliance Manager scenario for **GDPR** (the regulation this item's own
+  tie-break rule deferred in favor of HIPAA/HITECH) — **built** (see DONE below):
+  `scenarios/compliance-manager/gdpr-assessment/`, mirroring `assess-against-iso27001/`,
+  `pci-dss-assessment/`, `soc2-assessment/`, and `hipaa-hitech-assessment/`'s shape, with its own
+  6-category crosswalk matching GDPR's own published structure (Data Subject Rights, Data Processing
+  Principles, Breach Notification, Data Protection Impact Assessment, Cross-Border Data Transfers,
+  Accountability & Governance) rather than a copy of any sibling's shape — genuinely different from
+  a numbered-goal (PCI DSS), Trust-Services-Criteria (SOC 2), Annex A (ISO 27001), or
+  rule-with-safeguard-categories (HIPAA/HITECH) structure. Also grounded and documented three
+  GDPR-specific wrinkles no sibling scenario needed: the December 2022 licensing change's specific
+  effect on GDPR (moved from included-by-default to counting against the 3-free-premium-template
+  allotment, alongside NIST 800-53 and ISO 27001), GDPR's Article 37 *conditional* (not blanket) DPO
+  designation requirement, and GDPR's own Article 42/43 certification mechanism being real but
+  fragmented (a third distinct "what this assessment is not" shape, alongside HIPAA's "none exists"
+  and SOC 2/ISO 27001's "a mature one exists").
 - [ ] Consider a dedicated PHI-classification/DLP scenario using Microsoft Purview's built-in
   "U.S. Health Insurance Act (HIPAA) Enhanced" DLP policy template (confirmed via
   `dlp-policy-templates-include` during this build: SSN + DEA Number + U.S. Physical Addresses +
@@ -2683,6 +2689,37 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (`assess-against-iso27001`, `pci-dss-assessment`, `soc2-assessment`, `hipaa-hitech-assessment`)
   simultaneously, not just pairwise — extends the identical open item `soc2-assessment` left behind
   for its own three-way case.
+
+### Follow-ups discovered while building the Compliance Manager EU GDPR assessment scenario
+- [ ] A dedicated **GDPR Data Subject Request (DSR) fulfillment** scenario — the closest existing
+  technical building block, `scenarios/ediscovery/search-and-purge-data-spillage/`, was built for
+  inadvertent data-spillage remediation, not purpose-built DSR case management: it has no
+  request-tracking, no per-request SLA timer against GDPR's own Article 12(3) one-month (extendable
+  by two further months) response deadline, and no rectification/restriction workflow (only
+  discovery/export/deletion). `gdpr-assessment/README.md` §11, `design.md` §7, and `reviews.md` Red
+  Team finding 4 all disclose this gap rather than overclaim DSR coverage that doesn't exist.
+- [ ] A **cross-border data transfer / data residency** scenario scoping Standard Contractual
+  Clauses-relevant technical controls (e.g. Data Map/Purview data-residency-aware scanning or
+  storage-location reporting) for GDPR Article 46 purposes — `gdpr-assessment/deploy/policy/
+  gdpr-assessment-manifest.json`'s `controlCrosswalk` states this category has little to no direct
+  technical coverage from this library today; also relevant to the AGENTS.md §3 "multi-geo data
+  residency" scale axis more broadly, not just GDPR.
+- [ ] VERIFY (pilot tenant): whether Compliance Manager's Controls/Improvement actions views let you
+  filter or tag improvement actions by GDPR compliance area (Data Subject Requests / Breach
+  Notification / DPIA / processing principles) after assessment creation — no documented wizard step
+  or worked example surfaced during this build's Microsoft Learn MCP grounding pass.
+  `gdpr-assessment/README.md` §11 flags this as an open item rather than assuming the capability
+  exists or doesn't.
+- [ ] Once a live tenant is available: run the "Group-sharing functional test" across all five
+  Compliance Manager scenarios now sharing the `Security & Compliance Assessments` group
+  (`assess-against-iso27001`, `pci-dss-assessment`, `soc2-assessment`, `hipaa-hitech-assessment`,
+  `gdpr-assessment`) simultaneously, not just pairwise — extends the identical open item
+  `hipaa-hitech-assessment` left behind for its own four-way case.
+- [ ] VERIFY (pilot tenant): whether an organization that adopted Compliance Manager's GDPR template
+  before the December 2022 licensing change is shown any distinct migration/grandfathering signal on
+  the Regulations page, or simply sees it counted against the 3-free-premium-template allotment with
+  no further notice — `gdpr-assessment/README.md` §3/§10 states the current model but this
+  transition-period UX detail wasn't independently confirmed.
 
 ### Follow-ups discovered while building the Data Lineage custom-process-lineage scenario
 - [ ] VERIFY (pilot tenant): whether a relationship end's `typeName` must be the entity's own
@@ -3004,6 +3041,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/compliance-manager/gdpr-assessment/`** — commit PENDING (see the immediately
+  following "record commit hash" entry) — 2026-09-16. Fifth Compliance Manager scenario: full
+  deliverable (README.md, design.md, deploy/policy manifest, reused audit-trail export script,
+  validate script, rollback.md, reviews.md) mirroring `assess-against-iso27001/`,
+  `pci-dss-assessment/`, `soc2-assessment/`, and `hipaa-hitech-assessment/`'s shape. Grounded via the
+  Microsoft Learn MCP tool (`microsoft_docs_search`/`microsoft_docs_fetch`, available and used
+  directly this run) plus WebSearch for GDPR's own primary-text articles (37, 42, 12) not hosted on
+  learn.microsoft.com. Own 6-category crosswalk (Data Subject Rights, Data Processing Principles,
+  Breach Notification, DPIA, Cross-Border Data Transfers, Accountability & Governance) — a genuinely
+  different shape from all four sibling crosswalks, not a relabeled copy. Four-lens review completed
+  with 4 Red Team / 4 Blue Team / 8 Product Owner findings, all resolved (0 Fail); CISO lens Pass.
+  Five new follow-ups recorded above (DSR-fulfillment scenario, cross-border-transfer scenario, and
+  three VERIFY items) rather than expanded inline to keep this fragment scoped.
 - [x] **`scenarios/insider-risk/security-policy-violations-by-priority-users/` — re-verification
   fragment** — commit c6945ae — 2026-09-16. Closed the two top TODO items under "Follow-ups
   discovered while building the Data leaks by priority users scenario". This fragment had direct
