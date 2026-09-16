@@ -1,12 +1,26 @@
 # Microsoft Purview Scenario & Automation Library
 
-A commercial-grade, vendor-ready library covering **every Microsoft Purview module**. For each
-module it ships a systematic catalog of real-world **scenarios**, and every scenario delivers
-both **documentation** and **working automation code** (PowerShell / Microsoft Graph, IaC, and
-ready-to-import policy definitions).
+*A hundred-plus ways Purview actually gets deployed — not fifteen slides in a deck.*
 
-Each scenario is independently reviewed from four perspectives — **Red Team, Blue Team, CISO,
-and Microsoft Product Owner** — so what ships is attack-tested, operable, fundable, and correct.
+Every module. Every failure mode. Every regulatory driver. Documented and shipped as working
+PowerShell, reviewed from four angles before anything counts as done.
+
+**[View the styled homepage →](docs/homepage.html)**
+
+> Built scenario by scenario by Krunal Patel — [krunalpatel.ca@outlook.com](mailto:krunalpatel.ca@outlook.com)
+
+---
+
+## Why this exists
+
+Most Purview content stops at the reference architecture. This doesn't. Every scenario here
+ships as documentation *and* runnable automation — parameterized, idempotent, with a dry-run
+path — because that's the gap I kept running into: a clean architecture diagram and no script I
+could actually hand to a customer.
+
+I build it one scenario at a time: ground the facts in Microsoft's own documentation, write the
+code, then argue with it from four different angles — how it gets bypassed, how it gets
+operated, whether I'd fund it, whether Microsoft would call it correct — before it ships.
 
 > **Status:** in active build. See [`PROGRESS.md`](PROGRESS.md) for live coverage. This is a
 > knowledge-and-code product; code is authored to run in the buyer's own tenant (never auto-run
@@ -14,16 +28,30 @@ and Microsoft Product Owner** — so what ships is attack-tested, operable, fund
 
 ---
 
-## Module coverage
+## The numbers
 
-**Data Governance** — Data Map · Unified Catalog · Data Estate Insights · Data Quality · Data Lineage
-**Data Security** — Information Protection · DLP · Insider Risk Management · Adaptive Protection · DSPM for AI · Data Security Investigations
-**Risk & Compliance** — Compliance Manager · Communication Compliance · eDiscovery · Audit · Data Lifecycle Management · Records Management · Information Barriers
+| | |
+|---|---|
+| **103** | scenarios shipped |
+| **18** | Purview modules covered |
+| **4** | review lenses, every scenario |
+| **0** | invented cmdlets — unverified facts get tagged `VERIFY`, not guessed |
+
+## What's covered
+
+Eighteen Purview modules, organized the way Microsoft organizes them:
+
+**Data Governance** — Data Map (9) · Unified Catalog (6) · Data Estate Insights (3) · Data Quality (2) · Data Lineage (2)
+**Data Security** — DLP (18) · Insider Risk Management (10) · Information Protection (4) · Adaptive Protection (6) · DSPM for AI (3) · Data Security Investigations (1)
+**Risk & Compliance** — Data Lifecycle Management (9) · eDiscovery (8) · Compliance Manager (6) · Records Management (5) · Communication Compliance (4) · Audit (4) · Information Barriers (3)
 **Cross-cutting** — Licensing matrix · RBAC model · Graph/PowerShell automation surface · Migration
 
 See the live coverage matrix in [`PROGRESS.md`](PROGRESS.md).
 
-## How each scenario is structured
+## How every scenario ships
+
+Same six files, every time. No scenario is "done" until all six exist and the review below has
+no open findings.
 
 ```
 scenarios/<module>/<scenario-slug>/
@@ -34,6 +62,15 @@ scenarios/<module>/<scenario-slug>/
 ├── rollback.md    # clean undo
 └── reviews.md     # Red / Blue / CISO / MS-Product-Owner assessment
 ```
+
+## How it's reviewed
+
+Before a scenario counts as finished, I argue with it from four seats at the table:
+
+1. **Red Team** — how this gets bypassed: policy exceptions, coverage gaps, the unmonitored egress path.
+2. **Blue Team** — is it detectable and operable: alerts, signal-to-noise, the runbook someone actually follows at 2am.
+3. **CISO** — risk reduction against cost, licensing spend, change-management impact: would I actually fund this.
+4. **Microsoft Product Owner** — right feature for the job, current with Microsoft's own direction, nothing deprecated or reinvented.
 
 ## Repository conventions
 

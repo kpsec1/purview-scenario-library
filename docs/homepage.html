@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Purview Scenario &amp; Automation Library — Krunal Patel</title>
+<meta name="description" content="103 Microsoft Purview scenarios across 18 modules, each documented, automated, and four-lens reviewed. Built by Krunal Patel.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #17140F; }
+  body {
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    color: #F3EEE4;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: #E3963E; text-decoration: none; }
+  a:hover { color: #F2B368; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .container { max-width: 880px; margin: 0 auto; padding: 0 32px; }
+  .hero-headline { font-size: 58px; }
+  .module-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px; }
+  .byline-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .footer-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .stats-row { display: flex; flex-wrap: wrap; gap: 32px; }
+  .stat { flex: 1 1 160px; min-width: 150px; border-top: 1px solid #E3963E; padding-top: 16px; }
+  .stat-value { font-size: 40px; color: #E3963E; }
+  .col-list { display: flex; flex-direction: column; gap: 11px; font-size: 15px; }
+  .col-row { display: flex; justify-content: space-between; }
+  .col-row span:last-child { color: #A79C88; }
+  .review-item { display: flex; gap: 24px; padding: 22px 0; border-top: 1px solid #332D22; }
+  .review-num { font-size: 14px; color: #E3963E; width: 28px; flex-shrink: 0; }
+  .section { padding-top: 64px; padding-bottom: 64px; border-top: 1px solid #332D22; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 24px; }
+  pre.tree { white-space: pre; overflow-x: auto; background: #1D1912; border: 1px solid #332D22; padding: 24px 28px; font-size: 13.5px; line-height: 1.9; color: #F3EEE4; margin: 0; }
+  .cta { background: #E3963E; color: #17140F; font-weight: 600; font-size: 15px; padding: 13px 26px; display: inline-block; }
+  @media (max-width: 640px) {
+    .container { padding: 0 20px; }
+    .hero-headline { font-size: 36px; }
+    .module-grid { grid-template-columns: 1fr; gap: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div style="min-height: 100%; padding-bottom: 96px;">
+
+  <!-- Hero -->
+  <div class="container" style="padding-top: 120px; padding-bottom: 64px;">
+    <div class="mono" style="font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #E3963E; margin-bottom: 24px;">
+      Microsoft Purview &middot; Scenario &amp; Automation Library
+    </div>
+    <h1 class="hero-headline" style="font-family: 'Source Serif 4', ui-serif, Georgia, serif; font-weight: 500; line-height: 1.08; margin: 0 0 28px 0; max-width: 820px;">
+      A hundred-plus ways Purview actually gets deployed &mdash; not fifteen slides in a deck.
+    </h1>
+    <p style="font-size: 19px; line-height: 1.6; color: #A79C88; max-width: 620px; margin: 0 0 40px 0;">
+      Every module. Every failure mode. Every regulatory driver. Documented and shipped as
+      working PowerShell, reviewed from four angles before anything counts as done.
+    </p>
+    <div style="width: 64px; height: 2px; background: #E3963E; margin-bottom: 40px;"></div>
+    <div class="byline-row">
+      <a class="cta" href="mailto:krunalpatel.ca@outlook.com?subject=Purview%20Scenario%20Library">Get in touch</a>
+      <div class="mono" style="font-size: 13px; color: #A79C88;">
+        Built scenario by scenario by Krunal Patel
+      </div>
+    </div>
+  </div>
+
+  <!-- Why -->
+  <div class="container section">
+    <div class="mono eyebrow" style="color: #A79C88;">01 &mdash; Why this exists</div>
+    <p style="font-size: 18px; line-height: 1.75; max-width: 680px; margin: 0 0 20px 0;">
+      Most Purview content stops at the reference architecture. This doesn&rsquo;t. Every scenario
+      here ships as documentation <em>and</em> runnable automation &mdash; parameterized, idempotent,
+      with a dry-run path &mdash; because that&rsquo;s the gap I kept running into: a clean architecture
+      diagram and no script I could actually hand to a customer.
+    </p>
+    <p style="font-size: 18px; line-height: 1.75; max-width: 680px; margin: 0; color: #A79C88;">
+      I build it one scenario at a time: ground the facts in Microsoft&rsquo;s own documentation, write
+      the code, then argue with it from four different angles &mdash; how it gets bypassed, how it gets
+      operated, whether I&rsquo;d fund it, whether Microsoft would call it correct &mdash; before it ships.
+    </p>
+  </div>
+
+  <!-- Stats -->
+  <div class="container section">
+    <div class="stats-row">
+      <div class="stat"><div class="mono stat-value">103</div><div style="font-size: 14px; color: #A79C88; margin-top: 6px;">scenarios shipped</div></div>
+      <div class="stat"><div class="mono stat-value">18</div><div style="font-size: 14px; color: #A79C88; margin-top: 6px;">Purview modules covered</div></div>
+      <div class="stat"><div class="mono stat-value">4</div><div style="font-size: 14px; color: #A79C88; margin-top: 6px;">review lenses, every scenario</div></div>
+      <div class="stat"><div class="mono stat-value">0</div><div style="font-size: 14px; color: #A79C88; margin-top: 6px;">invented cmdlets &mdash; unverified facts get tagged, not guessed</div></div>
+    </div>
+  </div>
+
+  <!-- Module coverage -->
+  <div class="container section">
+    <div class="mono eyebrow" style="color: #A79C88;">02 &mdash; What&rsquo;s covered</div>
+    <p style="font-size: 18px; line-height: 1.7; max-width: 680px; margin: 0 0 36px 0;">
+      Eighteen Purview modules, organized the way Microsoft organizes them.
+    </p>
+    <div class="module-grid">
+      <div>
+        <div class="mono" style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #F3EEE4; margin-bottom: 18px;">Data Governance</div>
+        <div class="col-list">
+          <div class="col-row"><span>Data Map</span><span class="mono">9</span></div>
+          <div class="col-row"><span>Unified Catalog</span><span class="mono">6</span></div>
+          <div class="col-row"><span>Data Estate Insights</span><span class="mono">3</span></div>
+          <div class="col-row"><span>Data Quality</span><span class="mono">2</span></div>
+          <div class="col-row"><span>Data Lineage</span><span class="mono">2</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="mono" style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #F3EEE4; margin-bottom: 18px;">Data Security</div>
+        <div class="col-list">
+          <div class="col-row"><span>DLP</span><span class="mono">18</span></div>
+          <div class="col-row"><span>Insider Risk Mgmt</span><span class="mono">10</span></div>
+          <div class="col-row"><span>Information Protection</span><span class="mono">4</span></div>
+          <div class="col-row"><span>Adaptive Protection</span><span class="mono">6</span></div>
+          <div class="col-row"><span>DSPM for AI</span><span class="mono">3</span></div>
+          <div class="col-row"><span>Data Security Investigations</span><span class="mono">1</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="mono" style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #F3EEE4; margin-bottom: 18px;">Risk &amp; Compliance</div>
+        <div class="col-list">
+          <div class="col-row"><span>Data Lifecycle Mgmt</span><span class="mono">9</span></div>
+          <div class="col-row"><span>eDiscovery</span><span class="mono">8</span></div>
+          <div class="col-row"><span>Compliance Manager</span><span class="mono">6</span></div>
+          <div class="col-row"><span>Records Management</span><span class="mono">5</span></div>
+          <div class="col-row"><span>Communication Compliance</span><span class="mono">4</span></div>
+          <div class="col-row"><span>Audit</span><span class="mono">4</span></div>
+          <div class="col-row"><span>Information Barriers</span><span class="mono">3</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it ships -->
+  <div class="container section">
+    <div class="mono eyebrow" style="color: #A79C88;">03 &mdash; How every scenario ships</div>
+    <p style="font-size: 18px; line-height: 1.7; max-width: 680px; margin: 0 0 28px 0;">
+      Same six files, every time. No scenario is &ldquo;done&rdquo; until all six exist and the review
+      below has no open findings.
+    </p>
+    <pre class="tree mono">scenarios/&lt;module&gt;/&lt;scenario&gt;/
+&#9500;&#9472;&#9472; README.md      summary &rarr; prerequisites &rarr; steps &rarr; validation &rarr; rollback
+&#9500;&#9472;&#9472; design.md      architecture, decisions, data flow
+&#9500;&#9472;&#9472; deploy/        *.ps1 &mdash; idempotent, parameterized, dry-run path
+&#9500;&#9472;&#9472; validate/      verification scripts, safe to re-run
+&#9500;&#9472;&#9472; rollback.md    clean undo
+&#9492;&#9472;&#9472; reviews.md     Red Team / Blue Team / CISO / Product Owner</pre>
+  </div>
+
+  <!-- Review -->
+  <div class="container section">
+    <div class="mono eyebrow" style="color: #A79C88;">04 &mdash; How it&rsquo;s reviewed</div>
+    <p style="font-size: 18px; line-height: 1.7; max-width: 680px; margin: 0 0 36px 0;">
+      Before a scenario counts as finished, I argue with it from four seats at the table.
+    </p>
+    <div>
+      <div class="review-item">
+        <div class="mono review-num">01</div>
+        <div>
+          <div style="font-weight: 600; font-size: 16px; margin-bottom: 6px;">Red Team</div>
+          <div style="color: #A79C88; font-size: 15px; line-height: 1.6;">How this gets bypassed &mdash; policy exceptions, coverage gaps, the unmonitored egress path.</div>
+        </div>
+      </div>
+      <div class="review-item">
+        <div class="mono review-num">02</div>
+        <div>
+          <div style="font-weight: 600; font-size: 16px; margin-bottom: 6px;">Blue Team</div>
+          <div style="color: #A79C88; font-size: 15px; line-height: 1.6;">Is it detectable and operable &mdash; alerts, signal-to-noise, the runbook someone actually follows at 2am.</div>
+        </div>
+      </div>
+      <div class="review-item">
+        <div class="mono review-num">03</div>
+        <div>
+          <div style="font-weight: 600; font-size: 16px; margin-bottom: 6px;">CISO</div>
+          <div style="color: #A79C88; font-size: 15px; line-height: 1.6;">Risk reduction against cost, licensing spend, change-management impact &mdash; would I actually fund this.</div>
+        </div>
+      </div>
+      <div class="review-item" style="border-bottom: 1px solid #332D22;">
+        <div class="mono review-num">04</div>
+        <div>
+          <div style="font-weight: 600; font-size: 16px; margin-bottom: 6px;">Microsoft Product Owner</div>
+          <div style="color: #A79C88; font-size: 15px; line-height: 1.6;">Right feature for the job, current with Microsoft&rsquo;s own direction, nothing deprecated or reinvented.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="container" style="padding-top: 48px;">
+    <div class="footer-row">
+      <div style="font-size: 14px; color: #A79C88; max-width: 420px; line-height: 1.6;">
+        Proprietary reference library. Code is authored to run in your tenant &mdash; never auto-executed
+        here.
+      </div>
+      <div class="mono" style="text-align: right; font-size: 13px; color: #A79C88;">
+        <div style="color: #F3EEE4; margin-bottom: 4px;">Krunal Patel</div>
+        <a href="mailto:krunalpatel.ca@outlook.com">krunalpatel.ca@outlook.com</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
