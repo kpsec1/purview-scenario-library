@@ -2940,7 +2940,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **`scenarios/audit/compromised-account-incident-response/`** — commit PENDING — 2026-09-16.
+- [x] **`scenarios/audit/compromised-account-incident-response/`** — commit a52d3a4 — 2026-09-16.
   The mutating incident-response companion `audit/premium-audit-investigation/design.md` §7
   explicitly scoped out. Automates Steps 1, 2, and 6 of Microsoft's own "Respond to a compromised
   cloud email account" playbook — disable the Entra ID account (`Update-MgUser -AccountEnabled
