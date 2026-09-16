@@ -1847,11 +1847,50 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   to `data-leaks-exfiltration-activity-trigger/validate/
   Test-DataLeaksExfiltrationActivityTriggerSetup.ps1` in place of the current manual checklist
   items for those two independent decisions.
-- [ ] Consider a companion scenario or script using the **Insider Risk Indicators (preview)**
+- [x] Consider a companion scenario or script using the **Insider Risk Indicators (preview)**
   connector to bring a non-Microsoft-workload detection (e.g. a third-party DLP or CASB alert) in
   as a custom trigger for this same base `Data leaks` template — explicitly out of scope for this
   fragment (`design.md` §7); a materially different building block (a new data connector) from
-  either existing worked example (DLP-policy trigger, built-in exfiltration-activity trigger).
+  either existing worked example (DLP-policy trigger, built-in exfiltration-activity trigger) —
+  **built** (see DONE below) as `scenarios/insider-risk/data-leaks-custom-indicator-trigger/`:
+  the third documented trigger mechanism for this template, worked end to end using Microsoft's
+  own Salesforce+Dropbox multi-indicator example, with a new upload script
+  (`deploy/Send-InsiderRiskIndicatorRecord.ps1`) that fails closed on two documented silent-
+  failure modes (duplicate UPN+timestamp silent-drop; source-column value mismatch) and reuses
+  the HR-connector sibling's app-registration scripts unmodified after independently confirming
+  (direct GitHub fetch of the actual ingestion sample script) the underlying OAuth/webhook
+  mechanics are identical. New follow-ups from this build are filed immediately below.
+
+### Follow-ups discovered while building the Data leaks custom-indicator (third-party-connector) trigger scenario
+- [ ] VERIFY (portal): whether custom indicators can actually be added to `Data leaks by priority
+  users` and/or `Data leaks by risky users` (not just the base `Data leaks` template this fragment
+  scoped itself to) — Microsoft's own wording ("any *Data theft* or *Data leaks* policies") is not
+  precise enough to confirm either direction. `data-leaks-custom-indicator-trigger/design.md` §2
+  goal 7/`README.md` §11 flag this rather than guessing. If confirmed, extend this scenario's
+  pattern to those sibling templates as a new fragment rather than editing this one.
+- [ ] VERIFY (portal): whether Source-column value matching for the Insider Risk Indicators
+  connector is case-sensitive — `data-leaks-custom-indicator-trigger/deploy/
+  Send-InsiderRiskIndicatorRecord.ps1` assumes case-sensitive matching (the stricter, fail-safer
+  assumption) but Microsoft's own documentation doesn't state either way.
+- [ ] VERIFY (pilot tenant): re-ingestion/de-duplication behavior for an unchanged CSV re-uploaded
+  on a subsequent scheduled run of `data-leaks-custom-indicator-trigger/deploy/
+  Send-InsiderRiskIndicatorRecord.ps1` — the same open question already tracked for the
+  HR-connector sibling's own webhook, now also open for this connector.
+- [ ] VERIFY (pilot tenant): end-to-end pipeline latency (third-party detection → CSV export →
+  upload → sync → scoring → alert) for `data-leaks-custom-indicator-trigger/` — not independently
+  measured in this build; no specific figure is asserted in `README.md` §7/§11 pending this.
+- [ ] Consider a Power Automate-based upload trigger for
+  `data-leaks-custom-indicator-trigger/` (Microsoft's own optional Step 7 in
+  `import-insider-risk-indicators`, triggered on new-file-in-OneDrive/SharePoint) as an alternative
+  to the scheduled-script pattern this fragment reused from the HR-connector sibling — explicitly
+  deferred as a non-goal in `design.md` §7.
+- [ ] Consider whether the partial-chunk-upload-failure behavior this build disclosed for
+  `data-leaks-custom-indicator-trigger/deploy/Send-InsiderRiskIndicatorRecord.ps1` (README.md §11 —
+  no all-or-nothing transaction, no automatic resume, relies on the duplicate-detection rule to
+  make a full re-run safe) also applies to `../departing-employee-data-theft/deploy/
+  Send-HrTerminationRecord.ps1`, which shares the same sequential-chunk-upload structure but never
+  had this consequence stated explicitly in its own docs — a documentation-only backport if
+  confirmed, not a code change.
 
 ### Follow-ups discovered while building the Data leaks by priority users scenario
 - [x] Correct `security-policy-violations-by-priority-users/README.md` §10's claim that its
@@ -3118,6 +3157,37 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/insider-risk/data-leaks-custom-indicator-trigger/`** — commit PENDING — 2026-09-16.
+  Third and final documented triggering-event mechanism for the base `Data leaks` Insider Risk
+  Management policy template (siblings: `data-leaks/` — DLP-policy trigger;
+  `data-leaks-exfiltration-activity-trigger/` — built-in-indicator trigger), closing the follow-up
+  filed while building the latter. Uses the **Insider Risk Indicators (preview)** connector to import
+  pre-aggregated, non-Microsoft-workload detections (Microsoft's own worked example: Salesforce +
+  Dropbox activity via a Source-column-routed CSV) as custom indicators, used as the policy's
+  trigger and/or scoring indicator with a mandatory custom threshold (no default exists for a custom
+  indicator). New deploy script `Send-InsiderRiskIndicatorRecord.ps1` takes the CSV's column names as
+  parameters (Microsoft documents this connector's schema as genuinely flexible, unlike the
+  HR-connector sibling's fixed schema) and fails closed on two Microsoft-documented silent-failure
+  modes: duplicate UPN+event-time combinations (silently dropped by the service) and source-column
+  values not matching the connector's configured allow-list (hard connector-side failure). Grounded
+  via the Microsoft Learn MCP tool (`microsoft_docs_fetch`, found available and used directly in this
+  build despite the scheduled task's own instructions assuming it would not be) against
+  `import-insider-risk-indicators`, `insider-risk-management-settings-policy-indicators`,
+  `insider-risk-management-policy-templates`, and `insider-risk-management-configure`, plus an
+  independent direct GitHub fetch of the actual `sample_script.ps1` ingestion sample script, which
+  confirmed the OAuth token endpoint, fixed resource ID, and webhook URL are identical to the
+  already-grounded HR-connector sibling's own script (and confirmed a different default chunk size,
+  5,000 vs. that sibling's page-documented 500) — reused `Register-HrConnectorApp.ps1`/
+  `Test-HrConnectorAppRegistration.ps1` unmodified on that basis rather than forking them. Full
+  deliverable: README.md (12-section skeleton), design.md, deploy/ (new upload/validation script +
+  policy-config manifest), validate/, rollback.md, and a four-lens reviews.md — two Fix items (Red
+  Team: the third-party CSV pipeline validates shape, not provenance, a new trust boundary; Blue
+  Team: partial-chunk-upload failure has no automatic resume) both resolved by disclosure in
+  `README.md` §8/§11 before this fragment was marked done. Six new follow-ups (template-scope
+  ambiguity, source-column case-sensitivity, re-ingestion idempotency, end-to-end latency, a
+  Power Automate upload-trigger alternative, and a possible documentation backport to the
+  HR-connector sibling) filed under "Follow-ups discovered while building the Data leaks
+  custom-indicator (third-party-connector) trigger scenario" above.
 - [x] **`scenarios/data-lifecycle-management/retention-labels-financial-records/` — grounding-defect
   fix fragment** — commit PENDING — 2026-09-16. Fixed the `New-RetentionComplianceRule -Name` +
   `-ApplyComplianceTag` invalid-parameter-combination defect flagged under "Follow-up discovered while
