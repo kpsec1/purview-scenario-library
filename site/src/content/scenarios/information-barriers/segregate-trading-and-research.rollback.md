@@ -10,10 +10,10 @@ until **Compliance/Legal confirm** the wall is no longer required. When in doubt
 
 ## Recommended sequence
 
-Deactivation only takes effect for users after a policy-**application** run — so lifting the wall is a
+Deactivation only takes effect for users after a policy-**application** run, so lifting the wall is a
 two-part act: set the policies inactive, then apply.
 
-### Stage 1 — Deactivate and lift the wall
+### Stage 1, Deactivate and lift the wall
 
 ```powershell
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
@@ -28,9 +28,9 @@ deploy with `-Activate`. Use this to pause the wall (e.g. a reorganization) with
 definition.
 
 Without `-Apply`, the policies are marked inactive but **users are still blocked** until an application
-run occurs — the script warns about this. Always `-Apply` when you actually intend to lift the wall.
+run occurs, the script warns about this. Always `-Apply` when you actually intend to lift the wall.
 
-### Stage 2 — Delete the policies and segments
+### Stage 2, Delete the policies and segments
 
 ```powershell
 ./deploy/Remove-TradingResearchBarrier.ps1 -ConfigPath ./deploy/config/trading-research-barrier.json -Apply -Delete
@@ -42,14 +42,14 @@ deploy. Use this only when the wall is being permanently retired.
 
 ## What rollback does **not** undo
 
-- **Anything that happened while the wall was up.** Removed chat memberships, blocked access — lifting
+- **Anything that happened while the wall was up.** Removed chat memberships, blocked access, lifting
   the wall restores future communication, it doesn't retroactively recreate conversations that were
   disabled.
-- **SharePoint/OneDrive IB enablement** (if you enabled it separately) — disable that via its own
+- **SharePoint/OneDrive IB enablement** (if you enabled it separately), disable that via its own
   configuration if fully decommissioning.
-- **The source directory attribute** used for segmentation — untouched; the wall's segmentation logic
+- **The source directory attribute** used for segmentation, untouched; the wall's segmentation logic
   lives in that attribute, which you manage independently.
-- **Audit records** of the IB configuration and application runs — retained per their own policy.
+- **Audit records** of the IB configuration and application runs, retained per their own policy.
 
 ## Verification after rollback
 
@@ -60,5 +60,5 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 
 After **Stage 1**, expect the policies to exist but be `Inactive` (the "state is Active" check `[WARN]`s
 without `-RequireActive`), and a fresh application run to be reported. After **Stage 2**, expect the
-segment and policy existence checks to `[FAIL]` — confirming removal. Then confirm in Teams that a
+segment and policy existence checks to `[FAIL]`, confirming removal. Then confirm in Teams that a
 Trading and a Research user can communicate again (allow up to 24h for SharePoint).

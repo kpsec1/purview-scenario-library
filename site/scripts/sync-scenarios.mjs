@@ -1,25 +1,24 @@
 // Sync the Purview scenario library into the Astro content collection.
 //
-// For each scenario we publish the FULL lifecycle on-site so a visitor can go
-// start to end without leaving for GitHub:
-//   <cat>/<slug>.md           overview (README)
-//   <cat>/<slug>.design.md    design notes
-//   <cat>/<slug>.deploy.md    deployment scripts (deploy/** inlined)
-//   <cat>/<slug>.validate.md  validation scripts (validate/** inlined)
-//   <cat>/<slug>.rollback.md  rollback notes
+// Per scenario we generate:
+//   src/content/scenarios/<cat>/<slug>.md            overview (README, cleaned)
+//   src/content/scenarios/<cat>/<slug>.design.md     design notes (cleaned)
+//   src/content/scenarios/<cat>/<slug>.rollback.md   rollback runbook (cleaned)
+//   src/data/scenario-scripts/<cat>/<slug>.json      deploy/validate scripts
 //
-// Cross-references to other scenarios (backticked `scenarios/<cat>/<slug>/`)
-// are rewritten as on-site links so the reader stays connected.
+// "Cleaned" means every em/en dash in prose is removed (never inside code), so
+// the whole site is free of long dashes. Overview frontmatter carries the
+// At-a-glance facts and a contents list for the redesigned scenario page.
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import GithubSlugger from 'github-slugger';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..', '..');
 const scenariosRoot = path.join(repoRoot, 'scenarios');
 const outRoot = path.join(scriptDir, '..', 'src', 'content', 'scenarios');
-
-const PART_ORDER = ['design', 'deploy', 'validate', 'rollback'];
+const dataRoot = path.join(scriptDir, '..', 'src', 'data', 'scenario-scripts');
 
 const LANG_BY_EXT = {
   '.ps1': 'powershell',
@@ -30,7 +29,35 @@ const LANG_BY_EXT = {
   '.sql': 'sql',
   '.yml': 'yaml',
   '.yaml': 'yaml',
+  '.bicep': 'bicep',
+  '.xml': 'xml',
+  '.csv': 'text',
+  '.txt': 'text',
 };
+
+const FRAMEWORKS = [
+  ['GDPR', /\bGDPR\b/],
+  ['HIPAA', /\bHIPAA\b/],
+  ['PCI DSS', /\bPCI[-\s]?DSS\b/],
+  ['SOC 2', /\bSOC[-\s]?2\b/],
+  ['ISO 27001', /\bISO(?:\/IEC)?\s?27001\b/],
+  ['NIST', /\bNIST\b/],
+  ['CCPA', /\bCCPA\b/],
+  ['SOX', /\bSOX\b|\bSarbanes[-\s]?Oxley\b/],
+  ['FINRA', /\bFINRA\b/],
+  ['FedRAMP', /\bFedRAMP\b/],
+];
+
+const LICENSES = [
+  ['Microsoft 365 E5', /\bM(?:icrosoft )?365 E5\b|\bE5\b/],
+  ['E5 Compliance', /\bE5 Compliance\b/],
+  ['Microsoft 365 E3', /\bM(?:icrosoft )?365 E3\b|\bE3\b/],
+  ['Teams Premium', /\bTeams Premium\b/],
+  ['SharePoint Advanced Management', /\bSharePoint Advanced Management\b|\bSAM\b/],
+  ['Defender for Endpoint P2', /\bDefender for Endpoint(?: Plan 2| P2)?\b/],
+  ['Entra ID P2', /\bEntra ID P2\b|\bAzure AD Premium P2\b/],
+  ['Pay-as-you-go', /\bpay[-\s]?as[-\s]?you[-\s]?go\b|\bconsumption[-\s]?based\b/],
+];
 
 async function isDir(p) {
   try {
@@ -59,9 +86,24 @@ async function walkFiles(dir) {
   for (const e of entries.sort((a, b) => a.name.localeCompare(b.name))) {
     const full = path.join(dir, e.name);
     if (e.isDirectory()) out.push(...(await walkFiles(full)));
-    else out.push(full);
+    else if (e.name !== '.DS_Store') out.push(full);
   }
   return out;
+}
+
+// Replace long dashes: numeric ranges become hyphens, everything else a comma.
+function cleanDashes(text) {
+  return text
+    .replace(/(\d)\s*[–—]\s*(\d)/g, '$1-$2')
+    .replace(/\s*[–—]\s*/g, ', ');
+}
+
+// Remove long dashes from all rendered content: prose, Mermaid diagram labels,
+// and inline code examples in the README. Mermaid arrows and PowerShell flags
+// use plain hyphens, which cleanDashes never touches. The actual deploy/validate
+// script files are published separately and verbatim.
+function cleanProse(markdown) {
+  return markdown.split('\n').map(cleanDashes).join('\n');
 }
 
 function extractTitle(markdown, fallback) {
@@ -96,30 +138,44 @@ function prettyCategory(slug) {
     .join(' ');
 }
 
-function fenceFor(content) {
-  // Use a fence longer than any run of backticks inside the content.
-  let max = 0;
-  for (const m of content.matchAll(/`+/g)) max = Math.max(max, m[0].length);
-  return '`'.repeat(Math.max(3, max + 1));
+function extractWhoFor(readme) {
+  const m = readme.match(/\*\*Who it'?s for:\*\*\s*(.+)/);
+  return m ? cleanDashes(m[1].replace(/\s+/g, ' ').trim()) : undefined;
 }
 
-async function buildScriptDoc(dir, kind) {
-  const files = (await walkFiles(dir)).filter((f) => !f.endsWith('.DS_Store'));
-  if (files.length === 0) return { md: null, count: 0 };
-  const intro =
-    kind === 'deploy'
-      ? 'The scripts and configuration below deploy this scenario. Review them, then run in order — each is designed to be idempotent and has a matching rollback.\n'
-      : 'Run these checks after deployment to confirm the control is working as designed.\n';
-  const parts = [intro];
-  for (const file of files) {
-    const rel = path.relative(dir, file).split(path.sep).join('/');
-    const ext = path.extname(file).toLowerCase();
-    const lang = LANG_BY_EXT[ext] ?? '';
-    const content = (await readMaybe(file)) ?? '';
-    const fence = fenceFor(content);
-    parts.push(`#### \`${rel}\`\n\n${fence}${lang}\n${content.replace(/\s+$/, '')}\n${fence}`);
+function detectFromList(text, list) {
+  const found = [];
+  for (const [label, re] of list) if (re.test(text)) found.push(label);
+  return found;
+}
+
+function sectionText(readme, headingRe) {
+  const lines = readme.split('\n');
+  const start = lines.findIndex((l) => headingRe.test(l));
+  if (start === -1) return '';
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    if (/^## /.test(lines[i])) {
+      end = i;
+      break;
+    }
   }
-  return { md: parts.join('\n\n'), count: files.length };
+  return lines.slice(start + 1, end).join('\n');
+}
+
+// Build the contents list from the README's H2 headings, matching the ids that
+// rehype-slug will assign (fresh slugger over all headings in document order).
+function buildToc(readme) {
+  const slugger = new GithubSlugger();
+  const toc = [];
+  for (const line of readme.split('\n')) {
+    const m = line.match(/^(#{2,6})\s+(.*\S)\s*$/);
+    if (!m) continue;
+    const text = cleanDashes(m[2].trim());
+    const id = slugger.slug(text);
+    if (m[1].length === 2) toc.push({ id, text });
+  }
+  return toc;
 }
 
 function frontmatter(obj) {
@@ -132,16 +188,31 @@ function frontmatter(obj) {
   return lines.join('\n');
 }
 
+async function collectScripts(dir) {
+  const files = await walkFiles(dir);
+  const scripts = [];
+  for (const file of files) {
+    const rel = path.relative(dir, file).split(path.sep).join('/');
+    const ext = path.extname(file).toLowerCase();
+    const lang = LANG_BY_EXT[ext] ?? 'text';
+    const code = (await readMaybe(file)) ?? '';
+    scripts.push({ path: rel, lang, code: code.replace(/\s+$/, '') });
+  }
+  return scripts;
+}
+
 async function main() {
   if (!(await isDir(scenariosRoot))) {
     console.log(
-      `sync-scenarios: source ${scenariosRoot} not found — keeping committed content, nothing to sync`
+      `sync-scenarios: source ${scenariosRoot} not found, keeping committed content, nothing to sync`
     );
     return;
   }
 
   await fs.rm(outRoot, { recursive: true, force: true });
   await fs.mkdir(outRoot, { recursive: true });
+  await fs.rm(dataRoot, { recursive: true, force: true });
+  await fs.mkdir(dataRoot, { recursive: true });
 
   const categories = (await fs.readdir(scenariosRoot, { withFileTypes: true }))
     .filter((d) => d.isDirectory())
@@ -161,82 +232,75 @@ async function main() {
       const readme = await readMaybe(path.join(dir, 'README.md'));
       if (readme === null) continue;
 
-      const id = `${category}/${slug}`;
       const rawTitle = extractTitle(readme, prettyCategory(slug));
       const { category: catLabel, short } = splitCategory(rawTitle, prettyCategory(category));
-      const overviewBody = stripFirstH1(readme);
+
+      const whoFor = extractWhoFor(readme);
+      const frameworks = detectFromList(readme, FRAMEWORKS);
+      const licensing = detectFromList(
+        sectionText(readme, /^##\s+\d+\.\s+Cost/) || readme,
+        LICENSES
+      );
+      const toc = buildToc(readme);
+
+      const deploy = await collectScripts(path.join(dir, 'deploy'));
+      const validate = await collectScripts(path.join(dir, 'validate'));
+      const designRaw = await readMaybe(path.join(dir, 'design.md'));
+      const rollbackRaw = await readMaybe(path.join(dir, 'rollback.md'));
 
       const outDir = path.join(outRoot, category);
       await fs.mkdir(outDir, { recursive: true });
 
-      const parts = [];
-
-      // Design
-      const designRaw = await readMaybe(path.join(dir, 'design.md'));
       if (designRaw) {
-        const body = stripFirstH1(designRaw);
         await fs.writeFile(
           path.join(outDir, `${slug}.design.md`),
-          frontmatter({ part: 'design', parent: id }) + body,
+          frontmatter({ part: 'design', parent: `${category}/${slug}` }) +
+            cleanProse(stripFirstH1(designRaw)),
           'utf8'
         );
-        parts.push('design');
       }
-
-      // Deploy scripts
-      const deploy = await buildScriptDoc(path.join(dir, 'deploy'), 'deploy');
-      if (deploy.md) {
-        await fs.writeFile(
-          path.join(outDir, `${slug}.deploy.md`),
-          frontmatter({ part: 'deploy', parent: id }) + deploy.md,
-          'utf8'
-        );
-        parts.push('deploy');
-      }
-
-      // Validate scripts
-      const validate = await buildScriptDoc(path.join(dir, 'validate'), 'validate');
-      if (validate.md) {
-        await fs.writeFile(
-          path.join(outDir, `${slug}.validate.md`),
-          frontmatter({ part: 'validate', parent: id }) + validate.md,
-          'utf8'
-        );
-        parts.push('validate');
-      }
-
-      // Rollback
-      const rollbackRaw = await readMaybe(path.join(dir, 'rollback.md'));
       if (rollbackRaw) {
-        const body = stripFirstH1(rollbackRaw);
         await fs.writeFile(
           path.join(outDir, `${slug}.rollback.md`),
-          frontmatter({ part: 'rollback', parent: id }) + body,
+          frontmatter({ part: 'rollback', parent: `${category}/${slug}` }) +
+            cleanProse(stripFirstH1(rollbackRaw)),
           'utf8'
         );
-        parts.push('rollback');
       }
 
-      // Overview (must be written last so `related` is complete)
-      const overviewFm = frontmatter({
-        title: short,
-        fullTitle: rawTitle,
-        category: catLabel,
-        categorySlug: category,
-        slug,
-        repoPath: `scenarios/${category}/${slug}`,
-        parts: parts.sort((a, b) => PART_ORDER.indexOf(a) - PART_ORDER.indexOf(b)),
-        deployCount: deploy.count,
-        validateCount: validate.count,
-      });
-      await fs.writeFile(path.join(outDir, `${slug}.md`), overviewFm + overviewBody, 'utf8');
+      if (deploy.length || validate.length) {
+        const dataDir = path.join(dataRoot, category);
+        await fs.mkdir(dataDir, { recursive: true });
+        await fs.writeFile(
+          path.join(dataDir, `${slug}.json`),
+          JSON.stringify({ deploy, validate }),
+          'utf8'
+        );
+      }
+
+      await fs.writeFile(
+        path.join(outDir, `${slug}.md`),
+        frontmatter({
+          title: cleanDashes(short),
+          category: catLabel,
+          categorySlug: category,
+          slug,
+          whoFor,
+          frameworks,
+          licensing,
+          deployCount: deploy.length,
+          validateCount: validate.length,
+          hasDesign: Boolean(designRaw),
+          hasRollback: Boolean(rollbackRaw),
+          toc,
+        }) + cleanProse(stripFirstH1(readme)),
+        'utf8'
+      );
       count += 1;
     }
   }
 
-  console.log(
-    `sync-scenarios: wrote ${count} scenarios (overview + lifecycle parts) from ${categories.length} categories`
-  );
+  console.log(`sync-scenarios: wrote ${count} scenarios from ${categories.length} categories`);
 }
 
 main().catch((err) => {

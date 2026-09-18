@@ -7,7 +7,7 @@ parent: "information-protection/auto-label-confidential-sharepoint"
 Auto-labeling changes affect live content classification, so roll back in stages rather than
 deleting outright.
 
-### Stage 1 — Disable (reversible, seconds)
+### Stage 1, Disable (reversible, seconds)
 
 ```powershell
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
@@ -27,7 +27,7 @@ Use this stage for: a false-positive wave that needs immediate relief while you 
 conditions, a change freeze, or a temporary business exception that doesn't warrant deleting the
 control.
 
-### Stage 2 — Simulation (partial rollback, keeps visibility)
+### Stage 2, Simulation (partial rollback, keeps visibility)
 
 If a full disable is too blunt (you still want to know what *would* have been labeled), step back
 to simulation instead of fully disabling:
@@ -39,14 +39,14 @@ Set-AutoSensitivityLabelPolicy -Identity "Confidentiality - Auto-Label PII in Sh
 Nothing is labeled going forward; simulation results still populate the Labeled items dashboard.
 This is the same mode the deploy script defaults to on first run.
 
-### Stage 3 — Permanent removal (not reversible)
+### Stage 3, Permanent removal (not reversible)
 
 ```powershell
 ./deploy/Remove-ConfidentialAutoLabelPolicy.ps1 -Purge
 ```
 
 This runs `Remove-AutoSensitivityLabelPolicy`, which deletes the policy **and its two rules** in
-one call. There is no "undo" — re-establishing the control means re-running
+one call. There is no "undo", re-establishing the control means re-running
 `deploy/New-ConfidentialAutoLabelPolicy.ps1` from scratch. Only do this when the control is being
 permanently retired (e.g., replaced by a broader policy covering more sensitive information types
 or locations).
@@ -61,13 +61,13 @@ or locations).
   scenario's scope.
 - **Encryption, if the label applies it.** If `Confidential` is configured to apply encryption,
   disabling or removing this auto-labeling policy has no effect on files already encrypted under
-  that label — the encryption is a property of the label assignment on the file, not of this
+  that label, the encryption is a property of the label assignment on the file, not of this
   policy.
-- **The `Confidential` label itself.** This scenario never created the label — it's a
+- **The `Confidential` label itself.** This scenario never created the label, it's a
   prerequisite dependency (see `design.md` §7). Removing this policy has no effect on the label's
   existence, definition, or publication to users.
 - **The `Set-SPOTenant -EnableAIPIntegration` tenant toggle.** That is a separate, tenant-wide
-  setting outside this policy's lifecycle (see `README.md` §3, §11) — this scenario's rollback
+  setting outside this policy's lifecycle (see `README.md` §3, §11), this scenario's rollback
   does not touch it.
 
 ## Verification after rollback

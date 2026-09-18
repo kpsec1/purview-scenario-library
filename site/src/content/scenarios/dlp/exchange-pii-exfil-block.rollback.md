@@ -6,7 +6,7 @@ parent: "dlp/exchange-pii-exfil-block"
 
 DLP policy changes affect live mail flow, so roll back in stages rather than deleting outright.
 
-### Stage 1 — Disable (reversible, seconds)
+### Stage 1, Disable (reversible, seconds)
 
 ```powershell
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
@@ -25,7 +25,7 @@ Use this stage for: a false-positive incident that needs immediate relief while 
 policy, a change freeze, or a temporary business exception that doesn't warrant deleting the
 control.
 
-### Stage 2 — Simulation (partial rollback, keeps visibility)
+### Stage 2, Simulation (partial rollback, keeps visibility)
 
 If a full disable is too blunt (you still want to know what *would* have been blocked or
 encrypted), step back to simulation instead of fully disabling:
@@ -37,20 +37,20 @@ Set-DlpCompliancePolicy -Identity "PII DLP - Exchange External Send Control" -Mo
 Nothing is blocked or encrypted; policy tips and alerts still fire. This is the same mode the
 deploy script defaults to on first run.
 
-### Stage 3 — Permanent removal (not reversible)
+### Stage 3, Permanent removal (not reversible)
 
 ```powershell
 ./deploy/Remove-ExchangePiiDlpPolicy.ps1 -Purge
 ```
 
 This runs `Remove-DlpCompliancePolicy`, which deletes the policy **and all its rules** in one call
-(Microsoft Learn: `remove-dlpcompliancepolicy`). There is no "undo" — re-establishing the control
+(Microsoft Learn: `remove-dlpcompliancepolicy`). There is no "undo", re-establishing the control
 means re-running `deploy/New-ExchangePiiDlpPolicy.ps1` from scratch. Only do this when the control
 is being permanently retired (e.g., replaced by a successor policy with a different name).
 
 ### Switching `-Action` without a full rollback
 
-Moving between Block and Encrypt mode doesn't require rollback at all — re-run the deploy script
+Moving between Block and Encrypt mode doesn't require rollback at all, re-run the deploy script
 with the new `-Action` and `-Force`:
 
 ```powershell
@@ -60,7 +60,7 @@ with the new `-Action` and `-Force`:
 The script clears the previous action's parameter (`RemoveRMSTemplate`/`BlockAccess $false`) on
 the `PII-Exchange-Protect-External` rule before applying the new one, and removes the
 `PII-Exchange-Override-External` rule if it's no longer applicable (Encrypt mode has no override
-concept — see `design.md` §6).
+concept, see `design.md` §6).
 
 ## What rollback does **not** undo
 
@@ -71,12 +71,12 @@ concept — see `design.md` §6).
   was enforcing was not delivered; disabling or removing the policy afterward does not
   retroactively deliver it. The sender must resend.
 - **Messages already encrypted.** A message already encrypted and delivered under Encrypt mode
-  stays encrypted for its recipient — rollback has no effect on mail already sent.
+  stays encrypted for its recipient, rollback has no effect on mail already sent.
 - **The business-exception group's membership.** This scenario does not create or manage
-  `ExceptionGroupEmail` — it's a dependency, not a deployed artifact. Removing this policy has no
+  `ExceptionGroupEmail`, it's a dependency, not a deployed artifact. Removing this policy has no
   effect on that group.
 - **RMS templates.** This scenario does not create or manage the `Encrypt-Only`/`Do Not Forward`
-  templates it references — they are tenant-level Message Encryption artifacts, unaffected by
+  templates it references, they are tenant-level Message Encryption artifacts, unaffected by
   policy rollback.
 
 ## Verification after rollback

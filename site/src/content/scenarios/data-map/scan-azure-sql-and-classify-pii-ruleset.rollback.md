@@ -5,11 +5,11 @@ parent: "data-map/scan-azure-sql-and-classify-pii-ruleset"
 ## Recommended sequence
 
 Like the base `scan-azure-sql-and-classify` scenario, rolling this back never touches the source
-database or live Microsoft 365 traffic — it only changes which classifications a future scan run
+database or live Microsoft 365 traffic, it only changes which classifications a future scan run
 compares columns against. Rollback is staged so you can revert the scan without deleting the
 ruleset object (e.g. you plan to reuse it on another scan later).
 
-### Stage 1 — Revert the scan to the System default ruleset (keep the custom ruleset object)
+### Stage 1, Revert the scan to the System default ruleset (keep the custom ruleset object)
 
 ```powershell
 ./deploy/Remove-PiiOnlyScanRuleset.ps1 `
@@ -18,7 +18,7 @@ ruleset object (e.g. you plan to reuse it on another scan later).
 ```
 
 Reverts `scanRulesetName`/`scanRulesetType` on the target scan back to `AzureSqlDatabase`/`System`
-(every other scan property — authentication kind, database name, collection — left unchanged).
+(every other scan property, authentication kind, database name, collection, left unchanged).
 The custom `AzureSqlDatabase-PiiOnly` ruleset object stays defined, so a differently configured
 scan (or this same scan again later) can reference it without recreating it.
 
@@ -26,7 +26,7 @@ Use this stage for: temporarily reverting to full-spectrum classification (e.g. 
 that needs the full ~200-classification sweep) while keeping the PII-only ruleset available to
 re-apply afterward.
 
-### Stage 2 — Also delete the custom ruleset object
+### Stage 2, Also delete the custom ruleset object
 
 ```powershell
 ./deploy/Remove-PiiOnlyScanRuleset.ps1 `
@@ -36,7 +36,7 @@ re-apply afterward.
 
 Performs Stage 1's scan revert first, then deletes the `AzureSqlDatabase-PiiOnly` scan rule set
 object itself. **Confirm no other scan in the account still references this ruleset name before
-running with `-DeleteRuleset`** — scan rule sets are account-wide objects (design.md §2), so a
+running with `-DeleteRuleset`**, scan rule sets are account-wide objects (design.md §2), so a
 ruleset created for one database's scan may already be reused by another.
 
 ## What rollback does **not** undo
@@ -47,7 +47,7 @@ ruleset created for one database's scan may already be reused by another.
   scenario was applied) are not retroactively changed or removed.
 - **The base scenario's data source and scan registration.** This scenario only ever modifies the
   scan's `scanRulesetName`/`scanRulesetType` properties. Removing the scan or data source entirely
-  is `scan-azure-sql-and-classify`'s own rollback — see that scenario's `rollback.md`.
+  is `scan-azure-sql-and-classify`'s own rollback, see that scenario's `rollback.md`.
 - **Any other scan still referencing this ruleset.** Stage 2's delete only proceeds after this
   scenario's own scan has been detached; it does nothing to detect or detach a *different* scan
   that references the same ruleset name. Check manually (or via

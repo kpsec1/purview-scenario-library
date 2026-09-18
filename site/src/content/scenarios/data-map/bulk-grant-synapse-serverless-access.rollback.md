@@ -8,7 +8,7 @@ This scenario only grants read (`db_datareader`) access - rollback is a straight
 so you can pause after removing database-level access without also removing the server-level login (in
 case other databases still need it).
 
-### Stage 1 — Remove `db_datareader` membership for specific databases (keep the login)
+### Stage 1, Remove `db_datareader` membership for specific databases (keep the login)
 
 Run against each database to revoke, using an operator identity with Synapse Administrator privilege
 (the same identity class the deploy script's `-AppId` requires):
@@ -27,7 +27,7 @@ DROP USER [<PrincipalName>];
 Use this stage for: narrowing scope after a database is decommissioned or moved out of the parent
 scenario's scan target, without affecting the other databases this scenario granted access to.
 
-### Stage 2 — Remove the server-level login (only after every database's user/role has been dropped)
+### Stage 2, Remove the server-level login (only after every database's user/role has been dropped)
 
 ```sql
 -- Run against master. Confirm no other database still has a user mapped to this login first -

@@ -6,11 +6,11 @@ parent: "data-map/scan-on-premises-sql-server-and-classify-pii-ruleset"
 
 Like the base `scan-on-premises-sql-server-and-classify` scenario, rolling this back never touches
 the SQL Server instance's data, the self-hosted integration runtime, the stored credential, or live
-network traffic — it only changes which classifications a future scan run compares columns against.
+network traffic, it only changes which classifications a future scan run compares columns against.
 Rollback is staged so you can revert the scan without deleting the ruleset object (e.g. you plan to
 reuse it on another scan later).
 
-### Stage 1 — Revert the scan to the System default ruleset (keep the custom ruleset object)
+### Stage 1, Revert the scan to the System default ruleset (keep the custom ruleset object)
 
 ```powershell
 ./deploy/Remove-PiiOnlyScanRuleset.ps1 `
@@ -19,27 +19,27 @@ reuse it on another scan later).
 ```
 
 Reverts `scanRulesetName`/`scanRulesetType` on the target scan back to `SqlServerDatabase`/`System`
-(every other scan property — server endpoint, database name, collection, the `connectedVia`
-self-hosted integration runtime reference, the stored credential reference — left unchanged). The
+(every other scan property, server endpoint, database name, collection, the `connectedVia`
+self-hosted integration runtime reference, the stored credential reference, left unchanged). The
 custom `SqlServerDatabase-PiiOnly` ruleset object stays defined, so a differently configured scan (or
 this same scan again later) can reference it without recreating it.
 
-**This build independently confirmed the custom ruleset's `kind` is `SqlServerDatabase` — the
-identical string used as the revert target's name above — but the System ruleset's own literal
+**This build independently confirmed the custom ruleset's `kind` is `SqlServerDatabase`, the
+identical string used as the revert target's name above, but the System ruleset's own literal
 resource `name` remains an inherited `VERIFY` from the base scenario, not fully closed by this
 build** (see `design.md` §2 goal 6 and `README.md` §11: three converging Microsoft sources confirm
 the `kind`, but no worked example was found pairing that literal string with `scanRulesetType:
 "System"`). Confirm the real System ruleset name in the portal (**Management Center → Scan rule
 sets → System** tab, filtered to SQL Server) before relying on `-RevertToRulesetName`'s default in an
 unattended pipeline. (Contrast with the Azure Synapse Analytics sibling, where the revert-target name
-and the custom ruleset `kind` are two *different*, both-confirmed strings — do not carry that
+and the custom ruleset `kind` are two *different*, both-confirmed strings, do not carry that
 scenario's `-RevertToRulesetName` value over here, or vice versa.)
 
 Use this stage for: temporarily reverting to full-spectrum classification (e.g. a one-time audit
 that needs the full ~200-classification sweep) while keeping the PII-only ruleset available to
 re-apply afterward.
 
-### Stage 2 — Also delete the custom ruleset object
+### Stage 2, Also delete the custom ruleset object
 
 ```powershell
 ./deploy/Remove-PiiOnlyScanRuleset.ps1 `
@@ -49,7 +49,7 @@ re-apply afterward.
 
 Performs Stage 1's scan revert first, then deletes the `SqlServerDatabase-PiiOnly` scan rule set
 object itself. **Confirm no other scan in the account still references this ruleset name before
-running with `-DeleteRuleset`** — scan rule sets are account-wide objects (design.md §2), so a
+running with `-DeleteRuleset`**, scan rule sets are account-wide objects (design.md §2), so a
 ruleset created for one instance's scan may already be reused by another (e.g. a second on-premises
 SQL Server instance registered under a different data source name but scanned for the same narrow
 compliance driver).
@@ -65,7 +65,7 @@ compliance driver).
   `scanRulesetName`/`scanRulesetType` properties. Removing the scan or data source entirely,
   deleting the integration runtime resource, uninstalling the SHIR software from its host, revoking
   the SQL/Windows login's `db_datareader` grant, or deleting the Key Vault secret and Purview
-  credential object is `scan-on-premises-sql-server-and-classify`'s own rollback — see that
+  credential object is `scan-on-premises-sql-server-and-classify`'s own rollback, see that
   scenario's `rollback.md`.
 - **Any other scan still referencing this ruleset.** Stage 2's delete only proceeds after this
   scenario's own scan has been detached; it does nothing to detect or detach a *different* scan
@@ -98,5 +98,5 @@ catch {
 
 Or, in the portal: **Data Map → Management → Scan rule sets → Custom** tab should no longer list the
 ruleset (Stage 2), and the scan's configuration pane should show **SqlServerDatabase (System)** as
-its rule set (Stage 1) — cross-check the exact label shown against the still-open System-ruleset-name
+its rule set (Stage 1), cross-check the exact label shown against the still-open System-ruleset-name
 `VERIFY` above.

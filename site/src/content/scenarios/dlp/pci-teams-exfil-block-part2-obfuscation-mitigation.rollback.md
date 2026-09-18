@@ -4,11 +4,11 @@ parent: "dlp/pci-teams-exfil-block-part2-obfuscation-mitigation"
 ---
 ## Recommended sequence
 
-This fragment adds one rule to an existing policy — roll back the rule, not the parent policy.
+This fragment adds one rule to an existing policy, roll back the rule, not the parent policy.
 Rolling back Part 1's policy itself is `scenarios/dlp/pci-teams-exfil-block/rollback.md`'s job,
 not this file's.
 
-### Stage 1 — Audit-only (reversible, seconds)
+### Stage 1, Audit-only (reversible, seconds)
 
 ```powershell
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
@@ -26,7 +26,7 @@ match, but no longer blocks the message. Restore blocking instantly:
 Use this stage for: a false-positive Elevated-risk assignment causing business disruption, a
 change freeze, or while re-tuning the feeder IRM policy's thresholds.
 
-### Stage 2 — Permanent removal (not reversible)
+### Stage 2, Permanent removal (not reversible)
 
 ```powershell
 ./deploy/Remove-PciElevatedRiskTeamsBlock.ps1 -Purge
@@ -45,13 +45,13 @@ documented in `README.md` §8).
   policy.** All untouched by either rollback stage here.
 - **The feeder Insider Risk Management policy, the Communication Compliance indicator, or
   Adaptive Protection's scope configuration.** All portal-only prerequisites this fragment's
-  scripts never created — rolling back the DLP rule has no effect on them. To fully decommission
+  scripts never created, rolling back the DLP rule has no effect on them. To fully decommission
   this fragment, also disable/delete the feeder IRM policy and remove it from Adaptive
-  Protection's scope via the portal (see `README.md` §5, Steps 2–4, in reverse).
+  Protection's scope via the portal (see `README.md` §5, Steps 2-4, in reverse).
 - **Audit log / alert history.** Retained per the same retention windows Part 1's `rollback.md`
   already documents, regardless of this rule's state.
 - **A user's current insider risk level.** Computed by Adaptive Protection independently of this
-  rule's existence — removing the rule does not reset anyone's Elevated/Moderate/Minor
+  rule's existence, removing the rule does not reset anyone's Elevated/Moderate/Minor
   assignment.
 
 ## Verification after rollback

@@ -4,12 +4,12 @@ parent: "data-map/scan-azure-sql-and-classify"
 ---
 ## Recommended sequence
 
-Unlike a DLP or auto-labeling policy, a Data Map scan does not act on live traffic — removing it
+Unlike a DLP or auto-labeling policy, a Data Map scan does not act on live traffic, removing it
 stops future discovery/classification but never affects the source database or any Microsoft 365
 control. Rollback here is lower-stakes, but still staged so you can pause at "stop the recurring
 schedule" without losing the registration.
 
-### Stage 1 — Remove the recurring trigger only (keep the scan and source)
+### Stage 1, Remove the recurring trigger only (keep the scan and source)
 
 ```powershell
 # Manually, via REST (no dedicated flag in Remove-AzureSqlDataMapScan.ps1 for trigger-only removal
@@ -27,7 +27,7 @@ Invoke-RestMethod -Method Delete `
 Use this stage for: pausing the recurring schedule (e.g. during a change freeze) while keeping the
 scan and data source registered for a later on-demand run via `-RunNow`.
 
-### Stage 2 — Remove the scan and trigger, keep the data source registered
+### Stage 2, Remove the scan and trigger, keep the data source registered
 
 ```powershell
 ./deploy/Remove-AzureSqlDataMapScan.ps1 `
@@ -39,9 +39,9 @@ Removes the scan object and its trigger (if any). The data source stays register
 collection, so a new scan (potentially with a different scan rule set or authentication method)
 can be added later without re-registering the source. Catalog assets already ingested from prior
 scan runs are **not** deleted (Microsoft's own documentation: "Deleting your scan does not delete
-catalog assets created from previous scans" — `README.md` reference 1).
+catalog assets created from previous scans", `README.md` reference 1).
 
-### Stage 3 — Full removal (data source too)
+### Stage 3, Full removal (data source too)
 
 ```powershell
 ./deploy/Remove-AzureSqlDataMapScan.ps1 `
@@ -60,7 +60,7 @@ place.
   classification tags from prior successful scan runs remain in the Data Map/Unified Catalog after
   the scan or data source is removed. There is no cascading delete.
 - **The two out-of-band grants.** This scenario's deploy script does not create the Azure IAM
-  `Reader` role assignment or the SQL `db_datareader` grant for the Purview SAMI — removing the
+  `Reader` role assignment or the SQL `db_datareader` grant for the Purview SAMI, removing the
   scan does not remove them either. Clean those up separately (Azure portal IAM removal; a T-SQL
   `DROP USER` for the SAMI's database user) if the intent is a full teardown rather than a
   scan-configuration rollback.

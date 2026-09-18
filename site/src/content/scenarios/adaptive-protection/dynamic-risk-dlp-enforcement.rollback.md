@@ -2,14 +2,14 @@
 part: "rollback"
 parent: "adaptive-protection/dynamic-risk-dlp-enforcement"
 ---
-This scenario's own deployed artifact is a single DLP policy — narrower in scope than the
+This scenario's own deployed artifact is a single DLP policy, narrower in scope than the
 Insider Risk Management scenario's rollback (which spans a policy, a connector, and an app
 registration). Roll back in stages rather than deleting outright, since a live block rule
 affects real users the moment it's disabled or re-enabled.
 
 ## Recommended sequence
 
-### Stage 1 — Disable the DLP policy (reversible, seconds)
+### Stage 1, Disable the DLP policy (reversible, seconds)
 
 ```powershell
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
@@ -18,7 +18,7 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
 This runs `Set-DlpCompliancePolicy -Identity "Adaptive Protection - Teams and Exchange DLP
 (Custom)" -Mode Disable`. The policy and its two rules remain defined (visible in the Purview
-portal under **Data loss prevention** → **Policies**) but stop evaluating traffic — no user is
+portal under **Data loss prevention** → **Policies**) but stop evaluating traffic, no user is
 blocked or audited by this scenario's rules while disabled. Re-enable instantly:
 
 ```powershell
@@ -29,7 +29,7 @@ Use this stage for: a false-positive incident that needs immediate relief, a cha
 suspicion that the Elevated-block rule is disrupting a specific user's legitimate work while you
 investigate.
 
-### Stage 2 — Step back to simulation (partial rollback, keeps visibility)
+### Stage 2, Step back to simulation (partial rollback, keeps visibility)
 
 If a full disable is too blunt (you still want to know what *would* have been blocked or
 audited), step back to simulation instead:
@@ -41,14 +41,14 @@ Set-DlpCompliancePolicy -Identity "Adaptive Protection - Teams and Exchange DLP 
 Nothing is blocked; policy tips and alerts still fire. This is the same mode the deploy script
 defaults to on first run.
 
-### Stage 3 — Permanent removal (not reversible)
+### Stage 3, Permanent removal (not reversible)
 
 ```powershell
 ./deploy/Remove-AdaptiveProtectionDlpPolicy.ps1 -Purge
 ```
 
 This runs `Remove-DlpCompliancePolicy`, which deletes the policy **and its two rules** in one
-call [[1]](#references). There is no "undo" — re-establishing the control means re-running
+call [[1]](#references). There is no "undo", re-establishing the control means re-running
 `deploy/New-AdaptiveProtectionDlpPolicy.ps1` from scratch. Only do this when the control is
 being permanently retired (e.g., the buyer is replacing it with a Conditional Access-based
 approach instead, or discontinuing Adaptive Protection entirely).
@@ -57,18 +57,18 @@ approach instead, or discontinuing Adaptive Protection entirely).
 
 - **Adaptive Protection itself, or insider risk level definitions.** Rolling back this
   scenario's DLP policy has no effect on whether Adaptive Protection is turned on or how
-  Elevated/Moderate/Minor are defined — those are separate portal settings this scenario doesn't
-  own (README.md §5 Steps 1–3). If the intent is to fully undo Adaptive Protection, that's a
+  Elevated/Moderate/Minor are defined, those are separate portal settings this scenario doesn't
+  own (README.md §5 Steps 1-3). If the intent is to fully undo Adaptive Protection, that's a
   separate portal action: Purview portal → **Insider Risk Management** → **Adaptive protection**
   → **Adaptive Protection settings** → turn Adaptive Protection **Off** (per Microsoft's own
   documented "Disable Adaptive Protection" behavior [[2]](#references): all users' currently
   assigned insider risk levels reset within about six hours, and no policies are automatically
   deleted).
-- **The feeder Insider Risk Management policy.** Not created or managed by this scenario — see
+- **The feeder Insider Risk Management policy.** Not created or managed by this scenario, see
   `scenarios/insider-risk/departing-employee-data-theft/rollback.md` for that scenario's own
   rollback procedure.
 - **A user's current insider risk level.** Disabling or deleting this scenario's DLP policy does
-  not reset any user's Elevated/Moderate/Minor assignment — that's computed and owned entirely
+  not reset any user's Elevated/Moderate/Minor assignment, that's computed and owned entirely
   by the Adaptive Protection/Insider Risk Management service, independent of any DLP policy
   reading it. A user who was Elevated-risk before this rollback remains Elevated-risk after it;
   they simply stop being blocked by *this* policy.
@@ -86,12 +86,12 @@ Get-DlpCompliancePolicy -Identity "Adaptive Protection - Teams and Exchange DLP 
 ```
 
 Confirm `Mode` reports `Disable` (Stage 1/2 outcome as expected) or that the command returns
-nothing (Stage 3 — policy deleted). If the intent was also to disable Adaptive Protection
-itself, separately confirm via the Purview portal's Adaptive Protection settings tab — there is
+nothing (Stage 3, policy deleted). If the intent was also to disable Adaptive Protection
+itself, separately confirm via the Purview portal's Adaptive Protection settings tab, there is
 no PowerShell/Graph query for that state as of this writing.
 
 ## References
 
-1. Remove-DlpCompliancePolicy reference — <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancepolicy>
-2. Help dynamically mitigate risks with Adaptive Protection — "Disable Adaptive Protection"
-   section — <https://learn.microsoft.com/purview/insider-risk-management-adaptive-protection#disable-adaptive-protection>
+1. Remove-DlpCompliancePolicy reference, <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancepolicy>
+2. Help dynamically mitigate risks with Adaptive Protection, "Disable Adaptive Protection"
+   section, <https://learn.microsoft.com/purview/insider-risk-management-adaptive-protection#disable-adaptive-protection>

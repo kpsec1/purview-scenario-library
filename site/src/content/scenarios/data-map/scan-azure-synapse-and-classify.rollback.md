@@ -9,7 +9,7 @@ traffic, so removing it stops future discovery/classification but never affects 
 or any Microsoft 365 control. Rollback is staged so you can pause at "stop the recurring schedule"
 without losing the registration.
 
-### Stage 1 — Remove the recurring trigger only (keep the scan and source)
+### Stage 1, Remove the recurring trigger only (keep the scan and source)
 
 ```powershell
 # No dedicated flag in Remove-AzureSynapseDataMapScan.ps1 for trigger-only removal beyond what running
@@ -24,7 +24,7 @@ Invoke-RestMethod -Method Delete `
 Use this stage for: pausing the recurring schedule (e.g. during a change freeze) while keeping the
 scan and data source registered for a later on-demand run via `-RunNow`.
 
-### Stage 2 — Remove the scan and trigger, keep the data source registered
+### Stage 2, Remove the scan and trigger, keep the data source registered
 
 ```powershell
 ./deploy/Remove-AzureSynapseDataMapScan.ps1 `
@@ -36,7 +36,7 @@ Removes the scan object and its trigger (if any). The data source (the workspace
 registered under its collection. Catalog assets already ingested from prior scan runs are **not**
 deleted, same documented behavior as both sibling scenarios.
 
-### Stage 3 — Full removal (data source too)
+### Stage 3, Full removal (data source too)
 
 ```powershell
 ./deploy/Remove-AzureSynapseDataMapScan.ps1 `
@@ -49,7 +49,7 @@ Also deletes the data source registration. Re-establishing the control means re-
 prerequisites (workspace Reader grant, serverless-only Storage Blob Data Reader grant, per-database
 enumeration login and `db_datareader` grants, workspace firewall setting) are still in place.
 
-### Stage 4 (optional, Synapse-specific) — Revoke the serverless-only Azure IAM grants
+### Stage 4 (optional, Synapse-specific), Revoke the serverless-only Azure IAM grants
 
 Unlike the logical-server sibling scenario (whose only Azure IAM grant is a single Reader role) and
 similar in spirit to the Managed Instance sibling's tenant-level Directory Readers step, this
@@ -58,25 +58,25 @@ the associated storage account) beyond the shared workspace-level Reader role. I
 should also revert it:
 
 1. Confirm no other workload depends on the Purview account's SAMI holding Storage Blob Data Reader on
-   this storage account — revoking it can affect any other Purview scan that reuses the same SAMI
+   this storage account, revoking it can affect any other Purview scan that reuses the same SAMI
    against the same storage account (e.g. an ADLS Gen2 Data Map scenario sharing the account).
 2. An **Owner** or **User Access Administrator** removes the Purview account's Storage Blob Data
    Reader role assignment on the resource group/subscription scope it was granted at (Azure portal →
    the scope → **Access control (IAM)** → find the assignment → **Remove**).
 
-This step is deliberately **not** part of `Remove-AzureSynapseDataMapScan.ps1` — it is an Azure IAM
+This step is deliberately **not** part of `Remove-AzureSynapseDataMapScan.ps1`, it is an Azure IAM
 change outside this scenario's automation identity's own Purview role scope, and revoking it can
 silently break unrelated Purview scans sharing the same SAMI and storage account. Treat it as a
 manually-confirmed, out-of-band step.
 
 ## What rollback does **not** undo
 
-- **Catalog assets and classifications already ingested.** Same as both sibling scenarios — no
+- **Catalog assets and classifications already ingested.** Same as both sibling scenarios, no
   cascading delete.
 - **The out-of-band grants and settings.** This scenario's deploy script does not create the workspace
   Reader grant, the serverless-only Storage Blob Data Reader grant, the per-database `CREATE
   LOGIN`/`CREATE USER`/`db_datareader` grants, the external-table scoped-credential grant, or the
-  workspace firewall setting — removing the scan does not remove any of them either. Clean up
+  workspace firewall setting, removing the scan does not remove any of them either. Clean up
   separately if the intent is a full teardown; see Stage 4 above for the serverless-specific Azure IAM
   grant.
 - **Scan run history.** Prior run records remain visible in the Purview portal's Monitoring view for

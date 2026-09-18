@@ -5,7 +5,7 @@ parent: "data-estate-insights/glossary-curation-coverage-report"
 ## What there is to roll back
 
 Like `classification-coverage-report`, this scenario creates **no object inside Microsoft Purview at
-all** — no domain, no term, no relationship. Every call it makes is a read-only `GET`. "Rollback"
+all**, no domain, no term, no relationship. Every call it makes is a read-only `GET`. "Rollback"
 here means three things, none of which touch the Purview account itself:
 
 1. Stop the scheduled execution of `deploy/Export-GlossaryCurationCoverageReport.ps1`.
@@ -15,7 +15,7 @@ here means three things, none of which touch the Purview account itself:
 
 ## 1. Stop the schedule
 
-This scenario ships no scheduler-specific code (`README.md` §5) — remove or disable whatever
+This scenario ships no scheduler-specific code (`README.md` §5), remove or disable whatever
 recurring-execution mechanism was wired up, using that platform's own removal procedure. There is
 nothing Purview-side to undo as part of this step.
 
@@ -29,26 +29,26 @@ service principal granted **Global Catalog Reader** at the catalog level instead
 **Settings** → **Unified Catalog** → **Roles and permissions** → **Global Catalog Readers**.
 
 If the app registration itself is no longer needed for any other purpose in this repo, also revoke
-or delete its client secret/certificate — standard Entra app-registration hygiene, not specific to
+or delete its client secret/certificate, standard Entra app-registration hygiene, not specific to
 this scenario.
 
 ## 3. Decide the fate of already-produced report files
 
 - **Trend-log CSV and per-run breakdown JSON files** (wherever `-TrendLogPath` /
-  `-BreakdownOutputDirectory` pointed) are ordinary files this scenario wrote outside of Purview —
+  `-BreakdownOutputDirectory` pointed) are ordinary files this scenario wrote outside of Purview, 
   delete them, archive them, or leave them in place per the buyer's own data-retention policy. There
   is no Purview-side artifact tied to them that would become orphaned or inconsistent if they're
   kept after the automation identity's role is removed.
 - If the trend log was committed to a source-control repository (the recommended pattern for
-  preserving history — `README.md` §4/§8), treat its removal like removing any other tracked file:
+  preserving history, `README.md` §4/§8), treat its removal like removing any other tracked file:
   a deliberate commit, not an ad hoc delete.
 
 ## What rollback does **not** undo
 
-- **Any Purview object.** There isn't one — see "What there is to roll back," above. Removing this
+- **Any Purview object.** There isn't one, see "What there is to roll back," above. Removing this
   scenario's automation has zero effect on the domains, terms, contacts, or asset relationships it
   read from.
-- **The glossary terms themselves** — entirely owned by
+- **The glossary terms themselves**, entirely owned by
   `scenarios/unified-catalog/curate-business-glossary/` (or whichever process authored the domain(s)
   this scenario reported on), not by this scenario.
 

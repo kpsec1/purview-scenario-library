@@ -9,7 +9,7 @@ not act on live traffic, so removing it stops future discovery/classification bu
 on-premises SQL Server or any Microsoft 365 control. Rollback is staged so you can pause at "stop the
 recurring schedule" without losing the registration, or go all the way to decommissioning the SHIR.
 
-### Stage 1 — Remove the recurring trigger only (keep the scan, source, and integration runtime)
+### Stage 1, Remove the recurring trigger only (keep the scan, source, and integration runtime)
 
 ```powershell
 # No dedicated flag in Remove-OnPremisesSqlServerDataMapScan.ps1 for trigger-only removal beyond what
@@ -24,7 +24,7 @@ Invoke-RestMethod -Method Delete `
 Use this stage for: pausing the recurring schedule (e.g. during a change freeze) while keeping the
 scan, data source, and integration runtime registered for a later on-demand run via `-RunNow`.
 
-### Stage 2 — Remove the scan and trigger, keep the data source and integration runtime registered
+### Stage 2, Remove the scan and trigger, keep the data source and integration runtime registered
 
 ```powershell
 ./deploy/Remove-OnPremisesSqlServerDataMapScan.ps1 `
@@ -34,10 +34,10 @@ scan, data source, and integration runtime registered for a later on-demand run 
 
 Removes the scan object and its trigger (if any). The data source and integration runtime stay
 registered. Catalog assets already ingested from prior scan runs are **not** deleted (Microsoft's own
-documentation: "Deleting your scan does not delete catalog assets created from previous scans" —
+documentation: "Deleting your scan does not delete catalog assets created from previous scans", 
 `README.md` reference 3).
 
-### Stage 3 — Also remove the data source registration
+### Stage 3, Also remove the data source registration
 
 ```powershell
 ./deploy/Remove-OnPremisesSqlServerDataMapScan.ps1 `
@@ -45,12 +45,12 @@ documentation: "Deleting your scan does not delete catalog assets created from p
     -DataSourceName 'sql01-contoso-local' -RemoveDataSource
 ```
 
-Deletes the data source registration. The integration runtime resource stays registered — leave it in
+Deletes the data source registration. The integration runtime resource stays registered, leave it in
 place if any other data source's scan still references it. Re-establishing the control means
 re-running `deploy/New-OnPremisesSqlServerDataMapScan.ps1` from scratch for the data source and scan
 (but not necessarily the integration runtime, if it's still present and healthy).
 
-### Stage 4 — Also remove the integration runtime resource (only if nothing else uses it)
+### Stage 4, Also remove the integration runtime resource (only if nothing else uses it)
 
 ```powershell
 ./deploy/Remove-OnPremisesSqlServerDataMapScan.ps1 `
@@ -60,31 +60,31 @@ re-running `deploy/New-OnPremisesSqlServerDataMapScan.ps1` from scratch for the 
 ```
 
 **Before running this stage:** confirm no other data source's scan in this Purview account still
-references `-IntegrationRuntimeName` — a single self-hosted integration runtime is commonly shared
+references `-IntegrationRuntimeName`, a single self-hosted integration runtime is commonly shared
 across many on-premises sources. Removing the *resource* does not stop the SHIR *software* or its
 Windows service on whatever host it's running on; it only removes Purview's registration of it. If the
 SHIR node tries to check in after this, it will fail to authenticate (its key is tied to the deleted
 resource) but the Windows service itself keeps running until stopped separately.
 
-### Stage 5 (optional, full decommission) — Decommission the SHIR host
+### Stage 5 (optional, full decommission), Decommission the SHIR host
 
-Not scripted by this repo — this is host-level administration, not a Purview REST operation:
+Not scripted by this repo, this is host-level administration, not a Purview REST operation:
 
 1. On the SHIR host, stop and uninstall the Integration Runtime Windows service (or decommission the
    VM entirely if it was dedicated to this purpose).
 2. If the SHIR host also served other integration runtimes or other Purview accounts, do **not**
-   decommission it — only remove the node registration specific to this integration runtime (Purview
+   decommission it, only remove the node registration specific to this integration runtime (Purview
    portal → **Integration runtimes** → the runtime → **Nodes** tab → select the node → delete).
 
 ### What rollback does **not** undo
 
-- **Catalog assets and classifications already ingested.** Same as every sibling scenario — no
+- **Catalog assets and classifications already ingested.** Same as every sibling scenario, no
   cascading delete.
 - **The SHIR software installation and Windows service on its host.** Stage 4 removes Purview's
-  registration only — see Stage 5 for the host-level cleanup this repo does not script.
+  registration only, see Stage 5 for the host-level cleanup this repo does not script.
 - **The SQL/Windows login, its `db_datareader` grant, the Key Vault secret, and the Purview credential
   object.** This scenario's deploy script never created any of these (§8/§11 of `design.md`/`README.md`)
-  — removing the scan does not remove any of them either. Clean up separately if the intent is a full
+, removing the scan does not remove any of them either. Clean up separately if the intent is a full
   teardown: drop the login in SSMS, delete the Key Vault secret, and delete the credential object in
   Purview's **Credentials** page.
 - **Scan run history.** Prior run records remain visible in the Purview portal's Monitoring view for

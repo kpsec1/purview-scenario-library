@@ -6,11 +6,11 @@ parent: "dspm-for-ai/copilot-external-email-block"
 
 This scenario adds exactly **one rule** to a policy owned by
 `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/`. Every rollback stage below is scoped to
-that one rule only — the parent policy and its Rule 0 (label exclusion), Rule 1 (web-grounding
+that one rule only, the parent policy and its Rule 0 (label exclusion), Rule 1 (web-grounding
 restriction), and the `copilot-prompt-full-block` sibling's Rule 2 (prompt full-block) are never
 modified by this scenario's scripts, in either direction.
 
-### Stage 1 — Disable (reversible, seconds)
+### Stage 1, Disable (reversible, seconds)
 
 ```powershell
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
@@ -26,11 +26,11 @@ Set-DlpComplianceRule -Identity "Copilot-Exclude-ExternalEmail-Processing" -Disa
 ```
 
 Use this stage for: a legitimate partner domain being unexpectedly excluded (check the tenant's
-accepted-domains list first — README.md §8/§11 — before assuming this rule itself is at fault),
+accepted-domains list first, README.md §8/§11, before assuming this rule itself is at fault),
 while comparing this script's `FromScope`/`RestrictAccess` output against a portal-created rule per
 `README.md` §5's VERIFY guidance, or a change freeze.
 
-### Stage 2 — Permanent removal (not reversible)
+### Stage 2, Permanent removal (not reversible)
 
 ```powershell
 ./deploy/Remove-CopilotExternalEmailBlockRule.ps1 -Purge
@@ -38,7 +38,7 @@ while comparing this script's `FromScope`/`RestrictAccess` output against a port
 
 This runs `Remove-DlpComplianceRule -Identity "Copilot-Exclude-ExternalEmail-Processing"`, which
 deletes **only this rule**. The parent policy and its other rules are unaffected and continue
-enforcing exactly as they did before this scenario was deployed. There is no undo — re-establishing
+enforcing exactly as they did before this scenario was deployed. There is no undo, re-establishing
 this control means re-running `deploy/Add-CopilotExternalEmailBlockRule.ps1` from scratch.
 
 ## What rollback does **not** undo
@@ -50,11 +50,11 @@ this control means re-running `deploy/Add-CopilotExternalEmailBlockRule.ps1` fro
   the rule afterward only affects future Copilot interactions.
 - **The parent policy and its other three rules.** Neither rollback stage touches
   `Copilot DLP - Sensitive Data Exposure Protection`'s existence, `Mode`, or its label-exclusion /
-  web-grounding-restriction / prompt-full-block rules — those are owned and rolled back
+  web-grounding-restriction / prompt-full-block rules, those are owned and rolled back
   independently by `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/rollback.md` and
   `scenarios/dspm-for-ai/copilot-prompt-full-block/rollback.md` respectively.
 - **The tenant's Exchange accepted-domains configuration.** This scenario never reads or writes that
-  list — it only depends on it (README.md §3/§8).
+  list, it only depends on it (README.md §3/§8).
 
 ## Verification after rollback
 

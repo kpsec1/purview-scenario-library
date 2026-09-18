@@ -5,14 +5,14 @@ parent: "data-lifecycle-management/event-based-retention-and-disposition"
 ## 1. Problem statement
 
 Employee-record retention obligations are usually anchored to **separation date**, not document
-creation date — "keep for N years after the employee leaves." Purview's creation/modification-age
+creation date, "keep for N years after the employee leaves." Purview's creation/modification-age
 retention types can't express that; only **event-based retention** can, because the clock starts
 when an admin/integration tells Purview a specific event happened for specific content, on a date
 that can be past, present, or future [[1]](#references). The second half of the problem is that
-permanently deleting a departed employee's records shouldn't be a silent, unattended action —
+permanently deleting a departed employee's records shouldn't be a silent, unattended action, 
 records governance and (in many organizations) legal defensibility expect a **human chain of
 review** before disposal. This scenario builds the whole chain as code: the event type, the label,
-the publish mechanism, and the per-employee event trigger — with a deliberately staged, two-reviewer
+the publish mechanism, and the per-employee event trigger, with a deliberately staged, two-reviewer
 disposition review before anything is deleted.
 
 ## 2. Design goals
@@ -22,17 +22,17 @@ disposition review before anything is deleted.
    creation-age duration that hopes to outlast tenure.
 2. **Defensible disposition, not silent deletion.** `KeepAndDelete` + a **two-stage**
    `MultiStageReviewProperty` (HR Records, then Legal) so no single reviewer can unilaterally
-   dispose of employee records — modeling a realistic sign-off chain, not this module's simpler
+   dispose of employee records, modeling a realistic sign-off chain, not this module's simpler
    single-`ReviewerEmail` sibling.
 3. **Separate the one-time policy from the recurring operational action.** Deploying the event
    type/label/policy is a one-time (or rare) change; firing an event is something that happens
    *every time an employee leaves*. Two scripts, two different safety postures.
 4. **Guard the dangerous default.** An event fired with no Asset ID scope retains **everything**
-   under that event type, tenant-wide [[1]](#references) — the trigger script refuses this unless
+   under that event type, tenant-wide [[1]](#references), the trigger script refuses this unless
    the caller explicitly opts in with `-Force`.
 5. **Honest about undocumented edges.** `-AutoApprovalPeriod`, the `MultiStageReviewProperty`
    read-back shape, and whether `-ReviewerEmail`/`-MultiStageReviewProperty` can coexist are all
-   genuinely undocumented on Microsoft's own reference pages (stub descriptions) — flagged inline
+   genuinely undocumented on Microsoft's own reference pages (stub descriptions), flagged inline
    rather than guessed, per `AGENTS.md` §4.
 
 ## 3. Object model
@@ -67,7 +67,7 @@ sequenceDiagram
 
 Four durable objects (event type, label, policy, rule) created once by the deploy script, plus one
 recurring, append-only object (the event) created per employee by the trigger script. Labeling
-individual content and setting its Asset ID is a manual, human step in between — deliberately not
+individual content and setting its Asset ID is a manual, human step in between, deliberately not
 scripted (see §7).
 
 ## 4. Why publish, not auto-apply
@@ -75,7 +75,7 @@ scripted (see §7).
 The sibling `retention-labels-financial-records` scenario **auto-applies** its label from a content
 signal (a KQL match) because the label there targets an entire content *category* (financial
 records) that a query can reliably identify. This scenario's label targets **one specific
-employee's** records at a time — there's no reliable content signal that says "this document belongs
+employee's** records at a time, there's no reliable content signal that says "this document belongs
 to employee 123456" other than a human records manager deciding it does and setting the Asset ID
 accordingly. A **publish** policy (`-PublishComplianceTag`) is therefore the correct mechanism: it
 makes the label available for records managers to apply, rather than trying to auto-match on content
@@ -85,7 +85,7 @@ an Asset ID [[1]](#references)[[2]](#references).
 
 Publish-then-manually-apply has a consequence worth naming: content isn't a locked record until
 someone actually applies the label. The recommended operating model (README §5) is to apply the
-label during onboarding, so the only action required at departure is firing the event — otherwise
+label during onboarding, so the only action required at departure is firing the event, otherwise
 the window between "employee leaves" and "someone gets around to labeling their folder" is a window
 where those records are as editable/deletable as anything else. This is a real, disclosed limitation
 of a publish-based design, not a defect (`reviews.md` Red Team).
@@ -118,14 +118,14 @@ integration without also granting it the ability to redefine the retention polic
 
 ## 7. Non-goals
 
-- **Auto-apply for this label.** See §4 — no reliable per-employee content signal exists; publish is
+- **Auto-apply for this label.** See §4, no reliable per-employee content signal exists; publish is
   the correct mechanism here, not a limitation to fix later.
 - **An HR-system connector or "missing events" reconciliation report.** `New-RetentionTriggerEvent.ps1`
-  is the integration point an HR system (or a scheduled script reading an HR export) would call —
+  is the integration point an HR system (or a scheduled script reading an HR export) would call, 
   building that connector, and a report of departed employees with no matching fired event, is a
   distinct, documented follow-up (`PROGRESS.md`).
 - **Publishing this repo's *financial-records* label for manual application.** A tracked, separate
-  follow-up (`publish-labels-for-manual-application`) — different label, different scenario.
+  follow-up (`publish-labels-for-manual-application`), different label, different scenario.
 - **File plan descriptors, adaptive scopes, and bulk multi-class file plans.** Same non-goals as the
   sibling starter; candidate follow-ups shared across the module.
 - **Editing an existing label/policy/rule.** The deploy reports and does not mutate; changes are a

@@ -5,11 +5,11 @@ parent: "audit/premium-audit-investigation"
 ## 1. Problem statement
 
 When an account is compromised or an insider is suspected, an investigator needs to reconstruct that
-account's activity — mailbox access, sending/impersonation, inbox-rule and delegate changes, file
-exfiltration, sign-ins, privilege changes — quickly, completely, and defensibly. Doing this by hand
+account's activity, mailbox access, sending/impersonation, inbox-rule and delegate changes, file
+exfiltration, sign-ins, privilege changes, quickly, completely, and defensibly. Doing this by hand
 in the portal, one search at a time under incident pressure, is slow and inconsistent. This scenario
 automates a **read-only** audit-log investigation: from a config, it runs a curated crucial-events
-query via the Audit Search Graph API, waits for it, and exports the records for the case file — the
+query via the Audit Search Graph API, waits for it, and exports the records for the case file, the
 same way every time.
 
 ## 2. Design goals
@@ -34,8 +34,8 @@ Two surfaces read the unified audit log:
 - **The Audit Search Graph API** (`/security/auditLog/queries`, v1.0 `security` namespace) is the
   modern surface: an **async job** you poll, with server-side execution (survives a closed session),
   proper **paging** over records, **app-only** auth for unattended/scheduled hunts, and fine-grained
-  **service-scoped permissions** (`AuditLogsQuery-Exchange.Read.All`, etc.). Those properties — scale,
-  paging, app-only, least-privilege scoping — are exactly what a repeatable investigation workflow
+  **service-scoped permissions** (`AuditLogsQuery-Exchange.Read.All`, etc.). Those properties, scale,
+  paging, app-only, least-privilege scoping, are exactly what a repeatable investigation workflow
   needs, so this scenario uses the Graph API and notes the cmdlet as the classic alternative.
 
 ## 4. Workflow
@@ -58,7 +58,7 @@ sequenceDiagram
     Script->>Script: export CSV (key fields) + JSON (full auditData) + operation summary
 ```
 
-The job is asynchronous by design — Microsoft runs it server-side so it survives a closed session.
+The job is asynchronous by design, Microsoft runs it server-side so it survives a closed session.
 The script polls the status until it leaves the running set, then pages all records before exporting.
 
 ## 5. The crucial-events preset
@@ -75,7 +75,7 @@ techniques an investigator most needs to see:
 | Access | `UserLoggedIn`, `UserLoginFailed` |
 | Privilege / identity change | `Add member to role.`, `Update user.` |
 
-The preset is a starting point, not a fixed control — investigators trim or extend it per incident.
+The preset is a starting point, not a fixed control, investigators trim or extend it per incident.
 `MailItemsAccessed` is explicitly a Premium crucial event, which is why this scenario is framed as
 "Premium."
 
@@ -92,13 +92,13 @@ The preset is a starting point, not a fixed control — investigators trim or ex
 
 ## 7. Non-goals
 
-- **Responding/remediating** (disabling the account, revoking sessions, deleting malicious rules) —
+- **Responding/remediating** (disabling the account, revoking sessions, deleting malicious rules), 
   this scenario investigates; response is a separate, mutating workflow (and a different tool).
-- **Real-time alerting / SIEM streaming** — for continuous streaming use the Office 365 Management
+- **Real-time alerting / SIEM streaming**, for continuous streaming use the Office 365 Management
   Activity API or a Sentinel connector; this is an on-demand investigation.
-- **Retention-policy configuration** — creating audit log **retention policies** (a Premium feature)
+- **Retention-policy configuration**, creating audit log **retention policies** (a Premium feature)
   is a separate scenario; here retention is a prerequisite/《given》.
-- **The classic `Search-UnifiedAuditLog` path** — noted as the alternative surface (§3), not the one
+- **The classic `Search-UnifiedAuditLog` path**, noted as the alternative surface (§3), not the one
   this scenario scripts.
-- **Deleting/managing saved queries at scale** — the scenario runs investigations; saved-query
+- **Deleting/managing saved queries at scale**, the scenario runs investigations; saved-query
   lifecycle (jobs auto-retain 30 days) is left to the portal.

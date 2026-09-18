@@ -6,10 +6,10 @@ parent: "dspm-for-ai/copilot-prompt-full-block"
 
 This scenario adds exactly **one rule** to a policy owned by
 `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/`. Every rollback stage below is scoped to
-that one rule only — the parent policy and its Rule 0 (label exclusion) / Rule 1 (web-grounding
+that one rule only, the parent policy and its Rule 0 (label exclusion) / Rule 1 (web-grounding
 restriction) are never modified by this scenario's scripts, in either direction.
 
-### Stage 1 — Disable (reversible, seconds)
+### Stage 1, Disable (reversible, seconds)
 
 ```powershell
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
@@ -28,7 +28,7 @@ Use this stage for: a false-positive spike needing immediate relief, a change fr
 comparing this script's `RestrictAccess` output against a portal-created rule per `README.md` §5's
 VERIFY guidance.
 
-### Stage 2 — Permanent removal (not reversible)
+### Stage 2, Permanent removal (not reversible)
 
 ```powershell
 ./deploy/Remove-CopilotPromptFullBlockRule.ps1 -Purge
@@ -36,7 +36,7 @@ VERIFY guidance.
 
 This runs `Remove-DlpComplianceRule -Identity "Copilot-Block-SensitivePrompts-FullResponse"`, which
 deletes **only this rule**. The parent policy and its other two rules are unaffected and continue
-enforcing exactly as they did before this scenario was deployed. There is no undo — re-establishing
+enforcing exactly as they did before this scenario was deployed. There is no undo, re-establishing
 this control means re-running `deploy/Add-CopilotPromptFullBlockRule.ps1` from scratch.
 
 ## What rollback does **not** undo
@@ -48,7 +48,7 @@ this control means re-running `deploy/Add-CopilotPromptFullBlockRule.ps1` from s
   future prompts.
 - **The parent policy and its Rule 0/Rule 1.** Neither rollback stage touches
   `Copilot DLP - Sensitive Data Exposure Protection`'s existence, `Mode`, or its label-exclusion /
-  web-grounding-restriction rules — those are owned and rolled back independently by
+  web-grounding-restriction rules, those are owned and rolled back independently by
   `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/rollback.md`.
 
 ## Verification after rollback

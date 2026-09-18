@@ -8,7 +8,7 @@ This scenario's DLP policy affects live Copilot traffic, so roll back in stages 
 deleting outright. The DSPM for AI oversharing data risk assessment (README.md §5, §8) is not
 deployed by this scenario (it is automatic and portal-only) and has nothing to roll back.
 
-### Stage 1 — Disable (reversible, seconds)
+### Stage 1, Disable (reversible, seconds)
 
 ```powershell
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
@@ -26,7 +26,7 @@ Set-DlpCompliancePolicy -Identity "Copilot DLP - Sensitive Data Exposure Protect
 Use this stage for: a false-positive incident needing immediate relief while tuning, a change
 freeze, or a temporary business exception.
 
-### Stage 2 — Simulation (partial rollback, keeps visibility)
+### Stage 2, Simulation (partial rollback, keeps visibility)
 
 ```powershell
 Set-DlpCompliancePolicy -Identity "Copilot DLP - Sensitive Data Exposure Protection" -Mode TestWithNotifications
@@ -35,17 +35,17 @@ Set-DlpCompliancePolicy -Identity "Copilot DLP - Sensitive Data Exposure Protect
 Nothing is blocked; alerts still fire. This is the same mode the deploy script defaults to on
 first run.
 
-### Stage 3 — Permanent removal (not reversible)
+### Stage 3, Permanent removal (not reversible)
 
 ```powershell
 ./deploy/Remove-CopilotSensitiveDataProtectionPolicy.ps1 -Purge
 ```
 
 This runs `Remove-DlpCompliancePolicy`, which deletes the policy **and its two rules** in one call.
-There is no undo — re-establishing the control means re-running
+There is no undo, re-establishing the control means re-running
 `deploy/New-CopilotSensitiveDataProtectionPolicy.ps1` from scratch. Only do this when the control
 is being permanently retired (e.g., replaced by a successor policy, or by activating DSPM for AI's
-one-click equivalent instead — see `design.md` §3a for why this scenario avoided that path in the
+one-click equivalent instead, see `design.md` §3a for why this scenario avoided that path in the
 first place before choosing to switch to it).
 
 ## What rollback does **not** undo
@@ -56,7 +56,7 @@ first place before choosing to switch to it).
   was already restricted while the policy was enforcing is not retroactively regenerated;
   disabling or removing the policy afterward only affects future prompts.
 - **Sensitivity labels.** This scenario does not create or manage the `Confidential`/`Highly
-  Confidential` labels it references — they are a dependency (see
+  Confidential` labels it references, they are a dependency (see
   `scenarios/information-protection/auto-label-confidential-sharepoint/`), not a deployed artifact.
   Removing this policy has no effect on the labels or their own auto-labeling policies.
 - **DSPM for AI oversharing assessment.** It is not created or scoped by this scenario at all; it

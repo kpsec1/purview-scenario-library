@@ -5,11 +5,11 @@ parent: "data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset"
 ## Recommended sequence
 
 Like the base `scan-azure-sql-managed-instance-and-classify` scenario, rolling this back never
-touches the managed instance's data or live Microsoft 365 traffic — it only changes which
+touches the managed instance's data or live Microsoft 365 traffic, it only changes which
 classifications a future scan run compares columns against. Rollback is staged so you can revert
 the scan without deleting the ruleset object (e.g. you plan to reuse it on another scan later).
 
-### Stage 1 — Revert the scan to the System default ruleset (keep the custom ruleset object)
+### Stage 1, Revert the scan to the System default ruleset (keep the custom ruleset object)
 
 ```powershell
 ./deploy/Remove-PiiOnlyScanRuleset.ps1 `
@@ -18,24 +18,24 @@ the scan without deleting the ruleset object (e.g. you plan to reuse it on anoth
 ```
 
 Reverts `scanRulesetName`/`scanRulesetType` on the target scan back to
-`AzureSqlDatabaseManagedInstance`/`System` (every other scan property — authentication kind, server
-endpoint, database name, collection — left unchanged). The custom
+`AzureSqlDatabaseManagedInstance`/`System` (every other scan property, authentication kind, server
+endpoint, database name, collection, left unchanged). The custom
 `AzureSqlDatabaseManagedInstance-PiiOnly` ruleset object stays defined, so a differently configured
 scan (or this same scan again later) can reference it without recreating it.
 
-**This source type has no naming trap** — the revert target's ruleset **name**
+**This source type has no naming trap**, the revert target's ruleset **name**
 (`AzureSqlDatabaseManagedInstance`) is the identical string to the ruleset `kind` used when
 creating the custom object, confirmed independently for this source type rather than assumed from
-either sibling scenario — see `design.md` §2 goal 6 and `README.md` §11. (Contrast with the Azure
+either sibling scenario, see `design.md` §2 goal 6 and `README.md` §11. (Contrast with the Azure
 Synapse Analytics sibling, where the revert-target name and the custom ruleset `kind` are two
-different strings — do not carry that scenario's `-RevertToRulesetName` value over here, or vice
+different strings, do not carry that scenario's `-RevertToRulesetName` value over here, or vice
 versa.)
 
 Use this stage for: temporarily reverting to full-spectrum classification (e.g. a one-time audit
 that needs the full ~200-classification sweep) while keeping the PII-only ruleset available to
 re-apply afterward.
 
-### Stage 2 — Also delete the custom ruleset object
+### Stage 2, Also delete the custom ruleset object
 
 ```powershell
 ./deploy/Remove-PiiOnlyScanRuleset.ps1 `
@@ -45,7 +45,7 @@ re-apply afterward.
 
 Performs Stage 1's scan revert first, then deletes the `AzureSqlDatabaseManagedInstance-PiiOnly`
 scan rule set object itself. **Confirm no other scan in the account still references this ruleset
-name before running with `-DeleteRuleset`** — scan rule sets are account-wide objects (design.md
+name before running with `-DeleteRuleset`**, scan rule sets are account-wide objects (design.md
 §2), so a ruleset created for one instance's scan may already be reused by another.
 
 ## What rollback does **not** undo
@@ -59,7 +59,7 @@ name before running with `-DeleteRuleset`** — scan rule sets are account-wide 
   properties. Removing the scan or data source entirely, un-granting the Azure IAM Reader role and
   the `db_datareader` SQL grant, disabling the public endpoint, or removing the Directory Readers
   Microsoft Entra role assignment is `scan-azure-sql-managed-instance-and-classify`'s own rollback
-  — see that scenario's `rollback.md`.
+, see that scenario's `rollback.md`.
 - **Any other scan still referencing this ruleset.** Stage 2's delete only proceeds after this
   scenario's own scan has been detached; it does nothing to detect or detach a *different* scan
   that references the same ruleset name. Check manually (or via

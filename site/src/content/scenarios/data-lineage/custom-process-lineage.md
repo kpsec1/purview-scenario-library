@@ -1,13 +1,16 @@
 ---
 title: "Model a Custom Transform as a Process Node (DataSet -> Process -> DataSet)"
-fullTitle: "Data Lineage — Model a Custom Transform as a Process Node (DataSet -> Process -> DataSet)"
 category: "Data Lineage"
 categorySlug: "data-lineage"
 slug: "custom-process-lineage"
-repoPath: "scenarios/data-lineage/custom-process-lineage"
-parts: ["design","deploy","validate","rollback"]
+whoFor: "the same audience as the sibling scenario - a data governance or platform"
+frameworks: ["GDPR","PCI DSS"]
+licensing: []
 deployCount: 3
 validateCount: 1
+hasDesign: true
+hasRollback: true
+toc: [{"id":"1-scenario-summary","text":"1. Scenario summary"},{"id":"2-businessregulatory-driver","text":"2. Business/regulatory driver"},{"id":"3-prerequisites","text":"3. Prerequisites"},{"id":"4-architecture","text":"4. Architecture"},{"id":"5-step-by-step-implementation","text":"5. Step-by-step implementation"},{"id":"6-configuration-reference","text":"6. Configuration reference"},{"id":"7-validation--how-to-prove-it-works","text":"7. Validation / how to prove it works"},{"id":"8-operations--tuning","text":"8. Operations & tuning"},{"id":"9-rollback--decommission","text":"9. Rollback / decommission"},{"id":"10-cost--licensing-notes","text":"10. Cost & licensing notes"},{"id":"11-known-limitations--gotchas","text":"11. Known limitations & gotchas"},{"id":"12-references","text":"12. References"}]
 ---
 ## 1. Scenario summary
 
@@ -66,17 +69,17 @@ flowchart TD
     end
 
     subgraph Modeled["Modeled by THIS scenario"]
-        Proc[["Nightly customer risk-scoring job<br/>(PurviewScenarioLibraryEtlProcess,<br/>custom subtype of Process —<br/>runbookUrl + scheduleExpression)"]]
+        Proc[["Nightly customer risk-scoring job<br/>(PurviewScenarioLibraryEtlProcess,<br/>custom subtype of Process, <br/>runbookUrl + scheduleExpression)"]]
     end
 
-    subgraph Sibling["Optional — coexists if end-to-end-lineage-validation is also deployed"]
+    subgraph Sibling["Optional, coexists if end-to-end-lineage-validation is also deployed"]
         DirectEdge["direct_lineage_dataset_dataset<br/>(no Process node)"]
     end
 
     Deployer[["deploy/New-CustomProcessLineage.ps1<br/>(app-only service principal,<br/>Data Curator role)"]]
     Validator[["validate/Test-ProcessLineage.ps1<br/>(app-only service principal,<br/>Data Reader role)"]]
 
-    Src -. "reads (real, out-of-band process —<br/>Purview never sees this directly)" .-> RealJob["Nightly Python job<br/>(Azure Functions timer trigger)"]
+    Src -. "reads (real, out-of-band process, <br/>Purview never sees this directly)" .-> RealJob["Nightly Python job<br/>(Azure Functions timer trigger)"]
     RealJob -. "writes" .-> Dst
 
     Deployer -- "1: ensure custom type<br/>2: upsert Process entity<br/>3: create dataset_process_inputs<br/>4: create process_dataset_outputs" --> Proc
@@ -280,26 +283,26 @@ entity; the upstream/downstream assets and the custom Process type definition ar
 
 ## 12. References
 
-1. Data lineage in classic Data Catalog (overview, use cases, granularity) — <https://learn.microsoft.com/purview/data-gov-classic-lineage>
-2. Data lineage user guide for classic Data Catalog (supported systems table, known limitations, manual lineage) — <https://learn.microsoft.com/purview/data-gov-classic-lineage-user-guide>
-3. Data governance and security baselines with Microsoft Purview — "Data visibility baseline" (Recommendation: "Enable automated lineage where available and close gaps manually where required") — <https://learn.microsoft.com/azure/cloud-adoption-framework/data/governance-security-baselines-purview-data-estate-unify-data-platform>
-4. Type definitions and how to create custom types (asset/type concepts, `Referenceable`/`Asset`/`DataSet`/`Process` base types) — <https://learn.microsoft.com/purview/data-gov-api-custom-types>
-5. Tutorial: Authenticate for Microsoft Purview data-plane APIs (service principal setup, Data Curator/Data Reader roles for the Catalog Data plane, token acquisition) — <https://learn.microsoft.com/purview/data-gov-api-rest-data-plane>
-6. Create and get lineage relationships using the REST API — Example 1 (DataSet -> Process -> DataSet: create a Process entity via Entity Bulk Create, then `dataset_process_inputs`/`process_dataset_outputs` relationships) and "Create New Custom Types" (custom Process/DataSet type bodies) — <https://learn.microsoft.com/purview/data-gov-api-create-lineage-relationships>
-7. Custom classifications in Data Map — confirms "data curator or data source administrator permission on a domain or collection... at any collection level" for the closely related custom-classification-creation action — <https://learn.microsoft.com/purview/data-map-classification-custom>
-8. Data lineage user guide for classic Data Catalog — manual lineage entries and portal Lineage tab — <https://learn.microsoft.com/purview/data-gov-classic-lineage-user-guide#manual-lineage>
-9. Manage domains and collections in Microsoft Purview Data Map — Data Curator/Data Reader/Collection Administrator role definitions — <https://learn.microsoft.com/purview/data-map-domains-collections-manage#add-roles-and-restrict-access>
-10. Type - Bulk Create REST reference (API version 2023-09-01; "Please avoid recreating existing types"; `azure_sql_server_example` worked `AtlasAttributeDef` shape) — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/type/bulk-create>
-11. GraphQL API with Microsoft Purview (preview) — confirms both `api.purview-service.microsoft.com` and `{account}.purview.azure.com` as valid endpoint hosts for the `/datamap/api/...` path family — <https://learn.microsoft.com/purview/data-gov-api-graphql>
-12. Entity - Bulk Create Or Update REST reference (API version 2023-09-01; confirms upsert-by-qualifiedName semantics directly in its own description) — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/entity/bulk-create-or-update>
-13. Type - Get Entity Def By Name REST reference (API version 2023-09-01) — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/type/get-entity-def-by-name>
-14. Relationship - Create REST reference (API version 2023-09-01) — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/relationship/create>
-15. Relationship - Delete REST reference (API version 2023-09-01) — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/relationship/delete>
-16. Lineage - Get By Unique Attribute REST reference (API version 2023-09-01) — <https://learn.microsoft.com/rest/api/purview/datamapdataplane/lineage/get-by-unique-attribute>
-17. Entity.DeleteByUniqueAttribute method (.NET SDK; confirms `DELETE /datamap/api/atlas/v2/entity/uniqueAttribute/type/{typeName}?attr:qualifiedName={qn}` — this build's grounding pass did not independently fetch a canonical REST-reference page at the same depth as the other operations cited here — see `rollback.md` and the removal script's `.NOTES`) — <https://learn.microsoft.com/dotnet/api/azure.analytics.purview.datamap.entity.deletebyuniqueattribute>
-18. TypeDefinition.Delete method (.NET SDK; confirms a Type - Delete operation exists, but this build did not independently confirm its REST path or in-use-type deletion behavior — `rollback.md`) — <https://learn.microsoft.com/dotnet/api/azure.analytics.purview.datamap.typedefinition.delete>
+1. Data lineage in classic Data Catalog (overview, use cases, granularity), <https://learn.microsoft.com/purview/data-gov-classic-lineage>
+2. Data lineage user guide for classic Data Catalog (supported systems table, known limitations, manual lineage), <https://learn.microsoft.com/purview/data-gov-classic-lineage-user-guide>
+3. Data governance and security baselines with Microsoft Purview, "Data visibility baseline" (Recommendation: "Enable automated lineage where available and close gaps manually where required"), <https://learn.microsoft.com/azure/cloud-adoption-framework/data/governance-security-baselines-purview-data-estate-unify-data-platform>
+4. Type definitions and how to create custom types (asset/type concepts, `Referenceable`/`Asset`/`DataSet`/`Process` base types), <https://learn.microsoft.com/purview/data-gov-api-custom-types>
+5. Tutorial: Authenticate for Microsoft Purview data-plane APIs (service principal setup, Data Curator/Data Reader roles for the Catalog Data plane, token acquisition), <https://learn.microsoft.com/purview/data-gov-api-rest-data-plane>
+6. Create and get lineage relationships using the REST API, Example 1 (DataSet -> Process -> DataSet: create a Process entity via Entity Bulk Create, then `dataset_process_inputs`/`process_dataset_outputs` relationships) and "Create New Custom Types" (custom Process/DataSet type bodies), <https://learn.microsoft.com/purview/data-gov-api-create-lineage-relationships>
+7. Custom classifications in Data Map, confirms "data curator or data source administrator permission on a domain or collection... at any collection level" for the closely related custom-classification-creation action, <https://learn.microsoft.com/purview/data-map-classification-custom>
+8. Data lineage user guide for classic Data Catalog, manual lineage entries and portal Lineage tab, <https://learn.microsoft.com/purview/data-gov-classic-lineage-user-guide#manual-lineage>
+9. Manage domains and collections in Microsoft Purview Data Map, Data Curator/Data Reader/Collection Administrator role definitions, <https://learn.microsoft.com/purview/data-map-domains-collections-manage#add-roles-and-restrict-access>
+10. Type - Bulk Create REST reference (API version 2023-09-01; "Please avoid recreating existing types"; `azure_sql_server_example` worked `AtlasAttributeDef` shape), <https://learn.microsoft.com/rest/api/purview/datamapdataplane/type/bulk-create>
+11. GraphQL API with Microsoft Purview (preview), confirms both `api.purview-service.microsoft.com` and `{account}.purview.azure.com` as valid endpoint hosts for the `/datamap/api/...` path family, <https://learn.microsoft.com/purview/data-gov-api-graphql>
+12. Entity - Bulk Create Or Update REST reference (API version 2023-09-01; confirms upsert-by-qualifiedName semantics directly in its own description), <https://learn.microsoft.com/rest/api/purview/datamapdataplane/entity/bulk-create-or-update>
+13. Type - Get Entity Def By Name REST reference (API version 2023-09-01), <https://learn.microsoft.com/rest/api/purview/datamapdataplane/type/get-entity-def-by-name>
+14. Relationship - Create REST reference (API version 2023-09-01), <https://learn.microsoft.com/rest/api/purview/datamapdataplane/relationship/create>
+15. Relationship - Delete REST reference (API version 2023-09-01), <https://learn.microsoft.com/rest/api/purview/datamapdataplane/relationship/delete>
+16. Lineage - Get By Unique Attribute REST reference (API version 2023-09-01), <https://learn.microsoft.com/rest/api/purview/datamapdataplane/lineage/get-by-unique-attribute>
+17. Entity.DeleteByUniqueAttribute method (.NET SDK; confirms `DELETE /datamap/api/atlas/v2/entity/uniqueAttribute/type/{typeName}?attr:qualifiedName={qn}`, this build's grounding pass did not independently fetch a canonical REST-reference page at the same depth as the other operations cited here, see `rollback.md` and the removal script's `.NOTES`), <https://learn.microsoft.com/dotnet/api/azure.analytics.purview.datamap.entity.deletebyuniqueattribute>
+18. TypeDefinition.Delete method (.NET SDK; confirms a Type - Delete operation exists, but this build did not independently confirm its REST path or in-use-type deletion behavior, `rollback.md`), <https://learn.microsoft.com/dotnet/api/azure.analytics.purview.datamap.typedefinition.delete>
 
 > Re-verify all links and the VERIFY items in §11 against current Microsoft Learn before a
-> customer-facing deployment — Microsoft's own Data Map REST surface is explicitly called out
+> customer-facing deployment, Microsoft's own Data Map REST surface is explicitly called out
 > elsewhere in this repo (`scenarios/data-map/scan-azure-sql-and-classify/README.md` §11) as
 > evolving.

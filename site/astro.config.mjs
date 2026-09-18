@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import { visit } from 'unist-util-visit';
+import rehypeSlug from 'rehype-slug';
 
 // Convert ```mermaid fenced code blocks into <pre class="mermaid"> elements so
 // Mermaid can render them as diagrams in the browser (instead of Astro's syntax
@@ -51,7 +52,7 @@ export default defineConfig({
   site: 'https://kpsec1.github.io',
   markdown: {
     remarkPlugins: [remarkMermaid],
-    rehypePlugins: [rehypeKeepOnlyMsDocLinks],
+    rehypePlugins: [rehypeSlug, rehypeKeepOnlyMsDocLinks],
     shikiConfig: {
       theme: 'github-light',
       wrap: true,

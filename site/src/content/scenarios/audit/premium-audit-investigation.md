@@ -1,13 +1,16 @@
 ---
 title: "Forensic Investigation of a Compromised Account"
-fullTitle: "Audit (Premium) — Forensic Investigation of a Compromised Account"
 category: "Audit (Premium)"
 categorySlug: "audit"
 slug: "premium-audit-investigation"
-repoPath: "scenarios/audit/premium-audit-investigation"
-parts: ["design","deploy","validate","rollback"]
+whoFor: "a SOC / incident-response / insider-risk / compliance investigator who needs to"
+frameworks: ["GDPR"]
+licensing: ["Microsoft 365 E5"]
 deployCount: 2
 validateCount: 1
+hasDesign: true
+hasRollback: true
+toc: [{"id":"1-scenario-summary","text":"1. Scenario summary"},{"id":"2-businessregulatory-driver","text":"2. Business/regulatory driver"},{"id":"3-prerequisites","text":"3. Prerequisites"},{"id":"4-architecture","text":"4. Architecture"},{"id":"5-step-by-step-implementation","text":"5. Step-by-step implementation"},{"id":"6-configuration-reference","text":"6. Configuration reference"},{"id":"7-validation--how-to-prove-it-works","text":"7. Validation / how to prove it works"},{"id":"8-operations--tuning","text":"8. Operations & tuning"},{"id":"9-rollback--decommission","text":"9. Rollback / decommission"},{"id":"10-cost--licensing-notes","text":"10. Cost & licensing notes"},{"id":"11-known-limitations--gotchas","text":"11. Known limitations & gotchas"},{"id":"12-references","text":"12. References"}]
 ---
 ## 1. Scenario summary
 
@@ -29,32 +32,32 @@ mechanics automated (and re-runnable) rather than hand-clicked in the portal und
 When an account is compromised or an insider is suspected, the audit log is the primary source of
 truth: it "captures, records, and retains thousands of user and admin operations" so security ops,
 IT, insider-risk, and legal teams can reconstruct activity [[1]](#references). Speed and completeness
-matter — breach-notification clocks (GDPR 72 hours, many U.S. state laws, sector rules) start early,
+matter, breach-notification clocks (GDPR 72 hours, many U.S. state laws, sector rules) start early,
 and regulators/insurers expect a defensible investigation record. Automating the search-and-export:
-- **shortens time-to-triage** — a curated crucial-events query runs in one command instead of many
+- **shortens time-to-triage**, a curated crucial-events query runs in one command instead of many
   portal searches;
-- **is consistent and defensible** — the same config produces the same scoped investigation, with an
+- **is consistent and defensible**, the same config produces the same scoped investigation, with an
   exported evidence set, every time;
-- **exploits Audit (Premium)** — Premium unlocks **crucial events** such as **`MailItemsAccessed`**
-  (which mailbox items an attacker actually read — central to scoping a BEC/mailbox compromise) and
+- **exploits Audit (Premium)**, Premium unlocks **crucial events** such as **`MailItemsAccessed`**
+  (which mailbox items an attacker actually read, central to scoping a BEC/mailbox compromise) and
   **long retention** (up to 1 year, 10 years with the add-on) so investigations can reach back far
   enough [[2]](#references)[[3]](#references).
 
 ## 3. Prerequisites
 
 Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. Automation surface:
-`docs/automation-surface.md` (surface 3 — Microsoft Graph). Summary:
+`docs/automation-surface.md` (surface 3, Microsoft Graph). Summary:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Audit tier | **Audit (Standard)** for search/export + Graph API + 180-day retention; **Audit (Premium)** for crucial events (`MailItemsAccessed`), 1-year (10-year add-on) retention, high-bandwidth API | Premium comes with M365/O365 E5, Purview Suite, or the E5 eDiscovery & Audit add-on [[2]](#references)[[3]](#references) |
 | Graph permission | **AuditLogsQuery.Read.All** (all workloads), or a service-scoped variant (`AuditLogsQuery-Exchange.Read.All`, `-SharePoint.Read.All`, `-Entra.Read.All`, …) | Delegated or Application; least-privileged is `AuditLogsQuery-Entra.Read.All` [[4]](#references) |
-| Auth (this scenario) | `Connect-MgGraph -Scopes 'AuditLogsQuery.Read.All'` (delegated) or app-only certificate | Microsoft Graph PowerShell SDK — `docs/automation-surface.md` §3 |
-| Classic alternative role | **View-Only Audit Logs** / **Audit Logs** (for `Search-UnifiedAuditLog`) | The classic EXO cmdlet path — see §11 |
-| Auditing enabled | On by default; individual services (e.g. Power BI) may need auditing turned on | Record availability is typically 60–90 min after an event [[5]](#references) |
+| Auth (this scenario) | `Connect-MgGraph -Scopes 'AuditLogsQuery.Read.All'` (delegated) or app-only certificate | Microsoft Graph PowerShell SDK, `docs/automation-surface.md` §3 |
+| Classic alternative role | **View-Only Audit Logs** / **Audit Logs** (for `Search-UnifiedAuditLog`) | The classic EXO cmdlet path, see §11 |
+| Auditing enabled | On by default; individual services (e.g. Power BI) may need auditing turned on | Record availability is typically 60-90 min after an event [[5]](#references) |
 
 > Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) and the
-> Product Terms before a sales commitment — SKU names and the crucial-events list change.
+> Product Terms before a sales commitment, SKU names and the crucial-events list change.
 
 ## 4. Architecture
 
@@ -80,8 +83,8 @@ flowchart TD
 ```
 
 The query is an **async job**: create it, poll until its status is terminal, then page the records.
-The export is the deliverable — a timestamped CSV (triage-friendly key fields) plus JSON (the full
-`auditData` per record for deep analysis). Read-only throughout — no tenant state changes. Full
+The export is the deliverable, a timestamped CSV (triage-friendly key fields) plus JSON (the full
+`auditData` per record for deep analysis). Read-only throughout, no tenant state changes. Full
 rationale: `design.md`.
 
 ## 5. Step-by-step implementation
@@ -111,7 +114,7 @@ Connect-MgGraph -Scopes 'AuditLogsQuery.Read.All'
 ```
 
 The script uses the **Audit Search Graph API** (v1.0 `security` namespace) via the Microsoft Graph
-PowerShell SDK (`Invoke-MgGraphRequest`) — automation surface 3 per `docs/automation-surface.md`.
+PowerShell SDK (`Invoke-MgGraphRequest`), automation surface 3 per `docs/automation-surface.md`.
 
 ## 6. Configuration reference
 
@@ -123,7 +126,7 @@ PowerShell SDK (`Invoke-MgGraphRequest`) — automation surface 3 per `docs/auto
 | `displayName` | investigation label | Optional |
 | `filterStartDateTime` / `filterEndDateTime` | ISO 8601 UTC, or derived from `lookbackDays` | The window; Premium retention lets it reach back up to 1 year [[3]](#references) |
 | `userPrincipalNameFilters[]` | the target account(s) | The "who" |
-| `operationFilters[]` | crucial-events preset (MailItemsAccessed, Send/SendAs, New-/Set-InboxRule, Add-MailboxPermission, FileDownloaded, AnonymousLinkCreated, UserLoggedIn/UserLoginFailed, role/user changes) | The "what" — trim to the incident [[9]](#references) |
+| `operationFilters[]` | crucial-events preset (MailItemsAccessed, Send/SendAs, New-/Set-InboxRule, Add-MailboxPermission, FileDownloaded, AnonymousLinkCreated, UserLoggedIn/UserLoginFailed, role/user changes) | The "what", trim to the incident [[9]](#references) |
 | `recordTypeFilters[]` | optional workload filter | e.g. `exchangeItem`, `sharePointFileOperation`, `azureActiveDirectory` [[4]](#references) |
 | `keywordFilter`, `ipAddressFilters[]`, `objectIdFilters[]` | optional | Non-indexed keyword; source IP; file/object path [[4]](#references) |
 | Export | CSV (key fields) + JSON (full `auditData`) | Timestamped under the output dir |
@@ -134,25 +137,25 @@ auditLogRecordType, clientIp, objectId`; JSON keeps the full record incl. `audit
 
 ## 7. Validation / how to prove it works
 
-1. **Readiness** — `./validate/Test-AuditInvestigation.ps1` confirms Graph connectivity, an
+1. **Readiness**, `./validate/Test-AuditInvestigation.ps1` confirms Graph connectivity, an
    `AuditLogsQuery*` scope, a well-formed config, and runs a **1-hour probe query** that proves the
    API + permission + audit availability end-to-end. Exits non-zero on failure.
-2. **Known-event test** — perform a benign, identifiable action as a test user (e.g. create and
-   delete an inbox rule), wait ~60–90 minutes for ingestion [[5]](#references), then run the
+2. **Known-event test**, perform a benign, identifiable action as a test user (e.g. create and
+   delete an inbox rule), wait ~60-90 minutes for ingestion [[5]](#references), then run the
    investigation scoped to that user/operation and confirm the record appears in the export.
-3. **Completeness/paging** — for a broad query, confirm the exported record count matches the portal
+3. **Completeness/paging**, for a broad query, confirm the exported record count matches the portal
    search count and that paging followed `@odata.nextLink` (no silent truncation).
-4. **Crucial-event (Premium) test** — for a Premium-licensed user, confirm `MailItemsAccessed`
-   records are returned (they are not available under Standard) — evidence the Premium tier is active
+4. **Crucial-event (Premium) test**, for a Premium-licensed user, confirm `MailItemsAccessed`
+   records are returned (they are not available under Standard), evidence the Premium tier is active
    [[2]](#references).
-5. **Repeatability** — re-run with the same config/window and confirm the same record set (audit
+5. **Repeatability**, re-run with the same config/window and confirm the same record set (audit
    records are immutable), demonstrating the investigation is reproducible for the case file.
 
 ## 8. Operations & tuning
 
 **Investigation runbook (suspected account compromise):**
-1. Scope tight first — run with the target UPN + the crucial-events preset over the suspected window.
-2. Triage the CSV: look for **`New-InboxRule`/`UpdateInboxRules`** (auto-forward/hide — classic BEC),
+1. Scope tight first, run with the target UPN + the crucial-events preset over the suspected window.
+2. Triage the CSV: look for **`New-InboxRule`/`UpdateInboxRules`** (auto-forward/hide, classic BEC),
    **`Add-MailboxPermission`/`SendAs`** (delegate abuse), **`MailItemsAccessed`** (what was read),
    **`FileDownloaded`/`AnonymousLinkCreated`** (exfil/oversharing), and **`UserLoginFailed` →
    `UserLoggedIn`** patterns with unusual `clientIp`.
@@ -162,7 +165,7 @@ auditLogRecordType, clientIp, objectId`; JSON keeps the full record incl. `audit
 
 **Tuning / limits:** broad operation sets over long windows return large result sets and slower jobs;
 each admin can run up to **10 search jobs** concurrently (one unfiltered) [[6]](#references). Prefer
-narrow, iterative queries. Record availability lags events by ~60–90 minutes [[5]](#references), so
+narrow, iterative queries. Record availability lags events by ~60-90 minutes [[5]](#references), so
 don't conclude "no activity" immediately after an incident.
 
 **Automation:** run app-only (certificate) on a schedule for recurring hunts (e.g. daily
@@ -170,7 +173,7 @@ mailbox-rule-creation sweep), writing exports to a secured evidence store.
 
 ## 9. Rollback / decommission
 
-See `rollback.md`. This scenario is **read-only** — it creates a transient search job and reads
+See `rollback.md`. This scenario is **read-only**, it creates a transient search job and reads
 records; there is no tenant state to undo. The only cleanup is the **exported evidence files** (secure
 and dispose per your IR data-handling policy) and, optionally, deleting the saved query. Completed
 search jobs are retained by the service for 30 days [[6]](#references).
@@ -191,41 +194,41 @@ search jobs are retained by the service for 30 days [[6]](#references).
   the **export can contain highly sensitive content and PII** (subjects, file paths, IPs, and
   workload `auditData`). Treat the output directory as evidence: restrict access, store per IR
   policy, and dispose when the matter closes (`rollback.md`).
-- **VERIFY — audit query status enum.** The script polls until the status leaves the running set
+- **VERIFY, audit query status enum.** The script polls until the status leaves the running set
   (`notStarted/running/queued/inProgress`) and expects a `succeeded`-like terminal value before
   reading records; confirm the exact `auditLogQueryStatus` values for your tenant/region
   [[4]](#references).
-- **Ingestion latency.** Records typically appear 60–90 minutes after the event (longer for some
-  services) — "no results" right after an incident may just mean the data hasn't landed
+- **Ingestion latency.** Records typically appear 60-90 minutes after the event (longer for some
+  services), "no results" right after an incident may just mean the data hasn't landed
   [[5]](#references).
 - **Crucial events need Premium.** `MailItemsAccessed` and other crucial events are **not** available
-  under Audit (Standard), and only for appropriately-licensed users — a Standard-only tenant will get
+  under Audit (Standard), and only for appropriately-licensed users, a Standard-only tenant will get
   an incomplete picture of mailbox access [[2]](#references).
 - **Retention boundary.** Queries can't return data older than the user's retention (180 days
   Standard; up to 1 year Premium; 10 years with the add-on) [[3]](#references).
 - **Concurrency/size limits.** Up to 10 concurrent jobs per admin (one unfiltered); very broad
   queries are slow and large [[6]](#references). The classic `Search-UnifiedAuditLog` caps at 50,000
-  records per search — the Graph API is the better path for large investigations [[10]](#references).
+  records per search, the Graph API is the better path for large investigations [[10]](#references).
 - **Classic alternative.** `Search-UnifiedAuditLog` (EXO PowerShell, View-Only Audit Logs role) is the
   synchronous classic surface; this scenario uses the async Graph API for scale, paging, and app-only
-  auth — see `design.md` [[10]](#references).
+  auth, see `design.md` [[10]](#references).
 - **Region availability.** The Audit Search Graph API is available in the global/GCC deployments noted
   on the reference pages; confirm availability for sovereign clouds before relying on it
   [[4]](#references).
 
 ## 12. References
 
-1. Learn about auditing solutions in Microsoft Purview (overview) — <https://learn.microsoft.com/purview/audit-solutions-overview>
-2. Auditing solutions — Audit (Standard) vs (Premium) capability comparison (crucial events, retention) — <https://learn.microsoft.com/purview/audit-solutions-overview#comparison-of-key-capabilities>
-3. Microsoft Purview service description — Audit (Premium) (1-year/10-year retention, crucial events, high-bandwidth API) — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-audit-premium>
-4. Create auditLogQuery (`POST /security/auditLog/queries`; body fields; recordTypeFilters enum; AuditLogsQuery permissions) — <https://learn.microsoft.com/graph/api/security-auditcoreroot-post-auditlogqueries?view=graph-rest-1.0>
-5. Search the audit log — before you search (ingestion latency, Search-UnifiedAuditLog) — <https://learn.microsoft.com/purview/audit-search#before-you-search-the-audit-log>
-6. Search the audit log (server-side jobs, 30-day retention of jobs, 10 concurrent per admin) — <https://learn.microsoft.com/purview/audit-search>
-7. Export audit records — <https://learn.microsoft.com/purview/audit-log-export-records>
-8. List auditLogRecords (`GET /security/auditLog/queries/{id}/records`; record fields) — <https://learn.microsoft.com/graph/api/security-auditlogquery-list-records?view=graph-rest-1.0>
-9. Audit log activities (operation/activity names) — <https://learn.microsoft.com/purview/audit-log-activities>
-10. Search-UnifiedAuditLog (classic EXO cmdlet; 5,000/search default, 50,000 max; roles) — <https://learn.microsoft.com/powershell/module/exchange/search-unifiedauditlog>
+1. Learn about auditing solutions in Microsoft Purview (overview), <https://learn.microsoft.com/purview/audit-solutions-overview>
+2. Auditing solutions, Audit (Standard) vs (Premium) capability comparison (crucial events, retention), <https://learn.microsoft.com/purview/audit-solutions-overview#comparison-of-key-capabilities>
+3. Microsoft Purview service description, Audit (Premium) (1-year/10-year retention, crucial events, high-bandwidth API), <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-audit-premium>
+4. Create auditLogQuery (`POST /security/auditLog/queries`; body fields; recordTypeFilters enum; AuditLogsQuery permissions), <https://learn.microsoft.com/graph/api/security-auditcoreroot-post-auditlogqueries?view=graph-rest-1.0>
+5. Search the audit log, before you search (ingestion latency, Search-UnifiedAuditLog), <https://learn.microsoft.com/purview/audit-search#before-you-search-the-audit-log>
+6. Search the audit log (server-side jobs, 30-day retention of jobs, 10 concurrent per admin), <https://learn.microsoft.com/purview/audit-search>
+7. Export audit records, <https://learn.microsoft.com/purview/audit-log-export-records>
+8. List auditLogRecords (`GET /security/auditLog/queries/{id}/records`; record fields), <https://learn.microsoft.com/graph/api/security-auditlogquery-list-records?view=graph-rest-1.0>
+9. Audit log activities (operation/activity names), <https://learn.microsoft.com/purview/audit-log-activities>
+10. Search-UnifiedAuditLog (classic EXO cmdlet; 5,000/search default, 50,000 max; roles), <https://learn.microsoft.com/powershell/module/exchange/search-unifiedauditlog>
 
 > Re-verify all links, the API version, request/response shapes, the status enum, and the crucial-
 > events/licensing details against current Microsoft Learn before a customer-facing deployment. The
-> investigation is read-only; the exported evidence is sensitive — handle it accordingly.
+> investigation is read-only; the exported evidence is sensitive, handle it accordingly.

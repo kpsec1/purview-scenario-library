@@ -6,10 +6,10 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist"
 
 This fragment shares one `macOSCustomConfiguration` object with the parent scenario and the
 portable-device-coverage fragment. Rolling back means removing **only** this fragment's delta (one
-group, one rule, and the `excludeGroups` edit to one existing rule) — not the shared Bluetooth
+group, one rule, and the `excludeGroups` edit to one existing rule), not the shared Bluetooth
 catch-all group or `Deny-AllBluetoothDevices`'s own two deny/auditDeny entries.
 
-### Stage 1 — Remove the Bluetooth device exception only (reversible, minutes)
+### Stage 1, Remove the Bluetooth device exception only (reversible, minutes)
 
 ```powershell
 Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
@@ -23,9 +23,9 @@ entries), the parent's `removableMedia` coverage, the Apple/Portable coverage, a
 identity/assignment are all untouched.
 
 **Important:** removing this exception makes the previously-approved Bluetooth device **denied
-again**, not left unrestricted — Bluetooth reverts to the portable-device-coverage fragment's
+again**, not left unrestricted, Bluetooth reverts to the portable-device-coverage fragment's
 original unconditional-deny state. This is the *opposite* direction from most of this control's
-other rollbacks (which typically remove restriction, not add it back) — confirm this is the
+other rollbacks (which typically remove restriction, not add it back), confirm this is the
 intended outcome (e.g. the approved device is being formally revoked) before running this stage as
 routine cleanup rather than a deliberate access-revocation action.
 
@@ -35,16 +35,16 @@ Re-add the exception instantly:
 ./deploy/Add-MacBluetoothDeviceAllowlist.ps1 -ConfigPath ./deploy/config/my-tenant.json
 ```
 
-### Stage 2 — Swap the approved device (partial rollback)
+### Stage 2, Swap the approved device (partial rollback)
 
 To replace the approved device (revoke one, approve another), edit
 `approvedBluetoothDevices[0]`'s `vendorId`/`productId` in the config file and re-run
-`deploy/Add-MacBluetoothDeviceAllowlist.ps1 -Force` — this reconciles the group/rule in place
+`deploy/Add-MacBluetoothDeviceAllowlist.ps1 -Force`, this reconciles the group/rule in place
 without a separate remove-then-add step.
 
-### Stage 3 — Remove the entire device control policy (not this fragment's rollback)
+### Stage 3, Remove the entire device control policy (not this fragment's rollback)
 
-This fragment has no "Stage 3" of its own — there is only one shared policy object. To remove
+This fragment has no "Stage 3" of its own, there is only one shared policy object. To remove
 device control entirely (all four families, every fragment's contributions), use the parent
 scenario's own rollback:
 
@@ -54,11 +54,11 @@ scenario's own rollback:
 
 ## What rollback does **not** undo
 
-- **Advanced Hunting / `DeviceEvents` history** for events this exception already generated —
+- **Advanced Hunting / `DeviceEvents` history** for events this exception already generated, 
   retained per its own retention window regardless of policy state.
 - **The prerequisite fragment's Bluetooth catch-all coverage, or the parent's/Apple/Portable
-  coverage** — Stage 1 of this rollback is scoped exclusively to this fragment's own delta.
-- **The known ordering hazard** (`README.md` §11) — rolling back this fragment does not change the
+  coverage**, Stage 1 of this rollback is scoped exclusively to this fragment's own delta.
+- **The known ordering hazard** (`README.md` §11), rolling back this fragment does not change the
   fact that re-running the portable-device-coverage fragment's own `-Force` reconcile at any point
   in the future would have no additional effect once this fragment's exception is already removed
   (there is nothing left for it to strip), but if this fragment is later re-deployed, the hazard
@@ -84,5 +84,5 @@ $json.rules | Where-Object { $_.name -like '*Bluetooth*' } | Select-Object name,
 ## References
 
 1. `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/rollback.md`
-   — the prerequisite fragment's own rollback, for removing the shared Bluetooth coverage entirely.
-2. `scenarios/dlp/defender-device-control-usb-allowlist-macos/rollback.md` — full policy removal.
+, the prerequisite fragment's own rollback, for removing the shared Bluetooth coverage entirely.
+2. `scenarios/dlp/defender-device-control-usb-allowlist-macos/rollback.md`, full policy removal.
