@@ -12,14 +12,14 @@ this fragment scoped to the resolve/attach lookup itself." This fragment is that
 only that hand-off:
 
 - It is not part of `teams-group-hold-resolution` because that scenario's own `design.md` §2 is
-  explicit that member expansion is "a human decision, not this script's to make", folding an
-  auto-selecting merge into the resolve script would blur a boundary that scenario deliberately
-  drew.
+ explicit that member expansion is "a human decision, not this script's to make", folding an
+ auto-selecting merge into the resolve script would blur a boundary that scenario deliberately
+ drew.
 - It is not part of `location-scoped-legal-hold` because that scenario's scripts never read a
-  roster CSV or a group identity at all, they consume an already-fully-specified
-  `location-hold-definition.json` (`design.md` there, throughout). Teaching that scenario's deploy
-  script to also understand roster CSVs and selection files would widen its own scope past a single
-  concern (building/removing a hold from a declarative definition).
+ roster CSV or a group identity at all, they consume an already-fully-specified
+ `location-hold-definition.json` (`design.md` there, throughout). Teaching that scenario's deploy
+ script to also understand roster CSVs and selection files would widen its own scope past a single
+ concern (building/removing a hold from a declarative definition).
 
 ## 2. The human decision this script never makes
 
@@ -76,20 +76,20 @@ no associated SharePoint site of its own to attach; only mailbox `userSources[]`
 
 - **Deciding which members to select.** See §2. Always supplied by the caller via `-SelectionPath`.
 - **Re-validating current group membership.** This script reads the roster CSV as a point-in-time
-  record; it never calls `Get-UnifiedGroupLinks` itself. If the roster is stale (a selected member
-  has since left the group), this script still merges them, the roster is the audit trail for what
-  the human's decision was based on at decision time, not a live membership re-check. A caller who
-  needs current-membership confirmation runs `teams-group-hold-resolution/validate/
-  Test-TeamsGroupHoldLocations.ps1`'s group-drift check separately.
+ record; it never calls `Get-UnifiedGroupLinks` itself. If the roster is stale (a selected member
+ has since left the group), this script still merges them, the roster is the audit trail for what
+ the human's decision was based on at decision time, not a live membership re-check. A caller who
+ needs current-membership confirmation runs `teams-group-hold-resolution/validate/
+ Test-TeamsGroupHoldLocations.ps1`'s group-drift check separately.
 - **Attaching a `siteSource`.** Individual members don't have their own SharePoint site in this
-  context (their OneDrive is a materially different Purview hold-location type, not `siteSource`
-  the way a group's Team site is), this fragment adds `userSources[]` entries only, never
-  `siteSources[]`.
+ context (their OneDrive is a materially different Purview hold-location type, not `siteSource`
+ the way a group's Team site is), this fragment adds `userSources[]` entries only, never
+ `siteSources[]`.
 - **Adding a member's personal OneDrive to the hold.** A different location type from either
-  sibling scenario's scope; not addressed here or in either sibling scenario.
+ sibling scenario's scope; not addressed here or in either sibling scenario.
 - **Building or modifying the hold policy/case itself.** `-AddToHold` requires an already-existing
-  `-CaseId`/`-HoldId`, exactly like `teams-group-hold-resolution`'s own `-AddToHold` path. This
-  scenario never calls `POST .../legalHolds` itself.
+ `-CaseId`/`-HoldId`, exactly like `teams-group-hold-resolution`'s own `-AddToHold` path. This
+ scenario never calls `POST.../legalHolds` itself.
 
 ## 7. Future refactor this fragment (again) sets up
 

@@ -71,24 +71,24 @@ resource) but the Windows service itself keeps running until stopped separately.
 Not scripted by this repo, this is host-level administration, not a Purview REST operation:
 
 1. On the SHIR host, stop and uninstall the Integration Runtime Windows service (or decommission the
-   VM entirely if it was dedicated to this purpose).
+ VM entirely if it was dedicated to this purpose).
 2. If the SHIR host also served other integration runtimes or other Purview accounts, do **not**
-   decommission it, only remove the node registration specific to this integration runtime (Purview
-   portal → **Integration runtimes** → the runtime → **Nodes** tab → select the node → delete).
+ decommission it, only remove the node registration specific to this integration runtime (Purview
+ portal → **Integration runtimes** → the runtime → **Nodes** tab → select the node → delete).
 
 ### What rollback does **not** undo
 
 - **Catalog assets and classifications already ingested.** Same as every sibling scenario, no
-  cascading delete.
+ cascading delete.
 - **The SHIR software installation and Windows service on its host.** Stage 4 removes Purview's
-  registration only, see Stage 5 for the host-level cleanup this repo does not script.
+ registration only, see Stage 5 for the host-level cleanup this repo does not script.
 - **The SQL/Windows login, its `db_datareader` grant, the Key Vault secret, and the Purview credential
-  object.** This scenario's deploy script never created any of these (§8/§11 of `design.md`/`README.md`)
+ object.** This scenario's deploy script never created any of these (§8/§11 of `design.md`/`README.md`)
 , removing the scan does not remove any of them either. Clean up separately if the intent is a full
-  teardown: drop the login in SSMS, delete the Key Vault secret, and delete the credential object in
-  Purview's **Credentials** page.
+ teardown: drop the login in SSMS, delete the Key Vault secret, and delete the credential object in
+ Purview's **Credentials** page.
 - **Scan run history.** Prior run records remain visible in the Purview portal's Monitoring view for
-  their standard 90-day retention window regardless of whether the scan object still exists.
+ their standard 90-day retention window regardless of whether the scan object still exists.
 
 ## Verification after rollback
 

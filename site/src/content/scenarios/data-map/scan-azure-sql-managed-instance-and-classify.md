@@ -35,7 +35,7 @@ classification coverage for it, without silently reusing a script built for a di
 Same underlying drivers as the sibling scenario, GDPR Art. 30 records of processing, CCPA/CPRA
 data inventory obligations, PCI DSS Requirement 3.2/12.5.2 cardholder data discovery, HIPAA §164.308
 risk analysis all require an accurate, current inventory of where regulated data lives
-[[1]](#references). Azure SQL Managed Instance is a common landing zone for lift-and-shift
+. Azure SQL Managed Instance is a common landing zone for lift-and-shift
 migrations of on-premises SQL Server estates specifically *because* it preserves near-full SQL
 Server surface area (cross-database queries, SQL Agent, linked servers), which also means it tends
 to accumulate the same long-lived, schema-drifted databases that made the original on-premises
@@ -45,24 +45,24 @@ regressing the tenant's classification coverage.
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for this scenario (deltas
+Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/). Summary for this scenario (deltas
 from the sibling scenario's table are called out explicitly):
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Microsoft Purview account + Data Map | Active **Azure subscription** with the M365 tenant, resource group for the Purview account | PAYG-billed Azure consumption, not a per-user M365 entitlement, see `docs/licensing-matrix.md` §1-2 |
-| Register + configure the source/scan | **Data Source Administrator** role on the target collection | Classic Data Map role, see `docs/rbac-model.md` §5 |
-| Call the Data Map REST API at all (any role) | **Collection Admin** role at root collection assigns data-plane roles to the automation service principal | Only a Collection Admin can grant Purview roles to a service principal, see `docs/rbac-model.md` §5 |
+| Microsoft Purview account + Data Map | Active **Azure subscription** with the M365 tenant, resource group for the Purview account | PAYG-billed Azure consumption, not a per-user M365 entitlement, see [Licensing matrix §1](/docs/licensing-matrix/#1-the-two-billing-models-read-this-first), 2 |
+| Register + configure the source/scan | **Data Source Administrator** role on the target collection | Classic Data Map role, see [RBAC model §5](/docs/rbac-model/#5-data-governance-roles-data-map--unified-catalog-a-separate-model) |
+| Call the Data Map REST API at all (any role) | **Collection Admin** role at root collection assigns data-plane roles to the automation service principal | Only a Collection Admin can grant Purview roles to a service principal, see [RBAC model §5](/docs/rbac-model/#5-data-governance-roles-data-map--unified-catalog-a-separate-model) |
 | Read scan results / browse classified assets (validation) | **Data Reader** role on the target collection | Least-privilege for the read-only `validate/` script |
-| **Public endpoint enabled** on the managed instance | [Configure public endpoint in Azure SQL Managed Instance](https://learn.microsoft.com/azure/azure-sql/managed-instance/public-endpoint-configure) | **Different from the sibling scenario**, a managed instance has no public endpoint by default; this scenario's default (SAMI over the public endpoint) does not work until it's explicitly enabled [[2]](#references) |
-| **Microsoft Entra admin set on the instance itself** | `Set-AzSqlInstanceActiveDirectoryAdministrator` (not `Set-AzSqlServerActiveDirectoryAdministrator`) | A different cmdlet/resource type from the logical-server sibling scenario, see §5 step 2 [[3]](#references) |
-| **Directory Readers Microsoft Entra role** for the instance's managed identity | Granted by a **Privileged Role Administrator** | **New prerequisite not present in the sibling scenario**, Managed Instance requires this broader role (or equivalent fine-grained Graph permissions) before Microsoft Entra authentication works at all; Azure SQL Database does not [[3]](#references) |
+| **Public endpoint enabled** on the managed instance | [Configure public endpoint in Azure SQL Managed Instance](https://learn.microsoft.com/azure/azure-sql/managed-instance/public-endpoint-configure) | **Different from the sibling scenario**, a managed instance has no public endpoint by default; this scenario's default (SAMI over the public endpoint) does not work until it's explicitly enabled |
+| **Microsoft Entra admin set on the instance itself** | `Set-AzSqlInstanceActiveDirectoryAdministrator` (not `Set-AzSqlServerActiveDirectoryAdministrator`) | A different cmdlet/resource type from the logical-server sibling scenario, see §5 step 2 |
+| **Directory Readers Microsoft Entra role** for the instance's managed identity | Granted by a **Privileged Role Administrator** | **New prerequisite not present in the sibling scenario**, Managed Instance requires this broader role (or equivalent fine-grained Graph permissions) before Microsoft Entra authentication works at all; Azure SQL Database does not |
 | Azure IAM on the target managed instance | **Reader** role for the Purview account's SAMI, scoped to **the managed instance resource itself** | Same narrow-scope recommendation as the sibling scenario (not the resource group or subscription), see §11 |
-| Database-level access for the scan identity | `db_datareader` granted to the Purview account's SAMI as a Microsoft Entra external-provider database user (`CREATE USER [<PurviewAccountName>] FROM EXTERNAL PROVIDER;`) | T-SQL step in §5, this scenario cites the exact statement directly rather than a generic cross-reference [[4]](#references) |
-| Network path to the instance (NSG) | Inbound rule allowing the `AzureCloud` service tag over the ports the instance's connection type requires (Redirect: `1433` + `11000`-`11999`; Proxy: `3342`) | Managed-Instance-specific, a logical server's simpler "Allow Azure services" firewall toggle has no equivalent here; see §6 and §11 [[5]](#references) |
-| Automation identity for the REST calls themselves | App registration with **Data Source Administrator** (and, for the validate script, **Data Reader**) Purview role on the collection | Client-secret app-only OAuth2, see `docs/automation-surface.md` §3 and §5 below |
+| Database-level access for the scan identity | `db_datareader` granted to the Purview account's SAMI as a Microsoft Entra external-provider database user (`CREATE USER [<PurviewAccountName>] FROM EXTERNAL PROVIDER;`) | T-SQL step in §5, this scenario cites the exact statement directly rather than a generic cross-reference |
+| Network path to the instance (NSG) | Inbound rule allowing the `AzureCloud` service tag over the ports the instance's connection type requires (Redirect: `1433` + `11000`-`11999`; Proxy: `3342`) | Managed-Instance-specific, a logical server's simpler "Allow Azure services" firewall toggle has no equivalent here; see §6 and §11 |
+| Automation identity for the REST calls themselves | App registration with **Data Source Administrator** (and, for the validate script, **Data Reader**) Purview role on the collection | Client-secret app-only OAuth2, see [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) and §5 below |
 
-> Verify current entitlement names and the PAYG meter against `docs/licensing-matrix.md` before a
+> Verify current entitlement names and the PAYG meter against [Licensing matrix](/docs/licensing-matrix/) before a
 > sales commitment, SKU names and billing meters change.
 
 ## 4. Architecture
@@ -109,42 +109,42 @@ design rationale and the complete Managed-Instance-vs-Database diff: `design.md`
 ### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
 1. Sign in to the [Microsoft Purview portal](https://purview.microsoft.com) → **Data Map** →
-   **Register** → **Azure SQL Managed Instance** → **Continue**. Select **From Azure subscription**,
-   the subscription, and the server; provide the instance's **public endpoint fully qualified domain
-   name and port** (e.g. `mi-contoso-prod.public.ac1b2c3d4e5f.database.windows.net,3342`), then
-   **Register** [[2]](#references). **Security tradeoff:** enabling the public endpoint puts that
-   FQDN on the public internet, a strictly larger network exposure than the sibling scenario's
-   "Allow Azure services" firewall toggle, which keeps the connection path inside Azure's own network
-   fabric. Authentication (Entra/SQL) is still required to read data either way, but for a production
-   instance prefer a **private endpoint** with a self-hosted integration runtime instead (this
-   requires switching authentication off SAMI, see §11).
+ **Register** → **Azure SQL Managed Instance** → **Continue**. Select **From Azure subscription**,
+ the subscription, and the server; provide the instance's **public endpoint fully qualified domain
+ name and port** (e.g. `mi-contoso-prod.public.ac1b2c3d4e5f.database.windows.net,3342`), then
+ **Register**. **Security tradeoff:** enabling the public endpoint puts that
+ FQDN on the public internet, a strictly larger network exposure than the sibling scenario's
+ "Allow Azure services" firewall toggle, which keeps the connection path inside Azure's own network
+ fabric. Authentication (Entra/SQL) is still required to read data either way, but for a production
+ instance prefer a **private endpoint** with a self-hosted integration runtime instead (this
+ requires switching authentication off SAMI, see §11).
 2. **Set the Microsoft Entra admin on the instance** (not the logical server, there isn't one for a
-   managed instance): Azure portal → the managed instance → **Microsoft Entra ID** → **Set admin**,
-   or `Set-AzSqlInstanceActiveDirectoryAdministrator` [[3]](#references).
+ managed instance): Azure portal → the managed instance → **Microsoft Entra ID** → **Set admin**,
+ or `Set-AzSqlInstanceActiveDirectoryAdministrator`.
 3. **Grant Directory Readers.** On the instance's **Microsoft Entra ID** pane, select the banner
-   prompting you to grant Directory Reader permissions to the instance's managed identity (requires
-   signing in as a **Privileged Role Administrator**), or run the PowerShell script Microsoft
-   publishes for this step [[3]](#references). Skipping this step means Microsoft Entra
-   authentication, including the SAMI-based scan this scenario configures, does not work at all.
+ prompting you to grant Directory Reader permissions to the instance's managed identity (requires
+ signing in as a **Privileged Role Administrator**), or run the PowerShell script Microsoft
+ publishes for this step. Skipping this step means Microsoft Entra
+ authentication, including the SAMI-based scan this scenario configures, does not work at all.
 4. **Grant database access to the Purview SAMI.** Against the target database:
    ```sql
    CREATE USER [<exact name of your Purview account>] FROM EXTERNAL PROVIDER;
    ```
-   then grant it `db_datareader` (e.g. `ALTER ROLE db_datareader ADD MEMBER [<PurviewAccountName>];`)
-   [[4]](#references).
+ then grant it `db_datareader` (e.g. `ALTER ROLE db_datareader ADD MEMBER [<PurviewAccountName>];`)
+.
 5. **Grant Azure IAM Reader.** On the managed instance resource itself (not the resource group or
-   subscription, same narrow-scope guidance as the sibling scenario), assign the Purview account's
-   name the **Reader** role.
+ subscription, same narrow-scope guidance as the sibling scenario), assign the Purview account's
+ name the **Reader** role.
 6. **Confirm the network path.** If the instance uses the public endpoint, confirm its Network
-   Security Group has an inbound rule allowing the `AzureCloud` service tag over the ports its
-   connection type requires (Redirect: `1433` + `11000`-`11999`; Proxy: `3342`) [[5]](#references).
+ Security Group has an inbound rule allowing the `AzureCloud` service tag over the ports its
+ connection type requires (Redirect: `1433` + `11000`-`11999`; Proxy: `3342`).
 7. Back in the Purview portal, select **New scan** under the registered source, choose the Azure
-   integration runtime (public endpoint) or a self-hosted IR (private endpoint, see §11), select the
-   SAMI credential, **Test connection**, then **Continue** [[2]](#references).
+ integration runtime (public endpoint) or a self-hosted IR (private endpoint, see §11), select the
+ SAMI credential, **Test connection**, then **Continue**.
 8. Scope the scan, choose a scan rule set (system default, this scenario's default), choose a scan
-   trigger, and **Save and run** [[2]](#references).
+ trigger, and **Save and run**.
 9. After the scan completes, browse the classified assets in **Unified Catalog** to confirm columns
-   matching your target SITs are tagged.
+ matching your target SITs are tagged.
 
 ### Script path (idempotent, parameterized, dry-run capable)
 
@@ -185,7 +185,7 @@ design rationale and the complete Managed-Instance-vs-Database diff: `design.md`
 ```
 
 The deploy script uses the **Microsoft Purview Data Map / Data Governance REST API**, automation
-surface 4 per `docs/automation-surface.md` §1. Steps 2-6 above (Entra admin, Directory Readers,
+surface 4 per [Automation surface §1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first). Steps 2-6 above (Entra admin, Directory Readers,
 database grant, IAM Reader, network) are one-time, out-of-band prerequisites this script does not
 perform, see `design.md` §8.
 
@@ -193,16 +193,16 @@ perform, see `design.md` §8.
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Data source `kind` | `AzureSqlDatabaseManagedInstance` | Distinct from the sibling scenario's `AzureSqlDatabase` [[6]](#references) |
-| Scan `kind` (default) | `AzureSqlDatabaseManagedInstanceMsi` | SAMI-authenticated, no credential object to create or rotate [[7]](#references) |
+| Data source `kind` | `AzureSqlDatabaseManagedInstance` | Distinct from the sibling scenario's `AzureSqlDatabase` |
+| Scan `kind` (default) | `AzureSqlDatabaseManagedInstanceMsi` | SAMI-authenticated, no credential object to create or rotate |
 | Scan `kind` (alternative) | `AzureSqlDatabaseManagedInstanceCredential` | SQL authentication or service principal, requiring a Key Vault-backed credential object created **via the Purview portal**, same open gap as the sibling scenario; see §11 |
-| `serverEndpoint` format | `tcp:<PublicEndpointFqdn>,<Port>` (e.g. `tcp:mi-contoso-prod.public.ac1b2c3d4e5f.database.windows.net,3342`) | Distinct from the sibling scenario's bare hostname, confirmed via Microsoft's own worked PowerShell example [[8]](#references) |
-| Default public-endpoint port | `3342` | Microsoft's own worked *registration* example uses this port. **Distinct from the NSG *network-path* ports** in §3's table: since October 2025, Redirect is Microsoft's default connection type for connections originating inside Azure (Proxy remains default for connections originating outside Azure), which determines whether the NSG needs `1433`+`11000`-`11999` (Redirect) or just `3342` (Proxy), confirm both the registration port and the connection type independently against the instance's actual configuration before relying on either default [[5]](#references) |
+| `serverEndpoint` format | `tcp:<PublicEndpointFqdn>,<Port>` (e.g. `tcp:mi-contoso-prod.public.ac1b2c3d4e5f.database.windows.net,3342`) | Distinct from the sibling scenario's bare hostname, confirmed via Microsoft's own worked PowerShell example |
+| Default public-endpoint port | `3342` | Microsoft's own worked *registration* example uses this port. **Distinct from the NSG *network-path* ports** in §3's table: since October 2025, Redirect is Microsoft's default connection type for connections originating inside Azure (Proxy remains default for connections originating outside Azure), which determines whether the NSG needs `1433`+`11000`-`11999` (Redirect) or just `3342` (Proxy), confirm both the registration port and the connection type independently against the instance's actual configuration before relying on either default |
 | Collection reference | `{ "referenceName": "<5-char collection ID>", "type": "CollectionReference" }` | Same shape as the sibling scenario, read the ID from the collection's URL in the portal, not its friendly name |
-| Scan rule set (this scenario's default) | `scanRulesetName: "AzureSqlDatabaseManagedInstance"`, `scanRulesetType: "System"` | A **different system rule set name** from the sibling scenario's `AzureSqlDatabase`, confirmed via Microsoft's own worked PowerShell example; includes the same SSN + Credit Card Number pair [[9]](#references) |
-| Scan level | `Full` (first run) → `Incremental` (subsequent scheduled runs) | Same pattern as the sibling scenario [[10]](#references) |
-| Recurring trigger | Optional; `RecurrenceFrequency`/`RecurrenceInterval` parameters | Trigger resource name is always `default`, confirmed via Microsoft's own worked Triggers example [[11]](#references) |
-| Run-scan call shape | `POST .../scans/{name}:run?runId={guid}&scanLevel={level}` | **Corrected from the sibling scenario's assumed shape**, an action-style POST, not a resource-style `PUT .../runs/{runId}`; confirmed via direct fetch of Microsoft's own REST reference, see `design.md` §5 [[12]](#references) |
+| Scan rule set (this scenario's default) | `scanRulesetName: "AzureSqlDatabaseManagedInstance"`, `scanRulesetType: "System"` | A **different system rule set name** from the sibling scenario's `AzureSqlDatabase`, confirmed via Microsoft's own worked PowerShell example; includes the same SSN + Credit Card Number pair |
+| Scan level | `Full` (first run) → `Incremental` (subsequent scheduled runs) | Same pattern as the sibling scenario |
+| Recurring trigger | Optional; `RecurrenceFrequency`/`RecurrenceInterval` parameters | Trigger resource name is always `default`, confirmed via Microsoft's own worked Triggers example |
+| Run-scan call shape | `POST.../scans/{name}:run?runId={guid}&scanLevel={level}` | **Corrected from the sibling scenario's assumed shape**, an action-style POST, not a resource-style `PUT.../runs/{runId}`; confirmed via direct fetch of Microsoft's own REST reference, see `design.md` §5 |
 | API version pinned by this script | `2023-09-01` | Confirmed current for all four REST operations this script uses, via direct fetch of each operation's own canonical reference page, see §11 |
 
 Full cmdlet/REST-body grounding: `deploy/New-AzureSqlManagedInstanceDataMapScan.ps1` inline comments
@@ -211,30 +211,30 @@ and its `.NOTES` block cite the exact Microsoft Learn reference pages.
 ## 7. Validation / how to prove it works
 
 1. **Automated config check**, `./validate/Test-AzureSqlManagedInstanceDataMapScan.ps1` confirms
-   the data source and scan objects exist with the expected `kind`, `serverEndpoint` form, and scan
-   rule set, and reports the most recent scan run's status. Exits non-zero on any hard failure (safe
-   for a CI-style pre-flight).
+ the data source and scan objects exist with the expected `kind`, `serverEndpoint` form, and scan
+ rule set, and reports the most recent scan run's status. Exits non-zero on any hard failure (safe
+ for a CI-style pre-flight).
 2. **Scan run status**, Purview portal → **Data Map** → **Data sources** → select the source →
-   **Recent scans** → the run shows **Queued → In progress → Completed**, with assets
-   discovered/classified counts [[10]](#references). Scan run history is retained for **90 days**.
+ **Recent scans** → the run shows **Queued → In progress → Completed**, with assets
+ discovered/classified counts. Scan run history is retained for **90 days**.
 3. **Classification evidence**, browse or search the **Unified Catalog** for the scanned database
-   asset; confirm the target columns carry the **U.S. Social Security Number** or **Credit Card
-   Number** classification badges.
+ asset; confirm the target columns carry the **U.S. Social Security Number** or **Credit Card
+ Number** classification badges.
 4. **Entra prerequisite evidence**, on the managed instance's **Microsoft Entra ID** pane in the
-   Azure portal, confirm the Directory Readers banner no longer appears (or run
-   `Get-MgDirectoryRoleMember` against the Directory Readers role and confirm the instance's managed
-   identity is a member), a missing Directory Readers grant is the single most common reason this
-   scenario's scan authenticates successfully in testing but fails against a newly registered
-   instance. **Deliberately manual, not part of `validate/Test-AzureSqlManagedInstanceDataMapScan.ps1`:**
-   that script authenticates against the Purview Data Map data-plane resource with a Data
-   Reader-scoped Purview role; confirming Directory Readers membership needs a separate Microsoft
-   Graph token and a directory-read permission this scenario's automation identity has no other
-   reason to hold, automated instead by the dedicated companion scenario
-   `scenarios/data-map/verify-purview-entra-graph-prerequisites/`, which checks Directory Readers
-   membership (and drift) across every Managed-Instance-backed Purview source, not just this one.
+ Azure portal, confirm the Directory Readers banner no longer appears (or run
+ `Get-MgDirectoryRoleMember` against the Directory Readers role and confirm the instance's managed
+ identity is a member), a missing Directory Readers grant is the single most common reason this
+ scenario's scan authenticates successfully in testing but fails against a newly registered
+ instance. **Deliberately manual, not part of `validate/Test-AzureSqlManagedInstanceDataMapScan.ps1`:**
+ that script authenticates against the Purview Data Map data-plane resource with a Data
+ Reader-scoped Purview role; confirming Directory Readers membership needs a separate Microsoft
+ Graph token and a directory-read permission this scenario's automation identity has no other
+ reason to hold, automated instead by the dedicated companion scenario
+ `scenarios/data-map/verify-purview-entra-graph-prerequisites/`, which checks Directory Readers
+ membership (and drift) across every Managed-Instance-backed Purview source, not just this one.
 5. **Access-path evidence**, confirm in the database (`SELECT * FROM sys.database_principals WHERE
-   type = 'E'`) that the Purview account's SAMI appears as an external-provider database user with
-   `db_datareader`.
+ type = 'E'`) that the Purview account's SAMI appears as an external-provider database user with
+ `db_datareader`.
 
 ## 8. Operations & tuning
 
@@ -277,7 +277,7 @@ public endpoint), see `rollback.md`.
 
 ## 10. Cost & licensing notes
 
-Same PAYG/Azure-consumption billing model as the sibling scenario, see `docs/licensing-matrix.md`
+Same PAYG/Azure-consumption billing model as the sibling scenario, see [Licensing matrix](/docs/licensing-matrix/)
 §1-2 and `scan-azure-sql-and-classify/README.md` §10 for the full text (cost governance, sizing,
 no M365 license consumed). No Managed-Instance-specific billing delta: Data Map scanning meters the
 same way regardless of the underlying Azure SQL source type.
@@ -285,38 +285,38 @@ same way regardless of the underlying Azure SQL source type.
 ## 11. Known limitations & gotchas
 
 - **SAMI cannot be used with a private endpoint.** If the managed instance is reachable only via a
-  Purview ingestion private endpoint, this scenario's default authentication (SAMI) does not work, 
-  Microsoft's own documentation states managed identity authentication isn't supported when
-  connecting to Microsoft Purview over private endpoints. Fall back to a service principal or SQL
-  authentication (both requiring a Key Vault-backed credential object created via the portal, no
-  documented REST endpoint for credential creation was found during this build, same open gap as the
-  sibling scenario) [[13]](#references).
+ Purview ingestion private endpoint, this scenario's default authentication (SAMI) does not work, 
+ Microsoft's own documentation states managed identity authentication isn't supported when
+ connecting to Microsoft Purview over private endpoints. Fall back to a service principal or SQL
+ authentication (both requiring a Key Vault-backed credential object created via the portal, no
+ documented REST endpoint for credential creation was found during this build, same open gap as the
+ sibling scenario).
 - **Directory Readers is a tenant-wide-flavored role, not a Purview-scoped one.** Granting it
-  requires a **Privileged Role Administrator**, a materially higher-privilege operation than any
-  other grant this scenario needs, flagged as a Red Team finding in `reviews.md`.
+ requires a **Privileged Role Administrator**, a materially higher-privilege operation than any
+ other grant this scenario needs, flagged as a Red Team finding in `reviews.md`.
 - **Existing classifications are not retroactively removed** when a scan rule set is narrowed, same
-  behavior as the sibling scenario.
+ behavior as the sibling scenario.
 - **U.S.-centric SIT starter set**, same caveat as every other scenario in this repo using the
-  SSN + Credit Card Number pair; not GDPR-complete for a non-U.S. tenant.
+ SSN + Credit Card Number pair; not GDPR-complete for a non-U.S. tenant.
 - **VERIFY, default public-endpoint port.** This scenario defaults `-Port` to `3342`, matching
-  Microsoft's own worked registration example, but the actual port a given instance's public
-  endpoint listens on depends on its connection-policy configuration. Confirm the real port (Azure
-  portal → the instance → **Networking** → **Public endpoint**) before relying on the default in a
-  script running unattended.
+ Microsoft's own worked registration example, but the actual port a given instance's public
+ endpoint listens on depends on its connection-policy configuration. Confirm the real port (Azure
+ portal → the instance → **Networking** → **Public endpoint**) before relying on the default in a
+ script running unattended.
 - **VERIFY, credential-object REST creation.** Same open gap as the sibling scenario: no documented
-  REST endpoint for creating the Key Vault-backed credential object needed for
-  `AzureSqlDatabaseManagedInstanceCredential` scanning.
+ REST endpoint for creating the Key Vault-backed credential object needed for
+ `AzureSqlDatabaseManagedInstanceCredential` scanning.
 - **Follow-up recorded in `PROGRESS.md`:** the two REST-shape corrections this build made relative to
-  the sibling scenario's assumptions (Run Scan's action-style POST; List Scan History's nested asset
-  counts, `design.md` §5) should be backported into `scan-azure-sql-and-classify`'s own scripts, since
-  that scenario's `PUT .../runs/{runId}` call would not match the confirmed API contract.
+ the sibling scenario's assumptions (Run Scan's action-style POST; List Scan History's nested asset
+ counts, `design.md` §5) should be backported into `scan-azure-sql-and-classify`'s own scripts, since
+ that scenario's `PUT.../runs/{runId}` call would not match the confirmed API contract.
 
 ## 12. References
 
 1. Discover and govern Azure SQL Database in Microsoft Purview (shared regulatory-driver framing), <https://learn.microsoft.com/purview/register-scan-azure-sql-database>
 2. Connect to and manage an Azure SQL Managed Instance in Microsoft Purview (registration, public endpoint, scan setup), <https://learn.microsoft.com/purview/register-scan-azure-sql-managed-instance>
 3. Configure and manage Microsoft Entra authentication with Azure SQL, "Set Microsoft Entra admin" (Azure SQL Managed Instance) and "Assign Microsoft Graph permissions" (Directory Readers role requirement), <https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure>
-4. Configure and manage Microsoft Entra authentication with Azure SQL, "Create Microsoft Entra principals in SQL" (`CREATE USER ... FROM EXTERNAL PROVIDER` syntax), <https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure#create-contained-users-mapped-to-azure-ad-identities>
+4. Configure and manage Microsoft Entra authentication with Azure SQL, "Create Microsoft Entra principals in SQL" (`CREATE USER... FROM EXTERNAL PROVIDER` syntax), <https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure#create-contained-users-mapped-to-azure-ad-identities>
 5. Check Azure data source readiness to register and scan in Microsoft Purview, Azure SQL Managed Instance (AzureSQLMI) network/NSG/ProxyOverride checklist, <https://learn.microsoft.com/purview/data-map-data-sources-check-azure-readiness>
 6. AzureSqlDatabaseManagedInstanceDataSource (Data Sources - Create Or Replace REST reference, API version 2023-09-01), <https://learn.microsoft.com/rest/api/purview/scanningdataplane/data-sources/create-or-replace>
 7. AzureSqlDatabaseManagedInstanceMsiScan / AzureSqlDatabaseManagedInstanceMsiScanProperties (Scans - Create Or Replace REST reference, API version 2023-09-01), <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scans/create-or-replace>
@@ -324,7 +324,7 @@ same way regardless of the underlying Azure SQL source type.
 9. New-AzPurviewAzureSqlDatabaseManagedInstanceMsiScanObject (Az.Purview PowerShell module, confirms `ScanRulesetName 'AzureSqlDatabaseManagedInstance'` via its own worked example), <https://learn.microsoft.com/powershell/module/az.purview/new-azpurviewazuresqldatabasemanagedinstancemsiscanobject>
 10. Monitor Data Map population in Microsoft Purview (scan run statuses, 90-day run-history retention), <https://learn.microsoft.com/purview/data-map-scan-run-monitor-population>
 11. Triggers - Create Or Replace REST API reference (API version 2023-09-01, worked example confirming the trigger body shape and the `triggers/default` path), <https://learn.microsoft.com/rest/api/purview/scanningdataplane/triggers/create-or-replace>
-12. Scan Result - Run Scan REST API reference (API version 2023-09-01; confirms the `POST .../scans/{name}:run?runId=...` action-style shape) and Scan Result - List Scan History (confirms the nested `discoveryExecutionDetails.statistics.assets` shape), <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-result/run-scan> and <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-result/list-scan-history>
+12. Scan Result - Run Scan REST API reference (API version 2023-09-01; confirms the `POST.../scans/{name}:run?runId=...` action-style shape) and Scan Result - List Scan History (confirms the nested `discoveryExecutionDetails.statistics.assets` shape), <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-result/run-scan> and <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-result/list-scan-history>
 13. Connect to and manage an Azure SQL Managed Instance in Microsoft Purview, "System or user assigned managed identity to register" (private-endpoint managed-identity limitation), <https://learn.microsoft.com/purview/register-scan-azure-sql-managed-instance#register>
 14. Az.Purview PowerShell module reference (`Remove-AzPurviewDataSource`, `Remove-AzPurviewScan`), <https://learn.microsoft.com/powershell/module/az.purview/>
 15. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary), <https://learn.microsoft.com/purview/data-gov-classic-permissions>

@@ -46,7 +46,7 @@ before it's shown tenant-wide again, or a temporary pause during a larger reorga
 This deletes every domain in the tree (`DELETE /businessdomains/{id}`), **children before parents**
 , Microsoft's own portal guidance for deleting a governance domain requires first unpublishing it
 and removing all business concepts within it, **including any subdomains**
-[[6]](README.md#12-references), and this script's deepest-first ordering exists specifically to
+, and this script's deepest-first ordering exists specifically to
 satisfy that documented requirement without a manual pre-step. There is no "undo", re-establishing
 the hierarchy means re-running `deploy/New-GovernanceDomainHierarchy.ps1` from scratch, which
 generates **new** domain IDs (any external system that recorded the old IDs, e.g. a data product
@@ -64,16 +64,16 @@ scenarios to build on top of.
 ## What rollback does **not** undo
 
 - **Domain history.** Same as `curate-business-glossary/rollback.md`, Microsoft Learn does not
-  document a separate audit trail for Unified Catalog object changes distinct from the general
-  Microsoft Purview audit log.
+ document a separate audit trail for Unified Catalog object changes distinct from the general
+ Microsoft Purview audit log.
 - **The attribute *definitions* themselves.** This scenario's scripts only ever set/clear values on
-  the domain object's `managedAttributes` array; they never touch the tenant's
-  **Custom metadata (preview)** attribute-group/attribute definitions (`design.md` §7).
+ the domain object's `managedAttributes` array; they never touch the tenant's
+ **Custom metadata (preview)** attribute-group/attribute definitions (`design.md` §7).
 - **The target Data Map collection(s)** a data estate mapping referenced. This scenario never
-  creates or deletes Data Map collections, only the Unified Catalog-side mapping record.
+ creates or deletes Data Map collections, only the Unified Catalog-side mapping record.
 - **Links from data products, glossary terms, or critical data elements in other scenarios that
-  point at one of these domains.** A deleted domain leaves those objects' `domain`/`domainIds`
-  reference dangling; check the portal before purging a domain other scenarios build on.
+ point at one of these domains.** A deleted domain leaves those objects' `domain`/`domainIds`
+ reference dangling; check the portal before purging a domain other scenarios build on.
 
 ## Verification after rollback
 

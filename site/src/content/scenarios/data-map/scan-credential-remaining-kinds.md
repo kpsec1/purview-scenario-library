@@ -18,7 +18,7 @@ Extends `scenarios/data-map/scan-credential-key-vault-backed/` to the **five** M
 Scanning-data-plane `CredentialType` kinds that scenario deliberately left out, 
 `AccountKey`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, and `ManagedIdentity`
 (user-assigned), completing coverage of all **eight** documented kinds
-[[1]](#references). Each is a genuinely different request-body shape, not a parameter tweak: three
+. Each is a genuinely different request-body shape, not a parameter tweak: three
 carry no `KeyVaultSecret` reference at all, and `ConsumerKeyAuth` carries **two** independent ones.
 
 **Who it's for:** a data governance team onboarding source types the parent scenario's three kinds
@@ -35,34 +35,34 @@ to the three kinds the SQL-family scenarios in this repo happen to consume. Two 
 here matter enough to call out specifically:
 
 - **`ManagedIdentity` (user-assigned) is not a fallback tier, it's a *preferred* one.**
-  Microsoft's own credential priority order is **(1) Purview system-assigned managed identity →
-  (2) user-assigned managed identity → (3) service principal → (4) account key/SQL
-  authentication/other** [[9]](#references). The parent scenario's `ServicePrincipal`/`SqlAuth`/
-  `BasicAuth` kinds serve tiers 3-4, "the cases where the higher tiers are genuinely unavailable,"
-  by its own README §11. `ManagedIdentity` fills the gap directly below system-assigned identity:
-  wherever a source supports it, it is Microsoft's **second-choice** authentication method, not a
-  last resort, see §11 for the licensing/preview caveat that tempers this.
+ Microsoft's own credential priority order is **(1) Purview system-assigned managed identity →
+ (2) user-assigned managed identity → (3) service principal → (4) account key/SQL
+ authentication/other**. The parent scenario's `ServicePrincipal`/`SqlAuth`/
+ `BasicAuth` kinds serve tiers 3-4, "the cases where the higher tiers are genuinely unavailable,"
+ by its own README §11. `ManagedIdentity` fills the gap directly below system-assigned identity:
+ wherever a source supports it, it is Microsoft's **second-choice** authentication method, not a
+ last resort, see §11 for the licensing/preview caveat that tempers this.
 - **`AccountKey`, `AmazonARN`, and `ConsumerKeyAuth` are the only paths for whole source
-  categories.** Amazon S3 and Salesforce have **no** managed-identity or service-principal option
-  in Microsoft's own documentation, `AmazonARN`/`ConsumerKeyAuth` are those sources' *only*
-  Purview-native authentication method [[6]](#references)[[7]](#references). Without this
-  fragment, onboarding either source through this library meant a portal-only credential step with
-  no scripted, diffable artifact, the same gap the parent scenario closed for SQL-family sources.
+ categories.** Amazon S3 and Salesforce have **no** managed-identity or service-principal option
+ in Microsoft's own documentation, `AmazonARN`/`ConsumerKeyAuth` are those sources' *only*
+ Purview-native authentication method. Without this
+ fragment, onboarding either source through this library meant a portal-only credential step with
+ no scripted, diffable artifact, the same gap the parent scenario closed for SQL-family sources.
 
 ## 3. Prerequisites
 
-Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md` §5. This scenario's
+Full licensing detail: [Licensing matrix](/docs/licensing-matrix/). RBAC: [RBAC model §5](/docs/rbac-model/#5-data-governance-roles-data-map--unified-catalog-a-separate-model). This scenario's
 prerequisites are **identical** to the parent scenario's (§3), same collection roles, same Key
 Vault access model, same automation identity, with two kind-specific additions:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Everything in `scan-credential-key-vault-backed/README.md` §3 |, | Data Source Administrator to create, Data Reader to validate, Purview MSI Get+List (or Key Vault Secrets User) on the vault, a dedicated scan-credential Key Vault. Unchanged by this fragment |
-| (`AmazonARN` only) An AWS IAM role trusting Microsoft's account | Role created in the AWS console, trusting the **Microsoft account ID** and **external ID** Purview's portal displays when you start creating a Role ARN credential | These two values are **not** properties of the credential object (§6), Microsoft's own worked walkthrough shows them appearing only in the **portal's** "New credential" pane, and this build found no REST endpoint that returns them [[6]](#references). **VERIFY (pilot tenant):** confirm no such endpoint exists before assuming a fully portal-free Role ARN onboarding is possible, see §11 |
-| (`ManagedIdentity` only) A user-assigned managed identity already added to the Purview account | Created via the Purview account's **Managed identities** blade in the Azure portal (a separate Azure-side step, not a Scanning-API call) | [[8]](#references). This fragment's script references that UAMI's `principalId`/`resourceId`/`tenantId` by value, it does not create the UAMI itself, the same "credential is downstream of an out-of-band identity" pattern the parent scenario established for the Key Vault and its secret |
-| (`ManagedIdentity` only) Feature stage | **Preview** | Microsoft's own documentation labels "User-assigned managed identity" as "(preview)" as of this writing [[8]](#references), see §11 before committing to it in a production design |
+| (`AmazonARN` only) An AWS IAM role trusting Microsoft's account | Role created in the AWS console, trusting the **Microsoft account ID** and **external ID** Purview's portal displays when you start creating a Role ARN credential | These two values are **not** properties of the credential object (§6), Microsoft's own worked walkthrough shows them appearing only in the **portal's** "New credential" pane, and this build found no REST endpoint that returns them. **VERIFY (pilot tenant):** confirm no such endpoint exists before assuming a fully portal-free Role ARN onboarding is possible, see §11 |
+| (`ManagedIdentity` only) A user-assigned managed identity already added to the Purview account | Created via the Purview account's **Managed identities** blade in the Azure portal (a separate Azure-side step, not a Scanning-API call) |. This fragment's script references that UAMI's `principalId`/`resourceId`/`tenantId` by value, it does not create the UAMI itself, the same "credential is downstream of an out-of-band identity" pattern the parent scenario established for the Key Vault and its secret |
+| (`ManagedIdentity` only) Feature stage | **Preview** | Microsoft's own documentation labels "User-assigned managed identity" as "(preview)" as of this writing, see §11 before committing to it in a production design |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) before a
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) (dated 2026-09-02) before a
 > sales commitment.
 
 ## 4. Architecture
@@ -124,7 +124,7 @@ provisioned access for, by this fragment; the credential merely names them. Full
 Steps 1-2 (store the secret, grant Purview vault access) are the parent scenario's §5 steps 1-2 and
 apply unchanged to `AccountKey`, `ConsumerKeyAuth`, and `DelegatedAuth` (skip them entirely for
 `AmazonARN` and `ManagedIdentity`, neither uses a Key Vault secret). Then, on the Purview
-**Credentials** page → **+ New** [[6]](#references):
+**Credentials** page → **+ New**:
 
 | Kind | Authentication method (portal) | Fields |
 |---|---|---|
@@ -132,11 +132,11 @@ apply unchanged to `AccountKey`, `ConsumerKeyAuth`, and `DelegatedAuth` (skip th
 | `AmazonARN` | **Role ARN** | Role ARN (paste after creating the AWS-side role, see §3) |
 | `ConsumerKeyAuth` | **Consumer Key** | User name, consumer key (plain text field), Key Vault connection + secret name for the consumer secret, Key Vault connection + secret name for the password |
 | `DelegatedAuth` | **Delegated auth** | Client ID, user name, Key Vault connection + secret name for the password |
-| `ManagedIdentity` | **Managed identity** | Select from the **User assigned managed identities** dropdown (populated from the Purview account's own **Managed identities** blade, this build found no free-text principal/resource/tenant ID entry in the portal path) [[8]](#references) |
+| `ManagedIdentity` | **Managed identity** | Select from the **User assigned managed identities** dropdown (populated from the Purview account's own **Managed identities** blade, this build found no free-text principal/resource/tenant ID entry in the portal path) |
 
 > The portal's `ManagedIdentity` path is a dropdown selection, not a form of raw IDs, but the REST
 > body it produces underneath is the same `principalId`/`resourceId`/`tenantId` shape §6 documents,
-> confirmed by the Scanning-data-plane reference [[1]](#references) independent of the portal UI.
+> confirmed by the Scanning-data-plane reference independent of the portal UI.
 
 ### Script path
 
@@ -193,7 +193,7 @@ scenario already created rather than making a new one per credential kind.
 ### Credential body, kind → `typeProperties` shape
 
 All five confirmed directly against the Scanning-data-plane **Credential - Create Or Replace**
-reference [[1]](#references), the same source the parent scenario used for its three kinds, and
+reference, the same source the parent scenario used for its three kinds, and
 cross-checked against `scenarios/data-map/scan-credential-inventory-report/`'s independently-built
 per-kind fingerprint table (§6 there), which reached the identical shapes from the read side.
 
@@ -214,11 +214,11 @@ The `KeyVaultSecret`/`Store` sub-object and its two open-VERIFY discriminator li
 
 | Kind | Confirmed for | Source |
 |---|---|---|
-| `AccountKey` | Azure Blob Storage, ADLS Gen1, ADLS Gen2, Azure Files, Azure Cosmos DB (SQL API) | [[2]](#references)[[3]](#references)[[4]](#references) |
-| `AmazonARN` | Amazon S3 (the **only** documented auth method for this source, no managed identity or service principal option exists for S3) | [[6]](#references) |
-| `ConsumerKeyAuth` | Salesforce (the **only** documented auth method for this source) | [[7]](#references) |
-| `DelegatedAuth` | Microsoft Fabric (same-tenant and cross-tenant), Power BI tenant (same-tenant and cross-tenant) | [[10]](#references)[[11]](#references) |
-| `ManagedIdentity` | Azure Data Lake Gen1, Azure Data Lake Gen2, Azure SQL Database, Azure SQL Managed Instance, Azure Synapse dedicated SQL pools, Azure Blob Storage | [[8]](#references) |
+| `AccountKey` | Azure Blob Storage, ADLS Gen1, ADLS Gen2, Azure Files, Azure Cosmos DB (SQL API) | |
+| `AmazonARN` | Amazon S3 (the **only** documented auth method for this source, no managed identity or service principal option exists for S3) | |
+| `ConsumerKeyAuth` | Salesforce (the **only** documented auth method for this source) | |
+| `DelegatedAuth` | Microsoft Fabric (same-tenant and cross-tenant), Power BI tenant (same-tenant and cross-tenant) | |
+| `ManagedIdentity` | Azure Data Lake Gen1, Azure Data Lake Gen2, Azure SQL Database, Azure SQL Managed Instance, Azure Synapse dedicated SQL pools, Azure Blob Storage | |
 
 No scenario in this library scans Amazon S3, Salesforce, Microsoft Fabric, or Power BI yet, those
 are natural future fragments this one hands a working credential to (§11, `design.md` §7). The
@@ -237,7 +237,7 @@ SAMI is the most immediately actionable follow-up from this fragment; not built 
 | `-ConsumerSecretName` / `-ConsumerSecretVersion` | `ConsumerKeyAuth` only | The **second**, independent secret reference (`consumerSecret`) |
 | `-UserName` | `ConsumerKeyAuth`, `DelegatedAuth` | |
 | `-ConsumerKey` | `ConsumerKeyAuth` only | Plain string, written verbatim into the credential's metadata, not a Key Vault reference (§6) |
-| `-ClientId` | `DelegatedAuth` only | The scanning app registration's Application (client) ID, see the Microsoft Fabric/Power BI worked examples [[10]](#references)[[11]](#references) |
+| `-ClientId` | `DelegatedAuth` only | The scanning app registration's Application (client) ID, see the Microsoft Fabric/Power BI worked examples |
 | `-RoleArn` | `AmazonARN` only | e.g. `arn:aws:iam::<account>:role/<role-name>` |
 | `-PrincipalId` / `-ResourceId` / `-ManagedIdentityTenantId` | `ManagedIdentity` only | Identify an **existing** UAMI already added to the Purview account (§3); `-ManagedIdentityTenantId` defaults to `-TenantId` |
 | `-SecretReferenceType` / `-SecretStoreReferenceType` | Any secret-bearing kind | Same VERIFY-driven parameters as the parent scenario, same defaults |
@@ -254,19 +254,19 @@ with a per-kind completeness table instead of the parent's single three-kind `sw
 1. Credential exists; kind matches `-ExpectedCredentialType` if supplied.
 2. Kind-specific field completeness (the right-hand column of §6's table, checked field by field).
 3. For every `KeyVaultSecret`-shaped field the kind carries (one for `AccountKey`/`DelegatedAuth`,
-   **two** for `ConsumerKeyAuth`, zero for `AmazonARN`/`ManagedIdentity`): the two discriminator
-   literals are compared the same `[WARN]`-only way as the parent scenario.
+ **two** for `ConsumerKeyAuth`, zero for `AmazonARN`/`ManagedIdentity`): the two discriminator
+ literals are compared the same `[WARN]`-only way as the parent scenario.
 4. `-CheckKeyVaultSecret`: resolves every secret the kind carries (both, for `ConsumerKeyAuth`) via
-   `Get-AzKeyVaultSecret` without `-AsPlainText`. The Azure Key Vault name is derived the same
-   authoritative way as the parent scenario's check 1, a `GET` against the Key Vault connection
-   object, then reading the real vault name out of its `baseUrl`, never assumed to equal the
-   Purview connection name.
+ `Get-AzKeyVaultSecret` without `-AsPlainText`. The Azure Key Vault name is derived the same
+ authoritative way as the parent scenario's check 1, a `GET` against the Key Vault connection
+ object, then reading the real vault name out of its `baseUrl`, never assumed to equal the
+ Purview connection name.
 5. `AmazonARN`-specific: warns (never fails, this is a format sanity check, not an AWS-side call)
-   if `-RoleArn`'s value doesn't match the `arn:aws:iam::\d{12}:role/.+` shape Microsoft's own worked
-   example uses [[6]](#references).
+ if `-RoleArn`'s value doesn't match the `arn:aws:iam::\d{12}:role/.+` shape Microsoft's own worked
+ example uses.
 6. `ManagedIdentity`-specific: prints an `[INFO]` reminder that this is a **preview** capability
-   (§11) and that nothing in this script can confirm the referenced UAMI is actually attached to the
-   Purview account, only that the credential object carries those three ID strings.
+ (§11) and that nothing in this script can confirm the referenced UAMI is actually attached to the
+ Purview account, only that the credential object carries those three ID strings.
 
 **What no script here can prove**, beyond the parent scenario's own §7 disclaimer: for `AmazonARN`,
 that the AWS-side IAM role trust policy is configured correctly (that is an AWS-console fact, not a
@@ -297,7 +297,7 @@ sufficient when a Key Vault-side backstop is also in play.
 
 | Kind | First check | If that passes but the scan still fails |
 |---|---|---|
-| `AmazonARN` | `validate/... -ExpectedCredentialType AmazonARN`, confirms the ARN's string shape only | The failure is entirely on the AWS side: the IAM role's trust policy, its `AmazonS3ReadOnlyAccess`-equivalent permissions, a bucket policy, or an SCP policy blocking the connection [[6]](#references). This scenario's validate script cannot reach into AWS at all, escalate straight to an AWS console check |
+| `AmazonARN` | `validate/... -ExpectedCredentialType AmazonARN`, confirms the ARN's string shape only | The failure is entirely on the AWS side: the IAM role's trust policy, its `AmazonS3ReadOnlyAccess`-equivalent permissions, a bucket policy, or an SCP policy blocking the connection. This scenario's validate script cannot reach into AWS at all, escalate straight to an AWS console check |
 | `ManagedIdentity` | `validate/... -ExpectedCredentialType ManagedIdentity`, confirms the three ID strings are present, non-empty, and internally consistent | Confirm the referenced UAMI is still listed under the Purview account's **Managed identities** blade (it can be deleted there independently of this credential object, per §9), then confirm it still holds the access grant the source-specific registration steps describe (§6 references). Also re-confirm current Preview status, a preview-stage capability changing behavior without a corresponding REST reference update is a real possibility, not a hypothetical one (§11) |
 
 **Kind-specific operational notes:**
@@ -307,7 +307,7 @@ sufficient when a Key Vault-side backstop is also in play.
 | `AccountKey` | Rotating the storage account key is an **Azure Storage/Cosmos DB** operation, not a Key Vault one, the new key must be written into the *same* secret name/version pattern this scenario's credential already references |
 | `AmazonARN` | No secret to rotate. The only "credential rotation" concept is replacing the Role ARN itself (e.g. after an AWS-side role rename), re-run this scenario's deploy script with the new `-RoleArn` |
 | `ConsumerKeyAuth` | **Two** secrets to track, not one, a Salesforce connected-app secret rotation and a Salesforce user password rotation are independent events, each requiring its own Key Vault write (and, if versions are pinned, its own re-deploy) |
-| `DelegatedAuth` | The Fabric/Power BI admin account's password expiring is a common, easy-to-miss failure mode for this kind specifically, Microsoft's own troubleshooting guidance for Fabric/Power BI scans distinguishes an "Access - Failed" test-connection result (user authentication) from an "Assets - Failed" result (Purview-Fabric authorization), which maps directly to "check this credential" vs. "check the Purview managed identity's Fabric security-group membership" [[10]](#references) |
+| `DelegatedAuth` | The Fabric/Power BI admin account's password expiring is a common, easy-to-miss failure mode for this kind specifically, Microsoft's own troubleshooting guidance for Fabric/Power BI scans distinguishes an "Access - Failed" test-connection result (user authentication) from an "Assets - Failed" result (Purview-Fabric authorization), which maps directly to "check this credential" vs. "check the Purview managed identity's Fabric security-group membership" |
 | `ManagedIdentity` | No secret at all, monitor instead via the estate-wide inventory report (drift on `PrincipalId`/`ResourceId`/`TenantId`) and via the **preview** status itself: re-check Microsoft's documentation periodically for GA changes that could alter behavior (§11) |
 
 ## 9. Rollback / decommission
@@ -329,75 +329,75 @@ per-transaction costs apply only to the three secret-bearing kinds here, no new 
 licensing. Two additions:
 
 - **The `ManagedIdentity` kind's preview status (§11) means Microsoft's standard preview terms** (no
-  SLA, subject to change) apply to that kind specifically, a buyer building a business case around
-  it should treat it as pre-GA, not as a bounded, stable cost line the way the parent scenario's
-  three GA kinds can be treated.
+ SLA, subject to change) apply to that kind specifically, a buyer building a business case around
+ it should treat it as pre-GA, not as a bounded, stable cost line the way the parent scenario's
+ three GA kinds can be treated.
 - **`AmazonARN` and `ManagedIdentity` each pull in a coordination cost the parent scenario's three
-  kinds never did**, worth naming for the same reason the parent scenario named the Key Vault
-  Secrets Officer coordination cost (its own §10/`design.md` §3): `AmazonARN` requires an **AWS IAM
-  role**, which in most enterprises is owned by a cloud infrastructure or AWS platform team entirely
-  outside the Purview governance team's normal Azure-only scope, a genuinely cross-cloud dependency,
-  not just a cross-team one. `ManagedIdentity` requires an Azure identity administrator to create and
-  assign the user-assigned managed identity via the Purview account's own **Managed identities**
-  blade, an Azure-portal action outside the Scanning REST API this scenario otherwise stays within.
-  Neither is expensive, but both are process dependencies a CISO's rollout timeline should account
-  for explicitly rather than discover during onboarding.
+ kinds never did**, worth naming for the same reason the parent scenario named the Key Vault
+ Secrets Officer coordination cost (its own §10/`design.md` §3): `AmazonARN` requires an **AWS IAM
+ role**, which in most enterprises is owned by a cloud infrastructure or AWS platform team entirely
+ outside the Purview governance team's normal Azure-only scope, a genuinely cross-cloud dependency,
+ not just a cross-team one. `ManagedIdentity` requires an Azure identity administrator to create and
+ assign the user-assigned managed identity via the Purview account's own **Managed identities**
+ blade, an Azure-portal action outside the Scanning REST API this scenario otherwise stays within.
+ Neither is expensive, but both are process dependencies a CISO's rollout timeline should account
+ for explicitly rather than discover during onboarding.
 
 ## 11. Known limitations & gotchas
 
 - **`ManagedIdentity` is a Microsoft-labeled Preview capability.** Microsoft's own
-  "Credentials for source authentication" reference lists "User-assigned managed identity
-  (preview)" explicitly [[8]](#references), current as of this fragment's grounding pass. The
-  Scanning-data-plane REST reference documents the `ManagedIdentity` kind and its `typeProperties`
-  shape without a preview annotation of its own [[1]](#references), the preview label lives on the
-  *product* page, not the API reference, so this fragment treats the capability as preview-status
-  overall and flags it rather than picking whichever source is silent. **VERIFY (pilot tenant):**
-  confirm current GA/preview status before a production commitment; re-check Microsoft's
-  documentation periodically, since preview features can reach GA (or be retired) without a
-  corresponding REST reference change.
+ "Credentials for source authentication" reference lists "User-assigned managed identity
+ (preview)" explicitly, current as of this fragment's grounding pass. The
+ Scanning-data-plane REST reference documents the `ManagedIdentity` kind and its `typeProperties`
+ shape without a preview annotation of its own, the preview label lives on the
+ *product* page, not the API reference, so this fragment treats the capability as preview-status
+ overall and flags it rather than picking whichever source is silent. **VERIFY (pilot tenant):**
+ confirm current GA/preview status before a production commitment; re-check Microsoft's
+ documentation periodically, since preview features can reach GA (or be retired) without a
+ corresponding REST reference change.
 - **The `AmazonARN` kind's Microsoft account ID / external ID have no confirmed REST source.**
-  Microsoft's Amazon S3 connector walkthrough shows these two values appearing in the **portal's**
-  "New credential" pane before the AWS-side role is created, but neither this scenario's grounding
-  pass nor the Scanning-data-plane reference identifies a REST endpoint that returns them
-  [[1]](#references)[[6]](#references), they do not appear anywhere in `RoleARNCredential`'s
-  documented shape (only `roleARN` does). **VERIFY (pilot tenant or a future Microsoft Learn pass):**
-  whether any documented endpoint exposes these two values, which would be required to fully
-  script Role ARN onboarding end to end (today, at least one portal visit is required to read them,
-  even though creating the credential *object* itself is fully scripted by this fragment).
+ Microsoft's Amazon S3 connector walkthrough shows these two values appearing in the **portal's**
+ "New credential" pane before the AWS-side role is created, but neither this scenario's grounding
+ pass nor the Scanning-data-plane reference identifies a REST endpoint that returns them
+, they do not appear anywhere in `RoleARNCredential`'s
+ documented shape (only `roleARN` does). **VERIFY (pilot tenant or a future Microsoft Learn pass):**
+ whether any documented endpoint exposes these two values, which would be required to fully
+ script Role ARN onboarding end to end (today, at least one portal visit is required to read them,
+ even though creating the credential *object* itself is fully scripted by this fragment).
 - **`RoleARNCredential`'s own description overstates its `typeProperties`.** Microsoft's REST
-  reference describes the `RoleARNCredential` **object** as "Credential type that uses Account ID,
-  External ID and Role ARN for authentication," but `RoleARNCredentialTypeProperties`, the actual
-  field list, contains only `roleARN` [[1]](#references). This is consistent with the previous
-  bullet (account ID/external ID are Microsoft-generated values used to configure the *AWS* side of
-  the trust, not customer-supplied fields Purview stores) rather than a contradiction, but a reader
-  diffing the description against the schema could reasonably expect two more fields. Noted so this
-  fragment isn't mistaken for having missed them.
+ reference describes the `RoleARNCredential` **object** as "Credential type that uses Account ID,
+ External ID and Role ARN for authentication," but `RoleARNCredentialTypeProperties`, the actual
+ field list, contains only `roleARN`. This is consistent with the previous
+ bullet (account ID/external ID are Microsoft-generated values used to configure the *AWS* side of
+ the trust, not customer-supplied fields Purview stores) rather than a contradiction, but a reader
+ diffing the description against the schema could reasonably expect two more fields. Noted so this
+ fragment isn't mistaken for having missed them.
 - **A second Microsoft documentation copy-paste artifact, noted for the same reason the parent
-  scenario noted `KeyVaultSecretServicePrinipalCredentialTypeProperties`'s missing "c."**
-  `KeyVaultSecretDelegatedAuthCredentialTypeProperties.clientId`'s documented description reads
-  "Credential type that uses Account ID, External ID and Role ARN for authentication", verbatim
-  `RoleARNCredential`'s own description, evidently copy-pasted and not updated
-  [[1]](#references). The field itself is unambiguous from its name, type, and the Fabric/Power BI
-  worked examples that populate it with an app registration's Client ID [[10]](#references)
-  [[11]](#references); only the reference table's prose description is wrong.
+ scenario noted `KeyVaultSecretServicePrinipalCredentialTypeProperties`'s missing "c."**
+ `KeyVaultSecretDelegatedAuthCredentialTypeProperties.clientId`'s documented description reads
+ "Credential type that uses Account ID, External ID and Role ARN for authentication", verbatim
+ `RoleARNCredential`'s own description, evidently copy-pasted and not updated
+. The field itself is unambiguous from its name, type, and the Fabric/Power BI
+ worked examples that populate it with an app registration's Client ID 
+; only the reference table's prose description is wrong.
 - **`ConsumerKeyAuth`'s `consumerKey` is stored as plain text, not a secret reference.** Confirmed
-  directly from the schema, `typeProperties.consumerKey` is typed `string`, unlike `consumerSecret`
-  and `password`, which are both `KeyVaultSecret` [[1]](#references). This matches Salesforce's own
-  OAuth model, where a Connected App's Consumer Key (client ID) is not treated as sensitive the way
-  its Consumer Secret is, but it does mean this scenario's credential object itself carries that
-  value in the clear inside Purview's metadata store, not inside Key Vault. Not a defect in this
-  fragment; a property of the kind as Microsoft defined it.
+ directly from the schema, `typeProperties.consumerKey` is typed `string`, unlike `consumerSecret`
+ and `password`, which are both `KeyVaultSecret`. This matches Salesforce's own
+ OAuth model, where a Connected App's Consumer Key (client ID) is not treated as sensitive the way
+ its Consumer Secret is, but it does mean this scenario's credential object itself carries that
+ value in the clear inside Purview's metadata store, not inside Key Vault. Not a defect in this
+ fragment; a property of the kind as Microsoft defined it.
 - **Everything the parent scenario's own §11 discloses still applies, unmodified, to the
-  secret-bearing kinds here**: the two `KeyVaultSecret` discriminator-literal VERIFYs, the
-  undocumented `secretVersion`-omitted behavior, the absence of a "test credential" API, the absence
-  of a credential-to-scan reverse lookup, the vault-wide (never per-secret) blast radius of the Key
-  Vault grant, create-or-replace's silent-re-point risk with no enumerated Purview audit-event
-  category for credentials, and create-or-replace's "a re-run without an optional parameter unpins
-  it" behavior. Not re-derived here, see parent `README.md` §11 for the full text and citations.
+ secret-bearing kinds here**: the two `KeyVaultSecret` discriminator-literal VERIFYs, the
+ undocumented `secretVersion`-omitted behavior, the absence of a "test credential" API, the absence
+ of a credential-to-scan reverse lookup, the vault-wide (never per-secret) blast radius of the Key
+ Vault grant, create-or-replace's silent-re-point risk with no enumerated Purview audit-event
+ category for credentials, and create-or-replace's "a re-run without an optional parameter unpins
+ it" behavior. Not re-derived here, see parent `README.md` §11 for the full text and citations.
 - **No consuming scan scenario exists yet in this library** for `AccountKey`'s four source types,
-  `AmazonARN`, `ConsumerKeyAuth`, or `DelegatedAuth`. This fragment produces a correctly-shaped,
-  validated credential object with nothing in this repo to hand it to yet, see §6 and `design.md`
-  §7 for the natural future pairings.
+ `AmazonARN`, `ConsumerKeyAuth`, or `DelegatedAuth`. This fragment produces a correctly-shaped,
+ validated credential object with nothing in this repo to hand it to yet, see §6 and `design.md`
+ §7 for the natural future pairings.
 
 ## 12. References
 
@@ -415,13 +415,13 @@ licensing. Two additions:
 
 Related scenarios in this library:
 - `scenarios/data-map/scan-credential-key-vault-backed/`, the parent scenario (`SqlAuth`,
-  `BasicAuth`, `ServicePrincipal`); this fragment shares its deletion script, Key Vault connection
-  model, and open VERIFYs.
+ `BasicAuth`, `ServicePrincipal`); this fragment shares its deletion script, Key Vault connection
+ model, and open VERIFYs.
 - `scenarios/data-map/scan-credential-inventory-report/`, already fingerprints all eight
-  `CredentialType` kinds, including the five this fragment creates; no change needed there.
+ `CredentialType` kinds, including the five this fragment creates; no change needed there.
 - `scenarios/data-map/scan-azure-sql-and-classify/`, `scan-azure-sql-managed-instance-and-classify/`,
-  `scan-azure-synapse-and-classify/`, the three existing scan scenarios whose source types also
-  support a `ManagedIdentity` (UAMI) credential as an alternative to SAMI (§6); not wired together
-  here, see `design.md` §7.
-- `docs/rbac-model.md` §5, Data Map collection roles.
-- `docs/automation-surface.md`, surface 4 (Purview data-plane REST).
+ `scan-azure-synapse-and-classify/`, the three existing scan scenarios whose source types also
+ support a `ManagedIdentity` (UAMI) credential as an alternative to SAMI (§6); not wired together
+ here, see `design.md` §7.
+- [RBAC model §5](/docs/rbac-model/#5-data-governance-roles-data-map--unified-catalog-a-separate-model), Data Map collection roles.
+- [Automation surface](/docs/automation-surface/), surface 4 (Purview data-plane REST).

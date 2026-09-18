@@ -7,13 +7,13 @@ parent: "data-lifecycle-management/event-based-retention-and-disposition"
 Two things this rollback **cannot** touch, by design:
 
 - **A fired retention event.** Once `New-RetentionTriggerEvent.ps1` (or the portal) creates an event,
-  Microsoft's documentation states it **cannot be canceled** [[1]](#references). Any content already
-  in scope for that event keeps its retention clock running regardless of what you do to the policy
-  or label afterward.
+ Microsoft's documentation states it **cannot be canceled**. Any content already
+ in scope for that event keeps its retention clock running regardless of what you do to the policy
+ or label afterward.
 - **A record-locked item.** Content already labeled with `IsRecordLabel = $true` and whose event has
-  fired is locked, it can't be edited, deleted, or have its label removed, until it completes
-  disposition review. Disabling or deleting the publish policy stops **new** labeling; it does not
-  unlock existing records.
+ fired is locked, it can't be edited, deleted, or have its label removed, until it completes
+ disposition review. Disabling or deleting the publish policy stops **new** labeling; it does not
+ unlock existing records.
 
 If you deployed to the wrong locations or with the wrong reviewers, fix the config and re-deploy
 *before* any events are fired against affected content, that's the only fully reversible window.
@@ -56,11 +56,11 @@ script reports that refusal rather than forcing it.
 
 ### Retention event types and fired events are never removed by this script
 
-`Remove-ComplianceRetentionEventType` exists as a documented cmdlet [[2]](#references), and
+`Remove-ComplianceRetentionEventType` exists as a documented cmdlet, and
 retention events are visible via `Get-ComplianceRetentionEvent`, but neither is scripted here. This
 scenario treats the event type and every fired event as an **append-only audit record of what
 happened**, deleting an event type doesn't cancel the retention it already started
-[[1]](#references), so removing it has no protective effect and only destroys the record of *why*
+, so removing it has no protective effect and only destroys the record of *why*
 retention started for the content still under it. If you genuinely need to retire an event type,
 do so deliberately in the portal after confirming no content is still relying on it.
 
@@ -88,6 +88,6 @@ directly, not covered by the validate script, which checks policy state, not ind
 ## References
 
 1. Start retention when an event occurs (events can't be canceled once triggered; deleting an event
-   type doesn't cancel retention it already started), <https://learn.microsoft.com/purview/event-driven-retention>
+ type doesn't cancel retention it already started), <https://learn.microsoft.com/purview/event-driven-retention>
 2. PowerShell cmdlets available for event-based retention automation (includes
-   Remove-ComplianceRetentionEventType), <https://learn.microsoft.com/purview/event-driven-retention#automate-events-by-using-powershell>
+ Remove-ComplianceRetentionEventType), <https://learn.microsoft.com/purview/event-driven-retention#automate-events-by-using-powershell>

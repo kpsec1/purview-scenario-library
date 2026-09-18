@@ -20,13 +20,13 @@ from**, not what it says. Per Microsoft's own documentation (fetched directly th
 2026-09-10):
 
 > "The policy evaluates email metadata only - specifically, the sender domain compared against your
-> tenant's accepted domains. The body of the email isn't inspected." [[1]](#references)
+> tenant's accepted domains. The body of the email isn't inspected." 
 
 The business problem this addresses is also different in kind from the other three rules:
 **prompt-injection and untrusted-data-influence risk**, not sensitive-data leakage. Microsoft's own
 worked use case for this action is explicit that the concern is an external email carrying
 "untrusted instructions or prompt-injection content" that Copilot might reason over as if it were
-trusted internal context [[1]](#references), a control against Copilot being manipulated by
+trusted internal context, a control against Copilot being manipulated by
 attacker-controlled grounding data, not a control against Copilot leaking the organization's own
 sensitive data outward. This scenario's README frames the driver accordingly (§2), distinct from the
 SIT/label-driven framing of its three siblings.
@@ -63,7 +63,7 @@ independently cross-checked this build) defines "outside the organization" as: *
 address isn't in an accepted domain, OR the sender's email address is in an accepted domain
 configured as an external relay domain."* This is the **same accepted-domains mechanism** the
 Copilot-location page itself describes ("the sender domain compared against your tenant's accepted
-domains") [[1]](#references), the two independently-sourced descriptions of "external" converge on
+domains"), the two independently-sourced descriptions of "external" converge on
 the same underlying comparison, which is meaningfully stronger corroboration than this repo's typical
 single-source VERIFY.
 
@@ -72,7 +72,7 @@ later fragment):** the "configured as an external relay domain" clause above is 
 only.** Microsoft's `Set-AcceptedDomain` reference states this explicitly, `ExternalRelay` is *"a type
 of non-authoritative domain that's available only in on-premises Exchange organizations,"* and
 `New-`/`Remove-AcceptedDomain` are both on-premises-Exchange-only cmdlets with no Exchange Online
-equivalent. For the pure Exchange Online tenant this scenario targets (`docs/automation-surface.md`
+equivalent. For the pure Exchange Online tenant this scenario targets ([Automation surface](/docs/automation-surface/)
 §1), only the `Authoritative` and `InternalRelay` accepted-domain types are reachable, both of which
 count as in-organization, so in practice this tenant class's `NotInOrganization` match is driven by
 the "isn't in an accepted domain" clause alone; the external-relay clause is a real mechanism in
@@ -102,10 +102,10 @@ condition/action pairing is documented as **"Prevent Copilot from processing con
 prompts"**, a parent action with a named sub-action), this scenario's action is documented with no
 sub-action at all: the Copilot-location page's own supported-conditions-and-actions table lists the
 action for this condition simply as **"Prevent Copilot from processing content"**
-[[2]](#references), the exact same top-level action text, verbatim, as **Rule 0's** label-exclusion
+, the exact same top-level action text, verbatim, as **Rule 0's** label-exclusion
 action, which is the one combination Microsoft's `New-DlpCompliancePolicy` reference publishes a full
 worked example for (`-RestrictAccess @(@{setting='ExcludeContentProcessing';value='Block'})` paired
-with `-AdvancedRule`, a label condition) [[3]](#references). This scenario's inference therefore
+with `-AdvancedRule`, a label condition). This scenario's inference therefore
 rests on a narrower gap than `copilot-prompt-full-block`'s own already-accepted inference: the
 *action* side of this rule is the one Microsoft has fully worked an example for; only the *condition*
 side (`-FromScope` in place of `-AdvancedRule`) is unconfirmed for this specific rule shape. Still
@@ -127,18 +127,18 @@ flagged as an explicit `VERIFY` everywhere it matters (`README.md` §5/§11, the
 ## 7. Non-goals
 
 - This scenario does not create the parent policy. If the named policy doesn't already exist, the
-  deploy script fails fast rather than silently creating one (same guard as `copilot-prompt-full-block`).
+ deploy script fails fast rather than silently creating one (same guard as `copilot-prompt-full-block`).
 - This scenario does not resolve the open `-FromScope`-on-Copilot-location VERIFY definitively, 
-  that requires either a pilot tenant (permanently out of reach for this repo's build process) or a
-  future Microsoft-published worked example combining the two. It closes the "should we build this at
-  all" question with a stronger-than-usual evidentiary basis (§4/§5), not the underlying grounding gap
-  itself.
+ that requires either a pilot tenant (permanently out of reach for this repo's build process) or a
+ future Microsoft-published worked example combining the two. It closes the "should we build this at
+ all" question with a stronger-than-usual evidentiary basis (§4/§5), not the underlying grounding gap
+ itself.
 - This scenario does not attempt to inspect email **body** content for prompt-injection payloads, 
-  Microsoft's own documentation is explicit that this control is metadata-only (sender-domain
-  comparison), and this scenario does not claim otherwise anywhere in its docs or scripts.
+ Microsoft's own documentation is explicit that this control is metadata-only (sender-domain
+ comparison), and this scenario does not claim otherwise anywhere in its docs or scripts.
 - This scenario does not address prompt-injection risk from **other** external content Copilot can
-  ground on (e.g., an external SharePoint guest share, a web search result before Rule 1 applies), 
-  it closes exactly the one documented gap Microsoft names for external **email**, nothing broader.
+ ground on (e.g., an external SharePoint guest share, a web search result before Rule 1 applies), 
+ it closes exactly the one documented gap Microsoft names for external **email**, nothing broader.
 
 ## 8. References
 

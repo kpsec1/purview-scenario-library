@@ -9,7 +9,7 @@ allowlist removable-storage control for macOS, scoped to `primaryId: removable_m
 only. Microsoft's own device control documentation is explicit that macOS device control also
 manages three further, independent device families, `apple_devices`, `portable_devices`, and
 `bluetooth_devices`, each with its own enable switch, its own group/rule matching, and its own
-access-type vocabulary [[1]](#references). A `removable_media_devices`-only policy does not deny
+access-type vocabulary. A `removable_media_devices`-only policy does not deny
 these devices; it does not see them at all, exactly the same "different device family, not a
 narrower rule" structure the Windows sibling's own WPD-coverage fragment closed for
 `WpdDevices`. This was flagged as a confirmed Red Team finding in the parent scenario's own review
@@ -21,39 +21,39 @@ three families, reusing the parent's proven default-deny/audited-both-paths shap
 ## 2. Design goals
 
 1. **Extend, don't duplicate.** The parent's `deviceControl.policy` JSON is a single embedded
-   string inside one `macOSCustomConfiguration` object's `.mobileconfig` payload, a second,
-   competing profile targeting the same devices would conflict, not layer (§3 below). This fragment
-   PATCHes the parent object's payload in place.
+ string inside one `macOSCustomConfiguration` object's `.mobileconfig` payload, a second,
+ competing profile targeting the same devices would conflict, not layer (§3 below). This fragment
+ PATCHes the parent object's payload in place.
 2. **Preserve the parent's coverage exactly.** The deploy script never touches the parent's
-   `removableMedia` feature flag, `AllRemovableStorage`/`ApprovedBackupDrives` groups, or either
-   `RemovableMediaDevices`-scoped rule, it identifies and reconciles only the groups/rules/feature
-   flags it owns (by fixed GUID / fixed feature key), passing everything else through untouched.
-   `validate/Test-MacPortableDeviceCoverage.ps1` explicitly checks the parent's original settings
-   survive unmodified.
+ `removableMedia` feature flag, `AllRemovableStorage`/`ApprovedBackupDrives` groups, or either
+ `RemovableMediaDevices`-scoped rule, it identifies and reconciles only the groups/rules/feature
+ flags it owns (by fixed GUID / fixed feature key), passing everything else through untouched.
+ `validate/Test-MacPortableDeviceCoverage.ps1` explicitly checks the parent's original settings
+ survive unmodified.
 3. **Mirror the parent's mutually-exclusive rule shape, per family.** For Apple and Portable
-   devices: one approved group (optional), one catch-all group, one allow rule (included =
-   approved), one deny rule (included = catch-all, excluded = approved when configured), a device
-   matches exactly one rule per family by construction. Bluetooth is catch-all-deny-only in this
-   fragment (§5).
+ devices: one approved group (optional), one catch-all group, one allow rule (included =
+ approved), one deny rule (included = catch-all, excluded = approved when configured), a device
+ matches exactly one rule per family by construction. Bluetooth is catch-all-deny-only in this
+ fragment (§5).
 4. **Both allow and deny paths are audited, not just the deny path**, same principle as the parent
-   (`design.md` §2 there) and the Windows WPD-coverage sibling, extended to all three new families.
+ (`design.md` §2 there) and the Windows WPD-coverage sibling, extended to all three new families.
 5. **Prefer a directly-confirmed worked example over a prose reference table wherever the two seem
-   to disagree.** The Learn page's entry-`$type` property table renders one family as
-   `PortableDevice` (capitalized), inconsistent with every other row in that same table and with
-   the page's own separate Access Types table below it (lowercase `portableDevice`). Rather than
-   guess which rendering is authoritative, this fragment's grounding pass fetched three of
-   Microsoft's own published GitHub sample policies and found all three use the lowercase form with
-   zero worked examples using the capitalized one, treated as a documentation table rendering
-   inconsistency, not a second valid casing (§6).
+ to disagree.** The Learn page's entry-`$type` property table renders one family as
+ `PortableDevice` (capitalized), inconsistent with every other row in that same table and with
+ the page's own separate Access Types table below it (lowercase `portableDevice`). Rather than
+ guess which rendering is authoritative, this fragment's grounding pass fetched three of
+ Microsoft's own published GitHub sample policies and found all three use the lowercase form with
+ zero worked examples using the capitalized one, treated as a documentation table rendering
+ inconsistency, not a second valid casing (§6).
 6. **State genuinely open gaps honestly rather than resolve them by guessing**, the
-   `portable_devices`-`serialNumber` VERIFY and the deliberate Bluetooth-has-no-allowlist scope
-   decision (§5) are both disclosed in `README.md` §11, not silently assumed.
+ `portable_devices`-`serialNumber` VERIFY and the deliberate Bluetooth-has-no-allowlist scope
+ decision (§5) are both disclosed in `README.md` §11, not silently assumed.
 
 ## 3. Why widen the parent's payload instead of a second Custom profile
 
 Microsoft's macOS device control model has exactly one policy object per Mac's assigned
 configuration, `deviceControl.policy` inside one `.mobileconfig`, carrying every family's
-groups/rules/settings together as one JSON document [[1]](#references)[[2]](#references)
+groups/rules/settings together as one JSON document 
 (`PayloadIdentifier: com.microsoft.wdav`, a fixed, singular identifier). Two Intune macOS Custom
 profiles both delivering a `com.microsoft.wdav`-typed payload to the same Mac would be a genuine
 MDM profile-merge conflict, the same open, undocumented-by-Apple risk the parent scenario's own
@@ -75,7 +75,7 @@ to a parent scenario's existing object rather than standing up a second, overlap
 |---|---|---|---|
 |, | `settings.features.removableMedia` | Parent's own enable flag | **Unchanged**, read from the live object and passed through untouched |
 |, | `groups[]`/`rules[]` for `AllRemovableStorage`/`ApprovedBackupDrives` | Parent's own removable-media coverage | **Unchanged** |
-| 1-3 | `settings.features.appleDevice` / `.portableDevice` / `.bluetoothDevice`, each `{"disable": false}` | Enable enforcement for the three new families, each is disabled by default even once the top-level `DC_in_dlp` engine switch is on [[1]](#references) | **New** |
+| 1-3 | `settings.features.appleDevice` / `.portableDevice` / `.bluetoothDevice`, each `{"disable": false}` | Enable enforcement for the three new families, each is disabled by default even once the top-level `DC_in_dlp` engine switch is on | **New** |
 | 4 | Group `AllAppleDevices` | `primaryId: apple_devices` catch-all | **New** |
 | 5 | Group `ApprovedAppleDevices` (optional) | `serialNumber` OR'd allowlist, from `-ConfigPath` | **New, conditional** |
 | 6 | Group `AllPortableDevices` | `primaryId: portable_devices` catch-all | **New** |
@@ -93,17 +93,17 @@ Windows WPD-coverage sibling's own precedent of enumerating a family's specific 
 explicitly rather than using the `generic` entry `$type`, and because all three of the worked
 GitHub samples this fragment grounds against do the same (`audit_all_apple_devices.json`,
 `deny_mobile_devices.json`, `deny_all_bluetooth_devices_except_samsung.json` all use family-typed
-entries with explicit access arrays, never `$type: generic`) [[2]](#references).
+entries with explicit access arrays, never `$type: generic`).
 
 ## 5. Why Bluetooth has no approved-device allowlist in v1
 
 Apple and Portable devices reuse the parent's proven `serialNumber`/`or`-clause, OR'd-multi-device
 group shape, directly confirmed for `apple_devices` via Microsoft's own
-`audit_all_apple_devices_except_serial_numbers.json` sample [[2]](#references). Bluetooth is
+`audit_all_apple_devices_except_serial_numbers.json` sample. Bluetooth is
 different: Microsoft's own worked exception-group sample for this family
 (`deny_all_bluetooth_devices_except_samsung.json`) matches a **single** device by ANDing
 `primaryId` + `vendorId` + `productId` in one group query, not by OR'ing `serialNumber` values
-across several [[2]](#references), the same structural reason the parent macOS scenario's own
+across several, the same structural reason the parent macOS scenario's own
 `design.md` §5 already gives for deferring `vendorId`/`productId` compound matching for removable
 media: representing **more than one** AND'd vendor+product pair inside one allowlist requires a
 per-device sub-group referenced via a `groupId` clause, a materially more complex, dynamic-GUID
@@ -149,22 +149,22 @@ confirmed.
 ## 8. Non-goals
 
 - This scenario does not create a new Intune device configuration object, a new assignment, or
-  change the parent policy's assignment scope, it only widens the shared object's payload.
+ change the parent policy's assignment scope, it only widens the shared object's payload.
 - This scenario does not build a Bluetooth approved-device allowlist (§5) or resolve the
-  `portable_devices`-`serialNumber` VERIFY (§6), both deliberately left open per `AGENTS.md` §4
-  rather than guessed, and trackable in `PROGRESS.md`.
+ `portable_devices`-`serialNumber` VERIFY (§6), both deliberately left open per `AGENTS.md` §4
+ rather than guessed, and trackable in `PROGRESS.md`.
 - This scenario does not implement `vendorId`/`productId` compound matching for Apple or Portable
-  devices, the same per-device, dynamic-sub-group idempotency complexity the parent macOS
-  scenario's own `design.md` §5 already defers for removable media, not re-litigated here.
+ devices, the same per-device, dynamic-sub-group idempotency complexity the parent macOS
+ scenario's own `design.md` §5 already defers for removable media, not re-litigated here.
 - This scenario does not deploy via JAMF, Intune only, matching the parent's own scope boundary.
-  Because the underlying `deviceControl.policy` JSON schema is identical across both deployment
-  paths, the same groups/rules/settings shape this fragment grounds applies equally to
-  `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`'s JAMF-managed sibling, closing
-  this fragment for the Intune path closes the equivalent PROGRESS.md follow-up tracked for JAMF
-  too, without a second build.
+ Because the underlying `deviceControl.policy` JSON schema is identical across both deployment
+ paths, the same groups/rules/settings shape this fragment grounds applies equally to
+ `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`'s JAMF-managed sibling, closing
+ this fragment for the Intune path closes the equivalent PROGRESS.md follow-up tracked for JAMF
+ too, without a second build.
 - This scenario does not address the `encryption: apfs` clause or the `mediaSerialNumber`/
-  `mediaProductName`/`mediaApplicationId` (Secure Digital card) clauses, out of scope, matching the
-  parent scenario's own non-goals.
+ `mediaProductName`/`mediaApplicationId` (Secure Digital card) clauses, out of scope, matching the
+ parent scenario's own non-goals.
 
 ## References
 

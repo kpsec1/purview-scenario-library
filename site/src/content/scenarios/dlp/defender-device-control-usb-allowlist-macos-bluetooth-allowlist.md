@@ -88,21 +88,21 @@ Intune profile, no new assignment. Full rule-by-rule rationale: `design.md` §3-
 ### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
 1. Confirm both prerequisite fragments are already deployed, [Microsoft Intune admin
-   center](https://intune.microsoft.com) → **Devices** → **macOS** → **Configuration profiles** →
-   the parent policy → Custom configuration → view the current `.mobileconfig`, and confirm its
-   `deviceControl.policy` JSON already contains an `AllBluetoothDevices` group and a
-   `Deny-AllBluetoothDevices` rule.
+ center](https://intune.microsoft.com) → **Devices** → **macOS** → **Configuration profiles** →
+ the parent policy → Custom configuration → view the current `.mobileconfig`, and confirm its
+ `deviceControl.policy` JSON already contains an `AllBluetoothDevices` group and a
+ `Deny-AllBluetoothDevices` rule.
 2. Add one new group to the same JSON's `groups[]` array, `$type: "and"`, clauses
-   `[{"$type":"primaryId","value":"bluetooth_devices"}, {"$type":"vendorId","value":"<4-digit hex>"},
-   {"$type":"productId","value":"<4-digit hex>"}]`, the exact shape Microsoft's own
-   `deny_all_bluetooth_devices_except_samsung.json` sample uses.
+ `[{"$type":"primaryId","value":"bluetooth_devices"}, {"$type":"vendorId","value":"<4-digit hex>"},
+ {"$type":"productId","value":"<4-digit hex>"}]`, the exact shape Microsoft's own
+ `deny_all_bluetooth_devices_except_samsung.json` sample uses.
 3. Edit the existing `Deny-AllBluetoothDevices` rule to add `"excludeGroups": ["<new group id>"]`, 
-   leave its `entries` untouched.
+ leave its `entries` untouched.
 4. Add one new rule to `rules[]`, `includeGroups: ["<new group id>"]`, two entries: `allow` and
-   `auditAllow` (`send_event`), both `$type: "bluetoothDevice"`, `access: ["download_files_from_device",
-   "send_files_to_device"]`.
+ `auditAllow` (`send_event`), both `$type: "bluetoothDevice"`, `access: ["download_files_from_device",
+ "send_files_to_device"]`.
 5. Re-escape the edited JSON, re-embed it as the `<key>policy</key><string>...</string>` value, and
-   re-upload the `.mobileconfig`, **replacing**, not creating a second profile.
+ re-upload the `.mobileconfig`, **replacing**, not creating a second profile.
 6. **Review + save.** No new assignment step, this reuses the existing assignment.
 
 ### Script path (idempotent, parameterized, dry-run capable)
@@ -131,7 +131,7 @@ Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thu
 The deploy script refuses to run if the portable-device-coverage fragment's Bluetooth coverage
 doesn't already exist (§3, §7). Like both fragments beneath it, it uses `Invoke-MgGraphRequest`
 against the `macOSCustomConfiguration` resource (automation surface 3 per
-`docs/automation-surface.md` §3). It extracts the parent's current embedded policy JSON, merges in
+[Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended)). It extracts the parent's current embedded policy JSON, merges in
 this fragment's group/rule, rebuilds the shared `Deny-AllBluetoothDevices` rule with its original
 two entries reproduced unchanged plus the new `excludeGroups`, and PATCHes the whole `.mobileconfig`
 payload back, every other plist key and every group/rule this fragment doesn't own is left
@@ -171,23 +171,23 @@ mechanism has no documented per-unit identifier, see §11.
 ## 7. Validation / how to prove it works
 
 1. **Automated config check**, `./validate/Test-MacBluetoothDeviceAllowlist.ps1 -ConfigPath
-   ./deploy/config/mac-bluetooth-device-allowlist.sample.json` confirms the prerequisite Bluetooth
-   coverage exists, the approved-device group/allow rule (if configured) match the current
-   `-ConfigPath` definition, the deny rule's `entries` are unchanged, and sibling Apple/Portable/
-   removable-media coverage is unaffected. It also specifically distinguishes "never configured"
-   from the known ordering-hazard drift condition (§11) rather than reporting both the same way.
+./deploy/config/mac-bluetooth-device-allowlist.sample.json` confirms the prerequisite Bluetooth
+ coverage exists, the approved-device group/allow rule (if configured) match the current
+ `-ConfigPath` definition, the deny rule's `entries` are unchanged, and sibling Apple/Portable/
+ removable-media coverage is unaffected. It also specifically distinguishes "never configured"
+ from the known ordering-hazard drift condition (§11) rather than reporting both the same way.
 2. **Device onboarding/Full Disk Access check**, same as the parent scenario's §7 step 1/4;
-   nothing in this fragment enforces without both already being true on the pilot Mac.
+ nothing in this fragment enforces without both already being true on the pilot Mac.
 3. **Profile sync check**, Intune admin center → **Devices** → **macOS** →
-   **Configuration profiles** → the policy → **Device status** → **Succeeded**.
+ **Configuration profiles** → the policy → **Device status** → **Succeeded**.
 4. **Functional test (unapproved Bluetooth device)**, pair a Bluetooth device not matching the
-   configured `vendorId`/`productId` and attempt a file transfer. Expect: denied, with a
-   `RemovableStoragePolicyTriggered` event, `Verdict = Deny`.
+ configured `vendorId`/`productId` and attempt a file transfer. Expect: denied, with a
+ `RemovableStoragePolicyTriggered` event, `Verdict = Deny`.
 5. **Functional test (approved Bluetooth device)**, pair the approved device and attempt a file
-   transfer. Expect: the operation succeeds, and a `RemovableStoragePolicyTriggered` event with
-   `Verdict = Allow` still appears (audited, not silent).
+ transfer. Expect: the operation succeeds, and a `RemovableStoragePolicyTriggered` event with
+ `Verdict = Allow` still appears (audited, not silent).
 6. **Finding `vendorId`/`productId` for a device that has already been denied at least once**, 
-   query the deny events (extends the portable-device-coverage fragment's own §7 step 8 query):
+ query the deny events (extends the portable-device-coverage fragment's own §7 step 8 query):
    ```kusto
    DeviceEvents
    | where ActionType == "RemovableStoragePolicyTriggered"
@@ -198,13 +198,13 @@ mechanism has no documented per-unit identifier, see §11.
        ProductId = tostring(parsed.ProductId)
    | order by Timestamp desc
    ```
-   **VERIFY (pilot tenant):** `VendorId`/`ProductId` as literal `AdditionalFields` property names for
-   a macOS Bluetooth deny event are not independently confirmed by a Microsoft worked example, this
-   query is a reasonable extension of the same cross-platform `DeviceEvents`/`AdditionalFields`
-   schema assumption the parent and portable-device-coverage fragments already establish (confirmed
-   there for `Verdict`/`SerialNumberId`/`RemovableStoragePolicy`), not a directly confirmed field
-   name for these two specifically. If the field names differ, obtain `vendorId`/`productId` from
-   the device's own pairing/product documentation instead (§3).
+ **VERIFY (pilot tenant):** `VendorId`/`ProductId` as literal `AdditionalFields` property names for
+ a macOS Bluetooth deny event are not independently confirmed by a Microsoft worked example, this
+ query is a reasonable extension of the same cross-platform `DeviceEvents`/`AdditionalFields`
+ schema assumption the parent and portable-device-coverage fragments already establish (confirmed
+ there for `Verdict`/`SerialNumberId`/`RemovableStoragePolicy`), not a directly confirmed field
+ name for these two specifically. If the field names differ, obtain `vendorId`/`productId` from
+ the device's own pairing/product documentation instead (§3).
 
 ## 8. Operations & tuning
 
@@ -213,21 +213,21 @@ portable-device-coverage fragment's own additions (`README.md` §8 there). Two a
 this fragment:
 
 - **Keep the approved-device list to exactly the devices with a documented business need.** Every
-  device sharing the same `vendorId`+`productId` pair, not just the one physical unit an approver
-  had in mind, is allowed once configured (§11). Treat approval as "this model, for this business
-  reason," not "this specific unit."
+ device sharing the same `vendorId`+`productId` pair, not just the one physical unit an approver
+ had in mind, is allowed once configured (§11). Treat approval as "this model, for this business
+ reason," not "this specific unit."
 - **After any change to Apple/Portable coverage via the portable-device-coverage fragment's own
-  `-Force` reconcile, re-run this fragment's deploy script and re-validate.** This is the documented
-  ordering hazard (§11), it is a routine operational step for this three-layer policy, not an
-  incident, but it needs to be in the standard change-management runbook for this control, not
-  discovered the hard way after a Bluetooth exception silently stops working.
+ `-Force` reconcile, re-run this fragment's deploy script and re-validate.** This is the documented
+ ordering hazard (§11), it is a routine operational step for this three-layer policy, not an
+ incident, but it needs to be in the standard change-management runbook for this control, not
+ discovered the hard way after a Bluetooth exception silently stops working.
 - **Review `Allow-ApprovedBluetoothDevice` `auditAllow` event volume and distinct `DeviceName` count
-  against the number of physically-issued approved units, on the same review cadence as the parent
-  control's other KPIs.** Because `vendorId`+`productId` cannot distinguish the genuine approved
-  unit from an impersonating one with a matching model identifier (§11), this comparison, more
-  distinct allowed devices than units actually issued, or a volume spike from one `DeviceName` that
-  doesn't match known usage, is the practical detection signal available in this schema for the
-  residual gap described in §11, not a cryptographic guarantee.
+ against the number of physically-issued approved units, on the same review cadence as the parent
+ control's other KPIs.** Because `vendorId`+`productId` cannot distinguish the genuine approved
+ unit from an impersonating one with a matching model identifier (§11), this comparison, more
+ distinct allowed devices than units actually issued, or a volume spike from one `DeviceName` that
+ doesn't match known usage, is the practical detection signal available in this schema for the
+ residual gap described in §11, not a cryptographic guarantee.
 
 ## 9. Rollback / decommission
 
@@ -249,75 +249,75 @@ device list, and the ordering-hazard runbook step (§8).
 ## 11. Known limitations & gotchas
 
 - **Exactly one approved device in this v1 fragment.** Microsoft's "Access policy rule" reference is
-  explicit: "If multiple groups are in the `includeGroups`, it's *AND*", so two separate
-  vendor+product device groups cannot simply both be listed in one allow rule's `includeGroups` (a
-  device would need to match both simultaneously, which is impossible for two different devices).
-  Supporting more than one approved device would need either a separate allow/exception rule pair
-  per device, or the per-device sub-group + `groupId`-clause-nesting technique this repository's
-  sibling scenarios already defer as unverified complexity
-  (`defender-device-control-usb-allowlist-macos-vendor-product-matching/`,
-  `defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md` §5). This
-  fragment's deploy script throws a clear error rather than silently accepting (and mis-handling)
-  more than one configured device. Multi-device support is tracked as a follow-up in `PROGRESS.md`.
+ explicit: "If multiple groups are in the `includeGroups`, it's *AND*", so two separate
+ vendor+product device groups cannot simply both be listed in one allow rule's `includeGroups` (a
+ device would need to match both simultaneously, which is impossible for two different devices).
+ Supporting more than one approved device would need either a separate allow/exception rule pair
+ per device, or the per-device sub-group + `groupId`-clause-nesting technique this repository's
+ sibling scenarios already defer as unverified complexity
+ (`defender-device-control-usb-allowlist-macos-vendor-product-matching/`,
+ `defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md` §5). This
+ fragment's deploy script throws a clear error rather than silently accepting (and mis-handling)
+ more than one configured device. Multi-device support is tracked as a follow-up in `PROGRESS.md`.
 - **`vendorId`+`productId` identify a device *model*, not a unique physical unit, a materially
-  weaker allowlist than this control's `serialNumber`-based exceptions elsewhere, not merely the
-  same class of risk at a different layer.** A `serialNumber` allowlist (removable media, Apple,
-  Portable families) at least requires acquiring or firmware-spoofing the one approved physical
-  unit's identity. `vendorId`+`productId` are, by design, identical across **every** unit of a given
-  model, no forgery is even needed to get a second, unapproved unit of the same approved
-  phone/scanner model through this exception. Deliberate impersonation is also plausible without any
-  physical device: Bluetooth HCI/GAP vendor and product identifiers are commonly software-
-  configurable on inexpensive BLE development boards and some commodity dongles, putting spoofing a
-  specific approved model's identifiers within reach of a moderately capable attacker with no
-  physical access to an approved unit at all. This is not a gap in this fragment's design; it is the
-  only documented matching mechanism Microsoft provides for the `bluetooth_devices` family (no
-  `serialNumber` clause is demonstrated for Bluetooth in any Microsoft-published sample, see
-  `design.md` §6 for why this fragment does not attempt one). Approve only device *models* with a
-  genuine, narrow business need, size the approved-unit count you expect, and see §8 for the
-  operational triage this residual gap needs.
+ weaker allowlist than this control's `serialNumber`-based exceptions elsewhere, not merely the
+ same class of risk at a different layer.** A `serialNumber` allowlist (removable media, Apple,
+ Portable families) at least requires acquiring or firmware-spoofing the one approved physical
+ unit's identity. `vendorId`+`productId` are, by design, identical across **every** unit of a given
+ model, no forgery is even needed to get a second, unapproved unit of the same approved
+ phone/scanner model through this exception. Deliberate impersonation is also plausible without any
+ physical device: Bluetooth HCI/GAP vendor and product identifiers are commonly software-
+ configurable on inexpensive BLE development boards and some commodity dongles, putting spoofing a
+ specific approved model's identifiers within reach of a moderately capable attacker with no
+ physical access to an approved unit at all. This is not a gap in this fragment's design; it is the
+ only documented matching mechanism Microsoft provides for the `bluetooth_devices` family (no
+ `serialNumber` clause is demonstrated for Bluetooth in any Microsoft-published sample, see
+ `design.md` §6 for why this fragment does not attempt one). Approve only device *models* with a
+ genuine, narrow business need, size the approved-unit count you expect, and see §8 for the
+ operational triage this residual gap needs.
 - **Known ordering hazard: re-running the portable-device-coverage fragment's own
-  `Add-MacPortableDeviceCoverage.ps1 -Force` after this fragment silently drops the exclusion.**
-  That script unconditionally rebuilds the `Deny-AllBluetoothDevices` rule with no `excludeGroups`
-  on every `-Force` run (it has no awareness this fragment exists), the approved device would then
-  be denied again, with no error raised by either script at the time. Remediation: re-run this
-  fragment's own `deploy/Add-MacBluetoothDeviceAllowlist.ps1` afterward to restore the exclusion.
-  `validate/Test-MacBluetoothDeviceAllowlist.ps1` detects this exact drift condition (approved
-  group/allow rule present, but `excludeGroups` missing) and reports it as a distinct, actionable
-  `[FAIL]` rather than conflating it with "never deployed." See §8 for the operational runbook this
-  belongs in.
+ `Add-MacPortableDeviceCoverage.ps1 -Force` after this fragment silently drops the exclusion.**
+ That script unconditionally rebuilds the `Deny-AllBluetoothDevices` rule with no `excludeGroups`
+ on every `-Force` run (it has no awareness this fragment exists), the approved device would then
+ be denied again, with no error raised by either script at the time. Remediation: re-run this
+ fragment's own `deploy/Add-MacBluetoothDeviceAllowlist.ps1` afterward to restore the exclusion.
+ `validate/Test-MacBluetoothDeviceAllowlist.ps1` detects this exact drift condition (approved
+ group/allow rule present, but `excludeGroups` missing) and reports it as a distinct, actionable
+ `[FAIL]` rather than conflating it with "never deployed." See §8 for the operational runbook this
+ belongs in.
 - **This fragment restricts Bluetooth file transfer only, not all Bluetooth functionality for the
-  approved device**, inherited unchanged from the portable-device-coverage fragment's own §11
-  disclosure; the `bluetoothDevice` entry type's only documented access operations are
-  `download_files_from_device`/`send_files_to_device`.
+ approved device**, inherited unchanged from the portable-device-coverage fragment's own §11
+ disclosure; the `bluetoothDevice` entry type's only documented access operations are
+ `download_files_from_device`/`send_files_to_device`.
 - **This fragment does not change the parent's assignment**, widening the shared payload takes
-  effect for every device already assigned the parent policy.
+ effect for every device already assigned the parent policy.
 - **VERIFY (pilot tenant, before relying on it for triage):** the exact `AdditionalFields` property
-  names for a Bluetooth device's `vendorId`/`productId` in a `RemovableStoragePolicyTriggered` deny
-  event (§7 step 6) are not independently confirmed by a Microsoft worked example.
+ names for a Bluetooth device's `vendorId`/`productId` in a `RemovableStoragePolicyTriggered` deny
+ event (§7 step 6) are not independently confirmed by a Microsoft worked example.
 - **This fragment inherits every prerequisite-fragment limitation** not superseded above, Full Disk
-  Access as a hard, silent prerequisite; the open VERIFY on `payload` PATCH replace-vs-merge
-  semantics; the possible conflict with an independently-deployed `com.microsoft.wdav` preferences
-  profile; and no remote, at-scale check for Full Disk Access grant status (parent `README.md` §11,
-  portable-device-coverage `README.md` §11).
+ Access as a hard, silent prerequisite; the open VERIFY on `payload` PATCH replace-vs-merge
+ semantics; the possible conflict with an independently-deployed `com.microsoft.wdav` preferences
+ profile; and no remote, at-scale check for Full Disk Access grant status (parent `README.md` §11,
+ portable-device-coverage `README.md` §11).
 
 ## 12. References
 
 1. Device Control for macOS (Query type 1 `$type`/`and`/`or` AND/OR semantics; Clause reference, 
-   `vendorId`/`productId` "Four digit hexadecimal string"; Access policy rule reference, 
-   `includeGroups` multiple-groups-is-AND, `excludeGroups` multiple-groups-is-OR; Enforcement
-   reference, `allow`/`deny`/`auditAllow`/`auditDeny`; Access Types table for `bluetoothDevice`;
-   `settings.global.defaultEnforcement` `"allow"` (default) or `"deny"`), 
-   <https://learn.microsoft.com/defender-endpoint/mac-device-control-overview>
+ `vendorId`/`productId` "Four digit hexadecimal string"; Access policy rule reference, 
+ `includeGroups` multiple-groups-is-AND, `excludeGroups` multiple-groups-is-OR; Enforcement
+ reference, `allow`/`deny`/`auditAllow`/`auditDeny`; Access Types table for `bluetoothDevice`;
+ `settings.global.defaultEnforcement` `"allow"` (default) or `"deny"`), 
+ <https://learn.microsoft.com/defender-endpoint/mac-device-control-overview>
 2. Sample macOS device control policy, `deny_all_bluetooth_devices_except_samsung.json` (the exact
-   `vendorId`+`productId` AND-match exception-group and allow-rule shape this fragment reproduces;
-   fetched directly from the raw file during this fragment's build), 
-   <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_all_bluetooth_devices_except_samsung.json>
+ `vendorId`+`productId` AND-match exception-group and allow-rule shape this fragment reproduces;
+ fetched directly from the raw file during this fragment's build), 
+ <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_all_bluetooth_devices_except_samsung.json>
 3. `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/`, the
-   prerequisite fragment this scenario extends; owns the `AllBluetoothDevices` group and
-   `Deny-AllBluetoothDevices` rule this fragment adds an exception to. See that scenario's own
-   references for every citation not repeated here.
+ prerequisite fragment this scenario extends; owns the `AllBluetoothDevices` group and
+ `Deny-AllBluetoothDevices` rule this fragment adds an exception to. See that scenario's own
+ references for every citation not repeated here.
 4. `scenarios/dlp/defender-device-control-usb-allowlist-macos/`, the root parent scenario; see its
-   own references for licensing, onboarding, Full Disk Access, and Graph resource schemas.
+ own references for licensing, onboarding, Full Disk Access, and Graph resource schemas.
 
 > Re-verify all links, and especially the `AdditionalFields` VendorId/ProductId VERIFY (§11) and the
 > `payload` PATCH replace-vs-merge semantics inherited from the parent, against current Microsoft

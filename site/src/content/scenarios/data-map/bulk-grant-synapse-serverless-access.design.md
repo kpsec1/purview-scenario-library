@@ -6,8 +6,8 @@ parent: "data-map/bulk-grant-synapse-serverless-access"
 
 `scenarios/data-map/scan-azure-synapse-and-classify/` documents a real, CISO-flagged cost-scaling
 problem (`reviews.md`, CISO finding 1; `README.md` §3's cost/effort note): the serverless half of that
-scenario's enumeration-authentication story needs a `CREATE LOGIN ... FROM EXTERNAL PROVIDER` and a
-`CREATE USER ...` + `db_datareader` grant applied before the Purview scan can classify anything, and
+scenario's enumeration-authentication story needs a `CREATE LOGIN... FROM EXTERNAL PROVIDER` and a
+`CREATE USER...` + `db_datareader` grant applied before the Purview scan can classify anything, and
 Microsoft's own documented procedure is a manual, per-database Synapse Studio walkthrough. A workspace
 with a handful of serverless databases makes this a minor one-time chore; a workspace with dozens (a
 realistic shape for an enterprise data-mesh-style Synapse deployment, where teams spin up their own
@@ -17,25 +17,25 @@ the parent scenario's scan can do anything useful. This scenario automates that 
 ## 2. Design goals
 
 1. **Solve exactly the CISO-flagged gap, nothing more.** This is a bulk-application script for one
-   specific, named prerequisite step of the parent scenario - not a general-purpose Synapse
-   administration toolkit and not a re-implementation of the parent scenario's own Purview
-   registration/scan logic.
+ specific, named prerequisite step of the parent scenario - not a general-purpose Synapse
+ administration toolkit and not a re-implementation of the parent scenario's own Purview
+ registration/scan logic.
 2. **Get the server-scoped-vs-per-database question right, even though it means correcting the
-   framing the parent scenario shipped with.** §4 below is the single source of truth for this.
+ framing the parent scenario shipped with.** §4 below is the single source of truth for this.
 3. **Idempotent, safe to re-run against a workspace where some databases are already granted.** Every
-   mutating statement is preceded by a live catalog check; a re-run only touches what's still missing.
+ mutating statement is preceded by a live catalog check; a re-run only touches what's still missing.
 4. **Don't let one bad database sink the batch.** A single database that fails (e.g. a read-only
-   Spark/Lake replica - see §6) is reported and skipped, not a fatal error for every other database in
-   the run.
+ Spark/Lake replica - see §6) is reported and skipped, not a fatal error for every other database in
+ the run.
 5. **Don't fabricate what isn't confirmed.** Every T-SQL statement and catalog-view query this scenario
-   uses is grounded in a directly-fetched Microsoft Learn page (see §7) - none of it is inferred from
-   API naming conventions the way some of the parent scenario's own Data Map REST body properties had
-   to be.
+ uses is grounded in a directly-fetched Microsoft Learn page (see §7) - none of it is inferred from
+ API naming conventions the way some of the parent scenario's own Data Map REST body properties had
+ to be.
 
 ## 3. Why a separate scenario/script, not an extension of the parent scenario's own deploy script
 
 The parent scenario's `New-AzureSynapseDataMapScan.ps1` calls the **Microsoft Purview Data Map REST
-API** (`https://{account}.purview.azure.com`) - automation surface 4 per `docs/automation-surface.md`.
+API** (`https://{account}.purview.azure.com`) - automation surface 4 per [Automation surface](/docs/automation-surface/).
 This scenario's script calls **the Synapse serverless SQL pool endpoint directly** via T-SQL
 (`Invoke-Sqlcmd -AccessToken`, resource `https://database.windows.net/`) - a materially different
 automation surface with a materially different identity model:
@@ -44,7 +44,7 @@ automation surface with a materially different identity model:
 |---|---|---|
 | Target | Purview Data Map control plane | The Synapse workspace's own SQL engine |
 | Auth resource | `https://purview.azure.net` | `https://database.windows.net/` |
-| Required role on the caller | Purview **Data Source Administrator** (a Purview RBAC role) | Synapse **Synapse Administrator** / SQL Active Directory Admin (an Azure Synapse RBAC role - a completely different system; see README.md §3 and `docs/rbac-model.md`'s gap note below) |
+| Required role on the caller | Purview **Data Source Administrator** (a Purview RBAC role) | Synapse **Synapse Administrator** / SQL Active Directory Admin (an Azure Synapse RBAC role - a completely different system; see README.md §3 and [RBAC model](/docs/rbac-model/)'s gap note below) |
 | What it does | Registers a data source + scan object | Runs DDL (`CREATE LOGIN`/`CREATE USER`/`ALTER ROLE`) directly against the target databases |
 
 Folding this into the parent script would mean one script juggling two unrelated authentication
@@ -61,9 +61,9 @@ Administrator) - a different, adjacent system from the database-level `db_datare
 scenario automates, not a substitute for it (flagged as a Microsoft Product Owner finding in
 `reviews.md`).
 
-**Cross-cutting doc gap surfaced by this build, not fixed here:** neither `docs/automation-surface.md`
+**Cross-cutting doc gap surfaced by this build, not fixed here:** neither [Automation surface](/docs/automation-surface/)
 (five REST/PowerShell/Graph surfaces, none of them a direct T-SQL connection) nor
-`docs/rbac-model.md` (nine systems, none of them Azure Synapse's own workspace RBAC) currently covers
+[RBAC model](/docs/rbac-model/) (nine systems, none of them Azure Synapse's own workspace RBAC) currently covers
 what this scenario's script actually is - a sixth automation surface and a tenth RBAC system
 respectively. Flagged in `README.md` §3/§11 and recorded as a follow-up in `PROGRESS.md` rather than
 edited into those two cross-cutting docs in this same fragment (`AGENTS.md` §6 - one fragment per
@@ -72,7 +72,7 @@ turn).
 ## 4. The server-scoped-vs-per-database correction (read this before touching the script)
 
 The parent scenario's `README.md` §5 step 3c and `design.md` §4 describe the serverless
-`CREATE LOGIN ... FROM EXTERNAL PROVIDER` step as something to **"repeat for every serverless database
+`CREATE LOGIN... FROM EXTERNAL PROVIDER` step as something to **"repeat for every serverless database
 to be scanned"** - a direct, literal transcription of Microsoft's own portal walkthrough, which frames
 the step as something you do from inside each database's own Synapse Studio "New SQL script" context
 (`register-scan-synapse-workspace` §"Authentication for enumerating serverless SQL Database
@@ -83,12 +83,12 @@ independent, directly-fetched Microsoft Learn pages stating plainly that this is
 operation:
 
 - *Troubleshoot serverless SQL pool in Azure Synapse Analytics*: a worked `CREATE LOGIN`/role-grant
-  example is prefixed with `use master` and the page's own text for the closely related
-  workspace-level-reader pattern states the statements **"should be executed on master database, as
-  these are all server-level permissions."**
+ example is prefixed with `use master` and the page's own text for the closely related
+ workspace-level-reader pattern states the statements **"should be executed on master database, as
+ these are all server-level permissions."**
 - *Access lake databases using serverless SQL pool*'s "Create workspace-level data reader" example runs
-  `CREATE LOGIN [wsdatareader@contoso.com] FROM EXTERNAL PROVIDER` exactly **once**, with no per-database
-  repetition, immediately followed by two `GRANT ... TO` statements that are also server-level.
+ `CREATE LOGIN [wsdatareader@contoso.com] FROM EXTERNAL PROVIDER` exactly **once**, with no per-database
+ repetition, immediately followed by two `GRANT... TO` statements that are also server-level.
 
 This is also the standard, unsurprising SQL Server/Azure SQL behavior: `CREATE LOGIN` has always been a
 server-scoped statement regardless of which database context executes it - Synapse serverless is not
@@ -162,23 +162,23 @@ snippets.
 ## 8. Non-goals
 
 - **Dedicated SQL pool bulk-granting.** Dedicated pools use a different, non-login-based grant pattern
-  (`CREATE USER ... FROM EXTERNAL PROVIDER` + `sp_addrolemember`, no separate `CREATE LOGIN` step), and
-  a workspace typically has at most one dedicated pool - the CISO-flagged scaling problem this scenario
-  solves is specific to serverless's many-databases-per-workspace shape. Out of scope; the parent
-  scenario's own manual walkthrough (§5 step 4, dedicated branch) remains the documented path for that
-  one-time cost.
+ (`CREATE USER... FROM EXTERNAL PROVIDER` + `sp_addrolemember`, no separate `CREATE LOGIN` step), and
+ a workspace typically has at most one dedicated pool - the CISO-flagged scaling problem this scenario
+ solves is specific to serverless's many-databases-per-workspace shape. Out of scope; the parent
+ scenario's own manual walkthrough (§5 step 4, dedicated branch) remains the documented path for that
+ one-time cost.
 - **Auto-detecting read-only Spark/Lake-replicated databases.** Microsoft's own documentation states
-  these "do not apply" to the serverless grant steps (they are read-only), but no catalog column or
-  documented signal identifying them was found during this build's grounding pass. This script surfaces
-  a failed grant attempt against one as a per-database `Error` result rather than fabricating a
-  detection heuristic; `-ExcludeDatabase` lets an operator skip known ones on subsequent runs. See
-  `README.md` §11.
+ these "do not apply" to the serverless grant steps (they are read-only), but no catalog column or
+ documented signal identifying them was found during this build's grounding pass. This script surfaces
+ a failed grant attempt against one as a per-database `Error` result rather than fabricating a
+ detection heuristic; `-ExcludeDatabase` lets an operator skip known ones on subsequent runs. See
+ `README.md` §11.
 - **Creating the operator's own Synapse Administrator role assignment.** A documented prerequisite
-  (`README.md` §3), not a deliverable - granting oneself elevated Synapse RBAC is exactly the kind of
-  rare, high-privilege, one-time directory/workspace grant this repo's established convention (see
-  PROGRESS.md's `verify-purview-entra-graph-prerequisites` follow-up) declines to automate.
+ (`README.md` §3), not a deliverable - granting oneself elevated Synapse RBAC is exactly the kind of
+ rare, high-privilege, one-time directory/workspace grant this repo's established convention (see
+ PROGRESS.md's `verify-purview-entra-graph-prerequisites` follow-up) declines to automate.
 - **The external-table scoped-credential grant** (`GRANT REFERENCES ON DATABASE SCOPED
-  CREDENTIAL::...`) - unchanged non-goal carried over from the parent scenario; workspace-specific
-  credential names can't be generically parameterized here either.
+ CREDENTIAL::...`) - unchanged non-goal carried over from the parent scenario; workspace-specific
+ credential names can't be generically parameterized here either.
 - **Registering or running the Purview scan itself** - that remains
-  `scan-azure-synapse-and-classify/deploy/New-AzureSynapseDataMapScan.ps1`'s job.
+ `scan-azure-synapse-and-classify/deploy/New-AzureSynapseDataMapScan.ps1`'s job.

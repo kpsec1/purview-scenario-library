@@ -52,15 +52,15 @@ replaced by a successor policy with a different name).
 ## What rollback does **not** undo
 
 - **Audit log / alert history.** Alerts already generated (DLP Alerts dashboard, Microsoft
-  Defender portal incidents) are retained per their own retention windows (30 days in the DLP
-  Alerts dashboard, 6 months in Microsoft Defender portal, see `README.md` §8) regardless of
-  policy state.
+ Defender portal incidents) are retained per their own retention windows (30 days in the DLP
+ Alerts dashboard, 6 months in Microsoft Defender portal, see `README.md` §8) regardless of
+ policy state.
 - **Messages already blocked.** A message a user tried to send while the policy was enforcing was
-  not delivered; disabling or removing the policy afterward does not retroactively deliver it.
-  The sender must resend.
+ not delivered; disabling or removing the policy afterward does not retroactively deliver it.
+ The sender must resend.
 - **Card Operations group membership.** This scenario does not create or manage the
-  `CardOpsGroupEmail` security group, it's a dependency, not a deployed artifact. Removing this
-  policy has no effect on that group.
+ `CardOpsGroupEmail` security group, it's a dependency, not a deployed artifact. Removing this
+ policy has no effect on that group.
 
 ## Verification after rollback
 

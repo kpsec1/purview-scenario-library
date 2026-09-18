@@ -53,17 +53,17 @@ control is being permanently retired or replaced by a successor policy with a di
 ## What rollback does **not** undo
 
 - **Audit log / alert history.** Alerts already generated (DLP Alerts dashboard, Microsoft
-  Defender portal incidents) are retained per their own retention windows regardless of policy
-  state (`README.md` §8).
+ Defender portal incidents) are retained per their own retention windows regardless of policy
+ state (`README.md` §8).
 - **Files already copied or blocked.** A copy that was blocked while the policy was enforcing was
-  not written to the removable drive; disabling or removing the policy afterward does not
-  retroactively complete it. A copy that was audited (IT Data Custodians path) already completed, 
-  disabling the policy has no effect on data already on the device.
+ not written to the removable drive; disabling or removing the policy afterward does not
+ retroactively complete it. A copy that was audited (IT Data Custodians path) already completed, 
+ disabling the policy has no effect on data already on the device.
 - **Device onboarding.** This scenario does not onboard or offboard devices, rollback here has no
-  effect on whether a device remains onboarded to Endpoint DLP / Microsoft Defender for Endpoint.
+ effect on whether a device remains onboarded to Endpoint DLP / Microsoft Defender for Endpoint.
 - **IT Data Custodians group membership.** This scenario does not create or manage the
-  `ITCustodiansGroupEmail` security group, it's a dependency, not a deployed artifact. Removing
-  this policy has no effect on that group.
+ `ITCustodiansGroupEmail` security group, it's a dependency, not a deployed artifact. Removing
+ this policy has no effect on that group.
 
 ## Verification after rollback
 

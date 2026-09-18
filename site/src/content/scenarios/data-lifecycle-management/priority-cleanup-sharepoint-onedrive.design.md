@@ -7,9 +7,9 @@ parent: "data-lifecycle-management/priority-cleanup-sharepoint-onedrive"
 Microsoft Teams meeting recordings and transcripts, kept for Copilot recap, accumulate in OneDrive
 (most recordings) and SharePoint (channel-meeting recordings) and are typically low-value after
 1-3 months, but a retention policy can keep them far longer, growing storage cost with no
-compensating benefit [[1]](#references). A second, related use case: when an employee leaves, items
+compensating benefit. A second, related use case: when an employee leaves, items
 in their OneDrive's Preservation Hold library with an unexpired retention period block deletion of
-the entire OneDrive site [[1]](#references). Microsoft Purview's **Priority cleanup** feature
+the entire OneDrive site. Microsoft Purview's **Priority cleanup** feature
 (Data Lifecycle Management), already built for Exchange in this repo's
 `priority-cleanup-exchange-data-spillage` sibling, also covers this workload, but with a
 materially different approver model, mandatory simulation, and a softer deletion mechanism
@@ -27,7 +27,7 @@ where Microsoft's own documentation shows the two workloads differ.
 ## 3. Why this is a separate fragment, not a copy-paste of the Exchange scenario
 
 Microsoft documents priority cleanup as materially different per workload
-[[1]](#references)[[2]](#references):
+:
 
 | | Exchange (built) | SharePoint/OneDrive (this fragment) |
 |---|---|---|
@@ -72,26 +72,26 @@ one genuinely new, both flagged inline (deploy script `.NOTES`, config `_labelNo
 §11) rather than guessed silently:
 
 - **`RetentionDuration`/`RetentionType` for "delete as soon as possible", carried over.** Same
-  inference as the Exchange sibling (`RetentionDuration 0`, `RetentionType TaggedAgeInDays`), for
-  the same reason: the cmdlet reference doesn't publish the literal value ASAP maps to, and no
-  worked example is specific to priority cleanup for either workload. Still VERIFY, still open.
+ inference as the Exchange sibling (`RetentionDuration 0`, `RetentionType TaggedAgeInDays`), for
+ the same reason: the cmdlet reference doesn't publish the literal value ASAP maps to, and no
+ worked example is specific to priority cleanup for either workload. Still VERIFY, still open.
 - **`-MultiStageReviewProperty` stage count, a new, different construction.** The Exchange
-  sibling used three stages (`PriorityCleanupAdmin`/`RetentionManager`/`EDiscoveryAdmin`) because
-  Microsoft's prose names three roles that approve **after** turn-on. For SharePoint/OneDrive,
-  Microsoft's prose names only **one** role that approves after turn-on (eDiscovery admin,
-  conditionally), the "second Priority Cleanup Admin" requirement is satisfied differently, by a
-  pre-turn-on simulation review and turn-on step that this scenario's scripts model as a *separate
-  invocation* (`-EnforceSimulation`, gated on operator discipline), not as a label-level review
-  stage. This scenario's `-MultiStageReviewProperty` therefore carries **one** stage
-  (`EDiscoveryAdmin`) rather than the sibling's three. Whether the underlying service also expects
-  (or silently ignores, or requires) a `PriorityCleanupAdmin` stage entry in that same JSON for its
-  own bookkeeping is **not confirmed** by any Microsoft worked example specific to priority cleanup
-  for this workload, this scenario's own open construction gap, distinct from the one it inherited.
-  Failure mode if wrong in the "missing a required stage" direction: per the Exchange sibling's
-  confirmed behavior for its own stage set, an incorrect approver-role mapping surfaces as a loud,
-  synchronous policy-creation failure, not a silent misconfiguration [[3]](#references), so this
-  scenario's single-stage construction is expected to fail loudly at deploy time if it's wrong,
-  the same safety property the Exchange sibling relies on.
+ sibling used three stages (`PriorityCleanupAdmin`/`RetentionManager`/`EDiscoveryAdmin`) because
+ Microsoft's prose names three roles that approve **after** turn-on. For SharePoint/OneDrive,
+ Microsoft's prose names only **one** role that approves after turn-on (eDiscovery admin,
+ conditionally), the "second Priority Cleanup Admin" requirement is satisfied differently, by a
+ pre-turn-on simulation review and turn-on step that this scenario's scripts model as a *separate
+ invocation* (`-EnforceSimulation`, gated on operator discipline), not as a label-level review
+ stage. This scenario's `-MultiStageReviewProperty` therefore carries **one** stage
+ (`EDiscoveryAdmin`) rather than the sibling's three. Whether the underlying service also expects
+ (or silently ignores, or requires) a `PriorityCleanupAdmin` stage entry in that same JSON for its
+ own bookkeeping is **not confirmed** by any Microsoft worked example specific to priority cleanup
+ for this workload, this scenario's own open construction gap, distinct from the one it inherited.
+ Failure mode if wrong in the "missing a required stage" direction: per the Exchange sibling's
+ confirmed behavior for its own stage set, an incorrect approver-role mapping surfaces as a loud,
+ synchronous policy-creation failure, not a silent misconfiguration, so this
+ scenario's single-stage construction is expected to fail loudly at deploy time if it's wrong,
+ the same safety property the Exchange sibling relies on.
 
 ## 5. Idempotency and safety posture
 
@@ -127,18 +127,18 @@ undone" framing.
 ## 7. Non-goals
 
 - **Permanent deletion sub-feature** (bypasses the Recycle Bin; public preview from 2026-08-24), 
-  a distinct capability with its own approval model and irreversibility profile; built as its own
-  sibling scenario, `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/`.
+ a distinct capability with its own approval model and irreversibility profile; built as its own
+ sibling scenario, `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/`.
 - **Adaptive-scope targeting**, this scenario is static-scope only, same non-goal as the Exchange
-  sibling.
+ sibling.
 - **Scripting the approval workflow itself**, no documented API exists; portal-only by design.
 - **Tenant-wide on/off toggle automation**, shared gap with the Exchange sibling; the toggle
-  itself is also shared between both workloads, so this is genuinely the same open item, not a
-  duplicate one.
+ itself is also shared between both workloads, so this is genuinely the same open item, not a
+ duplicate one.
 - **Scripting a scheduled query-date-rolling helper** for the "no age filter in KeyQL" gap
-  identified in `README.md` §8, a real operational need, but a distinct fragment (a small
-  scheduled-task script that edits/re-simulates the rule on a cadence) rather than something to
-  bolt onto this deploy script's one-shot create-or-report model.
+ identified in `README.md` §8, a real operational need, but a distinct fragment (a small
+ scheduled-task script that edits/re-simulates the rule on a cadence) rather than something to
+ bolt onto this deploy script's one-shot create-or-report model.
 
 ## References
 

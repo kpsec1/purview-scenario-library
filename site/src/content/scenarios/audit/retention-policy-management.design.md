@@ -10,12 +10,12 @@ are retained for one year automatically, and everything else defaults to 180 day
 tenant-wide, un-editable, and often wrong for a specific buyer's needs in two directions at once:
 
 - **Too short** for a workload or a specific set of users the default doesn't cover at all (Teams,
-  Power BI, Dynamics 365, third-party connectors, or any other non-Entra/Exchange/OneDrive/
-  SharePoint workload) or where a regulatory/legal-hold driver needs longer retention than the
-  180-day fallback.
+ Power BI, Dynamics 365, third-party connectors, or any other non-Entra/Exchange/OneDrive/
+ SharePoint workload) or where a regulatory/legal-hold driver needs longer retention than the
+ 180-day fallback.
 - **Too long/expensive to search** for high-volume, low-investigative-value activity (a noisy
-  service-account operation, a chatty automated process) that a buyer would rather retain for a
-  shorter, cheaper, faster-to-search window.
+ service-account operation, a chatty automated process) that a buyer would rather retain for a
+ shorter, cheaper, faster-to-search window.
 
 `scenarios/audit/premium-audit-investigation/` already assumes the data it searches is still
 retained when an investigator needs it. This scenario is the **configuration counterpart**: it
@@ -26,53 +26,53 @@ version-controlled-config pattern as every other scenario in this library.
 ## 2. Design goals
 
 1. Manage **multiple named policies as one reconciled set**, driven by a version-controlled JSON
-   config, not a single ad hoc `New-UnifiedAuditLogRetentionPolicy` call, because a real
-   deployment is rarely just one policy, and Microsoft caps an organization at **50** audit log
-   retention policies total, making "what do we already have, and does this collide with it"
-   a first-class concern the script must check, not the operator.
+ config, not a single ad hoc `New-UnifiedAuditLogRetentionPolicy` call, because a real
+ deployment is rarely just one policy, and Microsoft caps an organization at **50** audit log
+ retention policies total, making "what do we already have, and does this collide with it"
+ a first-class concern the script must check, not the operator.
 2. Idempotent, full reconciliation: running the script twice with the same config must not error
-   and must not create a duplicate policy. Because `Set-UnifiedAuditLogRetentionPolicy`'s
-   `-Operations`/`-RecordTypes`/`-UserIds` are documented **overwrite** semantics (the values you
-   specify replace any existing entries, not merge with them), a get-or-create-then-set pattern is
-   both idempotent and correctly self-healing if a policy's live settings drift from the config.
+ and must not create a duplicate policy. Because `Set-UnifiedAuditLogRetentionPolicy`'s
+ `-Operations`/`-RecordTypes`/`-UserIds` are documented **overwrite** semantics (the values you
+ specify replace any existing entries, not merge with them), a get-or-create-then-set pattern is
+ both idempotent and correctly self-healing if a policy's live settings drift from the config.
 3. Enforce the two hard tenant-wide constraints Microsoft documents **before** attempting a write,
-   not after a cmdlet throws: **Priority must be globally unique** across every custom policy in
-   the tenant (not just this config file), and the **total policy count must not exceed 50**. Both
-   are checked pre-flight against a live `Get-UnifiedAuditLogRetentionPolicy` snapshot.
+ not after a cmdlet throws: **Priority must be globally unique** across every custom policy in
+ the tenant (not just this config file), and the **total policy count must not exceed 50**. Both
+ are checked pre-flight against a live `Get-UnifiedAuditLogRetentionPolicy` snapshot.
 4. Ship a dry-run path (`-WhatIf`, `SupportsShouldProcess`) that reports every create/update it
-   would perform, with no tenant-state change, matching `AGENTS.md` §4 and every other scenario in
-   this repo.
+ would perform, with no tenant-state change, matching `AGENTS.md` §4 and every other scenario in
+ this repo.
 5. Be explicit about the one governing constraint this design **cannot** work around: the
-   PowerShell `-RetentionDuration` enum (`ThreeMonths`/`SixMonths`/`NineMonths`/`TwelveMonths`/
-   `TenYears`) is narrower than the portal's duration picker (adds `7 Days`/`30 Days`/`3 Years`/
-   `5 Years`/`7 Years`), confirmed by directly comparing the official `New-`/
-   `Set-UnifiedAuditLogRetentionPolicy` cmdlet references against the official
-   `audit-log-retention-policies` conceptual page, both fetched during this build (not a VERIFY, 
-   both sources are Microsoft Learn, and they disagree on cmdlet surface vs. portal surface, not on
-   a fact either page states inconsistently with itself). A buyer who needs one of those five
-   durations must use the portal for that specific policy; this script cannot create or edit it.
+ PowerShell `-RetentionDuration` enum (`ThreeMonths`/`SixMonths`/`NineMonths`/`TwelveMonths`/
+ `TenYears`) is narrower than the portal's duration picker (adds `7 Days`/`30 Days`/`3 Years`/
+ `5 Years`/`7 Years`), confirmed by directly comparing the official `New-`/
+ `Set-UnifiedAuditLogRetentionPolicy` cmdlet references against the official
+ `audit-log-retention-policies` conceptual page, both fetched during this build (not a VERIFY, 
+ both sources are Microsoft Learn, and they disagree on cmdlet surface vs. portal surface, not on
+ a fact either page states inconsistently with itself). A buyer who needs one of those five
+ durations must use the portal for that specific policy; this script cannot create or edit it.
 
 ## 3. Why Security & Compliance PowerShell (not Graph, not the portal only)
 
 - Audit log retention policy objects (`UnifiedAuditLogRetentionPolicy`) are Security & Compliance
-  PowerShell objects, `New-`/`Set-`/`Get-`/`Remove-UnifiedAuditLogRetentionPolicy`, automation
-  surface 2 per `docs/automation-surface.md` §1, the same surface every DLP/DLM/records-management
-  scenario in this library already uses. No Microsoft Graph endpoint for this object was found
-  during this build's grounding pass (the sibling `premium-audit-investigation` scenario's own
-  Graph surface, the Audit Search Graph API, is a different object entirely, it *searches* the
-  audit log, it does not configure how long records are *kept*).
+ PowerShell objects, `New-`/`Set-`/`Get-`/`Remove-UnifiedAuditLogRetentionPolicy`, automation
+ surface 2 per [Automation surface §1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first), the same surface every DLP/DLM/records-management
+ scenario in this library already uses. No Microsoft Graph endpoint for this object was found
+ during this build's grounding pass (the sibling `premium-audit-investigation` scenario's own
+ Graph surface, the Audit Search Graph API, is a different object entirely, it *searches* the
+ audit log, it does not configure how long records are *kept*).
 - The portal ("Create audit retention policy" flyout, **Audit** solution → **Audit retention
-  policies** dashboard) is the only surface that exposes the five durations PowerShell's enum
-  doesn't (§2 point 5), but it authors one policy at a time, by hand, with no config-as-code
-  audit trail. A buyer managing more than a handful of policies, or wanting the same reviewable,
-  re-runnable deployment discipline as every other control in this library, needs the scripted
-  path for the four durations it *does* cover.
+ policies** dashboard) is the only surface that exposes the five durations PowerShell's enum
+ doesn't (§2 point 5), but it authors one policy at a time, by hand, with no config-as-code
+ audit trail. A buyer managing more than a handful of policies, or wanting the same reviewable,
+ re-runnable deployment discipline as every other control in this library, needs the scripted
+ path for the four durations it *does* cover.
 - Microsoft's own documentation states the inverse constraint too: a policy created via
-  `New-UnifiedAuditLogRetentionPolicy` for a record type/activity combination **not available in
-  the portal's own policy-creation tool becomes portal-view-and-delete-only**, it can no longer be
-  *edited* from the dashboard, only from `Set-UnifiedAuditLogRetentionPolicy`. This is a real
-  operational trap for a buyer who scripts a policy today and expects a portal admin to be able to
-  tune it tomorrow, called out explicitly in `README.md` §8 and §11.
+ `New-UnifiedAuditLogRetentionPolicy` for a record type/activity combination **not available in
+ the portal's own policy-creation tool becomes portal-view-and-delete-only**, it can no longer be
+ *edited* from the dashboard, only from `Set-UnifiedAuditLogRetentionPolicy`. This is a real
+ operational trap for a buyer who scripts a policy today and expects a portal admin to be able to
+ tune it tomorrow, called out explicitly in `README.md` §8 and §11.
 
 ## 4. Reconciliation logic
 
@@ -128,18 +128,18 @@ pilot tenant) rather than asserting either reading as fact.
 ## 7. Non-goals
 
 - This scenario does not create the **default** Audit (Premium) retention policy, it's automatic,
-  tenant-wide, and Microsoft explicitly states it can't be modified (only shortened for specific
-  users via a custom policy, which this script *can* author).
+ tenant-wide, and Microsoft explicitly states it can't be modified (only shortened for specific
+ users via a custom policy, which this script *can* author).
 - This scenario does not create or manage the **10-Year Audit Log Retention add-on** license
-  assignment itself, that's a licensing/assignment action in the Microsoft 365 admin center, a
-  dependency this scenario assumes is already in place for any `TenYears` policy (§5).
+ assignment itself, that's a licensing/assignment action in the Microsoft 365 admin center, a
+ dependency this scenario assumes is already in place for any `TenYears` policy (§5).
 - This scenario does not script the five portal-only durations (`7 Days`/`30 Days`/`3 Years`/
-  `5 Years`/`7 Years`), no PowerShell path for them was found; see §2 point 5 and `README.md` §11.
+ `5 Years`/`7 Years`), no PowerShell path for them was found; see §2 point 5 and `README.md` §11.
 - This scenario does not perform the **search** half of the audit story, that's
-  `scenarios/audit/premium-audit-investigation/`, which this scenario is the retention-side
-  companion to, not a replacement for.
+ `scenarios/audit/premium-audit-investigation/`, which this scenario is the retention-side
+ companion to, not a replacement for.
 - This scenario does not implement a "disable without delete" state. Unlike this library's DLP/DLM
-  scenarios (which stage `TestWithNotifications` → `Enable`), Microsoft documents no `-Enabled`/
-  `Mode` parameter for `UnifiedAuditLogRetentionPolicy` objects, the only lifecycle actions are
-  create, edit, and delete. `README.md` §9/§11 and `rollback.md` treat deletion as the only "off"
-  switch.
+ scenarios (which stage `TestWithNotifications` → `Enable`), Microsoft documents no `-Enabled`/
+ `Mode` parameter for `UnifiedAuditLogRetentionPolicy` objects, the only lifecycle actions are
+ create, edit, and delete. `README.md` §9/§11 and `rollback.md` treat deletion as the only "off"
+ switch.

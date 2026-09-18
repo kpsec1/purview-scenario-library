@@ -6,7 +6,7 @@ parent: "data-lifecycle-management/adaptive-scope-auto-apply-label"
 
 This scenario deploys a **record** retention label (`IsRecordLabel: true`), not a Keep-only
 retention action. Per Microsoft's own documented behavior, an applied record label can only be
-unlocked or removed by a user with **records-manager** privilege [[1]](#references), unlike the
+unlocked or removed by a user with **records-manager** privilege, unlike the
 `adaptive-scope-retention` sibling, where removing the rule "causes the release of all Exchange
 mailbox and SharePoint site retentions that are associated with the rule." **Rolling back this
 scenario's policy/rule does not unlock or remove any record label already applied to content**, it
@@ -34,7 +34,7 @@ adaptive scope's query, before more content gets locked, not to undo content alr
 ./deploy/Remove-AdaptiveScopeAutoApplyLabel.ps1 -ConfigPath ./deploy/config/adaptive-scope-auto-apply-label.json -Delete
 ```
 
-`Remove-RetentionCompliancePolicy` removes the policy **and its rule together** [[2]](#references).
+`Remove-RetentionCompliancePolicy` removes the policy **and its rule together**.
 This stops future auto-apply entirely. **It does not touch the label definition or any content
 already labeled**, those require separate, deliberate action (see below).
 
@@ -57,26 +57,26 @@ This is deliberately **not** scripted in this scenario, it is a higher-consequen
 action, distinct from policy/rule rollback:
 
 1. Confirm the specific items that were mis-labeled (content search scoped to the label, or the
-   portal's Records Management reporting).
+ portal's Records Management reporting).
 2. A user with the **Records Management** role group (or **RecordManagement** sub-role) can remove
-   the record label from specific content, or (with the appropriate file-plan permission) change the
-   label's own definition [[3]](#references).
+ the record label from specific content, or (with the appropriate file-plan permission) change the
+ label's own definition.
 3. **This is not possible at all if the label was ever created with `Regulatory: true`**, a
-   regulatory record cannot be removed by anyone, including a Global Administrator, once applied
-   [[1]](#references). This scenario's default config uses a plain (non-regulatory) record precisely
-   so this recovery path stays available, do not change `label.regulatory` to `true` without
-   understanding this is a one-way door.
+ regulatory record cannot be removed by anyone, including a Global Administrator, once applied
+. This scenario's default config uses a plain (non-regulatory) record precisely
+ so this recovery path stays available, do not change `label.regulatory` to `true` without
+ understanding this is a one-way door.
 
 ## What rollback does **not** undo
 
 - **Any record already applied to content.** Policy/rule rollback stops future labeling only, see
-  above for the separate, manual, records-manager-gated recovery path.
+ above for the separate, manual, records-manager-gated recovery path.
 - **A regulatory record, ever, by anyone**, not applicable to this scenario's default config, but
-  relevant if you changed `label.regulatory` to `true` and then used the publish sibling to
-  distribute it.
+ relevant if you changed `label.regulatory` to `true` and then used the publish sibling to
+ distribute it.
 - **The distribution/population delay on the way back in.** Re-enabling the policy or re-creating the
-  scope restarts the same up-to-5-day (scope) and up-to-7-day (auto-apply distribution) delays
-  documented in `README.md` §6/§7, rollback is not instant to reverse either.
+ scope restarts the same up-to-5-day (scope) and up-to-7-day (auto-apply distribution) delays
+ documented in `README.md` §6/§7, rollback is not instant to reverse either.
 
 ## Verification after rollback
 

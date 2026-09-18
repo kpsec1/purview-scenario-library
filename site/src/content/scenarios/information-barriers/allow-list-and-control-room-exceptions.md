@@ -43,20 +43,20 @@ any policy, gives an examiner a reviewable artifact for exactly who can cross th
 
 ## 3. Prerequisites
 
-Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. Automation surface:
-`docs/automation-surface.md` (surface 1, Security & Compliance PowerShell). Summary:
+Full licensing detail: [Licensing matrix](/docs/licensing-matrix/). RBAC: [RBAC model](/docs/rbac-model/). Automation surface:
+[Automation surface](/docs/automation-surface/) (surface 1, Security & Compliance PowerShell). Summary:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
 | **Base scenario deployed** | `scenarios/information-barriers/segregate-trading-and-research/` | This scenario hard-fails if the `Trading`/`Research` segments don't already exist |
-| Licensing | **M365 E5 / E5 Compliance / Insider Risk Management** or the **IB add-on** | Same entitlement as the base scenario [[7]](#references) |
+| Licensing | **M365 E5 / E5 Compliance / Insider Risk Management** or the **IB add-on** | Same entitlement as the base scenario |
 | Role | **Information Barriers** roles / **Compliance Administrator** / **Organization Management** | To create segments, policies, and run application |
-| Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell, `docs/automation-surface.md` §3 |
+| Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell, [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
 | Directory data | A populated Entra attribute cleanly identifying each exception group | e.g. `Department -eq 'ComplianceControlRoom'` |
 | IB mode | **SingleSegment**, not Legacy, not MultiSegment | Legacy mode + an Allow policy hides ALL non-IB users/groups from the assigned segment's members (a severe collateral impact); MultiSegment requires every tenant policy to be Allow-type, incompatible with the base scenario's Block policies. `Get-PolicyConfig` reports current mode; the deploy/validate scripts check and warn, see §11 |
-| Groups | IB supports **Microsoft 365 Groups** only; DLs/Security Groups are non-IB | [[1]](#references) |
+| Groups | IB supports **Microsoft 365 Groups** only; DLs/Security Groups are non-IB | |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` before a sales commitment, SKU
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) before a sales commitment, SKU
 > names change.
 
 ## 4. Architecture
@@ -134,44 +134,44 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 
 Segments and policies are visible in the [Microsoft Purview portal](https://purview.microsoft.com) →
 **Information Barriers** → **Segments** / **Policies** / **Policy application**
-[[1]](#references). `-WhatIf` is non-functional in S&C PowerShell, so the scripts ship a `-DryRun`.
+. `-WhatIf` is non-functional in S&C PowerShell, so the scripts ship a `-DryRun`.
 
 ## 6. Configuration reference
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Segment cmdlet | `New-OrganizationSegment -Name -UserGroupFilter` | Same as the base scenario [[3]](#references) |
-| Policy cmdlet (create) | `New-InformationBarrierPolicy -AssignedSegment -SegmentsAllowed -State Inactive` | Comma-separated list; cannot combine with `-SegmentsBlocked` [[4]](#references) |
-| Policy cmdlet (reconcile) | `Set-InformationBarrierPolicy -Identity -SegmentsAllowed` | Set the policy **Inactive first** if it's Active before editing [[11]](#references) |
+| Segment cmdlet | `New-OrganizationSegment -Name -UserGroupFilter` | Same as the base scenario |
+| Policy cmdlet (create) | `New-InformationBarrierPolicy -AssignedSegment -SegmentsAllowed -State Inactive` | Comma-separated list; cannot combine with `-SegmentsBlocked` |
+| Policy cmdlet (reconcile) | `Set-InformationBarrierPolicy -Identity -SegmentsAllowed` | Set the policy **Inactive first** if it's Active before editing |
 | Policy naming | `<assignedSegment>-allow-<allows, joined by '-'>` | e.g. `ComplianceControlRoom-allow-Trading-Research`, `Legal-allow-Research` |
 | Allow-list shapes modeled | "Sees both sides" (`ComplianceControlRoom`) and "one-sided" (`Legal`) | Same mechanism, different `allows` list, the pattern generalizes to any number of exception segments |
-| Activate | `Set-InformationBarrierPolicy -Identity <GUID> -State Active` | Then apply [[1]](#references) |
-| Apply | `Start-InformationBarrierPoliciesApplication` | Async: ~30 min to start, ~5,000 users/hour; SharePoint up to 24h [[1]](#references) |
-| Status | `Get-InformationBarrierPoliciesApplicationStatus` | Track application progress [[5]](#references) |
-| Policy type immutability | Can't convert Allow<->Block in place | Deactivate + create a new policy of the other type instead [[11]](#references) |
-| One policy per segment | Enforced by design | Never assign 2 policies to the same segment [[1]](#references) |
+| Activate | `Set-InformationBarrierPolicy -Identity <GUID> -State Active` | Then apply |
+| Apply | `Start-InformationBarrierPoliciesApplication` | Async: ~30 min to start, ~5,000 users/hour; SharePoint up to 24h |
+| Status | `Get-InformationBarrierPoliciesApplicationStatus` | Track application progress |
+| Policy type immutability | Can't convert Allow<->Block in place | Deactivate + create a new policy of the other type instead |
+| One policy per segment | Enforced by design | Never assign 2 policies to the same segment |
 
 Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
 
 ## 7. Validation / how to prove it works
 
 1. **Automated (staged)**, `./validate/Test-ControlRoomAllowException.ps1` confirms both prerequisite
-   segments exist, both exception segments exist, both allow policies exist with the right assigned
-   segment, and that each policy's live `SegmentsAllowed` set exactly matches config.
+ segments exist, both exception segments exist, both allow policies exist with the right assigned
+ segment, and that each policy's live `SegmentsAllowed` set exactly matches config.
 2. **Automated (enforced)**, after `-Activate`, re-run with `-RequireActive`; policies must be
-   **Active** and an application run must have occurred.
+ **Active** and an application run must have occurred.
 3. **Real-world allow test**, after application completes, confirm a `ComplianceControlRoom` user
-   **can** communicate with both a `Trading` and a `Research` user, and a `Legal` user **can**
-   communicate with a `Research` user.
+ **can** communicate with both a `Trading` and a `Research` user, and a `Legal` user **can**
+ communicate with a `Research` user.
 4. **Real-world scope test**, confirm a `Legal` user **cannot** communicate with a `Trading` user
-   (the asymmetric allow-list is enforced, not just the union of everyone's access).
+ (the asymmetric allow-list is enforced, not just the union of everyone's access).
 5. **No-collateral test**, confirm the `Trading`/`Research` wall itself still blocks as before (this
-   scenario didn't weaken it), and that users outside IB entirely are unaffected.
+ scenario didn't weaken it), and that users outside IB entirely are unaffected.
 6. **Reconciliation proof**, edit an `allows` list in config, re-run the deploy, and confirm the
-   validate script's live-vs-desired check now passes for the new list (and that an initially-Active
-   policy was left Inactive pending a fresh `-Activate`).
+ validate script's live-vs-desired check now passes for the new list (and that an initially-Active
+ policy was left Inactive pending a fresh `-Activate`).
 7. **Idempotency proof**, re-run the deploy with no config changes; segments/policies report
-   `exists`/`already matches config` and nothing is duplicated or re-mutated.
+ `exists`/`already matches config` and nothing is duplicated or re-mutated.
 
 ## 8. Operations & tuning
 
@@ -203,62 +203,62 @@ never touched by this scenario's rollback.
 ## 10. Cost & licensing notes
 
 - **No incremental licensing** beyond the base scenario's E5 / E5 Compliance / IRM / IB add-on
-  entitlement [[7]](#references), exception segments/policies are additional objects under the same
-  entitlement, not a separately metered capability.
+ entitlement, exception segments/policies are additional objects under the same
+ entitlement, not a separately metered capability.
 - **Cost is operational discipline, not $.** The real cost is keeping exception-segment membership
-  narrow and current, an over-broad or stale allow-list is a bigger risk to the wall's credibility
-  than any licensing spend.
+ narrow and current, an over-broad or stale allow-list is a bigger risk to the wall's credibility
+ than any licensing spend.
 - **Reconciliation reduces portal drift risk.** Scripting the allow-list edit (vs. a manual portal
-  change) keeps the config file as the single source of truth for who has cross-wall access.
+ change) keeps the config file as the single source of truth for who has cross-wall access.
 
 ## 11. Known limitations & gotchas
 
 - **Additive only, does not create the wall.** This scenario hard-fails if `Trading`/`Research`
-  don't already exist; it never creates or edits the base scenario's Block policies.
+ don't already exist; it never creates or edits the base scenario's Block policies.
 - **Activation affects live communication for the exception segments.** Restricts
-  `ComplianceControlRoom`/`Legal` to their allow-lists once application completes, stage inactive,
-  `-DryRun`, get sign-off first.
+ `ComplianceControlRoom`/`Legal` to their allow-lists once application completes, stage inactive,
+ `-DryRun`, get sign-off first.
 - **Editing an Active Allow policy requires deactivation first.** The deploy script does this
-  automatically for a detected `SegmentsAllowed` drift and leaves the policy **Inactive**, you must
-  re-run with `-Activate` to reactivate and re-apply; it never silently reactivates an edited policy.
+ automatically for a detected `SegmentsAllowed` drift and leaves the policy **Inactive**, you must
+ re-run with `-Activate` to reactivate and re-apply; it never silently reactivates an edited policy.
 - **Can't convert Allow<->Block on the same policy.** Changing a policy's *type* requires deactivating
-  it and creating a new policy of the other type, not scripted here since this scenario only ever
-  creates Allow-type policies [[11]](#references).
+ it and creating a new policy of the other type, not scripted here since this scenario only ever
+ creates Allow-type policies.
 - **Legacy IB mode + an Allow policy hides non-IB users/groups from that segment's members, grounded,
-  not a guess.** This is the single biggest gotcha in this scenario: in **Legacy** mode specifically
-  (not SingleSegment, not MultiSegment), assigning an Allow policy to `ComplianceControlRoom`/`Legal`
-  would hide **every** non-segmented user/group from that segment's members once applied, not just
-  the segments left off the allow list. A control-room analyst could lose the ability to reach their
-  own manager or IT helpdesk. `New-ControlRoomAllowException.ps1` and
-  `validate/Test-ControlRoomAllowException.ps1` both check `Get-PolicyConfig` and warn (non-fatally)
-  if the tenant is in Legacy mode, confirm/move to **SingleSegment** mode
-  (`Set-PolicyConfig -InformationBarrierMode SingleSegment`) before activating this scenario
-  [[2]](#references).
+ not a guess.** This is the single biggest gotcha in this scenario: in **Legacy** mode specifically
+ (not SingleSegment, not MultiSegment), assigning an Allow policy to `ComplianceControlRoom`/`Legal`
+ would hide **every** non-segmented user/group from that segment's members once applied, not just
+ the segments left off the allow list. A control-room analyst could lose the ability to reach their
+ own manager or IT helpdesk. `New-ControlRoomAllowException.ps1` and
+ `validate/Test-ControlRoomAllowException.ps1` both check `Get-PolicyConfig` and warn (non-fatally)
+ if the tenant is in Legacy mode, confirm/move to **SingleSegment** mode
+ (`Set-PolicyConfig -InformationBarrierMode SingleSegment`) before activating this scenario
+.
 - **VERIFY (pilot tenant):** whether `Set-InformationBarrierPolicy -SegmentsAllowed` fully **replaces**
-  the allowed-segment list or **merges** with the existing one. Microsoft's own worked example shows
-  setting a single new value but doesn't state replace-vs-merge semantics explicitly.
-  `deploy/New-ControlRoomAllowException.ps1` always sends the complete desired list (assumes replace)
-  rather than guessing merge behavior, confirm before relying on this for partial/incremental
-  updates in a pilot tenant.
+ the allowed-segment list or **merges** with the existing one. Microsoft's own worked example shows
+ setting a single new value but doesn't state replace-vs-merge semantics explicitly.
+ `deploy/New-ControlRoomAllowException.ps1` always sends the complete desired list (assumes replace)
+ rather than guessing merge behavior, confirm before relying on this for partial/incremental
+ updates in a pilot tenant.
 - **MultiSegment mode is incompatible with this composition as designed.** MultiSegment mode requires
-  **every** policy in the tenant to be Allow-type, configuring even one Block policy (as
-  `Trading`/`Research` does) breaks it. This scenario deliberately requires SingleSegment mode
-  (one segment per user); it does **not** support a person belonging to both `Trading` and
-  `ComplianceControlRoom` simultaneously. A future migration to an all-Allow-policy model would be a
-  rebuild of the base scenario, not an extension of it, see `design.md` §6.
+ **every** policy in the tenant to be Allow-type, configuring even one Block policy (as
+ `Trading`/`Research` does) breaks it. This scenario deliberately requires SingleSegment mode
+ (one segment per user); it does **not** support a person belonging to both `Trading` and
+ `ComplianceControlRoom` simultaneously. A future migration to an all-Allow-policy model would be a
+ rebuild of the base scenario, not an extension of it, see `design.md` §6.
 - **Mixing Allow-type and Block-type policies across different segments is grounded in Microsoft's own
-  worked example (a third "compatible" segment alongside two mutually-blocked segments,
-  [[1]](#references)), not independently confirmed against a live tenant in this build.** The
-  mechanics (each policy type only restricts its own assigned segment; an unlisted segment is
-  unaffected by a policy that doesn't name it) are documented per-cmdlet, but this exact 3-segment
-  composition (two Block-walled segments plus a third Allow-type segment reaching both) has not been
-  pilot-tested here, validate in a pilot tenant before a customer-facing deployment.
+ worked example (a third "compatible" segment alongside two mutually-blocked segments,
+), not independently confirmed against a live tenant in this build.** The
+ mechanics (each policy type only restricts its own assigned segment; an unlisted segment is
+ unaffected by a policy that doesn't name it) are documented per-cmdlet, but this exact 3-segment
+ composition (two Block-walled segments plus a third Allow-type segment reaching both) has not been
+ pilot-tested here, validate in a pilot tenant before a customer-facing deployment.
 - **`-WhatIf` is non-functional in S&C PowerShell**, the scripts ship a `-DryRun` instead.
 - **Application is async and delayed.** ~30 min to start, ~5,000 users/hour; SharePoint/OneDrive
-  enforcement up to 24 hours after activation [[1]](#references).
-- **Groups: M365 Groups only.** DLs and Security Groups are treated as non-IB [[1]](#references).
+ enforcement up to 24 hours after activation.
+- **Groups: M365 Groups only.** DLs and Security Groups are treated as non-IB.
 - **Illustrative values.** Segment attributes, filters, and names are placeholders, set them to your
-  real directory data, validated by Compliance, before activating.
+ real directory data, validated by Compliance, before activating.
 
 ## 12. References
 

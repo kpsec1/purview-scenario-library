@@ -55,10 +55,10 @@ the server-level login check too) - a full `[FAIL]` sweep confirms complete roll
 ## What rollback does **not** undo
 
 - **Any Data Map assets or classifications already ingested** by the parent scenario's scan while this
-  scenario's grants were in place. Revoking read access here doesn't retroactively un-classify anything
-  already in the catalog - same behavior as the parent scenario's own rollback.
+ scenario's grants were in place. Revoking read access here doesn't retroactively un-classify anything
+ already in the catalog - same behavior as the parent scenario's own rollback.
 - **The operator identity's own Synapse Administrator role assignment** - this scenario never creates
-  that (a documented prerequisite, `README.md` §3), so rollback doesn't touch it either. Revoke it
-  separately via Azure Synapse's own RBAC management if a full teardown of the operator identity itself
-  is intended.
+ that (a documented prerequisite, `README.md` §3), so rollback doesn't touch it either. Revoke it
+ separately via Azure Synapse's own RBAC management if a full teardown of the operator identity itself
+ is intended.
 - **The workspace firewall setting** - unchanged by this scenario in either direction.

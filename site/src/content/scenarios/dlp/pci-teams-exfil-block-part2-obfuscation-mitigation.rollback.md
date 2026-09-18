@@ -42,17 +42,17 @@ documented in `README.md` §8).
 ## What rollback does **not** undo
 
 - **Part 1's own three rules, the parent policy, or `dynamic-risk-dlp-enforcement`'s separate
-  policy.** All untouched by either rollback stage here.
+ policy.** All untouched by either rollback stage here.
 - **The feeder Insider Risk Management policy, the Communication Compliance indicator, or
-  Adaptive Protection's scope configuration.** All portal-only prerequisites this fragment's
-  scripts never created, rolling back the DLP rule has no effect on them. To fully decommission
-  this fragment, also disable/delete the feeder IRM policy and remove it from Adaptive
-  Protection's scope via the portal (see `README.md` §5, Steps 2-4, in reverse).
+ Adaptive Protection's scope configuration.** All portal-only prerequisites this fragment's
+ scripts never created, rolling back the DLP rule has no effect on them. To fully decommission
+ this fragment, also disable/delete the feeder IRM policy and remove it from Adaptive
+ Protection's scope via the portal (see `README.md` §5, Steps 2-4, in reverse).
 - **Audit log / alert history.** Retained per the same retention windows Part 1's `rollback.md`
-  already documents, regardless of this rule's state.
+ already documents, regardless of this rule's state.
 - **A user's current insider risk level.** Computed by Adaptive Protection independently of this
-  rule's existence, removing the rule does not reset anyone's Elevated/Moderate/Minor
-  assignment.
+ rule's existence, removing the rule does not reset anyone's Elevated/Moderate/Minor
+ assignment.
 
 ## Verification after rollback
 

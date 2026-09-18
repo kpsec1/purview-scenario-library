@@ -11,15 +11,15 @@ covers (a review set/export, or a purge). Each is staged separately below.
 ### Stage 1, Fulfillment rollback (if a hand-off script already ran)
 
 - **Access/Portability** (review set/export): follow
-  `premium-legal-hold-and-export/rollback.md` unchanged, the review set and export package are its
-  objects, created under this scenario's case/search but governed by that scenario's own rollback
-  guidance.
+ `premium-legal-hold-and-export/rollback.md` unchanged, the review set and export package are its
+ objects, created under this scenario's case/search but governed by that scenario's own rollback
+ guidance.
 - **Erasure** (purge): follow `search-and-purge-data-spillage/rollback.md` unchanged. **A
-  `PermanentlyDelete` purge cannot be undone**, see that document's own warning; this applies
-  identically to a DSR erasure request.
+ `PermanentlyDelete` purge cannot be undone**, see that document's own warning; this applies
+ identically to a DSR erasure request.
 - **Rectification/Restriction/Objection**: no Purview-side rollback exists, since no Purview-side
-  fulfillment action was taken (`design.md` §6). Any correction was made directly in the system of
-  record and is that system's own rollback concern.
+ fulfillment action was taken (`design.md` §6). Any correction was made directly in the system of
+ record and is that system's own rollback concern.
 
 ### Stage 2, Remove the custodian userSource / custodian (rarely needed)
 
@@ -69,9 +69,9 @@ the script, and note the correction in your own change log, this scenario's scri
 
 - **Reverse a completed Erasure (purge).** See `search-and-purge-data-spillage/rollback.md`.
 - **Undo a correction made outside Purview** for a Rectification request, that's the system of
-  record's own history/versioning, not this scenario's.
+ record's own history/versioning, not this scenario's.
 - **Retract an export package already delivered to the data subject** for an Access/Portability
-  request, once delivered, it's out of this scenario's (and Microsoft's) control.
+ request, once delivered, it's out of this scenario's (and Microsoft's) control.
 - **Tell you whether closing or deleting a given case is the right call.** That's a records-
-  retention/accountability decision for the organization, informed by §9 of `README.md` and Stage 3
-  above, not something this scenario's scripts can decide for you.
+ retention/accountability decision for the organization, informed by §9 of `README.md` and Stage 3
+ above, not something this scenario's scripts can decide for you.

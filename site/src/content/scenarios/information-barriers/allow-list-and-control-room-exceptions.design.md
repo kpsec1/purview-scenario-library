@@ -15,20 +15,20 @@ membership over time.
 ## 2. Design goals
 
 1. **Additive, not destructive.** Never touch the `Trading`/`Research` segments or their Block
-   policies, this scenario only adds new segments/policies alongside them.
+ policies, this scenario only adds new segments/policies alongside them.
 2. **Model the general pattern, not just one example.** The sample config carries two allow-list
-   shapes, a "sees both sides" control-room exception and a narrower, one-sided asymmetric
-   allow-list, so the deploy script demonstrably generalizes rather than special-casing one segment.
+ shapes, a "sees both sides" control-room exception and a narrower, one-sided asymmetric
+ allow-list, so the deploy script demonstrably generalizes rather than special-casing one segment.
 3. **Safe by default.** Create/reconcile everything **Inactive**; enforcement is a separate, explicit
-   `-Activate` gated behind `-DryRun` review.
+ `-Activate` gated behind `-DryRun` review.
 4. **Honest about editing a live policy.** Changing an Allow policy's membership on an **Active**
-   policy requires deactivating it first (Microsoft's own documented edit workflow); the script does
-   this automatically and makes the reactivation requirement explicit rather than silently leaving a
-   stale allow-list enforced.
+ policy requires deactivating it first (Microsoft's own documented edit workflow); the script does
+ this automatically and makes the reactivation requirement explicit rather than silently leaving a
+ stale allow-list enforced.
 5. **Idempotent create-or-reconcile.** Segments are create-or-report (as in the base scenario); allow
-   policies additionally support **reconciliation**, if the live `SegmentsAllowed` set drifts from
-   config, the script corrects it, because an allow-list's membership is expected to change over
-   time (a new compliance analyst joins the control room) in a way a static ethical wall is not.
+ policies additionally support **reconciliation**, if the live `SegmentsAllowed` set drifts from
+ config, the script corrects it, because an allow-list's membership is expected to change over
+ time (a new compliance analyst joins the control room) in a way a static ethical wall is not.
 
 ## 3. Why allow-list (not just "no policy") for the exception segment
 
@@ -39,17 +39,17 @@ instead, for three reasons documented in Microsoft's own IB guidance and this re
 posture:
 
 - **Explicit allow-list is examinable.** "No policy" is invisible in `Get-InformationBarrierPolicy`
-  output, an examiner or internal audit has nothing to point at. An Allow policy is a named,
-  reviewable object stating exactly which two segments the control room may reach.
+ output, an examiner or internal audit has nothing to point at. An Allow policy is a named,
+ reviewable object stating exactly which two segments the control room may reach.
 - **Default-deny for the exception segment itself.** An Allow-type policy makes its **assigned**
-  segment default-deny to everything *except* what's listed, so if the control room should reach
-  only Trading and Research (not, say, a future `Investment-Banking-Advisory` segment), the allow
-  policy enforces that boundary too, rather than leaving the control room's own scope implicitly open
-  to every future segment.
+ segment default-deny to everything *except* what's listed, so if the control room should reach
+ only Trading and Research (not, say, a future `Investment-Banking-Advisory` segment), the allow
+ policy enforces that boundary too, rather than leaving the control room's own scope implicitly open
+ to every future segment.
 - **Matches Microsoft's own worked pattern.** The "Get started with Information Barriers" walkthrough
-  describes exactly this shape, a third segment (their example: HR) that stays "compatible" with two
-  segments a Block policy keeps apart from each other [[1]](README.md#12-references). This scenario's
-  `ComplianceControlRoom` plays that same role for `Trading`/`Research`.
+ describes exactly this shape, a third segment (their example: HR) that stays "compatible" with two
+ segments a Block policy keeps apart from each other. This scenario's
+ `ComplianceControlRoom` plays that same role for `Trading`/`Research`.
 
 ## 4. Object model and sequence
 
@@ -97,20 +97,20 @@ sequenceDiagram
 ## 6. Non-goals
 
 - **MultiSegment mode / multi-segment membership.** Letting a single user sit in more than one
-  segment (e.g. a person who is genuinely both "Trading" and "ComplianceControlRoom") requires
-  tenant-wide MultiSegment mode, which in turn requires **every** IB policy in the tenant to be
-  Allow-type, incompatible with the existing Block-type wall unless it's also rebuilt as Allow
-  policies. Out of scope; flagged as a real migration path in `README.md` §11, not scripted here.
+ segment (e.g. a person who is genuinely both "Trading" and "ComplianceControlRoom") requires
+ tenant-wide MultiSegment mode, which in turn requires **every** IB policy in the tenant to be
+ Allow-type, incompatible with the existing Block-type wall unless it's also rebuilt as Allow
+ policies. Out of scope; flagged as a real migration path in `README.md` §11, not scripted here.
 - **Rebuilding the wall as Allow-only policies.** An alternative design converts `Trading`/`Research`
-  themselves to Allow policies (each allowed to talk only to everyone except the other side) to enable
-  MultiSegment mode later. Not attempted, it would mean rewriting a scenario this one is a companion
-  to, not an extension of it.
+ themselves to Allow policies (each allowed to talk only to everyone except the other side) to enable
+ MultiSegment mode later. Not attempted, it would mean rewriting a scenario this one is a companion
+ to, not an extension of it.
 - **Automatic membership sourcing for the exception segments.** Like the base scenario, segment
-  membership comes from an Entra attribute (`Department`) set by whatever process manages org data;
-  this scenario doesn't build an HR-feed or attestation workflow for who belongs in
-  `ComplianceControlRoom` or `Legal`.
+ membership comes from an Entra attribute (`Department`) set by whatever process manages org data;
+ this scenario doesn't build an HR-feed or attestation workflow for who belongs in
+ `ComplianceControlRoom` or `Legal`.
 - **A three-or-more-way wall.** This models one wall (`Trading`/`Research`) plus exceptions; a
-  scenario with three or more mutually-walled sides is a different, larger topology.
+ scenario with three or more mutually-walled sides is a different, larger topology.
 - **Auditing who actually used the exception access.** Detecting/alerting when a
-  `ComplianceControlRoom` member reads Trading-side content is a Blue Team/DLP/Activity Explorer
-  concern, not an IB-policy concern, noted in `README.md` §8, not built here.
+ `ComplianceControlRoom` member reads Trading-side content is a Blue Team/DLP/Activity Explorer
+ concern, not an IB-policy concern, noted in `README.md` §8, not built here.

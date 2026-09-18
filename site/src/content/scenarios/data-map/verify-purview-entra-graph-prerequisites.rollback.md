@@ -31,7 +31,7 @@ permissions** → remove, then re-confirm admin consent is also revoked). If the
 holds `User.Read.All`/`Group.Read.All` solely for this scenario's best-effort drift-name resolution
 (`README.md` §3), remove those too. If the app registration was created solely for this scenario and
 isn't used elsewhere, consider deleting the app registration and its certificate/secret entirely, 
-check `docs/automation-surface.md` §3 first in case the same app registration is shared with another
+check [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) first in case the same app registration is shared with another
 scenario's script (e.g. the sibling `scan-azure-sql-managed-instance-and-classify` scenario's own
 automation identity, which is a *different* app registration with *Purview* roles, not Graph
 permissions, the two are never the same identity in this scenario's default design).
@@ -39,15 +39,15 @@ permissions, the two are never the same identity in this scenario's default desi
 ## What rollback does **not** undo
 
 - **Any Directory Readers grant or revocation this scenario's findings led a human to make.** This
-  scenario never performs the grant/revoke itself (`design.md` §10), only reports on current state.
-  Removing this scenario does not touch Directory Readers membership in any way.
+ scenario never performs the grant/revoke itself (`design.md` §10), only reports on current state.
+ Removing this scenario does not touch Directory Readers membership in any way.
 - **The sibling scenario's own deployment.** `scan-azure-sql-managed-instance-and-classify`'s
-  rollback is entirely independent (its own `rollback.md`), removing this scenario only removes the
-  *monitoring* of its Entra prerequisite, not the scan/data-source objects themselves, and re-opens
-  the blind spot this scenario's `design.md` §1 describes if that sibling scenario stays deployed
-  without this one.
+ rollback is entirely independent (its own `rollback.md`), removing this scenario only removes the
+ *monitoring* of its Entra prerequisite, not the scan/data-source objects themselves, and re-opens
+ the blind spot this scenario's `design.md` §1 describes if that sibling scenario stays deployed
+ without this one.
 - **Report files already generated.** Same as any other point-in-time evidence, deleting this
-  scenario's schedule does not retroactively delete or invalidate reports already written to disk.
+ scenario's schedule does not retroactively delete or invalidate reports already written to disk.
 
 ## Verification after rollback
 

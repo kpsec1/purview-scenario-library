@@ -7,10 +7,10 @@ parent: "data-lifecycle-management/priority-cleanup-exchange-data-spillage"
 Priority cleanup is designed to permanently delete content, overriding retention policies,
 litigation holds, eDiscovery holds, and Preservation Lock (delete-only). Once every required
 approval for an item is complete, it is deleted, Microsoft states explicitly that deleted items
-"cannot be restored by users, by admins, or by Microsoft" [[1]](#references). **Rollback here can
+"cannot be restored by users, by admins, or by Microsoft". **Rollback here can
 disable or delete the policy going forward; it cannot undo a deletion that already happened**, and
 Microsoft also warns that disabling/deleting the policy does not reliably stop an **in-flight**
-approval that has already gathered all required sign-offs from completing [[2]](#references). If you
+approval that has already gathered all required sign-offs from completing. If you
 deployed against the wrong mailboxes or an over-broad query, act immediately (Stage 1 below) and, if
 anything is still pending, get every remaining approver to **decline** (Relabel) it in the portal
 before assuming disabling the policy is sufficient.
@@ -45,7 +45,7 @@ happened and cannot be recalled). Reversible: re-run the deploy script to re-ena
 
 Removes the policy (and its rule). Per Microsoft's own limitation notice, **items already through
 the approval process may still be permanently deleted even after the policy is deleted**
-[[2]](#references), this is not a bug in the script, it's documented platform behavior.
+, this is not a bug in the script, it's documented platform behavior.
 
 ### Stage 3, Remove the label (optional)
 
@@ -58,12 +58,12 @@ Attempts `Remove-ComplianceTag`. Reports rather than forces if the service refus
 ## What rollback does **not** undo
 
 - **Any item already permanently deleted by a completed approval.** No admin action, and no action by
-  Microsoft, can restore it.
+ Microsoft, can restore it.
 - **An in-flight approval that completes after you disable/delete the policy.** Use Stage 0 first if
-  anything must not be deleted.
+ anything must not be deleted.
 - **The audit trail.** `PriorityCleanupTagApplied`/`PriorityCleanupDelete` events remain in the audit
-  log regardless of policy state, this is a feature (evidentiary record of what happened and when),
-  not something to try to undo.
+ log regardless of policy state, this is a feature (evidentiary record of what happened and when),
+ not something to try to undo.
 
 ## Verification after rollback
 

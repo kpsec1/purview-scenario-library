@@ -41,7 +41,7 @@ dropped. This fragment makes that translation a single auditable script run inst
 
 ## 3. Prerequisites
 
-Full licensing and role detail: `docs/licensing-matrix.md` and `docs/rbac-model.md`. This
+Full licensing and role detail: [Licensing matrix](/docs/licensing-matrix/) and [RBAC model](/docs/rbac-model/). This
 scenario's requirements are the union of its two inputs' own prerequisites, it introduces no new
 licensing or role beyond what building the roster and the hold definition already require.
 
@@ -52,7 +52,7 @@ licensing or role beyond what building the roster and the hold definition alread
 | eDiscovery Premium licensing + eDiscovery Manager/Administrator RBAC | Only for the optional `-AddToHold` path | Identical requirement to both sibling scenarios' own `-AddToHold`/deploy paths, see `location-scoped-legal-hold/README.md` §3 |
 | Microsoft Graph app-only auth (surface 3) | Only for `-AddToHold` | Same shape as both sibling scenarios: `-AppId`/`-TenantId`/`-CertificateThumbprint` or `-Certificate` |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms before
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) and the Product Terms before
 > a sales commitment, SKU names change.
 
 ## 4. Architecture
@@ -93,7 +93,7 @@ dot-sourced per this repo's self-contained-deploy-tree convention (`design.md` �
 
 There is no dedicated portal equivalent for this specific hand-off, the portal's own **Create a
 hold** → **Manage data sources** flow lets an operator add an individual custodian's mailbox
-directly by typing their name/address [[1]](#references), which is exactly what this script
+directly by typing their name/address, which is exactly what this script
 automates from a roster + selection file instead of manual entry. Use the portal path for a single
 one-off addition; use this script when the addition needs to be reproducible, auditable (the
 `-SelectionPath` `reason` field), or applied consistently across more than one matter.
@@ -164,33 +164,33 @@ Connect-ExchangeOnline -AppId $AppId -CertificateThumbprint $Thumbprint -Organiz
 | Merged definition file | `Merge-RosterIntoHoldDefinition.ps1` (Stage 1, always) | Same shape as `location-scoped-legal-hold/deploy/policy/location-hold-definition.json`, with new `userSources[]` entries appended: `{ "email": "...", "note": "Individual member of '<Group>' (<Name>) added via roster-to-hold-locations/deploy/Merge-RosterIntoHoldDefinition.ps1. Reason: <reason>" }` |
 
 Graph endpoint used by `-AddToHold` (identical to both sibling scenarios' own, full grounding
-there): `POST .../legalHolds/{id}/userSources` [[2]](#references).
+there): `POST.../legalHolds/{id}/userSources`.
 
 ## 7. Validation / how to prove it works
 
 1. **Automated check**, `./validate/Test-RosterHoldDefinitionMerge.ps1` confirms every selected
-   email still traces to a roster row, appears exactly once in the merged definition file with a
-   non-empty audit-trail note, and, with `-CaseId`/`-HoldId`, is present and `applied` on the
-   named hold policy. Exits non-zero on any hard failure.
+ email still traces to a roster row, appears exactly once in the merged definition file with a
+ non-empty audit-trail note, and, with `-CaseId`/`-HoldId`, is present and `applied` on the
+ named hold policy. Exits non-zero on any hard failure.
 2. **Functional proof (portal)**, after `-AddToHold`, open the case's **Hold policies** tab and
-   confirm each newly added individual's mailbox appears as a location with no errors, the same
-   proof both sibling scenarios' own §7 describe [[3]](#references).
+ confirm each newly added individual's mailbox appears as a location with no errors, the same
+ proof both sibling scenarios' own §7 describe.
 3. **Audit-trail sanity check**, open the merged definition file directly and confirm each new
-   entry's `note` field names the correct source group and reflects the selection file's `reason`, 
-   this is the artifact a compliance reviewer or outside counsel would actually read to confirm
-   *why* a given mailbox was individually preserved.
+ entry's `note` field names the correct source group and reflects the selection file's `reason`, 
+ this is the artifact a compliance reviewer or outside counsel would actually read to confirm
+ *why* a given mailbox was individually preserved.
 
 ## 8. Operations & tuning
 
 **KPIs to watch:**
 - **A roster/selection pair that has drifted apart**, if `-RosterPath` is re-generated (a group's
-  membership changed) after a `-SelectionPath` was authored against an older roster, re-run
-  `validate/Test-RosterHoldDefinitionMerge.ps1`'s traceability check before re-running the merge;
-  a selected email that no longer appears in a refreshed roster is a signal to confirm with counsel
-  whether that person is still relevant, not to silently drop or silently keep them.
+ membership changed) after a `-SelectionPath` was authored against an older roster, re-run
+ `validate/Test-RosterHoldDefinitionMerge.ps1`'s traceability check before re-running the merge;
+ a selected email that no longer appears in a refreshed roster is a signal to confirm with counsel
+ whether that person is still relevant, not to silently drop or silently keep them.
 - **An `-InPlace` run's `.bak-*` files accumulating**, these are plain local backups with no
-  automatic cleanup; prune them like any other local working file once a matter's holds are
-  confirmed stable.
+ automatic cleanup; prune them like any other local working file once a matter's holds are
+ confirmed stable.
 
 **Review cadence:** re-run `validate/Test-RosterHoldDefinitionMerge.ps1` on the same cadence as
 `location-scoped-legal-hold`'s own hold-status checks (at least weekly for the life of the matter),
@@ -218,26 +218,26 @@ Graph calls are the same no-PAYG/metered-cost reads/writes both sibling scenario
 ## 11. Known limitations & gotchas
 
 - **This script never decides who to select, and never re-validates current membership.** See
-  `design.md` §2 and §6. A stale roster or a mistaken selection is a human-process risk this script
-  cannot detect on its own; its only defense is the hard-error check that every selected email
-  traces to *some* roster row (`design.md` §4), not that the roster itself is current.
+ `design.md` §2 and §6. A stale roster or a mistaken selection is a human-process risk this script
+ cannot detect on its own; its only defense is the hard-error check that every selected email
+ traces to *some* roster row (`design.md` §4), not that the roster itself is current.
 - **`-InPlace`'s `.bak-*` backup is local-only.** It protects against this script's own overwrite
-  mistake, not against the original tracked file being lost some other way (a bad `git` operation,
-  a wiped working directory). Prefer the default `-OutputPath` behavior (never touches
-  `-DefinitionPath`) unless there's a specific reason to overwrite in place.
+ mistake, not against the original tracked file being lost some other way (a bad `git` operation,
+ a wiped working directory). Prefer the default `-OutputPath` behavior (never touches
+ `-DefinitionPath`) unless there's a specific reason to overwrite in place.
 - **Only adds `userSources[]` (mailboxes), never `siteSources[]` or OneDrive.** See `design.md`
-  §6. A matter that also needs an individually named person's OneDrive preserved needs a different,
-  not-yet-built mechanism (OneDrive is a distinct Purview eDiscovery location type from both
-  `userSource` and `siteSource`).
+ §6. A matter that also needs an individually named person's OneDrive preserved needs a different,
+ not-yet-built mechanism (OneDrive is a distinct Purview eDiscovery location type from both
+ `userSource` and `siteSource`).
 - **Does not create or modify the hold policy or case itself.** `-AddToHold` requires an existing
-  `-CaseId`/`-HoldId` from `location-scoped-legal-hold/deploy/New-EdiscoveryLocationHold.ps1` (or
-  the portal); this scenario is purely the roster-to-definition-file translation step, optionally
-  followed by reconciliation onto an already-existing hold.
+ `-CaseId`/`-HoldId` from `location-scoped-legal-hold/deploy/New-EdiscoveryLocationHold.ps1` (or
+ the portal); this scenario is purely the roster-to-definition-file translation step, optionally
+ followed by reconciliation onto an already-existing hold.
 - **Inherits both sibling scenarios' own open VERIFYs unchanged**, the 100-vs->1,000-member
-  group-expansion-cap discrepancy (relevant only to how large a roster this scenario might be asked
-  to select from) and the `siteSource` title-matching weak point (not applicable here, since this
-  scenario never touches `siteSources[]`), see `location-scoped-legal-hold/README.md` §11 and
-  `teams-group-hold-resolution/README.md` §11 for the full analysis; not re-derived here.
+ group-expansion-cap discrepancy (relevant only to how large a roster this scenario might be asked
+ to select from) and the `siteSource` title-matching weak point (not applicable here, since this
+ scenario never touches `siteSources[]`), see `location-scoped-legal-hold/README.md` §11 and
+ `teams-group-hold-resolution/README.md` §11 for the full analysis; not re-derived here.
 
 ## 12. References
 

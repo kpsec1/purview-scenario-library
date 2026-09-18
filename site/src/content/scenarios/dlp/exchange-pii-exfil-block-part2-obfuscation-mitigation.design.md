@@ -43,11 +43,11 @@ matches are **not** a supported workload for the "High Severity DLP Alert" indic
 Insider Risk Management, forcing that fragment to route through a Communication Compliance SIT
 indicator as a workaround. **That constraint does not apply here.** Microsoft's own reference is
 explicit that the DLP-alerts indicator's supported workloads are Exchange Online, SharePoint
-Online, and OneDrive for Business [[1]](#references), Exchange Online by name. The Insider Risk
+Online, and OneDrive for Business, Exchange Online by name. The Insider Risk
 Management policy-templates reference independently confirms the **Data leaks** template's
 triggering-event option: *"Data leak policy activity that creates a High severity alert... DLP
 policy configured for High severity alerts (Exchange Online, SharePoint Online, or OneDrive for
-Business workloads only)"* [[2]](#references).
+Business workloads only)"*.
 
 This means the feeder IRM policy for this fragment can point **directly** at the parent scenario's
 own `PII DLP - Exchange External Send Control` policy as its triggering event, no Communication
@@ -109,34 +109,34 @@ finding, it inherits it and applies it to a new, more narrowly-scoped rule.
 ## 6a. Triggering event choice: "User matches a DLP policy," not "User performs an exfiltration activity"
 
 Both triggering-event options are available on the **Data leaks** template's policy workflow
-[[3]](#references), and both would technically work here since Exchange is a supported DLP-alerts
+, and both would technically work here since Exchange is a supported DLP-alerts
 workload (§3). This fragment deliberately uses the direct DLP-policy-match trigger rather than the
 built-in-exfiltration-indicators trigger the Teams sibling fragment had to use, for three reasons:
 
 1. **Precision.** The DLP-policy trigger fires specifically off the parent scenario's own
-   `PII-Exchange-Protect-External`/`PII-Exchange-Override-External` High-severity rule matches, 
-   exactly the SSN/Credit Card Number exfiltration attempts this fragment exists to compensate for.
-   The exfiltration-activity trigger is broader (any built-in Office exfiltration indicator,
-   independent of whether the content matched a SIT at all), which is the *only* option available
-   for the Teams sibling but is a strictly less-targeted choice here where a better option exists.
+ `PII-Exchange-Protect-External`/`PII-Exchange-Override-External` High-severity rule matches, 
+ exactly the SSN/Credit Card Number exfiltration attempts this fragment exists to compensate for.
+ The exfiltration-activity trigger is broader (any built-in Office exfiltration indicator,
+ independent of whether the content matched a SIT at all), which is the *only* option available
+ for the Teams sibling but is a strictly less-targeted choice here where a better option exists.
 2. **One fewer configuration surface to drift.** The DLP-policy trigger reads the parent policy's
-   existing `ReportSeverityLevel` settings directly, no separate SIT list to keep in sync with the
-   parent scenario's own SIT choices if a buyer later adds a third SIT to that policy.
+ existing `ReportSeverityLevel` settings directly, no separate SIT list to keep in sync with the
+ parent scenario's own SIT choices if a buyer later adds a third SIT to that policy.
 3. **Consistency with Microsoft's own stated guidance for the Data leaks template**, whose
-   documented purpose is explicitly built around a DLP policy as the triggering event
-   [[2]](#references), this fragment uses the template as designed rather than falling back to the
-   generic exfiltration-activity path only because a workload gap forces it elsewhere (as the Teams
-   sibling must).
+ documented purpose is explicitly built around a DLP policy as the triggering event
+, this fragment uses the template as designed rather than falling back to the
+ generic exfiltration-activity path only because a workload gap forces it elsewhere (as the Teams
+ sibling must).
 
 **Guideline this fragment's manifest deliberately surfaces** (§ manifest,
 `parentDlpPolicyPrerequisite`): Microsoft's own Data leaks policy guidance cautions against
 over-assigning High severity broadly, since it directly gates this triggering event
-[[2]](#references), the parent scenario's default of High severity only on its two
+, the parent scenario's default of High severity only on its two
 external-recipient rules (not the Low-severity internal-audit rule) is already the correct,
 minimal-noise configuration; this fragment requires no change to it.
 
 **Scaling note:** a Data leaks-template IRM policy can have up to 20 DLP policies assigned as a
-triggering event [[2]](#references). This fragment uses exactly one (the parent Exchange policy),
+triggering event. This fragment uses exactly one (the parent Exchange policy),
 well within that limit, noted here only so a future buyer who wants one feeder IRM policy to
 watch several DLP policies (e.g., this fragment's parent policy plus a future SharePoint/OneDrive
 PII policy) knows the ceiling exists, not because this fragment is anywhere near it.
@@ -159,37 +159,37 @@ Teams-side composition.
 ## 7. Non-goals
 
 - **Does not reconstruct or correlate literal message content across messages.** No Microsoft
-  capability does this; this fragment closes the channel *after* a behavioral signal, not by
-  detecting the split content itself. Documented as an explicit residual risk in `README.md` §11,
-  not fixed.
+ capability does this; this fragment closes the channel *after* a behavioral signal, not by
+ detecting the split content itself. Documented as an explicit residual risk in `README.md` §11,
+ not fixed.
 - **Does not modify or duplicate `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s
-  own DLP policy, or either of `scenarios/dlp/exchange-pii-exfil-block`'s own three rules, or
-  `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion`'s rule.** All keep
-  operating independently and unchanged (other than the priority-compaction shift this fragment's
-  deploy script applies to make room at priority 0); this fragment adds a *separate* rule to the
-  parent scenario's *own* named policy so the control's behavior (rule name, alert routing,
-  exception-group interaction) stays self-contained and auditable as one control, rather than
-  splitting evidence across two differently-owned policies.
+ own DLP policy, or either of `scenarios/dlp/exchange-pii-exfil-block`'s own three rules, or
+ `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion`'s rule.** All keep
+ operating independently and unchanged (other than the priority-compaction shift this fragment's
+ deploy script applies to make room at priority 0); this fragment adds a *separate* rule to the
+ parent scenario's *own* named policy so the control's behavior (rule name, alert routing,
+ exception-group interaction) stays self-contained and auditable as one control, rather than
+ splitting evidence across two differently-owned policies.
 - **Does not create or modify any Communication Compliance policy.** Unlike the Teams sibling
-  fragment, this fragment needs none, see §3.
+ fragment, this fragment needs none, see §3.
 - **Does not configure Endpoint DLP, Teams DLP, USB/print restrictions, or personal-cloud-upload
-  controls.** An Elevated-risk user blocked from external Exchange sharing by this fragment can
-  still exfiltrate via other channels Adaptive Protection's Devices policy or the Teams sibling
-  fragment would cover, same already-documented gap `dynamic-risk-dlp-enforcement/README.md` §11
-  names, not re-litigated here.
+ controls.** An Elevated-risk user blocked from external Exchange sharing by this fragment can
+ still exfiltrate via other channels Adaptive Protection's Devices policy or the Teams sibling
+ fragment would cover, same already-documented gap `dynamic-risk-dlp-enforcement/README.md` §11
+ names, not re-litigated here.
 - **Does not attempt to lower the up-to-36-hour Adaptive Protection propagation delay, or the IRM
-  cumulative-exfiltration-detection daily evaluation cadence** (§8, `README.md`), both are backend
-  processing characteristics of the Purview service, not properties this fragment's code can
-  script around.
+ cumulative-exfiltration-detection daily evaluation cadence** (§8, `README.md`), both are backend
+ processing characteristics of the Purview service, not properties this fragment's code can
+ script around.
 
 ## 8. References
 
 Full citation list with URLs is in `README.md` §12. Numbered references above:
 [1] Configure policy indicators in Insider Risk Management, Data loss prevention alerts
-    indicators, supported DLP workloads (Exchange Online, SharePoint Online, OneDrive for
-    Business).
+ indicators, supported DLP workloads (Exchange Online, SharePoint Online, OneDrive for
+ Business).
 [2] Learn about Insider Risk Management policy templates, Data leaks template's DLP-policy
-    triggering event and configuration guidelines.
+ triggering event and configuration guidelines.
 [3] Get started with Insider Risk Management, Step 6, Triggers for this policy page (the "User
-    matches a data loss prevention (DLP) policy" vs. "User performs an exfiltration activity"
-    triggering-event choice).
+ matches a data loss prevention (DLP) policy" vs. "User performs an exfiltration activity"
+ triggering-event choice).

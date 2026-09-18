@@ -39,11 +39,11 @@ years **after the contract expires**", "retain employee records for 10 years **a
 "retain product specs until **end-of-life** plus 5 years". You cannot express these with a
 creation/modification-age clock, the start date isn't known when the content is created. Microsoft
 Purview **event-based retention** models exactly this: a label listens for an **event type**, and when a
-dated **event** is created the retention period begins for the matching content [[1]](#references).
+dated **event** is created the retention period begins for the matching content.
 
 Because these records are usually **declared records** and their disposal has legal weight, best
 practice is to end retention with a **disposition review**, a records manager (or a multi-stage panel)
-**reviews and approves** disposal, and the system keeps **proof of disposition** [[2]](#references).
+**reviews and approves** disposal, and the system keeps **proof of disposition**.
 That reviewed, evidenced disposal is what regulators and auditors ask to see. **DoD 5015.02**,
 **SEC 17a-4 / FINRA 4511** (records schedules), **GDPR/CCPA** storage-limitation, and internal records
 schedules all point at this lifecycle. Managing it as code makes the schedule reproducible and the
@@ -57,19 +57,19 @@ disposition defensible.
 
 ## 3. Prerequisites
 
-Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. Automation surface:
-`docs/automation-surface.md` (surface 1, Security & Compliance PowerShell). Summary:
+Full licensing detail: [Licensing matrix](/docs/licensing-matrix/). RBAC: [RBAC model](/docs/rbac-model/). Automation surface:
+[Automation surface](/docs/automation-surface/) (surface 1, Security & Compliance PowerShell). Summary:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Licensing | **Records management** (record labels, event-based retention, disposition review): **M365 E5 / E5 Compliance / Purview Suite** | Event-based retention + disposition are E5 records-management capabilities [[7]](#references) |
-| Role (config) | **Records Management** or **Retention Management** role group | To create event types, labels, policies, rules, `docs/rbac-model.md` |
-| Role (disposition) | **Disposition Management** role (in the Records Management role group; **not** granted to global admins by default) | Reviewers need this to see and act on disposition items [[2]](#references) |
-| Reviewers | Individual **users** or **mail-enabled security groups** (not Microsoft 365 Groups) | Up to 10 reviewers/stage, up to 5 stages [[2]](#references) |
-| Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell, `docs/automation-surface.md` §3 |
+| Licensing | **Records management** (record labels, event-based retention, disposition review): **M365 E5 / E5 Compliance / Purview Suite** | Event-based retention + disposition are E5 records-management capabilities |
+| Role (config) | **Records Management** or **Retention Management** role group | To create event types, labels, policies, rules, [RBAC model](/docs/rbac-model/) |
+| Role (disposition) | **Disposition Management** role (in the Records Management role group; **not** granted to global admins by default) | Reviewers need this to see and act on disposition items |
+| Reviewers | Individual **users** or **mail-enabled security groups** (not Microsoft 365 Groups) | Up to 10 reviewers/stage, up to 5 stages |
+| Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell, [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
 | Target locations | SharePoint site(s) / mailboxes / OneDrive | Publish policy needs ≥1 location |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) before a sales
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) (dated 2026-09-02) before a sales
 > commitment, SKU names change.
 
 ## 4. Architecture
@@ -131,51 +131,51 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 ### Portal reference
 
 Event types and events live in the [Microsoft Purview portal](https://purview.microsoft.com) under
-**Records Management → Events** (**Manage event types** / **+ Create** event) [[1]](#references); labels
+**Records Management → Events** (**Manage event types** / **+ Create** event); labels
 and label policies under **Records Management → File plan / Label policies**; pending disposals under
-**Records Management → Disposition** [[2]](#references). Events can also be automated via the Microsoft
-Graph records-management APIs (the older REST event API is deprecated) [[6]](#references). `-WhatIf` is
+**Records Management → Disposition**. Events can also be automated via the Microsoft
+Graph records-management APIs (the older REST event API is deprecated). `-WhatIf` is
 non-functional in S&C PowerShell, so the scripts ship a `-DryRun`.
 
 ## 6. Configuration reference
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Event-type cmdlet | `New-ComplianceRetentionEventType` | Creates the event type [[5]](#references) |
-| Label cmdlet | `New-ComplianceTag` | Record label [[4]](#references) |
+| Event-type cmdlet | `New-ComplianceRetentionEventType` | Creates the event type |
+| Label cmdlet | `New-ComplianceTag` | Record label |
 | `RetentionAction` | `KeepAndDelete` | Retain, then dispose (review-gated) |
 | `RetentionType` | `EventAgeInDays` | Clock starts on the event, not content age |
-| `EventType` | the event-type name | Binds the label to the event type; **can't be changed after save** [[1]](#references) |
+| `EventType` | the event-type name | Binds the label to the event type; **can't be changed after save** |
 | `RetentionDuration` | `2555` (≈7 years) | Days after the event |
 | `IsRecordLabel` | `$true` | Declares content a record (lockable) |
-| `ReviewerEmail` | records-manager address(es) | Enables **disposition review**; users or mail-enabled security groups [[2]](#references) |
-| `AutoApprovalPeriod` | optional | Auto-approve if no reviewer acts within N days (7-365) [[4]](#references) |
-| Publish cmdlets | `New-RetentionCompliancePolicy` + `New-RetentionComplianceRule -PublishComplianceTag` | Publish (not auto-apply) [[3]](#references) |
-| Event cmdlet | `New-ComplianceRetentionEvent` | `-EventDateTime`, `-SharePointAssetIdQuery`/`-ExchangeAssetIdQuery` to scope [[8]](#references) |
+| `ReviewerEmail` | records-manager address(es) | Enables **disposition review**; users or mail-enabled security groups |
+| `AutoApprovalPeriod` | optional | Auto-approve if no reviewer acts within N days (7-365) |
+| Publish cmdlets | `New-RetentionCompliancePolicy` + `New-RetentionComplianceRule -PublishComplianceTag` | Publish (not auto-apply) |
+| Event cmdlet | `New-ComplianceRetentionEvent` | `-EventDateTime`, `-SharePointAssetIdQuery`/`-ExchangeAssetIdQuery` to scope |
 
 Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
 
 ## 7. Validation / how to prove it works
 
 1. **Automated**, `./validate/Test-RecordsDisposition.ps1` confirms the event type exists; the label
-   exists as a record with `KeepAndDelete` / `EventAgeInDays`, is bound to the event type, and has a
-   disposition reviewer; the publish policy exists, is enabled, has ≥1 location; the rule publishes the
-   label; and reports any already-triggered events. Exits non-zero on failure.
+ exists as a record with `KeepAndDelete` / `EventAgeInDays`, is bound to the event type, and has a
+ disposition reviewer; the publish policy exists, is enabled, has ≥1 location; the rule publishes the
+ label; and reports any already-triggered events. Exits non-zero on failure.
 2. **Publish test**, apply the published label to a test item (or set it as a default library label);
-   confirm it appears (portal, or the item's compliance tag). Publishing can take up to **7 days**.
+ confirm it appears (portal, or the item's compliance tag). Publishing can take up to **7 days**.
 3. **Event / clock test (lab tenant)**, create a dated event (`-TriggerEvent`) scoped by asset ID, and
-   confirm the retention clock starts for matching labeled content (sync up to 7 days) [[1]](#references).
+ confirm the retention clock starts for matching labeled content (sync up to 7 days).
 4. **Disposition test (lab tenant)**, for a short test duration, let retention elapse and confirm a
-   **disposition item** appears in **Records Management → Disposition** for the reviewer, that approval
-   moves it toward deletion (**15 days** after approval), and that **proof of disposition** is retained
-   [[2]](#references).
+ **disposition item** appears in **Records Management → Disposition** for the reviewer, that approval
+ moves it toward deletion (**15 days** after approval), and that **proof of disposition** is retained
+.
 5. **Idempotency proof**, re-run the deploy; every object reports `exists` (not `created`); nothing is
-   duplicated or silently mutated; no event is created without `-TriggerEvent` + `event.create`.
+ duplicated or silently mutated; no event is created without `-TriggerEvent` + `event.create`.
 6. **Evidence export for an auditor/examiner**, 
-   `scenarios/records-management/disposition-proof-export/` documents the portal's own Filter+Export
-   `.csv` workflow for this evidence and adds a scriptable, schedulable rolling audit trail
-   (`Search-UnifiedAuditLog` against the disposition-review and record-deletion Operations) as a
-   companion to the manual per-label export above.
+ `scenarios/records-management/disposition-proof-export/` documents the portal's own Filter+Export
+ `.csv` workflow for this evidence and adds a scriptable, schedulable rolling audit trail
+ (`Search-UnifiedAuditLog` against the disposition-review and record-deletion Operations) as a
+ companion to the manual per-label export above.
 
 ## 8. Operations & tuning
 
@@ -183,7 +183,7 @@ Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
 backlog** (pending items awaiting review, the key records-management SLA); count of events triggered
 vs. expected; count of items disposed with proof. **Tuning:** scope each event **narrowly** with an
 asset-ID query, an event with no asset ID starts retention for **all** content carrying that
-event-type label, which is almost never intended [[1]](#references). Use `AutoApprovalPeriod` to stop a
+event-type label, which is almost never intended. Use `AutoApprovalPeriod` to stop a
 disposition backlog stalling disposal when reviewers are slow, but only where auto-approval is
 defensible for that record class. Multi-stage reviews (up to 5 stages, 10 reviewers each) model
 sign-off chains where one approver isn't enough.
@@ -203,39 +203,39 @@ rather than forces them.
 ## 10. Cost & licensing notes
 
 - **Per-user E5 entitlement**, no Azure consumption meter. Event-based retention, record labels, and
-  disposition review are **E5 / E5 Compliance / Purview Suite** records-management capabilities
-  [[7]](#references).
+ disposition review are **E5 / E5 Compliance / Purview Suite** records-management capabilities
+.
 - **Cost is licensing + storage + records-management labor.** Records held until an event (which may be
-  years away, or indefinite if the event never fires) accrue storage; and disposition **review** is
-  human effort, budget reviewer time, or use auto-approval where defensible.
+ years away, or indefinite if the event never fires) accrue storage; and disposition **review** is
+ human effort, budget reviewer time, or use auto-approval where defensible.
 - **The expensive mistake is a mis-scoped event.** An event without an asset-ID query starts retention
-  across everything carrying that event-type label, a broad, hard-to-unwind action (§11).
+ across everything carrying that event-type label, a broad, hard-to-unwind action (§11).
 
 ## 11. Known limitations & gotchas
 
 - **A triggered event can't be cancelled.** Deleting the event does **not** stop the retention it
-  started; there's no undo. The trigger is gated behind `-TriggerEvent` **and** `event.create=true`, and
-  the deploy without those flags starts **no** clock [[1]](#references).
+ started; there's no undo. The trigger is gated behind `-TriggerEvent` **and** `event.create=true`, and
+ the deploy without those flags starts **no** clock.
 - **An applied record label can't be deleted** and its retention can't be shortened, rollback reports
-  this rather than forcing it. Confirm you need a *record* label (lockable) vs. a standard retention
-  label before declaring records.
+ this rather than forcing it. Confirm you need a *record* label (lockable) vs. a standard retention
+ label before declaring records.
 - **The event type is immutable after the label is saved with it**, name/scope it deliberately.
 - **Event scope is dangerous by default.** An event with no `-SharePointAssetIdQuery` /
-  `-ExchangeAssetIdQuery` triggers retention for **all** content with that event-type label
-  [[1]](#references). The sample config ships an asset-ID query and `create=false`.
+ `-ExchangeAssetIdQuery` triggers retention for **all** content with that event-type label
+. The sample config ships an asset-ID query and `create=false`.
 - **`-WhatIf` is non-functional in S&C PowerShell**, the scripts ship a `-DryRun` instead.
 - **Latency.** Publishing a label and syncing a triggered event to content each take **up to 7 days**, 
-  don't mistake latency for failure.
+ don't mistake latency for failure.
 - **Disposition RBAC is separate.** The **Disposition Management** role isn't granted to global admins by
-  default; reviewers must hold it, or they won't see disposition items [[2]](#references). Reviewers are
-  users or mail-enabled security groups, not Microsoft 365 Groups.
+ default; reviewers must hold it, or they won't see disposition items. Reviewers are
+ users or mail-enabled security groups, not Microsoft 365 Groups.
 - **Idempotency is create-or-report, not create-or-update.** Records objects are high-consequence and are
-  never silently mutated, edit deliberately, with review.
+ never silently mutated, edit deliberately, with review.
 - **Events are now automated via Microsoft Graph** (records-management APIs); the earlier REST event API
-  is deprecated. PowerShell `New-ComplianceRetentionEvent` remains supported [[6]](#references).
+ is deprecated. PowerShell `New-ComplianceRetentionEvent` remains supported.
 - **Illustrative values.** The event-type name, 7-year duration, site URL, reviewer address, and
-  asset-ID query are placeholders, set them to your real records schedule, validated by Records/Legal,
-  before deploying.
+ asset-ID query are placeholders, set them to your real records schedule, validated by Records/Legal,
+ before deploying.
 
 ## 12. References
 

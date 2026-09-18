@@ -24,7 +24,7 @@ parent's USB allowlist exactly as before this fragment was ever deployed.
 
 **Important:** removing this coverage makes Apple/Portable/Bluetooth devices **unrestricted again,
 not denied**, per Microsoft's documented per-family enable model, a family whose `features.<name>
-.disable` flag isn't set to `false` "doesn't apply" at all [[1]](#references). A previously-covered
+.disable` flag isn't set to `false` "doesn't apply" at all. A previously-covered
 device is invisible to the policy after rollback, the same as it was before this fragment was ever
 deployed. Do not use this as an emergency "block everything" containment step; if the goal is
 emergency containment, narrow the approved-device allowlists (or, for Bluetooth, there is nothing
@@ -62,11 +62,11 @@ scenario where the parent is purged but Apple/Portable/Bluetooth coverage surviv
 ## What rollback does **not** undo
 
 - **Advanced Hunting / `DeviceEvents` history** for events these families already generated, 
-  retained per its own retention window regardless of policy state, same as the parent scenario.
+ retained per its own retention window regardless of policy state, same as the parent scenario.
 - **The parent policy's `removableMedia` coverage, assignment, or object identity**, Stage 1 of
-  this rollback is scoped exclusively to this fragment's own delta.
+ this rollback is scoped exclusively to this fragment's own delta.
 - **Device onboarding/Full Disk Access grant, or the approved-devices' physical inventory**, this
-  scenario does not manage either; they are dependencies, not deployed artifacts.
+ scenario does not manage either; they are dependencies, not deployed artifacts.
 
 ## Verification after rollback
 
@@ -89,5 +89,5 @@ $json.rules.name
 ## References
 
 1. Device Control for macOS (per-family `settings.features.<name>.disable` enable model, "if you
-   don't configure this value, it doesn't apply"), 
-   <https://learn.microsoft.com/defender-endpoint/mac-device-control-overview>
+ don't configure this value, it doesn't apply"), 
+ <https://learn.microsoft.com/defender-endpoint/mac-device-control-overview>

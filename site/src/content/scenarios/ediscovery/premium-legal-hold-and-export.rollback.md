@@ -69,24 +69,24 @@ this stage over Stage 3.
 ## What rollback does **not** undo
 
 - **Custodian mailbox/OneDrive content itself.** Releasing a hold removes *eDiscovery's*
-  preservation of that content, it does not delete anything, and it does not restore anything.
-  Whatever normal retention/deletion policy would otherwise apply to that mailbox or site (if
-  any) resumes governing it once the hold is gone.
+ preservation of that content, it does not delete anything, and it does not restore anything.
+ Whatever normal retention/deletion policy would otherwise apply to that mailbox or site (if
+ any) resumes governing it once the hold is gone.
 - **Downloaded export packages.** Files already downloaded via
-  `deploy/Get-EdiscoveryExportPackage.ps1` to local/pipeline storage are not touched by any stage
-  above, they are outside eDiscovery's control the moment they're downloaded, and their
-  retention/disposition (privileged production material, likely subject to its own legal-hold or
-  confidentiality obligations toward outside counsel) is the operator's responsibility, not this
-  scenario's.
+ `deploy/Get-EdiscoveryExportPackage.ps1` to local/pipeline storage are not touched by any stage
+ above, they are outside eDiscovery's control the moment they're downloaded, and their
+ retention/disposition (privileged production material, likely subject to its own legal-hold or
+ confidentiality obligations toward outside counsel) is the operator's responsibility, not this
+ scenario's.
 - **Review-set content in Microsoft-managed Azure Storage**, once a review set exists, is not
-  automatically deleted by releasing a custodian's hold or even closing the case, only by
-  explicitly deleting the review set (portal) or the case itself (Stage 4).
+ automatically deleted by releasing a custodian's hold or even closing the case, only by
+ explicitly deleting the review set (portal) or the case itself (Stage 4).
 - **Audit log entries.** Every case-close and case-delete action, and every hold-**policy**
-  create/update/remove/retry action, is itself an audited event in the Microsoft 365 unified audit
-  log, independent of the case's own lifecycle, rollback of the *control* does not roll back the
-  *record that it existed*. Run `deploy/Export-EdiscoveryAuditTrail.ps1` before and after each
-  rollback stage to capture the actor/timestamp for the record (README.md §8 has the open caveat on
-  whether this scenario's own custodian-scoped release calls specifically are covered).
+ create/update/remove/retry action, is itself an audited event in the Microsoft 365 unified audit
+ log, independent of the case's own lifecycle, rollback of the *control* does not roll back the
+ *record that it existed*. Run `deploy/Export-EdiscoveryAuditTrail.ps1` before and after each
+ rollback stage to capture the actor/timestamp for the record (README.md §8 has the open caveat on
+ whether this scenario's own custodian-scoped release calls specifically are covered).
 
 ## Verification after rollback
 

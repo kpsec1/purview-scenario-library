@@ -25,7 +25,7 @@ Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thu
 ./deploy/Remove-InsiderRiskStepUpPolicies.ps1 -Policy Minor
 ```
 
-This PATCHes the selected policy/policies' `state` to `disabled` [[1]](#references). The policy
+This PATCHes the selected policy/policies' `state` to `disabled`. The policy
 object(s) remain defined (visible in **Entra admin center** → **Conditional Access** →
 **Policies**) but stop evaluating sign-ins. Re-enable instantly by re-running
 `deploy/New-InsiderRiskStepUpPolicies.ps1` with the appropriate `-ModerateMode`/`-MinorMode` and
@@ -51,7 +51,7 @@ state, and the Moderate policy's default state on first deploy.
 ```
 
 This calls `Remove-MgIdentityConditionalAccessPolicy` for each selected policy, which deletes the
-policy object entirely [[2]](#references). There is no "undo", re-establishing the control means
+policy object entirely. There is no "undo", re-establishing the control means
 re-running `deploy/New-InsiderRiskStepUpPolicies.ps1` from scratch. **The Terms of Use agreement
 object itself is not deleted by this stage**, it is a separate object this scenario's scripts
 never created or own (see `README.md` §11); delete it separately in the portal if it's no longer
@@ -62,17 +62,17 @@ needed for any purpose.
 - **Adaptive Protection itself, or insider risk level definitions.** Identical to both siblings.
 - **The feeder Insider Risk Management policy.** Not created or managed by this scenario.
 - **A user's current insider risk level.** Disabling or deleting either policy does not reset any
-  user's Elevated/Moderate/Minor assignment.
+ user's Elevated/Moderate/Minor assignment.
 - **The Terms of Use agreement object.** Never created, owned, or deleted by this scenario's
-  scripts, a separate Microsoft Entra ID Governance object (§5 Step 4). Deleting it independently
-  (outside this scenario) would also remove the Moderate policy's grant control reference; do not
-  delete the agreement while the Moderate policy is still enabled without first rolling back the
-  policy.
+ scripts, a separate Microsoft Entra ID Governance object (§5 Step 4). Deleting it independently
+ (outside this scenario) would also remove the Moderate policy's grant control reference; do not
+ delete the agreement while the Moderate policy is still enabled without first rolling back the
+ policy.
 - **Terms of Use acceptance records.** A user's prior acceptance of the agreement (tracked as a
-  Graph `agreementAcceptance` object) is unaffected by rolling back this scenario's policies.
+ Graph `agreementAcceptance` object) is unaffected by rolling back this scenario's policies.
 - **Either sibling scenario's own policy or rules**, if also deployed. All three Conditional
-  Access policies (Elevated block, Moderate Terms of Use, Minor insights) and the DLP sibling's
-  rules are independent, rolling back one has no effect on the others.
+ Access policies (Elevated block, Moderate Terms of Use, Minor insights) and the DLP sibling's
+ rules are independent, rolling back one has no effect on the others.
 - **Sign-in log history.** Retained per its own retention window regardless of policy state.
 
 ## Verification after rollback

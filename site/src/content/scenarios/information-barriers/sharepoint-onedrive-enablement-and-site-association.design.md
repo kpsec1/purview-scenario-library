@@ -18,34 +18,34 @@ sites that need it.
 ## 2. Design goals
 
 1. **Close the file-collaboration gap, not duplicate the wall.** Reuses the existing
-   Trading/Research segments and block policies from `segregate-trading-and-research`, this
-   scenario adds SharePoint/OneDrive enforcement on top of them, it doesn't define a new wall.
+ Trading/Research segments and block policies from `segregate-trading-and-research`, this
+ scenario adds SharePoint/OneDrive enforcement on top of them, it doesn't define a new wall.
 2. **Respect the two automatic paths.** Teams-connected sites (Implicit mode) and a segmented
-   user's own OneDrive (Explicit mode) protect themselves automatically once the tenant switch is
-   on, script only what's genuinely manual: standalone SharePoint sites.
+ user's own OneDrive (Explicit mode) protect themselves automatically once the tenant switch is
+ on, script only what's genuinely manual: standalone SharePoint sites.
 3. **Idempotent, create-or-report / add-what's-missing.** Never silently remove a segment
-   association the config didn't ask for; the tenant-enablement script is a true idempotent
-   toggle (reads current state, changes only on a real diff).
+ association the config didn't ask for; the tenant-enablement script is a true idempotent
+ toggle (reads current state, changes only on a real diff).
 4. **Honest about the two-surface, Windows-only automation reality.** This is the first scenario
-   in this library to combine surface 2 (segment name → GUID resolution) with surface 5
-   (`Set-SPOTenant`/`Set-SPOSite`) in one workflow, and surface 5 has no cross-platform CI/CD path
+ in this library to combine surface 2 (segment name → GUID resolution) with surface 5
+ (`Set-SPOTenant`/`Set-SPOSite`) in one workflow, and surface 5 has no cross-platform CI/CD path
 , both are stated plainly rather than glossed over.
 5. **Don't overcorrect on rollback.** A full tenant-wide suspend is a blunt instrument that also
-   drops enforcement on the Teams-Implicit sites the parent scenario already protects, the
-   rollback path defaults to per-site removal and only escalates to suspension for a genuine
-   decommission (§6).
+ drops enforcement on the Teams-Implicit sites the parent scenario already protects, the
+ rollback path defaults to per-site removal and only escalates to suspension for a genuine
+ decommission (§6).
 
 ## 3. Why this needs its own fragment (not folded into the parent)
 
 - It is Microsoft's own **documented, separate configuration step** ("Step 5: Configure
-  Information Barriers on SharePoint and OneDrive (optional)" in the IB configuration overview),
-  with its own prerequisites (policies active + applied + 24h propagated first), its own cmdlets,
-  and its own automation surface (5, not 2), genuinely distinct code and RBAC from the parent's
-  segment/policy definitions.
+ Information Barriers on SharePoint and OneDrive (optional)" in the IB configuration overview),
+ with its own prerequisites (policies active + applied + 24h propagated first), its own cmdlets,
+ and its own automation surface (5, not 2), genuinely distinct code and RBAC from the parent's
+ segment/policy definitions.
 - It generalizes beyond the Trading/Research pair: any scenario that builds a wall via
-  `New-InformationBarrierPolicy` needs this same enablement + site-association step if the wall
-  must also cover files, so keeping it a separate, referenceable fragment avoids duplicating this
-  logic into every future IB scenario.
+ `New-InformationBarrierPolicy` needs this same enablement + site-association step if the wall
+ must also cover files, so keeping it a separate, referenceable fragment avoids duplicating this
+ logic into every future IB scenario.
 
 ## 4. Object model and sequence
 
@@ -92,26 +92,26 @@ script scripts.
 ## 6. Non-goals
 
 - **Teams-connected site management.** Implicit mode is Microsoft-managed via Team/Microsoft 365
-  group membership; a SharePoint Administrator can't directly manage segments on an Implicit-mode
-  site (per Microsoft's own guidance), out of scope here.
+ group membership; a SharePoint Administrator can't directly manage segments on an Implicit-mode
+ site (per Microsoft's own guidance), out of scope here.
 - **Per-user OneDrive mode management** (`Owner Moderated`/`Mixed` via `Set-SPOSite -Identity
-  <OneDrive URL> -InformationBarriersMode ...`), a real, documented capability, but a distinct
-  exception-handling scenario (e.g. "let a compliance officer's OneDrive be visible across the
-  wall"), not this scenario's baseline enablement.
+ <OneDrive URL> -InformationBarriersMode...`), a real, documented capability, but a distinct
+ exception-handling scenario (e.g. "let a compliance officer's OneDrive be visible across the
+ wall"), not this scenario's baseline enablement.
 - **`DefaultOneDriveInformationBarrierMode` tuning**, `Set-SPOTenant` exposes this parameter, but
-  the fetched Microsoft Learn reference for it doesn't enumerate accepted values or describe its
-  effect distinctly from the per-site `-InformationBarriersMode` values; not scripted here rather
-  than guessed (`README.md` §11).
+ the fetched Microsoft Learn reference for it doesn't enumerate accepted values or describe its
+ effect distinctly from the per-site `-InformationBarriersMode` values; not scripted here rather
+ than guessed (`README.md` §11).
 - **Auto-discovery of SharePoint sites needing segments.** The config is a human-curated list; a
-  scan of all tenant sites to propose segment associations is a natural follow-up, not built here
-  (`docs/automation-surface.md` §5 already notes surface 5 isn't a bulk-iteration surface in this
-  library).
+ scan of all tenant sites to propose segment associations is a natural follow-up, not built here
+ ([Automation surface §5](/docs/automation-surface/#5-throttling-scale-and-resilience-patterns) already notes surface 5 isn't a bulk-iteration surface in this
+ library).
 - **App-only/people-picker bypass toggles** (`-AppBypassInformationBarriers`,
-  `-AppOnlyBypassPeoplePickerPolicies`), documented, real settings for apps that need to reach IB
-  sites; left as a manual, case-by-case decision rather than defaulted on, since enabling them
-  widens the wall's exceptions.
+ `-AppOnlyBypassPeoplePickerPolicies`), documented, real settings for apps that need to reach IB
+ sites; left as a manual, case-by-case decision rather than defaulted on, since enabling them
+ widens the wall's exceptions.
 - **Audit-log export script** for the seven documented SharePoint IB audit activities (enable,
-  apply/change/remove segment, apply/change mode, disable), the exact `RecordType`/`Operations`
-  values for `Search-UnifiedAuditLog` aren't confirmed in this build; a natural companion to
-  `segregate-trading-and-research`'s own open audit-trail item, tracked as a follow-up rather than
-  guessed.
+ apply/change/remove segment, apply/change mode, disable), the exact `RecordType`/`Operations`
+ values for `Search-UnifiedAuditLog` aren't confirmed in this build; a natural companion to
+ `segregate-trading-and-research`'s own open audit-trail item, tracked as a follow-up rather than
+ guessed.

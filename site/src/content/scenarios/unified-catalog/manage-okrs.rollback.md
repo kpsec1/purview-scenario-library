@@ -43,7 +43,7 @@ a key result's underlying metric is under review.
 ```
 
 Deletes the `entityType=OBJECTIVE` relationship on each data product named in the definition
-file's `relatedDataProducts` array (`DELETE .../dataProducts/{id}/relationships`), enumerated
+file's `relatedDataProducts` array (`DELETE.../dataProducts/{id}/relationships`), enumerated
 from the **definition file**, not from the objective, because the Okr operation group has no
 "list every data product this objective is linked to" call of its own (design.md §4). **A
 data-product link created outside this scenario's scripts (e.g. via the portal's own + Link data
@@ -65,10 +65,10 @@ missing).
 ```
 
 `-Purge` implies `-RemoveLinks`, then deletes every key result
-(`DELETE .../objectives/{id}/keyResults/{keyResultId}`) and finally the objective itself
-(`DELETE .../objectives/{id}`), matching Microsoft's own documented manual deletion order: "To
+(`DELETE.../objectives/{id}/keyResults/{keyResultId}`) and finally the objective itself
+(`DELETE.../objectives/{id}`), matching Microsoft's own documented manual deletion order: "To
 delete an OKR, first unpublish it and delete any key results and links to related data products.
-Then select Delete" [[1]](README.md#12-references). There is no "undo" at the API level, but
+Then select Delete". There is no "undo" at the API level, but
 unlike this repo's name-identified sibling scenarios, re-running `deploy/New-Okr.ps1` against the
 **same, unmodified definition file** after a purge will attempt to `PUT` (update) an id that no
 longer exists on the server and receive a 404 on the initial `GET`, the script correctly falls
@@ -89,15 +89,15 @@ scenario's use), not as part of Stage 1-3 above.
 ## What rollback does **not** undo
 
 - **The underlying data product(s).** `scenarios/unified-catalog/manage-data-products/` owns
-  their lifecycle; this scenario only looks them up by name.
+ their lifecycle; this scenario only looks them up by name.
 - **The governance domain.** `scenarios/unified-catalog/curate-business-glossary/` owns its
-  lifecycle; this scenario only looks it up by name.
+ lifecycle; this scenario only looks it up by name.
 - **A data-product link created outside this scenario's own `relatedDataProducts` list**, see
-  Stage 2's explicit caveat above.
+ Stage 2's explicit caveat above.
 - **OKR history.** Same limitation `curate-business-glossary/rollback.md`,
-  `manage-data-products/rollback.md`, and `manage-critical-data-elements/rollback.md` record, no
-  separate audit trail for Unified Catalog object changes was found distinct from the general
-  Microsoft Purview audit log.
+ `manage-data-products/rollback.md`, and `manage-critical-data-elements/rollback.md` record, no
+ separate audit trail for Unified Catalog object changes was found distinct from the general
+ Microsoft Purview audit log.
 
 ## Verification after rollback
 

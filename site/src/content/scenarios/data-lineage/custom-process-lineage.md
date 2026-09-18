@@ -43,21 +43,21 @@ knowledge of which team owns which script.
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for this scenario (same
+Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/). Summary for this scenario (same
 Data Map / Azure-consumption billing model as `end-to-end-lineage-validation` - see that scenario's
 README.md Section 3 for the full PAYG framing, not repeated here):
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Microsoft Purview account + Data Map | Active Azure subscription, Purview account with Data Map enabled | Same PAYG billing as the sibling scenario - `docs/licensing-matrix.md` §1-2 |
-| Create/update the Process entity and both relationships | **Data Curator** role on the collection containing the upstream/downstream assets | Classic Data Map role, Catalog Data plane [[9]](#references). Same collection-wide blast-radius caveat `end-to-end-lineage-validation/README.md` §3 already documents - treat this credential with the same care |
-| Create the custom Process **type definition** | **VERIFY** - at minimum Data Curator on a collection (confirmed sufficient for the closely related "create a custom **classification**" action [[7]](#references)); this scenario's grounding pass found no equally explicit permission statement specifically for creating a custom **entity type definition** via Type - Bulk Create. Not independently confirmed whether type creation is collection-scoped or requires a broader/root-level grant - flagged in Section 11 rather than asserted. **Residual risk regardless of which way this resolves**: Apache Atlas type definitions are account-wide objects, not partitioned per collection the way entities are - if type creation turns out to require (or merely be possible with) only collection-level Data Curator, that credential can create/pollute the tenant's entire shared type namespace, not just objects inside its own collection. Treat the deploy credential's blast radius as tenant-wide for this specific action, on top of the collection-wide entity/relationship blast radius the sibling scenario's own Red Team review already flagged |
-| Read lineage and the type definition only (validation) | **Data Reader** role on the same collection | Least-privilege for the read-only `validate/` script [[9]](#references) |
-| Grant the automation identity a Purview role at all | **Collection Admin** role at root (or the relevant sub-collection) | Only a Collection Admin can assign Data Curator/Data Reader to a service principal [[9]](#references) |
+| Microsoft Purview account + Data Map | Active Azure subscription, Purview account with Data Map enabled | Same PAYG billing as the sibling scenario - [Licensing matrix §1](/docs/licensing-matrix/#1-the-two-billing-models-read-this-first)-2 |
+| Create/update the Process entity and both relationships | **Data Curator** role on the collection containing the upstream/downstream assets | Classic Data Map role, Catalog Data plane. Same collection-wide blast-radius caveat `end-to-end-lineage-validation/README.md` §3 already documents - treat this credential with the same care |
+| Create the custom Process **type definition** | **VERIFY** - at minimum Data Curator on a collection (confirmed sufficient for the closely related "create a custom **classification**" action); this scenario's grounding pass found no equally explicit permission statement specifically for creating a custom **entity type definition** via Type - Bulk Create. Not independently confirmed whether type creation is collection-scoped or requires a broader/root-level grant - flagged in Section 11 rather than asserted. **Residual risk regardless of which way this resolves**: Apache Atlas type definitions are account-wide objects, not partitioned per collection the way entities are - if type creation turns out to require (or merely be possible with) only collection-level Data Curator, that credential can create/pollute the tenant's entire shared type namespace, not just objects inside its own collection. Treat the deploy credential's blast radius as tenant-wide for this specific action, on top of the collection-wide entity/relationship blast radius the sibling scenario's own Red Team review already flagged |
+| Read lineage and the type definition only (validation) | **Data Reader** role on the same collection | Least-privilege for the read-only `validate/` script |
+| Grant the automation identity a Purview role at all | **Collection Admin** role at root (or the relevant sub-collection) | Only a Collection Admin can assign Data Curator/Data Reader to a service principal |
 | The upstream and downstream assets already exist | Both registered and scanned via Data Map - same assets `end-to-end-lineage-validation` already targets (`scenarios/data-map/scan-azure-sql-and-classify/` for `customerdb.dbo.Customers`) | This scenario does not register or scan either source - see §6/`design.md` §7 |
-| Automation identity for the REST calls themselves | App registration with Data Curator (deploy) or Data Reader (validate) Purview role | Client-secret app-only OAuth2, same token endpoint as this repo's other surface-4 scripts - `docs/automation-surface.md` §3 |
+| Automation identity for the REST calls themselves | App registration with Data Curator (deploy) or Data Reader (validate) Purview role | Client-secret app-only OAuth2, same token endpoint as this repo's other surface-4 scripts - [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` before a sales commitment.
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) before a sales commitment.
 
 ## 4. Architecture
 
@@ -102,16 +102,16 @@ rationale: `design.md`.
 ### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
 1. Confirm both DataSet assets already exist and copy their exact **Qualified name** values from
-   each asset's **Overview** page in the Purview portal - same manual-copy step
-   `end-to-end-lineage-validation/README.md` §5 step 2 documents, and the same open VERIFY
-   (§11 below) about the exact `azure_sql_table` qualifiedName format.
+ each asset's **Overview** page in the Purview portal - same manual-copy step
+ `end-to-end-lineage-validation/README.md` §5 step 2 documents, and the same open VERIFY
+ (§11 below) about the exact `azure_sql_table` qualifiedName format.
 2. Assign the automation identity's *human* counterpart (or yourself, for this walkthrough) the
-   **Data Curator** role on the collection containing both assets: **Data Map** -> **Collections**
-   -> select the collection -> **Role assignments** -> add under **Data curators** [[9]](#references).
+ **Data Curator** role on the collection containing both assets: **Data Map** -> **Collections**
+ -> select the collection -> **Role assignments** -> add under **Data curators**.
 3. After running the script (below), open the upstream asset's **Lineage** tab in the Purview
-   portal and confirm a new node - the Process entity, named "Nightly customer risk-scoring job" -
-   now sits between `customerdb.dbo.Customers` and `analyticsdb.dbo.CustomerRiskSummary`, with the
-   `runbookUrl` and `scheduleExpression` attributes visible when you select it.
+ portal and confirm a new node - the Process entity, named "Nightly customer risk-scoring job" -
+ now sits between `customerdb.dbo.Customers` and `analyticsdb.dbo.CustomerRiskSummary`, with the
+ `runbookUrl` and `scheduleExpression` attributes visible when you select it.
 
 ### Script path (idempotent, parameterized, dry-run capable)
 
@@ -142,7 +142,7 @@ rationale: `design.md`.
 ```
 
 Both scripts use the **Microsoft Purview Data Map / Atlas v2 REST API** - automation surface 4 per
-`docs/automation-surface.md` §1 - the same surface `end-to-end-lineage-validation` uses, extended
+[Automation surface §1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first) - the same surface `end-to-end-lineage-validation` uses, extended
 here to the **Type** and (for the first time in this repo) **Entity** operation groups. Token
 acquisition follows the same client-credentials pattern already used by this repo's other
 surface-4 scripts.
@@ -151,19 +151,19 @@ surface-4 scripts.
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Custom Process type name | `PurviewScenarioLibraryEtlProcess` | `superTypes: ["Process"]` - directly confirmed shape from Microsoft's "Create a Custom Process Type" worked example [[6]](#references) |
-| Custom type attributes | `runbookUrl` (string), `scheduleExpression` (string), both `cardinality: SINGLE`, `isOptional: true` | Confirmed `AtlasAttributeDef` shape from Microsoft's own `Type - Bulk Create` worked example (`azure_sql_server_example`) [[10]](#references) |
+| Custom Process type name | `PurviewScenarioLibraryEtlProcess` | `superTypes: ["Process"]` - directly confirmed shape from Microsoft's "Create a Custom Process Type" worked example |
+| Custom type attributes | `runbookUrl` (string), `scheduleExpression` (string), both `cardinality: SINGLE`, `isOptional: true` | Confirmed `AtlasAttributeDef` shape from Microsoft's own `Type - Bulk Create` worked example (`azure_sql_server_example`) |
 | Process entity qualifiedName | `custom-lineage.nightly-customer-risk-scoring-job` | Authored by this scenario, not copied from the portal - the Process entity doesn't pre-exist as a scanned asset, so there is no format to match. Deliberately dot-namespaced, following the same convention as Microsoft's own worked example (`test_lineage.HiveQuery1`) |
-| Relationship types | `dataset_process_inputs` (upstream DataSet -> Process), `process_dataset_outputs` (Process -> downstream DataSet) | Both directly confirmed via Microsoft's own worked Example 1 [[6]](#references) |
+| Relationship types | `dataset_process_inputs` (upstream DataSet -> Process), `process_dataset_outputs` (Process -> downstream DataSet) | Both directly confirmed via Microsoft's own worked Example 1 |
 | Relationship end typeName for the Process node | Literal `Process` | Matches Microsoft's own worked example exactly - see `design.md` §5. Not independently re-confirmed for a *custom* Process subtype specifically - §11 |
 | Column-level detail | `columnMapping` **on the Process entity's own attributes** (JSON-encoded string: `[{"DatasetMapping":{...},"ColumnMapping":[...]}]`) | Matches Microsoft's own worked DataSet -> Process -> DataSet example exactly - a genuinely different placement from the sibling scenario's direct-edge case, where `columnMapping` sits on the relationship instead (`design.md` §5) |
 | Process entity idempotency | Entity - Bulk Create Or Update's documented upsert-by-qualifiedName | No separate existence check needed - stronger grounding than the relationship/type idempotency mechanisms below (`design.md` §2) |
 | Type definition idempotency | `Type - Get Entity Def By Name` existence check before `Type - Bulk Create` | That operation's reference page warns "avoid recreating existing types" |
 | Relationship idempotency | Single depth-2 `Lineage - Get By Unique Attribute` existence check (from the upstream asset) before either `Relationship - Create` POST | See `design.md` §2/§4 |
-| Deploy role | **Data Curator** | Catalog Data plane write access [[9]](#references) |
-| Validate role | **Data Reader** | Catalog Data plane read-only access [[9]](#references) |
+| Deploy role | **Data Curator** | Catalog Data plane write access |
+| Validate role | **Data Reader** | Catalog Data plane read-only access |
 | API version pinned by both scripts | `2023-09-01` | Confirmed current via direct fetch of Microsoft's own REST reference pages for Entity - Bulk Create Or Update, Type - Bulk Create, Type - Get Entity Def By Name, Relationship - Create, and Lineage - Get By Unique Attribute |
-| `-PurviewAccountEndpoint` accepted values | `https://api.purview-service.microsoft.com` (new portal) or `https://<account>.purview.azure.com` (classic portal) | Same dual-endpoint confirmation as the sibling scenario [[11]](#references) |
+| `-PurviewAccountEndpoint` accepted values | `https://api.purview-service.microsoft.com` (new portal) or `https://<account>.purview.azure.com` (classic portal) | Same dual-endpoint confirmation as the sibling scenario |
 
 Full REST-body grounding: `deploy/New-CustomProcessLineage.ps1`, `deploy/
 Remove-CustomProcessLineage.ps1`, and `validate/Test-ProcessLineage.ps1` inline comments and their
@@ -172,25 +172,25 @@ Remove-CustomProcessLineage.ps1`, and `validate/Test-ProcessLineage.ps1` inline 
 ## 7. Validation / how to prove it works
 
 1. **Automated end-to-end check** - `./validate/Test-ProcessLineage.ps1` confirms the custom type
-   exists **and its attribute set matches this scenario's definition file** (catching schema drift
-   the deploy script's own existence-only check can't - see §11), fetches the two-hop lineage graph
-   in one call, and confirms both the
-   `dataset_process_inputs` and `process_dataset_outputs` hops are walkable edges *in the correct
-   order* (not merely that all three nodes appear somewhere in the graph), plus that the Process
-   entity's `columnMapping` attribute survived. Exits non-zero on any hard failure.
+ exists **and its attribute set matches this scenario's definition file** (catching schema drift
+ the deploy script's own existence-only check can't - see §11), fetches the two-hop lineage graph
+ in one call, and confirms both the
+ `dataset_process_inputs` and `process_dataset_outputs` hops are walkable edges *in the correct
+ order* (not merely that all three nodes appear somewhere in the graph), plus that the Process
+ entity's `columnMapping` attribute survived. Exits non-zero on any hard failure.
 2. **Portal evidence** - open `customerdb.dbo.Customers`' **Lineage** tab; a new "Nightly customer
-   risk-scoring job" Process node should appear between it and
-   `analyticsdb.dbo.CustomerRiskSummary`. Selecting the node should show the `runbookUrl` and
-   `scheduleExpression` attributes; selecting either edge should show the relationship type.
+ risk-scoring job" Process node should appear between it and
+ `analyticsdb.dbo.CustomerRiskSummary`. Selecting the node should show the `runbookUrl` and
+ `scheduleExpression` attributes; selecting either edge should show the relationship type.
 3. **Negative test (prove the validator actually detects a gap)** - run
-   `deploy/Remove-CustomProcessLineage.ps1` to delete both relationships and the Process entity,
-   then re-run `validate/Test-ProcessLineage.ps1` and confirm it now reports `[FAIL]` for the
-   Process entity's presence (and, consequently, both hops) with the guidance pointing back at the
-   deploy script. Re-run the deploy script afterward to restore the chain.
+ `deploy/Remove-CustomProcessLineage.ps1` to delete both relationships and the Process entity,
+ then re-run `validate/Test-ProcessLineage.ps1` and confirm it now reports `[FAIL]` for the
+ Process entity's presence (and, consequently, both hops) with the guidance pointing back at the
+ deploy script. Re-run the deploy script afterward to restore the chain.
 4. **Idempotency proof** - re-run `deploy/New-CustomProcessLineage.ps1` a second time against an
-   already-deployed chain and confirm every step reports `[SKIP]`/upsert-no-op rather than creating
-   duplicates - including a **third** run after that, to confirm the second run's idempotency wasn't
-   a fluke of ordering.
+ already-deployed chain and confirm every step reports `[SKIP]`/upsert-no-op rather than creating
+ duplicates - including a **third** run after that, to confirm the second run's idempotency wasn't
+ a fluke of ordering.
 
 ## 8. Operations & tuning
 
@@ -230,56 +230,56 @@ entity; the upstream/downstream assets and the custom Process type definition ar
 ## 10. Cost & licensing notes
 
 - **PAYG, not per-user, and effectively free at this scenario's scale** - same Data Map /
-  Azure-consumption metering as the sibling scenario (`docs/licensing-matrix.md` §1-2). Creating one
-  type definition and one entity is a lighter-weight metadata write than even the sibling's
-  relationship-only calls.
+ Azure-consumption metering as the sibling scenario ([Licensing matrix §1](/docs/licensing-matrix/#1-the-two-billing-models-read-this-first)-2). Creating one
+ type definition and one entity is a lighter-weight metadata write than even the sibling's
+ relationship-only calls.
 - **No M365 per-user license required.**
 - **The real cost driver is operational, not metered**: keeping the Process entity's
-  `runbookUrl`/`scheduleExpression` attributes current as the underlying job changes owners or
-  schedules - budget engineering time for that, not Azure spend.
+ `runbookUrl`/`scheduleExpression` attributes current as the underlying job changes owners or
+ schedules - budget engineering time for that, not Azure spend.
 
 ## 11. Known limitations & gotchas
 
 - **Custom lineage - including this scenario's Process node - is asserted, not verified.** Same
-  evidentiary caveat as `end-to-end-lineage-validation/README.md` §11: Purview does not check that
-  the modeled job actually does what its attributes claim. If this graph is cited as
-  audit/compliance evidence, distinguish natively-captured lineage from custom-asserted lineage
-  (both the edges *and* this Process node) explicitly.
+ evidentiary caveat as `end-to-end-lineage-validation/README.md` §11: Purview does not check that
+ the modeled job actually does what its attributes claim. If this graph is cited as
+ audit/compliance evidence, distinguish natively-captured lineage from custom-asserted lineage
+ (both the edges *and* this Process node) explicitly.
 - **VERIFY - relation-end typeName for a *custom* Process subtype.** This scenario uses the literal
-  `Process` (not `PurviewScenarioLibraryEtlProcess`) as the relationship-end typeName for both
-  `dataset_process_inputs` and `process_dataset_outputs`, matching Microsoft's own worked example
-  exactly - but that example's concrete entity type was a **built-in** subtype (`hive_view_query`),
-  not a custom one. Whether the same ancestor-typeName resolution behavior holds identically for a
-  custom subtype was not independently re-confirmed by this build's grounding pass. If it doesn't,
-  the fix is a one-line change (use `PurviewScenarioLibraryEtlProcess` instead of `Process` in both
-  relationship end definitions) - flagged rather than assumed either way.
+ `Process` (not `PurviewScenarioLibraryEtlProcess`) as the relationship-end typeName for both
+ `dataset_process_inputs` and `process_dataset_outputs`, matching Microsoft's own worked example
+ exactly - but that example's concrete entity type was a **built-in** subtype (`hive_view_query`),
+ not a custom one. Whether the same ancestor-typeName resolution behavior holds identically for a
+ custom subtype was not independently re-confirmed by this build's grounding pass. If it doesn't,
+ the fix is a one-line change (use `PurviewScenarioLibraryEtlProcess` instead of `Process` in both
+ relationship end definitions) - flagged rather than assumed either way.
 - **VERIFY - permission scope for creating a custom entity type definition.** §3 above; this
-  build's grounding pass confirmed collection-level Data Curator is sufficient for the closely
-  related "create a custom classification" action, but found no equally explicit statement for
-  Type - Bulk Create specifically.
+ build's grounding pass confirmed collection-level Data Curator is sufficient for the closely
+ related "create a custom classification" action, but found no equally explicit statement for
+ Type - Bulk Create specifically.
 - **The deploy script's type-existence check does not detect schema drift** - it only asks "does a
-  type with this name exist," and (per Type - Bulk Create's own "avoid recreating existing types"
-  warning) never re-submits the shape to reconcile an existing type that was edited out-of-band.
-  `validate/Test-ProcessLineage.ps1` closes the detection gap (a dedicated schema-drift check
-  compares the live type's attribute names against this definition file), but does not - and, given
-  the unconfirmed update semantics, should not - attempt to fix drift automatically. See that
-  script's inline comments.
+ type with this name exist," and (per Type - Bulk Create's own "avoid recreating existing types"
+ warning) never re-submits the shape to reconcile an existing type that was edited out-of-band.
+ `validate/Test-ProcessLineage.ps1` closes the detection gap (a dedicated schema-drift check
+ compares the live type's attribute names against this definition file), but does not - and, given
+ the unconfirmed update semantics, should not - attempt to fix drift automatically. See that
+ script's inline comments.
 - **VERIFY - the not-found status code for Type - Get Entity Def By Name.** This script's existence
-  check treats *any* non-success response as "type does not exist yet" rather than assuming 404
-  specifically - see the deploy script's `.NOTES`. Functionally safe (a transient error would also
-  be misread as "missing," causing a redundant-but-harmless Type - Bulk Create attempt that itself
-  would then either succeed or surface a clearer error), but not the same as a confirmed 404.
+ check treats *any* non-success response as "type does not exist yet" rather than assuming 404
+ specifically - see the deploy script's `.NOTES`. Functionally safe (a transient error would also
+ be misread as "missing," causing a redundant-but-harmless Type - Bulk Create attempt that itself
+ would then either succeed or surface a clearer error), but not the same as a confirmed 404.
 - **VERIFY - the exact qualifiedName string format Purview assigns to an `azure_sql_table` asset.**
-  Same open item the sibling scenario already carries (`end-to-end-lineage-validation/README.md`
-  §11) - applies here identically to the upstream/downstream references, not to the Process
-  entity's own (self-authored) qualifiedName.
+ Same open item the sibling scenario already carries (`end-to-end-lineage-validation/README.md`
+ §11) - applies here identically to the upstream/downstream references, not to the Process
+ entity's own (self-authored) qualifiedName.
 - **This scenario does not validate that `runbookUrl` points at a live, current document** - see
-  §8. A stale link is not detected by `validate/Test-ProcessLineage.ps1`.
+ §8. A stale link is not detected by `validate/Test-ProcessLineage.ps1`.
 - **Rollback does not delete the custom Process type definition** - see `rollback.md` "What
-  rollback does not undo" for why, and the open VERIFY on the Type - Delete operation itself.
+ rollback does not undo" for why, and the open VERIFY on the Type - Delete operation itself.
 - **This is the Data Map / Atlas REST surface, not the retiring classic Data Catalog UI** - same
-  clarification as the sibling scenario (`end-to-end-lineage-validation/README.md` §11); nothing
-  here depends on the classic Data Catalog UI or is at risk from its retirement.
+ clarification as the sibling scenario (`end-to-end-lineage-validation/README.md` §11); nothing
+ here depends on the classic Data Catalog UI or is at risk from its retirement.
 
 ## 12. References
 

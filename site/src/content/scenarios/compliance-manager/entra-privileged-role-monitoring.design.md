@@ -44,7 +44,7 @@ Privileged Identity Management" PIM security alert** (a real, High-severity, bui
 Microsoft ships). That native alert is gated: Microsoft's own configuration guidance lists a
 separate, dedicated Low-severity alert, *"The organization doesn't have Microsoft Entra ID P2 or
 Microsoft Entra ID Governance"*, that fires specifically because the primary alert **doesn't
-function at all** without one of those two licenses. This library's own `docs/licensing-matrix.md`
+function at all** without one of those two licenses. This library's own [Licensing matrix](/docs/licensing-matrix/)
 and `rbac-model.md` scope most scenarios to broadly-available tiers precisely because a
 sophisticated-buyer-but-not-necessarily-P2-licensed tenant (the SMB/mid-market segment
 `AGENTS.md` §3's "Scale" axis calls out) is a real target audience, for that tenant, this
@@ -88,15 +88,15 @@ deliberately **not** added this same way).
 
 ## 4. How the client-side role-name filter works (grounded against the documented schema)
 
-`Get-MgAuditLogDirectoryAudit -Filter "category eq 'RoleManagement' and activityDateTime ge ... and
-activityDateTime le ..." -All` returns every Core-Directory-and-PIM RoleManagement event in the
+`Get-MgAuditLogDirectoryAudit -Filter "category eq 'RoleManagement' and activityDateTime ge... and
+activityDateTime le..." -All` returns every Core-Directory-and-PIM RoleManagement event in the
 window, this script does not further narrow the server-side `$filter` to `activityDisplayName`
 because Microsoft's own `$filter` reference for this specific resource documents only `eq`, `ge`,
 `le`, and `startswith` as supported operators, without confirming that combining `eq` on two
 different fields (`category` and `activityDisplayName`) with `and` is supported the same way the
 `category`+`activityDateTime` combination is (that specific combination **is** grounded, a
 Microsoft troubleshooting article's own worked example filters `/auditLogs/directoryAudits` on
-`loggedByService eq '...' and activityDateTime ge ...`, the same shape this script uses). Narrowing
+`loggedByService eq '...' and activityDateTime ge...`, the same shape this script uses). Narrowing
 by `ActivityDisplayName` and by the monitored role names therefore happens **client-side**, in
 PowerShell, after the broader server-side pull, see the deploy script's `$monitoredActivities` /
 `Get-RoleDisplayNameFromTargetResources` logic.
@@ -201,23 +201,23 @@ flowchart TD
 ## 9. Non-goals
 
 - **Privileged Identity Management (PIM) eligible/time-bound role activations.** A structurally
-  different, much larger family of activity names under the same `RoleManagement` audit category
-  (§3), a buyer running these four roles through PIM (Microsoft's own recommended practice for
-  exactly this population) needs PIM's own alerting (**PIM alerts**, "Roles are being assigned
-  outside of Privileged Identity Management" and related built-in alert types) as the primary
-  control for that path; this script's scope is the direct/permanent-assignment path PIM alerting
-  does *not* fully replace (a role can still be assigned directly, bypassing PIM, by anyone who
-  already holds `RoleManagement.ReadWrite.Directory` or the Privileged Role Administrator role).
-  Tracked as a follow-up in `PROGRESS.md`.
+ different, much larger family of activity names under the same `RoleManagement` audit category
+ (§3), a buyer running these four roles through PIM (Microsoft's own recommended practice for
+ exactly this population) needs PIM's own alerting (**PIM alerts**, "Roles are being assigned
+ outside of Privileged Identity Management" and related built-in alert types) as the primary
+ control for that path; this script's scope is the direct/permanent-assignment path PIM alerting
+ does *not* fully replace (a role can still be assigned directly, bypassing PIM, by anyone who
+ already holds `RoleManagement.ReadWrite.Directory` or the Privileged Role Administrator role).
+ Tracked as a follow-up in `PROGRESS.md`.
 - **Reproducing or replacing `Export-ComplianceManagerAuditTrail.ps1`.** That script is untouched, 
-  this scenario is a companion, cross-referenced signal, not a rewrite (§7).
+ this scenario is a companion, cross-referenced signal, not a rewrite (§7).
 - **Alerting/SIEM routing beyond `Write-Warning` console output.** Same accepted scope boundary
-  this library already draws elsewhere (e.g. `assess-against-iso27001/reviews.md` Blue Team finding
-  2), wiring a specific SIEM/alerting product is out of a single scenario's scope.
+ this library already draws elsewhere (e.g. `assess-against-iso27001/reviews.md` Blue Team finding
+ 2), wiring a specific SIEM/alerting product is out of a single scenario's scope.
 - **Writing/removing Entra role assignments.** This scenario is read-only by design (§1), it
-  monitors a change, it does not gate or reverse one. A buyer wanting a preventive (not just
-  detective) control should pair this with Conditional Access-based step-up authentication for
-  privileged roles and/or PIM's approval workflow, both outside this fragment's scope.
+ monitors a change, it does not gate or reverse one. A buyer wanting a preventive (not just
+ detective) control should pair this with Conditional Access-based step-up authentication for
+ privileged roles and/or PIM's approval workflow, both outside this fragment's scope.
 
 ## 10. The role-assignable-group companion script (`Export-RoleAssignableGroupMembershipAuditTrail.ps1`)
 
@@ -228,27 +228,27 @@ sibling script" principle applies equally to this companion's relationship with 
 **Two phases, both re-run on every invocation, no cached discovery state:**
 
 1. **Discovery.** `Get-MgGroup -Filter "isAssignableToRole eq true" -All` lists every role-assignable
-   group in the tenant, a plain `eq` filter on a boolean property, confirmed by two independent
-   Microsoft Learn sources to work **without** the `ConsistencyLevel: eventual`/`$count` advanced-
-   query headers some other `$filter` operators on directory objects require (`graph/filter-query-
-   parameter`'s own worked example is literally `~/groups?$filter=isAssignableToRole eq true`; the
-   general advanced-query guidance separately confirms `eq` filters "work by default" while `ne`/
-   `not`/`endswith` do not). For each of the four monitored role names,
-   `Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '<role>'"` resolves the role
-   definition Id, then `Get-MgRoleManagementDirectoryRoleAssignment -Filter "roleDefinitionId eq
-   '<id>'" -All` lists its active assignments, both filter shapes directly confirmed by Microsoft's
-   own "List Microsoft Entra role assignments" worked PowerShell examples. A client-side join (any
-   assignment whose `PrincipalId` is also a role-assignable group's `Id`) produces the monitored-
-   group set. Re-running discovery every invocation (rather than caching it in a config file) means a
-   group newly assigned to, or removed from, a monitored role between runs is picked up
-   automatically on the very next scheduled run, with no separate reconciliation step needed.
+ group in the tenant, a plain `eq` filter on a boolean property, confirmed by two independent
+ Microsoft Learn sources to work **without** the `ConsistencyLevel: eventual`/`$count` advanced-
+ query headers some other `$filter` operators on directory objects require (`graph/filter-query-
+ parameter`'s own worked example is literally `~/groups?$filter=isAssignableToRole eq true`; the
+ general advanced-query guidance separately confirms `eq` filters "work by default" while `ne`/
+ `not`/`endswith` do not). For each of the four monitored role names,
+ `Get-MgRoleManagementDirectoryRoleDefinition -Filter "DisplayName eq '<role>'"` resolves the role
+ definition Id, then `Get-MgRoleManagementDirectoryRoleAssignment -Filter "roleDefinitionId eq
+ '<id>'" -All` lists its active assignments, both filter shapes directly confirmed by Microsoft's
+ own "List Microsoft Entra role assignments" worked PowerShell examples. A client-side join (any
+ assignment whose `PrincipalId` is also a role-assignable group's `Id`) produces the monitored-
+ group set. Re-running discovery every invocation (rather than caching it in a config file) means a
+ group newly assigned to, or removed from, a monitored role between runs is picked up
+ automatically on the very next scheduled run, with no separate reconciliation step needed.
 
 2. **Audit export.** For the discovered group set, `Get-MgAuditLogDirectoryAudit` is called with the
-   **same** grounded server-side filter shape as the sibling script (`category eq 'GroupManagement'`
-   + date range only, §4's reasoning for not guessing at a wider compound filter applies here
-   identically), narrowing client-side to `Add member to group`/`Remove member from group` events
-   whose `targetResources` array contains a `Group`-typed entry matching one of the monitored group
-   Ids.
+ **same** grounded server-side filter shape as the sibling script (`category eq 'GroupManagement'`
+ + date range only, §4's reasoning for not guessing at a wider compound filter applies here
+ identically), narrowing client-side to `Add member to group`/`Remove member from group` events
+ whose `targetResources` array contains a `Group`-typed entry matching one of the monitored group
+ Ids.
 
 **A grounding improvement this companion surfaced, not just a gap-fill:** confirming the
 `targetResources` shape for `Add member to group` required finding a genuinely new source, 

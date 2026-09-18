@@ -57,20 +57,20 @@ compliance driver).
 ## What rollback does **not** undo
 
 - **Classifications already applied by prior scan runs.** Removing or narrowing the ruleset only
-  changes what a *future* scan run compares columns against. Classification tags already recorded
-  on catalog assets from runs made under the PII-only ruleset (or the System ruleset, before this
-  scenario was applied) are not retroactively changed or removed.
+ changes what a *future* scan run compares columns against. Classification tags already recorded
+ on catalog assets from runs made under the PII-only ruleset (or the System ruleset, before this
+ scenario was applied) are not retroactively changed or removed.
 - **The base scenario's self-hosted integration runtime, data source registration, stored
-  credential, or SQL/Windows login.** This scenario only ever modifies the scan's
-  `scanRulesetName`/`scanRulesetType` properties. Removing the scan or data source entirely,
-  deleting the integration runtime resource, uninstalling the SHIR software from its host, revoking
-  the SQL/Windows login's `db_datareader` grant, or deleting the Key Vault secret and Purview
-  credential object is `scan-on-premises-sql-server-and-classify`'s own rollback, see that
-  scenario's `rollback.md`.
+ credential, or SQL/Windows login.** This scenario only ever modifies the scan's
+ `scanRulesetName`/`scanRulesetType` properties. Removing the scan or data source entirely,
+ deleting the integration runtime resource, uninstalling the SHIR software from its host, revoking
+ the SQL/Windows login's `db_datareader` grant, or deleting the Key Vault secret and Purview
+ credential object is `scan-on-premises-sql-server-and-classify`'s own rollback, see that
+ scenario's `rollback.md`.
 - **Any other scan still referencing this ruleset.** Stage 2's delete only proceeds after this
-  scenario's own scan has been detached; it does nothing to detect or detach a *different* scan
-  that references the same ruleset name. Check manually (or via
-  `validate/Test-PiiOnlyScanRuleset.ps1` against each candidate data source/scan pair) first.
+ scenario's own scan has been detached; it does nothing to detect or detach a *different* scan
+ that references the same ruleset name. Check manually (or via
+ `validate/Test-PiiOnlyScanRuleset.ps1` against each candidate data source/scan pair) first.
 
 ## Verification after rollback
 

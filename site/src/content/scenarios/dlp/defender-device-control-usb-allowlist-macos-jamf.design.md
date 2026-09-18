@@ -15,7 +15,7 @@ to Intune-enrolled devices.
 
 This scenario is that JAMF-managed sibling. It enforces the **identical policy**, same groups,
 same rules, same fail-closed settings, because macOS Device Control's JSON policy schema is one
-schema regardless of which MDM delivers it [[2]](#references). Only the delivery mechanism differs.
+schema regardless of which MDM delivers it. Only the delivery mechanism differs.
 
 ## 2. Design goals
 
@@ -26,17 +26,17 @@ design.md` §2), restated for JAMF:
 2. **A single named allowlist group** (`ApprovedBackupDrives`, matched by `serialNumber`).
 3. **Both the allow and the deny paths are audited.**
 4. **Idempotent artifact generation.** Re-running the deploy script with an unchanged config
-   produces byte-identical output; re-running after an allowlist change overwrites the artifact
-   (with `-Force`) rather than silently drifting.
+ produces byte-identical output; re-running after an allowlist change overwrites the artifact
+ (with `-Force`) rather than silently drifting.
 5. **A hybrid Intune+JAMF fleet runs one identical policy identity.** This scenario reuses the
-   Intune sibling's exact group/rule GUIDs and names (§4 below) so a buyer managing some Macs
-   through Intune and others through JAMF is enforcing the literal same control, not two
-   independently-drifting near-duplicates.
+ Intune sibling's exact group/rule GUIDs and names (§4 below) so a buyer managing some Macs
+ through Intune and others through JAMF is enforcing the literal same control, not two
+ independently-drifting near-duplicates.
 
 ## 3. Why this scenario does **not** call the JAMF Pro REST API (and what it does instead)
 
 Microsoft's own documented JAMF procedure for Device Control (`mac-device-control-jamf`
-[[1]](#references)) is a four-step, JAMF-console-driven workflow:
+) is a four-step, JAMF-console-driven workflow:
 
 | Step | What it is | Scriptable by this repo? |
 |---|---|---|
@@ -49,7 +49,7 @@ Steps 3-4 are the crux of this design decision. Microsoft's article explicitly f
 "third-party tool" it does not provide API-level guidance for, and this build's own grounding pass
 found no confirmed JAMF Pro REST API request body for populating a **Custom-Schema-sourced**
 Application & Custom Settings property (as opposed to a plain uploaded `.plist`, a different,
-simpler mechanism JAMF also supports for other Defender for Endpoint preferences [[4]](#references),
+simpler mechanism JAMF also supports for other Defender for Endpoint preferences,
 but not the one Microsoft's own Device Control article documents). `developer.jamf.com` was
 unreachable from this build's network environment, so the exact JAMF Pro API shape for this
 specific property type could not be independently confirmed either way.
@@ -75,16 +75,16 @@ Graph API script), disclosed, not hidden, as this scenario's own primary scope b
 | 1 | `settings.features.removableMedia.disable = false` | Enables enforcement for the `removableMedia` feature. |
 | 2 | `settings.global.defaultEnforcement = "deny"` | Fail-closed default. |
 | 3 | `groups[0]` "AllRemovableStorage" (catch-all) | `query: {"$type":"all","clauses":[{"$type":"primaryId","value":"removable_media_devices"}]}` |
-| 4 | `groups[1]` "ApprovedBackupDrives" | `query: {"$type":"any","clauses":[{"$type":"serialNumber","value":"<serial>"}, ...]}` |
+| 4 | `groups[1]` "ApprovedBackupDrives" | `query: {"$type":"any","clauses":[{"$type":"serialNumber","value":"<serial>"},...]}` |
 | 5 | `rules[0]` "Allow-ApprovedBackupDrives" | `includeGroups=[ApprovedBackupDrives]`; `allow` + `auditAllow(send_event)`, `access=[read,write,execute]` |
 | 6 | `rules[1]` "Deny-AllOtherRemovableStorage" | `includeGroups=[AllRemovableStorage]`, `excludeGroups=[ApprovedBackupDrives]`; `deny` + `auditDeny(send_event, show_notification)`, `access=[read,write,execute]` |
 
 Every property name, clause `$type`, and access value is confirmed directly against Microsoft's
-"Device Control for macOS" reference [[2]](#references), the same source the Intune sibling's
+"Device Control for macOS" reference, the same source the Intune sibling's
 `design.md` §4 cites, this scenario's script literally reuses that generation logic, minus the
 `.mobileconfig`/plist wrapper the Intune path needs and the JAMF path does not (JAMF ingests the
 policy as plain JSON pasted into a GUI text box, not a base64-encoded payload
-[[1]](#references)).
+).
 
 ```mermaid
 flowchart TD
@@ -134,11 +134,11 @@ since the policy schema itself is unchanged.
 ## 7. Data flow / staged rollout
 
 Enforcement runs **locally on the Mac** via the same `mdatp` client and minimum version
-(`101.91.92`) as the Intune sibling [[2]](#references), with the same Full Disk Access dependency
+(`101.91.92`) as the Intune sibling, with the same Full Disk Access dependency
 for `com.microsoft.dlp.daemon`, deployed via JAMF's own documented mechanism
 (`fulldisk.mobileconfig`, uploaded through the JAMF Pro console per `mac-jamfpro-policies` Step 6
-[[3]](#references), also referenced directly from the Purview-specific JAMF onboarding guide
-[[5]](#references)) rather than Intune's identical `fulldisk.mobileconfig` upload.
+, also referenced directly from the Purview-specific JAMF onboarding guide
+) rather than Intune's identical `fulldisk.mobileconfig` upload.
 
 There is no policy-level simulation mode on either deployment path. On JAMF, the staged-rollout
 lever is the profile's **Scope** tab (a specific Computer Group, never "All Computers" on a first
@@ -149,22 +149,22 @@ carried through to the deploy script's console output as a reminder, not an API 
 ## 8. Non-goals
 
 - This scenario does not onboard Macs to Microsoft Defender for Endpoint via JAMF, deploy the Full
-  Disk Access (PPPC) profile for `com.microsoft.dlp.daemon`, or update the JAMF Pro "MDE
-  Preferences" custom-schema profile's `schema.json`, all are prerequisites, not deployed
-  artifacts, the same boundary the Intune sibling draws for its own onboarding/enrollment
-  dependency.
+ Disk Access (PPPC) profile for `com.microsoft.dlp.daemon`, or update the JAMF Pro "MDE
+ Preferences" custom-schema profile's `schema.json`, all are prerequisites, not deployed
+ artifacts, the same boundary the Intune sibling draws for its own onboarding/enrollment
+ dependency.
 - This scenario does not call the JAMF Pro REST/Classic API, §3 above.
 - This scenario does not restrict Apple (iOS/iPadOS) devices, Portable devices, or Bluetooth media
 , only `removable_media_devices`. Identical gap to the Intune sibling's own disclosed WPD/
-  portable-device boundary (`defender-device-control-usb-allowlist-macos/README.md` §11), called
-  out with equal weight in this scenario's own `README.md` §11, not treated as lower-severity
-  because it is a "JAMF-only" gap.
+ portable-device boundary (`defender-device-control-usb-allowlist-macos/README.md` §11), called
+ out with equal weight in this scenario's own `README.md` §11, not treated as lower-severity
+ because it is a "JAMF-only" gap.
 - This scenario does not implement `vendorId`/`productId` compound matching, §5 above.
 - This scenario does not deploy the general Defender for Endpoint on macOS onboarding package,
-  antivirus/EDR settings, notifications, AutoUpdate, system extensions, network extension, or
-  background-services profiles `mac-jamfpro-policies` [[3]](#references) documents as separate,
-  broader MDE-on-JAMF setup steps, out of scope; this scenario assumes Defender for Endpoint is
-  already fully deployed and onboarded via JAMF, and adds only the Device Control policy on top.
+ antivirus/EDR settings, notifications, AutoUpdate, system extensions, network extension, or
+ background-services profiles `mac-jamfpro-policies` documents as separate,
+ broader MDE-on-JAMF setup steps, out of scope; this scenario assumes Defender for Endpoint is
+ already fully deployed and onboarded via JAMF, and adds only the Device Control policy on top.
 
 ## References
 

@@ -30,17 +30,17 @@ precise, immediate complement to a slower, query-based auto-apply policy.
 Two distinct, real needs converge on the same mechanism:
 
 1. **Regulatory records have no other path.** Microsoft's auto-apply retention label policies
-   explicitly **do not support regulatory records**, the docs state this as a scenario-level
-   limitation, not a corner case: *"This scenario isn't supported for regulatory records... These
-   scenarios require a published retention label policy"* [[4]](#references), corroborated by
-   *"...for labels that mark items as records (but not regulatory records), auto-apply those
-   labels"* [[5]](#references). If your obligation (SEC 17a-4, FINRA 4511, SOX, MiFID II, see the
-   sibling scenario) requires full WORM regulatory immutability, **this scenario is not optional**, 
-   it is the mechanism, not a variant.
+ explicitly **do not support regulatory records**, the docs state this as a scenario-level
+ limitation, not a corner case: *"This scenario isn't supported for regulatory records... These
+ scenarios require a published retention label policy"*, corroborated by
+ *"...for labels that mark items as records (but not regulatory records), auto-apply those
+ labels"*. If your obligation (SEC 17a-4, FINRA 4511, SOX, MiFID II, see the
+ sibling scenario) requires full WORM regulatory immutability, **this scenario is not optional**, 
+ it is the mechanism, not a variant.
 2. **Precision and immediacy for everything else.** Auto-apply is asynchronous (up to 7 days) and
-   only as good as its match query. Publishing lets a person who *knows* an item is a financial
-   record apply the label the moment they create or receive it, a genuine complement, not a
-   duplicate, of auto-apply for standard and record (non-regulatory) labels.
+ only as good as its match query. Publishing lets a person who *knows* an item is a financial
+ record apply the label the moment they create or receive it, a genuine complement, not a
+ duplicate, of auto-apply for standard and record (non-regulatory) labels.
 
 > ⚠️ **This scenario corrects a gap in the sibling scenario.** `retention-labels-financial-records`
 > originally auto-applied its label with `regulatory: true` by default, a configuration Microsoft's
@@ -51,18 +51,18 @@ Two distinct, real needs converge on the same mechanism:
 
 ## 3. Prerequisites
 
-Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. Automation surface:
-`docs/automation-surface.md` (surface 2, Security & Compliance PowerShell). Summary:
+Full licensing detail: [Licensing matrix](/docs/licensing-matrix/). RBAC: [RBAC model](/docs/rbac-model/). Automation surface:
+[Automation surface](/docs/automation-surface/) (surface 2, Security & Compliance PowerShell). Summary:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Licensing | Retention labels/policies: **M365 E3**; records management (record/regulatory record labels, publishing them, disposition): **M365 E5 / E5 Compliance / Purview Suite** | Same licensing the label itself required, publishing adds no new SKU [[9]](#references) |
-| Role | **Retention Management** or **Records Management** role group (Compliance Administrator / Organization Management include it) | Same role group as the sibling, `docs/rbac-model.md` |
-| Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell, `docs/automation-surface.md` §3 |
+| Licensing | Retention labels/policies: **M365 E3**; records management (record/regulatory record labels, publishing them, disposition): **M365 E5 / E5 Compliance / Purview Suite** | Same licensing the label itself required, publishing adds no new SKU |
+| Role | **Retention Management** or **Records Management** role group (Compliance Administrator / Organization Management include it) | Same role group as the sibling, [RBAC model](/docs/rbac-model/) |
+| Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell, [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
 | Pre-existing label | The retention label named in the config **must already exist** | This scenario never creates or edits a label, `retention-labels-financial-records` (or any label source) creates it first |
 | Target locations | Finance SharePoint site(s) / Exchange mailboxes or DG / OneDrive / Microsoft 365 Group | Policy needs ≥1 location |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` before a sales commitment, 
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) before a sales commitment, 
 > SKU names change.
 
 ## 4. Architecture
@@ -119,7 +119,7 @@ Get-ComplianceTag -Identity 'Financial Records - 7yr Regulatory'
 
 The policy is visible in the [Microsoft Purview portal](https://purview.microsoft.com) under
 **Records Management** (or **Data Lifecycle Management**) → **Policies** → **Label policies**, listed
-with policy type **Publish** [[1]](#references). `-WhatIf` is non-functional in S&C PowerShell, so
+with policy type **Publish**. `-WhatIf` is non-functional in S&C PowerShell, so
 the deploy/remove scripts ship a `-DryRun` instead.
 
 ### How users actually apply the published label
@@ -128,39 +128,39 @@ Once published, users select the label themselves, this scenario doesn't (and ca
 application:
 
 - **Outlook / Outlook on the web:** select the item → **Assign Policy** (ribbon or right-click) →
-  choose the label [[1]](#references).
+ choose the label.
 - **SharePoint / OneDrive:** select the item → details pane → **Apply label** (new experience only,
-  not classic) [[1]](#references).
+ not classic).
 - **Teams group-connected sites:** **Files** tab, same experience as SharePoint, once the label is
-  published to the **Microsoft 365 Groups** location [[1]](#references).
+ published to the **Microsoft 365 Groups** location.
 
 ## 6. Configuration reference
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
 | Label | Read-only prerequisite (`Get-ComplianceTag`) | This scenario never runs `New-/Set-ComplianceTag` |
-| Policy cmdlet | `New-RetentionCompliancePolicy` | Publish label policy; needs ≥1 location [[2]](#references) |
+| Policy cmdlet | `New-RetentionCompliancePolicy` | Publish label policy; needs ≥1 location |
 | Locations | `SharePointLocation`, `ExchangeLocation` | Also `OneDriveLocation`, `ModernGroupLocation` |
-| Rule cmdlet | `New-RetentionComplianceRule -PublishComplianceTag` | One rule per policy; **no** `-ContentMatchQuery`/`-ContentContainsSensitiveInformation`, those parameters belong to the `-ApplyComplianceTag` parameter set only [[3]](#references) |
-| Retry stuck distribution | `Set-RetentionCompliancePolicy -RetryDistribution` | If the policy status shows Off (Error) [[4]](#references) |
-| Supported for regulatory records | **Yes, the only supported path** | Contrast: auto-apply explicitly does **not** support regulatory records [[4]](#references)[[5]](#references) |
+| Rule cmdlet | `New-RetentionComplianceRule -PublishComplianceTag` | One rule per policy; **no** `-ContentMatchQuery`/`-ContentContainsSensitiveInformation`, those parameters belong to the `-ApplyComplianceTag` parameter set only |
+| Retry stuck distribution | `Set-RetentionCompliancePolicy -RetryDistribution` | If the policy status shows Off (Error) |
+| Supported for regulatory records | **Yes, the only supported path** | Contrast: auto-apply explicitly does **not** support regulatory records |
 
 Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
 
 ## 7. Validation / how to prove it works
 
 1. **Automated**, `./validate/Test-PublishRetentionLabelPolicy.ps1` confirms the label exists, the
-   policy exists/enabled with ≥1 location, and the rule publishes the expected label. Exits
-   non-zero on failure.
+ policy exists/enabled with ≥1 location, and the rule publishes the expected label. Exits
+ non-zero on failure.
 2. **Publish timing**, SharePoint/OneDrive typically surface the label within a day (allow up to 7);
-   Exchange can take up to 7 days and needs the mailbox to hold ≥10 MB of data [[1]](#references).
+ Exchange can take up to 7 days and needs the mailbox to hold ≥10 MB of data.
 3. **Manual-apply test**, in a lab tenant, confirm the label actually appears in Outlook's **Assign
-   Policy** menu and SharePoint/OneDrive's **Apply label** picker, then apply it to a test item and
-   confirm the expected retention/record behavior [[1]](#references).
+ Policy** menu and SharePoint/OneDrive's **Apply label** picker, then apply it to a test item and
+ confirm the expected retention/record behavior.
 4. **Idempotency proof**, re-run the deploy; the policy/rule report `exists` (not `created`) and
-   nothing is duplicated or silently mutated.
+ nothing is duplicated or silently mutated.
 5. **If stuck (Off (Error))**, run `Set-RetentionCompliancePolicy -Identity <policy> -RetryDistribution`
-   [[4]](#references).
+.
 
 ## 8. Operations & tuning
 
@@ -186,46 +186,46 @@ content a user already labeled.
 ## 10. Cost & licensing notes
 
 - **No incremental licensing cost.** Publishing uses the same records-management/E5-tier entitlement
-  the label itself already required, there's no separate "publish" SKU [[9]](#references).
+ the label itself already required, there's no separate "publish" SKU.
 - **The real cost is human, not technical.** Publishing depends on people choosing to apply the
-  label; the cost of under-coverage is a training/process problem, not a licensing one, factor
-  operator/user training into the rollout plan, especially where (as with regulatory records) this
-  is the *only* mechanism available.
+ label; the cost of under-coverage is a training/process problem, not a licensing one, factor
+ operator/user training into the rollout plan, especially where (as with regulatory records) this
+ is the *only* mechanism available.
 - **No storage-growth risk from this scenario alone**, publishing doesn't retain anything by
-  itself; the label's own retention action (created by the sibling) does that.
+ itself; the label's own retention action (created by the sibling) does that.
 
 ## 11. Known limitations & gotchas
 
 - **Human-dependent coverage.** A published label is only as effective as people choosing to apply
-  it. For regulatory records this is unavoidable (auto-apply isn't an option); for other labels,
-  pair this with the sibling's auto-apply scenario rather than relying on publishing alone.
+ it. For regulatory records this is unavoidable (auto-apply isn't an option); for other labels,
+ pair this with the sibling's auto-apply scenario rather than relying on publishing alone.
 - **No content-matching for publish rules.** `-PublishComplianceTag` accepts no
-  `-ContentMatchQuery`/`-ContentContainsSensitiveInformation`, there's nothing to "tune" beyond
-  locations, unlike the auto-apply sibling [[3]](#references).
+ `-ContentMatchQuery`/`-ContentContainsSensitiveInformation`, there's nothing to "tune" beyond
+ locations, unlike the auto-apply sibling.
 - **Publish latency.** Up to 7 days for both SharePoint/OneDrive and Exchange in the worst case
-  (SharePoint/OneDrive usually appears within a day); Exchange mailboxes need ≥10 MB of data
-  [[1]](#references).
+ (SharePoint/OneDrive usually appears within a day); Exchange mailboxes need ≥10 MB of data
+.
 - **This scenario never creates the label.** If `Get-ComplianceTag` finds nothing, the deploy script
-  throws rather than guessing a definition, create the label first.
+ throws rather than guessing a definition, create the label first.
 - **`Get-RetentionComplianceRule`'s `PublishComplianceTag` read-back property is not explicitly
-  documented**, Microsoft's reference lists only Name/Disabled/Mode/Comment as the cmdlet's
-  documented default-display properties [[6]](#references). This repo's sibling scenario already
-  reads the parallel `ApplyComplianceTag` property directly without flagging it as unconfirmed;
-  `validate/Test-PublishRetentionLabelPolicy.ps1` follows the same established convention for
-  `PublishComplianceTag` rather than introducing an inconsistent hedge. **VERIFY (pilot tenant)**
-  before relying on this in an unattended pipeline.
+ documented**, Microsoft's reference lists only Name/Disabled/Mode/Comment as the cmdlet's
+ documented default-display properties. This repo's sibling scenario already
+ reads the parallel `ApplyComplianceTag` property directly without flagging it as unconfirmed;
+ `validate/Test-PublishRetentionLabelPolicy.ps1` follows the same established convention for
+ `PublishComplianceTag` rather than introducing an inconsistent hedge. **VERIFY (pilot tenant)**
+ before relying on this in an unattended pipeline.
 - **Default labels for SharePoint/Outlook are a related but separate capability.** After
-  publishing, an admin can set the label as a *default* for a document library or Outlook folder so
-  unlabeled items inherit it automatically [[1]](#references), a portal-only step; no
-  PowerShell/Graph cmdlet for it was found during this build's grounding pass. Out of scope here
-  (`design.md` §7).
+ publishing, an admin can set the label as a *default* for a document library or Outlook folder so
+ unlabeled items inherit it automatically, a portal-only step; no
+ PowerShell/Graph cmdlet for it was found during this build's grounding pass. Out of scope here
+ (`design.md` §7).
 - **A label can be in more than one label policy.** Microsoft confirms *"a single retention label can
-  be included in multiple retention label policies"* [[7]](#references), so a non-regulatory record
-  label could legitimately be both auto-applied (sibling scenario) and published (this scenario) at
-  the same time. This scenario's default worked example targets the sibling's regulatory label,
-  which by definition can only ever be published.
+ be included in multiple retention label policies"*, so a non-regulatory record
+ label could legitimately be both auto-applied (sibling scenario) and published (this scenario) at
+ the same time. This scenario's default worked example targets the sibling's regulatory label,
+ which by definition can only ever be published.
 - **Illustrative values.** The policy name, locations, and Exchange distribution-group name are
-  placeholders, set them to your actual finance locations before deploying.
+ placeholders, set them to your actual finance locations before deploying.
 
 ## 12. References
 

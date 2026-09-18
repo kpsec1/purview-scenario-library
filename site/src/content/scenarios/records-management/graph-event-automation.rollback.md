@@ -37,12 +37,12 @@ only when the event-based schedule is being permanently retired and its label de
 ## What rollback does **not** undo
 
 - **Retention already started by a fired event.** No Graph call stops a running clock, that's the
-  records guarantee.
+ records guarantee.
 - **The event-based retention label and publish policy**, owned by the sibling PowerShell scenario /
-  portal; decommission there if needed.
+ portal; decommission there if needed.
 - **Content already retained, reviewed, or disposed**, unaffected.
 - **The app registration and its `RecordsManagement.ReadWrite.All` grant**, remove that separately in
-  Entra if decommissioning the integration identity.
+ Entra if decommissioning the integration identity.
 
 ## Verification after rollback
 

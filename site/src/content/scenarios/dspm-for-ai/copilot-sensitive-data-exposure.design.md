@@ -17,45 +17,45 @@ technical control in (1) cannot see it.
 ## 2. Design goals
 
 1. Deploy a real, idempotent, re-runnable DLP policy for the **Microsoft 365 Copilot and Copilot
-   Chat** location that excludes sensitivity-labeled confidential content from Copilot processing, 
-   the one part of "Copilot oversharing risk" a content-level DLP control can actually close.
+ Chat** location that excludes sensitivity-labeled confidential content from Copilot processing, 
+ the one part of "Copilot oversharing risk" a content-level DLP control can actually close.
 2. Add a second, narrower rule that restricts Copilot's use of external web search as a grounding
-   source when a prompt itself contains a sensitive information type (SSN, credit card number), 
-   a different, real risk (sensitive prompt fragments leaking to a web search provider) that this
-   repo's Purview DLP-for-Copilot location also supports natively.
+ source when a prompt itself contains a sensitive information type (SSN, credit card number), 
+ a different, real risk (sensitive prompt fragments leaking to a web search provider) that this
+ repo's Purview DLP-for-Copilot location also supports natively.
 3. Be explicit, everywhere in this scenario's deliverables, that neither rule fixes **unlabeled**
-   oversharing, the actual permissions problem. Point instead at the DSPM for AI oversharing data
-   risk assessment as the tool that finds that exposure, and at permissions remediation /
-   auto-labeling expansion as the fix. A scenario that lets a buyer believe this DLP policy alone
-   solves "Copilot oversharing" would be selling a control that doesn't match its own limitations, 
-   flagged explicitly as a Product Owner review item (see `reviews.md`).
+ oversharing, the actual permissions problem. Point instead at the DSPM for AI oversharing data
+ risk assessment as the tool that finds that exposure, and at permissions remediation /
+ auto-labeling expansion as the fix. A scenario that lets a buyer believe this DLP policy alone
+ solves "Copilot oversharing" would be selling a control that doesn't match its own limitations, 
+ flagged explicitly as a Product Owner review item (see `reviews.md`).
 4. Only script what Microsoft's own PowerShell reference documents with a worked, citable example.
-   The Copilot location DLP surface has at least one additional documented action (full
-   prompt-response blocking) with no published PowerShell example as of this build, that action is
-   deliberately left portal-only rather than reconstructed from an unconfirmed parameter/setting
-   name (`AGENTS.md` §4 no-invented-cmdlets rule).
+ The Copilot location DLP surface has at least one additional documented action (full
+ prompt-response blocking) with no published PowerShell example as of this build, that action is
+ deliberately left portal-only rather than reconstructed from an unconfirmed parameter/setting
+ name (`AGENTS.md` §4 no-invented-cmdlets rule).
 5. Ship "off" by default (`-Mode TestWithNotifications`), matching every other DLP scenario in this
-   repo.
+ repo.
 
 ## 3. Why DLP for Copilot (not DSPM for AI policies, not sensitivity label enforcement alone) for the technical control
 
 - **DSPM for AI (classic) itself has no DLP authoring surface.** It is a dashboard, reporting, and
-  recommendation layer that *creates* one-click DLP/IRM/Communication Compliance policies on the
-  buyer's behalf through the portal, there is no PowerShell/Graph cmdlet in Microsoft's published
-  reference that creates a *custom* data risk assessment or a Copilot DLP policy through DSPM for AI
-  directly. The only real deploy surface for the technical control this scenario needs is DLP
-  itself, targeting the Copilot location, DSPM for AI (classic) is documented here as the
-  discovery/reporting layer this scenario complements, not the deploy target.
+ recommendation layer that *creates* one-click DLP/IRM/Communication Compliance policies on the
+ buyer's behalf through the portal, there is no PowerShell/Graph cmdlet in Microsoft's published
+ reference that creates a *custom* data risk assessment or a Copilot DLP policy through DSPM for AI
+ directly. The only real deploy surface for the technical control this scenario needs is DLP
+ itself, targeting the Copilot location, DSPM for AI (classic) is documented here as the
+ discovery/reporting layer this scenario complements, not the deploy target.
 - **Sensitivity labeling and its enforcement policies alone are not enough.** A label's own
-  encryption/access-restriction settings control who can *open* a file; they do not, by themselves,
-  stop Copilot from *summarizing* a file the user is already permitted to open. DLP for the Copilot
-  location is the mechanism that adds that additional "don't process this in a Copilot response"
-  behavior on top of an existing label, this scenario assumes the label taxonomy already exists
-  (via `scenarios/information-protection/auto-label-confidential-sharepoint/`) and adds the Copilot
-  enforcement layer on top.
+ encryption/access-restriction settings control who can *open* a file; they do not, by themselves,
+ stop Copilot from *summarizing* a file the user is already permitted to open. DLP for the Copilot
+ location is the mechanism that adds that additional "don't process this in a Copilot response"
+ behavior on top of an existing label, this scenario assumes the label taxonomy already exists
+ (via `scenarios/information-protection/auto-label-confidential-sharepoint/`) and adds the Copilot
+ enforcement layer on top.
 - **Endpoint DLP / Teams DLP do not cover Copilot grounding or prompts at all.** They are different
-  policy locations entirely; DLP for Microsoft 365 Copilot and Copilot Chat is a distinct location
-  introduced specifically for this surface [[README §12, ref 2]].
+ policy locations entirely; DLP for Microsoft 365 Copilot and Copilot Chat is a distinct location
+ introduced specifically for this surface [[README §12, ref 2]].
 
 ## 3a. Why a new, named policy instead of the one-click "DSPM for AI - Protect sensitive data from Copilot processing" default
 
@@ -112,7 +112,7 @@ content-processing control, not an access control, see §7 (Non-goals) below.
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`), per `docs/automation-surface.md` surface 2 | Same as every other DLP scenario in this repo; no Graph authoring equivalent for DLP policy/rule objects exists today. |
+| Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`), per [Automation surface](/docs/automation-surface/) surface 2 | Same as every other DLP scenario in this repo; no Graph authoring equivalent for DLP policy/rule objects exists today. |
 | Label-condition mechanism | `-AdvancedRule` JSON (not a simple named parameter) | This is the only mechanism Microsoft's own `New-DlpComplianceRule` reference documents for combining a sensitivity-label condition with the Copilot location's `RestrictAccess` action, reproduced from that reference's own worked Example 4, not invented. |
 | Sensitivity labels | **Confidential**, **Highly Confidential** (parameterizable list) | Reuses and extends the label taxonomy already established by `scenarios/information-protection/auto-label-confidential-sharepoint/` rather than introducing a new one. |
 | SITs for the web-grounding rule | **U.S. Social Security Number (SSN)**, **Credit Card Number** | Reuses the exact SIT pair already established by `auto-label-confidential-sharepoint` and `endpoint-dlp-usb-block`, keeping this repo's example tenant's sensitive-data taxonomy consistent across scenarios rather than introducing a third variant. |
@@ -124,30 +124,30 @@ content-processing control, not an access control, see §7 (Non-goals) below.
 ## 7. Non-goals
 
 - This scenario does not remediate SharePoint/OneDrive oversharing itself (removing "Anyone" links,
-  tightening inherited permissions, Restricted Access Control). That is the output of the DSPM for
-  AI oversharing assessment this scenario documents as a required companion activity, not a
-  deliverable of this scenario's code.
+ tightening inherited permissions, Restricted Access Control). That is the output of the DSPM for
+ AI oversharing assessment this scenario documents as a required companion activity, not a
+ deliverable of this scenario's code.
 - This scenario does not configure the DSPM for AI custom (non-default) data risk assessment for
-  Fabric or other item-level scanning, those require a separate Entra app registration with
-  `Sites.ReadWrite.All`/`Files.ReadWrite.All` and other Graph application permissions
-  (`dspm-for-ai-considerations` prerequisites) that are a materially different automation surface
-  from this scenario's DLP policy and are better scoped as their own fragment.
+ Fabric or other item-level scanning, those require a separate Entra app registration with
+ `Sites.ReadWrite.All`/`Files.ReadWrite.All` and other Graph application permissions
+ (`dspm-for-ai-considerations` prerequisites) that are a materially different automation surface
+ from this scenario's DLP policy and are better scoped as their own fragment.
 - This scenario does not configure DLP restriction of external email as a Copilot grounding source
-  (the "Block external email from being processed" preview feature), a related but distinct
-  Copilot-location DLP action with its own condition type (`Email is received from > External
-  users`), out of scope here to keep this fragment to the oversharing/labeled-content exposure
-  problem it is named for. **Built** as `scenarios/dspm-for-ai/copilot-external-email-block/`, which
-  adds it as a fourth rule on this same shared policy.
+ (the "Block external email from being processed" preview feature), a related but distinct
+ Copilot-location DLP action with its own condition type (`Email is received from > External
+ users`), out of scope here to keep this fragment to the oversharing/labeled-content exposure
+ problem it is named for. **Built** as `scenarios/dspm-for-ai/copilot-external-email-block/`, which
+ adds it as a fourth rule on this same shared policy.
 - This scenario does not configure Adaptive Protection-driven, risk-based DLP for **third-party**
-  generative AI sites accessed via a browser (a different location/enforcement plane from the
-  first-party Microsoft 365 Copilot location this scenario covers). A dedicated grounding pass
-  (`PROGRESS.md`, 2026-09-09) investigated this as a follow-up scenario and found it is **not**
-  a straightforward extension of `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s
-  Teams/Exchange pattern the way this note previously implied: the DSPM for AI one-click policies
-  that cover third-party AI sites split across two structurally different mechanisms, an
-  Endpoint DLP (`Devices`) policy against the built-in, non-editable "Generative AI Websites"
-  sensitive service domain group, and a newer "Inline web traffic" / Edge for Business location
-  using an "Adaptive app scopes" cloud-app construct, and neither has a Microsoft-published
-  PowerShell/Graph worked example as of this pass, so this repo does not script either rather than
-  fabricate the missing parameters. See the closed `PROGRESS.md` follow-up item for the full
-  citation trail.
+ generative AI sites accessed via a browser (a different location/enforcement plane from the
+ first-party Microsoft 365 Copilot location this scenario covers). A dedicated grounding pass
+ (`PROGRESS.md`, 2026-09-09) investigated this as a follow-up scenario and found it is **not**
+ a straightforward extension of `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s
+ Teams/Exchange pattern the way this note previously implied: the DSPM for AI one-click policies
+ that cover third-party AI sites split across two structurally different mechanisms, an
+ Endpoint DLP (`Devices`) policy against the built-in, non-editable "Generative AI Websites"
+ sensitive service domain group, and a newer "Inline web traffic" / Edge for Business location
+ using an "Adaptive app scopes" cloud-app construct, and neither has a Microsoft-published
+ PowerShell/Graph worked example as of this pass, so this repo does not script either rather than
+ fabricate the missing parameters. See the closed `PROGRESS.md` follow-up item for the full
+ citation trail.

@@ -60,13 +60,13 @@ rollback:
 ## What rollback does **not** undo
 
 - **Advanced Hunting / `DeviceEvents` history** for events an approved vendorId/productId device
-  already generated, retained per its own retention window regardless of policy state.
+ already generated, retained per its own retention window regardless of policy state.
 - **Either family's `serialNumber`-based approvals, or the removable-media/Bluetooth sibling
-  fragments' own coverage**, both stages of this rollback are scoped exclusively to this fragment's
-  own Apple/Portable vendorId/productId additions.
+ fragments' own coverage**, both stages of this rollback are scoped exclusively to this fragment's
+ own Apple/Portable vendorId/productId additions.
 - **A device also matched by a still-present `serialNumber` clause**, Stage 1 and Stage 2 both only
-  remove this fragment's `groupId`-referenced OR-branch; a device independently approved by serial
-  number remains approved through that separate mechanism.
+ remove this fragment's `groupId`-referenced OR-branch; a device independently approved by serial
+ number remains approved through that separate mechanism.
 
 ## Verification after rollback
 
@@ -91,9 +91,9 @@ $json.groups.name | Where-Object { $_ -like 'AppleVendorProductMatch-*' -or $_ -
 ## References
 
 1. `scenarios/dlp/defender-device-control-usb-allowlist-macos/rollback.md`, full policy removal
-   (Stage 3).
+ (Stage 3).
 2. `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/rollback.md`, 
-   the removable-media sibling's equivalent single-device rollback and verification pattern, which
-   this fragment's own rollback directly mirrors, per family.
+ the removable-media sibling's equivalent single-device rollback and verification pattern, which
+ this fragment's own rollback directly mirrors, per family.
 3. `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/rollback.md`, the
-   Bluetooth sibling's equivalent rollback, for the same "revocation, not unrestriction" caution.
+ Bluetooth sibling's equivalent rollback, for the same "revocation, not unrestriction" caution.

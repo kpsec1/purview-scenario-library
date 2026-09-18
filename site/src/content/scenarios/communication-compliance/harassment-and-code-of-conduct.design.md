@@ -25,9 +25,9 @@ that appears twice, word for word:
 
 > "PowerShell isn't supported for creating and managing Communication Compliance policies. To
 > create and manage these policies, use the policy management controls in the Communication
-> Compliance solution." [[12]](#references) [[13]](#references)
+> Compliance solution." 
 
-`docs/automation-surface.md`'s own routing table (§4) has no row for Communication Compliance for
+[Automation surface](/docs/automation-surface/)'s own routing table (§4) has no row for Communication Compliance for
 the same reason every other no-write-API module in this repo (Compliance Manager, Insider Risk
 Management policy authoring) has none.
 
@@ -39,7 +39,7 @@ would fail on first use and cost the buyer more time than a correctly-labeled ma
 **A documentation-adjacent nuance worth recording, not hiding:** the older `New-`/
 `Get-SupervisoryReviewPolicyV2` cmdlets (Communication Compliance's pre-rebrand name, "Supervisory
 Review") are still present in the current `ExchangeOnlineManagement`/Security & Compliance
-PowerShell module reference [[14]](#references), and `Get-SupervisoryReviewPolicyV2` is even used
+PowerShell module reference, and `Get-SupervisoryReviewPolicyV2` is even used
 in Microsoft's own `communication-compliance-reports-audits` article, but only to read a policy's
 `ReviewMailbox` property for a storage-size check, never to create or edit a policy. This scenario
 does not use `New-SupervisoryReviewPolicyV2` to create the policy itself: Microsoft's current,
@@ -51,17 +51,17 @@ not actually correct" shortcut `AGENTS.md` §4 exists to prevent.
 **What this scenario ships instead**, to still meet `AGENTS.md` §9's definition of done:
 
 1. A precise, repeatable **portal runbook** (`README.md` §5, backed by a structured, versioned,
-   explicitly non-executable JSON manifest at
-   `deploy/policy/communication-compliance-policy-manifest.json`, the same "reference manifest,
-   not an API payload" pattern this repo established in
-   `scenarios/insider-risk/departing-employee-data-theft/` and
-   `scenarios/compliance-manager/assess-against-iso27001/` for other no-write-API Purview
-   surfaces) plus one genuinely uploadable artifact the portal wizard actually consumes: a custom
-   keyword dictionary text file (§4 below).
+ explicitly non-executable JSON manifest at
+ `deploy/policy/communication-compliance-policy-manifest.json`, the same "reference manifest,
+ not an API payload" pattern this repo established in
+ `scenarios/insider-risk/departing-employee-data-theft/` and
+ `scenarios/compliance-manager/assess-against-iso27001/` for other no-write-API Purview
+ surfaces) plus one genuinely uploadable artifact the portal wizard actually consumes: a custom
+ keyword dictionary text file (§4 below).
 2. One genuinely scriptable, genuinely useful piece of real automation, with a documented,
-   grounded API: `deploy/Export-CommunicationComplianceAuditTrail.ps1`, which pulls the five
-   Communication-Compliance-specific unified-audit-log operations Microsoft's own docs document
-   across three worked-example query shapes (§4).
+ grounded API: `deploy/Export-CommunicationComplianceAuditTrail.ps1`, which pulls the five
+ Communication-Compliance-specific unified-audit-log operations Microsoft's own docs document
+ across three worked-example query shapes (§4).
 
 ## 3. Why Communication Compliance (not DLP, not Insider Risk Management) for this control
 
@@ -70,18 +70,18 @@ choosing between these three controls for a given problem; the same reasoning ap
 here:
 
 - **DLP** inspects content and can block a message in real time, but its rule engine matches
-  patterns/sensitive-information-types deterministically, it has no trainable-classifier concept
-  for "this message is harassing" and cannot itself distinguish a professional disagreement from a
-  targeted personal attack. Wrong tool for nuanced, human-judgment-requiring language.
+ patterns/sensitive-information-types deterministically, it has no trainable-classifier concept
+ for "this message is harassing" and cannot itself distinguish a professional disagreement from a
+ targeted personal attack. Wrong tool for nuanced, human-judgment-requiring language.
 - **Insider Risk Management** scores cumulative user risk from many signal types (including a
-  Communication Compliance integration, §6 below) but its own policy templates target data
-  theft/leakage/security-policy violations, not interpersonal conduct, as the primary detection
-  surface.
+ Communication Compliance integration, §6 below) but its own policy templates target data
+ theft/leakage/security-policy violations, not interpersonal conduct, as the primary detection
+ surface.
 - **Communication Compliance** is the Purview solution purpose-built for this: Microsoft-trained
-  classifiers for Discrimination, Harassment, Profanity, and Threat language, a review workflow
-  with role-separated reviewers, pseudonymization by design, and a documented audit trail, see
-  Microsoft's own framing: "you can check user communications in your organization for human
-  resources concerns such as harassment" [[1]](#references).
+ classifiers for Discrimination, Harassment, Profanity, and Threat language, a review workflow
+ with role-separated reviewers, pseudonymization by design, and a documented audit trail, see
+ Microsoft's own framing: "you can check user communications in your organization for human
+ resources concerns such as harassment".
 
 Communication Compliance is explicitly **detective, not preventive**, it reviews messages *after*
 they're sent, for human reviewers to act on; it cannot block a message before delivery the way DLP
@@ -91,7 +91,7 @@ can. This is a deliberate, documented trade-off (§7, Non-goals), not an oversig
 
 Four Microsoft-provided trainable classifiers are combined as OR conditions:
 
-| Classifier | What it detects | Documented expected volume [[8]](#references) |
+| Classifier | What it detects | Documented expected volume |
 |---|---|---|
 | Discrimination | Explicit discriminatory language (particularly sensitive to language targeting Black/African American communities relative to other groups, per Microsoft's own classifier definition) | Low |
 | Harassment | Offensive content targeting race, color, religion, national origin, also labeled "Targeted harassment" on some Microsoft Learn pages and in the portal's Filters UI (§11 VERIFY, a documented naming inconsistency, not this scenario's error) | Low |
@@ -100,20 +100,20 @@ Four Microsoft-provided trainable classifiers are combined as OR conditions:
 
 **Why not the preview LLM-based content-safety classifiers (Hate/Sexual/Violence/Self-harm)
 instead:** those classifiers are Microsoft 365 Copilot, Teams, and Viva Engage only, they do not
-cover Exchange Online [[9]](#references). Since this scenario's location scope explicitly includes
+cover Exchange Online. Since this scenario's location scope explicitly includes
 Exchange (harassment over email is exactly as real a risk as harassment over Teams), the
 trainable-classifier family is the only one with full coverage across all three in-scope
 locations. The content-safety classifiers are a candidate follow-up for Teams/Viva
 Engage-specific, higher-accuracy detection (`PROGRESS.md`), not a substitute here.
 
 **Why not a custom trainable classifier:** Communication Compliance explicitly does not support
-them, "Custom trainable classifiers aren't supported" [[8]](#references), only the fixed catalog
+them, "Custom trainable classifiers aren't supported", only the fixed catalog
 above (plus keyword dictionaries and sensitive information types) is available as a condition.
 
 **Why a custom keyword dictionary, and why it deliberately does not contain slurs or profanity:**
 the Profanity/Harassment/Discrimination classifiers already cover explicit offensive language more
 robustly than a static word list could (they're trained on natural-language patterns, not exact
-string matches, and cover multiple languages [[8]](#references)). A keyword list's marginal value
+string matches, and cover multiple languages). A keyword list's marginal value
 over an already-classifier-covered condition set is catching **organization-specific evasion or
 concealment phrasing** a classifier isn't designed to flag, "don't tell HR," "keep this between
 us," "delete this after reading." `deploy/policy/code-of-conduct-evasion-phrases.txt` is scoped to
@@ -124,7 +124,7 @@ shipping a slur/profanity word list in a public-facing reference repository serv
 
 Communication Compliance's permission model draws a sharp line: **Analysts** can investigate
 alerts and see message metadata; **Investigators** can additionally see full message *content*
-[[6]](#references). For most compliance scenarios, starting reviewers at the narrower Analyst role
+. For most compliance scenarios, starting reviewers at the narrower Analyst role
 and escalating to Investigator only when needed is the safer default. This scenario deliberately
 assigns HR/Legal reviewers directly to **Communication Compliance Investigators** instead, because
 a harassment investigation that cannot see the actual message text is not a credible
@@ -133,18 +133,18 @@ sent" without being able to read it cannot make a defensible remediation decisio
 cost of this broader role is mitigated, not eliminated, by:
 
 - Username pseudonymization (`deploy/policy/communication-compliance-policy-manifest.json`'s
-  `privacySettings`), reviewers see a pseudonym until a case genuinely requires revealing
-  identity.
+ `privacySettings`), reviewers see a pseudonym until a case genuinely requires revealing
+ identity.
 - Narrow role-group membership, only named HR/Legal stakeholders, not a broad admin group.
 - The audit trail this scenario's script exports, which records every review-tag/resolution action
-  taken (`ReviewTag` category, §8 below) as an accountability mechanism for reviewer conduct
-  itself.
+ taken (`ReviewTag` category, §8 below) as an accountability mechanism for reviewer conduct
+ itself.
 
 ## 6. Integration awareness: Insider Risk Management (documented, not built here)
 
 Microsoft documents an optional integration where Communication Compliance signals feed Insider
 Risk Management's risky-user detection (a dedicated auto-created "Insider risk trigger" policy,
-using the Threat/Harassment/Discrimination classifiers) [[10]](#references). This scenario's own
+using the Threat/Harassment/Discrimination classifiers). This scenario's own
 policy is a standalone Communication Compliance deployment and does not configure that IRM
 integration, see §7, Non-goals. A buyer who has also deployed
 `scenarios/insider-risk/departing-employee-data-theft/` should be aware the two solutions *can* be
@@ -153,26 +153,26 @@ wired together but are independent unless that specific IRM-side option is expli
 ## 7. Non-goals
 
 - **The FINRA/SEC-oriented "Regulatory compliance" policy template** (Customer complaints, Gifts &
-  entertainment, Money laundering, Regulatory collusion, Stock manipulation, Unauthorized
-  disclosure classifiers), a different regulatory driver (broker-dealer supervision) from this
-  scenario's HR/code-of-conduct focus. A natural sibling scenario, tracked in `PROGRESS.md`.
+ entertainment, Money laundering, Regulatory collusion, Stock manipulation, Unauthorized
+ disclosure classifiers), a different regulatory driver (broker-dealer supervision) from this
+ scenario's HR/code-of-conduct focus. A natural sibling scenario, tracked in `PROGRESS.md`.
 - **The "Detect Microsoft 365 Copilot and Microsoft 365 Copilot Chat interactions" policy
-  template** (Prompt Shields/Protected material classifiers), a DSPM-for-AI-adjacent concern, not
-  this scenario's interpersonal-conduct focus.
+ template** (Prompt Shields/Protected material classifiers), a DSPM-for-AI-adjacent concern, not
+ this scenario's interpersonal-conduct focus.
 - **Configuring the Insider Risk Management integration** described in §6, a deliberate, separate
-  opt-in with its own policy-template implications, better scoped as its own follow-up once
-  concretely needed.
+ opt-in with its own policy-template implications, better scoped as its own follow-up once
+ concretely needed.
 - **SIEM/Sentinel wiring.** This scenario's audit-trail script produces a CSV a SIEM connector can
-  ingest, and Microsoft documents a native Sentinel/`OfficeActivity` integration path
-  [[11]](#references), matching the same scope boundary `scenarios/dlp/pci-teams-exfil-block/`
-  already established (document the native alert surface and the SIEM path; don't build a
-  Sentinel workbook as part of this fragment).
+ ingest, and Microsoft documents a native Sentinel/`OfficeActivity` integration path
+, matching the same scope boundary `scenarios/dlp/pci-teams-exfil-block/`
+ already established (document the native alert surface and the SIEM path; don't build a
+ Sentinel workbook as part of this fragment).
 - **Third-party source connectors** (e.g. Instant Bloomberg), requires a connector configured
-  outside this scenario; out of scope.
+ outside this scenario; out of scope.
 - **Reproducing the exact remediation-action API surface** (Resolve/Tag as/Escalate/Notify/Power
-  Automate/Remove from Teams) as scriptable automation. These are portal-only reviewer actions
-  with no documented write API of their own, distinct from, and not to be confused with, the
-  policy-authoring write-API gap this scenario's §2 already covers.
+ Automate/Remove from Teams) as scriptable automation. These are portal-only reviewer actions
+ with no documented write API of their own, distinct from, and not to be confused with, the
+ policy-authoring write-API gap this scenario's §2 already covers.
 
 ## 8. Key decisions
 

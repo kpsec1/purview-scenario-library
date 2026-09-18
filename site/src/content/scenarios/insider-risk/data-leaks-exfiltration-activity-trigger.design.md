@@ -19,74 +19,74 @@ policy yet** actually needs.
 ## 2. Design goals
 
 1. **Same template, same population mechanism, different trigger, don't re-derive what's already
-   grounded.** This is not a new policy template; it is the base `Data leaks` template's other
-   documented triggering-event choice. Every fact this library already grounded for the sibling
-   scenario about the template itself (15,000-actively-scored-user cap, population = a plain Entra
-   group with no HR/priority-user/Communication-Compliance-trigger requirement, Cumulative
-   exfiltration detection default-on, the optional Communication Compliance/generative-AI/cloud
-   indicator categories) applies identically here and is cross-referenced, not re-grounded from
-   scratch.
+ grounded.** This is not a new policy template; it is the base `Data leaks` template's other
+ documented triggering-event choice. Every fact this library already grounded for the sibling
+ scenario about the template itself (15,000-actively-scored-user cap, population = a plain Entra
+ group with no HR/priority-user/Communication-Compliance-trigger requirement, Cumulative
+ exfiltration detection default-on, the optional Communication Compliance/generative-AI/cloud
+ indicator categories) applies identically here and is cross-referenced, not re-grounded from
+ scratch.
 2. **Ground the specific mechanics of the exfiltration-activity trigger the sibling scenario left
-   as a configuration reference, not a worked example: which indicators are selectable as the
-   trigger, and how default vs. custom thresholds actually work.** A direct Microsoft Learn fetch
-   of "Get started with Insider Risk Management" (`insider-risk-management-configure`) Step 6,
-   sub-steps 12/14/15, confirms two **separate** threshold decisions exist in the policy-creation
-   workflow for this template, not one:
-   - **Triggering-indicator thresholds** (sub-steps 12/14/15), chosen when selecting which
-     built-in indicator(s) bring a user **into scope** for the exfiltration-activity trigger.
-     "Choose either **Use default thresholds (Recommended)** or **Use custom thresholds for the
-     triggering events**." If custom is chosen, each selected trigger indicator gets its own
-     threshold, using "the recommended thresholds, custom thresholds, or thresholds based on
-     anomalous activities (for certain indicators) over the daily norm for users."
-   - **Policy (scoring) indicator thresholds** (sub-step 17, a later page in the same workflow), 
-     a **separate** default-vs-custom choice for the indicators that score an **already-triggered**
-     user's risk once they're in scope. This is the same threshold model every other Office-
-     indicator-scoring template in this library already documents (`data-leaks/README.md` §6), not
-     specific to this trigger path.
+ as a configuration reference, not a worked example: which indicators are selectable as the
+ trigger, and how default vs. custom thresholds actually work.** A direct Microsoft Learn fetch
+ of "Get started with Insider Risk Management" (`insider-risk-management-configure`) Step 6,
+ sub-steps 12/14/15, confirms two **separate** threshold decisions exist in the policy-creation
+ workflow for this template, not one:
+ - **Triggering-indicator thresholds** (sub-steps 12/14/15), chosen when selecting which
+ built-in indicator(s) bring a user **into scope** for the exfiltration-activity trigger.
+ "Choose either **Use default thresholds (Recommended)** or **Use custom thresholds for the
+ triggering events**." If custom is chosen, each selected trigger indicator gets its own
+ threshold, using "the recommended thresholds, custom thresholds, or thresholds based on
+ anomalous activities (for certain indicators) over the daily norm for users."
+ - **Policy (scoring) indicator thresholds** (sub-step 17, a later page in the same workflow), 
+ a **separate** default-vs-custom choice for the indicators that score an **already-triggered**
+ user's risk once they're in scope. This is the same threshold model every other Office-
+ indicator-scoring template in this library already documents (`data-leaks/README.md` §6), not
+ specific to this trigger path.
 
-   Conflating these two as a single decision would misstate the actual policy-creation workflow, 
-   `README.md` §5 Step 4/§6 and this file's §5 keep them explicitly distinct.
+ Conflating these two as a single decision would misstate the actual policy-creation workflow, 
+ `README.md` §5 Step 4/§6 and this file's §5 keep them explicitly distinct.
 3. **Document the worked threshold example Microsoft itself publishes, without inventing a default
-   numeric value Microsoft doesn't state.** The same "Configure policy indicators in Insider Risk
-   Management" page gives a fully worked, named example for a SharePoint Online download indicator:
-   three custom daily-event levels, 10+/day (low), 20+/day (medium), 30+/day (high), each mapped
-   to a resulting alert-severity tendency. Microsoft frames this explicitly as an illustration
-   ("For example, suppose you decide..."), not a universal default value, and does not publish the
-   actual **default** thresholds behind "Use default thresholds (Recommended)" for any indicator.
-   `README.md` §6 reproduces the worked example with its sourcing intact and flags the underlying
-   default numeric values as an open VERIFY (portal) rather than guessing them.
+ numeric value Microsoft doesn't state.** The same "Configure policy indicators in Insider Risk
+ Management" page gives a fully worked, named example for a SharePoint Online download indicator:
+ three custom daily-event levels, 10+/day (low), 20+/day (medium), 30+/day (high), each mapped
+ to a resulting alert-severity tendency. Microsoft frames this explicitly as an illustration
+ ("For example, suppose you decide..."), not a universal default value, and does not publish the
+ actual **default** thresholds behind "Use default thresholds (Recommended)" for any indicator.
+ `README.md` §6 reproduces the worked example with its sourcing intact and flags the underlying
+ default numeric values as an open VERIFY (portal) rather than guessing them.
 4. **Reuse the scope-candidate and alert-export scripts already generalized for this template
-   family, same reasoning as the DLP-trigger sibling, don't fork a third time.** This trigger path
-   changes nothing about how the policy's population is resolved or how alerts are exported; both
-   scripts are called with this scenario's own parameters, unmodified.
+ family, same reasoning as the DLP-trigger sibling, don't fork a third time.** This trigger path
+ changes nothing about how the policy's population is resolved or how alerts are exported; both
+ scripts are called with this scenario's own parameters, unmodified.
 5. **This trigger path needs no DLP-policy readiness check, the one new building block the sibling
-   scenario contributed doesn't apply here, so don't force it in.** `data-leaks/deploy/
-   Test-DlpPolicyIrmTriggerReadiness.ps1` validates an operator-chosen DLP policy's fitness as a
-   trigger; this scenario has no DLP policy in its trigger path at all. The genuinely new
-   contribution this fragment makes instead is a **policy-configuration manifest and matching
-   validation checklist scoped to the exfiltration-activity trigger's own decision points**
-   (which indicators are selected as the trigger, which threshold mode was chosen, and, because
-   there is no API to read any of this back, a durable, versioned record of what the workflow
-   button-clicks actually selected, the same role every other portal-only IRM scenario's manifest
-   plays in this library).
+ scenario contributed doesn't apply here, so don't force it in.** `data-leaks/deploy/
+ Test-DlpPolicyIrmTriggerReadiness.ps1` validates an operator-chosen DLP policy's fitness as a
+ trigger; this scenario has no DLP policy in its trigger path at all. The genuinely new
+ contribution this fragment makes instead is a **policy-configuration manifest and matching
+ validation checklist scoped to the exfiltration-activity trigger's own decision points**
+ (which indicators are selected as the trigger, which threshold mode was chosen, and, because
+ there is no API to read any of this back, a durable, versioned record of what the workflow
+ button-clicks actually selected, the same role every other portal-only IRM scenario's manifest
+ plays in this library).
 6. **Ground, don't guess, whether the two triggering-event options can be combined on one policy, 
-   report the sibling's open VERIFY plus a materially stronger signal this fragment's own direct
-   fetch surfaced, without overriding it.** The DLP-trigger sibling's own `design.md` §6 disclosed
-   this as unresolved based on WebSearch-only grounding. This fragment's direct fetch of the same
-   "Get started" page's Step 6, sub-step 12, phrases the two triggering-event choices as mutually
-   exclusive workflow branches, "If you select the **User matches a data loss prevention (DLP)
-   policy** triggering event option, you must select a DLP policy... If you select the **User
-   performs an exfiltration activity** triggering event option, you must select one or more of the
-   listed indicators", worded as alternative "if you select X... if you select Y..." branches, not
-   an explicit "select either or both" statement either sibling template's own risky-users-family
-   cousin carries for its AND/OR HR-connector/Communication-Compliance prerequisite. This is
-   **suggestive of a single-select choice, not confirmed as mutually exclusive by an explicit
-   statement**, `README.md` §11 states this exact nuance (stronger than the sibling's own framing,
-   still short of confirmed) rather than either re-asserting the sibling's weaker framing or
-   claiming full confirmation. This scenario's own docs use this reading; the sibling's own
-   `data-leaks/design.md` §6 and `README.md` §6/§11 are **not** edited in this fragment (a
-   separate scenario's files, out of scope for a one-fragment turn), tracked as a follow-up in
-   `PROGRESS.md` instead.
+ report the sibling's open VERIFY plus a materially stronger signal this fragment's own direct
+ fetch surfaced, without overriding it.** The DLP-trigger sibling's own `design.md` §6 disclosed
+ this as unresolved based on WebSearch-only grounding. This fragment's direct fetch of the same
+ "Get started" page's Step 6, sub-step 12, phrases the two triggering-event choices as mutually
+ exclusive workflow branches, "If you select the **User matches a data loss prevention (DLP)
+ policy** triggering event option, you must select a DLP policy... If you select the **User
+ performs an exfiltration activity** triggering event option, you must select one or more of the
+ listed indicators", worded as alternative "if you select X... if you select Y..." branches, not
+ an explicit "select either or both" statement either sibling template's own risky-users-family
+ cousin carries for its AND/OR HR-connector/Communication-Compliance prerequisite. This is
+ **suggestive of a single-select choice, not confirmed as mutually exclusive by an explicit
+ statement**, `README.md` §11 states this exact nuance (stronger than the sibling's own framing,
+ still short of confirmed) rather than either re-asserting the sibling's weaker framing or
+ claiming full confirmation. This scenario's own docs use this reading; the sibling's own
+ `data-leaks/design.md` §6 and `README.md` §6/§11 are **not** edited in this fragment (a
+ separate scenario's files, out of scope for a one-fragment turn), tracked as a follow-up in
+ `PROGRESS.md` instead.
 
 ## 3. Why this is its own scenario folder, not an edit to `data-leaks/`
 
@@ -144,25 +144,25 @@ they match.
 ## 7. Non-goals
 
 - **Does not configure the DLP-policy triggering event**, that is `data-leaks/`'s own worked
-  example; a tenant that already has a qualifying DLP policy should use that scenario instead of
-  (or, pending §2 goal 6's open question, possibly in addition to) this one.
+ example; a tenant that already has a qualifying DLP policy should use that scenario instead of
+ (or, pending §2 goal 6's open question, possibly in addition to) this one.
 - **Does not build `Data leaks by priority users` or `Data leaks by risky users`**, the latter is
-  already built as its own scenario; the former remains open in `PROGRESS.md`.
+ already built as its own scenario; the former remains open in `PROGRESS.md`.
 - **Does not attempt to script or predict threshold values.** Real-time analytics (preview) can
-  provide data-driven threshold recommendations directly in the portal workflow
-  (`insider-risk-management-settings-policy-indicators#use-real-time-analytics-recommendations-to-set-thresholds`)
+ provide data-driven threshold recommendations directly in the portal workflow
+ (`insider-risk-management-settings-policy-indicators#use-real-time-analytics-recommendations-to-set-thresholds`)
 , this scenario documents that this exists and its prerequisite (insider risk analytics enabled,
-  policy scoped to "Include all users and groups"), but does not attempt to replicate or fabricate
-  an equivalent scripted recommendation engine; no Graph/PowerShell API exists for it.
+ policy scoped to "Include all users and groups"), but does not attempt to replicate or fabricate
+ an equivalent scripted recommendation engine; no Graph/PowerShell API exists for it.
 - **Does not create a custom indicator via the Insider Risk Indicators (preview) connector**, a
-  separately-scoped capability (non-Microsoft-workload detections) that could be a future,
-  independently-scoped fragment for either template's trigger path, not built here.
+ separately-scoped capability (non-Microsoft-workload detections) that could be a future,
+ independently-scoped fragment for either template's trigger path, not built here.
 - **Does not edit `data-leaks/README.md` or `design.md`'s own disclosed VERIFY items**, this
-  fragment's own stronger (but still inconclusive) evidence on the combinability question is
-  recorded in this scenario's own docs and as a `PROGRESS.md` follow-up, not applied to a sibling
-  scenario's files in the same turn (`AGENTS.md` §6 one-fragment-per-turn discipline).
+ fragment's own stronger (but still inconclusive) evidence on the combinability question is
+ recorded in this scenario's own docs and as a `PROGRESS.md` follow-up, not applied to a sibling
+ scenario's files in the same turn (`AGENTS.md` §6 one-fragment-per-turn discipline).
 - **Does not configure Adaptive Protection**, same non-goal as every base Insider Risk Management
-  scenario in this library that isn't itself an Adaptive Protection scenario.
+ scenario in this library that isn't itself an Adaptive Protection scenario.
 - **Does not attempt cross-policy alert disambiguation**, the same disclosed gap every Insider Risk
-  Management scenario in this library carries (`AlertPolicyId` has no documented policy-name
-  mapping).
+ Management scenario in this library carries (`AlertPolicyId` has no documented policy-name
+ mapping).

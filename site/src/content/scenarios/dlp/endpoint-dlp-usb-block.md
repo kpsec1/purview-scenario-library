@@ -42,28 +42,28 @@ external-sharing controls in `pci-teams-exfil-block`.
 
 Two secondary drivers this control also supports:
 - **Audit/incident-response evidence**, every block and every IT Data Custodian copy is logged
-  (alert, incident report, Activity explorer event), giving an investigator or auditor a record of
-  what left the organization via removable media and when.
+ (alert, incident report, Activity explorer event), giving an investigator or auditor a record of
+ what left the organization via removable media and when.
 - **Consistency with the tenant's existing "sensitive" definition**, this scenario deliberately
-  reuses the exact SIT pair `auto-label-confidential-sharepoint` uses to apply the Confidential
-  label, so a buyer running both scenarios has one coherent definition of "sensitive," not two
-  independently tuned ones that can drift apart.
+ reuses the exact SIT pair `auto-label-confidential-sharepoint` uses to apply the Confidential
+ label, so a buyer running both scenarios has one coherent definition of "sensitive," not two
+ independently tuned ones that can drift apart.
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for this scenario:
+Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/). Summary for this scenario:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Endpoint Data Loss Prevention (DLP) | **Microsoft 365 E5/A5/G5**, **Microsoft Purview Suite/EDU/GOV/FLW**, **Microsoft Defender + Purview Suite FLW**, or **Microsoft 365 E5/A5/F5/G5 Information Protection & Governance** | Confirmed per-user for every endpoint user covered by the policy [[1]](#references) |
-| Device onboarding | Devices must be onboarded to Microsoft Purview device management (shared onboarding with Microsoft Defender for Endpoint) and actively reporting into Activity explorer | Onboarding is a package deployment (local script up to 10 machines, Group Policy, Configuration Manager, or Intune), **not** something this scenario's deploy script performs. See §5 and `design.md` §5 [[2]](#references) |
-| Supported OS | Windows 10/11 (specific builds per KB), Windows Server 2019+ (opt-in), or macOS (three latest released major versions) | Full current build matrix: `device-onboarding-overview` [[2]](#references) |
-| Role to onboard devices / manage device monitoring | **Security Administrator**, **Compliance Administrator**, or **Global Administrator** (Microsoft Entra role) | Device management currently supports **only** Entra roles, Purview role groups (including DLP Compliance Management) do **not** grant onboarding or device-monitoring rights, even though they do grant policy-authoring rights (next row) [[2]](#references) |
-| Role to author/edit DLP policies | **DLP Compliance Management** role (built into the *Compliance Administrator* / custom S&C role group) | See `docs/rbac-model.md` §3 (Purview role groups). Note this is a **separate** permission from device onboarding above, a buyer's DLP author may not be able to onboard devices, and vice versa |
-| Automation identity | App registration with **Exchange Online Protection → `Exchange.ManageAsApp`** application permission, granted the DLP-authoring role group | Certificate-based app-only auth, see `docs/automation-surface.md` §3. Does not cover device onboarding, which has no PowerShell/Graph automation surface documented as of this writing (VERIFY at deploy time) |
+| Endpoint Data Loss Prevention (DLP) | **Microsoft 365 E5/A5/G5**, **Microsoft Purview Suite/EDU/GOV/FLW**, **Microsoft Defender + Purview Suite FLW**, or **Microsoft 365 E5/A5/F5/G5 Information Protection & Governance** | Confirmed per-user for every endpoint user covered by the policy |
+| Device onboarding | Devices must be onboarded to Microsoft Purview device management (shared onboarding with Microsoft Defender for Endpoint) and actively reporting into Activity explorer | Onboarding is a package deployment (local script up to 10 machines, Group Policy, Configuration Manager, or Intune), **not** something this scenario's deploy script performs. See §5 and `design.md` §5 |
+| Supported OS | Windows 10/11 (specific builds per KB), Windows Server 2019+ (opt-in), or macOS (three latest released major versions) | Full current build matrix: `device-onboarding-overview` |
+| Role to onboard devices / manage device monitoring | **Security Administrator**, **Compliance Administrator**, or **Global Administrator** (Microsoft Entra role) | Device management currently supports **only** Entra roles, Purview role groups (including DLP Compliance Management) do **not** grant onboarding or device-monitoring rights, even though they do grant policy-authoring rights (next row) |
+| Role to author/edit DLP policies | **DLP Compliance Management** role (built into the *Compliance Administrator* / custom S&C role group) | See [RBAC model §3](/docs/rbac-model/#3-microsoft-entra-roles-that-map-into-purview) (Purview role groups). Note this is a **separate** permission from device onboarding above, a buyer's DLP author may not be able to onboard devices, and vice versa |
+| Automation identity | App registration with **Exchange Online Protection → `Exchange.ManageAsApp`** application permission, granted the DLP-authoring role group | Certificate-based app-only auth, see [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended). Does not cover device onboarding, which has no PowerShell/Graph automation surface documented as of this writing (VERIFY at deploy time) |
 | Dependency (not deployed by this scenario) | A mail-enabled security group or Microsoft 365 group for **IT Data Custodians** | Must exist before running `deploy/New-EndpointDlpUsbBlockPolicy.ps1` |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) and the
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) (dated 2026-09-02) and the
 > Product Terms before a sales commitment, SKU names change.
 
 ## 4. Architecture
@@ -99,33 +99,33 @@ Purview/Defender client, driven by policy synced from Security & Compliance Powe
 ### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
 1. **Onboard devices first** (one-time, not part of this scenario's deploy script). Sign in to the
-   [Microsoft Purview portal](https://purview.microsoft.com) → **Settings** → **Device
-   onboarding** → **Devices** → **Turn on device onboarding** → **Onboarding**, choose a
-   deployment method (local script, Group Policy, Configuration Manager, or Intune), and deploy
-   the downloaded package to target endpoints. If devices are already onboarded to Microsoft
-   Defender for Endpoint, they already appear in this list, only **Turn on device monitoring** is
-   needed [[2]](#references).
+ [Microsoft Purview portal](https://purview.microsoft.com) → **Settings** → **Device
+ onboarding** → **Devices** → **Turn on device onboarding** → **Onboarding**, choose a
+ deployment method (local script, Group Policy, Configuration Manager, or Intune), and deploy
+ the downloaded package to target endpoints. If devices are already onboarded to Microsoft
+ Defender for Endpoint, they already appear in this list, only **Turn on device monitoring** is
+ needed.
 2. Go to **Data loss prevention** → **Policies** → **Create policy**.
 3. Category: **Custom** → template: **Custom policy** → **Next**.
 4. Name: `Endpoint DLP - Block USB Removable Media Exfiltration`. **Policies can't be renamed
-   after creation**, confirm the name before continuing [[3]](#references).
+ after creation**, confirm the name before continuing.
 5. **Assign admin units**: accept **Full directory** (unless the tenant uses administrative units
-, see `docs/rbac-model.md` §4).
+, see [RBAC model §4](/docs/rbac-model/#4-purview-role-groups-by-module-representative-not-exhaustive)).
 6. **Choose locations**: select **Devices** only; deselect all other locations.
 7. **Define policy settings**: choose **Create or customize advanced DLP rules**.
 8. Create rule **USB-Block-Sensitive-AllUsers** (priority 0):
-   - Conditions: **Content contains** → **Sensitive info types** → **U.S. Social Security Number
-     (SSN)** OR **Credit Card Number** (min count 1 each); add **Sender is a member of** with
-     **Except if** toggled → the IT Data Custodians group.
-   - Actions: **Audit or restrict activities on devices** → **File activities for all apps** →
-     **Apply restrictions to specific activity** → set **Copy to a removable USB device** =
-     **Block** [[4]](#references).
-   - Incident reports: alert **High** severity, send to the SOC/admin mailbox.
+ - Conditions: **Content contains** → **Sensitive info types** → **U.S. Social Security Number
+ (SSN)** OR **Credit Card Number** (min count 1 each); add **Sender is a member of** with
+ **Except if** toggled → the IT Data Custodians group.
+ - Actions: **Audit or restrict activities on devices** → **File activities for all apps** →
+ **Apply restrictions to specific activity** → set **Copy to a removable USB device** =
+ **Block**.
+ - Incident reports: alert **High** severity, send to the SOC/admin mailbox.
 9. Create rule **USB-Audit-ITDataCustodians** (priority 1): same content condition, scoped
-   (**not** excepted) to the IT Data Custodians group; same activity restriction but set **Copy to
-   a removable USB device** = **Audit only**; alert **Low** severity.
+ (**not** excepted) to the IT Data Custodians group; same activity restriction but set **Copy to
+ a removable USB device** = **Audit only**; alert **Low** severity.
 10. **Policy mode**: choose **Run the policy in simulation mode** first. Do not turn it on
-    immediately, follow the staged rollout in §8 below.
+ immediately, follow the staged rollout in §8 below.
 11. **Submit**, then **Done**.
 
 ### Script path (idempotent, parameterized, dry-run capable)
@@ -164,7 +164,7 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 ```
 
 The deploy script uses Security & Compliance PowerShell (`New-DlpCompliancePolicy`,
-`New-DlpComplianceRule`), automation surface 2 per `docs/automation-surface.md` §1. Device
+`New-DlpComplianceRule`), automation surface 2 per [Automation surface §1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first). Device
 onboarding itself has no equivalent PowerShell/Graph cmdlet documented as of this writing and must
 be performed as in §5 step 1 above, once, before this policy has any effect.
 
@@ -188,29 +188,29 @@ its `.NOTES` block cite the exact Microsoft Learn PowerShell reference pages.
 ## 7. Validation / how to prove it works
 
 1. **Pilot-tenant first deploy (do this before §7.2-4 in any tenant)**, the `-EndpointDlpRestrictions`
-   `Setting`/`Value` strings this script uses are confirmed against Microsoft's official cmdlet
-   reference (§11), but run `deploy/New-EndpointDlpUsbBlockPolicy.ps1` once against a
-   non-production/pilot tenant and confirm it completes without a parameter-validation error
-   before relying on it elsewhere, as a routine first-deploy sanity check.
+ `Setting`/`Value` strings this script uses are confirmed against Microsoft's official cmdlet
+ reference (§11), but run `deploy/New-EndpointDlpUsbBlockPolicy.ps1` once against a
+ non-production/pilot tenant and confirm it completes without a parameter-validation error
+ before relying on it elsewhere, as a routine first-deploy sanity check.
 2. **Automated config check**, `./validate/Test-EndpointDlpUsbBlockPolicy.ps1
-   -ITCustodiansGroupEmail 'it-custodians@contoso.com'` confirms the policy and both rules exist
-   with the expected scoping, exits non-zero on any hard failure (safe for a CI-style pre-flight).
+ -ITCustodiansGroupEmail 'it-custodians@contoso.com'` confirms the policy and both rules exist
+ with the expected scoping, exits non-zero on any hard failure (safe for a CI-style pre-flight).
 3. **Device onboarding check**, Purview portal → **Settings** → **Device onboarding** →
-   **Devices**; confirm the target test device shows **Configuration status: Updated** and
-   **Policy Sync status: Updated** before running a functional test, an unsynced device will not
-   enforce the policy regardless of how correct the policy configuration is [[5]](#references).
+ **Devices**; confirm the target test device shows **Configuration status: Updated** and
+ **Policy Sync status: Updated** before running a functional test, an unsynced device will not
+ enforce the policy regardless of how correct the policy configuration is.
 4. **Functional test (non-Custodian user)**, from a test account **not** in the IT Data
-   Custodians group, on an onboarded device, attempt to copy a test file containing a documented
-   test SSN or card-brand-issued test card number (never a real person's SSN or a real
-   cardholder's PAN) to a USB drive. Expect: copy blocked, a toast notification on the endpoint,
-   and a high-severity alert in the DLP Alerts dashboard.
+ Custodians group, on an onboarded device, attempt to copy a test file containing a documented
+ test SSN or card-brand-issued test card number (never a real person's SSN or a real
+ cardholder's PAN) to a USB drive. Expect: copy blocked, a toast notification on the endpoint,
+ and a high-severity alert in the DLP Alerts dashboard.
 5. **Functional test (IT Data Custodian)**, same test, from an account in the IT Data Custodians
-   group. Expect: copy succeeds (not blocked), but a low-severity alert appears in the DLP Alerts
-   dashboard.
+ group. Expect: copy succeeds (not blocked), but a low-severity alert appears in the DLP Alerts
+ dashboard.
 6. **Functional test (non-sensitive content)**, copy a file with no SSN/card-number content to a
-   USB drive from either account. Expect: copy succeeds, no DLP alert.
+ USB drive from either account. Expect: copy succeeds, no DLP alert.
 7. **Activity explorer**, Purview portal → Data loss prevention → Activity explorer → filter by
-   policy name to confirm ongoing match volume once in `Enable` mode.
+ policy name to confirm ongoing match volume once in `Enable` mode.
 
 ## 8. Operations & tuning
 
@@ -222,20 +222,20 @@ are complete.
 
 **KPIs to watch (first 30 days):**
 - **Rule 0 (all-users block) match count**, a sudden spike after enabling usually means a
-  legitimate business process was missed by the IT Data Custodians exception, not a wave of
-  attempted exfiltration. Investigate before assuming malice.
+ legitimate business process was missed by the IT Data Custodians exception, not a wave of
+ attempted exfiltration. Investigate before assuming malice.
 - **Rule 1 (IT Data Custodians audit) volume and per-user distribution**, this is the baseline of
-  how much sensitive content the custodian team actually copies to removable media as part of its
-  job. An unusually high volume from a single custodian account relative to peers is the signal
-  worth investigating first.
+ how much sensitive content the custodian team actually copies to removable media as part of its
+ job. An unusually high volume from a single custodian account relative to peers is the signal
+ worth investigating first.
 - **False-positive rate**, SIT false positives (test data, employee IDs that happen to be
-  9 digits) show up as user complaints; tune by adjusting the SIT's confidence level or minimum
-  count only after confirming the pattern in Activity explorer, not from a single report.
+ 9 digits) show up as user complaints; tune by adjusting the SIT's confidence level or minimum
+ count only after confirming the pattern in Activity explorer, not from a single report.
 
 **Alert routing:** both rules generate alerts and incident reports to the SOC/admin mailbox
 parameter. Route the DLP alert source into the SIEM (Microsoft Sentinel connector, or the
 Microsoft Defender XDR incident queue export) so it lands in existing on-call rotation rather than
-living only in the Purview portal, see `docs/automation-surface.md` §4.
+living only in the Purview portal, see [Automation surface §4](/docs/automation-surface/#4-routing-table-which-surface-for-which-purview-task).
 
 **Review cadence:** quarterly at minimum for the overall control; re-run
 `validate/Test-EndpointDlpUsbBlockPolicy.ps1` as part of that review to catch configuration drift.
@@ -247,19 +247,19 @@ insider and deserves the same weekly-review discipline as the Card Operations ov
 
 **Incident-response runbook (Rule 0 block alert, or a Rule 1 audit event that looks anomalous):**
 1. **Triage**, open the alert in the DLP Alerts dashboard or Microsoft Defender portal incident
-   queue; confirm which rule matched, the user, the device, and that the "Sensitive info types"
-   tab shows an actual SSN/PAN-shaped match rather than a false positive.
+ queue; confirm which rule matched, the user, the device, and that the "Sensitive info types"
+ tab shows an actual SSN/PAN-shaped match rather than a false positive.
 2. **Classify**, true positive vs. false positive. False positive: no further action beyond
-   noting the pattern for a future SIT confidence-threshold tuning pass.
+ noting the pattern for a future SIT confidence-threshold tuning pass.
 3. **True positive, Rule 0 (block, non-Custodian user)**, the copy never completed; contact the
-   user's manager and initiate the org's standard data-handling incident process. Determine
-   whether the user needs a legitimate exception path or security-awareness follow-up.
+ user's manager and initiate the org's standard data-handling incident process. Determine
+ whether the user needs a legitimate exception path or security-awareness follow-up.
 4. **True positive, Rule 1 (IT Data Custodian audit)**, the copy already completed. Confirm the
-   activity matches the custodian's known backup/imaging schedule and device. If it doesn't
-   (unscheduled, unusual volume, unfamiliar device), escalate as a potential insider-risk event
-   and consider temporary removal from the IT Data Custodians group pending investigation.
+ activity matches the custodian's known backup/imaging schedule and device. If it doesn't
+ (unscheduled, unusual volume, unfamiliar device), escalate as a potential insider-risk event
+ and consider temporary removal from the IT Data Custodians group pending investigation.
 5. **Document**, every true positive and every custodian audit-event review is retained as
-   incident-response evidence; do not delete or edit alert records.
+ incident-response evidence; do not delete or edit alert records.
 
 ## 9. Rollback / decommission
 
@@ -270,98 +270,98 @@ permanently delete the policy and its rules.
 ## 10. Cost & licensing notes
 
 - **No PAYG component.** Endpoint DLP is a per-user entitlement feature, not billed through
-  Purview's Azure consumption model, see `docs/licensing-matrix.md` §1-2. Cost is the marginal
-  cost of moving any currently-sub-E5 endpoint users up to a qualifying SKU (§3 above).
+ Purview's Azure consumption model, see [Licensing matrix §1](/docs/licensing-matrix/#1-the-two-billing-models-read-this-first), 2. Cost is the marginal
+ cost of moving any currently-sub-E5 endpoint users up to a qualifying SKU (§3 above).
 - **No additional Azure subscription required** for this control specifically.
 - **Device onboarding has no separate license fee** beyond the qualifying per-user SKU, but it
-  does carry an operational cost: package deployment to every in-scope endpoint via existing
-  device-management tooling (Intune/Configuration Manager/Group Policy), which is real deployment
-  effort a buyer should budget for separately from the DLP policy authoring this scenario covers.
+ does carry an operational cost: package deployment to every in-scope endpoint via existing
+ device-management tooling (Intune/Configuration Manager/Group Policy), which is real deployment
+ effort a buyer should budget for separately from the DLP policy authoring this scenario covers.
 - **Sizing note:** license only the users in scope, typically all knowledge-worker endpoints
-  handling regulated data, which in the enterprises this repo targets is often already covered by
-  an existing E5 estate.
+ handling regulated data, which in the enterprises this repo targets is often already covered by
+ an existing E5 estate.
 
 ## 11. Known limitations & gotchas
 
 - **`EndpointDlpRestrictions` `Setting`/`Value` strings are confirmed against Microsoft's official
-  cmdlet reference.** Both the `New-DlpComplianceRule` and `Set-DlpComplianceRule` Learn reference
-  pages state directly: "The available values for `<Value>` are: Audit, Block, Ignore, or Warn,"
-  with a worked example `@{"Setting"="RemovableMedia"; "Value"="Block";}` matching this scenario's
-  Rule 0 exactly [[9]](#references)/[[10]](#references). The same pages confirm `Setting` names
-  beyond `RemovableMedia`, `Print`, `CopyPaste`, `ScreenCapture`, `NetworkShare`, and
-  `UnallowedApps`, none deployed by this scenario (see the non-restricted-activities bullet
-  below). The Microsoft Security Blog Tech Community walkthrough previously cited as the primary
-  source for this shape [[15]](#references) is retained only as a secondary, corroborating
-  citation now that the official reference confirms the same shape directly.
+ cmdlet reference.** Both the `New-DlpComplianceRule` and `Set-DlpComplianceRule` Learn reference
+ pages state directly: "The available values for `<Value>` are: Audit, Block, Ignore, or Warn,"
+ with a worked example `@{"Setting"="RemovableMedia"; "Value"="Block";}` matching this scenario's
+ Rule 0 exactly /. The same pages confirm `Setting` names
+ beyond `RemovableMedia`, `Print`, `CopyPaste`, `ScreenCapture`, `NetworkShare`, and
+ `UnallowedApps`, none deployed by this scenario (see the non-restricted-activities bullet
+ below). The Microsoft Security Blog Tech Community walkthrough previously cited as the primary
+ source for this shape is retained only as a secondary, corroborating
+ citation now that the official reference confirms the same shape directly.
 - **`Warn` is a real, documented action, and is now available as an opt-in for the IT Data
-  Custodians exception.** Both Learn pages state: "When you use the values Block or Warn in this
-  parameter, you also need to use the NotifyUser parameter", grouping `Warn` with the user-facing
-  `Block` action rather than the silent `Audit`/`Ignore` pair. That is strong, but not literal,
-  evidence that `Warn` is the enum value behind the portal's "Block with override" activity option
-  (a user-facing justification prompt, not a hard block), Microsoft's reference does not spell
-  out that exact portal-name mapping. `deploy/New-EndpointDlpUsbBlockPolicy.ps1` now accepts
-  `-ITExceptionAction Audit|Warn` (default `Audit`, unchanged prior behavior); choosing `Warn`
-  justification-gates the IT Data Custodians path instead of silently logging it, at the cost of
-  interrupting that team's legitimate workflow with a prompt on every matching copy. VERIFY (pilot
-  tenant) the actual on-screen prompt behavior before describing it to a customer as "Block with
-  override" by name.
+ Custodians exception.** Both Learn pages state: "When you use the values Block or Warn in this
+ parameter, you also need to use the NotifyUser parameter", grouping `Warn` with the user-facing
+ `Block` action rather than the silent `Audit`/`Ignore` pair. That is strong, but not literal,
+ evidence that `Warn` is the enum value behind the portal's "Block with override" activity option
+ (a user-facing justification prompt, not a hard block), Microsoft's reference does not spell
+ out that exact portal-name mapping. `deploy/New-EndpointDlpUsbBlockPolicy.ps1` now accepts
+ `-ITExceptionAction Audit|Warn` (default `Audit`, unchanged prior behavior); choosing `Warn`
+ justification-gates the IT Data Custodians path instead of silently logging it, at the cost of
+ interrupting that team's legitimate workflow with a prompt on every matching copy. VERIFY (pilot
+ tenant) the actual on-screen prompt behavior before describing it to a customer as "Block with
+ override" by name.
 - **Switching `-ITExceptionAction` from `Warn` back to `Audit` with `-Force` may leave stale
-  `NotifyUser`/`NotifyPolicyTipCustomText` values on the live rule.** `Set-DlpComplianceRule` is
-  not documented to clear a property simply because a later call omits it. Confirm those
-  properties with `Get-DlpComplianceRule` after switching away from `Warn` rather than assuming
-  `-Force` fully reverts every `Warn`-only property.
+ `NotifyUser`/`NotifyPolicyTipCustomText` values on the live rule.** `Set-DlpComplianceRule` is
+ not documented to clear a property simply because a later call omits it. Confirm those
+ properties with `Get-DlpComplianceRule` after switching away from `Warn` rather than assuming
+ `-Force` fully reverts every `Warn`-only property.
 - **Device onboarding is a separate, non-scripted prerequisite.** This scenario's deploy script
-  authors the DLP policy only; it assumes devices are already onboarded (§3, §5 step 1). A policy
-  deployed against un-onboarded devices has no effect and generates no error, always confirm
-  device onboarding/policy-sync status (§7 step 3) before concluding a functional test failure is
-  a policy bug.
+ authors the DLP policy only; it assumes devices are already onboarded (§3, §5 step 1). A policy
+ deployed against un-onboarded devices has no effect and generates no error, always confirm
+ device onboarding/policy-sync status (§7 step 3) before concluding a functional test failure is
+ a policy bug.
 - **Encrypted or password-protected files are not scanned.** Endpoint DLP inspects file content;
-  a password-protected archive or an encrypted container cannot be opened and classified, so a
-  user who zips-with-password a sensitive file before copying it to USB will not trigger either
-  rule. Microsoft documents dedicated policies for files it cannot scan
-  (`dlp-create-policy-files-edlp-doesnt-scan`), pair this scenario with that guidance if
-  encrypted-archive exfiltration is a realistic threat in the target environment
-  [[6]](#references).
+ a password-protected archive or an encrypted container cannot be opened and classified, so a
+ user who zips-with-password a sensitive file before copying it to USB will not trigger either
+ rule. Microsoft documents dedicated policies for files it cannot scan
+ (`dlp-create-policy-files-edlp-doesnt-scan`), pair this scenario with that guidance if
+ encrypted-archive exfiltration is a realistic threat in the target environment
+.
 - **Unsupported/unscanned file types and photographs of screens are not covered.** As with every
-  content-pattern DLP control in this repo (see `pci-teams-exfil-block/README.md` §11), a file
-  type Endpoint DLP doesn't parse, or a photo taken of a screen with a phone, bypasses text-pattern
-  matching entirely, this is an inherent limitation of content inspection, not a configuration
-  gap this scenario can close.
+ content-pattern DLP control in this repo (see `pci-teams-exfil-block/README.md` §11), a file
+ type Endpoint DLP doesn't parse, or a photo taken of a screen with a phone, bypasses text-pattern
+ matching entirely, this is an inherent limitation of content inspection, not a configuration
+ gap this scenario can close.
 - **This scenario does not restrict Print, clipboard, network share, Bluetooth, or RDP.** Only
-  **copy to removable media** is restricted. Microsoft's official cmdlet reference now confirms
-  the exact `Setting` names for four of those activities, `Print`, `CopyPaste` (clipboard),
-  `ScreenCapture`, and `NetworkShare`, plus `UnallowedApps`; `design.md` §7 documents how to
-  extend the `EndpointDlpRestrictions` array with one more `@{Setting=...; Value=...}` hashtable
-  per activity using those confirmed names. Bluetooth and RDP restriction `Setting` names were not
-  found in that reference and remain unconfirmed.
+ **copy to removable media** is restricted. Microsoft's official cmdlet reference now confirms
+ the exact `Setting` names for four of those activities, `Print`, `CopyPaste` (clipboard),
+ `ScreenCapture`, and `NetworkShare`, plus `UnallowedApps`; `design.md` §7 documents how to
+ extend the `EndpointDlpRestrictions` array with one more `@{Setting=...; Value=...}` hashtable
+ per activity using those confirmed names. Bluetooth and RDP restriction `Setting` names were not
+ found in that reference and remain unconfirmed.
 - **This scenario does not configure Removable USB device groups** (per-physical-device
-  allowlisting of specific IT-issued encrypted backup drives by Vendor ID/Product ID/Instance ID,
-  distinct from the group-based IT Data Custodians *user* exception this scenario does implement).
-  A dedicated grounding pass (`PROGRESS.md`) confirmed the portal workflow end-to-end: create the
-  group under **Purview portal → Settings → Data loss prevention → Endpoint DLP settings →
-  Removable USB device groups** (name it, add each device by Vendor ID/Product ID/Instance ID, and
-  give it an alias that appears only in the Purview console), then reference that group as an
-  **exclusion in a rule's actions/exceptions** back in the policy editor [[19]](#references)
-  [[20]](#references). The pass found the *cmdlet-level* half genuinely undocumented rather than
-  merely undiscovered: `Set-PolicyConfig` does expose a `-DlpRemovableMediaGroups` parameter
-  (`PswsHashtable`) confirmed to exist in Microsoft's own reference, alongside four sibling
-  device-group parameters (`-DlpPrinterGroups`, `-DlpNetworkShareGroups`, `-DlpAppGroups`,
-  `-DlpExtensionGroups`), but as of this pass, every one of those five parameters' descriptions,
-  and the cmdlet's entire `EXAMPLES` section, are unpublished placeholder text in Microsoft's
-  official reference [[21]](#references); and `New-DlpComplianceRule`/`Set-DlpComplianceRule`
-  expose no parameter of any kind for referencing a device group as a rule condition or exception
-  [[9]](#references)/[[10]](#references), confirming the rule-level reference step is portal-only
-  too, not merely the device-registration step already flagged. Scripting this without a
-  documented hashtable shape would mean fabricating dictionary keys this repo's grounding standard
-  (`AGENTS.md` §4) does not permit, so it stays a portal-only workflow until Microsoft publishes
-  one. Combining it with this scenario would let a buyer scope the IT exception down from "any
-  removable media, watched" to "only these specific backup drives, unrestricted", tracked as a
-  closed, investigated-not-built item in `PROGRESS.md` rather than an open build item.
+ allowlisting of specific IT-issued encrypted backup drives by Vendor ID/Product ID/Instance ID,
+ distinct from the group-based IT Data Custodians *user* exception this scenario does implement).
+ A dedicated grounding pass (`PROGRESS.md`) confirmed the portal workflow end-to-end: create the
+ group under **Purview portal → Settings → Data loss prevention → Endpoint DLP settings →
+ Removable USB device groups** (name it, add each device by Vendor ID/Product ID/Instance ID, and
+ give it an alias that appears only in the Purview console), then reference that group as an
+ **exclusion in a rule's actions/exceptions** back in the policy editor 
+. The pass found the *cmdlet-level* half genuinely undocumented rather than
+ merely undiscovered: `Set-PolicyConfig` does expose a `-DlpRemovableMediaGroups` parameter
+ (`PswsHashtable`) confirmed to exist in Microsoft's own reference, alongside four sibling
+ device-group parameters (`-DlpPrinterGroups`, `-DlpNetworkShareGroups`, `-DlpAppGroups`,
+ `-DlpExtensionGroups`), but as of this pass, every one of those five parameters' descriptions,
+ and the cmdlet's entire `EXAMPLES` section, are unpublished placeholder text in Microsoft's
+ official reference; and `New-DlpComplianceRule`/`Set-DlpComplianceRule`
+ expose no parameter of any kind for referencing a device group as a rule condition or exception
+ /, confirming the rule-level reference step is portal-only
+ too, not merely the device-registration step already flagged. Scripting this without a
+ documented hashtable shape would mean fabricating dictionary keys this repo's grounding standard
+ (`AGENTS.md` §4) does not permit, so it stays a portal-only workflow until Microsoft publishes
+ one. Combining it with this scenario would let a buyer scope the IT exception down from "any
+ removable media, watched" to "only these specific backup drives, unrestricted", tracked as a
+ closed, investigated-not-built item in `PROGRESS.md` rather than an open build item.
 - **This scenario does not replace Microsoft Defender for Endpoint device control.** Device
-  control can deny an unapproved USB device outright regardless of content (content-blind, at the
-  driver level); Endpoint DLP is content-aware but requires the device to already be a recognized
-  disk. A buyer wanting "no unknown USB devices, period" needs device control in addition to this
-  scenario, not instead of it, see `design.md` §3.
+ control can deny an unapproved USB device outright regardless of content (content-blind, at the
+ driver level); Endpoint DLP is content-aware but requires the device to already be a recognized
+ disk. A buyer wanting "no unknown USB devices, period" needs device control in addition to this
+ scenario, not instead of it, see `design.md` §3.
 
 ## 12. References
 

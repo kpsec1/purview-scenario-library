@@ -15,13 +15,13 @@ A `-PurgeType Recoverable` purge moves the item to the mailbox's **Recoverable I
 folder. Until the mailbox's deleted-item retention period expires:
 
 - **The end user** can recover it themselves: Outlook → Deleted Items → **Recover Items Recently
-  Removed From This Folder**.
+ Removed From This Folder**.
 - **An admin** can restore it via `New-MailboxRestoreRequest` targeting the Recoverable Items
-  folder, or (for a single item) an eDiscovery search scoped to that folder plus an export, this
-  scenario's own scripts don't automate that restore path, since restoring a spillage message
-  defeats the containment purpose in nearly every real incident; if a restore is genuinely needed
-  (for example, the purge matched an over-broad query and caught a legitimate message), do it
-  through the standard Exchange Online restore tooling, not by re-running this scenario's scripts.
+ folder, or (for a single item) an eDiscovery search scoped to that folder plus an export, this
+ scenario's own scripts don't automate that restore path, since restoring a spillage message
+ defeats the containment purpose in nearly every real incident; if a restore is genuinely needed
+ (for example, the purge matched an over-broad query and caught a legitimate message), do it
+ through the standard Exchange Online restore tooling, not by re-running this scenario's scripts.
 
 This is the **only** recoverable stage. It stops being available once the deleted-item retention
 period expires (the item then moves to the Purges folder and is gone) or if `-PurgeType
@@ -59,10 +59,10 @@ search-and-purge workflow.
 ## What this rollback cannot do
 
 - **Restore a `PermanentlyDelete` purge.** There is no stage for this, it is irreversible by
-  design, the same way `priority-cleanup-exchange-data-spillage`'s permanent deletion is.
+ design, the same way `priority-cleanup-exchange-data-spillage`'s permanent deletion is.
 - **Restore a `Recoverable` purge after the deleted-item retention period expires.** Once the item
-  reaches the Purges folder, it follows the same "gone" path as a hard delete.
+ reaches the Purges folder, it follows the same "gone" path as a hard delete.
 - **Tell you whether a specific purge run needs to be reversed at all.** That is an incident-response
-  judgment call (was the query over-broad? did it catch a legitimate message?) this scenario's
-  scripts cannot make for you, review the purge job report (`reportFileMetadata`, printed by
-  `Invoke-DataSpillagePurge.ps1`) before deciding.
+ judgment call (was the query over-broad? did it catch a legitimate message?) this scenario's
+ scripts cannot make for you, review the purge job report (`reportFileMetadata`, printed by
+ `Invoke-DataSpillagePurge.ps1`) before deciding.

@@ -22,45 +22,45 @@ per-credential question into an automated, diffable one.
 ## 2. Design goals
 
 1. **Generalize, don't duplicate.** `scan-credential-key-vault-backed/validate/
-   Test-PurviewScanCredential.ps1` already proves this pattern works for one credential with
-   hand-supplied `-Expected*` parameters. This scenario lifts the same idea, compare observed
-   fields against expected ones, to every credential in the account, driven by a single checked-in
-   file instead of per-run command-line parameters. It does not replace the sibling scenario's
-   script (which remains the right tool for "did the credential I just deployed come out right");
-   it answers a different, complementary question ("has anything in the whole inventory drifted
-   since I last checked").
+ Test-PurviewScanCredential.ps1` already proves this pattern works for one credential with
+ hand-supplied `-Expected*` parameters. This scenario lifts the same idea, compare observed
+ fields against expected ones, to every credential in the account, driven by a single checked-in
+ file instead of per-run command-line parameters. It does not replace the sibling scenario's
+ script (which remains the right tool for "did the credential I just deployed come out right");
+ it answers a different, complementary question ("has anything in the whole inventory drifted
+ since I last checked").
 2. **Handle all eight documented kinds correctly, not just the three this repo creates.**
-   `scan-credential-key-vault-backed` deliberately scripts creation for only three kinds (`SqlAuth`,
-   `BasicAuth`, `ServicePrincipal`), but `GET /scan/credentials` returns **whatever exists**,
-   including any of the other five kinds an operator created through the portal or a different
-   pipeline. A report that silently mis-parses or skips `AccountKey`/`AmazonARN`/`ConsumerKeyAuth`/
-   `DelegatedAuth`/`ManagedIdentity` credentials would give false confidence. Each kind's
-   `typeProperties` shape is structurally different, three have no `KeyVaultSecret` reference at
-   all (`AmazonARN`'s `roleARN` is a plain string; `ManagedIdentity` carries only
-   `principalId`/`resourceId`/`tenantId`), so the extraction has to be a genuine per-kind table, not
-   a single assumed shape. See §3.
+ `scan-credential-key-vault-backed` deliberately scripts creation for only three kinds (`SqlAuth`,
+ `BasicAuth`, `ServicePrincipal`), but `GET /scan/credentials` returns **whatever exists**,
+ including any of the other five kinds an operator created through the portal or a different
+ pipeline. A report that silently mis-parses or skips `AccountKey`/`AmazonARN`/`ConsumerKeyAuth`/
+ `DelegatedAuth`/`ManagedIdentity` credentials would give false confidence. Each kind's
+ `typeProperties` shape is structurally different, three have no `KeyVaultSecret` reference at
+ all (`AmazonARN`'s `roleARN` is a plain string; `ManagedIdentity` carries only
+ `principalId`/`resourceId`/`tenantId`), so the extraction has to be a genuine per-kind table, not
+ a single assumed shape. See §3.
 3. **Never touch, log, or expose a secret value.** Every field this scenario extracts and writes is
-   either a plaintext identity property (`user`, `servicePrincipalId`, `tenant`, `roleARN`,
-   `clientId`, `principalId`, `resourceId`, `tenantId`) or a Key Vault **secret reference**
-   (`secretName`, `store.referenceName`, `secretVersion`), never a password, key, or token. This is
-   not a design choice this scenario had to make carefully; it is structurally guaranteed, because
-   `GET /scan/credentials` **never returns secret values in the first place**, the same
-   reference-only property the create path relies on (`scan-credential-key-vault-backed/design.md`
-   §3) holds symmetrically for the read path.
+ either a plaintext identity property (`user`, `servicePrincipalId`, `tenant`, `roleARN`,
+ `clientId`, `principalId`, `resourceId`, `tenantId`) or a Key Vault **secret reference**
+ (`secretName`, `store.referenceName`, `secretVersion`), never a password, key, or token. This is
+ not a design choice this scenario had to make carefully; it is structurally guaranteed, because
+ `GET /scan/credentials` **never returns secret values in the first place**, the same
+ reference-only property the create path relies on (`scan-credential-key-vault-backed/design.md`
+ §3) holds symmetrically for the read path.
 4. **Idempotent trend log, same replace-by-RunId pattern already established.** Matches
-   `scenarios/data-estate-insights/classification-coverage-report/design.md` §5 exactly, no new
-   idempotency model to design or review.
+ `scenarios/data-estate-insights/classification-coverage-report/design.md` §5 exactly, no new
+ idempotency model to design or review.
 5. **The comparison engine is generic, not a per-kind if/else chain.** Once a credential's fields are
-   flattened into a named field set (the "fingerprint"), comparing it against an expected-state file
-   is one small, kind-agnostic function (`Compare-Fingerprint`). Adding a ninth credential kind in
-   the future (if Microsoft ever adds one) means adding one `switch` arm to
-   `Get-CredentialFingerprint`, not touching the comparison or reporting logic at all.
+ flattened into a named field set (the "fingerprint"), comparing it against an expected-state file
+ is one small, kind-agnostic function (`Compare-Fingerprint`). Adding a ninth credential kind in
+ the future (if Microsoft ever adds one) means adding one `switch` arm to
+ `Get-CredentialFingerprint`, not touching the comparison or reporting logic at all.
 6. **Be one fragment.** This scenario reads credentials and reports drift. It does not create,
-   modify, or delete any credential (that remains `scan-credential-key-vault-backed`'s job), and it
-   does not attempt to build the other five credential kinds' **creation** scripts, that is a
-   separate, still-open `PROGRESS.md` follow-up. Read-only reporting on a kind and scripted creation
-   of that same kind are different scopes, and conflating them would have made this fragment too
-   large to review properly (`AGENTS.md` §6).
+ modify, or delete any credential (that remains `scan-credential-key-vault-backed`'s job), and it
+ does not attempt to build the other five credential kinds' **creation** scripts, that is a
+ separate, still-open `PROGRESS.md` follow-up. Read-only reporting on a kind and scripted creation
+ of that same kind are different scopes, and conflating them would have made this fragment too
+ large to review properly (`AGENTS.md` §6).
 
 ## 3. The per-kind fingerprint table
 
@@ -127,20 +127,20 @@ incidental (`AGENTS.md` §6, keep fragments small by reusing what the repo alrea
 ## 7. Non-goals
 
 - **Creating, modifying, or deleting any credential.** Purely a read/report layer, same posture as
-  `classification-coverage-report`. `scan-credential-key-vault-backed` remains the only scenario in
-  this repo that writes credential objects.
+ `classification-coverage-report`. `scan-credential-key-vault-backed` remains the only scenario in
+ this repo that writes credential objects.
 - **Scripting creation of the five credential kinds this repo doesn't already build**
-  (`AccountKey`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, `ManagedIdentity`). This scenario
-  can **report on** any of them if they exist (§2 goal 2, §3), reading and writing are different
-  scopes, and the still-open `PROGRESS.md` follow-up for scripting their *creation* is unaffected by
-  this fragment shipping.
+ (`AccountKey`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, `ManagedIdentity`). This scenario
+ can **report on** any of them if they exist (§2 goal 2, §3), reading and writing are different
+ scopes, and the still-open `PROGRESS.md` follow-up for scripting their *creation* is unaffected by
+ this fragment shipping.
 - **Resolving whether the observed secret-reference literals (`type`/`store.type`) match Microsoft's
-  actual schema.** That VERIFY belongs to `scan-credential-key-vault-backed` (the scenario that
-  writes those literals); this scenario reads back whatever is already there and reports it as
-  observed, without re-litigating that open question.
+ actual schema.** That VERIFY belongs to `scan-credential-key-vault-backed` (the scenario that
+ writes those literals); this scenario reads back whatever is already there and reports it as
+ observed, without re-litigating that open question.
 - **A Purview-native alert or Sentinel/Log Analytics sink.** Same posture as
-  `classification-coverage-report/design.md` §7, flat trend-log/drift-report files are the
-  deliverable; SIEM ingestion is the buyer's own integration.
+ `classification-coverage-report/design.md` §7, flat trend-log/drift-report files are the
+ deliverable; SIEM ingestion is the buyer's own integration.
 - **Reconciling which scan(s) consume a drifted credential.** `scan-credential-key-vault-backed`'s
-  own `design.md` §7 already names "no credential-to-scan reverse index" as a Purview API gap this
-  repo cannot script around; this scenario inherits that same limitation rather than re-solving it.
+ own `design.md` §7 already names "no credential-to-scan reverse index" as a Purview API gap this
+ repo cannot script around; this scenario inherits that same limitation rather than re-solving it.

@@ -36,33 +36,33 @@ these scripts (Entra admin center → **App registrations** → the app → **AP
 remove, then re-confirm admin consent is also revoked):
 - **`AuditLog.Read.All`**, used by both scripts; remove only if decommissioning both.
 - **`Group.Read.All`** and **`RoleManagement.Read.Directory`**, used only by
-  `Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s Phase 1 discovery; safe to remove even if
-  keeping the sibling script running.
+ `Export-RoleAssignableGroupMembershipAuditTrail.ps1`'s Phase 1 discovery; safe to remove even if
+ keeping the sibling script running.
 
 If the app registration was created solely for this scenario and isn't used elsewhere, consider
-deleting the app registration and its certificate entirely, check `docs/automation-surface.md` §3
+deleting the app registration and its certificate entirely, check [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended)
 first in case the same app registration is shared with another scenario's script.
 
 ## What rollback does **not** undo
 
 - **Audit log records already generated.** `Add member to role`/`Remove member from role` events
-  (and, for the companion script, `Add member to group`/`Remove member from group` events) already
-  logged by Microsoft Entra ID are retained per the tenant's own Entra audit-log retention (7 days
-  Free / 30 days P1-P2, or up to 1 year if the tenant separately holds Purview Audit (Premium), 
-  `README.md` §11) regardless of whether either export script keeps running.
+ (and, for the companion script, `Add member to group`/`Remove member from group` events) already
+ logged by Microsoft Entra ID are retained per the tenant's own Entra audit-log retention (7 days
+ Free / 30 days P1-P2, or up to 1 year if the tenant separately holds Purview Audit (Premium), 
+ `README.md` §11) regardless of whether either export script keeps running.
 - **The role assignments/removals or group membership changes themselves.** Neither script in this
-  scenario ever modifies Entra role membership or group membership, both only read and report on
-  changes others make. Rolling back this scenario does not restore or revert any role assignment or
-  group membership.
+ scenario ever modifies Entra role membership or group membership, both only read and report on
+ changes others make. Rolling back this scenario does not restore or revert any role assignment or
+ group membership.
 - **`assess-against-iso27001`'s own audit trail and assessment.** That scenario's rollback
-  (`scenarios/compliance-manager/assess-against-iso27001/rollback.md`) is entirely independent, 
-  removing this scenario does not affect it, and re-introduces the blind spot
-  `Export-EntraPrivilegedRoleAuditTrail.ps1` closed (`design.md` §1) if that sibling scenario stays
-  deployed without this one.
+ (`scenarios/compliance-manager/assess-against-iso27001/rollback.md`) is entirely independent, 
+ removing this scenario does not affect it, and re-introduces the blind spot
+ `Export-EntraPrivilegedRoleAuditTrail.ps1` closed (`design.md` §1) if that sibling scenario stays
+ deployed without this one.
 - **If decommissioning only the companion script:** `Export-EntraPrivilegedRoleAuditTrail.ps1`
-  keeps running and covering direct role assignments as before, but the role-assignable-group gap
-  it cannot see (`design.md` §4b) re-opens, confirm this is an accepted, deliberate trade-off
-  before decommissioning the companion alone.
+ keeps running and covering direct role assignments as before, but the role-assignable-group gap
+ it cannot see (`design.md` §4b) re-opens, confirm this is an accepted, deliberate trade-off
+ before decommissioning the companion alone.
 
 ## Verification after rollback
 

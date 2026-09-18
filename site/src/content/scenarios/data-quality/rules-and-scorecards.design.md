@@ -16,53 +16,53 @@ schedule turns them into an actual, dated score.
 ## 2. Design goals
 
 1. **Declarative, versionable rule definitions.** Rules live in a JSON file under source control
-   (`deploy/rules/*.json`), matching this repo's established pattern from `curate-business-glossary`'s
-   glossary definition file, a rule change is a diff, not a portal click nobody can review.
+ (`deploy/rules/*.json`), matching this repo's established pattern from `curate-business-glossary`'s
+ glossary definition file, a rule change is a diff, not a portal click nobody can review.
 2. **Idempotent without depending on unconfirmed API semantics.** Unlike Data Map's Scans object
-   (explicitly documented as create-or-replace) or the Unified Catalog Terms API (POST create / PUT
-   update, explicitly split), this build's grounding pass could not confirm whether Data Quality's
-   `Create Rules` PUT is create-only or create-or-replace when reused against an existing `ruleId`.
-   Rather than assume either way, this scenario's idempotency comes from the *existence check itself*:
-   always look up any existing rule with the same `name` first (`Get Rules`), and always target that
-   rule's own `id` if found. The PUT verb's exact semantics on a reused ID then don't matter, the
-   script is correct either way.
+ (explicitly documented as create-or-replace) or the Unified Catalog Terms API (POST create / PUT
+ update, explicitly split), this build's grounding pass could not confirm whether Data Quality's
+ `Create Rules` PUT is create-only or create-or-replace when reused against an existing `ruleId`.
+ Rather than assume either way, this scenario's idempotency comes from the *existence check itself*:
+ always look up any existing rule with the same `name` first (`Get Rules`), and always target that
+ rule's own `id` if found. The PUT verb's exact semantics on a reused ID then don't matter, the
+ script is correct either way.
 3. **Type-agnostic rule engine, not a rule-type modeler.** Each of the six Purview-documented rule
-   types (Freshness, Unique values, String format match, Data type match, Duplicate rows,
-   Empty/blank fields, Table lookup, Custom) has its own `typeProperties` shape, and this build's
-   grounding pass only directly confirmed four of them (`NotNull`, `Unique`, `TypeMatch`, `Duplicate`,
-   `CustomTruth`) via Microsoft's own worked examples. Rather than build a PowerShell parameter set
-   per rule type (risking a fabricated shape for a type this build didn't confirm), the deploy script
-   passes each rule definition's `typeProperties` through to the API unmodified, the JSON file is the
-   single source of truth for what each rule actually validates, and the script's job is only
-   existence-reconciliation and the surrounding envelope (`id`/`name`/`status`/`businessDomain`/
-   `dataProduct`/`dataAsset`).
+ types (Freshness, Unique values, String format match, Data type match, Duplicate rows,
+ Empty/blank fields, Table lookup, Custom) has its own `typeProperties` shape, and this build's
+ grounding pass only directly confirmed four of them (`NotNull`, `Unique`, `TypeMatch`, `Duplicate`,
+ `CustomTruth`) via Microsoft's own worked examples. Rather than build a PowerShell parameter set
+ per rule type (risking a fabricated shape for a type this build didn't confirm), the deploy script
+ passes each rule definition's `typeProperties` through to the API unmodified, the JSON file is the
+ single source of truth for what each rule actually validates, and the script's job is only
+ existence-reconciliation and the surrounding envelope (`id`/`name`/`status`/`businessDomain`/
+ `dataProduct`/`dataAsset`).
 4. **Stay inside GA-covered, confirmed API surface.** The Data Quality API for Unified Catalog is
-   Public Preview and explicitly documents that it covers **GA features only**, no alerting,
-   schema-import, or preview-feature coverage (`README.md` reference 12). This scenario's scope (rules
-   + a one-time schedule + score read-back) stays inside that boundary; alert configuration and
-   recurring schedules are documented as portal-only rather than scripted with a guessed shape.
+ Public Preview and explicitly documents that it covers **GA features only**, no alerting,
+ schema-import, or preview-feature coverage (`README.md` reference 12). This scenario's scope (rules
+ + a one-time schedule + score read-back) stays inside that boundary; alert configuration and
+ recurring schedules are documented as portal-only rather than scripted with a guessed shape.
 5. **Compose with, don't duplicate, this repo's existing Data Governance scenarios.** This scenario
-   targets the same "Customer" asset/domain narrative already established by
-   `scan-azure-sql-and-classify` (the Azure SQL source) and `curate-business-glossary` (the
-   "Customer Experience" governance domain and "Customer"/"Customer ID" terms), a buyer evaluating
-   this repo end-to-end sees one coherent data asset governed, cataloged, and scored, not three
-   disconnected demos.
+ targets the same "Customer" asset/domain narrative already established by
+ `scan-azure-sql-and-classify` (the Azure SQL source) and `curate-business-glossary` (the
+ "Customer Experience" governance domain and "Customer"/"Customer ID" terms), a buyer evaluating
+ this repo end-to-end sees one coherent data asset governed, cataloged, and scored, not three
+ disconnected demos.
 
 ## 3. Why Unified Catalog Data Quality (not a custom Great Expectations/dbt-test pipeline)
 
 - **A custom data-quality pipeline** (Great Expectations, dbt tests, a hand-rolled Spark job) can
-  express arbitrary checks, but produces scores and dashboards that live *outside* Purview, a
-  reviewer checking this data asset's governance posture in Unified Catalog sees nothing. It also
-  duplicates infrastructure (compute, scheduling, alerting) Microsoft already operates for this
-  purpose.
+ express arbitrary checks, but produces scores and dashboards that live *outside* Purview, a
+ reviewer checking this data asset's governance posture in Unified Catalog sees nothing. It also
+ duplicates infrastructure (compute, scheduling, alerting) Microsoft already operates for this
+ purpose.
 - **Purview Data Quality** scores are visible exactly where the asset, its glossary terms, its
-  classification, and its lineage already live, the same governance domain / data product a data
-  consumer is already browsing. This is the product-idiomatic choice for a Purview-centered
-  governance program, and it's the one Microsoft's own roadmap (AI-assisted rule generation, health
-  reporting, observability) is investing in.
+ classification, and its lineage already live, the same governance domain / data product a data
+ consumer is already browsing. This is the product-idiomatic choice for a Purview-centered
+ governance program, and it's the one Microsoft's own roadmap (AI-assisted rule generation, health
+ reporting, observability) is investing in.
 - A buyer with an existing dbt-test/Great Expectations investment isn't forced to abandon it, Custom
-  (SQL or ADF-expression) rules in this scenario can encode the same logical checks a dbt test would,
-  so the *checks* can be ported even if the *execution engine* changes.
+ (SQL or ADF-expression) rules in this scenario can encode the same logical checks a dbt test would,
+ so the *checks* can be ported even if the *execution engine* changes.
 
 ## 4. Object model and REST call sequence
 
@@ -113,31 +113,31 @@ implements.
 ## 6. What this scenario assumes already exists
 
 - A Microsoft Purview account with Unified Catalog and Data Quality enabled (PAYG/DGPU metering
-  active).
+ active).
 - A governance domain, data product, and data asset already created and populated, this repo's
-  `curate-business-glossary` scenario creates the governance domain and glossary terms for the
-  "Customer Experience" domain this scenario's example targets, but does **not** create a data
-  product or add a data asset to one (see that scenario's own `design.md` §7 non-goals), a data
-  products scenario is a tracked follow-up in `PROGRESS.md`.
+ `curate-business-glossary` scenario creates the governance domain and glossary terms for the
+ "Customer Experience" domain this scenario's example targets, but does **not** create a data
+ product or add a data asset to one (see that scenario's own `design.md` §7 non-goals), a data
+ products scenario is a tracked follow-up in `PROGRESS.md`.
 - The target data asset's source already registered and scanned in Data Map
-  (`scenarios/data-map/scan-azure-sql-and-classify/` for the Azure SQL example this scenario reuses).
+ (`scenarios/data-map/scan-azure-sql-and-classify/` for the Azure SQL example this scenario reuses).
 - A Data Quality connection to that source already configured via the portal, with the Purview
-  managed identity granted read access (§7 below covers why this isn't scripted).
+ managed identity granted read access (§7 below covers why this isn't scripted).
 
 ## 7. Non-goals
 
 - This scenario does not create the governance domain, data product, or data asset it targets, see
-  §6.
+ §6.
 - This scenario does not create the Data Quality data-source connection (managed-identity credential)
-  the scan authenticates with, the `Create Data Source` REST operation's `computeId` field has no
-  documented provisioning path this build could confirm; see `README.md` §11.
+ the scan authenticates with, the `Create Data Source` REST operation's `computeId` field has no
+ documented provisioning path this build could confirm; see `README.md` §11.
 - This scenario does not configure score-threshold alerts, `README.md` §8/§11 documents this as a
-  portal-only step pending independent REST grounding of the `Get Alerts`/`Update Alert` operations.
+ portal-only step pending independent REST grounding of the `Get Alerts`/`Update Alert` operations.
 - This scenario does not implement a recurring (daily/weekly/monthly) scan schedule via the REST API, 
-  only the confirmed `RunOnce` trigger type is scripted; see `README.md` §11.
+ only the confirmed `RunOnce` trigger type is scripted; see `README.md` §11.
 - This scenario does not attempt AI-assisted/autogenerated rule suggestions (`Suggest rules` in the
-  portal), that is an interactive, model-driven portal feature with no documented REST equivalent in
-  this build's grounding pass.
+ portal), that is an interactive, model-driven portal feature with no documented REST equivalent in
+ this build's grounding pass.
 - This scenario does not create data profiling jobs (a separate, earlier lifecycle step, "Profile"
-  operation group), the example rules are authored directly, as a buyer with existing knowledge of
-  their schema would, rather than derived from a profiling pass this scenario doesn't run.
+ operation group), the example rules are authored directly, as a buyer with existing knowledge of
+ their schema would, rather than derived from a profiling pass this scenario doesn't run.

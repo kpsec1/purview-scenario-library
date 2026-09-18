@@ -36,39 +36,39 @@ rather than clicking **+ Add term** by hand in the portal every time a new sourc
 Two distinct governance objects, a CDE (technical: which columns) and a term (business: what the
 concept means), are more useful linked than separate. Microsoft's own concept page describes this
 directly: "You can link your critical data elements to related glossary terms" via **Manage
-related terms** [[1]](#12-references). Beyond legibility, this link has a concrete access-control
+related terms**. Beyond legibility, this link has a concrete access-control
 consequence Microsoft documents specifically for this triad of business concepts:
 
 - **Inherited access policies.** "You can set policies on governance domains, glossary terms, and
-  critical data elements. Data products in the governance domain, or data products that have
-  glossary terms or critical data elements applied, inherit and aggregate these policies... if you
-  set a manager approval policy on a glossary term applied to the data product, the data product
-  also requires manager approval" [[2]](#12-references). Once a term is linked to this scenario's
-  CDE, and the CDE's own "associated data products" rollup includes a downstream product
-  (`manage-critical-data-elements/design.md` §5), an access policy set on that *term*, e.g. a
-  manager-approval requirement for a regulated PII concept, aggregates onto every data product the
-  CDE touches, without a governance team having to configure the same policy redundantly on each
-  product individually.
+ critical data elements. Data products in the governance domain, or data products that have
+ glossary terms or critical data elements applied, inherit and aggregate these policies... if you
+ set a manager approval policy on a glossary term applied to the data product, the data product
+ also requires manager approval". Once a term is linked to this scenario's
+ CDE, and the CDE's own "associated data products" rollup includes a downstream product
+ (`manage-critical-data-elements/design.md` §5), an access policy set on that *term*, e.g. a
+ manager-approval requirement for a regulated PII concept, aggregates onto every data product the
+ CDE touches, without a governance team having to configure the same policy redundantly on each
+ product individually.
 - **Faster onboarding for a new consumer.** A catalog reader who finds "Customer ID" in the
-  Enterprise Glossary's Critical data elements tab can jump straight to the linked "Customer ID"
-  *term* for the plain-language definition, instead of inferring meaning from column names alone
+ Enterprise Glossary's Critical data elements tab can jump straight to the linked "Customer ID"
+ *term* for the plain-language definition, instead of inferring meaning from column names alone
 , directly supporting the "blueprint for new sources" framing
-  `manage-critical-data-elements/README.md` §2 already documents for the CDE side of this pairing.
+ `manage-critical-data-elements/README.md` §2 already documents for the CDE side of this pairing.
 - **Consistent regulated-data narrative.** If a CDE is used as a regulated-data inventory entry
-  (PCI/GDPR/HIPAA column mapping, per the sibling scenario's §2), linking it to the term that
-  carries the regulatory definition (e.g. "Cardholder Data") keeps the technical mapping and the
-  compliance definition from drifting apart as both are edited independently over time.
+ (PCI/GDPR/HIPAA column mapping, per the sibling scenario's §2), linking it to the term that
+ carries the regulatory definition (e.g. "Cardholder Data") keeps the technical mapping and the
+ compliance definition from drifting apart as both are edited independently over time.
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for this scenario:
+Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/). Summary for this scenario:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Unified Catalog data governance | **Pay-as-you-go (PAYG)**, billed on unique **governed assets/day** | This scenario creates a **relationship** object, not a governed asset, it adds **no incremental governed-asset cost** on its own (§10) |
 | An existing critical data element | `scenarios/unified-catalog/manage-critical-data-elements/` run at least once | This scenario resolves the CDE by name; it never creates one (§11, design.md §2) |
 | Existing glossary term(s) | `scenarios/unified-catalog/curate-business-glossary/` run at least once | Same reuse-by-name pattern for each entry in `relatedTerms` |
-| Role to link a critical data element to a term | **Data Steward** on the governance domain (unconfirmed minimum, see below) | Microsoft's own critical-data-elements page scopes CDE creation/column-adding to "data steward and data product owner permissions" but does not separately restate a role requirement for the **Manage related terms** action specifically, this scenario's automation identity requests Data Steward only, the minimum role every other Unified Catalog write action in this domain already requires. `docs/rbac-model.md` §5 |
+| Role to link a critical data element to a term | **Data Steward** on the governance domain (unconfirmed minimum, see below) | Microsoft's own critical-data-elements page scopes CDE creation/column-adding to "data steward and data product owner permissions" but does not separately restate a role requirement for the **Manage related terms** action specifically, this scenario's automation identity requests Data Steward only, the minimum role every other Unified Catalog write action in this domain already requires. [RBAC model §5](/docs/rbac-model/#5-data-governance-roles-data-map--unified-catalog-a-separate-model) |
 | Automation identity (Unified Catalog only) | Data Steward on the domain | Unlike `manage-critical-data-elements`, this scenario never resolves an owner via Microsoft Graph and never calls the Data Map/Atlas Entity API, it only reads and links objects that already exist in Unified Catalog, so no Graph token and no Data Map role are needed |
 
 **VERIFY, Data Steward alone may not be sufficient.** The prerequisite table above is an inference
@@ -87,7 +87,7 @@ here too: a compromised or over-broadly-assigned credential holding this role ca
 scenario's config targets. Scope the role assignment to only the domain(s) this automation curates
 , see the cross-referenced compensating-controls note in any sibling README.
 
-> Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms before
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) and the Product Terms before
 > a sales commitment. Both underlying features (critical data elements and glossary terms) are
 > Microsoft-labeled **preview** as of this build, re-check GA status before a customer-facing
 > commitment (§11).
@@ -122,7 +122,7 @@ flowchart TD
     J -.-> V[validate/Test-CdeRelatedTerms.ps1]
 ```
 
-Purview Unified Catalog REST API only (`docs/automation-surface.md` surface 4, **Critical Data
+Purview Unified Catalog REST API only ([Automation surface](/docs/automation-surface/) surface 4, **Critical Data
 Elements** and **Terms** operation groups). No Data Map/Atlas call and no Microsoft Graph call, 
 unlike its `manage-critical-data-elements` sibling, this scenario links two objects that already
 carry their own resolvable identity in Unified Catalog.
@@ -132,13 +132,13 @@ carry their own resolvable identity in Unified Catalog.
 ### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
 1. Sign in to the [Microsoft Purview portal](https://purview.microsoft.com) → **Unified Catalog**
-   → **Catalog management** → **Governance domains** → select `Customer Experience` → **Critical
-   data elements** → select `Customer ID` [[1]](#12-references).
-2. On the critical data element's details page, select **+ Add term** [[1]](#12-references).
+ → **Catalog management** → **Governance domains** → select `Customer Experience` → **Critical
+ data elements** → select `Customer ID`.
+2. On the critical data element's details page, select **+ Add term**.
 3. Search for the term(s) you want to link (e.g. `Customer ID`, `Customer`) and select them, then
-   select **Add** [[1]](#12-references).
+ select **Add**.
 4. To remove a related term later, select the term, then the **...** ellipsis button, then
-   **Remove** [[1]](#12-references).
+ **Remove**.
 
 ### Script path (idempotent, parameterized, dry-run capable)
 
@@ -181,17 +181,17 @@ cite the exact Microsoft Learn REST reference pages for every operation used.
 ## 7. Validation / how to prove it works
 
 1. **Automated check**, `./validate/Test-CdeRelatedTerms.ps1` confirms each term named in the
-   definition file exists and is linked to the critical data element, and reports (informational
-   only) the total count of `entityType=TERM` relationships the CDE currently has, so a term
-   linked outside this scenario's scripts (portal, or the reciprocal flow from the term's own
-   Related tab) is visible, not hidden. Exits non-zero on any hard failure.
+ definition file exists and is linked to the critical data element, and reports (informational
+ only) the total count of `entityType=TERM` relationships the CDE currently has, so a term
+ linked outside this scenario's scripts (portal, or the reciprocal flow from the term's own
+ Related tab) is visible, not hidden. Exits non-zero on any hard failure.
 2. **Portal check**, open the critical data element's details page and confirm the linked term(s)
-   appear under its related-terms list [[1]](#12-references).
+ appear under its related-terms list.
 3. **Reciprocal check**, open the linked glossary term's own **Related** tab and confirm the
-   critical data element appears there too [[4]](#12-references), the two portal actions
-   (**Manage related terms** on the CDE, "Add critical data element" on the term) describe the
-   *same* underlying relationship from either side, per Microsoft's own documentation for both
-   flows; this scenario always creates it from the CDE side.
+ critical data element appears there too, the two portal actions
+ (**Manage related terms** on the CDE, "Add critical data element" on the term) describe the
+ *same* underlying relationship from either side, per Microsoft's own documentation for both
+ flows; this scenario always creates it from the CDE side.
 
 ## 8. Operations & tuning
 
@@ -217,7 +217,7 @@ this scenario's validate script confirms the *link*, not the resulting policy ag
 would require calling into the separate access-policy configuration surface
 `manage-data-products/design.md` §5 already flags as having no discovered REST operation of its
 own). Confirm the aggregated policy view in the portal's **Manage policies** → **Preview** flow
-[[2]](#12-references) if this link is being made specifically to extend a term's access policy.
+ if this link is being made specifically to extend a term's access policy.
 
 **Preview-status caution:** both underlying features (critical data elements, glossary terms) are
 Microsoft-labeled preview, re-check GA status before citing a term-CDE link as durable evidence in
@@ -235,73 +235,73 @@ element, or the governance domain, those lifecycles belong to their own owning s
 ## 10. Cost & licensing notes
 
 - **This scenario adds no incremental governed-asset cost.** Microsoft's billing model meters
-  unique governed **assets** per day [[5]](#12-references) [[6]](#12-references), a CDE-to-term
-  relationship is not itself a governed asset and carries no separate billing line; the CDE and
-  any columns it maps were already billed (or not) by `manage-critical-data-elements` before this
-  scenario ever runs.
+ unique governed **assets** per day, a CDE-to-term
+ relationship is not itself a governed asset and carries no separate billing line; the CDE and
+ any columns it maps were already billed (or not) by `manage-critical-data-elements` before this
+ scenario ever runs.
 - **No per-user license required for the automation itself**, Unified Catalog curation stays
-  PAYG-only (`docs/licensing-matrix.md` §2).
+ PAYG-only ([Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix)).
 
 ## 11. Known limitations & gotchas
 
 - **Both underlying features are Microsoft-labeled preview.** Critical data elements' concept page
-  title is "Critical data elements (preview)"; re-check GA status before a customer-facing
-  commitment.
+ title is "Critical data elements (preview)"; re-check GA status before a customer-facing
+ commitment.
 - **VERIFY, whether linking a *published* term is accepted.** Microsoft's "Create and manage
-  glossary terms" page states plainly, for the *reciprocal* flow (linking a CDE to a term from the
-  term's own Related tab's "Add critical data element" button): "Glossary terms must be in
-  **Draft** state in order to add links; if the term is published, select **Unpublish** on the
-  term's page to put it in **Draft** state" [[4]](#12-references). The **Manage related terms**
-  flow this scenario automates (the "+ Add term" button on the *CDE's* own page) is documented on
-  a separate page [[1]](#12-references) with no equivalent Draft-state restriction stated. It is
-  not confirmed whether this is a genuine difference between the two flows, or an
-  incompletely-cross-documented restriction that also applies here. `deploy/Add-CdeRelatedTerm.ps1`
-  does not attempt to pre-emptively unpublish a term or otherwise guess at this, if a tenant
-  rejects linking a published term, the underlying REST error surfaces directly rather than being
-  silently swallowed. Confirm against a pilot tenant before relying on linking a *published* term
-  in an unattended pipeline.
+ glossary terms" page states plainly, for the *reciprocal* flow (linking a CDE to a term from the
+ term's own Related tab's "Add critical data element" button): "Glossary terms must be in
+ **Draft** state in order to add links; if the term is published, select **Unpublish** on the
+ term's page to put it in **Draft** state". The **Manage related terms**
+ flow this scenario automates (the "+ Add term" button on the *CDE's* own page) is documented on
+ a separate page with no equivalent Draft-state restriction stated. It is
+ not confirmed whether this is a genuine difference between the two flows, or an
+ incompletely-cross-documented restriction that also applies here. `deploy/Add-CdeRelatedTerm.ps1`
+ does not attempt to pre-emptively unpublish a term or otherwise guess at this, if a tenant
+ rejects linking a published term, the underlying REST error surfaces directly rather than being
+ silently swallowed. Confirm against a pilot tenant before relying on linking a *published* term
+ in an unattended pipeline.
 - **VERIFY, the Terms Query / Critical Data Elements Query `nameKeyword` filter's exact match
-  semantics**, the same open question every sibling Unified Catalog scenario in this repo already
-  records for its own Query calls (`curate-business-glossary/README.md` §11,
-  `manage-data-products/README.md` §11, `manage-critical-data-elements/README.md` §11); this
-  scenario applies the identical client-side-exact-match mitigation for both lookups.
+ semantics**, the same open question every sibling Unified Catalog scenario in this repo already
+ records for its own Query calls (`curate-business-glossary/README.md` §11,
+ `manage-data-products/README.md` §11, `manage-critical-data-elements/README.md` §11); this
+ scenario applies the identical client-side-exact-match mitigation for both lookups.
 - **This scenario does not configure or verify the resulting access-policy aggregation** (§8), 
-  only the relationship itself, which is the prerequisite for that aggregation to take effect.
+ only the relationship itself, which is the prerequisite for that aggregation to take effect.
 - **A term name that resolves to more than one term across domains is not handled specially**, 
-  `Find-TermByName` scopes its query to the same domain as the critical data element
-  (`domainIds`), so a same-named term in a *different* domain is never matched; this is
-  intentional, not a gap, since Unified Catalog terms are domain-scoped objects.
+ `Find-TermByName` scopes its query to the same domain as the critical data element
+ (`domainIds`), so a same-named term in a *different* domain is never matched; this is
+ intentional, not a gap, since Unified Catalog terms are domain-scoped objects.
 - **Deleting the critical data element without first unlinking its terms will fail against
-  Microsoft's own documented delete prerequisite.** The concept page states plainly: "To delete a
-  critical data element, you need to unpublish it and delete all columns within it, and any links
-  to glossary terms" [[1]](#12-references). `manage-critical-data-elements/deploy/
-  Remove-CriticalDataElement.ps1`'s own `-Purge` predates this scenario and does not remove TERM
-  relationships, run `./deploy/Remove-CdeRelatedTerm.ps1 -RemoveAll` first if the CDE has any
-  related terms (`rollback.md`).
+ Microsoft's own documented delete prerequisite.** The concept page states plainly: "To delete a
+ critical data element, you need to unpublish it and delete all columns within it, and any links
+ to glossary terms". `manage-critical-data-elements/deploy/
+ Remove-CriticalDataElement.ps1`'s own `-Purge` predates this scenario and does not remove TERM
+ relationships, run `./deploy/Remove-CdeRelatedTerm.ps1 -RemoveAll` first if the CDE has any
+ related terms (`rollback.md`).
 
 ## 12. References
 
 1. Critical data elements (preview), "Manage related terms," "Delete critical data" prerequisite,
-   role prerequisites, <https://learn.microsoft.com/purview/unified-catalog-critical-data-elements>
+ role prerequisites, <https://learn.microsoft.com/purview/unified-catalog-critical-data-elements>
 2. Manage data product access policies, inherited/aggregated policies from governance domains,
-   glossary terms, and critical data elements onto data products, <https://learn.microsoft.com/purview/unified-catalog-data-product-access-policies>
+ glossary terms, and critical data elements onto data products, <https://learn.microsoft.com/purview/unified-catalog-data-product-access-policies>
 3. Learn about Microsoft Purview Unified Catalog, critical data elements and glossary terms
-   feature overview, <https://learn.microsoft.com/purview/unified-catalog>
+ feature overview, <https://learn.microsoft.com/purview/unified-catalog>
 4. Create and manage glossary terms, "Link terms to data products, assets, and critical data
-   elements (preview)," including the Draft-state requirement for that reciprocal flow, <https://learn.microsoft.com/purview/unified-catalog-glossary-terms-create-manage>
+ elements (preview)," including the Draft-state requirement for that reciprocal flow, <https://learn.microsoft.com/purview/unified-catalog-glossary-terms-create-manage>
 5. Learn about data governance billing, Unified Catalog billing, governed assets defined via data
-   products or critical data elements, <https://learn.microsoft.com/purview/data-governance-billing>
+ products or critical data elements, <https://learn.microsoft.com/purview/data-governance-billing>
 6. Data governance billing frequently asked questions, <https://learn.microsoft.com/purview/data-governance-billing-faq>
 7. Data governance roles and permissions in Microsoft Purview, Data Steward role, 
-   <https://learn.microsoft.com/purview/data-governance-roles-permissions>
+ <https://learn.microsoft.com/purview/data-governance-roles-permissions>
 8. Purview Unified Catalog REST API, Critical Data Elements operation group (Create
-   Relationship/List Relationships/Delete Relationship, and the shared `EntityCategory` enum
-   confirming `TERM` as a valid value, fetched directly this build), 
-   <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/critical-data-elements?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
+ Relationship/List Relationships/Delete Relationship, and the shared `EntityCategory` enum
+ confirming `TERM` as a valid value, fetched directly this build), 
+ <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/critical-data-elements?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
 9. Purview Unified Catalog REST API, Terms operation group (Query), 
-   <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/terms?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
+ <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/terms?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
 10. Tutorial: Authenticate for APIs, service principal setup, Unified Catalog role assignment,
-    client-credentials token flow, <https://learn.microsoft.com/purview/data-gov-api-rest-data-plane>
+ client-credentials token flow, <https://learn.microsoft.com/purview/data-gov-api-rest-data-plane>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing engagement, this
 > scenario targets Unified Catalog's **preview** REST API surface (`2026-03-20-preview`), and both

@@ -43,18 +43,18 @@ is reported and skipped rather than treated as an error, so this is safe to re-r
 ## What rollback does **not** undo
 
 - **Score history.** Prior scan runs' scores (up to the last 50 snapshots per Microsoft's documented
-  retention) remain visible in the portal even after the rules that produced them are deleted. To
-  remove history explicitly, use the portal's **Delete data quality data** action on the asset's
-  Data quality overview page (`README.md` reference 8), not scripted here, since it's a destructive,
-  rarely needed action this repo's code-standard reserves for explicit, deliberate operator choice
-  rather than a default rollback path.
+ retention) remain visible in the portal even after the rules that produced them are deleted. To
+ remove history explicitly, use the portal's **Delete data quality data** action on the asset's
+ Data quality overview page (`README.md` reference 8), not scripted here, since it's a destructive,
+ rarely needed action this repo's code-standard reserves for explicit, deliberate operator choice
+ rather than a default rollback path.
 - **The Data Quality data-source connection.** This scenario's deploy script never created it (see
-  `README.md` §11), so rollback doesn't touch it either. Remove it separately via the portal
-  (**Manage** → **Connections**) if the intent is a full teardown.
+ `README.md` §11), so rollback doesn't touch it either. Remove it separately via the portal
+ (**Manage** → **Connections**) if the intent is a full teardown.
 - **The governance domain, data product, or data asset.** None of these were created by this
-  scenario, see `design.md` §6/§7, so none are removed by rollback.
+ scenario, see `design.md` §6/§7, so none are removed by rollback.
 - **Any score-threshold alerts configured via the portal.** Not scripted by this scenario (see
-  `README.md` §11); remove them separately under **Manage** → **Alerts** if desired.
+ `README.md` §11); remove them separately under **Manage** → **Alerts** if desired.
 
 ## Verification after rollback
 

@@ -30,30 +30,30 @@ Teams chat is now a first-class channel for the same data-spillage and inappropr
 incidents email has always presented, a confidential file summary pasted into a group chat, a
 harassment message in a channel, a wrong-recipient 1:1 share. Microsoft's own eDiscovery search-and-
 purge workflow documents Teams messages as a directly supported target for exactly this response
-[[1]](#references). This scenario builds that workflow as code, on the same idempotent-search /
+. This scenario builds that workflow as code, on the same idempotent-search /
 explicit-purge pattern this repo already established for mailboxes.
 
 > ⚠️ **There is no "soft delete" for a Teams purge.** Microsoft's own Graph reference states plainly:
 > "When purgeType is set to either `recoverable` or `permanentlyDelete` and purgeAreas is set to
-> `teamsMessages`, the Teams messages are permanently deleted" [[2]](#references). The user-visible
+> `teamsMessages`, the Teams messages are permanently deleted". The user-visible
 > message is removed **immediately** and replaced with an admin-deletion tombstone; it "can't be
-> recovered by the user" [[1]](#references). Review the search estimate carefully, there is no
+> recovered by the user". Review the search estimate carefully, there is no
 > analog to the mailbox sibling's Recoverable-Items recovery window here. See `design.md` §2/§7 for
 > why this corrects an assumption an earlier build of this repo's mailbox sibling scenario carried.
 
 ## 3. Prerequisites
 
-Full licensing detail: `docs/licensing-matrix.md` §2 (eDiscovery (Premium), a Graph-created case is
+Full licensing detail: [Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix) (eDiscovery (Premium), a Graph-created case is
 Premium-configured, same as the mailbox sibling; `design.md` §3 of that scenario). RBAC:
-`docs/rbac-model.md` §4. Automation surface: `docs/automation-surface.md` §3.
+[RBAC model §4](/docs/rbac-model/#4-purview-role-groups-by-module-representative-not-exhaustive). Automation surface: [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended).
 
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Licensing | **eDiscovery (Premium)**: M365/Office 365 **E5**, **Microsoft Purview Suite**, or **E5 eDiscovery & Audit** add-on | Same tier as `search-and-purge-data-spillage`, a Graph-created case is Premium-configured |
-| Role to create/run a search | **eDiscovery Manager** (own cases) or **eDiscovery Administrator** (all cases) | `docs/rbac-model.md` §4 |
-| Role to purge | **Search And Purge** | For this Teams-specific workflow, Microsoft states the role "is assigned to the **Data Investigator** and **Organization Management** role groups by default" [[1]](#references), note this is a broader default than the mailbox sibling's own citation ("available by default only to Organization Management members"); grant a **custom role group** with just the needed roles rather than relying on either default, least privilege |
-| Graph permission | Application **`eDiscovery.ReadWrite.All`** | Same as the mailbox sibling; confirmed against the `purgeData`/`searches`/`noncustodialDataSources` Graph reference pages [[2]](#references)[[6]](#references)[[7]](#references) |
-| Auth | Certificate-based app-only via `Connect-MgGraph` | `docs/automation-surface.md` §3 |
+| Role to create/run a search | **eDiscovery Manager** (own cases) or **eDiscovery Administrator** (all cases) | [RBAC model §4](/docs/rbac-model/#4-purview-role-groups-by-module-representative-not-exhaustive) |
+| Role to purge | **Search And Purge** | For this Teams-specific workflow, Microsoft states the role "is assigned to the **Data Investigator** and **Organization Management** role groups by default", note this is a broader default than the mailbox sibling's own citation ("available by default only to Organization Management members"); grant a **custom role group** with just the needed roles rather than relying on either default, least privilege |
+| Graph permission | Application **`eDiscovery.ReadWrite.All`** | Same as the mailbox sibling; confirmed against the `purgeData`/`searches`/`noncustodialDataSources` Graph reference pages |
+| Auth | Certificate-based app-only via `Connect-MgGraph` | [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
 | PowerShell module | `Microsoft.Graph.Security` ≥ 2.25.0 | Same module/version floor as the mailbox sibling |
 | Pre-resolved target mailboxes | Parent-team mailbox (`scenarios/ediscovery/teams-group-hold-resolution/`), or known participant/private-channel addresses | See `design.md` §4, this scenario does not re-derive Teams/group mailbox resolution |
 
@@ -133,7 +133,7 @@ copy-only" assumption, is in `design.md` §2/§3.
 ### Portal reference
 
 The case and search are visible under **eDiscovery** in the
-[Microsoft Purview portal](https://purview.microsoft.com) [[9]](#references). The portal's own
+[Microsoft Purview portal](https://purview.microsoft.com). The portal's own
 **Search** page flyout (**More → Purge data**) drives the identical `purgeData` action this
 scenario's script calls, so a purge started in the portal is visible to, and re-checkable by,
 `validate/Test-TeamsMessagePurgeSearchAndPurge.ps1`.
@@ -142,35 +142,35 @@ scenario's script calls, so a purge started in the portal is visible to, and re-
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Search cmdlet | `New-MgSecurityCaseEdiscoveryCaseSearch` (`-BodyParameter`, `noncustodialSources@odata.bind`) | POST `.../ediscoveryCases/{id}/searches` [[6]](#references) |
-| `contentQuery` | `kind:microsoftteams` -led KQL | Message kind condition value for Teams content [[4]](#references)[[5]](#references), not `kind:im` (Skype for Business; matches Teams too but needs an exclusion clause) |
+| Search cmdlet | `New-MgSecurityCaseEdiscoveryCaseSearch` (`-BodyParameter`, `noncustodialSources@odata.bind`) | POST `.../ediscoveryCases/{id}/searches` |
+| `contentQuery` | `kind:microsoftteams` -led KQL | Message kind condition value for Teams content, not `kind:im` (Skype for Business; matches Teams too but needs an exclusion clause) |
 | Data sources | Explicit `noncustodialDataSource` per target mailbox (`userSource`, `email`) | No Teams-appropriate `allTenantMailboxes`-style blanket scope exists; `design.md` §6 |
 | `dataSourceScopes` | `none` | Sources supplied explicitly via `noncustodialSources@odata.bind` instead |
 | Estimate cmdlet | `Invoke-MgEstimateSecurityCaseEdiscoveryCaseSearchStatistics` | Same as the mailbox sibling; returns `indexedItemCount`/`mailboxCount` via the polled operation |
-| Purge cmdlet | `Clear-MgSecurityCaseEdiscoveryCaseSearchData` | POST `.../searches/{id}/purgeData` [[2]](#references) |
+| Purge cmdlet | `Clear-MgSecurityCaseEdiscoveryCaseSearchData` | POST `.../searches/{id}/purgeData` |
 | `purgeType` | `recoverable` or `permanentlyDelete`, **both permanently delete the user copy for Teams** | `-ConfirmPermanentDelete` required for both, §2, `design.md` §7 |
 | `purgeAreas` | `teamsMessages` (hardcoded, this script never purges mailboxes) | The mailbox sibling's own `purgeAreas: mailboxes` remains that scenario's scope |
-| Items purged per mailbox/location per run | **≤ 100** | Same documented ceiling as the mailbox sibling [[1]](#references) |
-| Compliance-copy retention after purge | Retained ≥ 24 hours, then background-deleted (typically 1-7 days) | `SubstrateHolds` folder; reapplying a hold within the 24-hour window can preserve the compliance copy, but never the already-deleted user copy [[1]](#references) |
+| Items purged per mailbox/location per run | **≤ 100** | Same documented ceiling as the mailbox sibling |
+| Compliance-copy retention after purge | Retained ≥ 24 hours, then background-deleted (typically 1-7 days) | `SubstrateHolds` folder; reapplying a hold within the 24-hour window can preserve the compliance copy, but never the already-deleted user copy |
 | Operation polling | `Get-MgSecurityCaseEdiscoveryCaseOperation` | Same pattern as the mailbox sibling |
 
 ## 7. Validation / how to prove it works
 
 1. **Automated (object-level)**, `./validate/Test-TeamsMessagePurgeSearchAndPurge.ps1` confirms the
-   case and search exist, lists the search's bound non-custodial (mailbox) sources, reports the
-   latest `estimateStatistics` result, and lists every `purgeData` operation against the case with
-   its status. Exits non-zero on a `failed`/`submissionFailed` purge operation.
+ case and search exist, lists the search's bound non-custodial (mailbox) sources, reports the
+ latest `estimateStatistics` result, and lists every `purgeData` operation against the case with
+ its status. Exits non-zero on a `failed`/`submissionFailed` purge operation.
 2. **Teams client tombstone**, the fastest direct confirmation: the purged message is replaced in
-   the Teams client with **"This message was deleted by an admin"** immediately on a successful purge
-   [[1]](#references), a client-visible signal the mailbox sibling has no equivalent for.
+ the Teams client with **"This message was deleted by an admin"** immediately on a successful purge
+, a client-visible signal the mailbox sibling has no equivalent for.
 3. **Re-run the search's estimate**, a falling `indexedItemCount` across successive
-   `New-TeamsMessagePurgeSearch.ps1` runs after a purge is the same secondary evidence pattern the
-   mailbox sibling uses.
+ `New-TeamsMessagePurgeSearch.ps1` runs after a purge is the same secondary evidence pattern the
+ mailbox sibling uses.
 4. **Audit**, search the unified audit log for the eDiscovery search/purge activity, the same
-   `RecordType Discovery` pattern this repo's `premium-legal-hold-and-export` and
-   `search-and-purge-data-spillage` scenarios already use.
+ `RecordType Discovery` pattern this repo's `premium-legal-hold-and-export` and
+ `search-and-purge-data-spillage` scenarios already use.
 5. **Idempotency proof**, re-run `New-TeamsMessagePurgeSearch.ps1`; the case/search/noncustodial
-   sources all report `exists`, not `created`.
+ sources all report `exists`, not `created`.
 
 ## 8. Operations & tuning
 
@@ -197,72 +197,72 @@ case, and the holds you removed and must reapply.
 ## 10. Cost & licensing notes
 
 - **eDiscovery (Premium)** entitlement (E5/Suite/add-on), same as the mailbox sibling, no separate
-  per-search or per-purge meter for this action.
+ per-search or per-purge meter for this action.
 - **The real cost is the hold-removal/reapplication process**, not a licensing meter: every purge
-  requires a human to identify, remove, and later reapply holds on each target mailbox, a
-  heavier operational sequence than the mailbox sibling's "purge, held mailboxes are just skipped"
-  model.
+ requires a human to identify, remove, and later reapply holds on each target mailbox, a
+ heavier operational sequence than the mailbox sibling's "purge, held mailboxes are just skipped"
+ model.
 
 ## 11. Known limitations & gotchas
 
 - **No reversible purge mode.** Both `-PurgeType` values permanently delete the Teams user-visible
-  message on success. See §2's warning and `design.md` §2/§7. This is the single most important
-  fact about this scenario, and the reason `-ConfirmPermanentDelete` is required unconditionally.
+ message on success. See §2's warning and `design.md` §2/§7. This is the single most important
+ fact about this scenario, and the reason `-ConfirmPermanentDelete` is required unconditionally.
 - **A hold or retention policy on a target mailbox blocks the purge entirely** rather than just
-  hiding the item from view (the mailbox sibling's behavior). Remove it first, purge, then reapply, 
-  §5 steps 3/6. This scenario does not automate either step.
+ hiding the item from view (the mailbox sibling's behavior). Remove it first, purge, then reapply, 
+ §5 steps 3/6. This scenario does not automate either step.
 - **100 items per mailbox/location per run.** Same documented ceiling as the mailbox sibling; repeat
-  the purge to clear more.
+ the purge to clear more.
 - **Not supported for Teams Connect Chat (external access/federation) conversations, or for chats
-  with yourself**, Microsoft states both plainly [[1]](#references); not scriptable around.
+ with yourself**, Microsoft states both plainly; not scriptable around.
 - **VERIFY:** private-channel compliance-copy storage, one Microsoft Learn page describes "a
-  dedicated mailbox for each private channel" [[1]](#references), another describes storage "in the
-  Exchange Online mailboxes of all members of the private channel" [[3]](#references). This build
-  found no page reconciling the two. Do not assume a single dedicated mailbox is sufficient for a
-  private-channel target without confirming against the member-based model too, `design.md` §4.
+ dedicated mailbox for each private channel", another describes storage "in the
+ Exchange Online mailboxes of all members of the private channel". This build
+ found no page reconciling the two. Do not assume a single dedicated mailbox is sufficient for a
+ private-channel target without confirming against the member-based model too, `design.md` §4.
 - **VERIFY (pilot tenant or a future Microsoft Learn/SDK pass):** the exact typed PowerShell cmdlet
-  for binding an existing `noncustodialDataSource` onto a search via the `$ref` endpoint, 
-  `deploy/New-TeamsMessagePurgeSearch.ps1` calls the confirmed raw HTTP shape via
-  `Invoke-MgGraphRequest` instead of guessing an unconfirmed SDK cmdlet name. `design.md` §6.
+ for binding an existing `noncustodialDataSource` onto a search via the `$ref` endpoint, 
+ `deploy/New-TeamsMessagePurgeSearch.ps1` calls the confirmed raw HTTP shape via
+ `Invoke-MgGraphRequest` instead of guessing an unconfirmed SDK cmdlet name. `design.md` §6.
 - **VERIFY (pilot tenant):** how a case-level `ediscoveryNoncustodialDataSource`'s `DisplayName` is
-  populated for a mailbox (`userSource`), this scenario's idempotency check matches on `DisplayName`
-  as a best-effort heuristic; `validate/Test-TeamsMessagePurgeSearchAndPurge.ps1` reports this as
-  `[WARN]`, not `[PASS]`. `design.md` §6.
+ populated for a mailbox (`userSource`), this scenario's idempotency check matches on `DisplayName`
+ as a best-effort heuristic; `validate/Test-TeamsMessagePurgeSearchAndPurge.ps1` reports this as
+ `[WARN]`, not `[PASS]`. `design.md` §6.
 - **VERIFY:** whether `-PurgeType` still meaningfully affects the **compliance copy's** retention or
-  hold-interaction timeline for Teams, even though it no longer gates the user-copy outcome, no
-  Microsoft Learn page found during this build confirms either way. `design.md` §7.
+ hold-interaction timeline for Teams, even though it no longer gates the user-copy outcome, no
+ Microsoft Learn page found during this build confirms either way. `design.md` §7.
 - **This scenario purges Teams messages only** (`purgeAreas: teamsMessages`), it never touches
-  Exchange mailbox content; use the `search-and-purge-data-spillage` sibling for that.
+ Exchange mailbox content; use the `search-and-purge-data-spillage` sibling for that.
 - **This build corrected a factual error in the `search-and-purge-data-spillage` sibling's own
-  docs** (it previously described Teams purge as compliance-copy-only, the opposite of current
-  Microsoft Learn guidance for the Graph-based mechanism), see `design.md` §2. Both scenarios' texts
-  now agree.
+ docs** (it previously described Teams purge as compliance-copy-only, the opposite of current
+ Microsoft Learn guidance for the Graph-based mechanism), see `design.md` §2. Both scenarios' texts
+ now agree.
 - **Illustrative values.** The case name, query, and mailbox list in the sample config are
-  placeholders, replace with the real, confirmed incident details before use.
+ placeholders, replace with the real, confirmed incident details before use.
 
 ## 12. References
 
 1. Find and delete Microsoft Teams chat messages in eDiscovery (data sources table, hold-removal
-   requirement, role assignment, tombstone behavior, compliance-copy retention timing, Teams Connect
-   Chat/self-chat exclusions), <https://learn.microsoft.com/purview/edisc-search-teams-data>
+ requirement, role assignment, tombstone behavior, compliance-copy retention timing, Teams Connect
+ Chat/self-chat exclusions), <https://learn.microsoft.com/purview/edisc-search-teams-data>
 2. ediscoverySearch: purgeData (Graph v1.0; `purgeType`/`purgeAreas`; permanent-deletion note for
-   `teamsMessages`), <https://learn.microsoft.com/graph/api/security-ediscoverysearch-purgedata>
+ `teamsMessages`), <https://learn.microsoft.com/graph/api/security-ediscoverysearch-purgedata>
 3. Finding content in Microsoft Teams in eDiscovery (Teams content storage table; private-channel
-   member-mailbox description), <https://learn.microsoft.com/purview/edisc-search-teams>
+ member-mailbox description), <https://learn.microsoft.com/purview/edisc-search-teams>
 4. Use the condition builder to create search queries in eDiscovery (Message kind condition, value
-   `microsoftteams`), <https://learn.microsoft.com/purview/edisc-condition-builder>
+ `microsoftteams`), <https://learn.microsoft.com/purview/edisc-condition-builder>
 5. Feature reference for Content search (`kind:microsoftteams` KQL; `kind:im` Skype-for-Business
-   caveat), <https://learn.microsoft.com/purview/ediscovery-content-search-reference>
+ caveat), <https://learn.microsoft.com/purview/ediscovery-content-search-reference>
 6. Create searches (Graph v1.0; `dataSourceScopes`, `custodianSources@odata.bind`,
-   `noncustodialSources@odata.bind` worked example), <https://learn.microsoft.com/graph/api/security-ediscoverycase-post-searches>
+ `noncustodialSources@odata.bind` worked example), <https://learn.microsoft.com/graph/api/security-ediscoverycase-post-searches>
 7. Create nonCustodialDataSources (Graph v1.0; `userSource`/`siteSource` dataSource shape), <https://learn.microsoft.com/graph/api/security-ediscoverycase-post-noncustodialdatasources>
 8. Add noncustodialDataSources (Graph v1.0; `$ref` bind to a search), <https://learn.microsoft.com/graph/api/security-ediscoverysearch-post-noncustodialsources>
 9. Assign eDiscovery permissions, <https://learn.microsoft.com/purview/edisc-permissions>
 10. `scenarios/ediscovery/search-and-purge-data-spillage/`, the mailbox-purge sibling this scenario
-    completes; shares its case/search/estimate helper patterns and `Get-OperationIdFromLocation`
-    Location-header handling.
+ completes; shares its case/search/estimate helper patterns and `Get-OperationIdFromLocation`
+ Location-header handling.
 11. `scenarios/ediscovery/teams-group-hold-resolution/`, resolves a Team/Microsoft 365 Group's own
-    mailbox address, reused here for standard/shared-channel targets.
+ mailbox address, reused here for standard/shared-channel targets.
 
 > Re-verify all links, Graph SDK cmdlet names, and, especially, the private-channel storage model
 > and the unconfirmed `$ref`-bind cmdlet name (§11) against current Microsoft Learn before a

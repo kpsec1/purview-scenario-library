@@ -65,19 +65,19 @@ concept, see `design.md` §6).
 ## What rollback does **not** undo
 
 - **Audit log / alert history.** Alerts and incident reports already generated (DLP Alerts
-  dashboard, Microsoft Defender portal) are retained per their own retention windows regardless of
-  policy state.
+ dashboard, Microsoft Defender portal) are retained per their own retention windows regardless of
+ policy state.
 - **Messages already blocked.** A message a user tried to send externally while a Block-mode rule
-  was enforcing was not delivered; disabling or removing the policy afterward does not
-  retroactively deliver it. The sender must resend.
+ was enforcing was not delivered; disabling or removing the policy afterward does not
+ retroactively deliver it. The sender must resend.
 - **Messages already encrypted.** A message already encrypted and delivered under Encrypt mode
-  stays encrypted for its recipient, rollback has no effect on mail already sent.
+ stays encrypted for its recipient, rollback has no effect on mail already sent.
 - **The business-exception group's membership.** This scenario does not create or manage
-  `ExceptionGroupEmail`, it's a dependency, not a deployed artifact. Removing this policy has no
-  effect on that group.
+ `ExceptionGroupEmail`, it's a dependency, not a deployed artifact. Removing this policy has no
+ effect on that group.
 - **RMS templates.** This scenario does not create or manage the `Encrypt-Only`/`Do Not Forward`
-  templates it references, they are tenant-level Message Encryption artifacts, unaffected by
-  policy rollback.
+ templates it references, they are tenant-level Message Encryption artifacts, unaffected by
+ policy rollback.
 
 ## Verification after rollback
 

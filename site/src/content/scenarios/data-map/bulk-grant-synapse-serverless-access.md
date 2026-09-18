@@ -38,19 +38,19 @@ the same "unclassified aggregation point" risk the parent scenario's §2 describ
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md` (no incremental license cost - this
+Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/) (no incremental license cost - this
 scenario uses only Azure Synapse's own RBAC/SQL surface, not a Purview or M365 entitlement). Summary for
 this scenario:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Operator identity to run this script (`-AppId`) | **Synapse Administrator** role on the workspace (Azure Synapse's own RBAC, assignable in Synapse Studio → **Manage** → **Access control**, or `New-AzSynapseRoleAssignment -RoleDefinitionName 'Synapse Administrator'` from the `Az.Synapse` module) | A **completely different RBAC system** from the Purview roles the parent scenario's deploy script needs - confirmed via Microsoft's own *Azure Synapse workspace access control overview*: "Synapse Administrators are granted db_owner (DBO) permissions on the serverless SQL pool... To grant other users access to the serverless SQL pool, Synapse administrators need to run SQL scripts on the serverless pool." **Not yet cross-referenced in `docs/rbac-model.md`** (that doc currently documents nine systems, none of them Azure Synapse workspace RBAC), flagged rather than guessed at a section number; recorded as a follow-up in `PROGRESS.md` |
-| Principal being granted access (`-PrincipalName`) | Any Microsoft Entra-backed principal Azure Synapse accepts in `CREATE LOGIN ... FROM EXTERNAL PROVIDER` | Typically the Microsoft Purview account's own display name (the parent scenario's SAMI) - the two parameters are deliberately different identities in the common case, see `design.md` §6 |
+| Operator identity to run this script (`-AppId`) | **Synapse Administrator** role on the workspace (Azure Synapse's own RBAC, assignable in Synapse Studio → **Manage** → **Access control**, or `New-AzSynapseRoleAssignment -RoleDefinitionName 'Synapse Administrator'` from the `Az.Synapse` module) | A **completely different RBAC system** from the Purview roles the parent scenario's deploy script needs - confirmed via Microsoft's own *Azure Synapse workspace access control overview*: "Synapse Administrators are granted db_owner (DBO) permissions on the serverless SQL pool... To grant other users access to the serverless SQL pool, Synapse administrators need to run SQL scripts on the serverless pool." **Not yet cross-referenced in [RBAC model](/docs/rbac-model/)** (that doc currently documents nine systems, none of them Azure Synapse workspace RBAC), flagged rather than guessed at a section number; recorded as a follow-up in `PROGRESS.md` |
+| Principal being granted access (`-PrincipalName`) | Any Microsoft Entra-backed principal Azure Synapse accepts in `CREATE LOGIN... FROM EXTERNAL PROVIDER` | Typically the Microsoft Purview account's own display name (the parent scenario's SAMI) - the two parameters are deliberately different identities in the common case, see `design.md` §6 |
 | Workspace **firewall**: "Allow Azure services and resources to access this workspace" = **On** | Azure portal → the workspace → **Firewalls/Networking** | Same prerequisite the parent scenario documents (`scan-azure-synapse-and-classify/README.md` §3) - this script also needs a network path to the serverless endpoint, from wherever it runs |
-| `SqlServer` PowerShell module | A version supporting `Invoke-Sqlcmd -AccessToken` (Microsoft's own worked examples for this parameter use current module releases; pin a specific version before shipping to a buyer) | `Install-Module -Name SqlServer -Scope CurrentUser`. This is a **sixth automation surface** for this repo, not yet catalogued in `docs/automation-surface.md`'s five - see §11 |
+| `SqlServer` PowerShell module | A version supporting `Invoke-Sqlcmd -AccessToken` (Microsoft's own worked examples for this parameter use current module releases; pin a specific version before shipping to a buyer) | `Install-Module -Name SqlServer -Scope CurrentUser`. This is a **sixth automation surface** for this repo, not yet catalogued in [Automation surface](/docs/automation-surface/)'s five - see §11 |
 | Automation identity for the read-only `validate/` script | A lower-privileged identity than the deploy script's operator - only needs `CONNECT`/catalog-view visibility, not Synapse Administrator | See `validate/Test-SynapseServerlessDatabaseAccess.ps1`'s own `.PARAMETER AppId` note |
 
-> Verify current role names and RBAC assignment mechanics against `docs/rbac-model.md` and Microsoft
+> Verify current role names and RBAC assignment mechanics against [RBAC model](/docs/rbac-model/) and Microsoft
 > Learn before a sales commitment - this scenario's RBAC system (Azure Synapse workspace roles) is not
 > yet cross-referenced there.
 
@@ -155,8 +155,8 @@ granted access to, per that scenario's own `README.md` §8 incident-response cau
 ## 7. Validation / how to prove it works
 
 1. **Automated check**, `./validate/Test-SynapseServerlessDatabaseAccess.ps1` confirms the server-level
-   login exists and, for every target database, that the principal is both a database user and a
-   `db_datareader` member. Exits non-zero on any hard failure.
+ login exists and, for every target database, that the principal is both a database user and a
+ `db_datareader` member. Exits non-zero on any hard failure.
 2. **Manual spot-check**, from Synapse Studio, against any target database:
    ```sql
    SELECT p.name AS UserName, r.name AS RoleName
@@ -166,12 +166,12 @@ granted access to, per that scenario's own `README.md` §8 incident-response cau
    WHERE p.authentication_type_desc = 'EXTERNAL'
    ORDER BY p.name;
    ```
-   (Microsoft's own documented verification query, unfiltered - shows every external principal, not
-   just the one this scenario granted.)
+ (Microsoft's own documented verification query, unfiltered - shows every external principal, not
+ just the one this scenario granted.)
 3. **Downstream evidence**, after running this scenario's deploy script, re-run
-   `scan-azure-synapse-and-classify/deploy/New-AzureSynapseDataMapScan.ps1 -RunNow` and confirm (via
-   that scenario's own `validate/Test-AzureSynapseDataMapScan.ps1` and §7) that the previously-ungranted
-   databases now report discovered/classified assets.
+ `scan-azure-synapse-and-classify/deploy/New-AzureSynapseDataMapScan.ps1 -RunNow` and confirm (via
+ that scenario's own `validate/Test-AzureSynapseDataMapScan.ps1` and §7) that the previously-ungranted
+ databases now report discovered/classified assets.
 
 ## 8. Operations & tuning
 
@@ -218,71 +218,71 @@ statements and staging.
 
 No incremental license cost - this scenario grants SQL-level permissions using Azure Synapse's own RBAC
 and T-SQL surface, not a Purview or Microsoft 365 entitlement. The operator identity's Synapse
-Administrator role assignment itself has no billing implication either. See `docs/licensing-matrix.md`
+Administrator role assignment itself has no billing implication either. See [Licensing matrix](/docs/licensing-matrix/)
 for the parent scenario's own PAYG/Azure-consumption notes, which this scenario doesn't add to.
 
 ## 11. Known limitations & gotchas
 
 - **Cannot auto-detect read-only Spark/Lake-replicated databases.** Microsoft documents that "the
-  following steps for serverless databases do not apply to replicated databases" (databases replicated
-  from a Spark/Lake database are currently read-only), but no catalog column or documented signal
-  identifying them was found during this build's grounding pass. This script surfaces a failed grant
-  attempt against one as a per-database `Error` in its result table rather than fabricating a detection
-  heuristic - use `-ExcludeDatabase` to skip known ones on subsequent runs.
+ following steps for serverless databases do not apply to replicated databases" (databases replicated
+ from a Spark/Lake database are currently read-only), but no catalog column or documented signal
+ identifying them was found during this build's grounding pass. This script surfaces a failed grant
+ attempt against one as a per-database `Error` in its result table rather than fabricating a detection
+ heuristic - use `-ExcludeDatabase` to skip known ones on subsequent runs.
 - **`-PrincipalName` for a service-principal grantee is a known naming ambiguity this repo already
-  carries elsewhere.** Microsoft's own documentation uses the literal placeholder `[ServicePrincipalID]`
-  for this case without stating whether it means the app's display name or its application (client) ID
-  - the same ambiguity `scan-azure-synapse-and-classify` and its two Azure-SQL siblings already flag for
-  their own service-principal-authentication non-goals. This scenario's default use case (granting the
-  Purview account's own MSI, by its unambiguous display name) is unaffected.
+ carries elsewhere.** Microsoft's own documentation uses the literal placeholder `[ServicePrincipalID]`
+ for this case without stating whether it means the app's display name or its application (client) ID
+ - the same ambiguity `scan-azure-synapse-and-classify` and its two Azure-SQL siblings already flag for
+ their own service-principal-authentication non-goals. This scenario's default use case (granting the
+ Purview account's own MSI, by its unambiguous display name) is unaffected.
 - **CORRECTION applied here, not yet backported to the parent scenario.** `scan-azure-synapse-and-classify/
-  README.md` §5 step 3c and `design.md` §4 describe `CREATE LOGIN` as a per-database step. This
-  scenario's own grounding pass found two independent Microsoft Learn sources confirming it is a
-  server-scoped statement (run once against `master`) - see `design.md` §4 for the full grounding. This
-  scenario implements the corrected behavior; the parent scenario's wording is not edited by this
-  fragment (`AGENTS.md` §6) - a follow-up to reconcile it is recorded in `PROGRESS.md`.
+ README.md` §5 step 3c and `design.md` §4 describe `CREATE LOGIN` as a per-database step. This
+ scenario's own grounding pass found two independent Microsoft Learn sources confirming it is a
+ server-scoped statement (run once against `master`) - see `design.md` §4 for the full grounding. This
+ scenario implements the corrected behavior; the parent scenario's wording is not edited by this
+ fragment (`AGENTS.md` §6) - a follow-up to reconcile it is recorded in `PROGRESS.md`.
 - **Idempotency checks match by name only, not by a stable identifier.** The login/user-existence
-  checks (`sys.server_principals`/`sys.database_principals` filtered by `name = @PrincipalName`) would
-  treat an unrelated pre-existing principal that happens to share the same display name as "already
-  granted," silently skipping the intended grant. Azure Synapse's external-provider login model doesn't
-  document a way to pin a specific Microsoft Entra object ID at creation time the way a dedicated pool's
-  SID-aware variant can, flagged as a Red Team finding in `reviews.md` rather than resolved by
-  guessing a pinning mechanism. Low real-world likelihood (display-name collisions across
-  Entra-backed principals in one tenant are uncommon) but worth knowing before trusting this script's
-  "already granted" result for a principal name you didn't choose yourself.
+ checks (`sys.server_principals`/`sys.database_principals` filtered by `name = @PrincipalName`) would
+ treat an unrelated pre-existing principal that happens to share the same display name as "already
+ granted," silently skipping the intended grant. Azure Synapse's external-provider login model doesn't
+ document a way to pin a specific Microsoft Entra object ID at creation time the way a dedicated pool's
+ SID-aware variant can, flagged as a Red Team finding in `reviews.md` rather than resolved by
+ guessing a pinning mechanism. Low real-world likelihood (display-name collisions across
+ Entra-backed principals in one tenant are uncommon) but worth knowing before trusting this script's
+ "already granted" result for a principal name you didn't choose yourself.
 - **Cross-cutting doc gaps surfaced, not fixed here.** This scenario introduces a **sixth** automation
-  surface (direct T-SQL via `Invoke-Sqlcmd`) not yet in `docs/automation-surface.md`'s five, and relies
-  on a **tenth** RBAC system (Azure Synapse workspace roles - Synapse Administrator) not yet in
-  `docs/rbac-model.md`'s nine. Both are flagged inline above rather than silently assumed covered;
-  follow-ups to add them are recorded in `PROGRESS.md`.
+ surface (direct T-SQL via `Invoke-Sqlcmd`) not yet in [Automation surface](/docs/automation-surface/)'s five, and relies
+ on a **tenth** RBAC system (Azure Synapse workspace roles - Synapse Administrator) not yet in
+ [RBAC model](/docs/rbac-model/)'s nine. Both are flagged inline above rather than silently assumed covered;
+ follow-ups to add them are recorded in `PROGRESS.md`.
 - **Dedicated SQL pools are out of scope** - see `design.md` §8. The parent scenario's manual,
-  one-time-per-workspace dedicated-pool grant remains unautomated (and, per that scenario's own
-  reasoning, doesn't need bulk automation - a workspace typically has at most one dedicated pool).
+ one-time-per-workspace dedicated-pool grant remains unautomated (and, per that scenario's own
+ reasoning, doesn't need bulk automation - a workspace typically has at most one dedicated pool).
 - **Network path required from wherever this script runs.** Unlike the parent scenario's SAMI-authenticated
-  scan (which runs inside the Purview service), this script's operator identity connects directly to the
-  serverless SQL endpoint over TDS/1433 from wherever the script executes - confirm outbound network
-  reachability (and the workspace firewall setting) from that location before troubleshooting an
-  authentication failure as a permissions problem.
+ scan (which runs inside the Purview service), this script's operator identity connects directly to the
+ serverless SQL endpoint over TDS/1433 from wherever the script executes - confirm outbound network
+ reachability (and the workspace firewall setting) from that location before troubleshooting an
+ authentication failure as a permissions problem.
 
 ## 12. References
 
 1. Connect to and manage Azure Synapse Analytics workspaces in Microsoft Purview (per-database
-   `CREATE USER`/`ALTER ROLE`/verification-query T-SQL this scenario's per-database logic is modeled
-   on), <https://learn.microsoft.com/purview/register-scan-synapse-workspace>
+ `CREATE USER`/`ALTER ROLE`/verification-query T-SQL this scenario's per-database logic is modeled
+ on), <https://learn.microsoft.com/purview/register-scan-synapse-workspace>
 2. Invoke-Sqlcmd (SqlServer PowerShell module reference, confirms the `-AccessToken`
-   client-credentials connection pattern via its own "Example 12" worked example), <https://learn.microsoft.com/powershell/module/sqlserver/invoke-sqlcmd>
+ client-credentials connection pattern via its own "Example 12" worked example), <https://learn.microsoft.com/powershell/module/sqlserver/invoke-sqlcmd>
 3. Access lake databases using serverless SQL pool (confirms `SELECT * FROM sys.databases` as the
-   documented way to enumerate databases visible to a serverless SQL pool, and the once-only
-   `CREATE LOGIN` "Create workspace-level data reader" example), <https://learn.microsoft.com/azure/synapse-analytics/metadata/database>
+ documented way to enumerate databases visible to a serverless SQL pool, and the once-only
+ `CREATE LOGIN` "Create workspace-level data reader" example), <https://learn.microsoft.com/azure/synapse-analytics/metadata/database>
 4. Troubleshoot serverless SQL pool in Azure Synapse Analytics (confirms `CREATE LOGIN` as a
-   `master`-scoped, server-level statement, and the `sys.server_principals` login-existence query), <https://learn.microsoft.com/azure/synapse-analytics/sql/resources-self-help-sql-on-demand>
+ `master`-scoped, server-level statement, and the `sys.server_principals` login-existence query), <https://learn.microsoft.com/azure/synapse-analytics/sql/resources-self-help-sql-on-demand>
 5. Azure Synapse workspace access control overview (confirms the Synapse Administrator role's
-   `db_owner` permission on the serverless pool and its authority to grant others access), <https://learn.microsoft.com/azure/synapse-analytics/security/synapse-workspace-access-control-overview>
+ `db_owner` permission on the serverless pool and its authority to grant others access), <https://learn.microsoft.com/azure/synapse-analytics/security/synapse-workspace-access-control-overview>
 6. SQL Authentication in Azure Synapse Analytics (confirms bracket-quoted `CREATE LOGIN`/`CREATE USER`
-   syntax forms for both SQL and Microsoft Entra-backed principals), <https://learn.microsoft.com/azure/synapse-analytics/sql/sql-authentication>
+ syntax forms for both SQL and Microsoft Entra-backed principals), <https://learn.microsoft.com/azure/synapse-analytics/sql/sql-authentication>
 7. `scenarios/data-map/scan-azure-synapse-and-classify/`, the parent scenario this one is a
-   prerequisite-automation companion to; see its `README.md` §3 (the CISO-flagged cost note this
-   scenario resolves) and `reviews.md` (CISO finding 1).
+ prerequisite-automation companion to; see its `README.md` §3 (the CISO-flagged cost note this
+ scenario resolves) and `reviews.md` (CISO finding 1).
 
 > Re-verify all cmdlet parameters, T-SQL syntax, and RBAC role names against current Microsoft Learn
 > before a customer-facing deployment. This build's `learn.microsoft.com` fetches succeeded directly

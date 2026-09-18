@@ -44,7 +44,7 @@ neither of which an auditor accepts as "no unapproved Apple/Portable device, per
 ## 3. Prerequisites
 
 Same product family and licensing as the parent and portable-device-coverage scenarios, see
-`docs/licensing-matrix.md` §7 and `defender-device-control-usb-allowlist-macos-portable-device-
+[Licensing matrix §7](/docs/licensing-matrix/#7-adjacent-product-family-microsoft-defender-for-endpoint--intune-device-control-scenarios) and `defender-device-control-usb-allowlist-macos-portable-device-
 coverage/README.md` §3, which apply unchanged. The requirements this fragment adds are per family
 (Apple, Portable), configure only the family/families you need:
 
@@ -91,17 +91,17 @@ so a device newly matched through either mechanism is automatically covered. Ful
 ### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
 1. Confirm the prerequisites are already deployed: Intune admin center → **Devices** → **macOS** →
-   **Configuration profiles** → confirm `Device Control (macOS) - USB Removable Media Default-Deny
-   Allowlist` exists, and that its embedded policy JSON already has an `ApprovedAppleDevices` and/or
-   `ApprovedPortableDevices` group (from the portable-device-coverage fragment) with at least one
-   `serialNumber` clause for the family you want to extend.
+ **Configuration profiles** → confirm `Device Control (macOS) - USB Removable Media Default-Deny
+ Allowlist` exists, and that its embedded policy JSON already has an `ApprovedAppleDevices` and/or
+ `ApprovedPortableDevices` group (from the portable-device-coverage fragment) with at least one
+ `serialNumber` clause for the family you want to extend.
 2. Obtain the vendor ID and product ID for each device to approve (§3).
 3. Edit the profile's `.mobileconfig`: add one `groups[]` entry per device (shape: `design.md` §5
-   row 1) and one `groupId` clause per device to the relevant family's existing Approved group's
-   `query.clauses` array (shape: `design.md` §5 row 2), preserving every existing `serialNumber`
-   clause unchanged.
+ row 1) and one `groupId` clause per device to the relevant family's existing Approved group's
+ `query.clauses` array (shape: `design.md` §5 row 2), preserving every existing `serialNumber`
+ clause unchanged.
 4. Re-upload the modified `.mobileconfig` as the profile's configuration file, replacing the
-   existing one.
+ existing one.
 5. **Save**. No assignment change is needed.
 
 ### Script path (idempotent, parameterized, dry-run capable)
@@ -132,7 +132,7 @@ Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thu
 ```
 
 The deploy script uses the Microsoft Graph PowerShell SDK (`Invoke-MgGraphRequest` against the same
-`macOSCustomConfiguration` resource), automation surface 3 per `docs/automation-surface.md` §1. It
+`macOSCustomConfiguration` resource), automation surface 3 per [Automation surface §1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first). It
 never creates the prerequisite groups/rules and never changes the parent policy's assignment.
 
 ## 6. Configuration reference
@@ -152,26 +152,26 @@ cmdlet/REST/schema grounding: the deploy script's `.NOTES` block and §12 below.
 ## 7. Validation / how to prove it works
 
 1. **Automated config check**, `./validate/Test-MacApplePortableVendorProductDeviceAllowlist.ps1
-   -ConfigPath ./deploy/config/mac-apple-portable-vendor-product-device-allowlist.sample.json`
-   confirms, per family: the prerequisite Approved group/Allow rule are present, every configured
-   device's sub-group exists with the expected deterministic id and AND-clauses, the Approved group
-   references it via a `groupId` clause, no orphaned sub-group or stale `groupId` clause remains, and
-   the sibling fragments' own groups are unaffected; exits non-zero on any hard failure.
+ -ConfigPath./deploy/config/mac-apple-portable-vendor-product-device-allowlist.sample.json`
+ confirms, per family: the prerequisite Approved group/Allow rule are present, every configured
+ device's sub-group exists with the expected deterministic id and AND-clauses, the Approved group
+ references it via a `groupId` clause, no orphaned sub-group or stale `groupId` clause remains, and
+ the sibling fragments' own groups are unaffected; exits non-zero on any hard failure.
 2. **Profile sync check**, same as the parent scenario's §7 step 3: Intune admin center → confirm
-   pilot Macs show **Succeeded**, not **Pending** or **Error**, after this fragment's PATCH.
+ pilot Macs show **Succeeded**, not **Pending** or **Error**, after this fragment's PATCH.
 3. **Client-side status check**, same as the parent scenario's §7 step 4
-   (`mdatp health --details device_control`); this fragment does not change any Full Disk Access or
-   engine-enable requirement.
+ (`mdatp health --details device_control`); this fragment does not change any Full Disk Access or
+ engine-enable requirement.
 4. **Functional test (vendorId/productId-approved Apple/Portable device)**, connect a device whose
-   vendor+product pair is in the relevant family's config list (and whose serial number, if any, is
-   **not** separately approved, to isolate this fragment's own mechanism). Expect: the operation
-   succeeds, and a `RemovableStoragePolicyTriggered` event with `Verdict = Allow` appears in Advanced
-   Hunting.
+ vendor+product pair is in the relevant family's config list (and whose serial number, if any, is
+ **not** separately approved, to isolate this fragment's own mechanism). Expect: the operation
+ succeeds, and a `RemovableStoragePolicyTriggered` event with `Verdict = Allow` appears in Advanced
+ Hunting.
 5. **Functional test (unapproved device)**, connect a device matching neither a `serialNumber`
-   clause nor a configured `vendorId`+`productId` pair for its family. Expect: denied, identical to
-   the portable-device-coverage scenario's own §7 steps 4/6.
+ clause nor a configured `vendorId`+`productId` pair for its family. Expect: denied, identical to
+ the portable-device-coverage scenario's own §7 steps 4/6.
 6. **Advanced Hunting query**, identical query shape to the portable-device-coverage scenario's own
-   §7 step 8; this fragment adds no new `AdditionalFields` and requires no query change:
+ §7 step 8; this fragment adds no new `AdditionalFields` and requires no query change:
    ```kusto
    DeviceEvents
    | where ActionType == "RemovableStoragePolicyTriggered"
@@ -228,93 +228,93 @@ entry from the relevant family's array in the config file and re-run
 ## 10. Cost & licensing notes
 
 - **No PAYG component and no incremental licensing cost**, identical to the parent and
-  portable-device-coverage scenarios (`defender-device-control-usb-allowlist-macos/README.md` §10).
-  This fragment adds no new Microsoft capability, only a different matching mechanism inside the
-  same already-licensed policy object.
+ portable-device-coverage scenarios (`defender-device-control-usb-allowlist-macos/README.md` §10).
+ This fragment adds no new Microsoft capability, only a different matching mechanism inside the
+ same already-licensed policy object.
 - **No additional Azure subscription or Intune licensing line** beyond what the prerequisite
-  scenarios already require.
+ scenarios already require.
 
 ## 11. Known limitations & gotchas
 
 - **`vendorId`+`productId` identify a device MODEL, not a unique physical unit, this is a
-  materially weaker guarantee than `serialNumber` matching, not an equivalent alternative.** Any
-  device sharing the configured pair matches the exception. Approve device models here only for a
-  genuine, narrow business need where no serial-numbered alternative exists (`design.md` §4/§8, same
-  disclosure the removable-media sibling fragment already carries).
+ materially weaker guarantee than `serialNumber` matching, not an equivalent alternative.** Any
+ device sharing the configured pair matches the exception. Approve device models here only for a
+ genuine, narrow business need where no serial-numbered alternative exists (`design.md` §4/§8, same
+ disclosure the removable-media sibling fragment already carries).
 - **This fragment requires at least one `serialNumber` device already configured for a family before
-  it can add a vendorId/productId device to that same family** (`design.md` §3), it never creates
-  `ApprovedAppleDevices`/`ApprovedPortableDevices` or their Allow rules from a zero-`serialNumber`
-  starting state. Tracked as a follow-up in `PROGRESS.md` for a future fragment that would remove
-  this restriction.
+ it can add a vendorId/productId device to that same family** (`design.md` §3), it never creates
+ `ApprovedAppleDevices`/`ApprovedPortableDevices` or their Allow rules from a zero-`serialNumber`
+ starting state. Tracked as a follow-up in `PROGRESS.md` for a future fragment that would remove
+ this restriction.
 - **KNOWN CROSS-FRAGMENT ORDERING HAZARD, more severe than the Bluetooth sibling's own disclosed
-  equivalent (`design.md` §7):** if `defender-device-control-usb-allowlist-macos-portable-device-
-  coverage`'s own `Add-MacPortableDeviceCoverage.ps1 -Force` is re-run after this fragment, it
-  unconditionally rebuilds `ApprovedAppleDevices`/`ApprovedPortableDevices` from **its own**
-  `serialNumber` list only, silently dropping this fragment's `groupId` clauses, and (if that
-  family's `serialNumber` list is emptied) removing the group and its Allow rule entirely, orphaning
-  this fragment's sub-groups. Remediation: re-run this fragment's own deploy script afterward.
-  `validate/Test-MacApplePortableVendorProductDeviceAllowlist.ps1` detects and flags this specific
-  drift condition per family, distinct from "never configured."
+ equivalent (`design.md` §7):** if `defender-device-control-usb-allowlist-macos-portable-device-
+ coverage`'s own `Add-MacPortableDeviceCoverage.ps1 -Force` is re-run after this fragment, it
+ unconditionally rebuilds `ApprovedAppleDevices`/`ApprovedPortableDevices` from **its own**
+ `serialNumber` list only, silently dropping this fragment's `groupId` clauses, and (if that
+ family's `serialNumber` list is emptied) removing the group and its Allow rule entirely, orphaning
+ this fragment's sub-groups. Remediation: re-run this fragment's own deploy script afterward.
+ `validate/Test-MacApplePortableVendorProductDeviceAllowlist.ps1` detects and flags this specific
+ drift condition per family, distinct from "never configured."
 - **VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples pass):** no directly-confirmed
-  Microsoft worked example pairs `vendorId`+`productId` AND-clause matching with the `apple_devices`
-  or `portable_devices` primaryId families specifically, Microsoft's own published GitHub sample
-  policies demonstrate this exact AND-clause shape only for `bluetooth_devices`
-  (`deny_all_bluetooth_devices_except_samsung.json`), and a single-clause `vendorId`-only variant for
-  `removable_media_devices` (`deny_removable_media_except_kingston.json`). This fragment generalizes
-  the shape to two more families on the same basis the removable-media sibling fragment already
-  generalized it once (the clause type definitions themselves are documented family-agnostically),
-  not on a new, independently confirmed worked example. `audit_all_apple_devices_except_serial_
-  numbers.json` and `deny_mobile_devices.json` were both re-fetched during this fragment's build and
-  confirmed to use `serialNumber`/`primaryId` matching only for these two families, never
-  `vendorId`/`productId`. `deploy/Add-MacApplePortableVendorProductDeviceAllowlist.ps1`'s `.NOTES`
-  flags this inline.
+ Microsoft worked example pairs `vendorId`+`productId` AND-clause matching with the `apple_devices`
+ or `portable_devices` primaryId families specifically, Microsoft's own published GitHub sample
+ policies demonstrate this exact AND-clause shape only for `bluetooth_devices`
+ (`deny_all_bluetooth_devices_except_samsung.json`), and a single-clause `vendorId`-only variant for
+ `removable_media_devices` (`deny_removable_media_except_kingston.json`). This fragment generalizes
+ the shape to two more families on the same basis the removable-media sibling fragment already
+ generalized it once (the clause type definitions themselves are documented family-agnostically),
+ not on a new, independently confirmed worked example. `audit_all_apple_devices_except_serial_
+ numbers.json` and `deny_mobile_devices.json` were both re-fetched during this fragment's build and
+ confirmed to use `serialNumber`/`primaryId` matching only for these two families, never
+ `vendorId`/`productId`. `deploy/Add-MacApplePortableVendorProductDeviceAllowlist.ps1`'s `.NOTES`
+ flags this inline.
 - **The deterministic per-device group id (RFC 4122 §4.3 UUIDv5) is this fragment's own namespace
-  constant and hash-input format, distinct from every sibling fragment's own scheme.** If a future
-  engineer changes the namespace constant, the hash input string, the family tag, or the
-  normalization (`ToLowerInvariant()`) applied to `vendorId`/`productId` before hashing, every
-  previously-deployed device's computed id changes, and the deploy script will treat every existing
-  sub-group as orphaned on the next run.
+ constant and hash-input format, distinct from every sibling fragment's own scheme.** If a future
+ engineer changes the namespace constant, the hash input string, the family tag, or the
+ normalization (`ToLowerInvariant()`) applied to `vendorId`/`productId` before hashing, every
+ previously-deployed device's computed id changes, and the deploy script will treat every existing
+ sub-group as orphaned on the next run.
 - **VERIFY (pilot tenant, before production reliance):** the same open `macOSCustomConfiguration`
-  `payload` PATCH replace-vs-merge question the parent scenario's own README already flags
-  (`defender-device-control-usb-allowlist-macos/README.md` §11) applies identically here.
+ `payload` PATCH replace-vs-merge question the parent scenario's own README already flags
+ (`defender-device-control-usb-allowlist-macos/README.md` §11) applies identically here.
 - **This fragment inherits every non-goal already disclosed by the parent and portable-device-
-  coverage scenarios**, no content awareness, the Full Disk Access hard prerequisite, the
-  `portable_devices`-`serialNumber` VERIFY that scenario's own README already carries, and the known
-  Microsoft-documented Android-PTP-mode-only and Xcode-transfer product limitations.
+ coverage scenarios**, no content awareness, the Full Disk Access hard prerequisite, the
+ `portable_devices`-`serialNumber` VERIFY that scenario's own README already carries, and the known
+ Microsoft-documented Android-PTP-mode-only and Xcode-transfer product limitations.
 
 ## 12. References
 
 1. Device Control for macOS (Settings/Clause/Query reference tables, `groupId` "Match if a device
-   is a member of another group... The group must be defined within the policy before the clause.";
-   `vendorId`/`productId` "Four digit hexadecimal string"; `primaryId` values `apple_devices`/
-   `portable_devices`; Query `any`/`or` synonymy; `includeGroups` AND / `excludeGroups` OR
-   semantics), re-fetched directly during this fragment's own build, 
-   <https://learn.microsoft.com/defender-endpoint/mac-device-control-overview>
+ is a member of another group... The group must be defined within the policy before the clause.";
+ `vendorId`/`productId` "Four digit hexadecimal string"; `primaryId` values `apple_devices`/
+ `portable_devices`; Query `any`/`or` synonymy; `includeGroups` AND / `excludeGroups` OR
+ semantics), re-fetched directly during this fragment's own build, 
+ <https://learn.microsoft.com/defender-endpoint/mac-device-control-overview>
 2. Sample macOS device control policy, `deny_all_bluetooth_devices_except_samsung.json` (the
-   `primaryId`+`vendorId`+`productId` AND-clause exception-group shape this fragment generalizes a
-   second time, to `apple_devices`/`portable_devices`), 
-   <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_all_bluetooth_devices_except_samsung.json>
+ `primaryId`+`vendorId`+`productId` AND-clause exception-group shape this fragment generalizes a
+ second time, to `apple_devices`/`portable_devices`), 
+ <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_all_bluetooth_devices_except_samsung.json>
 3. Sample macOS device control policy, `audit_all_apple_devices_except_serial_numbers.json`
-   (re-fetched directly during this fragment's build; confirmed `serialNumber`/`or`/`excludeGroups`
-   matching only, no `vendorId`/`productId` usage for `apple_devices`), 
-   <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/audit_all_apple_devices_except_serial_numbers.json>
+ (re-fetched directly during this fragment's build; confirmed `serialNumber`/`or`/`excludeGroups`
+ matching only, no `vendorId`/`productId` usage for `apple_devices`), 
+ <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/audit_all_apple_devices_except_serial_numbers.json>
 4. Sample macOS device control policy, `deny_mobile_devices.json` (re-fetched directly during this
-   fragment's build; confirmed `primaryId`-only catch-all matching for both `apple_devices` and
-   `portable_devices`, no `vendorId`/`productId` usage), 
-   <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_mobile_devices.json>
+ fragment's build; confirmed `primaryId`-only catch-all matching for both `apple_devices` and
+ `portable_devices`, no `vendorId`/`productId` usage), 
+ <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_mobile_devices.json>
 5. RFC 4122, Section 4.3, Algorithm for Creating a Name-Based UUID (version 5, SHA-1), 
-   <https://www.rfc-editor.org/rfc/rfc4122#section-4.3>
+ <https://www.rfc-editor.org/rfc/rfc4122#section-4.3>
 6. `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/`, the
-   prerequisite fragment whose `ApprovedAppleDevices`/`ApprovedPortableDevices` groups and Allow
-   rules this fragment extends; see that scenario's own references for the shared macOS
-   device-control citations not repeated here.
+ prerequisite fragment whose `ApprovedAppleDevices`/`ApprovedPortableDevices` groups and Allow
+ rules this fragment extends; see that scenario's own references for the shared macOS
+ device-control citations not repeated here.
 7. `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/`, the direct
-   precedent this fragment generalizes from `removable_media_devices` to `apple_devices`/
-   `portable_devices`; same deterministic-GUID technique, same "extend the group, not the rule"
-   reasoning.
+ precedent this fragment generalizes from `removable_media_devices` to `apple_devices`/
+ `portable_devices`; same deterministic-GUID technique, same "extend the group, not the rule"
+ reasoning.
 8. `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/`, the sibling
-   fragment whose own disclosed-and-detected cross-fragment ordering hazard (`design.md` §8 there)
-   this fragment's own, more severe variant follows the same resolution pattern for.
+ fragment whose own disclosed-and-detected cross-fragment ordering hazard (`design.md` §8 there)
+ this fragment's own, more severe variant follows the same resolution pattern for.
 
 > Re-verify all links, and especially the vendorId/productId-for-Apple/Portable VERIFY (§11) and the
 > `payload` PATCH replace-vs-merge semantics, against current Microsoft Learn and a pilot tenant

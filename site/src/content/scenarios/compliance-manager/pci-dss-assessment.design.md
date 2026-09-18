@@ -22,7 +22,7 @@ scenario's `design.md` §2 for the full grounding): Compliance Manager has **no 
 Assessment creation, control mapping, and improvement-action status/evidence updates are portal-
 and Excel-wizard-driven only, confirmed again during this build against the current
 `compliance-manager-assessments`, `compliance-manager-improvement-actions`, and
-`compliance-manager-setup` articles. `docs/automation-surface.md` §4 still has no routing-table row
+`compliance-manager-setup` articles. [Automation surface §4](/docs/automation-surface/#4-routing-table-which-surface-for-which-purview-task) still has no routing-table row
 for Compliance Manager. Fabricating a `New-ComplianceManagerAssessment`-style cmdlet or a payload
 shape for the Excel "Action Update" bulk-import file would violate `AGENTS.md` §4 for the same
 reason it would have for the ISO 27001 scenario.
@@ -48,31 +48,31 @@ parameterized code" checklist item, the working code exists and is reused, not a
 done in full:
 
 1. A precise, repeatable **portal runbook** (`README.md` §5) backed by a structured, versioned,
-   explicitly-non-executable reference manifest at `deploy/policy/pci-dss-assessment-manifest.json`
+ explicitly-non-executable reference manifest at `deploy/policy/pci-dss-assessment-manifest.json`
 , same pattern as the ISO 27001 scenario, extended with a **PCI DSS v4.0 control crosswalk**
-   this library's own scenarios map against (manifest's `controlCrosswalk`, §7 below) and an
-   explicit group-placement decision grounded in Microsoft's documented (and more nuanced than it
-   first appears, §6 below) improvement-action-sharing behavior.
+ this library's own scenarios map against (manifest's `controlCrosswalk`, §7 below) and an
+ explicit group-placement decision grounded in Microsoft's documented (and more nuanced than it
+ first appears, §6 below) improvement-action-sharing behavior.
 2. A validate script (`validate/Test-ComplianceManagerAuditTrail.ps1`, reused and extended with a
-   `-CrosswalkManifestPath` check) that adds PCI-DSS-specific structural validation of this
-   scenario's own manifest on top of the audit-trail file-integrity checks it already performs for
-   the ISO 27001 scenario.
+ `-CrosswalkManifestPath` check) that adds PCI-DSS-specific structural validation of this
+ scenario's own manifest on top of the audit-trail file-integrity checks it already performs for
+ the ISO 27001 scenario.
 
 ## 3. Design goals
 
 1. Stand up a **dedicated PCI DSS v4.0 assessment**, not the tenant's default Data Protection
-   Baseline (§5 below, identical reasoning to the ISO 27001 scenario), and explicitly **not** the
-   deprecated PCI DSS v3.2.1 template that Compliance Manager's regulation catalog also lists
-   (§11), with a deliberate group-placement decision and a minimal, correct services scope.
+ Baseline (§5 below, identical reasoning to the ISO 27001 scenario), and explicitly **not** the
+ deprecated PCI DSS v3.2.1 template that Compliance Manager's regulation catalog also lists
+ (§11), with a deliberate group-placement decision and a minimal, correct services scope.
 2. Make explicit which of this library's already-built scenarios contribute to which PCI DSS
-   requirement goal, using this library's own crosswalk (§7) rather than fabricating Microsoft's
-   internal mapping.
+ requirement goal, using this library's own crosswalk (§7) rather than fabricating Microsoft's
+ internal mapping.
 3. State plainly, up front, what this assessment is **not**: a PCI DSS Self-Assessment
-   Questionnaire (SAQ) or a QSA-conducted Report on Compliance (RoC). This is the single most
-   important scoping statement in this scenario, see `README.md` §2/§11 and the CISO lens in
-   `reviews.md`.
+ Questionnaire (SAQ) or a QSA-conducted Report on Compliance (RoC). This is the single most
+ important scoping statement in this scenario, see `README.md` §2/§11 and the CISO lens in
+ `reviews.md`.
 4. Avoid duplicating the tenant-wide audit-trail script this scenario shares with
-   `assess-against-iso27001`, reuse it explicitly rather than re-shipping it (§2 above).
+ `assess-against-iso27001`, reuse it explicitly rather than re-shipping it (§2 above).
 5. Never fabricate what isn't documented, same standard as every other scenario in this library.
 
 ## 4. What Compliance Manager's audit log actually documents (identical grounding to the ISO 27001 scenario)
@@ -112,18 +112,18 @@ distinction this scenario's design leans on directly, and which is easy to get w
 This means:
 
 - **Technical** improvement actions (e.g., a DLP policy is turned on, a sensitivity label is
-  auto-applied, MFA is enforced) already sync to **every** assessment in the tenant, regardless of
-  which group either assessment belongs to. Placing this PCI DSS assessment in the same group as
-  `assess-against-iso27001` buys **nothing** for these, they were already shared.
+ auto-applied, MFA is enforced) already sync to **every** assessment in the tenant, regardless of
+ which group either assessment belongs to. Placing this PCI DSS assessment in the same group as
+ `assess-against-iso27001` buys **nothing** for these, they were already shared.
 - **Nontechnical** improvement actions (documentation and operational actions, e.g., "a written
-  information security policy exists," "a personnel background-check policy is documented," "an
-  incident response plan is maintained") sync **only within a shared group**. PCI DSS Requirement
-  12 and ISO/IEC 27001:2022's Annex A both require overlapping documentation of this kind (security
-  policy, risk assessment, incident response, personnel security). Placing both assessments in the
-  same group (`deploy/policy/pci-dss-assessment-manifest.json`'s `group.strategy:
-  joinExistingIfPresent`) is what lets completing that documentation work **once** credit both
-  assessments, the genuine, narrower benefit group placement provides, correctly scoped rather
-  than oversold.
+ information security policy exists," "a personnel background-check policy is documented," "an
+ incident response plan is maintained") sync **only within a shared group**. PCI DSS Requirement
+ 12 and ISO/IEC 27001:2022's Annex A both require overlapping documentation of this kind (security
+ policy, risk assessment, incident response, personnel security). Placing both assessments in the
+ same group (`deploy/policy/pci-dss-assessment-manifest.json`'s `group.strategy:
+ joinExistingIfPresent`) is what lets completing that documentation work **once** credit both
+ assessments, the genuine, narrower benefit group placement provides, correctly scoped rather
+ than oversold.
 
 A second grounded rule from the same reference governs whether this is even possible: a group can
 contain multiple assessments for the same **product** (Microsoft 365) only if each is for a
@@ -152,18 +152,18 @@ rather than stretched to look like coverage that doesn't exist.
 ## 8. Non-goals
 
 - **Generating the "Action Update" bulk-import Excel file.** Same constraint and same reasoning as
-  `assess-against-iso27001/design.md` §7.
+ `assess-against-iso27001/design.md` §7.
 - **Reproducing Microsoft's per-control PCI DSS improvement-action mapping.** Out of reach for the
-  reason in §7 above.
+ reason in §7 above.
 - **Multicloud (AWS/GCP/Azure via Defender for Cloud) service scoping.** Scoped to Microsoft 365
-  only, matching this library's tenant-only scope (`AGENTS.md` §5) and the ISO 27001 scenario's
-  identical non-goal.
+ only, matching this library's tenant-only scope (`AGENTS.md` §5) and the ISO 27001 scenario's
+ identical non-goal.
 - **Producing or substituting for a PCI DSS SAQ or QSA Report on Compliance.** This assessment is
-  an internal tracking and evidence tool. It does not itself satisfy an acquirer's or card
-  network's PCI DSS validation requirement, see `README.md` §2/§11. This is a non-goal in the
-  strongest possible sense: presenting it otherwise to a customer would be actively misleading.
+ an internal tracking and evidence tool. It does not itself satisfy an acquirer's or card
+ network's PCI DSS validation requirement, see `README.md` §2/§11. This is a non-goal in the
+ strongest possible sense: presenting it otherwise to a customer would be actively misleading.
 - **Re-implementing the audit-trail export as a second, independent script.** Deliberately reused
-  from `assess-against-iso27001` instead, see §2 above.
+ from `assess-against-iso27001` instead, see §2 above.
 
 ## 9. Key decisions
 

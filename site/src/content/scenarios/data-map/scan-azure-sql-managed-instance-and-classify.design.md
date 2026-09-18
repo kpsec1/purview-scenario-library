@@ -21,24 +21,24 @@ differ.
 ## 2. Design goals
 
 1. **Reuse the sibling scenario's proven shape, don't fork it.** Same object model (data source +
-   scan, both create-or-replace), same credential-free-by-default posture (SAMI), same
-   idempotency mechanism, same four-lens review structure. A buyer who has already deployed
-   `scan-azure-sql-and-classify` should find this scenario immediately familiar, with the diffs
-   confined to what Microsoft's own docs say is actually different about Managed Instance.
+ scan, both create-or-replace), same credential-free-by-default posture (SAMI), same
+ idempotency mechanism, same four-lens review structure. A buyer who has already deployed
+ `scan-azure-sql-and-classify` should find this scenario immediately familiar, with the diffs
+ confined to what Microsoft's own docs say is actually different about Managed Instance.
 2. **Name every genuine difference explicitly, in one place.** §4 below is the single source of
-   truth for "what's different about Managed Instance" so neither this design doc, the README, nor
-   the scripts re-derive it inconsistently.
+ truth for "what's different about Managed Instance" so neither this design doc, the README, nor
+ the scripts re-derive it inconsistently.
 3. **Raise this build's own grounding bar.** The sibling scenario shipped three open VERIFY items
-   because three of its four REST reference pages returned fetch errors at build time. This build
-   independently re-fetched all four canonical REST reference pages successfully and found **two
-   real discrepancies** between the sibling's reconstructed shapes and Microsoft's actual documented
-   contract (see §5). Rather than silently ship the same discrepancies again, this scenario's
-   scripts use the corrected shapes, and the discrepancies are logged as a follow-up to backport
-   into the sibling scenario.
+ because three of its four REST reference pages returned fetch errors at build time. This build
+ independently re-fetched all four canonical REST reference pages successfully and found **two
+ real discrepancies** between the sibling's reconstructed shapes and Microsoft's actual documented
+ contract (see §5). Rather than silently ship the same discrepancies again, this scenario's
+ scripts use the corrected shapes, and the discrepancies are logged as a follow-up to backport
+ into the sibling scenario.
 4. **Don't re-litigate what the sibling already decided correctly.** SAMI-first authentication,
-   system-default scan rule set (not a fabricated custom PII-only set), create-or-replace-native
-   idempotency, and the "register + scan, don't act on results" scope boundary all carry over
-   unchanged, see the sibling's own `design.md` §2-3 for that reasoning, not repeated here.
+ system-default scan rule set (not a fabricated custom PII-only set), create-or-replace-native
+ idempotency, and the "register + scan, don't act on results" scope boundary all carry over
+ unchanged, see the sibling's own `design.md` §2-3 for that reasoning, not repeated here.
 
 ## 3. Why a separate scenario, not a `-SourceKind` parameter on the sibling script
 
@@ -81,23 +81,23 @@ four canonical REST reference pages (Data Sources, Scans, Triggers, Scan Result)
 found:
 
 1. **Data Sources and Triggers**: the sibling's reconstructed shapes were correct, this scenario's
-   direct fetch confirms the same URI pattern, verb, and body shape (adjusted for the
-   `AzureSqlDatabaseManagedInstance`-specific field values in §4's table).
+ direct fetch confirms the same URI pattern, verb, and body shape (adjusted for the
+ `AzureSqlDatabaseManagedInstance`-specific field values in §4's table).
 2. **Scan Result - Run Scan is genuinely different from what the sibling assumed.** The confirmed
-   operation is an *action-style* `POST {endpoint}/scan/datasources/{ds}/scans/{scan}:run?
-   runId={guid}&scanLevel={level}&api-version=...` (a colon-suffixed action on the scan resource,
-   with `runId` as a query parameter), not a *resource-style* `PUT .../runs/{runId}` the sibling
-   scenario's `New-AzureSqlDataMapScan.ps1` sends. This scenario's `New-AzureSqlManagedInstanceDataMapScan.ps1`
-   uses the confirmed shape.
+ operation is an *action-style* `POST {endpoint}/scan/datasources/{ds}/scans/{scan}:run?
+ runId={guid}&scanLevel={level}&api-version=...` (a colon-suffixed action on the scan resource,
+ with `runId` as a query parameter), not a *resource-style* `PUT.../runs/{runId}` the sibling
+ scenario's `New-AzureSqlDataMapScan.ps1` sends. This scenario's `New-AzureSqlManagedInstanceDataMapScan.ps1`
+ uses the confirmed shape.
 3. **Scan Result - List Scan History's per-run asset counts are nested, not flat.** The confirmed
-   response shape carries them at `discoveryExecutionDetails.statistics.assets.discovered`/
-   `.classified` on each run record, not as flat `.assetsDiscovered`/`.assetsClassified` properties
-   the sibling's `Test-AzureSqlDataMapScan.ps1` reads. This scenario's validate script reads the
-   confirmed nested path.
+ response shape carries them at `discoveryExecutionDetails.statistics.assets.discovered`/
+ `.classified` on each run record, not as flat `.assetsDiscovered`/`.assetsClassified` properties
+ the sibling's `Test-AzureSqlDataMapScan.ps1` reads. This scenario's validate script reads the
+ confirmed nested path.
 
 Both discrepancies are logged as a `PROGRESS.md` follow-up to backport into the sibling scenario, 
 out of scope for this fragment itself (`AGENTS.md` §6: one fragment per turn), but worth fixing
-promptly since a `PUT .../runs/{runId}` call against the real API would either 404 or hit an
+promptly since a `PUT.../runs/{runId}` call against the real API would either 404 or hit an
 unintended route.
 
 ## 6. Object model and REST call sequence
@@ -138,7 +138,7 @@ its four calls.
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Deploy surface | Purview Data Map REST API (`Invoke-RestMethod`), per `docs/automation-surface.md` surface 4 | Same as the sibling scenario, no PowerShell module or Graph equivalent exists for data source/scan objects |
+| Deploy surface | Purview Data Map REST API (`Invoke-RestMethod`), per [Automation surface](/docs/automation-surface/) surface 4 | Same as the sibling scenario, no PowerShell module or Graph equivalent exists for data source/scan objects |
 | Scan authentication (default) | System-assigned managed identity (`AzureSqlDatabaseManagedInstanceMsi`) | Microsoft's own documented supported option for this source type, and the credential-free default this repo's Data Map scenarios standardize on |
 | Network path (default) | Public endpoint | Matches the sibling scenario's "credential-free, network-simple by default" posture; private endpoint + self-hosted IR is a documented, not-yet-scripted alternative (§8 Non-goals), and is the *only* path when SAMI/UAMI can't be used per Microsoft's own private-endpoint note |
 | SIT set | Microsoft's system default scan rule set (`scanRulesetName: AzureSqlDatabaseManagedInstance`, `scanRulesetType: System`) | Same rationale as the sibling scenario, includes the SSN + Credit Card Number pair this repo standardizes on |
@@ -149,22 +149,22 @@ its four calls.
 ## 8. Non-goals
 
 - This scenario does not script the **private endpoint + self-hosted integration runtime** path.
-  Microsoft's own documentation states managed identity authentication is not supported when
-  connecting to Microsoft Purview over private endpoints, so a buyer needing that topology must
-  switch to a service-principal or SQL-authentication credential object created via the portal (the
-  same portal-only credential-object gap the sibling scenario already carries as an open VERIFY), 
-  see `README.md` §11.
+ Microsoft's own documentation states managed identity authentication is not supported when
+ connecting to Microsoft Purview over private endpoints, so a buyer needing that topology must
+ switch to a service-principal or SQL-authentication credential object created via the portal (the
+ same portal-only credential-object gap the sibling scenario already carries as an open VERIFY), 
+ see `README.md` §11.
 - This scenario does not script the Microsoft Entra admin assignment
-  (`Set-AzSqlInstanceActiveDirectoryAdministrator`) or the Directory Readers role grant. Both are
-  one-time, higher-privilege (Privileged Role Administrator) prerequisites documented as manual
-  portal/PowerShell steps in `README.md` §5, consistent with this repo's convention of not
-  automating rare, high-privilege, one-time setup steps that sit outside the automation identity's
-  own Purview/Azure IAM role scope.
+ (`Set-AzSqlInstanceActiveDirectoryAdministrator`) or the Directory Readers role grant. Both are
+ one-time, higher-privilege (Privileged Role Administrator) prerequisites documented as manual
+ portal/PowerShell steps in `README.md` §5, consistent with this repo's convention of not
+ automating rare, high-privilege, one-time setup steps that sit outside the automation identity's
+ own Purview/Azure IAM role scope.
 - This scenario does not create a custom, PII-only scan rule set, or the Key Vault-backed
-  credential object needed for the `AzureSqlDatabaseManagedInstanceCredential` scan kind, both
-  carried over unchanged from the sibling scenario's own non-goals (`scan-azure-sql-and-classify/
-  design.md` §7) since neither is Managed-Instance-specific.
+ credential object needed for the `AzureSqlDatabaseManagedInstanceCredential` scan kind, both
+ carried over unchanged from the sibling scenario's own non-goals (`scan-azure-sql-and-classify/
+ design.md` §7) since neither is Managed-Instance-specific.
 - This scenario does not act on the classification results it produces, same scope boundary as
-  the sibling scenario and every other Data Map scenario in this repo.
+ the sibling scenario and every other Data Map scenario in this repo.
 - This scenario does not stand up the Purview account, the collection hierarchy, or the managed
-  instance itself, prerequisites, not deliverables, of this fragment.
+ instance itself, prerequisites, not deliverables, of this fragment.

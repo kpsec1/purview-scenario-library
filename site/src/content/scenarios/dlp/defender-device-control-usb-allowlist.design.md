@@ -24,50 +24,50 @@ the device layer instead of the content layer.
 ## 2. Design goals
 
 1. **Default-deny for removable storage**, scoped narrowly to the `RemovableMediaDevices` device
-   family only, printers, CD/DVD drives, and Windows Portable Devices are explicitly out of scope
-   (`README.md` §7, non-goals), matching the sibling Endpoint DLP scenario's identical "USB copy
-   only" scope boundary so the two controls compose predictably rather than one silently widening
-   the other's blast radius.
+ family only, printers, CD/DVD drives, and Windows Portable Devices are explicitly out of scope
+ (`README.md` §7, non-goals), matching the sibling Endpoint DLP scenario's identical "USB copy
+ only" scope boundary so the two controls compose predictably rather than one silently widening
+ the other's blast radius.
 2. **A single named allowlist group** (`ApprovedBackupDrives`) of IT-issued, identity-verified
-   drives gets full read/write/execute access; every other removable-storage device is denied,
-   with a logged, notified block, not a silent one.
+ drives gets full read/write/execute access; every other removable-storage device is denied,
+ with a logged, notified block, not a silent one.
 3. **Both the allow and the deny paths are audited**, not just the deny path: an approved drive's
-   use generates a queryable Advanced Hunting event on every access, the same "watched, not
-   invisible" design the IT Data Custodians exception uses in the sibling scenario, so an approved
-   drive's usage pattern is itself a monitorable signal, not a blind trust.
+ use generates a queryable Advanced Hunting event on every access, the same "watched, not
+ invisible" design the IT Data Custodians exception uses in the sibling scenario, so an approved
+ drive's usage pattern is itself a monitorable signal, not a blind trust.
 4. **Idempotent and re-runnable.** Re-running the deploy script with an unchanged config makes no
-   API calls beyond the read used to detect no drift; re-running after an allowlist change
-   reconciles the existing Intune device configuration object in place rather than creating a
-   duplicate.
+ API calls beyond the read used to detect no drift; re-running after an allowlist change
+ reconciles the existing Intune device configuration object in place rather than creating a
+ duplicate.
 5. **Ships scoped to a pilot group by default**, never tenant-wide on a first run, the same
-   staged-rollout discipline as every other scenario in this repo (`AGENTS.md` §4), adapted to
-   Intune assignment targeting since device control has no policy-level "simulation mode"
-   equivalent to Security & Compliance PowerShell's `TestWithNotifications` (§6, below).
+ staged-rollout discipline as every other scenario in this repo (`AGENTS.md` §4), adapted to
+ Intune assignment targeting since device control has no policy-level "simulation mode"
+ equivalent to Security & Compliance PowerShell's `TestWithNotifications` (§6, below).
 
 ## 3. Why Defender for Endpoint device control (not Endpoint DLP, not Windows device installation restrictions)
 
 - **Endpoint DLP** (the sibling scenario) is **content-aware but device-identity-blind**: it
-  inspects what's *in* the file, not *what device* it's going to. It cannot express "deny this
-  specific unapproved drive regardless of content", that's not a dimension its policy model has.
+ inspects what's *in* the file, not *what device* it's going to. It cannot express "deny this
+ specific unapproved drive regardless of content", that's not a dimension its policy model has.
 - **Windows device installation restrictions** (`policy-csp-deviceinstallation`, configurable via
-  Intune ADMX or Group Policy) block a device from installing/enumerating in Windows at all, based
-  on device ID / setup class. This is coarser and blunter than device control: it cannot express
-  "read-only for everyone, but full access for this one named drive", device installation
-  restrictions are a binary install/don't-install gate per device class, not a graduated
-  read/write/execute access-control model with named exceptions
-  (`device-control-overview#control-access-to-usb-devices`).
+ Intune ADMX or Group Policy) block a device from installing/enumerating in Windows at all, based
+ on device ID / setup class. This is coarser and blunter than device control: it cannot express
+ "read-only for everyone, but full access for this one named drive", device installation
+ restrictions are a binary install/don't-install gate per device class, not a graduated
+ read/write/execute access-control model with named exceptions
+ (`device-control-overview#control-access-to-usb-devices`).
 - **Device control in Defender for Endpoint** is the only Microsoft control that is simultaneously
-  (a) **device-identity-aware** (matches on serial number, vendor/product ID, or device instance
-  path, not content) and (b) **graduated** (Allow/Deny/AuditAllow/AuditDeny per access type, Read,
-  Write, Execute, not just install/don't-install), which is exactly the "default-deny, named
-  allowlist" shape this scenario needs. It is explicitly cross-platform (Windows and macOS) and
-  ships as part of Defender for Endpoint Plan 1, which most of this repo's E3+ enterprise buyers
-  already hold (`README.md` §3, §10).
+ (a) **device-identity-aware** (matches on serial number, vendor/product ID, or device instance
+ path, not content) and (b) **graduated** (Allow/Deny/AuditAllow/AuditDeny per access type, Read,
+ Write, Execute, not just install/don't-install), which is exactly the "default-deny, named
+ allowlist" shape this scenario needs. It is explicitly cross-platform (Windows and macOS) and
+ ships as part of Defender for Endpoint Plan 1, which most of this repo's E3+ enterprise buyers
+ already hold (`README.md` §3, §10).
 - This scenario **does not replace** `endpoint-dlp-usb-block`, the two are complementary layers
-  (device identity here, content awareness there), exactly as that scenario's own §11 already
-  states. A buyer who deploys only this scenario still has no control over *what* an approved
-  drive carries; a buyer who deploys only the sibling still has no control over *which* unapproved
-  drive a user plugs in for non-sensitive-looking content. Both together is the intended posture.
+ (device identity here, content awareness there), exactly as that scenario's own §11 already
+ states. A buyer who deploys only this scenario still has no control over *what* an approved
+ drive carries; a buyer who deploys only the sibling still has no control over *which* unapproved
+ drive a user plugs in for non-sensitive-looking content. Both together is the intended posture.
 
 ## 4. Why Intune Custom OMA-URI (`windows10CustomConfiguration`), not the Intune "Device Control" profile template
 
@@ -155,7 +155,7 @@ rollout produces real Advanced Hunting telemetry to validate against before wide
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Deploy surface | Microsoft Graph (`Connect-MgGraph`, app-only certificate), `Invoke-MgGraphRequest` against `v1.0` | Automation surface 3 per `docs/automation-surface.md` §1; matches the raw-REST-via-Graph-SDK pattern already established by `scenarios/records-management/graph-event-automation/` for Graph endpoints with no simple single-purpose typed cmdlet wrapper convenient for this object shape. |
+| Deploy surface | Microsoft Graph (`Connect-MgGraph`, app-only certificate), `Invoke-MgGraphRequest` against `v1.0` | Automation surface 3 per [Automation surface §1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first); matches the raw-REST-via-Graph-SDK pattern already established by `scenarios/records-management/graph-event-automation/` for Graph endpoints with no simple single-purpose typed cmdlet wrapper convenient for this object shape. |
 | Authoring mechanism | Custom OMA-URI (`windows10CustomConfiguration`), not the native Device Control profile template | §4 above, the only mechanism with a confirmed, current Graph schema. |
 | Group/rule identifiers | Four **fixed, source-controlled GUIDs** (one per group, one per rule), not freshly generated per run | Microsoft's own guidance is only that GUIDs "must be generated" for non-Intune-portal deployment paths (`device-control-policies#policies`), it does not require a fresh GUID per invocation. Fixed constants checked into `deploy/New-DeviceControlUsbAllowlistPolicy.ps1` guarantee every re-run targets the same four OMA-URI nodes (idempotent reconcile via PATCH), rather than a fresh `New-Guid` per run silently accumulating orphaned groups/rules inside the same `omaSettings` collection. |
 | Update strategy | Whole-object `omaSettings` array replacement on every reconcile (PATCH with the full, freshly-built array) | Simpler and less error-prone than patching individual OMA-URI nodes independently, and matches this scenario's declarative, config-file-driven model (the sibling `graph-event-automation` script uses the equivalent "GET, compare, POST/PATCH the full desired state" shape). |
@@ -166,23 +166,23 @@ rollout produces real Advanced Hunting telemetry to validate against before wide
 ## 8. Non-goals
 
 - This scenario does not onboard devices to Defender for Endpoint, create the Entra pilot/target
-  group, or provision the approved backup drives themselves, all are dependencies, not deployed
-  artifacts, the same boundary the sibling Endpoint DLP scenario draws for its own prerequisites.
+ group, or provision the approved backup drives themselves, all are dependencies, not deployed
+ artifacts, the same boundary the sibling Endpoint DLP scenario draws for its own prerequisites.
 - This scenario does not configure BitLocker-encryption-required device control (the
-  `DeviceEncryptionStateId` **Preview** group property), a real, documented extension
-  (`device-control-overview#control-access-to-bitlocker-encrypted-removable-media-preview`) that
-  would let "approved" mean "any BitLocker-encrypted drive" instead of "this specific serial
-  number list," but it is still Microsoft-labeled Preview as of this build and is a materially
-  different trust model (encryption-state-based, not identity-based), a candidate follow-up, not
-  bundled here.
+ `DeviceEncryptionStateId` **Preview** group property), a real, documented extension
+ (`device-control-overview#control-access-to-bitlocker-encrypted-removable-media-preview`) that
+ would let "approved" mean "any BitLocker-encrypted drive" instead of "this specific serial
+ number list," but it is still Microsoft-labeled Preview as of this build and is a materially
+ different trust model (encryption-state-based, not identity-based), a candidate follow-up, not
+ bundled here.
 - This scenario does not restrict printers, CD/DVD drives, or Windows Portable Devices, only the
-  `RemovableMediaDevices` family, matching `endpoint-dlp-usb-block`'s identical USB-only scope so
-  the two controls stack predictably.
+ `RemovableMediaDevices` family, matching `endpoint-dlp-usb-block`'s identical USB-only scope so
+ the two controls stack predictably.
 - This scenario does not configure macOS device control (a separate JSON/`mobileconfig` authoring
-  path, `mac-device-control-overview`), Windows only, consistent with this scenario's XML-based
-  OMA-URI settings. Built as its own sibling scenario:
-  `scenarios/dlp/defender-device-control-usb-allowlist-macos/`.
+ path, `mac-device-control-overview`), Windows only, consistent with this scenario's XML-based
+ OMA-URI settings. Built as its own sibling scenario:
+ `scenarios/dlp/defender-device-control-usb-allowlist-macos/`.
 - This scenario does not use Network, VPN Connection, File, or Print Job **advanced conditions**
-  (e.g. "deny removable storage unless on the corporate VPN"), the two-rule allow/deny-by-identity
-  model is the full scope; advanced conditions are a documented extension point
-  (`device-control-policies#advanced-conditions`) left for a future, explicitly-scoped fragment.
+ (e.g. "deny removable storage unless on the corporate VPN"), the two-rule allow/deny-by-identity
+ model is the full scope; advanced conditions are a documented extension point
+ (`device-control-policies#advanced-conditions`) left for a future, explicitly-scoped fragment.

@@ -22,7 +22,7 @@ template: the **Detect inappropriate content** template's fixed configuration,
 
 > Location: Microsoft Teams, Viva Engage · Direction: Inbound, Outbound, Internal ·
 > Review Percentage: 100% · Conditions: Hate, Violence, Sexual, Self-harm classifiers
-> [[3]](README.md#references)
+> 
 
 , is already exactly this scenario's target. Using the template directly means Microsoft owns
 keeping the classifier pairing current; a hand-built custom-policy equivalent would silently drift
@@ -33,7 +33,7 @@ legitimately want (adding Copilot as a location).
 
 Identical grounding to both sibling scenarios: Communication Compliance has no documented
 PowerShell, Graph, or REST write API for policy creation or management, template-based or custom
-[[2]](README.md#references)[[10]](README.md#references). This scenario ships the same two-part
+. This scenario ships the same two-part
 solution shape: a precise portal runbook (`README.md` §5) plus one genuinely scriptable piece of
 automation, an audit-trail export reusing the identical, already-grounded `Search-UnifiedAuditLog`
 surface (§7 below).
@@ -78,17 +78,17 @@ scenario, but with different classifiers." Communication Compliance has **no doc
 to route a Self-harm-classifier match to a different reviewer, on a different SLA, or through a
 different workflow than a Hate/Sexual/Violence match**, every alert this policy generates lands in
 the same Investigator queue, differentiated only by the shared Severity column
-[[10]](README.md#references). Two design choices follow from that gap:
+. Two design choices follow from that gap:
 
 1. **The escalation split is documented entirely as a runbook** (`README.md` §8), not built as a
-   technical control, because no technical control for it exists. This is stated plainly rather than
-   implied, a reviewer team that hasn't internalized the runbook will not be technically prevented
-   from mishandling a Self-harm alert (`README.md` §11, `reviews.md` Red Team finding).
+ technical control, because no technical control for it exists. This is stated plainly rather than
+ implied, a reviewer team that hasn't internalized the runbook will not be technically prevented
+ from mishandling a Self-harm alert (`README.md` §11, `reviews.md` Red Team finding).
 2. **Staffing the escalation path is a go-live gate, not a post-launch tuning item.** `README.md` §5
-   step 10 and §8 both frame this as a precondition, mirroring the same "deployed-but-unmonitored
-   control is worse than no control" reasoning `copilot-interaction-detection/design.md` (via its
-   CISO-lens finding) already established for its own triage-SLA requirement, except here the
-   consequence of getting it wrong is a missed welfare-risk signal, not a missed security event.
+ step 10 and §8 both frame this as a precondition, mirroring the same "deployed-but-unmonitored
+ control is worse than no control" reasoning `copilot-interaction-detection/design.md` (via its
+ CISO-lens finding) already established for its own triage-SLA requirement, except here the
+ consequence of getting it wrong is a missed welfare-risk signal, not a missed security event.
 
 ## 7. The audit-trail script: same surface, two new derived columns
 
@@ -99,25 +99,25 @@ the confirmed shape rather than inventing a new one, for the same reason
 `copilot-interaction-detection/design.md` §7 gives. What's new in this script:
 
 - **`-PolicyNameFilter`**, defaulted to this scenario's own policy name, identical mechanism and
-  rationale to `copilot-interaction-detection`'s own parameter, so a tenant running this scenario
-  alongside either sibling gets correctly-attributed, separate rolling CSVs.
+ rationale to `copilot-interaction-detection`'s own parameter, so a tenant running this scenario
+ alongside either sibling gets correctly-attributed, separate rolling CSVs.
 - **`ContentSafetyContext`**, a best-effort derived column distinguishing which of the four
-  classifiers (Hate / Sexual / Violence / Self-harm) a `PolicyMatch` row corresponds to, parsed the
-  same never-blocking way `copilot-interaction-detection`'s `CopilotContext` column is (`README.md`
-  §11 VERIFY, the exact `AuditData` shape for this classifier pairing is not independently
-  confirmed).
+ classifiers (Hate / Sexual / Violence / Self-harm) a `PolicyMatch` row corresponds to, parsed the
+ same never-blocking way `copilot-interaction-detection`'s `CopilotContext` column is (`README.md`
+ §11 VERIFY, the exact `AuditData` shape for this classifier pairing is not independently
+ confirmed).
 - **`SeverityHint`**, a best-effort derived column carrying the raw severity value if present in the
-  parsed `AuditData`, never blocking and never assumed present, genuinely new relative to both
-  sibling scripts, because this is the first Communication Compliance scenario in this repo whose
-  classifier family populates a Severity column at all.
+ parsed `AuditData`, never blocking and never assumed present, genuinely new relative to both
+ sibling scripts, because this is the first Communication Compliance scenario in this repo whose
+ classifier family populates a Severity column at all.
 - **A loud, distinct `Write-Warning` specifically for any newly-merged row where `ContentSafetyContext`
-  resolves to `SelfHarm`**, deliberately more prominent in the script's console output than the
-  generic `PolicyUpdate` warning both sibling scripts already emit, because a Self-harm match is the
-  one outcome this scenario's entire operational design (§6) is built around not missing. This is a
-  secondary, delayed-by-schedule safety net (the script runs on whatever cadence it's scheduled at,
-  not in real time), it does not replace the immediate, in-portal duty-of-care escalation §6
-  requires; it exists so a scheduled audit-trail run also surfaces the event for anyone reviewing its
-  output after the fact.
+ resolves to `SelfHarm`**, deliberately more prominent in the script's console output than the
+ generic `PolicyUpdate` warning both sibling scripts already emit, because a Self-harm match is the
+ one outcome this scenario's entire operational design (§6) is built around not missing. This is a
+ secondary, delayed-by-schedule safety net (the script runs on whatever cadence it's scheduled at,
+ not in real time), it does not replace the immediate, in-portal duty-of-care escalation §6
+ requires; it exists so a scheduled audit-trail run also surfaces the event for anyone reviewing its
+ output after the fact.
 
 Idempotency model: identical rolling-history pattern to both sibling scripts, merge and
 de-duplicate by `(CreationDate, Operations, UserIds, hash(AuditData))`.
@@ -125,23 +125,23 @@ de-duplicate by `(CreationDate, Operations, UserIds, hash(AuditData))`.
 ## 8. Non-goals
 
 - **Adding this policy's classifiers to Exchange or Copilot as locations.** Exchange is not a
-  supported location for this classifier family at all [[4]](README.md#references); Copilot is
-  supported by the classifiers in general but not by this specific template's fixed location list
-  [[3]](README.md#references), `README.md` §8 documents the supported edit for a buyer who wants
-  Copilot coverage as a forward reference, not deployed by this scenario's default.
+ supported location for this classifier family at all; Copilot is
+ supported by the classifiers in general but not by this specific template's fixed location list
+, `README.md` §8 documents the supported edit for a buyer who wants
+ Copilot coverage as a forward reference, not deployed by this scenario's default.
 - **Building a technical (in-product) routing mechanism for Self-harm matches.** No such capability
-  exists to build against (§6), this scenario's contribution is the documented runbook, not a
-  fabricated API-driven routing feature.
+ exists to build against (§6), this scenario's contribution is the documented runbook, not a
+ fabricated API-driven routing feature.
 - **Reproducing or replacing the organization's existing crisis hotline/EAP promotion program.**
-  This scenario is a detection-and-escalation aid layered on top of whatever crisis-support
-  infrastructure the organization already runs, not a substitute for it (`README.md` §11).
+ This scenario is a detection-and-escalation aid layered on top of whatever crisis-support
+ infrastructure the organization already runs, not a substitute for it (`README.md` §11).
 - **The Insider Risk Management generative-AI or Communication-Compliance-signal integrations.**
-  Same documented-but-not-configured treatment both sibling scenarios already apply, tracked as a
-  standalone follow-up in `PROGRESS.md`, not part of this fragment.
+ Same documented-but-not-configured treatment both sibling scenarios already apply, tracked as a
+ standalone follow-up in `PROGRESS.md`, not part of this fragment.
 - **SIEM/Sentinel wiring**, same native `OfficeActivity`/Sentinel path both siblings already
-  document; this scenario's CSV is SIEM-ingestible by the same mechanism, not rebuilt here.
+ document; this scenario's CSV is SIEM-ingestible by the same mechanism, not rebuilt here.
 - **Merging this policy with `harassment-and-code-of-conduct` into one custom policy.** See §4, a
-  deliberate, reasoned choice to keep them separate.
+ deliberate, reasoned choice to keep them separate.
 
 ## 9. Key decisions
 

@@ -51,19 +51,19 @@ call. There is no "undo", re-establishing the control means re-running
 ## What rollback does **not** undo
 
 - **Labels and encryption already applied to mail already delivered.** Because Exchange
-  auto-labeling only ever acts on mail in transit, "already labeled" here means mail that was
-  labeled/encrypted at the moment it passed through the policy while it was active. Disabling or
-  removing this policy has no retroactive effect on that mail, recipients who already received an
-  encrypted, Confidential-labeled message keep it exactly as delivered.
+ auto-labeling only ever acts on mail in transit, "already labeled" here means mail that was
+ labeled/encrypted at the moment it passed through the policy while it was active. Disabling or
+ removing this policy has no retroactive effect on that mail, recipients who already received an
+ encrypted, Confidential-labeled message keep it exactly as delivered.
 - **The `Confidential` label itself, or its scope.** This scenario never created or scoped the
-  label, it's a prerequisite dependency (see `design.md` §7). Removing this policy has no effect
-  on the label's existence, definition, publication, or whether its scope includes Emails.
+ label, it's a prerequisite dependency (see `design.md` §7). Removing this policy has no effect
+ on the label's existence, definition, publication, or whether its scope includes Emails.
 - **The sibling SharePoint/OneDrive scenario's own policy.** These are two separate policy
-  objects (`design.md` §7), rolling back this one has no effect on
-  `scenarios/information-protection/auto-label-confidential-sharepoint/`'s policy, and vice versa.
+ objects (`design.md` §7), rolling back this one has no effect on
+ `scenarios/information-protection/auto-label-confidential-sharepoint/`'s policy, and vice versa.
 - **Any `-ExternalMailRightsManagementOwner` configuration on a different policy or on the label
-  itself**, this scenario's own use of that parameter (if configured) is removed with the policy,
-  but the parameter is scoped per-policy, not global.
+ itself**, this scenario's own use of that parameter (if configured) is removed with the policy,
+ but the parameter is scoped per-policy, not global.
 
 ## Verification after rollback
 

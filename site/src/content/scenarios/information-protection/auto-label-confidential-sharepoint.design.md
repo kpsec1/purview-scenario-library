@@ -15,34 +15,34 @@ someone who made a deliberate labeling decision.
 ## 2. Design goals
 
 1. Apply the **Confidential** label automatically to SharePoint/OneDrive content containing SSNs
-   or credit card numbers, going forward and across the existing backlog, without requiring any
-   user action.
+ or credit card numbers, going forward and across the existing backlog, without requiring any
+ user action.
 2. Never override a **manually applied** label, regardless of priority, a human's deliberate
-   classification decision is authoritative and this control must not second-guess it.
+ classification decision is authoritative and this control must not second-guess it.
 3. Allow overriding only a **lower-priority, previously auto-applied or default** label, so the
-   control can still tighten classification over time (e.g., a file auto-labeled "General" that
-   later matches this rule should upgrade to "Confidential"), while never downgrading.
+ control can still tighten classification over time (e.g., a file auto-labeled "General" that
+ later matches this rule should upgrade to "Confidential"), while never downgrading.
 4. Exclude a nominated legal-hold/eDiscovery site from auto-labeling entirely, an active legal
-   matter's content should not be relabeled mid-hold by an unrelated automated process.
+ matter's content should not be relabeled mid-hold by an unrelated automated process.
 5. Idempotent and re-runnable: running the deploy script twice must not create duplicate policies
-   or rules.
+ or rules.
 6. Ship "off" by default: simulation mode first, matching the code standard in `AGENTS.md` §4 and
-   the pattern established in `scenarios/dlp/pci-teams-exfil-block/`.
+ the pattern established in `scenarios/dlp/pci-teams-exfil-block/`.
 
 ## 3. Why auto-labeling (not DLP, not a default library label, not manual-only)
 
 - **DLP for SharePoint/OneDrive** can *detect* the same sensitive information types, but its job
-  is to act on data movement/sharing (block, restrict, audit), it doesn't durably mark the file
-  with a sensitivity label other controls can key off of. This scenario is the classification
-  layer DLP conditions on, not a substitute for DLP.
+ is to act on data movement/sharing (block, restrict, audit), it doesn't durably mark the file
+ with a sensitivity label other controls can key off of. This scenario is the classification
+ layer DLP conditions on, not a substitute for DLP.
 - **A default sensitivity label for a document library** (`sensitivity-labels-sharepoint-default-label`)
-  applies to *new, unlabeled* files uploaded to a specific library based on where they land, not
-  based on *content*. It's location-based, not content-based, useful for "everything in this one
-  library is Confidential by policy," not for "find the SSNs wherever they are across the tenant."
+ applies to *new, unlabeled* files uploaded to a specific library based on where they land, not
+ based on *content*. It's location-based, not content-based, useful for "everything in this one
+ library is Confidential by policy," not for "find the SSNs wherever they are across the tenant."
 - **Manual-only labeling** (users pick a label themselves) remains the *primary* path for content
-  that doesn't match a specific automatable pattern, and this scenario explicitly never overrides
-  a manual choice (§2, goal 2), auto-labeling is a backstop and accelerant, not a replacement for
-  a labeling program's human judgment on ambiguous content.
+ that doesn't match a specific automatable pattern, and this scenario explicitly never overrides
+ a manual choice (§2, goal 2), auto-labeling is a backstop and accelerant, not a replacement for
+ a labeling program's human judgment on ambiguous content.
 
 ## 4. Policy architecture
 
@@ -86,7 +86,7 @@ budgeted for explicitly in `README.md` §11 (do not test immediately after a cha
 SharePoint/OneDrive requires `EnableAIPIntegration = $true` at the SharePoint tenant level
 (`Set-SPOTenant`), which is a *separate* one-time tenant configuration step outside the
 auto-labeling policy itself, run over the SharePoint Online Management Shell, automation surface
-5, now documented in `docs/automation-surface.md` §1/§2/§3/§6 (closed 2026-09-04). If that toggle
+5, now documented in [Automation surface §1/§2/§3/§6](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first) (closed 2026-09-04). If that toggle
 is off, or gets reset by unrelated SharePoint administration,
 this policy runs and reports success in its own dashboard while never actually labeling anything,
 with no error surfaced anywhere obvious.
@@ -95,7 +95,7 @@ with no error surfaced anywhere obvious.
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`), per `docs/automation-surface.md` surface 2 | Auto-labeling policy/rule objects are S&C PowerShell objects, same family as DLP policies. |
+| Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`), per [Automation surface](/docs/automation-surface/) surface 2 | Auto-labeling policy/rule objects are S&C PowerShell objects, same family as DLP policies. |
 | Sensitive info types | Built-in **U.S. Social Security Number (SSN)** and **Credit Card Number** | Purpose-built, Microsoft-maintained, representative of the two most common regulated-PII categories that trigger GDPR/CCPA obligations when found in an unmanaged document store. A production rollout would extend this list per the buyer's actual data inventory, this scenario ships the pattern, not an exhaustive SIT catalog. |
 | Combination logic | OR (`Any of these`) across the two SITs | Either sensitive info type alone is sufficient reason to classify the file as Confidential, there's no requirement both be present. |
 | Two rules instead of one | One rule per `-Workload` (SharePoint, OneDriveForBusiness) | `New-AutoSensitivityLabelRule -Workload` is single-valued, see `README.md` §11. |
@@ -107,15 +107,15 @@ with no error surfaced anywhere obvious.
 ## 7. Non-goals
 
 - This scenario does not author or publish the `Confidential` sensitivity label itself, it is a
-  prerequisite dependency (same pattern as the Card Operations security group in
-  `scenarios/dlp/pci-teams-exfil-block/design.md` §6), not a deployed artifact.
+ prerequisite dependency (same pattern as the Card Operations security group in
+ `scenarios/dlp/pci-teams-exfil-block/design.md` §6), not a deployed artifact.
 - This scenario does not cover Exchange (email) auto-labeling, even though the same policy family
-  supports it, scoped to SharePoint/OneDrive at-rest content per the scenario's title. Built as
-  `scenarios/information-protection/auto-label-confidential-exchange/` (closed 2026-09-04).
+ supports it, scoped to SharePoint/OneDrive at-rest content per the scenario's title. Built as
+ `scenarios/information-protection/auto-label-confidential-exchange/` (closed 2026-09-04).
 - This scenario does not configure the one-time `EnableAIPIntegration` tenant toggle, it is a
-  manual/portal prerequisite documented in `README.md` §3, not something this scenario's
-  idempotent deploy script re-asserts on every run (it's a tenant-wide setting unrelated to this
-  specific policy's lifecycle).
+ manual/portal prerequisite documented in `README.md` §3, not something this scenario's
+ idempotent deploy script re-asserts on every run (it's a tenant-wide setting unrelated to this
+ specific policy's lifecycle).
 - This scenario does not implement on-demand classification for backlog acceleration, it is
-  referenced in `README.md` §8 as a recommended pairing for tenants with a large pre-existing
-  content estate, not built here.
+ referenced in `README.md` §8 as a recommended pairing for tenants with a large pre-existing
+ content estate, not built here.

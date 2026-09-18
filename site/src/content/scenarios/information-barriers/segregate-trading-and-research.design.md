@@ -15,27 +15,27 @@ explicit, signed-off activation.
 ## 2. Design goals
 
 1. **Correct segregation by construction.** Two mutually-exclusive segments and **both** one-way block
-   policies, the only way to fully wall two sides.
+ policies, the only way to fully wall two sides.
 2. **Safe by default.** Create everything **inactive**; activation + tenant-wide application (which
-   blocks live communication) is a separate, explicit `-Activate` gated behind `-DryRun` review and
-   Compliance/Legal sign-off.
+ blocks live communication) is a separate, explicit `-Activate` gated behind `-DryRun` review and
+ Compliance/Legal sign-off.
 3. **Reproducible and auditable.** The config file is the versioned definition of the wall, what an
-   examiner or internal audit wants to see.
+ examiner or internal audit wants to see.
 4. **Idempotent create-or-report.** Locate segments/policies by name; never silently mutate an existing
-   one (IB objects gate real communication).
+ one (IB objects gate real communication).
 5. **Honest about async, delayed enforcement.** Document the ~30-min start, ~5,000-users/hour, and
-   24-hour SharePoint propagation rather than implying instant blocking.
+ 24-hour SharePoint propagation rather than implying instant blocking.
 
 ## 3. Why Information Barriers (not just permissions or DLP)
 
 - **Directory/permission separation** (separate sites, groups) is porous, people can still Teams-chat,
-  be added to a group call, or be @mentioned across the wall. It doesn't enforce a communication
-  barrier.
+ be added to a group call, or be @mentioned across the wall. It doesn't enforce a communication
+ barrier.
 - **DLP** inspects *content*; it doesn't stop two people from *communicating* in the first place, which
-  is the ethical-wall requirement.
+ is the ethical-wall requirement.
 - **Information Barriers** is the Microsoft-native control that actually prevents communication/
-  collaboration between incompatible groups across Teams, SharePoint, and OneDrive, the right tool for
-  a conflict-of-interest wall.
+ collaboration between incompatible groups across Teams, SharePoint, and OneDrive, the right tool for
+ a conflict-of-interest wall.
 
 ## 4. Object model and sequence
 
@@ -75,15 +75,15 @@ bidirectional wall. Application is asynchronous and user-by-user.
 ## 6. Non-goals
 
 - **Allow-list topologies** (a segment that may talk to only certain others), supported via
-  `-SegmentsAllowed`; this scenario uses the simpler, recommended block model.
+ `-SegmentsAllowed`; this scenario uses the simpler, recommended block model.
 - **SharePoint/OneDrive IB enablement and site association**, a separate enablement step
-  (`Set-SPOTenant`, site-segment association); documented as a prerequisite/extension, not scripted
-  here.
+ (`Set-SPOTenant`, site-segment association); documented as a prerequisite/extension, not scripted
+ here.
 - **Address book policy / GAL segmentation**, full directory separation is a related but distinct
-  configuration.
+ configuration.
 - **Exceptions modeling** (e.g. a control-room/compliance function that must see both sides), real
-  deployments add such segments/policies; the starter keeps a clean two-sided wall.
+ deployments add such segments/policies; the starter keeps a clean two-sided wall.
 - **Multi-segment mode migration**, changing IB mode to allow users in multiple segments is a
-  tenant-level operation out of scope here.
+ tenant-level operation out of scope here.
 - **Editing an existing wall in place**, the deploy reports and does not mutate; changes are a
-  deliberate, reviewed action.
+ deliberate, reviewed action.

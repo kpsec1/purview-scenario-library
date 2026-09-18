@@ -47,7 +47,7 @@ prior scenario's docs and must be stated plainly rather than glossed over:
 > Alert indicator... Microsoft Teams: DLP policy matches in Teams chat and channel messages...
 > This is by design."* Only Exchange Online, SharePoint Online, and OneDrive for Business DLP
 > alerts are evaluated by IRM's DLP-alerts indicator
-> [[1]](#references).
+>.
 
 This means the naive design, "wire Part 1's `PCI-Audit-Internal-AllUsers` rule as an IRM
 triggering event", **does not work**. It was the first design considered during this build and
@@ -60,7 +60,7 @@ Engage, and Microsoft 365 Copilot and Microsoft 365 Copilot Chat," optionally co
 "detect messages matching specific sensitive information types (SITs)", up to 30 SITs, which can
 include the same built-in **Credit Card Number** SIT Part 1 already uses. Matches become scored
 "Communication Risk" activity inside IRM once a user is in-scope for a policy
-[[2]](#references). This is the mechanism this fragment actually wires, not a Teams DLP-alert
+. This is the mechanism this fragment actually wires, not a Teams DLP-alert
 trigger, which the constraint above rules out.
 
 ## 4. Architecture
@@ -105,10 +105,10 @@ it inherits it and applies it to a new, more narrowly-scoped rule.
 | Priority | **0** (highest, ahead of Part 1's existing Rules 0/1/2, which shift to 1/2/3) | An Elevated-risk sender must not receive the Card Ops override path (Part 1 Rule 0) even if they are a Card Ops group member, a flagged risk level is itself a reason to withhold the self-service override, not merely to fall back to the content-based rules. |
 | No override (`NotifyAllowOverride` omitted) | Deliberate | Mirrors `dynamic-risk-dlp-enforcement`'s own Elevated-block rule (§6 there): a user already flagged Elevated cannot self-override a block, by Microsoft's own documented Quick Setup reference behavior for this condition. |
 | Priority renumbering technique | Script explicitly re-prioritizes all three existing rules (3←2, 2←1, 1←0, applied highest-number-first) before creating the new rule at 0, rather than relying on `New-DlpComplianceRule -Priority 0` to auto-shift them | Microsoft's `New-DlpComplianceRule`/`Set-DlpComplianceRule` reference documents the `-Priority` parameter's type and default but does not document whether inserting a colliding priority value auto-shifts other rules in the same policy. Rather than assume undocumented behavior, this script performs the reordering explicitly and deterministically, see `deploy/New-PciElevatedRiskTeamsBlock.ps1` `.NOTES`. |
-| Feeder IRM policy | A **new, dedicated** policy (not reusing `departing-employee-data-theft`) | `departing-employee-data-theft` only scores *departing* users (triggering event: resignation/termination date). The PCI Teams card-data audience (Card Operations, Finance, support staff handling payment conversations) is not primarily a departing-employee population, a dedicated **Data leaks**-template policy, scoped to the same user population as Part 1's DLP policy, is the correct template per Microsoft's own template-selection guidance [[3]](#references). Both policies can coexist in Adaptive Protection's scope simultaneously, insider risk levels are tenant-wide and computed from every in-scope feeder policy (`dynamic-risk-dlp-enforcement/README.md` §11, already-documented constraint this fragment inherits, not re-derives). |
+| Feeder IRM policy | A **new, dedicated** policy (not reusing `departing-employee-data-theft`) | `departing-employee-data-theft` only scores *departing* users (triggering event: resignation/termination date). The PCI Teams card-data audience (Card Operations, Finance, support staff handling payment conversations) is not primarily a departing-employee population, a dedicated **Data leaks**-template policy, scoped to the same user population as Part 1's DLP policy, is the correct template per Microsoft's own template-selection guidance. Both policies can coexist in Adaptive Protection's scope simultaneously, insider risk levels are tenant-wide and computed from every in-scope feeder policy (`dynamic-risk-dlp-enforcement/README.md` §11, already-documented constraint this fragment inherits, not re-derives). |
 | Triggering event for the new IRM policy | **User performs an exfiltration activity** (built-in Office exfiltration indicators), not a DLP-alert trigger | The DLP-alert trigger only supports Exchange/SharePoint/OneDrive workloads (§3), using it would silently exclude the one workload (Teams) this fragment exists to cover. The exfiltration-activity trigger has no such workload restriction. |
 | Communication Compliance SIT indicator | Enabled, scoped to **Credit Card Number** only | Reuses Part 1's own SIT choice, already reviewed and confirmed Luhn-checksum-validated and Microsoft-maintained (`pci-teams-exfil-block/reviews.md`, Product Owner lens), rather than introducing a second, unreviewed detection mechanism. |
-| Cumulative exfiltration detection | Enabled (default for the Data leaks template) | This is the specific, ML-based feature Microsoft documents as designed for exactly this evasion shape: *"departing users slowly exfiltrate data across a range of days, or... users repeatedly share data across multiple channels more than usual"* [[4]](#references), the closest documented analogue to a drip-fed, split-message exfiltration pattern that exists in the product today. |
+| Cumulative exfiltration detection | Enabled (default for the Data leaks template) | This is the specific, ML-based feature Microsoft documents as designed for exactly this evasion shape: *"departing users slowly exfiltrate data across a range of days, or... users repeatedly share data across multiple channels more than usual"*, the closest documented analogue to a drip-fed, split-message exfiltration pattern that exists in the product today. |
 
 ## 6a. Template choice: "Data leaks", not "Data leaks by priority users"
 
@@ -141,34 +141,34 @@ run end-to-end against a live tenant during this build. Flagged as an explicit `
 ## 7. Non-goals
 
 - **Does not reconstruct or correlate literal message content across messages.** No Microsoft
-  capability does this; this fragment closes the channel *after* a behavioral signal, not by
-  detecting the split content itself. Documented as an explicit residual risk in `README.md` §11,
-  not fixed.
+ capability does this; this fragment closes the channel *after* a behavioral signal, not by
+ detecting the split content itself. Documented as an explicit residual risk in `README.md` §11,
+ not fixed.
 - **Does not modify or duplicate `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s
-  own DLP policy.** That policy's Exchange+Teams, external-share-only rules keep operating
-  independently and unchanged; this fragment adds a *separate* rule to Part 1's *own* named
-  policy so the PCI-specific control's behavior (rule names, alert routing, Card Ops interaction)
-  stays self-contained and auditable as one control for a QSA, rather than splitting PCI evidence
-  across two differently-owned policies.
+ own DLP policy.** That policy's Exchange+Teams, external-share-only rules keep operating
+ independently and unchanged; this fragment adds a *separate* rule to Part 1's *own* named
+ policy so the PCI-specific control's behavior (rule names, alert routing, Card Ops interaction)
+ stays self-contained and auditable as one control for a QSA, rather than splitting PCI evidence
+ across two differently-owned policies.
 - **Does not create or modify the Communication Compliance policy beyond enabling the SIT
-  indicator with Credit Card Number selected.** Broader Communication Compliance coverage
-  (harassment, code-of-conduct language, etc.) is `scenarios/communication-compliance/
-  harassment-and-code-of-conduct/`'s scope, not this fragment's.
+ indicator with Credit Card Number selected.** Broader Communication Compliance coverage
+ (harassment, code-of-conduct language, etc.) is `scenarios/communication-compliance/
+ harassment-and-code-of-conduct/`'s scope, not this fragment's.
 - **Does not configure Endpoint DLP, USB/print restrictions, or personal-cloud-upload
-  controls.** An Elevated-risk user blocked from external Teams/Exchange sharing by this
-  fragment can still exfiltrate via other channels Adaptive Protection's Devices policy would
-  cover, same already-documented gap `dynamic-risk-dlp-enforcement/README.md` §11 names, not
-  re-litigated here.
+ controls.** An Elevated-risk user blocked from external Teams/Exchange sharing by this
+ fragment can still exfiltrate via other channels Adaptive Protection's Devices policy would
+ cover, same already-documented gap `dynamic-risk-dlp-enforcement/README.md` §11 names, not
+ re-litigated here.
 - **Does not attempt to lower the up-to-36-hour Adaptive Protection propagation delay, or the
-  IRM cumulative-exfiltration-detection daily evaluation cadence** (§8, `README.md`), both are
-  backend processing characteristics of the Purview service, not properties this fragment's code
-  can script around.
+ IRM cumulative-exfiltration-detection daily evaluation cadence** (§8, `README.md`), both are
+ backend processing characteristics of the Purview service, not properties this fragment's code
+ can script around.
 
 ## 8. References
 
 Full citation list with URLs is in `README.md` §12. Numbered references above:
 [1] Configure policy indicators in Insider Risk Management, supported DLP workloads.
 [2] Configure policy indicators in Insider Risk Management, Communication Compliance
-    indicators.
+ indicators.
 [3] Learn about Insider Risk Management policy templates, triggering events and prerequisites.
 [4] Create and manage Insider Risk Management policies, Cumulative exfiltration detection.

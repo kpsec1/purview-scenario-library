@@ -58,11 +58,11 @@ the associated storage account) beyond the shared workspace-level Reader role. I
 should also revert it:
 
 1. Confirm no other workload depends on the Purview account's SAMI holding Storage Blob Data Reader on
-   this storage account, revoking it can affect any other Purview scan that reuses the same SAMI
-   against the same storage account (e.g. an ADLS Gen2 Data Map scenario sharing the account).
+ this storage account, revoking it can affect any other Purview scan that reuses the same SAMI
+ against the same storage account (e.g. an ADLS Gen2 Data Map scenario sharing the account).
 2. An **Owner** or **User Access Administrator** removes the Purview account's Storage Blob Data
-   Reader role assignment on the resource group/subscription scope it was granted at (Azure portal →
-   the scope → **Access control (IAM)** → find the assignment → **Remove**).
+ Reader role assignment on the resource group/subscription scope it was granted at (Azure portal →
+ the scope → **Access control (IAM)** → find the assignment → **Remove**).
 
 This step is deliberately **not** part of `Remove-AzureSynapseDataMapScan.ps1`, it is an Azure IAM
 change outside this scenario's automation identity's own Purview role scope, and revoking it can
@@ -72,15 +72,15 @@ manually-confirmed, out-of-band step.
 ## What rollback does **not** undo
 
 - **Catalog assets and classifications already ingested.** Same as both sibling scenarios, no
-  cascading delete.
+ cascading delete.
 - **The out-of-band grants and settings.** This scenario's deploy script does not create the workspace
-  Reader grant, the serverless-only Storage Blob Data Reader grant, the per-database `CREATE
-  LOGIN`/`CREATE USER`/`db_datareader` grants, the external-table scoped-credential grant, or the
-  workspace firewall setting, removing the scan does not remove any of them either. Clean up
-  separately if the intent is a full teardown; see Stage 4 above for the serverless-specific Azure IAM
-  grant.
+ Reader grant, the serverless-only Storage Blob Data Reader grant, the per-database `CREATE
+ LOGIN`/`CREATE USER`/`db_datareader` grants, the external-table scoped-credential grant, or the
+ workspace firewall setting, removing the scan does not remove any of them either. Clean up
+ separately if the intent is a full teardown; see Stage 4 above for the serverless-specific Azure IAM
+ grant.
 - **Scan run history.** Prior run records remain visible in the Purview portal's Monitoring view for
-  their standard 90-day retention window regardless of whether the scan object still exists.
+ their standard 90-day retention window regardless of whether the scan object still exists.
 
 ## Verification after rollback
 

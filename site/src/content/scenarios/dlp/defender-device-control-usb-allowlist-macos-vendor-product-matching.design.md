@@ -17,40 +17,40 @@ names as its known limitation (`defender-device-control-usb-allowlist-macos/READ
 ## 2. Design goals
 
 1. **Extend, don't replace.** The parent's `serialNumber`-based `ApprovedBackupDrives` group stays
-   fully intact; this fragment adds vendorId/productId-matched devices as additional OR-branches of
-   the *same* group, so a tenant can mix both matching mechanisms freely in one allowlist.
+ fully intact; this fragment adds vendorId/productId-matched devices as additional OR-branches of
+ the *same* group, so a tenant can mix both matching mechanisms freely in one allowlist.
 2. **No new rule.** Because the parent's `Allow-ApprovedBackupDrives` and
-   `Deny-AllOtherRemovableStorage` rules both key off `ApprovedBackupDrives`' group **id** (not its
-   internal clause contents), adding a device to that group's OR-set is sufficient, no rule is
-   created or edited by this fragment. This is a materially smaller blast radius than the Bluetooth
-   sibling fragment, which needed a brand-new allow rule because Bluetooth's own approved-device
-   exception lives in a group referenced only by `excludeGroups`, not by `includeGroups` directly.
+ `Deny-AllOtherRemovableStorage` rules both key off `ApprovedBackupDrives`' group **id** (not its
+ internal clause contents), adding a device to that group's OR-set is sufficient, no rule is
+ created or edited by this fragment. This is a materially smaller blast radius than the Bluetooth
+ sibling fragment, which needed a brand-new allow rule because Bluetooth's own approved-device
+ exception lives in a group referenced only by `excludeGroups`, not by `includeGroups` directly.
 3. **Multi-device, not single-device.** Unlike the Bluetooth sibling fragment (capped at exactly one
-   approved device in v1, `defender-device-control-usb-allowlist-macos-bluetooth-allowlist/design.md`
-   §3), this fragment supports any number of vendorId+productId-matched devices, see §4 below for
-   how the per-device dynamic-GUID idempotency problem the parent scenario deferred is solved.
+ approved device in v1, `defender-device-control-usb-allowlist-macos-bluetooth-allowlist/design.md`
+ §3), this fragment supports any number of vendorId+productId-matched devices, see §4 below for
+ how the per-device dynamic-GUID idempotency problem the parent scenario deferred is solved.
 4. **Idempotent and re-runnable**, including self-healing drift and clean removal of a device no
-   longer in the config file (not merely additive), orphaned sub-groups and their `groupId` clauses
-   are detected and removed, not left behind.
+ longer in the config file (not merely additive), orphaned sub-groups and their `groupId` clauses
+ are detected and removed, not left behind.
 5. **Ships as an extension of an already-piloted policy**, this fragment does not touch the parent
-   policy's assignment; the parent scenario's own staged-rollout discipline already governs which
-   endpoints receive any change to the shared object.
+ policy's assignment; the parent scenario's own staged-rollout discipline already governs which
+ endpoints receive any change to the shared object.
 
 ## 3. Why `groupId`-referenced sub-groups (confirming, not re-deriving, the parent's own §5 analysis)
 
 macOS's device-control JSON schema keeps `vendorId` and `productId` as two separate clause types
-[[1]](#references). Matching one device by vendor+product pair requires an **AND** of both clauses,
+. Matching one device by vendor+product pair requires an **AND** of both clauses,
 but `ApprovedBackupDrives`' top-level `query` is a single `any` (OR) object, a group's `query` can
 be exactly one `all`/`any`/`not` object, never a mix of AND'd and OR'd clauses in one list. The
 schema's own documented mechanism for combining an AND-pair with other, independently-OR'd
 membership tests is the `groupId` clause type: *"Match if a device is a member of another group. The
 value represents the UUID of the group to match against. The group must be defined within the policy
-before the clause."* [[1]](#references), i.e., one small AND-group per device, referenced from the
+before the clause."*, i.e., one small AND-group per device, referenced from the
 umbrella group via a `groupId` clause. This exact shape (`primaryId` + `vendorId` + `productId`,
 AND'd inside a per-device sub-group) is confirmed directly against Microsoft's own
-`deny_all_bluetooth_devices_except_samsung.json` sample [[2]](#references) (fetched raw during this
+`deny_all_bluetooth_devices_except_samsung.json` sample (fetched raw during this
 fragment's build; also already used by the Bluetooth sibling fragment for its own, single-device
-case) and against `deny_removable_media_except_kingston.json` [[3]](#references), which demonstrates
+case) and against `deny_removable_media_except_kingston.json`, which demonstrates
 the same `removable_media_devices` family with a single-clause `vendorId`-only exception group (no
 `groupId` nesting needed there because that sample has only one exception group referenced directly
 by `excludeGroups`, not combined with other OR'd devices inside a shared group). Neither sample
@@ -71,28 +71,28 @@ buyer-supplied devices.
 
 This fragment resolves it with a **deterministic** id, not a **fixed** one: each sub-group's GUID is
 derived from its `vendorId`+`productId` pair using **RFC 4122 §4.3's version-5 (name-based, SHA-1)
-UUID algorithm** [[4]](#references), with a namespace constant unique to this fragment
+UUID algorithm**, with a namespace constant unique to this fragment
 (`8f3a2b10-8f2e-4c4a-9b8b-2f1a6c9d7e10`, hard-coded in `deploy/
 Add-MacVendorProductDeviceAllowlist.ps1`). Properties this gives, all essential to the idempotency
 requirement the parent scenario declined to build unverified:
 
 - **Same input → same id, always**, with no state file, no live Graph read-before-generate race, and
-  no dependency on script-run order, the id is a pure function of the device's own
-  vendorId+productId pair.
+ no dependency on script-run order, the id is a pure function of the device's own
+ vendorId+productId pair.
 - **A cosmetic label rename never orphans a group**, only `vendorId`/`productId` feed the hash, so
-  editing a device's human-readable `label` in the config file reconciles the *existing* group (same
-  id, new `name` only) rather than creating a duplicate and abandoning the original.
+ editing a device's human-readable `label` in the config file reconciles the *existing* group (same
+ id, new `name` only) rather than creating a duplicate and abandoning the original.
 - **Removing a device is now detectable, not merely omittable**, the deploy and validate scripts
-  both independently recompute the desired id set from the current config file and diff it against
-  every group whose `name` carries this fragment's `VendorProductMatch-` prefix; any such group not
-  in the desired set is a genuine orphan, identified and removed by the deploy script (`-Force` not
-  required, see §7), and flagged as a `[FAIL]` by the validate script if left in place.
+ both independently recompute the desired id set from the current config file and diff it against
+ every group whose `name` carries this fragment's `VendorProductMatch-` prefix; any such group not
+ in the desired set is a genuine orphan, identified and removed by the deploy script (`-Force` not
+ required, see §7), and flagged as a `[FAIL]` by the validate script if left in place.
 - **This is a public, non-Microsoft-specific cryptographic standard**, not a product fact requiring
-  Microsoft Learn grounding, no different in kind from this repository's other fragments' use of
-  literal GUID constants, just generated instead of hand-picked. It was independently verified during
-  this fragment's build against Python's standard-library `uuid.uuid5()` reference implementation for
-  the same namespace+name input, producing an identical output GUID byte-for-byte, see the deploy
-  script's `.NOTES`.
+ Microsoft Learn grounding, no different in kind from this repository's other fragments' use of
+ literal GUID constants, just generated instead of hand-picked. It was independently verified during
+ this fragment's build against Python's standard-library `uuid.uuid5()` reference implementation for
+ the same namespace+name input, producing an identical output GUID byte-for-byte, see the deploy
+ script's `.NOTES`.
 
 This is a materially different trade-off than the "fixed GUID" discipline the rest of this control
 family uses, and is called out explicitly here rather than presented as the same pattern under a new
@@ -122,7 +122,7 @@ entry, this fragment adds:
 | 1 | `groups[]` entry, `"VendorProductMatch-<label>"` | `$type: "device"`, `id` = deterministic UUIDv5(namespace, `vendorId:productId`), `query: {"$type":"and","clauses":[{"$type":"primaryId","value":"removable_media_devices"},{"$type":"vendorId","value":"<hex>"},{"$type":"productId","value":"<hex>"}]}` |
 | 2 | `ApprovedBackupDrives.query.clauses[]` entry | One `{"$type":"groupId","value":"<sub-group id>"}` clause appended alongside the parent's existing `serialNumber` clauses, the `any` (OR) semantics mean a device matching **either** mechanism is approved. |
 
-Ordering constraint (`design.md` §3 citation [[1]](#references)): every sub-group this fragment adds
+Ordering constraint (`design.md` §3 citation): every sub-group this fragment adds
 is inserted into the `groups` array **immediately before** `ApprovedBackupDrives`, satisfying "the
 group must be defined within the policy before the clause" while leaving every other fragment's
 groups at their original relative position.
@@ -154,18 +154,18 @@ alternative a buyer can choose for convenience.
 ## 8. Non-goals
 
 - This scenario does not create the parent `macOSCustomConfiguration` object, the
-  `AllRemovableStorage` catch-all group, `ApprovedBackupDrives` itself, or either of the parent's two
-  rules, all are prerequisites, not deployed artifacts (§3, `README.md` §3).
+ `AllRemovableStorage` catch-all group, `ApprovedBackupDrives` itself, or either of the parent's two
+ rules, all are prerequisites, not deployed artifacts (§3, `README.md` §3).
 - This scenario does not extend vendorId/productId matching to the Apple, Portable, or Bluetooth
-  families, those are each sibling fragments' own scope (Apple/Portable:
-  `defender-device-control-usb-allowlist-macos-portable-device-coverage`; Bluetooth already has its
-  own single-device vendorId/productId exception:
-  `defender-device-control-usb-allowlist-macos-bluetooth-allowlist`).
+ families, those are each sibling fragments' own scope (Apple/Portable:
+ `defender-device-control-usb-allowlist-macos-portable-device-coverage`; Bluetooth already has its
+ own single-device vendorId/productId exception:
+ `defender-device-control-usb-allowlist-macos-bluetooth-allowlist`).
 - This scenario does not attempt cryptographic per-unit verification of a vendorId/productId match, 
-  no such capability exists in this schema (§6).
+ no such capability exists in this schema (§6).
 - This scenario does not migrate the parent's `serialNumber` clauses to this fragment's mechanism, or
-  recommend one over the other beyond the strength disclosure in §6, both remain available, buyer's
-  choice per device.
+ recommend one over the other beyond the strength disclosure in §6, both remain available, buyer's
+ choice per device.
 
 ## References
 

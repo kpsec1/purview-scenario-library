@@ -57,11 +57,11 @@ Microsoft Entra role grant (Directory Readers) on the managed instance's own man
 just Purview/Azure IAM roles. If a full teardown should also revert that grant:
 
 1. Confirm no other workload on this managed instance depends on Microsoft Entra authentication, 
-   revoking Directory Readers breaks Entra authentication for **all** logins on the instance, not
-   just this scenario's scan.
+ revoking Directory Readers breaks Entra authentication for **all** logins on the instance, not
+ just this scenario's scan.
 2. A **Privileged Role Administrator** removes the instance's managed identity from the Directory
-   Readers role (Azure portal → Microsoft Entra ID → Roles and administrators → Directory Readers →
-   remove the member; or the PowerShell equivalent of the grant script in `README.md` reference 3).
+ Readers role (Azure portal → Microsoft Entra ID → Roles and administrators → Directory Readers →
+ remove the member; or the PowerShell equivalent of the grant script in `README.md` reference 3).
 
 This step is deliberately **not** part of `Remove-AzureSqlManagedInstanceDataMapScan.ps1`, it is a
 tenant-wide-flavored change outside this scenario's automation identity's own role scope, and
@@ -72,14 +72,14 @@ scenario's Azure IAM Reader grant.
 ## What rollback does **not** undo
 
 - **Catalog assets and classifications already ingested.** Same as the sibling scenario, no
-  cascading delete.
+ cascading delete.
 - **The four out-of-band grants and settings.** This scenario's deploy script does not create the
-  Microsoft Entra admin assignment, the Directory Readers role grant, the `db_datareader` grant, the
-  Azure IAM `Reader` role assignment, or the public-endpoint/NSG configuration, removing the scan
-  does not remove any of them either. Clean up separately if the intent is a full teardown; see
-  Stage 4 above for Directory Readers specifically.
+ Microsoft Entra admin assignment, the Directory Readers role grant, the `db_datareader` grant, the
+ Azure IAM `Reader` role assignment, or the public-endpoint/NSG configuration, removing the scan
+ does not remove any of them either. Clean up separately if the intent is a full teardown; see
+ Stage 4 above for Directory Readers specifically.
 - **Scan run history.** Prior run records remain visible in the Purview portal's Monitoring view for
-  their standard 90-day retention window regardless of whether the scan object still exists.
+ their standard 90-day retention window regardless of whether the scan object still exists.
 
 ## Verification after rollback
 

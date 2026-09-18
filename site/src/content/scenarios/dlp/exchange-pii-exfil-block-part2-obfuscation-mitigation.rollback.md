@@ -46,19 +46,19 @@ the buyer decides the residual coverage isn't worth the operational overhead doc
 ## What rollback does **not** undo
 
 - **The parent scenario's own rules, the parent policy, the separate Encrypt-mode audit
-  companion's rule, or `dynamic-risk-dlp-enforcement`'s separate policy.** All untouched by either
-  rollback stage here (Stage 2's decompaction only ever changes `-Priority`, never any rule's
-  conditions or actions).
+ companion's rule, or `dynamic-risk-dlp-enforcement`'s separate policy.** All untouched by either
+ rollback stage here (Stage 2's decompaction only ever changes `-Priority`, never any rule's
+ conditions or actions).
 - **The Exchange DLP-alerts indicator, the feeder Insider Risk Management policy, or Adaptive
-  Protection's scope configuration.** All portal-only prerequisites this fragment's scripts never
-  created, rolling back the DLP rule has no effect on them. To fully decommission this fragment,
-  also disable/delete the feeder IRM policy, remove the parent DLP policy from the DLP-alerts
-  indicator's list, and remove the feeder policy from Adaptive Protection's scope via the portal
-  (see `README.md` §5, Steps 2-4, in reverse).
+ Protection's scope configuration.** All portal-only prerequisites this fragment's scripts never
+ created, rolling back the DLP rule has no effect on them. To fully decommission this fragment,
+ also disable/delete the feeder IRM policy, remove the parent DLP policy from the DLP-alerts
+ indicator's list, and remove the feeder policy from Adaptive Protection's scope via the portal
+ (see `README.md` §5, Steps 2-4, in reverse).
 - **Audit log / alert history.** Retained per the same retention windows the parent scenario's own
-  `rollback.md` already documents, regardless of this rule's state.
+ `rollback.md` already documents, regardless of this rule's state.
 - **A user's current insider risk level.** Computed by Adaptive Protection independently of this
-  rule's existence, removing the rule does not reset anyone's Elevated/Moderate/Minor assignment.
+ rule's existence, removing the rule does not reset anyone's Elevated/Moderate/Minor assignment.
 
 ## Verification after rollback
 

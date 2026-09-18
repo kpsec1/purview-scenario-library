@@ -77,21 +77,21 @@ broken at scan time.
 Nothing in `deploy/` created these, so nothing in `deploy/` removes them. Do them in this order:
 
 1. **Revoke Purview's access to the vault**, remove the Purview account's access-policy entry
-   (Secret permissions Get/List), or its **Key Vault Secrets User** role assignment.
+ (Secret permissions Get/List), or its **Key Vault Secrets User** role assignment.
 2. **Disable, then delete, the secret**, disable first so a missed consumer surfaces as a clean
-   failure rather than a silent fallback. Note the vault's soft-delete retention window: the
-   secret remains recoverable (and its name reserved) until it is purged.
+ failure rather than a silent fallback. Note the vault's soft-delete retention window: the
+ secret remains recoverable (and its name reserved) until it is purged.
 3. **Retire the identity the credential pointed at**, drop the SQL login / `db_datareader` grant,
-   or delete the scan service principal's app registration and its client secret.
+ or delete the scan service principal's app registration and its client secret.
 
 ## What rollback does **not** undo
 
 - **Catalog assets and classifications** already ingested by scans that used this credential.
-  Removing a credential has no cascading effect on the Data Map, same as removing a scan.
+ Removing a credential has no cascading effect on the Data Map, same as removing a scan.
 - **Scan run history.** Prior run records stay visible in **Data Map → Monitoring** for their
-  standard retention window.
+ standard retention window.
 - **The Key Vault secret's value.** A Purview credential never held it, so deleting the credential
-  cannot remove or rotate it. Stage 3 step 2.
+ cannot remove or rotate it. Stage 3 step 2.
 - **Any scan object.** See Stage 0, this is the failure mode worth repeating.
 
 ## Verification after rollback

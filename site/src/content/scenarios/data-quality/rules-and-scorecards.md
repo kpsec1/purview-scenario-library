@@ -43,7 +43,7 @@ GDPR Art. 5(1)(d)'s accuracy principle requires personal data to be "accurate an
 kept up to date." SOX financial-reporting controls depend on the integrity of the data feeding them.
 And in the AI era, Microsoft's own product framing for this feature is explicit: "the reliability of
 data directly impacts the accuracy of AI-driven insights... without trustworthy data, there's a risk
-of eroding trust in AI systems and hindering their adoption" [[1]](#references), directly relevant to
+of eroding trust in AI systems and hindering their adoption", directly relevant to
 any buyer already running `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` in this repo, since
 a Copilot answer is only as trustworthy as the governed data it's grounded in.
 
@@ -53,20 +53,20 @@ internal data-trust program, instead of "we believe the customer data is general
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for this scenario:
+Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/). Summary for this scenario:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Microsoft Purview Data Quality | **PAYG only**, metered in **Data Governance Processing Units (DGPU)**, Basic/Standard/Advanced SKUs | No per-user M365 entitlement covers this feature, see `docs/licensing-matrix.md` §2 [[2]](#references) |
-| Deploy/manage rules, schedules, and alerts | **Data Quality Steward** role on the target governance domain | A *sub-role*: requires the user/service principal to **also** hold **Governance Domain Reader** and **Data Product Owner** on that domain, see §5 and [[3]](#references). **This role is granted at the governance-domain level, not per data product or per asset**, a service principal holding it for "Customer Experience" can create, edit, or delete Data Quality rules on *any* asset in *any* data product inside that domain, not just the one this scenario targets. There is no narrower, asset-scoped role documented for this action; treat the automation identity's credential with the same care as any domain-wide write credential, and review governance-domain role membership periodically (`docs/rbac-model.md` §9) |
-| Read rules and scores only (validation) | **Data Quality Reader** role on the target governance domain | Least-privilege for the read-only `validate/` script; same sub-role composition as above [[3]](#references) |
+| Microsoft Purview Data Quality | **PAYG only**, metered in **Data Governance Processing Units (DGPU)**, Basic/Standard/Advanced SKUs | No per-user M365 entitlement covers this feature, see [Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix) |
+| Deploy/manage rules, schedules, and alerts | **Data Quality Steward** role on the target governance domain | A *sub-role*: requires the user/service principal to **also** hold **Governance Domain Reader** and **Data Product Owner** on that domain, see §5 and. **This role is granted at the governance-domain level, not per data product or per asset**, a service principal holding it for "Customer Experience" can create, edit, or delete Data Quality rules on *any* asset in *any* data product inside that domain, not just the one this scenario targets. There is no narrower, asset-scoped role documented for this action; treat the automation identity's credential with the same care as any domain-wide write credential, and review governance-domain role membership periodically ([RBAC model §9](/docs/rbac-model/#9-microsoft-intune-rbac-a-fifth-system-for-intune-deployed-scenarios)) |
+| Read rules and scores only (validation) | **Data Quality Reader** role on the target governance domain | Least-privilege for the read-only `validate/` script; same sub-role composition as above |
 | The target data asset already exists in Unified Catalog | Registered + scanned in Data Map (`scenarios/data-map/scan-azure-sql-and-classify/`), then added to a data product in a governance domain | This scenario does **not** create the governance domain, data product, or data asset, see §7/`design.md` §7 |
-| A Data Quality **connection** to the source is configured | Portal-only in this build (§5), managed identity is the **only** supported authentication option for DQ scans on Microsoft-native sources (Azure SQL, ADLS Gen2, Fabric, Synapse, Azure SQL Managed Instance) [[4]](#references) | See §11 for why this scenario doesn't script the connection object |
-| Automation identity for the REST calls themselves | App registration with **Data Quality Steward** (deploy) or **Data Quality Reader** (validate) Purview role on the governance domain | Client-secret app-only OAuth2, same token endpoint as Data Map/Unified Catalog, `docs/automation-surface.md` §3 |
+| A Data Quality **connection** to the source is configured | Portal-only in this build (§5), managed identity is the **only** supported authentication option for DQ scans on Microsoft-native sources (Azure SQL, ADLS Gen2, Fabric, Synapse, Azure SQL Managed Instance) | See §11 for why this scenario doesn't script the connection object |
+| Automation identity for the REST calls themselves | App registration with **Data Quality Steward** (deploy) or **Data Quality Reader** (validate) Purview role on the governance domain | Client-secret app-only OAuth2, same token endpoint as Data Map/Unified Catalog, [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
 
-> Verify current entitlement names, DGPU pricing, and role names against `docs/licensing-matrix.md`
-> and `docs/rbac-model.md` (dated 2026-09-03) before a sales commitment, this is a **Public Preview**
-> feature and its API surface, roles, and metering are explicitly subject to change [[5]](#references).
+> Verify current entitlement names, DGPU pricing, and role names against [Licensing matrix](/docs/licensing-matrix/)
+> and [RBAC model](/docs/rbac-model/) (dated 2026-09-03) before a sales commitment, this is a **Public Preview**
+> feature and its API surface, roles, and metering are explicitly subject to change.
 
 ## 4. Architecture
 
@@ -111,29 +111,29 @@ this repo already uses for Data Map scanning. Full design rationale: `design.md`
 ### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
 1. Confirm the target asset is already in Unified Catalog: **Data Map** → source registered and
-   scanned; then **Unified Catalog** → the asset added to a **data product** inside a **governance
-   domain** [[6]](#references).
+ scanned; then **Unified Catalog** → the asset added to a **data product** inside a **governance
+ domain**.
 2. Assign the automation identity's *human* counterpart (or, for this walkthrough, yourself) the
-   **Data Quality Steward** role: in the governance domain, select **Roles** → add the user under
-   **Data Quality Steward** [[3]](#references). This role requires **Governance Domain Reader** and
-   **Data Product Owner** to already be held on the same domain, assign those first if not already
-   present.
+ **Data Quality Steward** role: in the governance domain, select **Roles** → add the user under
+ **Data Quality Steward**. This role requires **Governance Domain Reader** and
+ **Data Product Owner** to already be held on the same domain, assign those first if not already
+ present.
 3. Set up the **Data Quality connection**: **Health management** → **Data quality** → select the
-   governance domain → **Manage** → **Connections** → **New**. Choose **Data Map** as the source type
-   (simplest, reuses the already-scanned Data Map registration), test the connection, and **Submit**
-   [[4]](#references). Grant the Purview managed identity the source-appropriate read role (e.g.
-   `db_datareader` for Azure SQL, the same grant `scenarios/data-map/scan-azure-sql-and-classify/`
-   already documents) [[4]](#references).
+ governance domain → **Manage** → **Connections** → **New**. Choose **Data Map** as the source type
+ (simplest, reuses the already-scanned Data Map registration), test the connection, and **Submit**
+. Grant the Purview managed identity the source-appropriate read role (e.g.
+ `db_datareader` for Azure SQL, the same grant `scenarios/data-map/scan-azure-sql-and-classify/`
+ already documents).
 4. Navigate to the asset's **Data quality** page (**Health management** → **Data quality** → domain →
-   data product → asset) and select **Rules** → **New rule** to author each rule interactively, this
-   is the portal equivalent of what the script in §5's script path does in bulk from a JSON file
-   [[7]](#references).
+ data product → asset) and select **Rules** → **New rule** to author each rule interactively, this
+ is the portal equivalent of what the script in §5's script path does in bulk from a JSON file
+.
 5. Select **Run quality scan** for an immediate ad hoc run, or **Manage** → **Scheduled scans** → **New**
-   for a recurring cadence (the portal supports daily/weekly/monthly recurrence, see §11 for why this
-   scenario's script only schedules a one-time run) [[8]](#references).
+ for a recurring cadence (the portal supports daily/weekly/monthly recurrence, see §11 for why this
+ scenario's script only schedules a one-time run).
 6. After the scan completes, review the score on the asset's **Overview** tab, and the roll-up report
-   at **Health management** → **Reports** → **Data quality** for the product/domain view
-   [[9]](#references).
+ at **Health management** → **Reports** → **Data quality** for the product/domain view
+.
 
 ### Script path (idempotent, parameterized, dry-run capable)
 
@@ -166,7 +166,7 @@ this repo already uses for Data Map scanning. Full design rationale: `design.md`
 ```
 
 The deploy script uses the **Microsoft Purview Data Quality REST API for Unified Catalog** (Public
-Preview), automation surface 4 per `docs/automation-surface.md` §1, because rule and schedule
+Preview), automation surface 4 per [Automation surface §1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first), because rule and schedule
 objects have no Security & Compliance PowerShell or Graph equivalent. Token acquisition follows the
 same client-credentials pattern already used by this repo's other surface-4 scripts.
 
@@ -174,13 +174,13 @@ same client-credentials pattern already used by this repo's other surface-4 scri
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Rule types deployed | `NotNull`, `Unique`, `TypeMatch`, `Duplicate`, `CustomTruth` | Confirmed API `type` values, taken directly from Microsoft's own Get Rules / Create Rules reference examples [[10]](#references) |
-| Rule dimensions | Completeness, Uniqueness, Conformity, Accuracy (×2) | Matches the six-dimension model (Accuracy/Completeness/Conformity/Consistency/Timeliness/Uniqueness) Microsoft documents for Data Quality reporting [[11]](#references), this scenario deliberately omits **Freshness**, which isn't supported for Azure SQL sources [[7]](#references) |
-| Rule `status` on create | `Active` (default), or `Draft` via `-RuleStatus` | Draft rules don't run during a scan and don't contribute to the global score, a safe landing state for review [[7]](#references) |
-| Rule cap per asset | 200 active rules | Product-enforced; a scan fails outright above this, see §11 [[7]](#references) |
+| Rule types deployed | `NotNull`, `Unique`, `TypeMatch`, `Duplicate`, `CustomTruth` | Confirmed API `type` values, taken directly from Microsoft's own Get Rules / Create Rules reference examples |
+| Rule dimensions | Completeness, Uniqueness, Conformity, Accuracy (×2) | Matches the six-dimension model (Accuracy/Completeness/Conformity/Consistency/Timeliness/Uniqueness) Microsoft documents for Data Quality reporting, this scenario deliberately omits **Freshness**, which isn't supported for Azure SQL sources |
+| Rule `status` on create | `Active` (default), or `Draft` via `-RuleStatus` | Draft rules don't run during a scan and don't contribute to the global score, a safe landing state for review |
+| Rule cap per asset | 200 active rules | Product-enforced; a scan fails outright above this, see §11 |
 | Schedule trigger type | `RunOnce` only | The only trigger type this build's grounding confirmed in the REST schema, see §11 |
 | Scan authentication | Managed identity only (Microsoft-native sources) | Portal-configured DQ connection prerequisite, not scripted, see §11 |
-| API version pinned by this script | `2026-01-12-preview` | Confirmed current via direct fetch of Microsoft's REST reference at build time; **Public Preview**, covers GA Data Quality features only, not alerting/schema-import/preview features [[12]](#references) |
+| API version pinned by this script | `2026-01-12-preview` | Confirmed current via direct fetch of Microsoft's REST reference at build time; **Public Preview**, covers GA Data Quality features only, not alerting/schema-import/preview features |
 
 Full REST-body grounding: `deploy/New-DataQualityRulesAndSchedule.ps1` inline comments and its
 `.NOTES` block cite the exact Microsoft Learn reference pages.
@@ -188,41 +188,41 @@ Full REST-body grounding: `deploy/New-DataQualityRulesAndSchedule.ps1` inline co
 ## 7. Validation / how to prove it works
 
 1. **Automated config check**, `./validate/Test-DataQualityRulesAndScorecard.ps1` confirms every
-   rule in the definition file exists with the expected status, the schedule exists, and (once a scan
-   has run) reports the asset's current score. Exits non-zero on any hard failure.
+ rule in the definition file exists with the expected status, the schedule exists, and (once a scan
+ has run) reports the asset's current score. Exits non-zero on any hard failure.
 2. **Scan run status**, portal: **Health management** → **Data quality** → domain → data product →
-   asset → **Monitoring** shows the run's status (queued/running/completed/failed) and pass/fail row
-   counts per rule [[13]](#references).
+ asset → **Monitoring** shows the run's status (queued/running/completed/failed) and pass/fail row
+ counts per rule.
 3. **Score evidence**, the asset's **Overview** tab shows the rolled-up global score and per-rule
-   history (last 50 runs) [[9]](#references); the `Get Asset Scores For Asset DQ` call the validate
-   script makes returns the same number programmatically.
+ history (last 50 runs); the `Get Asset Scores For Asset DQ` call the validate
+ script makes returns the same number programmatically.
 4. **Negative test**, temporarily insert (in a non-production copy of the source data) a row with a
-   duplicated `CustomerId`, re-run the scan, and confirm the `Unique_values_CustomerId` rule's pass
-   count drops and the asset's global score decreases proportionally, this is the concrete proof the
-   rule is actually evaluating live data, not a static portal toggle.
+ duplicated `CustomerId`, re-run the scan, and confirm the `Unique_values_CustomerId` rule's pass
+ count drops and the asset's global score decreases proportionally, this is the concrete proof the
+ rule is actually evaluating live data, not a static portal toggle.
 5. **Draft-vs-Active proof**, deploy with `-RuleStatus Draft`, confirm via the validate script that
-   the rules exist but the asset score is unaffected (still whatever it was before, or unavailable if
-   no `Active` rule has ever run), then re-deploy with the default `Active` and confirm the score
-   changes on the next run [[7]](#references).
+ the rules exist but the asset score is unaffected (still whatever it was before, or unavailable if
+ no `Active` rule has ever run), then re-deploy with the default `Active` and confirm the score
+ changes on the next run.
 
 ## 8. Operations & tuning
 
 **KPIs to watch (first 30 days):**
 - **Asset/data-product/domain global score trend**, a steady score near 100% with sudden drops
-  flags an upstream data-pipeline regression faster than a downstream report catching the symptom.
+ flags an upstream data-pipeline regression faster than a downstream report catching the symptom.
 - **Passed vs. failed vs. miscast vs. empty row counts per rule** (from `Get Runs For Asset`/the
-  portal's rule-level **History** tab), a rule with a persistently high **miscast** count usually
-  means the rule's target type or format doesn't match the real data shape and needs tuning, not that
-  the data itself is bad [[14]](#references).
+ portal's rule-level **History** tab), a rule with a persistently high **miscast** count usually
+ means the rule's target type or format doesn't match the real data shape and needs tuning, not that
+ the data itself is bad.
 - **Scan failure rate**, a Data Quality scan failure (distinct from a low *score*, which means the
-  scan succeeded and found bad data) usually points at the DQ connection, not the rules, see the
-  runbook below.
+ scan succeeded and found bad data) usually points at the DQ connection, not the rules, see the
+ runbook below.
 
 **Alert routing:** configure score-threshold alerts (**Score less than X%**, or **Score decreased by
 more than X%**) per governance domain via **Manage** → **Alerts** in the portal, this is a
 **Data Quality Steward**-only action with no independently confirmed REST endpoint in this build's
 grounding pass (`Update Alert`/`Get Alerts` operation groups exist per the REST index, but were not
-independently fetched and verified for this fragment; see §11) [[15]](#references). Alerts email a
+independently fetched and verified for this fragment; see §11). Alerts email a
 configured recipient/distribution list on every scan, not just failures, route that mailbox into
 existing incident tooling rather than leaving it as an unmonitored inbox.
 
@@ -238,18 +238,18 @@ rule is caught even if the portal alert channel is missed or muted.
 
 **Incident-response runbook (a scan fails outright, distinct from "the score is just low"):**
 1. **Triage**, check the run status in **Health management** → **Data quality** → **Monitoring**
-   for the specific error, or via `Get Run Status`/`Get Runs For Asset` [[13]](#references).
+ for the specific error, or via `Get Run Status`/`Get Runs For Asset`.
 2. **Classify the cause**, in order of likelihood: (a) the DQ connection's managed-identity grant on
-   the source was revoked or the source's firewall changed (same failure class as the Data Map
-   scenario's runbook, see `scenarios/data-map/scan-azure-sql-and-classify/README.md` §8); (b) the
-   source schema changed and needs **Import schema** re-run before the next scan [[8]](#references);
-   (c) more than 200 active rules are on the asset (product-enforced cap, see §11) [[7]](#references);
-   (d) a transient Spark/service-side issue, safe to let the next scheduled run retry.
+ the source was revoked or the source's firewall changed (same failure class as the Data Map
+ scenario's runbook, see `scenarios/data-map/scan-azure-sql-and-classify/README.md` §8); (b) the
+ source schema changed and needs **Import schema** re-run before the next scan;
+ (c) more than 200 active rules are on the asset (product-enforced cap, see §11);
+ (d) a transient Spark/service-side issue, safe to let the next scheduled run retry.
 3. **Remediate**, re-apply the specific broken grant, re-import the schema, or deactivate the
-   lowest-priority rules to get under the 200-rule cap, then re-run
-   `validate/Test-DataQualityRulesAndScorecard.ps1` before assuming the fix worked.
+ lowest-priority rules to get under the 200-rule cap, then re-run
+ `validate/Test-DataQualityRulesAndScorecard.ps1` before assuming the fix worked.
 4. **Escalate** if failures recur after confirming the connection, schema, and rule count are all
-   healthy, a Purview-service-side issue worth a support case.
+ healthy, a Purview-service-side issue worth a support case.
 
 **Review cadence:** review rule pass/fail/miscast trends monthly with the data product owner; a rule
 that has passed 100% for months may be a candidate to retire (or tighten) rather than keep running at
@@ -264,66 +264,66 @@ reference: `./deploy/Remove-DataQualityRulesAndSchedule.ps1` removes the schedul
 ## 10. Cost & licensing notes
 
 - **PAYG, DGPU-metered, not per-user.** Data Quality is **PAYG only**, no per-user M365 entitlement
-  covers it. Cost is metered in **Data Governance Processing Units (DGPU)** across Basic/Standard/
-  Advanced SKUs, the same billing family as Unified Catalog's governed-assets/day meter, see
-  `docs/licensing-matrix.md` §2 [[2]](#references).
+ covers it. Cost is metered in **Data Governance Processing Units (DGPU)** across Basic/Standard/
+ Advanced SKUs, the same billing family as Unified Catalog's governed-assets/day meter, see
+ [Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix).
 - **Cost scales with scan frequency and data volume**, not with the number of rules configured in
-  isolation, a rule evaluates against the rows the scan actually reads, so a `Full`-equivalent scan
-  of a large table costs more per run than a scan scoped with the incremental (time-based) filter
-  option [[16]](#references). Prefer incremental scans for steady-state monitoring once a baseline
-  score exists, matching this repo's established Data Map guidance to reserve full scans for the
-  first run and periodic re-baselines.
+ isolation, a rule evaluates against the rows the scan actually reads, so a `Full`-equivalent scan
+ of a large table costs more per run than a scan scoped with the incremental (time-based) filter
+ option. Prefer incremental scans for steady-state monitoring once a baseline
+ score exists, matching this repo's established Data Map guidance to reserve full scans for the
+ first run and periodic re-baselines.
 - **This scenario's own default (a single `RunOnce` schedule) does not itself create a recurring
-  cost**, re-running `deploy/New-DataQualityRulesAndSchedule.ps1` (or the portal's recurring
-  schedule) is what turns this into an ongoing metered cost; budget for that before rolling out
-  beyond a pilot asset.
+ cost**, re-running `deploy/New-DataQualityRulesAndSchedule.ps1` (or the portal's recurring
+ schedule) is what turns this into an ongoing metered cost; budget for that before rolling out
+ beyond a pilot asset.
 - **Cost governance.** As with the Data Map PAYG scenario in this repo, set an Azure Cost Management
-  budget/alert before scaling this pattern to many assets or a daily/weekly recurring cadence, DGPU
-  consumption has no natural ceiling once a schedule is running unattended.
+ budget/alert before scaling this pattern to many assets or a daily/weekly recurring cadence, DGPU
+ consumption has no natural ceiling once a schedule is running unattended.
 
 ## 11. Known limitations & gotchas
 
 - **This scenario does not script the DQ data-source connection.** Creating the managed-identity
-  connection object (`Create Data Source` in the REST operation groups) requires a `computeId` field
-  whose provisioning mechanism this build could not independently confirm, Microsoft's own worked
-  example shows it as a pre-existing GUID with no documented endpoint to obtain one. Set up the
-  connection once via the portal (§5 step 3); it persists and does not need to be recreated per rule
-  deployment. Flagged as VERIFY/follow-up rather than fabricated, see `PROGRESS.md`.
+ connection object (`Create Data Source` in the REST operation groups) requires a `computeId` field
+ whose provisioning mechanism this build could not independently confirm, Microsoft's own worked
+ example shows it as a pre-existing GUID with no documented endpoint to obtain one. Set up the
+ connection once via the portal (§5 step 3); it persists and does not need to be recreated per rule
+ deployment. Flagged as VERIFY/follow-up rather than fabricated, see `PROGRESS.md`.
 - **VERIFY, recurring (non-`RunOnce`) schedule trigger type.** The portal's own **Scheduled scans**
-  wizard visibly supports daily/weekly/monthly recurrence, but this build's grounding pass found only
-  the `RunOnce` trigger shape (`timezone`/`isScheduled`/`triggerTime`) in Microsoft's published REST
-  examples for the Schedule object, no `Recurrence` type or frequency/interval fields were
-  independently confirmed, unlike Data Map's Scans trigger, which documents `Hour`/`Day`/`Week`/`Month`
-  explicitly. This scenario's script schedules a single one-time run; for an ongoing cadence, either
-  re-invoke the script periodically (e.g. from a pipeline's own scheduler) or use the portal wizard
-  until Microsoft documents the recurring shape.
+ wizard visibly supports daily/weekly/monthly recurrence, but this build's grounding pass found only
+ the `RunOnce` trigger shape (`timezone`/`isScheduled`/`triggerTime`) in Microsoft's published REST
+ examples for the Schedule object, no `Recurrence` type or frequency/interval fields were
+ independently confirmed, unlike Data Map's Scans trigger, which documents `Hour`/`Day`/`Week`/`Month`
+ explicitly. This scenario's script schedules a single one-time run; for an ongoing cadence, either
+ re-invoke the script periodically (e.g. from a pipeline's own scheduler) or use the portal wizard
+ until Microsoft documents the recurring shape.
 - **VERIFY, `TypeMatch` rule's target-type selection mechanism.** See the deploy script's `.NOTES`:
-  the confirmed `TypeProperties` schema has no field name for "the type this column is expected to
-  be," despite Microsoft's conceptual documentation describing exactly that behavior. Shipped with
-  `column` only, per Microsoft's own example; confirm against a pilot tenant.
+ the confirmed `TypeProperties` schema has no field name for "the type this column is expected to
+ be," despite Microsoft's conceptual documentation describing exactly that behavior. Shipped with
+ `column` only, per Microsoft's own example; confirm against a pilot tenant.
 - **VERIFY, Create Rules' create-vs-replace semantics when reused against an existing `ruleId`.**
-  This script's idempotency does not depend on the answer (see the deploy script's `.DESCRIPTION`),
-  but a production integration bypassing this script's existence check should confirm it.
+ This script's idempotency does not depend on the answer (see the deploy script's `.DESCRIPTION`),
+ but a production integration bypassing this script's existence check should confirm it.
 - **VERIFY, Alerts REST operations not independently exercised.** `Get Alerts`/`Update Alert` appear
-  in the REST operation-group index (confirming the API surface exists) but were not fetched and
-  grounded in this build; alert configuration is documented as portal-only in §8 pending that follow-up.
+ in the REST operation-group index (confirming the API surface exists) but were not fetched and
+ grounded in this build; alert configuration is documented as portal-only in §8 pending that follow-up.
 - **200-active-rule cap per asset is product-enforced**, not something this script checks for you, 
-  a scan fails outright above the cap, per §6/§8.
+ a scan fails outright above the cap, per §6/§8.
 - **The example `Custom_Email_format_valid` rule is a starter validator, not a compliance-grade
-  one.** Its regex (`^[^@\s]+@[^@\s]+\.[^@\s]+$`) accepts most real addresses and rejects most
-  garbage, but is not RFC 5322-complete and will both false-positive and false-negative on edge
-  cases (quoted local parts, IP-literal domains, etc.). Passing this scenario's validation is proof
-  the *rule infrastructure* works end-to-end, not proof the *rule content* is production-ready, 
-  replace the expression with the organization's actual email-validation standard before trusting
-  the resulting score in a compliance narrative.
+ one.** Its regex (`^[^@\s]+@[^@\s]+\.[^@\s]+$`) accepts most real addresses and rejects most
+ garbage, but is not RFC 5322-complete and will both false-positive and false-negative on edge
+ cases (quoted local parts, IP-literal domains, etc.). Passing this scenario's validation is proof
+ the *rule infrastructure* works end-to-end, not proof the *rule content* is production-ready, 
+ replace the expression with the organization's actual email-validation standard before trusting
+ the resulting score in a compliance narrative.
 - **This scenario does not create the governance domain, data product, or data asset it targets.**
-  It assumes the Data Governance path (`scenarios/data-map/scan-azure-sql-and-classify/` →
-  `scenarios/unified-catalog/curate-business-glossary/` or a future data-products scenario) has
-  already run, see `design.md` §7.
+ It assumes the Data Governance path (`scenarios/data-map/scan-azure-sql-and-classify/` →
+ `scenarios/unified-catalog/curate-business-glossary/` or a future data-products scenario) has
+ already run, see `design.md` §7.
 - **Public Preview.** The entire Data Quality REST API for Unified Catalog is Public Preview as of
-  this build and covers GA Data Quality features only, no alerting, schema-import, or preview-feature
-  API coverage yet [[12]](#references). Re-verify the operation set before a customer-facing
-  deployment; preview APIs can change without the same notice as GA surfaces.
+ this build and covers GA Data Quality features only, no alerting, schema-import, or preview-feature
+ API coverage yet. Re-verify the operation set before a customer-facing
+ deployment; preview APIs can change without the same notice as GA surfaces.
 
 ## 12. References
 

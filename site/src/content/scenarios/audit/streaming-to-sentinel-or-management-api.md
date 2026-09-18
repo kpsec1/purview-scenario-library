@@ -37,20 +37,20 @@ requirement, see §3 for which one (or both) a given buyer needs.
 
 ## 3. Prerequisites
 
-Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. Automation surface:
-`docs/automation-surface.md` §4 ("Audit search (API, high volume/bulk export)" row cites this exact
+Full licensing detail: [Licensing matrix](/docs/licensing-matrix/). RBAC: [RBAC model](/docs/rbac-model/). Automation surface:
+[Automation surface §4](/docs/automation-surface/#4-routing-table-which-surface-for-which-purview-task) ("Audit search (API, high volume/bulk export)" row cites this exact
 API). Summary:
 
 | Requirement | Path A (Sentinel connector) | Path B (Management Activity API) |
 |---|---|---|
-| SIEM | An existing Microsoft Sentinel workspace (Log Analytics workspace with Sentinel enabled) [[13]](#references) | Any, the API is SIEM-agnostic |
-| Tenant role to connect | **Security Administrator** (or equivalent) on the M365 tenant, **Sentinel Contributor** (read/write) on the workspace [[14]](#references) | An Entra app registration granted the **Application** permission **"Read activity data for an organization"** (`ActivityFeed.Read`) on **Office 365 Management APIs**, admin-consented. Add **"Read Data Loss Prevention (DLP) policy events"** only if subscribing to `DLP.All` [[3]](#references) |
-| Deployment auth | Azure RBAC **Contributor** (or narrower) on the resource group, for the Bicep deployment | OAuth2 **client-credentials** grant (certificate preferred over secret in production, `docs/automation-surface.md` §3) |
-| Audit prerequisite | **Unified audit logging** turned on for the tenant (shared prerequisite, both paths read from the same underlying audit pipeline) [[4]](#references) | Same |
-| Cost | **Free**, `OfficeActivity` (Exchange/SharePoint/Teams) is an excluded/free Log Analytics data source [[10]](#references) | No API charge; you pay for wherever the NDJSON output lands (ingestion, storage) |
+| SIEM | An existing Microsoft Sentinel workspace (Log Analytics workspace with Sentinel enabled) | Any, the API is SIEM-agnostic |
+| Tenant role to connect | **Security Administrator** (or equivalent) on the M365 tenant, **Sentinel Contributor** (read/write) on the workspace | An Entra app registration granted the **Application** permission **"Read activity data for an organization"** (`ActivityFeed.Read`) on **Office 365 Management APIs**, admin-consented. Add **"Read Data Loss Prevention (DLP) policy events"** only if subscribing to `DLP.All` |
+| Deployment auth | Azure RBAC **Contributor** (or narrower) on the resource group, for the Bicep deployment | OAuth2 **client-credentials** grant (certificate preferred over secret in production, [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended)) |
+| Audit prerequisite | **Unified audit logging** turned on for the tenant (shared prerequisite, both paths read from the same underlying audit pipeline) | Same |
+| Cost | **Free**, `OfficeActivity` (Exchange/SharePoint/Teams) is an excluded/free Log Analytics data source | No API charge; you pay for wherever the NDJSON output lands (ingestion, storage) |
 
-> Verify current entitlement names and role requirements against `docs/licensing-matrix.md` and
-> `docs/rbac-model.md` (dated 2026-09-02) before a sales commitment.
+> Verify current entitlement names and role requirements against [Licensing matrix](/docs/licensing-matrix/) and
+> [RBAC model](/docs/rbac-model/) (dated 2026-09-02) before a sales commitment.
 
 ## 4. Architecture
 
@@ -96,9 +96,9 @@ comparison: `design.md` §3.
 
 **Portal path:**
 1. In [Microsoft Sentinel](https://portal.azure.com) → **Data connectors**, search **Microsoft 365
-   (formerly, Office 365)** → **Open connector page** [[8]](#references).
+ (formerly, Office 365)** → **Open connector page**.
 2. Under **Configuration**, select the workloads to stream (**Exchange**, **SharePoint**,
-   **Teams**) → **Apply Changes** [[8]](#references).
+ **Teams**) → **Apply Changes**.
 
 **Script path (repeatable IaC, native what-if):**
 ```powershell
@@ -113,7 +113,7 @@ New-AzResourceGroupDeployment -ResourceGroupName <rg> `
   -workspaceName <sentinelWorkspaceName> -tenantId <tenantGuid>
 ```
 Uses the `Microsoft.SecurityInsights/dataConnectors` ARM resource, `kind: Office365`
-[[9]](#references), Azure Resource Manager (not a Purview automation surface), authenticated with
+, Azure Resource Manager (not a Purview automation surface), authenticated with
 the deploying user's/service principal's own Azure RBAC on the resource group.
 
 ### Path B, Management Activity API (custom)
@@ -134,21 +134,21 @@ $secret = Read-Host -AsSecureString -Prompt 'Client secret'
 
 Uses the **Office 365 Management Activity API**, a separate REST surface from Microsoft Graph, at
 `manage.office.com` (or the government-cloud equivalent), authenticated with an app registration's
-OAuth2 client-credentials grant. See `docs/automation-surface.md` §4 for how this surface relates to
+OAuth2 client-credentials grant. See [Automation surface §4](/docs/automation-surface/#4-routing-table-which-surface-for-which-purview-task) for how this surface relates to
 the Graph-based Audit Search API used by `premium-audit-investigation`.
 
 ## 6. Configuration reference
 
 | Setting | Path | Value this scenario uses | Notes |
 |---|---|---|---|
-| Connector kind | A | `Office365` | Portal calls it "Microsoft 365 (formerly, Office 365)"; the ARM/Bicep `kind` is still literally `Office365` [[9]](#references) |
+| Connector kind | A | `Office365` | Portal calls it "Microsoft 365 (formerly, Office 365)"; the ARM/Bicep `kind` is still literally `Office365` |
 | Data types | A | `exchange`, `sharePoint`, `teams`, each independently `Enabled`/`Disabled` | No `entra`/`dlp` data type exists on this connector kind, that's the coverage gap Path B fills |
-| Destination table | A | `OfficeActivity` | Free Log Analytics data source [[10]](#references) |
+| Destination table | A | `OfficeActivity` | Free Log Analytics data source |
 | Content types | B | `Audit.AzureActiveDirectory`, `Audit.Exchange`, `Audit.SharePoint`, `Audit.General`, `DLP.All` | Config-driven list; trim to avoid double-collecting what Path A already streams (design.md §3) |
-| Subscribe | B | `POST /activity/feed/subscriptions/start?contentType=X` | Idempotent in this script, checks `/subscriptions/list` first; 15-minute cooldown between `/start` calls per content type [[3]](#references) |
-| List content | B | `GET /activity/feed/subscriptions/content?contentType=X&startTime&endTime` | Window ≤24h, lookback ≤7 days (both hard API limits) [[2]](#references) |
-| Retrieve blob | B | `GET {contentUri}?PublisherIdentifier={tenantId}` | `PublisherIdentifier` always included, dedicated throttling pool [[3]](#references) |
-| Pagination | B | `NextPageUri` response header | Not `@odata.nextLink`, a different convention from Microsoft Graph [[1]](#references) |
+| Subscribe | B | `POST /activity/feed/subscriptions/start?contentType=X` | Idempotent in this script, checks `/subscriptions/list` first; 15-minute cooldown between `/start` calls per content type |
+| List content | B | `GET /activity/feed/subscriptions/content?contentType=X&startTime&endTime` | Window ≤24h, lookback ≤7 days (both hard API limits) |
+| Retrieve blob | B | `GET {contentUri}?PublisherIdentifier={tenantId}` | `PublisherIdentifier` always included, dedicated throttling pool |
+| Pagination | B | `NextPageUri` response header | Not `@odata.nextLink`, a different convention from Microsoft Graph |
 | Output | B | NDJSON, one file per content type per run | Forwarder-agnostic hand-off (design.md §6) |
 | Checkpoint | B | `checkpoints/<contentType>.checkpoint.json`, `lastEndTimeUtc`, `lastRunUtc` | Advances only after a successful export |
 
@@ -156,62 +156,62 @@ the Graph-based Audit Search API used by `premium-audit-investigation`.
 
 **Path A:**
 1. After deployment, confirm the connector shows **Connected** on the Sentinel **Data connectors**
-   page, or inspect the deployed resource (`Get-AzResource -ResourceType
-   Microsoft.SecurityInsights/dataConnectors`).
+ page, or inspect the deployed resource (`Get-AzResource -ResourceType
+ Microsoft.SecurityInsights/dataConnectors`).
 2. Generate a benign, identifiable event (e.g. a test SharePoint file access), wait for the ~60-90
-   minute typical ingestion latency shared with the underlying audit log [[5]](#references), then
-   query `OfficeActivity | where TimeGenerated > ago(2h)` in the workspace and confirm it appears.
+ minute typical ingestion latency shared with the underlying audit log, then
+ query `OfficeActivity | where TimeGenerated > ago(2h)` in the workspace and confirm it appears.
 
 **Path B:**
 1. **Readiness**, `./validate/Test-ManagementActivityStreaming.ps1` confirms token acquisition and
-   that every configured content type shows `status: enabled`.
+ that every configured content type shows `status: enabled`.
 2. **First poll**, run `Invoke-ManagementActivityPoll.ps1` once; confirm a checkpoint file is
-   created per content type and (if any events occurred in the window) an NDJSON export file is
-   non-empty.
+ created per content type and (if any events occurred in the window) an NDJSON export file is
+ non-empty.
 3. **Pipeline health over time**, re-run `Test-ManagementActivityStreaming.ps1` (without
-   `-SkipCheckpointCheck`) after the poll script has been scheduled for a day; confirm every content
-   type's checkpoint is fresh (within `-MaxStaleHours`).
+ `-SkipCheckpointCheck`) after the poll script has been scheduled for a day; confirm every content
+ type's checkpoint is fresh (within `-MaxStaleHours`).
 4. **Known-event test**, perform a benign action matching one of the subscribed content types (a
-   sign-in for `Audit.AzureActiveDirectory`, a file share for `Audit.SharePoint`), wait for
-   ingestion latency, run the poll, and confirm the record appears in that run's NDJSON.
+ sign-in for `Audit.AzureActiveDirectory`, a file share for `Audit.SharePoint`), wait for
+ ingestion latency, run the poll, and confirm the record appears in that run's NDJSON.
 
 ## 8. Operations & tuning
 
 - **First content lag.** A newly-started Path B subscription can take **up to 12 hours** before its
-  first content blobs appear [[1]](#references), don't conclude the pipeline is broken before then.
+ first content blobs appear, don't conclude the pipeline is broken before then.
 - **Scheduling cadence (Path B).** Poll at least once every few hours; the 24-hour-per-call window
-  and 7-day retrieval ceiling mean an outage longer than 7 days creates a **permanent gap** (the
-  script's stale-checkpoint warning surfaces this, README §7 item 3, `validate/` check 3).
+ and 7-day retrieval ceiling mean an outage longer than 7 days creates a **permanent gap** (the
+ script's stale-checkpoint warning surfaces this, README §7 item 3, `validate/` check 3).
 - **Throttling (Path B).** Baseline **2,000 requests/minute** per tenant, roughly double for
-  Microsoft 365/Office 365 E5 tenants [[6]](#references); always send `PublisherIdentifier` for a
-  dedicated pool rather than the shared general pool [[3]](#references). A sustained `AF429`
-  response means back off, not retry-in-a-tight-loop.
+ Microsoft 365/Office 365 E5 tenants; always send `PublisherIdentifier` for a
+ dedicated pool rather than the shared general pool. A sustained `AF429`
+ response means back off, not retry-in-a-tight-loop.
 - **Ordering is not guaranteed.** Content blobs are not necessarily sequential, a later-arriving
-  blob can contain earlier events than one already processed [[1]](#references). Downstream
-  analytics should key off event timestamps inside each record, not blob-arrival order.
+ blob can contain earlier events than one already processed. Downstream
+ analytics should key off event timestamps inside each record, not blob-arrival order.
 - **Avoid double-collection.** If both paths are deployed, don't subscribe Path B to
-  `Audit.Exchange`/`Audit.SharePoint` content that duplicates what Path A already streams into
-  `OfficeActivity`, unless the destination pipelines are genuinely separate and dedup is handled
-  downstream (design.md §3).
+ `Audit.Exchange`/`Audit.SharePoint` content that duplicates what Path A already streams into
+ `OfficeActivity`, unless the destination pipelines are genuinely separate and dedup is handled
+ downstream (design.md §3).
 - **Other scenarios can share this scenario's `-OutDir`.** `data-security-investigations/
-  post-breach-investigation-and-purge/deploy/Export-DsiActivityAuditTrail.ps1`'s own
-  `-NdjsonOutDir` parameter writes `DSI-Activity-<runStamp>.ndjson` files using the exact same
-  per-run-file convention `Invoke-ManagementActivityPoll.ps1` uses here, point it at this
-  scenario's `-OutDir` to have one downstream forwarder pick up both feeds. DSI records reach that
-  directory via `Search-UnifiedAuditLog`, not the Management Activity API, they are not a Path B
-  content type and are not subject to this API's 24-hour/7-day window limits (that scenario's own
-  `README.md` §11).
+ post-breach-investigation-and-purge/deploy/Export-DsiActivityAuditTrail.ps1`'s own
+ `-NdjsonOutDir` parameter writes `DSI-Activity-<runStamp>.ndjson` files using the exact same
+ per-run-file convention `Invoke-ManagementActivityPoll.ps1` uses here, point it at this
+ scenario's `-OutDir` to have one downstream forwarder pick up both feeds. DSI records reach that
+ directory via `Search-UnifiedAuditLog`, not the Management Activity API, they are not a Path B
+ content type and are not subject to this API's 24-hour/7-day window limits (that scenario's own
+ `README.md` §11).
 - **DLP.All is sensitive.** Detected sensitive-information events can themselves carry excerpts of
-  matched content, treat Path B's `DLP.All` export files with the same handling discipline as the
-  audit-investigation exports in this library's `premium-audit-investigation/rollback.md`.
-  **Restrict filesystem access to `-OutDir`** (NTFS/POSIX ACLs, or a private storage container if the
-  scheduled poll runs in Azure Automation/Functions) the same way you would any other directory
-  holding unified-audit-log content, the NDJSON files are plaintext, at rest, for as long as they
-  sit there before a downstream forwarder picks them up.
+ matched content, treat Path B's `DLP.All` export files with the same handling discipline as the
+ audit-investigation exports in this library's `premium-audit-investigation/rollback.md`.
+ **Restrict filesystem access to `-OutDir`** (NTFS/POSIX ACLs, or a private storage container if the
+ scheduled poll runs in Azure Automation/Functions) the same way you would any other directory
+ holding unified-audit-log content, the NDJSON files are plaintext, at rest, for as long as they
+ sit there before a downstream forwarder picks them up.
 - **429 handling is built in.** Every raw REST call in `Invoke-ManagementActivityPoll.ps1` honors
-  `Retry-After`/backs off exponentially on a 429/AF429 response, and each content type fails
-  independently (checkpoint not advanced) rather than aborting the whole run, see the script's
-  `.DESCRIPTION` and `docs/automation-surface.md` §5.
+ `Retry-After`/backs off exponentially on a 429/AF429 response, and each content type fails
+ independently (checkpoint not advanced) rather than aborting the whole run, see the script's
+ `.DESCRIPTION` and [Automation surface §5](/docs/automation-surface/#5-throttling-scale-and-resilience-patterns).
 
 ## 9. Rollback / decommission
 
@@ -220,45 +220,45 @@ See `rollback.md`.
 ## 10. Cost & licensing notes
 
 - **Path A is free at the data-ingestion layer**, `OfficeActivity` (Exchange/SharePoint/Teams) is
-  an explicitly excluded/free Log Analytics data source [[10]](#references); the only cost is the
-  Sentinel workspace itself (already a sunk cost if Sentinel is in use).
+ an explicitly excluded/free Log Analytics data source; the only cost is the
+ Sentinel workspace itself (already a sunk cost if Sentinel is in use).
 - **Path B has no API charge**, but every record you retrieve is a record you must land somewhere, 
-  Log Analytics per-GB ingestion (if forwarded via the Logs Ingestion API), a third-party SIEM's own
-  indexing cost, or storage, depending on where the NDJSON output is forwarded.
+ Log Analytics per-GB ingestion (if forwarded via the Logs Ingestion API), a third-party SIEM's own
+ indexing cost, or storage, depending on where the NDJSON output is forwarded.
 - **No license SKU gates either path** beyond unified audit logging itself and (for `DLP.All`) the
-  separate DLP-events read permission, this is not an Audit (Premium) feature the way crucial
-  events in `premium-audit-investigation` are.
+ separate DLP-events read permission, this is not an Audit (Premium) feature the way crucial
+ events in `premium-audit-investigation` are.
 
 ## 11. Known limitations & gotchas
 
 - **Path A does not cover Entra ID audit or DLP events.** Its three data types are Exchange,
-  SharePoint, and Teams only [[9]](#references), a buyer who also needs those needs Path B (or the
-  separate, dedicated Microsoft Entra ID Sentinel connector for `AuditLogs`/`SigninLogs`, not built
-  here).
+ SharePoint, and Teams only, a buyer who also needs those needs Path B (or the
+ separate, dedicated Microsoft Entra ID Sentinel connector for `AuditLogs`/`SigninLogs`, not built
+ here).
 - **This is not the Microsoft Purview Information Protection (Preview) connector.** That connector
-  streams label/protection-specific events (via the same underlying Management Activity API) into a
-  different table (`MicrosoftPurviewInformationProtection`), has documented event duplication against
-  `OfficeActivity`, and doesn't populate label names without an enrichment KQL join
-  [[11]](#references)[[12]](#references), out of scope here; see `design.md` §3.
+ streams label/protection-specific events (via the same underlying Management Activity API) into a
+ different table (`MicrosoftPurviewInformationProtection`), has documented event duplication against
+ `OfficeActivity`, and doesn't populate label names without an enrichment KQL join
+, out of scope here; see `design.md` §3.
 - **No webhook/push mode built.** Path B polls; Microsoft also documents a webhook push mode
-  requiring a hosted, internet-reachable endpoint, deliberately out of scope for this author-only
-  library (`design.md` §6).
+ requiring a hosted, internet-reachable endpoint, deliberately out of scope for this author-only
+ library (`design.md` §6).
 - **VERIFY, connector resource naming (Path A).** The Bicep template derives a deterministic name
-  via `guid()` so re-deployments target the same resource; Microsoft's `Office365`-kind reference
-  page doesn't state an explicit naming contract for this resource type, see the `.bicep` file's
-  own header comment.
+ via `guid()` so re-deployments target the same resource; Microsoft's `Office365`-kind reference
+ page doesn't state an explicit naming contract for this resource type, see the `.bicep` file's
+ own header comment.
 - **VERIFY, 15-minute `/start` cooldown edge case (Path B).** Whether the cooldown is measured from
-  the previous `/start` call's timestamp regardless of outcome, or only from a successful one, isn't
-  documented, `Enable-ManagementActivitySubscriptions.ps1` sidesteps this by skipping `/start`
-  entirely whenever `/subscriptions/list` already shows `enabled` for that content type.
+ the previous `/start` call's timestamp regardless of outcome, or only from a successful one, isn't
+ documented, `Enable-ManagementActivitySubscriptions.ps1` sidesteps this by skipping `/start`
+ entirely whenever `/subscriptions/list` already shows `enabled` for that content type.
 - **Ingestion latency is shared, not additive.** Both paths read from the same underlying audit
-  pipeline (~60-90 minutes typical for core services) [[5]](#references), streaming doesn't make
-  events appear faster than the audit log itself produces them; it removes the need for a human to
-  go looking once they do.
+ pipeline (~60-90 minutes typical for core services), streaming doesn't make
+ events appear faster than the audit log itself produces them; it removes the need for a human to
+ go looking once they do.
 - **Sentinel's Azure-portal experience is being retired in favor of the Defender portal** (after
-  March 31, 2027) [[15]](#references), the data connector itself is unaffected, but screenshots/menu
-  paths in buyer-facing walkthroughs should be re-checked against whichever portal the buyer's
-  Sentinel instance actually uses.
+ March 31, 2027), the data connector itself is unaffected, but screenshots/menu
+ paths in buyer-facing walkthroughs should be re-checked against whichever portal the buyer's
+ Sentinel instance actually uses.
 
 ## 12. References
 

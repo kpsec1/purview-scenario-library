@@ -36,12 +36,12 @@ publish policy now covers the same label, or the label is being retired.
 ## What rollback does **not** undo
 
 - **Any content a user already labeled.** The label and its retention settings stay exactly as they
-  were before this rollback, publishing/unpublishing never touches applied labels.
+ were before this rollback, publishing/unpublishing never touches applied labels.
 - **The label object itself**, this scenario has no mechanism to create, edit, or delete it in the
-  first place. See the sibling `retention-labels-financial-records/rollback.md` for that lifecycle.
+ first place. See the sibling `retention-labels-financial-records/rollback.md` for that lifecycle.
 - **Regulatory record restrictions.** If the published label is a regulatory record and a user
-  applied it, that content is immutable regardless of what happens to this policy, unpublishing
-  removes the *future* ability to apply it, not the *past* application.
+ applied it, that content is immutable regardless of what happens to this policy, unpublishing
+ removes the *future* ability to apply it, not the *past* application.
 
 ## Verification after rollback
 

@@ -15,11 +15,11 @@ The CSV/JSON exports can contain **highly sensitive content and PII**, subjects,
 addresses, and full workload `auditData`. Treat the output directory as case evidence:
 
 - **Restrict access** to the investigators/legal team who need it (NTFS/ACLs, an evidence share, or a
-  secured case system), do not leave exports on a shared drive or a laptop.
+ secured case system), do not leave exports on a shared drive or a laptop.
 - **Retain per your IR / legal-hold policy**, if litigation is anticipated, preserve the JSON export
-  and coordinate with the eDiscovery legal-hold scenario in this library rather than deleting it.
+ and coordinate with the eDiscovery legal-hold scenario in this library rather than deleting it.
 - **Dispose securely** when the matter is closed and no retention obligation remains (secure delete;
-  record the disposition in the case file).
+ record the disposition in the case file).
 
 ## 2. Clean up the transient search job (optional)
 
@@ -32,10 +32,10 @@ delete any audit records, the unified audit log is immutable and unaffected.
 
 - **The unified audit log** is immutable, running or deleting a query never alters it.
 - **The target account** is not modified, investigation ≠ response. If the investigation confirms
-  compromise, remediation (disable account, revoke sessions, remove malicious inbox rules, reset
-  credentials) is a separate, deliberate action performed with the appropriate tools and approvals.
+ compromise, remediation (disable account, revoke sessions, remove malicious inbox rules, reset
+ credentials) is a separate, deliberate action performed with the appropriate tools and approvals.
 - **Permissions/roles** granted for the investigation (the `AuditLogsQuery*` app or role) are not
-  changed by this scenario, revoke them separately if the investigator no longer needs access.
+ changed by this scenario, revoke them separately if the investigator no longer needs access.
 
 ## Verification
 

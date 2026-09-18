@@ -23,23 +23,23 @@ entry point) and builds the parts of standing it up that are actually scriptable
 ## 2. Design goals
 
 1. **Be honest about what's portal-only.** Investigation creation, search/scope management, AI
-   analysis (vectorization, categorization, examination), the mitigation plan, and purge itself have
-   no documented Graph or PowerShell **write** API (§3 below), this design does not invent one. What
-   this scenario ships is the two things that genuinely are scriptable: RBAC provisioning and the
-   audit-trail export.
+ analysis (vectorization, categorization, examination), the mitigation plan, and purge itself have
+ no documented Graph or PowerShell **write** API (§3 below), this design does not invent one. What
+ this scenario ships is the two things that genuinely are scriptable: RBAC provisioning and the
+ audit-trail export.
 2. **Least-privilege by construction.** The three dedicated DSI role groups (Admins/Investigators/
-   Reviewers) encode a real separation of duties, only Admins/Investigators can run a purge; only
-   Admins see the Pay-as-you-go usage dashboard. `deploy/New-DsiRoleGroupAssignments.ps1` provisions
-   exactly the declared membership, not a shortcut like adding everyone to Admins.
+ Reviewers) encode a real separation of duties, only Admins/Investigators can run a purge; only
+ Admins see the Pay-as-you-go usage dashboard. `deploy/New-DsiRoleGroupAssignments.ps1` provisions
+ exactly the declared membership, not a shortcut like adding everyone to Admins.
 3. **The highest-risk action gets the loudest signal.** A purge is the one DSI action that can
-   permanently, irreversibly delete tenant data. `deploy/Export-DsiActivityAuditTrail.ps1` singles out
-   `DSIPurgeStarted` with an explicit warning on every run, not just a row in a CSV.
+ permanently, irreversibly delete tenant data. `deploy/Export-DsiActivityAuditTrail.ps1` singles out
+ `DSIPurgeStarted` with an explicit warning on every run, not just a row in a CSV.
 4. **Idempotent and additive-safe.** Re-running the role-group script never removes an existing member
-   unless `-RemoveExtraMembers` is explicitly passed, a role group that gates purge permissions is
-   the wrong place for a script to make a destructive change by default.
+ unless `-RemoveExtraMembers` is explicitly passed, a role group that gates purge permissions is
+ the wrong place for a script to make a destructive change by default.
 5. **Author-only, no live tenant.** Both scripts require an existing PowerShell session the operator
-   establishes themselves; neither script provisions Data Security Investigations itself (billing, AI
-   capacity, and the privacy-terms acceptance are one-time portal steps, README.md §5).
+ establishes themselves; neither script provisions Data Security Investigations itself (billing, AI
+ capacity, and the privacy-terms acceptance are one-time portal steps, README.md §5).
 
 ## 3. Why there's no write-API script for the DSI workflow itself
 
@@ -48,19 +48,19 @@ documentation set, the `dataSecurityInvestigationAuditRecord` Graph resource, an
 Graph references this library already indexes for other scenarios) found:
 
 - Every documented way to create an investigation, add search results to scope, run AI analysis, add
-  an item to a mitigation plan, or create/run a purge query is a Microsoft Purview **portal** action
-  (`https://purview.microsoft.com/dsi`), Microsoft's own step-by-step articles (get-started, search,
-  scope, AI analysis, mitigation-actions) document only UI clicks, never a cmdlet or REST call.
+ an item to a mitigation plan, or create/run a purge query is a Microsoft Purview **portal** action
+ (`https://purview.microsoft.com/dsi`), Microsoft's own step-by-step articles (get-started, search,
+ scope, AI analysis, mitigation-actions) document only UI clicks, never a cmdlet or REST call.
 - The only Graph resource this library found under the `microsoft.graph.security` namespace for DSI, 
-  `dataSecurityInvestigationAuditRecord`, is a **read** schema: it describes the shape of a DSI event
-  *inside* an audit log record returned by the general Security API audit log surface. It is not a
-  management endpoint; it has no create/update/delete methods (confirmed: its reference page lists
-  "Methods: None").
+ `dataSecurityInvestigationAuditRecord`, is a **read** schema: it describes the shape of a DSI event
+ *inside* an audit log record returned by the general Security API audit log surface. It is not a
+ management endpoint; it has no create/update/delete methods (confirmed: its reference page lists
+ "Methods: None").
 - This mirrors a pattern already established elsewhere in this library, Communication Compliance
-  (`communication-compliance/harassment-and-code-of-conduct/design.md` §2) and the IRM case-escalation
-  scenario both found the same shape: a rich portal workflow with a documented, scriptable audit
-  footprint but no write API, and this scenario follows the same resolution rather than guessing an
-  endpoint that doesn't exist (`AGENTS.md` §4).
+ (`communication-compliance/harassment-and-code-of-conduct/design.md` §2) and the IRM case-escalation
+ scenario both found the same shape: a rich portal workflow with a documented, scriptable audit
+ footprint but no write API, and this scenario follows the same resolution rather than guessing an
+ endpoint that doesn't exist (`AGENTS.md` §4).
 
 Building a fake "automation" layer around a portal-only workflow would misrepresent what a buyer is
 actually getting. Instead, this scenario ships what's real: RBAC as code, and an audited, exportable
@@ -130,23 +130,23 @@ sequenceDiagram
 ## 6. Non-goals
 
 - **Scripting investigation creation, search, AI analysis, mitigation-plan changes, or purge itself.**
-  No documented write API exists (§3). Building this would mean either inventing an undocumented
-  endpoint or wrapping browser automation around the portal, both against this library's grounding
-  discipline.
+ No documented write API exists (§3). Building this would mean either inventing an undocumented
+ endpoint or wrapping browser automation around the portal, both against this library's grounding
+ discipline.
 - **Configuring DSI billing / AI capacity / compute unit location.** These are one-time portal setup
-  steps (README.md §5, Step 3) with no documented PowerShell/Graph configuration surface this build
-  found.
+ steps (README.md §5, Step 3) with no documented PowerShell/Graph configuration surface this build
+ found.
 - **The Data Security Posture (Copilot) agent.** A related but separate, independently-enabled
-  feature (its own Preview) surfaced during this grounding pass, out of scope; a candidate for its
-  own future fragment once it's further along.
+ feature (its own Preview) surfaced during this grounding pass, out of scope; a candidate for its
+ own future fragment once it's further along.
 - **DSPM (preview) proactive-AI-insights auto-investigation toggle.** Portal-only toggle, no API found;
-  noted in README.md §11 rather than built.
+ noted in README.md §11 rather than built.
 - **Building a dedicated SIEM forwarder.** `Export-DsiActivityAuditTrail.ps1`'s CSV output remains the
-  documented primary hand-off point. §8 below adds an *optional* `-NdjsonOutDir` companion output that
-  reuses `audit/streaming-to-sentinel-or-management-api`'s own Path B per-run NDJSON convention so the
-  two scenarios' outputs land in one directory, but this script still does not forward that NDJSON
-  anywhere itself, same non-goal as `Invoke-ManagementActivityPoll.ps1` (a downstream forwarder is
-  still required, and remains out of scope for a per-solution scenario like this one).
+ documented primary hand-off point. §8 below adds an *optional* `-NdjsonOutDir` companion output that
+ reuses `audit/streaming-to-sentinel-or-management-api`'s own Path B per-run NDJSON convention so the
+ two scenarios' outputs land in one directory, but this script still does not forward that NDJSON
+ anywhere itself, same non-goal as `Invoke-ManagementActivityPoll.ps1` (a downstream forwarder is
+ still required, and remains out of scope for a per-solution scenario like this one).
 - **A dedicated custodian/reviewer notification workflow.** Not part of DSI's documented feature set.
 
 ## 7. Relationship to this library's other purge-capable scenarios

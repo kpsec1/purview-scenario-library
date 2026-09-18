@@ -13,73 +13,73 @@ alerts. **Security policy violations by priority users** is the same triggering 
 indicator category, scored against a materially different population mechanism: a formal
 **priority user group**, a named, Microsoft-managed object created in Insider Risk Management
 settings, with its own bulk-membership workflow and its own reviewer-permission scoping
-[[1]](README.md#references)[[2]](README.md#references). This scenario deploys that template.
+. This scenario deploys that template.
 
 ## 2. Design goals
 
 1. **Get the population mechanism right, it is not "a bigger/smaller group," it is a different
-   kind of object.** The base template scenario resolves a plain Entra security group with
-   `Get-MgGroupTransitiveMemberAsUser` and adds it (or the individual users) directly to the
-   policy's "Users and groups" step. This template instead requires the operator to first create a
-   **priority user group** in **Insider Risk Management → Settings → Priority user groups**, add
-   members to *that* object (by search/select, or a bulk CSV upload keyed on a `user principal
-   name` column [[2]](README.md#references)), and only then assign the priority user group, not
-   a raw Entra group, to the policy. Conflating the two population mechanisms would misrepresent
-   how this template actually works.
+ kind of object.** The base template scenario resolves a plain Entra security group with
+ `Get-MgGroupTransitiveMemberAsUser` and adds it (or the individual users) directly to the
+ policy's "Users and groups" step. This template instead requires the operator to first create a
+ **priority user group** in **Insider Risk Management → Settings → Priority user groups**, add
+ members to *that* object (by search/select, or a bulk CSV upload keyed on a `user principal
+ name` column), and only then assign the priority user group, not
+ a raw Entra group, to the policy. Conflating the two population mechanisms would misrepresent
+ how this template actually works.
 2. **Ship the one genuinely new, scriptable capability this template's population mechanism makes
-   necessary: turning an existing Entra group into a correctly-formatted, correctly-sized
-   candidate list for the priority-user-group bulk-upload workflow.** Because priority user groups
-   have no documented Graph/PowerShell write API (this build searched specifically for one and
-   found none, every procedure Microsoft documents for creating or populating a priority user
-   group is the Purview portal UI), the only automatable piece of this template's setup is
-   **preparing** the input to that manual upload: resolving an operator-chosen Entra group's
-   transitive membership, deduping, filtering to enabled accounts, and formatting the result as a
-   `user principal name`-headed CSV ready to paste into the portal's bulk-upload dialog, 
-   `deploy/Get-PriorityUserGroupScopeCandidates.ps1`. This is new, scenario-specific value, not a
-   copy of the base template's scope script, because the two scripts check the resolved population
-   against **different caps** (§3) and produce output shaped for **different consumption paths** (a
-   portal CSV upload here, versus a portal manual-add-group step there).
+ necessary: turning an existing Entra group into a correctly-formatted, correctly-sized
+ candidate list for the priority-user-group bulk-upload workflow.** Because priority user groups
+ have no documented Graph/PowerShell write API (this build searched specifically for one and
+ found none, every procedure Microsoft documents for creating or populating a priority user
+ group is the Purview portal UI), the only automatable piece of this template's setup is
+ **preparing** the input to that manual upload: resolving an operator-chosen Entra group's
+ transitive membership, deduping, filtering to enabled accounts, and formatting the result as a
+ `user principal name`-headed CSV ready to paste into the portal's bulk-upload dialog, 
+ `deploy/Get-PriorityUserGroupScopeCandidates.ps1`. This is new, scenario-specific value, not a
+ copy of the base template's scope script, because the two scripts check the resolved population
+ against **different caps** (§3) and produce output shaped for **different consumption paths** (a
+ portal CSV upload here, versus a portal manual-add-group step there).
 3. **Disclose, don't guess at, the interaction between this template's two independently-documented
-   caps.** §3 below is the core of this design, Microsoft documents a 10,000-member ceiling on a
-   priority user group itself, and, separately, a 1,000-actively-scored-user ceiling on this exact
-   policy template, **its own, independently-tracked pool, confirmed (by a direct fetch of the same
-   limits reference the base template scenario grounded [[6]](README.md#references), plus the
-   Policy templates page's own "Policy template limits" section [[13]](README.md#references)) to
-   NOT be shared, cumulatively or otherwise, with the base template**, even though both document the
-   identical number (1,000), an earlier draft of this design stated the two caps as shared, which
-   this fragment's re-verification pass found incorrect (see `PROGRESS.md` "DONE"). No Microsoft
-   Learn page found during this build states what happens when a priority user group larger than
-   1,000 is assigned to a "…by priority users" policy, whether Microsoft scores the first 1,000 by
-   some order, warns at assignment time, or something else. This design treats that gap (a
-   *different* open question from the now-resolved shared/not-shared question above) as the single
-   most consequential open question for anyone sizing this template's population, not a footnote.
+ caps.** §3 below is the core of this design, Microsoft documents a 10,000-member ceiling on a
+ priority user group itself, and, separately, a 1,000-actively-scored-user ceiling on this exact
+ policy template, **its own, independently-tracked pool, confirmed (by a direct fetch of the same
+ limits reference the base template scenario grounded, plus the
+ Policy templates page's own "Policy template limits" section) to
+ NOT be shared, cumulatively or otherwise, with the base template**, even though both document the
+ identical number (1,000), an earlier draft of this design stated the two caps as shared, which
+ this fragment's re-verification pass found incorrect (see `PROGRESS.md` "DONE"). No Microsoft
+ Learn page found during this build states what happens when a priority user group larger than
+ 1,000 is assigned to a "…by priority users" policy, whether Microsoft scores the first 1,000 by
+ some order, warns at assignment time, or something else. This design treats that gap (a
+ *different* open question from the now-resolved shared/not-shared question above) as the single
+ most consequential open question for anyone sizing this template's population, not a footnote.
 4. **Reuse, don't duplicate, the alert-export script.** Identical reasoning to the base template
-   scenario (`security-policy-violations/design.md` §2 goal 3): the sibling's
-   `Export-SecurityViolationInsiderRiskAlerts.ps1` applies no policy- or template-specific filter,
-   so it already works unmodified against this policy's own alerts. A third copy would be pure
-   duplication.
+ scenario (`security-policy-violations/design.md` §2 goal 3): the sibling's
+ `Export-SecurityViolationInsiderRiskAlerts.ps1` applies no policy- or template-specific filter,
+ so it already works unmodified against this policy's own alerts. A third copy would be pure
+ duplication.
 5. **Surface the review-permission scoping feature as a genuine differentiator, not an
-   afterthought.** Unlike the base template (and unlike a plain Entra group), a priority user
-   group's own settings page lets an operator restrict *who* can review that specific population's
-   users, alerts, cases, and reports, to one or more of the built-in Insider Risk Management role
-   groups, or to a custom set of individual users, instead of leaving every priority population
-   reviewable by every Insider Risk Management Analyst/Investigator in the tenant
-   [[2]](README.md#references). For a genuinely sensitive priority population (e.g., executives, an
-   active internal investigation's subjects), this is a real least-privilege control this
-   template's population mechanism provides and the base template's plain-group mechanism does not
+ afterthought.** Unlike the base template (and unlike a plain Entra group), a priority user
+ group's own settings page lets an operator restrict *who* can review that specific population's
+ users, alerts, cases, and reports, to one or more of the built-in Insider Risk Management role
+ groups, or to a custom set of individual users, instead of leaving every priority population
+ reviewable by every Insider Risk Management Analyst/Investigator in the tenant
+. For a genuinely sensitive priority population (e.g., executives, an
+ active internal investigation's subjects), this is a real least-privilege control this
+ template's population mechanism provides and the base template's plain-group mechanism does not
 , `README.md` §3 and §8 state this as a reason to choose this template over the base one for a
-   sensitive-enough population, not just a byproduct of the setup steps.
+ sensitive-enough population, not just a byproduct of the setup steps.
 6. **Don't fabricate a policy- or priority-group-authoring API.** As with every other Insider Risk
-   Management scenario in this library, this build searched for a documented Graph/PowerShell write
-   surface for both policy authoring and priority-user-group management specifically, and found
-   neither (`docs/automation-surface.md` §6). Both stay portal-only prerequisites in this scenario.
+ Management scenario in this library, this build searched for a documented Graph/PowerShell write
+ surface for both policy authoring and priority-user-group management specifically, and found
+ neither ([Automation surface §6](/docs/automation-surface/#6-cicd-and-unattended-execution-guidance)). Both stay portal-only prerequisites in this scenario.
 
 ## 3. The two caps, and why their interaction is an open question
 
 | Cap | Value | Scope | Source |
 |---|---|---|---|
-| Priority user group membership | **10,000** members | Per priority user group object | [[2]](README.md#references) |
-| "Security policy violations by priority users" actively-scored population | **1,000** users | Cumulative, tenant-wide, across **every** policy built from this exact template, an independently-tracked pool, confirmed **not** shared with the base template, which documents the identical number (1,000) as its own, separate cap | [[6]](README.md#references)[[13]](README.md#references) |
+| Priority user group membership | **10,000** members | Per priority user group object | |
+| "Security policy violations by priority users" actively-scored population | **1,000** users | Cumulative, tenant-wide, across **every** policy built from this exact template, an independently-tracked pool, confirmed **not** shared with the base template, which documents the identical number (1,000) as its own, separate cap | |
 
 These are two different Microsoft-documented ceilings, checked against two different objects (the
 priority user group itself, vs. the policy template's own scoring capacity), and this build found
@@ -88,12 +88,12 @@ is assigned to a policy built from this template. Two readings are both plausibl
 documented facts alone, and neither is confirmed:
 
 - Microsoft silently scores only some subset of the group's members (order undocumented) and the
-  rest sit in the group but are never actively evaluated, the same "policy performance reduces"
-  degraded-not-failed pattern the base template scenario's own over-cap behavior already documents
-  from the same limits reference [[6]](README.md#references), extended here without a confirmed
-  worked example specific to this template.
+ rest sit in the group but are never actively evaluated, the same "policy performance reduces"
+ degraded-not-failed pattern the base template scenario's own over-cap behavior already documents
+ from the same limits reference, extended here without a confirmed
+ worked example specific to this template.
 - The portal surfaces a warning or blocks assignment of an over-sized group at policy-creation
-  time, plausible, but not documented, and no worked example was found either way.
+ time, plausible, but not documented, and no worked example was found either way.
 
 **This scenario does not guess between these two readings.** `deploy/
 Get-PriorityUserGroupScopeCandidates.ps1` checks a candidate list against **both** caps
@@ -132,10 +132,10 @@ flowchart TD
 Identical underlying scoring mechanism to the base template (a Defender for Endpoint
 security-violation alert on an in-scope user is itself the triggering event, no separate
 HR/Entra-deletion gate exists for this template family member either
-[[1]](README.md#references)), with one addition: Microsoft documents that membership in a priority
+), with one addition: Microsoft documents that membership in a priority
 user group increases both the **likelihood** and the **severity** of resulting alerts for the same
 underlying activity, compared to the same activity from a non-priority user
-[[2]](README.md#references), the scoring model itself treats priority-group membership as a risk
+, the scoring model itself treats priority-group membership as a risk
 multiplier, not merely a population filter. This is the functional reason to choose this template
 over the base one for a genuinely higher-risk subset of users, beyond the reviewer-permission
 scoping benefit in §2 goal 5.
@@ -155,14 +155,14 @@ scoping benefit in §2 goal 5.
 ## 7. Non-goals
 
 - This scenario does not deploy the base **Security policy violations**, **…by departing users**,
-  or **…by risky users** templates, each has its own, already-built or separately-scoped fragment.
+ or **…by risky users** templates, each has its own, already-built or separately-scoped fragment.
 - This scenario does not configure Defender for Endpoint itself, and does not re-implement the
-  reviewer-permission assignment as a script, both stay documented, portal-only prerequisites,
-  identical in kind to every sibling scenario's own non-goals.
+ reviewer-permission assignment as a script, both stay documented, portal-only prerequisites,
+ identical in kind to every sibling scenario's own non-goals.
 - This scenario does not attempt to programmatically create or populate the priority user group
-  itself, no Graph/PowerShell write API for that object was found during this build; `deploy/
-  Get-PriorityUserGroupScopeCandidates.ps1` prepares the CSV, it does not upload it.
+ itself, no Graph/PowerShell write API for that object was found during this build; `deploy/
+ Get-PriorityUserGroupScopeCandidates.ps1` prepares the CSV, it does not upload it.
 - This scenario does not maintain the source Entra security group used as the candidate-list input
 , group lifecycle is assumed to already be handled by whatever process governs that group, the
-  same non-goal the base template scenario already states for its own source group.
+ same non-goal the base template scenario already states for its own source group.
 - This scenario does not resolve the open dual-cap-interaction question in §3, it discloses it.

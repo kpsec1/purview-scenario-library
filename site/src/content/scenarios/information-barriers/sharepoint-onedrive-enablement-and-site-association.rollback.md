@@ -7,10 +7,10 @@ parent: "information-barriers/sharepoint-onedrive-enablement-and-site-associatio
 This scenario has two independent things to roll back, at very different blast radii:
 
 - **Site associations** (this scenario's own additions), narrow, reversible, no impact beyond
-  the specific sites you configured.
+ the specific sites you configured.
 - **Tenant-wide enablement**, broad: suspending it drops IB enforcement for **every** SharePoint
-  site and **every** OneDrive account tenant-wide, including the Teams-connected (Implicit mode)
-  sites that `../segregate-trading-and-research/`'s wall already protects automatically.
+ site and **every** OneDrive account tenant-wide, including the Teams-connected (Implicit mode)
+ sites that `../segregate-trading-and-research/`'s wall already protects automatically.
 
 **Default to removing only this scenario's site associations.** Only suspend the tenant-wide
 switch if you are decommissioning SharePoint/OneDrive IB coverage entirely, e.g. the whole
@@ -58,13 +58,13 @@ be undone by simply re-enabling rather than re-running Stage 1's site associatio
 ## What rollback does **not** undo
 
 - **The underlying IB segments and block policies**, those belong to
-  `../segregate-trading-and-research/`; roll that scenario back separately if the whole wall is
-  being retired.
+ `../segregate-trading-and-research/`; roll that scenario back separately if the whole wall is
+ being retired.
 - **Anything that happened while a site was Explicit-mode.** Sharing/access that was blocked stays
-  blocked in the past; rollback restores future access, it doesn't retroactively recreate declined
-  shares.
+ blocked in the past; rollback restores future access, it doesn't retroactively recreate declined
+ shares.
 - **Audit records** of the enablement, association, and removal actions, retained per their own
-  policy; see `README.md` §8.
+ policy; see `README.md` §8.
 
 ## Verification after rollback
 

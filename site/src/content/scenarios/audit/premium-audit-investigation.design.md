@@ -15,28 +15,28 @@ same way every time.
 ## 2. Design goals
 
 1. **Fast, consistent triage.** One config → one command → a curated crucial-events export. Re-running
-   the same config reproduces the same evidence set (audit records are immutable).
+ the same config reproduces the same evidence set (audit records are immutable).
 2. **Read-only and safe.** The scenario only searches and exports already-recorded events; it never
-   changes mailbox, identity, or policy state. `-WhatIf` previews the query without creating the job.
+ changes mailbox, identity, or policy state. `-WhatIf` previews the query without creating the job.
 3. **Scale via async + paging.** Use the async query API and follow `@odata.nextLink` so large
-   investigations don't truncate (the classic cmdlet caps at 50,000 records).
+ investigations don't truncate (the classic cmdlet caps at 50,000 records).
 4. **Evidence-grade output.** Export a triage CSV (key fields) and a full JSON (`auditData`), with the
-   output treated as sensitive evidence.
+ output treated as sensitive evidence.
 5. **Exploit Premium where it matters.** Center the preset on crucial events like `MailItemsAccessed`
-   (Premium-only) and lean on Premium's longer retention window.
+ (Premium-only) and lean on Premium's longer retention window.
 
 ## 3. Why the Audit Search Graph API (not Search-UnifiedAuditLog)
 
 Two surfaces read the unified audit log:
 - **`Search-UnifiedAuditLog`** (Exchange Online PowerShell) is the classic, synchronous surface. It
-  works and is great for quick ad-hoc checks, but it returns ≤5,000 records per call (50,000 max per
-  search with paging), is delegated-only in practice, and blocks the session while it runs.
+ works and is great for quick ad-hoc checks, but it returns ≤5,000 records per call (50,000 max per
+ search with paging), is delegated-only in practice, and blocks the session while it runs.
 - **The Audit Search Graph API** (`/security/auditLog/queries`, v1.0 `security` namespace) is the
-  modern surface: an **async job** you poll, with server-side execution (survives a closed session),
-  proper **paging** over records, **app-only** auth for unattended/scheduled hunts, and fine-grained
-  **service-scoped permissions** (`AuditLogsQuery-Exchange.Read.All`, etc.). Those properties, scale,
-  paging, app-only, least-privilege scoping, are exactly what a repeatable investigation workflow
-  needs, so this scenario uses the Graph API and notes the cmdlet as the classic alternative.
+ modern surface: an **async job** you poll, with server-side execution (survives a closed session),
+ proper **paging** over records, **app-only** auth for unattended/scheduled hunts, and fine-grained
+ **service-scoped permissions** (`AuditLogsQuery-Exchange.Read.All`, etc.). Those properties, scale,
+ paging, app-only, least-privilege scoping, are exactly what a repeatable investigation workflow
+ needs, so this scenario uses the Graph API and notes the cmdlet as the classic alternative.
 
 ## 4. Workflow
 
@@ -93,12 +93,12 @@ The preset is a starting point, not a fixed control, investigators trim or exten
 ## 7. Non-goals
 
 - **Responding/remediating** (disabling the account, revoking sessions, deleting malicious rules), 
-  this scenario investigates; response is a separate, mutating workflow (and a different tool).
+ this scenario investigates; response is a separate, mutating workflow (and a different tool).
 - **Real-time alerting / SIEM streaming**, for continuous streaming use the Office 365 Management
-  Activity API or a Sentinel connector; this is an on-demand investigation.
+ Activity API or a Sentinel connector; this is an on-demand investigation.
 - **Retention-policy configuration**, creating audit log **retention policies** (a Premium feature)
-  is a separate scenario; here retention is a prerequisite/《given》.
+ is a separate scenario; here retention is a prerequisite/《given》.
 - **The classic `Search-UnifiedAuditLog` path**, noted as the alternative surface (§3), not the one
-  this scenario scripts.
+ this scenario scripts.
 - **Deleting/managing saved queries at scale**, the scenario runs investigations; saved-query
-  lifecycle (jobs auto-retain 30 days) is left to the portal.
+ lifecycle (jobs auto-retain 30 days) is left to the portal.

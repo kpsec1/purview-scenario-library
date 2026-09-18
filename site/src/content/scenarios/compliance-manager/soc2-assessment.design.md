@@ -21,7 +21,7 @@ Identical starting constraint to `scenarios/compliance-manager/assess-against-is
 full grounding): Compliance Manager has **no write API**. Assessment creation, control mapping, and
 improvement-action status/evidence updates are portal- and Excel-wizard-driven only, re-confirmed
 during this build against the current `compliance-manager-assessments`, `compliance-manager-
-improvement-actions`, and `compliance-manager-setup` articles. `docs/automation-surface.md` §4 still
+improvement-actions`, and `compliance-manager-setup` articles. [Automation surface §4](/docs/automation-surface/#4-routing-table-which-surface-for-which-purview-task) still
 has no routing-table row for Compliance Manager. Fabricating a `New-ComplianceManagerAssessment`-
 style cmdlet or a payload shape for the Excel "Action Update" bulk-import file would violate
 `AGENTS.md` §4 for the same reason it would have for either sibling scenario.
@@ -45,41 +45,41 @@ maintaining three copies of security-relevant audit code that could silently dri
 done in full:
 
 1. A precise, repeatable **portal runbook** (`README.md` §5) backed by a structured, versioned,
-   explicitly-non-executable reference manifest at `deploy/policy/soc2-assessment-manifest.json`, 
-   same pattern as the ISO 27001 and PCI DSS scenarios, extended with a **SOC 2 Trust Services
-   Criteria (TSC) crosswalk** this library's own scenarios map against (manifest's
-   `controlCrosswalk`, §7 below) and an explicit group-placement decision that now accounts for a
-   **three-way** group membership (ISO 27001 + PCI DSS + SOC 2), not just two.
+ explicitly-non-executable reference manifest at `deploy/policy/soc2-assessment-manifest.json`, 
+ same pattern as the ISO 27001 and PCI DSS scenarios, extended with a **SOC 2 Trust Services
+ Criteria (TSC) crosswalk** this library's own scenarios map against (manifest's
+ `controlCrosswalk`, §7 below) and an explicit group-placement decision that now accounts for a
+ **three-way** group membership (ISO 27001 + PCI DSS + SOC 2), not just two.
 2. A validate script (`validate/Test-ComplianceManagerAuditTrail.ps1`, reused and extended with a
-   `-CrosswalkManifestPath` check) that adds SOC-2-specific structural validation of this scenario's
-   own manifest on top of the audit-trail file-integrity checks it already performs for the ISO
-   27001 and PCI DSS scenarios. Its manifest-shape check is structurally different from PCI DSS's
-   (5 named TSC categories, one flagged `mandatory`, rather than 6 numbered goals) because SOC 2's
-   own published structure is categorical, not numbered, reusing PCI DSS's exact goal-numbering
-   check would have silently mismatched SOC 2's real shape.
+ `-CrosswalkManifestPath` check) that adds SOC-2-specific structural validation of this scenario's
+ own manifest on top of the audit-trail file-integrity checks it already performs for the ISO
+ 27001 and PCI DSS scenarios. Its manifest-shape check is structurally different from PCI DSS's
+ (5 named TSC categories, one flagged `mandatory`, rather than 6 numbered goals) because SOC 2's
+ own published structure is categorical, not numbered, reusing PCI DSS's exact goal-numbering
+ check would have silently mismatched SOC 2's real shape.
 3. An explicit **Type I vs. Type II** framing (`README.md` §2/§8) not present in either sibling
-   scenario, because it materially changes this scenario's operational guidance: a Type II report's
-   6-12 month period of performance requires a longer sustained evidence-collection window than
-   PCI DSS's or ISO 27001's assessments call for by default.
+ scenario, because it materially changes this scenario's operational guidance: a Type II report's
+ 6-12 month period of performance requires a longer sustained evidence-collection window than
+ PCI DSS's or ISO 27001's assessments call for by default.
 
 ## 3. Design goals
 
 1. Stand up a **dedicated SOC 2 assessment**, not the tenant's default Data Protection Baseline
-   (§5 below, identical reasoning to the ISO 27001 and PCI DSS scenarios), and explicitly **not**
-   the "System and Organization Controls (SOC) 1" template that Compliance Manager's regulation
-   catalog also lists alongside it (§11), with a deliberate group-placement decision and a minimal,
-   correct services scope.
+ (§5 below, identical reasoning to the ISO 27001 and PCI DSS scenarios), and explicitly **not**
+ the "System and Organization Controls (SOC) 1" template that Compliance Manager's regulation
+ catalog also lists alongside it (§11), with a deliberate group-placement decision and a minimal,
+ correct services scope.
 2. Make explicit which of this library's already-built scenarios contribute to which SOC 2 Trust
-   Services Criteria category, using this library's own crosswalk (§7) rather than fabricating
-   Microsoft's internal mapping.
+ Services Criteria category, using this library's own crosswalk (§7) rather than fabricating
+ Microsoft's internal mapping.
 3. State plainly, up front, what this assessment is **not**: a SOC 2 report (Type I or Type II).
-   This is the single most important scoping statement in this scenario, see `README.md` §2/§11
-   and the CISO lens in `reviews.md`.
+ This is the single most important scoping statement in this scenario, see `README.md` §2/§11
+ and the CISO lens in `reviews.md`.
 4. Avoid duplicating the tenant-wide audit-trail script this scenario shares with its two siblings, 
-   reuse it explicitly rather than re-shipping it (§2 above).
+ reuse it explicitly rather than re-shipping it (§2 above).
 5. Never fabricate what isn't documented, same standard as every other scenario in this library,
-   including where the Compliance Manager wizard does **not** expose a documented TSC-category
-   selection step (§11's VERIFY item).
+ including where the Compliance Manager wizard does **not** expose a documented TSC-category
+ selection step (§11's VERIFY item).
 
 ## 4. What Compliance Manager's audit log actually documents (identical grounding to both sibling scenarios)
 
@@ -119,17 +119,17 @@ quote `assess-against-iso27001/design.md` §6 and `pci-dss-assessment/design.md`
 This means, unchanged from the two-assessment case the sibling scenarios document:
 
 - **Technical** improvement actions (e.g., a DLP policy is turned on, a sensitivity label is
-  auto-applied, MFA is enforced) already sync to **every** assessment in the tenant, regardless of
-  which group any of them belongs to. Placing this SOC 2 assessment in the same group as the ISO
-  27001 and/or PCI DSS assessments buys **nothing** for these, they were already shared.
+ auto-applied, MFA is enforced) already sync to **every** assessment in the tenant, regardless of
+ which group any of them belongs to. Placing this SOC 2 assessment in the same group as the ISO
+ 27001 and/or PCI DSS assessments buys **nothing** for these, they were already shared.
 - **Nontechnical** improvement actions (documentation and operational actions, e.g., "a written
-  information security policy exists," "a personnel background-check policy is documented," "an
-  incident response plan is maintained") sync **only within a shared group**. SOC 2's Security
-  Common Criteria, PCI DSS Requirement 12, and ISO/IEC 27001:2022's Annex A all require overlapping
-  documentation of this kind. Placing all three assessments in the same group
-  (`deploy/policy/soc2-assessment-manifest.json`'s `group.strategy: joinExistingIfPresent`) is what
-  lets completing that documentation work **once** credit all three, the genuine, narrower benefit
-  group placement provides, correctly scoped rather than oversold.
+ information security policy exists," "a personnel background-check policy is documented," "an
+ incident response plan is maintained") sync **only within a shared group**. SOC 2's Security
+ Common Criteria, PCI DSS Requirement 12, and ISO/IEC 27001:2022's Annex A all require overlapping
+ documentation of this kind. Placing all three assessments in the same group
+ (`deploy/policy/soc2-assessment-manifest.json`'s `group.strategy: joinExistingIfPresent`) is what
+ lets completing that documentation work **once** credit all three, the genuine, narrower benefit
+ group placement provides, correctly scoped rather than oversold.
 
 The grounded rule governing whether a **third** assessment can join the same group as the other two
 still holds exactly as documented: a group can contain multiple assessments for the same **product**
@@ -161,21 +161,21 @@ crosswalk states explicitly rather than treating all five categories as equally 
 ## 8. Non-goals
 
 - **Generating the "Action Update" bulk-import Excel file.** Same constraint and same reasoning as
-  `assess-against-iso27001/design.md` §7 and `pci-dss-assessment/design.md` §8.
+ `assess-against-iso27001/design.md` §7 and `pci-dss-assessment/design.md` §8.
 - **Reproducing Microsoft's per-control SOC 2 improvement-action mapping.** Out of reach for the
-  reason in §7 above.
+ reason in §7 above.
 - **Multicloud (AWS/GCP/Azure via Defender for Cloud) service scoping.** Scoped to Microsoft 365
-  only, matching this library's tenant-only scope (`AGENTS.md` §5) and both sibling scenarios'
-  identical non-goal.
+ only, matching this library's tenant-only scope (`AGENTS.md` §5) and both sibling scenarios'
+ identical non-goal.
 - **Producing or substituting for an actual SOC 2 report (Type I or Type II).** This assessment is
-  an internal readiness-tracking and evidence tool. It does not itself satisfy a customer's or
-  auditor's requirement for an independent CPA firm's attestation, see `README.md` §2/§11. This is
-  a non-goal in the strongest possible sense: presenting it otherwise to a customer would be
-  actively misleading.
+ an internal readiness-tracking and evidence tool. It does not itself satisfy a customer's or
+ auditor's requirement for an independent CPA firm's attestation, see `README.md` §2/§11. This is
+ a non-goal in the strongest possible sense: presenting it otherwise to a customer would be
+ actively misleading.
 - **Re-implementing the audit-trail export as a third, independent script.** Deliberately reused
-  from `assess-against-iso27001`/`pci-dss-assessment` instead, see §2 above.
+ from `assess-against-iso27001`/`pci-dss-assessment` instead, see §2 above.
 - **Scripting Trust Services Criteria category selection within the assessment.** No documented
-  wizard step or API for this was found during this build (§11's VERIFY item), not fabricated.
+ wizard step or API for this was found during this build (§11's VERIFY item), not fabricated.
 
 ## 9. Key decisions
 

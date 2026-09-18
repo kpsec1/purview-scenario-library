@@ -18,50 +18,50 @@ chain as code, using employee separation records as the concrete, representative
 ## 2. Design goals
 
 1. **Model a real sign-off chain, not a toy example.** HR Business Partner → Employment Counsel → Records
-   Management, mirroring how organizations actually gate a legally sensitive delete.
+ Management, mirroring how organizations actually gate a legally sensitive delete.
 2. **Make the auto-approval risk visible, not hidden.** `-AutoApprovalPeriod` prevents a chain stalling
-   forever, but it also means a stage can advance, or, at the final stage, dispose the record, with
-   **no human reviewer having looked at it**. That tension is surfaced everywhere: config comment, deploy
-   warning, validate output, README §8/§11, and the four-lens review.
+ forever, but it also means a stage can advance, or, at the final stage, dispose the record, with
+ **no human reviewer having looked at it**. That tension is surfaced everywhere: config comment, deploy
+ warning, validate output, README §8/§11, and the four-lens review.
 3. **Never guess at undocumented behavior.** `-ComplianceTagForNextStage` is a real, accepted parameter
-   whose own Microsoft reference page leaves the description as an unfilled placeholder. This scenario
-   wires it through (off by default) rather than either inventing a behavior or silently dropping a
-   documented parameter, and says exactly what is and isn't confirmed.
+ whose own Microsoft reference page leaves the description as an unfilled placeholder. This scenario
+ wires it through (off by default) rather than either inventing a behavior or silently dropping a
+ documented parameter, and says exactly what is and isn't confirmed.
 4. **Emit valid JSON, regardless of the doc example.** Microsoft's own published `-MultiStageReviewProperty`
-   syntax shows reviewer values unquoted inside a JSON array, which is not valid JSON as literally shown.
-   The deploy script builds the payload with `ConvertTo-Json`, not string concatenation, so it is always
-   well-formed, and says why, rather than quietly "fixing" the doc without comment.
+ syntax shows reviewer values unquoted inside a JSON array, which is not valid JSON as literally shown.
+ The deploy script builds the payload with `ConvertTo-Json`, not string concatenation, so it is always
+ well-formed, and says why, rather than quietly "fixing" the doc without comment.
 5. **Same guardrails as the parent scenario.** Event-based clock, gated irreversible trigger event,
-   create-or-report idempotency, `-DryRun` (no working `-WhatIf` in Security & Compliance PowerShell).
+ create-or-report idempotency, `-DryRun` (no working `-WhatIf` in Security & Compliance PowerShell).
 6. **Honest read-back.** Validating that a label's reviewer chain matches the config relies on a
-   `Get-ComplianceTag` output property (`MultiStageReviewerMetadata`) that is corroborated by third-party
-   worked examples, not Microsoft's own parameter reference. The validate script treats every check
-   touching it as `[WARN]`, never `[FAIL]`.
+ `Get-ComplianceTag` output property (`MultiStageReviewerMetadata`) that is corroborated by third-party
+ worked examples, not Microsoft's own parameter reference. The validate script treats every check
+ touching it as `[WARN]`, never `[FAIL]`.
 
 ## 3. Why employee separation records (and why this needs a chain the parent scenario doesn't)
 
 - **Litigation exposure differs by record class.** A contract record's disposal (the parent scenario) is
-  mostly a business-records-hygiene decision. An employee's personnel file, performance record, or
-  separation packet can become evidence in an EEOC charge or a wrongful-termination suit, and U.S.
-  recordkeeping floors already require holding it well past casual disposal: EEOC preserves personnel and
-  employment records for **1 year** from the record or the personnel action, whichever is later (29 CFR
-  1602.14), and if a charge is filed, records related to it must be kept until final disposition
-  [[9]](#references); FLSA payroll records must be kept **3 years**, and records underlying wage
-  computations **2 years** (29 CFR 516.5/516.6) [[10]](#references). This scenario's illustrative 3-year
-  (1,095-day) duration sits above both floors, set your own duration to your organization's real
-  litigation-hold practice and jurisdiction-specific statutes of limitation, not to this placeholder.
+ mostly a business-records-hygiene decision. An employee's personnel file, performance record, or
+ separation packet can become evidence in an EEOC charge or a wrongful-termination suit, and U.S.
+ recordkeeping floors already require holding it well past casual disposal: EEOC preserves personnel and
+ employment records for **1 year** from the record or the personnel action, whichever is later (29 CFR
+ 1602.14), and if a charge is filed, records related to it must be kept until final disposition
+; FLSA payroll records must be kept **3 years**, and records underlying wage
+ computations **2 years** (29 CFR 516.5/516.6). This scenario's illustrative 3-year
+ (1,095-day) duration sits above both floors, set your own duration to your organization's real
+ litigation-hold practice and jurisdiction-specific statutes of limitation, not to this placeholder.
 - **A single HR reviewer is a conflict-of-interest risk, not just a formality.** The person closest to a
-  separation is often the least appropriate sole approver of destroying that separation's records. A
-  chain that adds Employment Counsel and Records Management is the actual control, not a compliance
-  checkbox.
+ separation is often the least appropriate sole approver of destroying that separation's records. A
+ chain that adds Employment Counsel and Records Management is the actual control, not a compliance
+ checkbox.
 - **⚠️ Not currently cited: Executive Order 11246.** An earlier draft of this design considered citing EO
-  11246 federal-contractor affirmative-action recordkeeping (a 2-year floor) as an additional driver.
-  EO 11246 was rescinded by EO 14173 (January 21, 2025), and OFCCP's final rule rescinding its
-  implementing regulations was published August 21, 2026, effective **October 26, 2026**, imminent as of
-  this scenario's build date. It is deliberately **not** cited here. Section 503 (Rehabilitation Act) and
-  VEVRAA recordkeeping obligations for covered federal contractors remain in force independently of EO
-  11246 and are a legitimate additional driver for contractor tenants, but are outside this scenario's
-  core grounding, treat them as a customer-specific add-on, not an assumed baseline.
+ 11246 federal-contractor affirmative-action recordkeeping (a 2-year floor) as an additional driver.
+ EO 11246 was rescinded by EO 14173 (January 21, 2025), and OFCCP's final rule rescinding its
+ implementing regulations was published August 21, 2026, effective **October 26, 2026**, imminent as of
+ this scenario's build date. It is deliberately **not** cited here. Section 503 (Rehabilitation Act) and
+ VEVRAA recordkeeping obligations for covered federal contractors remain in force independently of EO
+ 11246 and are a legitimate additional driver for contractor tenants, but are outside this scenario's
+ core grounding, treat them as a customer-specific add-on, not an assumed baseline.
 
 ## 4. Object model and sequence
 
@@ -128,20 +128,20 @@ item; only the last stage's approval disposes it.
 ## 7. Non-goals
 
 - **A general-purpose N-stage generator for every record class.** This is one representative,
-  well-justified use of the multi-stage feature (employee separation), not a claim that every record
-  class needs a chain, most don't, and the parent single-reviewer scenario remains the default.
+ well-justified use of the multi-stage feature (employee separation), not a claim that every record
+ class needs a chain, most don't, and the parent single-reviewer scenario remains the default.
 - **Confirming `MultiStageReviewerMetadata`'s exact schema or `-ComplianceTagForNextStage`'s behavior
-  against a live tenant.** Both are flagged VERIFY rather than resolved by guessing, see README §11.
+ against a live tenant.** Both are flagged VERIFY rather than resolved by guessing, see README §11.
 - **Editing an existing label's reviewer chain in place.** `Set-ComplianceTag` documents
-  `-MultiStageReviewProperty` as settable post-creation, but this scenario's deploy is deliberately
-  create-or-report only; changing who reviews a records-disposal decision already in force is a
-  controlled, Records/Legal/HR-reviewed action, not a deploy side effect, a documented, not-yet-built
-  extension.
+ `-MultiStageReviewProperty` as settable post-creation, but this scenario's deploy is deliberately
+ create-or-report only; changing who reviews a records-disposal decision already in force is a
+ controlled, Records/Legal/HR-reviewed action, not a deploy side effect, a documented, not-yet-built
+ extension.
 - **Reading Microsoft Graph's `dispositionReviewStages`/`labelToBeApplied` records-management surface.**
-  Cited in the deploy script's `.NOTES` only as context for `-ComplianceTagForNextStage`'s likely intent
+ Cited in the deploy script's `.NOTES` only as context for `-ComplianceTagForNextStage`'s likely intent
 , building a Graph-based companion is a follow-up, not this fragment.
 - **Federal-contractor-specific recordkeeping (Section 503 / VEVRAA).** Noted in §3 as a legitimate
-  additional driver for contractor tenants but not built into this scenario's default configuration.
+ additional driver for contractor tenants but not built into this scenario's default configuration.
 
 ## References
 

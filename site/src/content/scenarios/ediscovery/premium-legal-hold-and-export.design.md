@@ -9,14 +9,14 @@ Security & Compliance PowerShell (`Connect-IPPSSession`, automation surface 2). 
 (Premium) is the deliberate exception: Microsoft's own permissions documentation states plainly
 that **app-only authentication for eDiscovery cmdlets in Security & Compliance PowerShell is
 unsupported**, and its remediation guidance is to "transition automations to Microsoft Graph APIs
-where available" [[R1]](#references-design). This isn't a stylistic preference, S&C PowerShell
+where available". This isn't a stylistic preference, S&C PowerShell
 does still expose legacy eDiscovery cmdlets (`New-ComplianceCase`, `New-CaseHoldPolicy`, etc.),
 and an *interactive, delegated* session can use them, but no unattended pipeline can, since
 app-only auth against that specific connection is unsupported for this module family. Every
 mutating call in this scenario's `deploy/` therefore goes through the `Microsoft.Graph.Security`
 module (`microsoft.graph.security` namespace, v1.0, not `microsoft.graph.ediscovery`, which
 Microsoft's own reference marks deprecated in favor of the `security` subnamespace
-[[R2]](#references-design)), matching `docs/automation-surface.md` §1's routing rule for
+), matching [Automation surface §1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first)'s routing rule for
 "case-based work with review sets/analytics."
 
 ## 2. Two-API design: authoring vs. package download
@@ -26,7 +26,7 @@ The scenario's third deploy script (`Get-EdiscoveryExportPackage.ps1`) authentic
 a separate first-party resource (`00001111-aaaa-2222-bbbb-3333cccc4444`) via `MSAL.PS`, and its
 own `eDiscovery.Download.Read` application permission granted against a distinct service
 principal (`MicrosoftPurviewEDiscovery`) that must be registered in the tenant before first use
-[[R3]](#references-design). This isn't a design choice this scenario made, it's how Microsoft
+. This isn't a design choice this scenario made, it's how Microsoft
 built the download path, and getting it wrong (assuming the Graph token from the first two scripts
 also authorizes the download) is the single most common failure mode a first-time implementer of
 this pattern hits. The design keeps this as two clearly separated scripts (`New-Ediscovery*.ps1`
@@ -38,11 +38,11 @@ are never silently conflated in one function's scope.
 The v1.0 Graph API exposes two distinct hold mechanisms under an eDiscovery case:
 
 1. **`ediscoveryCustodian.applyHold`**, the mechanism this scenario uses. A custodian is a named
-   person; adding their `userSource`(s) and calling `applyHold` places a hold on that person's
-   mailbox/OneDrive.
-2. **`ediscoveryHoldPolicy`** (`POST .../legalHolds`), a separate object with its own
-   `siteSources`/`userSources` relationships and an optional `contentQuery`, not necessarily tied
-   to a named custodian at all [[R4]](#references-design).
+ person; adding their `userSource`(s) and calling `applyHold` places a hold on that person's
+ mailbox/OneDrive.
+2. **`ediscoveryHoldPolicy`** (`POST.../legalHolds`), a separate object with its own
+ `siteSources`/`userSources` relationships and an optional `contentQuery`, not necessarily tied
+ to a named custodian at all.
 
 Both are legitimately called "legal hold" in Microsoft's documentation, and a reader coming from
 the S&C PowerShell world (where `New-CaseHoldPolicy` is the *only* hold object) can reasonably
@@ -64,11 +64,11 @@ surfaces (`scenarios/unified-catalog/curate-business-glossary/design.md` §2,
 
 | Object | Lookup key | Why this key |
 |---|---|---|
-| Case | `displayName` (exact match, client-side) | No documented case-name-uniqueness filter API; client-side match mirrors the portal's own "case name must be unique" UX rule [[R5]](#references-design) |
+| Case | `displayName` (exact match, client-side) | No documented case-name-uniqueness filter API; client-side match mirrors the portal's own "case name must be unique" UX rule |
 | Custodian | `email` | The one identifying property Microsoft's own `Create custodians` example uses |
 | Custodian userSource | `email` within the custodian's userSource collection | userSources have no separate display name |
 | Search | `displayName` | Same rationale as case |
-| Review set | `displayName` | Same rationale as case; review set names are documented as unique with a 64-character limit [[R6]](#references-design) |
+| Review set | `displayName` | Same rationale as case; review set names are documented as unique with a 64-character limit |
 | Custodian hold | `HoldStatus == 'success'` | Re-invoking `applyHold` on an already-held custodian is itself idempotent per Microsoft's async-operation design (a repeat `applyHold` simply re-asserts the hold), but this scenario still skips the call once `success` is observed, to avoid generating a redundant `ediscoveryHoldOperation` on every re-run |
 | `addToReviewSet` / export | operation type + (best-effort) `outputName`/"any succeeded op" | **Weakest link in this design**, see §7 non-goal below and README.md §11's explicit VERIFY; no documented "does an equivalent operation already exist" filter exists for these two operation types |
 
@@ -76,7 +76,7 @@ surfaces (`scenarios/unified-catalog/curate-business-glossary/design.md` §2,
 
 `addToReviewSet` and `export` both return `202 Accepted` with a `Location` header pointing at a
 `caseOperation` resource, not the finished object, the API is explicitly asynchronous
-[[R7]](#references-design). `New-EdiscoverySearchReviewSetExport.ps1` captures the operation ID
+. `New-EdiscoverySearchReviewSetExport.ps1` captures the operation ID
 from the response headers (`-ResponseHeadersVariable`) and polls
 `Get-MgSecurityCaseEdiscoveryCaseOperation` until the status leaves the in-flight set
 (`notStarted`/`running`) or the caller-configurable timeout elapses, rather than either blocking
@@ -101,42 +101,42 @@ failure this script should misreport.
 ## 7. Non-goals (explicitly out of scope for this fragment)
 
 - **`ediscoveryHoldPolicy`-based (location-scoped, non-custodian) holds**, see §3. A
-  location-scoped hold scenario (regulatory sweep, departmental shared mailbox) is a natural,
-  separately scoped follow-up, not a variant of this fragment.
+ location-scoped hold scenario (regulatory sweep, departmental shared mailbox) is a natural,
+ separately scoped follow-up, not a variant of this fragment.
 - **Legal hold notifications** (the Premium custodian-communication workflow, initial notice,
-  reminders, escalations, acknowledgment tracking), a follow-up fragment was tracked in
-  `PROGRESS.md` to build this as a companion scenario, on the assumption (common to several other
-  no-write-API Purview surfaces this library documents) that the gap was "portal-driven, no Graph
-  write API." Re-grounding for that follow-up found something different and more final: Microsoft's
-  current "Manage hold notifications" page states outright that legal hold custodian communications
-  were **permanently retired on August 31, 2025** and aren't available in the new eDiscovery
-  experience, not merely unautomatable, but gone. No companion scenario was built as a result; see
-  README.md §11 for what that means for a preservation narrative and `PROGRESS.md` for the closed
-  follow-up record.
+ reminders, escalations, acknowledgment tracking), a follow-up fragment was tracked in
+ `PROGRESS.md` to build this as a companion scenario, on the assumption (common to several other
+ no-write-API Purview surfaces this library documents) that the gap was "portal-driven, no Graph
+ write API." Re-grounding for that follow-up found something different and more final: Microsoft's
+ current "Manage hold notifications" page states outright that legal hold custodian communications
+ were **permanently retired on August 31, 2025** and aren't available in the new eDiscovery
+ experience, not merely unautomatable, but gone. No companion scenario was built as a result; see
+ README.md §11 for what that means for a preservation narrative and `PROGRESS.md` for the closed
+ follow-up record.
 - **Review-set analytics** (near-duplicate detection, themes, email threading, predictive coding,
-  attorney-client privilege detection, redaction/PDF conversion), this scenario stops at
-  "collect, commit, export," which is the right depth for a template scenario; a large,
-  contested-privilege review would layer these on top of (not instead of) this fragment's
-  foundation.
+ attorney-client privilege detection, redaction/PDF conversion), this scenario stops at
+ "collect, commit, export," which is the right depth for a template scenario; a large,
+ contested-privilege review would layer these on top of (not instead of) this fragment's
+ foundation.
 - **Export to a customer-owned Azure Storage account** (`azureBlobContainer`/`azureBlobToken`), 
-  documented only for the deprecated beta `ediscovery` subnamespace's `reviewSet: export` action,
-  not the current v1.0 `security.ediscoveryReviewSet: export` this scenario calls, which returns
-  Microsoft-managed storage + a download URL only. A buyer who specifically needs bring-your-own-
-  storage export should be told this path is not currently available on the supported v1.0
-  surface, not have it silently attempted.
+ documented only for the deprecated beta `ediscovery` subnamespace's `reviewSet: export` action,
+ not the current v1.0 `security.ediscoveryReviewSet: export` this scenario calls, which returns
+ Microsoft-managed storage + a download URL only. A buyer who specifically needs bring-your-own-
+ storage export should be told this path is not currently available on the supported v1.0
+ surface, not have it silently attempted.
 - **Insider Risk Management case escalation**, eDiscovery (Premium) supports being the
-  *destination* of an escalated IRM case [[R8]](#references-design); wiring that integration is a
-  natural follow-up once `scenarios/insider-risk/` has a scenario that produces an escalatable
-  case, not something this fragment builds standalone. **Built** as
-  `scenarios/insider-risk/irm-case-escalation-to-ediscovery/`, which reuses this scenario's
-  custodian/hold pattern unmodified and picks up exactly where the manual "Escalate for
-  investigation" portal click leaves off.
+ *destination* of an escalated IRM case; wiring that integration is a
+ natural follow-up once `scenarios/insider-risk/` has a scenario that produces an escalatable
+ case, not something this fragment builds standalone. **Built** as
+ `scenarios/insider-risk/irm-case-escalation-to-ediscovery/`, which reuses this scenario's
+ custodian/hold pattern unmodified and picks up exactly where the manual "Escalate for
+ investigation" portal click leaves off.
 
 ## 8. Audit trail script, grounding and the custodian-vs-hold-policy caveat
 
 `deploy/Export-EdiscoveryAuditTrail.ps1` (added as a follow-up fragment; see `PROGRESS.md`) queries
 `Search-UnifiedAuditLog -RecordType Discovery` for two categories confirmed verbatim against
-Microsoft's "Audit log activities" eDiscovery reference [[R9]](#references-design): case lifecycle
+Microsoft's "Audit log activities" eDiscovery reference: case lifecycle
 (`CaseAdded`/`CaseUpdated`/`CaseClosed`/`CaseReopened`/`CaseRemoved`) and hold-**policy** lifecycle
 (`HoldCreated`/`HoldUpdated`/`HoldRemoved`/`HoldRetryDistributionSync`). The reference page itself
 carries no legacy-experience caution banner and is the same page this repo's
@@ -148,8 +148,8 @@ What it does **not** resolve: whether those same four hold-policy `Operation` va
 *this* scenario's own `ediscoveryCustodian: applyHold`/`release` calls (§3's custodian-scoped hold
 mechanism, a different object from `ediscoveryHoldPolicy`). One Microsoft Learn page states that a
 custodian hold is "automatically added to a custodian hold policy" internally
-[[R10]](#references-design), which would suggest yes, but that page, and the only page describing
-a dedicated per-custodian audit search UI [[R11]](#references-design), both carry Microsoft's
+, which would suggest yes, but that page, and the only page describing
+a dedicated per-custodian audit search UI, both carry Microsoft's
 caution banner limiting them to organizations hosted by 21Vianet (China) after the classic
 eDiscovery experience's retirement everywhere else on August 31, 2025. Neither is confirmed to
 describe the current, non-legacy experience this scenario's own deploy scripts target. Rather than

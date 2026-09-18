@@ -31,6 +31,8 @@ function rehypeKeepOnlyMsDocLinks() {
   const isMsDoc = (href) =>
     typeof href === 'string' &&
     /^https?:\/\/(learn|docs)\.microsoft\.com\//i.test(href);
+  // Internal links to the published shared reference docs are kept.
+  const isRefDoc = (href) => typeof href === 'string' && /^\/docs\//.test(href);
   return (/** @type {any} */ tree) => {
     visit(tree, 'element', (node, index, parent) => {
       if (node.tagName !== 'a' || !parent || index === null) return;
@@ -40,6 +42,7 @@ function rehypeKeepOnlyMsDocLinks() {
         node.properties.rel = 'noopener noreferrer';
         return;
       }
+      if (isRefDoc(href)) return; // same-site reference page, keep as-is
       // Unwrap: replace the <a> with its text children (drop the link).
       parent.children.splice(index, 1, ...node.children);
       return index;

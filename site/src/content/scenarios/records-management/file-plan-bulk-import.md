@@ -41,38 +41,38 @@ signed customer agreements, and regulator correspondence, each with its own rete
 authority, and department owner. Microsoft Purview's **file plan** is explicitly the tool for this:
 it "lets you create retention labels interactively **or import in bulk**... labels support
 additional administrative information to help you identify and track business or regulatory
-requirements" [[3]](#references). Hand-building dozens of labels through the portal UI, one at a
+requirements". Hand-building dozens of labels through the portal UI, one at a
 time, doesn't scale and isn't reproducible or diffable for an examiner. Defining the schedule as a
 single CSV, validated locally before it ever reaches the tenant, makes the whole file plan a
 version-controlled artifact, and directly supports **SOX** (financial books and records), **FLSA**
 (HR/payroll records), **IRS** recordkeeping requirements, and internal records-retention schedules
 generally, each citable per-row via the **Provision/citation** file plan descriptor
-[[3]](#references).
+.
 
 > ⚠️ **Two things a bulk import cannot do.** (1) It cannot configure **multi-stage** disposition
 > review, the CSV import explicitly does not support it, and the PowerShell path here (single
 > `-ReviewerEmail`) doesn't either; that's a tracked, separate follow-up
 > (`multi-stage-disposition-review`, see PROGRESS.md). (2) It cannot **delete** or **update** a
 > retention label in bulk, `LabelName` and its core retention settings are immutable after
-> creation [[3]](#references), so a mistake in a shipped row means a **new**, correctly-named label,
+> creation, so a mistake in a shipped row means a **new**, correctly-named label,
 > not an edit. Review the schedule carefully (`-DryRun` / offline validation) before creating
 > anything.
 
 ## 3. Prerequisites
 
-Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. Automation surface:
-`docs/automation-surface.md` (surface 2, Security & Compliance PowerShell). Summary:
+Full licensing detail: [Licensing matrix](/docs/licensing-matrix/). RBAC: [RBAC model](/docs/rbac-model/). Automation surface:
+[Automation surface](/docs/automation-surface/) (surface 2, Security & Compliance PowerShell). Summary:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Licensing | **Records management** (file plan, retention labels): **M365 E5 / E5 Compliance / Purview Suite** | File plan import/export and record labels are E5 records-management capabilities [[7]](#references) |
-| Role (file plan access, portal) | **Retention Manager** or **View-only Retention Manager** | Required to see/use the File plan page at all [[3]](#references) |
-| Role (create objects, PowerShell) | **Records Management** role group (RecordManagement / Retention Management roles) | `docs/rbac-model.md`, needed for `New-ComplianceTag` / `New-FilePlanProperty*` |
+| Licensing | **Records management** (file plan, retention labels): **M365 E5 / E5 Compliance / Purview Suite** | File plan import/export and record labels are E5 records-management capabilities |
+| Role (file plan access, portal) | **Retention Manager** or **View-only Retention Manager** | Required to see/use the File plan page at all |
+| Role (create objects, PowerShell) | **Records Management** role group (RecordManagement / Retention Management roles) | [RBAC model](/docs/rbac-model/), needed for `New-ComplianceTag` / `New-FilePlanProperty*` |
 | Reviewers | Individual users, distribution groups, or security groups | `ReviewerEmail`; multiple addresses separated by **semicolons** in the CSV, by **comma/array** in the `-ReviewerEmail` cmdlet parameter, a genuine syntax difference between the two paths (§11) |
-| Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell, `docs/automation-surface.md` §3 |
+| Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell, [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
 | Portal path (CSV-import route only) | Records Management → File plan → Import | Human uploads the validated CSV, there is no API/cmdlet for this step (§11) |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) before a
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) (dated 2026-09-02) before a
 > sales commitment, SKU names change.
 
 ## 4. Architecture
@@ -142,13 +142,13 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 
 File plan lives in the [Microsoft Purview portal](https://purview.microsoft.com) under **Records
 Management → File plan**; the **Import** button is on that page, and file-plan descriptor picklists
-(Department/Category/etc.) can also be managed there directly [[3]](#references). `-WhatIf` is
+(Department/Category/etc.) can also be managed there directly. `-WhatIf` is
 non-functional in S&C PowerShell, so `New-FilePlanBulkLabels.ps1` ships a `-DryRun` instead.
 
 ## 6. Configuration reference
 
 The source CSV's columns are Microsoft's own documented file-plan-import property names
-[[3]](#references), both automation paths read the identical file:
+, both automation paths read the identical file:
 
 | Column | Required | Notes |
 |---|---|---|
@@ -159,40 +159,40 @@ The source CSV's columns are Microsoft's own documented file-plan-import propert
 | `RetentionDuration` | No* | `Unlimited` or 1-36525 (days); required once Action/Type are set |
 | `RetentionType` | No* | `CreationAgeInDays` \| `EventAgeInDays` \| `TaggedAgeInDays` \| `ModificationAgeInDays` |
 | `ReviewerEmail` | No | Requires `RetentionAction=KeepAndDelete`; **semicolon**-separated in the CSV, array/comma in the cmdlet (§11) |
-| `ReferenceId` / `DepartmentName` / `Category` / `SubCategory` / `AuthorityType` | No | Free-text file-plan descriptors; out-of-box picklist values or your own [[3]](#references) |
+| `ReferenceId` / `DepartmentName` / `Category` / `SubCategory` / `AuthorityType` | No | Free-text file-plan descriptors; out-of-box picklist values or your own |
 | `CitationName` / `CitationUrl` / `CitationJurisdiction` | No | The **Provision/citation** descriptor (name/URL/jurisdiction) |
-| `Regulatory` | No | `TRUE` requires `IsRecordLabel=TRUE` **and** the tenant configured to display the regulatory option, or import validation fails [[3]](#references) |
-| `EventType` | Cond. | Required iff `RetentionType=EventAgeInDays`; **must already exist** in the tenant before import/deploy [[3]](#references) |
+| `Regulatory` | No | `TRUE` requires `IsRecordLabel=TRUE` **and** the tenant configured to display the regulatory option, or import validation fails |
+| `EventType` | Cond. | Required iff `RetentionType=EventAgeInDays`; **must already exist** in the tenant before import/deploy |
 | `IsRecordUnlockedAsDefault` | No | `TRUE` requires `IsRecordLabel=TRUE` and `Regulatory≠TRUE` |
 | `ComplianceTagForNextStage` | No | Replacement label at end of retention; not allowed with `Regulatory=TRUE` |
 
 \* "No" per Microsoft's table, but each becomes required the moment any one of the group is set, 
 see `FilePlanRow.Validate.ps1` for the exact group-dependency logic, reproduced from
-[[3]](#references).
+.
 
 | Path B cmdlet | Purpose |
 |---|---|
-| `New-FilePlanPropertyDepartment` / `-Category` / `-SubCategory -ParentId` / `-Citation` / `-ReferenceId` / `-Authority` | Create-or-report the six descriptor picklist objects [[4]](#references) |
-| `New-ComplianceTag -FilePlanProperty <json>` | The label itself; `-FilePlanProperty` takes a `PSCustomObject{Settings=@(@{Key;Value})}` converted to JSON, the exact syntax Microsoft documents [[1]](#references) |
+| `New-FilePlanPropertyDepartment` / `-Category` / `-SubCategory -ParentId` / `-Citation` / `-ReferenceId` / `-Authority` | Create-or-report the six descriptor picklist objects |
+| `New-ComplianceTag -FilePlanProperty <json>` | The label itself; `-FilePlanProperty` takes a `PSCustomObject{Settings=@(@{Key;Value})}` converted to JSON, the exact syntax Microsoft documents |
 
 Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
 
 ## 7. Validation / how to prove it works
 
 1. **Schema validation (always)**, `New-FilePlanImportCsv.ps1` (offline) or
-   `validate/Test-FilePlanBulkImport.ps1` reproduces every documented rule and reports row number +
-   column, exactly like the portal's own upload validation.
+ `validate/Test-FilePlanBulkImport.ps1` reproduces every documented rule and reports row number +
+ column, exactly like the portal's own upload validation.
 2. **Tenant checks (Path A, before upload)**, `New-FilePlanImportCsv.ps1 -TenantChecks` confirms no
-   `LabelName` collision and every referenced `EventType` already exists.
+ `LabelName` collision and every referenced `EventType` already exists.
 3. **Post-creation reconciliation (either path)**, `validate/Test-FilePlanBulkImport.ps1` (connected)
-   confirms each row's label exists with matching `RetentionAction`/`RetentionType`/
-   `RetentionDuration`/`IsRecordLabel`. File-plan-descriptor read-back is reported informationally,
-   not hard-asserted (§11, read-back property names unconfirmed).
+ confirms each row's label exists with matching `RetentionAction`/`RetentionType`/
+ `RetentionDuration`/`IsRecordLabel`. File-plan-descriptor read-back is reported informationally,
+ not hard-asserted (§11, read-back property names unconfirmed).
 4. **Portal spot-check (Path A)**, after upload, confirm the success message and that the new
-   labels appear on the **File plan** page with the expected descriptors [[3]](#references).
+ labels appear on the **File plan** page with the expected descriptors.
 5. **Idempotency proof**, re-run either deploy path; every already-created label/descriptor reports
-   `exists` (Path B) or is excluded as a tenant-side duplicate (Path A's `-TenantChecks`); nothing is
-   duplicated or silently mutated.
+ `exists` (Path B) or is excluded as a tenant-side duplicate (Path A's `-TenantChecks`); nothing is
+ duplicated or silently mutated.
 
 ## 8. Operations & tuning
 
@@ -207,7 +207,7 @@ record classes into the same file rather than one-off portal creations, so every
 reviewable in one diff.
 
 **Change management:** `LabelName` and its core retention settings can't be changed once saved
-[[3]](#references), a correction is a **new row/label**, never an in-place edit of the CSV for an
+, a correction is a **new row/label**, never an in-place edit of the CSV for an
 existing name. Treat every schedule change as a Records/Legal-reviewed pull request against the CSV.
 
 ## 9. Rollback / decommission
@@ -222,80 +222,80 @@ creates are removed the same way, one at a time.
 ## 10. Cost & licensing notes
 
 - **Per-user E5 entitlement**, no Azure consumption meter. File plan (create/import/export) and
-  record labels are **E5 / E5 Compliance / Purview Suite** records-management capabilities
-  [[7]](#references).
+ record labels are **E5 / E5 Compliance / Purview Suite** records-management capabilities
+.
 - **Cost is licensing + storage + the labor of building the schedule once**, not per-label. Bulk
-  creation front-loads the schedule-design work (department sign-off, citations, retention periods)
-  so the ongoing marginal cost of adding one more record class is small, append a CSV row.
+ creation front-loads the schedule-design work (department sign-off, citations, retention periods)
+ so the ongoing marginal cost of adding one more record class is small, append a CSV row.
 - **The expensive mistake is a rushed schedule.** Because `LabelName` and core retention settings are
-  immutable, importing a bad schedule at scale means dozens of permanently-misnamed or
-  wrongly-scheduled labels, not one. Validate (§7) before either deploy path runs against a
-  production tenant.
+ immutable, importing a bad schedule at scale means dozens of permanently-misnamed or
+ wrongly-scheduled labels, not one. Validate (§7) before either deploy path runs against a
+ production tenant.
 
 ## 11. Known limitations & gotchas
 
 - **The CSV import step itself has no API.** Microsoft's file plan "Import" is a portal action
-  (download template → fill in → upload) with no documented Graph/REST endpoint or PowerShell
-  cmdlet [[3]](#references), `New-FilePlanImportCsv.ps1` validates and prepares the file; a human
-  still clicks Upload. Path B (`New-FilePlanBulkLabels.ps1`) is the only fully unattended route.
+ (download template → fill in → upload) with no documented Graph/REST endpoint or PowerShell
+ cmdlet, `New-FilePlanImportCsv.ps1` validates and prepares the file; a human
+ still clicks Upload. Path B (`New-FilePlanBulkLabels.ps1`) is the only fully unattended route.
 - **Multi-stage disposition review is out of scope for both paths.** The CSV import explicitly does
-  not support it [[3]](#references), and this scenario's PowerShell path uses single-stage
-  `-ReviewerEmail` only. A dedicated `multi-stage-disposition-review` fragment
-  (`-MultiStageReviewProperty`) is tracked separately in `PROGRESS.md`.
+ not support it, and this scenario's PowerShell path uses single-stage
+ `-ReviewerEmail` only. A dedicated `multi-stage-disposition-review` fragment
+ (`-MultiStageReviewProperty`) is tracked separately in `PROGRESS.md`.
 - **`ReviewerEmail` syntax differs by path.** The CSV import documents **semicolon**-separated
-  addresses in one cell [[3]](#references); `New-ComplianceTag -ReviewerEmail` takes a PowerShell
-  `SmtpAddress[]` array. `New-FilePlanBulkLabels.ps1` splits on `;` and re-assembles the array so one
-  CSV cell format serves both paths.
+ addresses in one cell; `New-ComplianceTag -ReviewerEmail` takes a PowerShell
+ `SmtpAddress[]` array. `New-FilePlanBulkLabels.ps1` splits on `;` and re-assembles the array so one
+ CSV cell format serves both paths.
 - **`CitationUrl`/`CitationJurisdiction` are not settable via `New-FilePlanPropertyCitation` in
-  Path B.** That cmdlet's documented syntax takes only `-Name` [[4]](#references), this script
-  creates/links the citation **name** and warns when a row also sets a URL/jurisdiction, since
-  setting those requires the portal. Path A (CSV import) does support all three citation columns
-  natively, since the import itself (not a cmdlet) writes them [[3]](#references).
+ Path B.** That cmdlet's documented syntax takes only `-Name`, this script
+ creates/links the citation **name** and warns when a row also sets a URL/jurisdiction, since
+ setting those requires the portal. Path A (CSV import) does support all three citation columns
+ natively, since the import itself (not a cmdlet) writes them.
 - **`LabelName` and core retention settings are immutable after save**, see §8. Neither script
-  offers an "update" mode by design (records objects are never silently mutated, matching the
-  sibling `regulatory-records-disposition` scenario's philosophy).
+ offers an "update" mode by design (records objects are never silently mutated, matching the
+ sibling `regulatory-records-disposition` scenario's philosophy).
 - **`Regulatory=TRUE` has a tenant-configuration prerequisite** this scenario cannot check
-  client-side (the tenant must be configured to display the regulatory-record option, or import
-  validation fails [[3]](#references)), both scripts warn on any `Regulatory=TRUE` row; the sample
-  schedule ships with none set to keep the default run tenant-config-independent.
+ client-side (the tenant must be configured to display the regulatory-record option, or import
+ validation fails), both scripts warn on any `Regulatory=TRUE` row; the sample
+ schedule ships with none set to keep the default run tenant-config-independent.
 - **VERIFY (pilot tenant):** the exact column **order** and header spelling of the live "Download a
-  blank template" file, that template is a portal-generated artifact with no linked, fetchable copy
-  in Microsoft Learn. This scenario's column set and names are grounded verbatim against the
-  documented property table [[3]](#references); confirm exact column order against a real template
-  download before a first production upload (Path A only, Path B doesn't depend on column order).
+ blank template" file, that template is a portal-generated artifact with no linked, fetchable copy
+ in Microsoft Learn. This scenario's column set and names are grounded verbatim against the
+ documented property table; confirm exact column order against a real template
+ download before a first production upload (Path A only, Path B doesn't depend on column order).
 - **VERIFY (pilot tenant):** the property name(s) `Get-ComplianceTag` exposes for file-plan
-  descriptor read-back, not documented, so `validate/Test-FilePlanBulkImport.ps1` reports
-  descriptors informationally rather than asserting on them.
+ descriptor read-back, not documented, so `validate/Test-FilePlanBulkImport.ps1` reports
+ descriptors informationally rather than asserting on them.
 - **VERIFY (pilot tenant or a future Microsoft Learn pass):** the exact `Search-UnifiedAuditLog`
-  `RecordType`/`Operations` values for a retention-label **definition/creation** event. Microsoft
-  documents the values for label **application** events (`Changed retention label for a file` /
-  `Labeled message as a record` [[8]](#references)) but this scenario did not find a documented
-  record type for the act of creating the label object itself, an audit-trail export script for
-  bulk-creation events is a tracked follow-up rather than a guessed `RecordType`.
+ `RecordType`/`Operations` values for a retention-label **definition/creation** event. Microsoft
+ documents the values for label **application** events (`Changed retention label for a file` /
+ `Labeled message as a record`) but this scenario did not find a documented
+ record type for the act of creating the label object itself, an audit-trail export script for
+ bulk-creation events is a tracked follow-up rather than a guessed `RecordType`.
 - **CSV/formula-injection guard is a general defensive control, not a Microsoft-documented rule.**
-  `FilePlanRow.Validate.ps1` refuses any free-text column whose value starts with `=`, `+`, `-`, or
-  `@`, or contains a raw tab/CR/LF, the classic spreadsheet-formula-injection vector, relevant
-  because the documented workflow has a human open the file in a spreadsheet app before uploading it
-  (§5). If a legitimate value needs one of those leading characters, prefix it with a space or
-  apostrophe.
+ `FilePlanRow.Validate.ps1` refuses any free-text column whose value starts with `=`, `+`, `-`, or
+ `@`, or contains a raw tab/CR/LF, the classic spreadsheet-formula-injection vector, relevant
+ because the documented workflow has a human open the file in a spreadsheet app before uploading it
+ (§5). If a legitimate value needs one of those leading characters, prefix it with a space or
+ apostrophe.
 - **Illustrative values.** The sample schedule's ten record classes, retention periods, citations,
-  and reviewer addresses are placeholders, replace with your organization's real, Records/Legal
-  -approved schedule before deploying.
+ and reviewer addresses are placeholders, replace with your organization's real, Records/Legal
+ -approved schedule before deploying.
 
 ## 12. References
 
 1. New-ComplianceTag (`-FilePlanProperty` PSCustomObject→JSON shape; `-RetentionAction`/
-   `-RetentionDuration`/`-RetentionType`/`-ReviewerEmail`/`-IsRecordLabel`/`-Regulatory`/
-   `-IsRecordUnlockedAsDefault`/`-ComplianceTagForNextStage`), <https://learn.microsoft.com/powershell/module/exchangepowershell/new-compliancetag>
+ `-RetentionDuration`/`-RetentionType`/`-ReviewerEmail`/`-IsRecordLabel`/`-Regulatory`/
+ `-IsRecordUnlockedAsDefault`/`-ComplianceTagForNextStage`), <https://learn.microsoft.com/powershell/module/exchangepowershell/new-compliancetag>
 2. Get-ComplianceRetentionEventType / Get-ComplianceTag (live EventType/LabelName checks), <https://learn.microsoft.com/powershell/module/exchangepowershell/get-complianceretentioneventtype>
 3. Use file plan to create and manage retention labels (import property table, group dependencies,
-   max lengths, LabelName charset, roles, delete constraints, "not supported for import: multi-stage
-   disposition review"), <https://learn.microsoft.com/purview/file-plan-manager>
+ max lengths, LabelName charset, roles, delete constraints, "not supported for import: multi-stage
+ disposition review"), <https://learn.microsoft.com/purview/file-plan-manager>
 4. New-FilePlanPropertyDepartment / -Category / -SubCategory (`-ParentId`) / -Citation /
-   -ReferenceId / -Authority, <https://learn.microsoft.com/powershell/module/exchangepowershell/new-fileplanpropertydepartment>
+ -ReferenceId / -Authority, <https://learn.microsoft.com/powershell/module/exchangepowershell/new-fileplanpropertydepartment>
 5. Get-FilePlanPropertyAuthority / -Category / -Citation / -Department / -ReferenceId /
-   -SubCategory (the six `Get-*` cmdlets `-FilePlanProperty`'s values must resolve against), 
-   referenced in New-ComplianceTag's own `-FilePlanProperty` documentation [[1]](#references)
+ -SubCategory (the six `Get-*` cmdlets `-FilePlanProperty`'s values must resolve against), 
+ referenced in New-ComplianceTag's own `-FilePlanProperty` documentation 
 6. Learn about records management, <https://learn.microsoft.com/purview/records-management>
 7. Microsoft Purview service description, Records Management licensing, <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description>
 8. Declare records by using retention labels, audit log activities for labeling, <https://learn.microsoft.com/purview/declare-records>

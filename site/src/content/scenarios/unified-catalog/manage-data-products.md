@@ -34,37 +34,37 @@ defined, reviewed, and versioned via a pull request, not assembled one portal cl
 Data products are Unified Catalog's answer to a specific, recurring failure mode: a consumer who
 needs "the customer table" has to request access to 15 similarly-named tables individually, and a
 data owner who tightens a use-case policy has to update each of those tables' permissions one at a
-time [[3]](#12-references). Grouping them into one data product means one access request, one
+time. Grouping them into one data product means one access request, one
 policy surface, and one place a data owner curates description/use-case/ownership as the
-underlying assets change [[3]](#12-references) [[10]](#12-references).
+underlying assets change.
 
 Beyond that operational driver, this scenario supports:
 - **Least-privilege access requests**, a consumer requests exactly the data product they need,
-  through a tracked, approvable workflow (`design.md` §5), rather than being granted broad Data Map
-  collection access "to be safe."
+ through a tracked, approvable workflow (`design.md` §5), rather than being granted broad Data Map
+ collection access "to be safe."
 - **SOC 2 / ISO 27001 access-governance evidence**, every access request against a published data
-  product is logged and tiered through named approvers [[4]](#12-references), a stronger audit
-  trail than ad hoc table-level permission grants.
+ product is logged and tiered through named approvers, a stronger audit
+ trail than ad hoc table-level permission grants.
 - **Data quality accountability**, a data product carries an aggregate data-quality score computed
-  from its linked assets [[1]](#12-references), directly consuming the output of
-  `scenarios/data-quality/rules-and-scorecards/` once that scenario's rules are applied to this
-  same "Customer" asset.
+ from its linked assets, directly consuming the output of
+ `scenarios/data-quality/rules-and-scorecards/` once that scenario's rules are applied to this
+ same "Customer" asset.
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for this scenario:
+Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/). Summary for this scenario:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Unified Catalog data governance | **Pay-as-you-go (PAYG)**, billed on unique **governed assets/day** | Unlike `curate-business-glossary`, **this scenario does incur a charge**, see §10. Linking a real data asset to a data product is exactly the billing trigger Microsoft's FAQ describes [[8]](#12-references) |
+| Unified Catalog data governance | **Pay-as-you-go (PAYG)**, billed on unique **governed assets/day** | Unlike `curate-business-glossary`, **this scenario does incur a charge**, see §10. Linking a real data asset to a data product is exactly the billing trigger Microsoft's FAQ describes |
 | A completed scan | `scenarios/data-map/scan-azure-sql-and-classify/` run at least once | This scenario consumes that scenario's output (a Data Map asset GUID for `customerdb.dbo.Customers`), it does not scan anything itself |
 | The governing terms | `scenarios/unified-catalog/curate-business-glossary/` run at least once (with `-Publish` if the terms should be linkable in a published state) | This scenario looks up `Customer` and `Customer ID` by name in the same domain rather than creating them |
-| Role to author the data product | **Data Product Owner** (governance-domain-level role, assigned on the domain's **Roles** tab, same role model as `Data Steward`) | `docs/rbac-model.md` §5 |
-| Role to link the underlying Data Map asset | **Data Reader** on the asset's Data Map collection, in addition to Data Product Owner in Unified Catalog | Two separate role systems, `docs/rbac-model.md` §5's "Rule of thumb" |
+| Role to author the data product | **Data Product Owner** (governance-domain-level role, assigned on the domain's **Roles** tab, same role model as `Data Steward`) | [RBAC model §5](/docs/rbac-model/#5-data-governance-roles-data-map--unified-catalog-a-separate-model) |
+| Role to link the underlying Data Map asset | **Data Reader** on the asset's Data Map collection, in addition to Data Product Owner in Unified Catalog | Two separate role systems, [RBAC model §5](/docs/rbac-model/#5-data-governance-roles-data-map--unified-catalog-a-separate-model)'s "Rule of thumb" |
 | Automation identity (Unified Catalog + Graph) | Same service-principal pattern as `curate-business-glossary`: Data Product Owner in Unified Catalog, `User.Read.All` application permission in Graph | §3's compensating-controls note in `curate-business-glossary/README.md` applies identically here, this scenario resolves the data product's owner the same way |
-| **Manual, portal-only prerequisite before `-Publish`** | A **data product access policy** configured via **Manage policies** on the data product's details page | Microsoft's own docs: "Before you can publish, you need to add data assets to your data product and set up a data access policy" [[1]](#12-references), `design.md` §5 explains why this scenario cannot script it |
+| **Manual, portal-only prerequisite before `-Publish`** | A **data product access policy** configured via **Manage policies** on the data product's details page | Microsoft's own docs: "Before you can publish, you need to add data assets to your data product and set up a data access policy", `design.md` §5 explains why this scenario cannot script it |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms before
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) and the Product Terms before
 > a sales commitment, SKU names and PAYG meters change.
 
 ## 4. Architecture
@@ -103,7 +103,7 @@ flowchart TD
 
 One Unified Catalog **data product**, one Unified Catalog **data asset** wrapper, and their
 relationships, all authored via the **Purview Unified Catalog REST API**
-(`docs/automation-surface.md` surface 4). The one place this scenario also calls **Microsoft
+([Automation surface](/docs/automation-surface/) surface 4). The one place this scenario also calls **Microsoft
 Graph** (surface 3) is owner-identity resolution, same as `curate-business-glossary/design.md` §5.
 
 ## 5. Step-by-step implementation
@@ -111,19 +111,19 @@ Graph** (surface 3) is owner-identity resolution, same as `curate-business-gloss
 ### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
 1. Sign in to the [Microsoft Purview portal](https://purview.microsoft.com) → **Unified Catalog**
-   → **Catalog management** → **Data products** → **New data product**.
+ → **Catalog management** → **Data products** → **New data product**.
 2. **Basic details**: Name `Customer Master Data`, Type **Master and reference data**, Audience
-   `Data Analyst`/`Business Analyst`/`Data Engineer`, Owner your Data Product Owner account.
-   **Next** [[1]](#12-references).
+ `Data Analyst`/`Business Analyst`/`Data Engineer`, Owner your Data Product Owner account.
+ **Next**.
 3. **Business details**: Governance domain `Customer Experience` (the same domain
-   `curate-business-glossary` created), Use case as in the definition file. **Next** → **Create**.
+ `curate-business-glossary` created), Use case as in the definition file. **Next** → **Create**.
 4. On the new data product's details page, **Add data assets** → search for
-   `customerdb.dbo.Customers` → select it → **Add** [[1]](#12-references).
+ `customerdb.dbo.Customers` → select it → **Add**.
 5. Under **Glossary terms**, select **+** → search for `Customer` and `Customer ID` → **Add**
-   [[1]](#12-references).
+.
 6. Select **Manage policies** → configure **Permitted access** purposes and **Access request
-   approvers** (defaults to the data product owner) [[4]](#12-references).
-7. Select **Publish** on the data product's details page [[1]](#12-references).
+ approvers** (defaults to the data product owner).
+7. Select **Publish** on the data product's details page.
 
 ### Script path (idempotent, parameterized, dry-run capable)
 
@@ -164,7 +164,7 @@ portal after `scenarios/data-map/scan-azure-sql-and-classify/` has scanned it at
 | Object | Field | Source | Notes |
 |---|---|---|---|
 | Data product | `id` | Client-generated GUID | Same identity model as glossary terms, see `design.md` §3 |
-| Data product | `type` | `Master` (this scenario), full enum: `Master`, `Reference`, `Analytical`, `AI`, `MasterDataAndReferenceData`, `BusinessSystemOrApplication`, `ModelTypes`, `DashboardsOrReports`, `Operational`, `MLAITrainingDataSet`, `MLAITestingDataSet`, `TransactionalDataset`, `AnalyticsModel`, `SemanticModel` | The REST enum's 14 values don't map one-to-one onto the portal's 11 documented type labels [[1]](#12-references), e.g. the portal shows "Master and reference data" as one option; the REST enum has both a standalone `Master` and a separate `MasterDataAndReferenceData`. This scenario uses `Master` for the customer-identity narrative; confirm the portal-vs-REST label mapping in a pilot tenant before presenting type choices to a non-technical curator |
+| Data product | `type` | `Master` (this scenario), full enum: `Master`, `Reference`, `Analytical`, `AI`, `MasterDataAndReferenceData`, `BusinessSystemOrApplication`, `ModelTypes`, `DashboardsOrReports`, `Operational`, `MLAITrainingDataSet`, `MLAITestingDataSet`, `TransactionalDataset`, `AnalyticsModel`, `SemanticModel` | The REST enum's 14 values don't map one-to-one onto the portal's 11 documented type labels, e.g. the portal shows "Master and reference data" as one option; the REST enum has both a standalone `Master` and a separate `MasterDataAndReferenceData`. This scenario uses `Master` for the customer-identity narrative; confirm the portal-vs-REST label mapping in a pilot tenant before presenting type choices to a non-technical curator |
 | Data product | `status` | `DRAFT` → `PUBLISHED` | Publish additionally requires an access policy, §3, `design.md` §5 |
 | Data product | `contacts.owner[].id` | Entra object ID | Resolved from the definition file's UPN, same as `curate-business-glossary` |
 | Data asset (Unified Catalog) | `id` | Server-assigned GUID, **distinct** from the Data Map asset's own GUID | `design.md` §4, Create Relationship links against *this* id |
@@ -178,21 +178,21 @@ cite the exact Microsoft Learn REST reference pages for every operation used.
 ## 7. Validation / how to prove it works
 
 1. **Automated check**, `./validate/Test-DataProduct.ps1` confirms the data product exists with
-   the expected type/description/updateFrequency/audience/owner-contact, confirms the data asset
-   wrapper and both relationships exist, and reports the classifications Data Map scanning found on
-   the underlying asset. Exits non-zero on any hard failure (safe for a CI-style pre-flight).
-   Publish status is reported as a warning, not a hard failure.
+ the expected type/description/updateFrequency/audience/owner-contact, confirms the data asset
+ wrapper and both relationships exist, and reports the classifications Data Map scanning found on
+ the underlying asset. Exits non-zero on any hard failure (safe for a CI-style pre-flight).
+ Publish status is reported as a warning, not a hard failure.
 2. **Portal check**, Purview portal → Unified Catalog → **Discovery** → **Data products** →
-   explore the `Customer Experience` domain → open `Customer Master Data` → confirm the **Details**
-   tab shows the expected description/use case/owner, and the **Data assets** and **Glossary
-   terms** sections both list one item [[13]](#12-references).
+ explore the `Customer Experience` domain → open `Customer Master Data` → confirm the **Details**
+ tab shows the expected description/use case/owner, and the **Data assets** and **Glossary
+ terms** sections both list one item.
 3. **Consumer-visibility check (after `-Publish` and a configured access policy)**, as a
-   **Catalog Reader**-only account, search Unified Catalog **Discovery** for "Customer" and confirm
-   `Customer Master Data` appears with a working **Request access** button
-   [[3]](#12-references) [[4]](#12-references).
+ **Catalog Reader**-only account, search Unified Catalog **Discovery** for "Customer" and confirm
+ `Customer Master Data` appears with a working **Request access** button
+.
 4. **Cross-scenario check**, open the linked `customerdb.dbo.Customers` asset's own **Governance**
-   tab and confirm `Customer Master Data` appears under "Data products the asset is part of"
-   [[12]](#12-references), proof the link is bidirectional, not just visible from the product side.
+ tab and confirm `Customer Master Data` appears under "Data products the asset is part of"
+, proof the link is bidirectional, not just visible from the product side.
 
 ## 8. Operations & tuning
 
@@ -210,13 +210,13 @@ narrower `-Publish`-only status transition does not have this problem (`design.m
 
 **Asset-count and quality-score drift:** the data product's `additionalProperties.assetCount` (this
 scenario's `validate` script reports it as an informational KPI) and its aggregate
-`dataQualityScore` [[1]](#12-references) both change independently of this scenario's own runs, a
+`dataQualityScore` both change independently of this scenario's own runs, a
 portal user adding another asset, or `scenarios/data-quality/rules-and-scorecards/`'s scan
 schedule producing a new score. Track both as operational metrics once the product portfolio grows
 past what a human can eyeball weekly.
 
 **Access-request backlog:** every access request against this data product is queued for the
-approvers configured in its access policy [[4]](#12-references), an unattended approver queue
+approvers configured in its access policy, an unattended approver queue
 defeats the "self-service" value proposition this scenario is built around. This is portal-only
 operational hygiene, not something this scenario's scripts monitor.
 
@@ -230,53 +230,53 @@ itself.
 ## 10. Cost & licensing notes
 
 - **Unlike `curate-business-glossary`, this scenario incurs a PAYG charge.** Microsoft's billing
-  FAQ is explicit about the trigger: creating domains and data products with nothing attached costs
-  nothing, but once a data asset is linked, billing is **per unique governed asset per day**
-  [[8]](#12-references). This scenario links exactly one governed asset
-  (`customerdb.dbo.Customers`), so it adds one billed asset, deduplicated if that same asset is
-  also linked from other data products, glossary terms, or critical data elements
-  [[9]](#12-references), not one charge per relationship this scenario creates.
+ FAQ is explicit about the trigger: creating domains and data products with nothing attached costs
+ nothing, but once a data asset is linked, billing is **per unique governed asset per day**
+. This scenario links exactly one governed asset
+ (`customerdb.dbo.Customers`), so it adds one billed asset, deduplicated if that same asset is
+ also linked from other data products, glossary terms, or critical data elements
+, not one charge per relationship this scenario creates.
 - **No per-user license required for the automation itself**, Unified Catalog curation stays
-  PAYG-only (`docs/licensing-matrix.md` §2). A human requesting access to the resulting data
-  product still needs whatever license the underlying data asset's own access model requires
-  (e.g. an Azure SQL Database role), Unified Catalog access policies gate the *request* workflow,
-  not the underlying data-plane permission grant itself [[4]](#12-references).
+ PAYG-only ([Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix)). A human requesting access to the resulting data
+ product still needs whatever license the underlying data asset's own access model requires
+ (e.g. an Azure SQL Database role), Unified Catalog access policies gate the *request* workflow,
+ not the underlying data-plane permission grant itself.
 
 ## 11. Known limitations & gotchas
 
 - **`-Publish` requires a portal-only access policy this scenario cannot configure.** `design.md`
-  §5 covers this in full; the practical effect is that a first-time `-Publish` run against a data
-  product with no access policy configured may fail, and this scenario cannot tell you why beyond
-  the `Write-Warning` printed before the attempt.
+ §5 covers this in full; the practical effect is that a first-time `-Publish` run against a data
+ product with no access policy configured may fail, and this scenario cannot tell you why beyond
+ the `Write-Warning` printed before the attempt.
 - **VERIFY, whether the REST `Update` operation enforces the access-policy prerequisite
-  server-side, or only the portal UI does.** Not documented either way (`design.md` §5). If the
-  REST call does *not* enforce it, this script could technically publish a data product with no
-  access-request path configured for consumers, a real gap flagged in `reviews.md` (Red Team).
+ server-side, or only the portal UI does.** Not documented either way (`design.md` §5). If the
+ REST call does *not* enforce it, this script could technically publish a data product with no
+ access-request path configured for consumers, a real gap flagged in `reviews.md` (Red Team).
 - **VERIFY, the `Data Products - Create Relationship` request body for `entityType=DATAASSET` and
-  `entityType=TERM`.** The REST reference's only worked example is for
-  `entityType=CRITICALDATACOLUMN` and includes an `assetId` field this script's `DATAASSET`/`TERM`
-  calls omit (`design.md` §3, inline `.NOTES` in `deploy/New-DataProduct.ps1`). If a tenant rejects
-  or silently ignores these calls, confirm the correct body shape per entity type against a pilot
-  tenant or the Swagger specification linked from the API overview page
-  [[15]](#12-references) before relying on this pattern at scale.
+ `entityType=TERM`.** The REST reference's only worked example is for
+ `entityType=CRITICALDATACOLUMN` and includes an `assetId` field this script's `DATAASSET`/`TERM`
+ calls omit (`design.md` §3, inline `.NOTES` in `deploy/New-DataProduct.ps1`). If a tenant rejects
+ or silently ignores these calls, confirm the correct body shape per entity type against a pilot
+ tenant or the Swagger specification linked from the API overview page
+ before relying on this pattern at scale.
 - **The two "Policies" concepts in Unified Catalog are not the same thing.** The REST API's
-  `Policies` operation group returns the underlying RBAC authorization-policy engine (attribute/
-  decision rules keyed by domain/product GUIDs), **not** the "who can request access, what do they
-  attest to" data product access policy the portal's **Manage policies** button configures
-  (`design.md` §5). This scenario does not call the `Policies` REST operation group at all; do not
-  assume it can be used to script access policies.
+ `Policies` operation group returns the underlying RBAC authorization-policy engine (attribute/
+ decision rules keyed by domain/product GUIDs), **not** the "who can request access, what do they
+ attest to" data product access policy the portal's **Manage policies** button configures
+ (`design.md` §5). This scenario does not call the `Policies` REST operation group at all; do not
+ assume it can be used to script access policies.
 - **`nameKeyword` match semantics are undocumented**, the same open question
-  `curate-business-glossary/README.md` §11 records for Query Terms, this scenario's
-  `Find-DataProductByName` applies the identical client-side-exact-match mitigation and inherits
-  the identical pagination caveat for very large domains.
+ `curate-business-glossary/README.md` §11 records for Query Terms, this scenario's
+ `Find-DataProductByName` applies the identical client-side-exact-match mitigation and inherits
+ the identical pagination caveat for very large domains.
 - **Portal type labels vs. REST `type` enum values don't map one-to-one**, see §6's configuration
-  reference note. Confirm the correct mapping before building a curator-facing UI on top of this
-  script's config file format.
+ reference note. Confirm the correct mapping before building a curator-facing UI on top of this
+ script's config file format.
 - **This scenario does not configure critical data elements or OKR links**, and does not register
-  or scan the underlying Data Map source, `design.md` §6 has the full non-goal list.
+ or scan the underlying Data Map source, `design.md` §6 has the full non-goal list.
 - **Deleting the Unified Catalog data asset wrapper is opt-in and unchecked.**
-  `Remove-DataProduct.ps1 -Purge -DeleteDataAssetWrapper` cannot confirm another data product isn't
-  still referencing the same wrapper before deleting it, see `rollback.md`.
+ `Remove-DataProduct.ps1 -Purge -DeleteDataAssetWrapper` cannot confirm another data product isn't
+ still referencing the same wrapper before deleting it, see `rollback.md`.
 
 ## 12. References
 
@@ -302,5 +302,5 @@ itself.
 > Re-verify all links against current Microsoft Learn before a customer-facing engagement, this
 > scenario targets Unified Catalog's **preview** REST API surface (`2026-03-20-preview`), whose
 > `Data Assets`/`Data Columns` operation groups were only added in this exact version
-> [[15]](#12-references) and are therefore among the least-tenured of any REST surface this repo
+> and are therefore among the least-tenured of any REST surface this repo
 > depends on.

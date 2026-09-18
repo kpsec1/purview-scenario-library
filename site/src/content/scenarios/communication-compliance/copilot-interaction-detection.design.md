@@ -26,7 +26,7 @@ configuration,
 
 > Location: Microsoft 365 Copilot and Microsoft 365 Copilot Chat · Direction: Inbound, Outbound,
 > Internal · Review Percentage: 100% · Conditions: Prompt Shields, Protected material classifiers
-> [[3]](#references)
+> 
 
 , is already exactly this scenario's target configuration, with no additional condition this
 scenario needs to add. Using the template directly (rather than rebuilding the same thing as a
@@ -41,7 +41,7 @@ place a buyer may legitimately want to deviate (§8 below).
 Communication Compliance has no documented PowerShell, Graph, or REST write API for policy
 creation or management, template-based or custom, the same "PowerShell isn't supported..."
 statement `harassment-and-code-of-conduct/design.md` §2 already grounded against appears verbatim
-on the same two Microsoft Learn pages [[9]](#references) [[10]](#references), and neither page nor
+on the same two Microsoft Learn pages, and neither page nor
 the dedicated `communication-compliance-copilot` article documents an exception for
 template-based policy creation. This scenario ships the same two-part solution shape as its
 sibling: a precise portal runbook (`README.md` §5) plus one genuinely scriptable, genuinely useful
@@ -64,7 +64,7 @@ fourth, different one:
 Communication Compliance is the only one of the four with **Prompt Shields** and **Protected
 material** as available conditions at all, these two classifiers are documented as configurable
 in Communication Compliance specifically, evaluating "generative AI prompts ONLY" (Prompt Shields)
-and "generative AI responses ONLY" (Protected material), respectively [[6]](#references). DLP has
+and "generative AI responses ONLY" (Protected material), respectively. DLP has
 no equivalent condition for either; it matches sensitive-information-types and labels, not
 jailbreak-attempt or copyright-similarity signals.
 
@@ -72,20 +72,20 @@ jailbreak-attempt or copyright-similarity signals.
 
 | Classifier | Evaluates | Detects | Language/format limits |
 |---|---|---|---|
-| Prompt Shields | **Prompts only** [[6]](#references) | User prompt-injection ("jailbreak") attempts, attempts to override system instructions, embed fake conversation turns, invoke a no-restrictions persona, or use encoding to evade filters [[4]](#references) | English only, per the classifier definition table [[6]](#references) |
-| Protected material | **Responses only** [[6]](#references) | Known copyrighted/branded text content (lyrics, articles, recipes, licensed web content) that a Copilot response reproduces | English only, per the classifier definition table [[6]](#references) |
+| Prompt Shields | **Prompts only** | User prompt-injection ("jailbreak") attempts, attempts to override system instructions, embed fake conversation turns, invoke a no-restrictions persona, or use encoding to evade filters | English only, per the classifier definition table |
+| Protected material | **Responses only** | Known copyrighted/branded text content (lyrics, articles, recipes, licensed web content) that a Copilot response reproduces | English only, per the classifier definition table |
 
 Two consequences this scenario's docs make explicit rather than leaving implicit:
 
 - **A user pasting copyrighted or sensitive content INTO a prompt is not what either classifier
-  here is built to catch.** Prompt Shields looks for jailbreak *intent*, not sensitive or protected
-  *content*, in a prompt. That is `copilot-sensitive-data-exposure`'s and `copilot-prompt-full-block`'s
-  job (§4 above), not this scenario's.
+ here is built to catch.** Prompt Shields looks for jailbreak *intent*, not sensitive or protected
+ *content*, in a prompt. That is `copilot-sensitive-data-exposure`'s and `copilot-prompt-full-block`'s
+ job (§4 above), not this scenario's.
 - **Neither classifier carries the Severity column** the LLM-based content-safety classifiers
-  (Hate/Sexual/Violence/Self-harm) do, that column and its severity-4-or-higher threshold are
-  documented specifically for the content-safety-classifier family, not for Prompt Shields/Protected
-  material [[7]](#references). Alert triage for this policy has no built-in severity ranking to sort
-  by, see `README.md` §8.
+ (Hate/Sexual/Violence/Self-harm) do, that column and its severity-4-or-higher threshold are
+ documented specifically for the content-safety-classifier family, not for Prompt Shields/Protected
+ material. Alert triage for this policy has no built-in severity ranking to sort
+ by, see `README.md` §8.
 
 ## 6. Reviewer role choice: Investigators, following the same reasoning as the harassment scenario
 
@@ -105,70 +105,70 @@ already grounded (`SupervisionRuleMatch`; `RecordType Discovery` +
 `SupervisionPolicyCreated`/`Updated`/`Deleted`; `RecordType AeD` + `SupervisoryReviewTag`), this is
 not a gap in this build's research, it is the correct outcome of Communication Compliance recording
 its audit footprint identically regardless of which policy, template, or location produced the
-event [[11]](#references). Reusing the same three-query shape (rather than inventing a
+event. Reusing the same three-query shape (rather than inventing a
 Copilot-specific audit surface that doesn't exist) is the same "don't fabricate an API" discipline
 `AGENTS.md` §4 requires. What is genuinely new in this scenario's script, not copied:
 
 - **`-PolicyNameFilter`**, defaulted to this scenario's own policy name, so a tenant running both
-  this scenario and `harassment-and-code-of-conduct` side by side (a realistic, expected deployment
+ this scenario and `harassment-and-code-of-conduct` side by side (a realistic, expected deployment
 , they are independent policies with no overlap in classifiers or location) gets two separate,
-  correctly-attributed rolling CSVs rather than one merged file an investigator would have to
-  manually re-split by policy name. `Search-UnifiedAuditLog`'s `AuditData` JSON payload carries the
-  policy name; this script parses it and filters client-side rather than assuming a
-  server-side `-PolicyName` parameter exists on `Search-UnifiedAuditLog` itself, no such parameter
-  is documented [[11]](#references) [[12]](#references), so client-side filtering (not a fabricated
-  server-side one) is the only grounded option.
+ correctly-attributed rolling CSVs rather than one merged file an investigator would have to
+ manually re-split by policy name. `Search-UnifiedAuditLog`'s `AuditData` JSON payload carries the
+ policy name; this script parses it and filters client-side rather than assuming a
+ server-side `-PolicyName` parameter exists on `Search-UnifiedAuditLog` itself, no such parameter
+ is documented, so client-side filtering (not a fabricated
+ server-side one) is the only grounded option.
 - **A `CopilotContext` derived column**, best-effort-parsed from `AuditData` where present, so an
-  export consumer doesn't have to manually unpack the JSON blob to tell whether a given row was a
-  prompt-side or response-side match. Documented as best-effort in the script's own `.NOTES`, the
-  exact shape of `AuditData` for this specific classifier pairing was not independently confirmed
-  against a worked example in this build's grounding pass, so this script never fails or drops a
-  row over a parse miss (see `README.md` §11 VERIFY).
+ export consumer doesn't have to manually unpack the JSON blob to tell whether a given row was a
+ prompt-side or response-side match. Documented as best-effort in the script's own `.NOTES`, the
+ exact shape of `AuditData` for this specific classifier pairing was not independently confirmed
+ against a worked example in this build's grounding pass, so this script never fails or drops a
+ row over a parse miss (see `README.md` §11 VERIFY).
 
 ## 8. Non-goals
 
 - **The Insider Risk Management "Risky Agents" or "Risky AI usage" policy templates.** Whether this
-  scenario's fixed "Microsoft 365 Copilot and Microsoft 365 Copilot Chat" location also reaches
-  Copilot Studio-built or Microsoft Foundry agent interactions is an open VERIFY (`README.md` §11), 
-  Microsoft's general channel-detection overview describes a same-sounding "Microsoft Copilot
-  experiences" location as covering Copilot Studio agents too, but no worked example in this build's
-  grounding pass confirmed the two phrasings denote the same location. If agent-specific risk is the
-  actual concern, IRM's dedicated **Risky Agents** template is the purpose-built control for that
-  surface, not something this scenario asserts it already covers.
+ scenario's fixed "Microsoft 365 Copilot and Microsoft 365 Copilot Chat" location also reaches
+ Copilot Studio-built or Microsoft Foundry agent interactions is an open VERIFY (`README.md` §11), 
+ Microsoft's general channel-detection overview describes a same-sounding "Microsoft Copilot
+ experiences" location as covering Copilot Studio agents too, but no worked example in this build's
+ grounding pass confirmed the two phrasings denote the same location. If agent-specific risk is the
+ actual concern, IRM's dedicated **Risky Agents** template is the purpose-built control for that
+ surface, not something this scenario asserts it already covers.
 - **The Insider Risk Management "Risky AI usage" policy template integration.** Microsoft documents
-  an optional path where these same two classifiers (Prompt Shields, Protected material detection)
-  feed IRM's risk-scoring templates via the **Policy indicators** setting on *Data leaks*, *Data
-  leaks by risky users*, *Data leaks by priority users*, or *Risky AI usage* templates
-  [[8]](#references), a standalone Insider Risk Management scenario this repo doesn't yet have
-  (tracked in `PROGRESS.md`), not part of this Communication-Compliance-only fragment.
+ an optional path where these same two classifiers (Prompt Shields, Protected material detection)
+ feed IRM's risk-scoring templates via the **Policy indicators** setting on *Data leaks*, *Data
+ leaks by risky users*, *Data leaks by priority users*, or *Risky AI usage* templates
+, a standalone Insider Risk Management scenario this repo doesn't yet have
+ (tracked in `PROGRESS.md`), not part of this Communication-Compliance-only fragment.
 - **Extending this policy (or an existing one) to Enterprise AI apps / Other AI apps locations.**
-  Both require enabling **pay-as-you-go billing**, Microsoft 365 Copilot itself has no PAYG
-  requirement, but connected/third-party generative AI applications do [[2]](#references). Mixing a
-  PAYG-gated location into this scenario's licensing story would materially change its cost section
-  (`README.md` §10) for a location this scenario doesn't target, a deliberate scope boundary, not
-  an oversight. `README.md` §8 documents the **Add a generative AI app as a location for an existing
-  policy** path as a forward reference for a buyer who wants that later, with the PAYG cost called
-  out explicitly at that point.
+ Both require enabling **pay-as-you-go billing**, Microsoft 365 Copilot itself has no PAYG
+ requirement, but connected/third-party generative AI applications do. Mixing a
+ PAYG-gated location into this scenario's licensing story would materially change its cost section
+ (`README.md` §10) for a location this scenario doesn't target, a deliberate scope boundary, not
+ an oversight. `README.md` §8 documents the **Add a generative AI app as a location for an existing
+ policy** path as a forward reference for a buyer who wants that later, with the PAYG cost called
+ out explicitly at that point.
 - **Adding Copilot as a location to the existing `harassment-and-code-of-conduct` policy.** Microsoft
-  documents this as a supported, simple edit (§8 above), an organization that already has that
-  policy deployed could extend it to also apply its Threat/Harassment/Discrimination/Profanity
-  classifiers to Copilot prompts/responses. This scenario deliberately keeps the two policies
-  separate rather than folding one into the other, because they detect materially different risk
-  categories (interpersonal conduct vs. AI-safety/IP) with different natural reviewer pools
-  (HR/Legal vs. Security/Responsible-AI/Legal), see `README.md` §8 for this as a documented,
-  optional alternative a buyer can choose instead.
+ documents this as a supported, simple edit (§8 above), an organization that already has that
+ policy deployed could extend it to also apply its Threat/Harassment/Discrimination/Profanity
+ classifiers to Copilot prompts/responses. This scenario deliberately keeps the two policies
+ separate rather than folding one into the other, because they detect materially different risk
+ categories (interpersonal conduct vs. AI-safety/IP) with different natural reviewer pools
+ (HR/Legal vs. Security/Responsible-AI/Legal), see `README.md` §8 for this as a documented,
+ optional alternative a buyer can choose instead.
 - **The preview LLM-based content-safety classifiers (Hate/Sexual/Violence/Self-harm).** These do
-  cover Microsoft 365 Copilot as one of their three supported workloads [[7]](#references), but they
-  are a distinct, already-covered concern this repo's `harassment-and-code-of-conduct` follow-up
-  backlog already tracks as its own candidate fragment, not duplicated here.
+ cover Microsoft 365 Copilot as one of their three supported workloads, but they
+ are a distinct, already-covered concern this repo's `harassment-and-code-of-conduct` follow-up
+ backlog already tracks as its own candidate fragment, not duplicated here.
 - **Reproducing Copilot's own built-in Responsible AI runtime protections** (block lists,
-  Responsible-AI classifier filtering inside Copilot itself, hidden-Unicode-instruction
-  sanitization) [[5]](#references) as part of this scenario. Those are Microsoft product-side
-  mitigations this scenario's Communication Compliance layer sits behind and monitors, not something
-  this repo configures.
+ Responsible-AI classifier filtering inside Copilot itself, hidden-Unicode-instruction
+ sanitization) as part of this scenario. Those are Microsoft product-side
+ mitigations this scenario's Communication Compliance layer sits behind and monitors, not something
+ this repo configures.
 - **SIEM/Sentinel wiring**, same documented native path (`OfficeActivity`/Sentinel) as
-  `harassment-and-code-of-conduct/design.md` §7 already establishes; this scenario's CSV is
-  SIEM-ingestible by the same mechanism, not rebuilt here.
+ `harassment-and-code-of-conduct/design.md` §7 already establishes; this scenario's CSV is
+ SIEM-ingestible by the same mechanism, not rebuilt here.
 
 ## 9. Key decisions
 

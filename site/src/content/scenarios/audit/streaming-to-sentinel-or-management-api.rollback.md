@@ -55,12 +55,12 @@ Confirm with `/subscriptions/list` that each stopped content type no longer show
 
 **Clean up local state:**
 - Remove or archive the `checkpoints/` directory, stale checkpoints from a decommissioned pipeline
-  are misleading if `Test-ManagementActivityStreaming.ps1` is ever pointed at this config again.
+ are misleading if `Test-ManagementActivityStreaming.ps1` is ever pointed at this config again.
 - Secure or dispose of the `out/*.ndjson` export files per your data-handling policy, they can
-  contain sensitive content, especially anything exported while `DLP.All` was subscribed (README.md
-  §8/§11). While the pipeline is live, restrict filesystem access to `-OutDir` the same way; these
-  are plaintext files sitting at rest until a downstream forwarder consumes them, not just a
-  decommissioning concern.
+ contain sensitive content, especially anything exported while `DLP.All` was subscribed (README.md
+ §8/§11). While the pipeline is live, restrict filesystem access to `-OutDir` the same way; these
+ are plaintext files sitting at rest until a downstream forwarder consumes them, not just a
+ decommissioning concern.
 
 **Revoke the app registration's access** if it's no longer needed: remove the granted **Office 365
 Management APIs** permissions (and admin consent) from the Entra app registration, or delete the app
@@ -69,11 +69,11 @@ registration/credential entirely if it was created solely for this pipeline.
 ## 3. Nothing else is touched
 
 - **The unified audit log itself** is unaffected by either path's teardown, both paths only read
-  from it (Path A via the managed connector, Path B via subscribe/poll); neither ever writes to or
-  purges it.
+ from it (Path A via the managed connector, Path B via subscribe/poll); neither ever writes to or
+ purges it.
 - **Unified audit logging** (the tenant-wide on/off switch) is a shared prerequisite for other
-  scenarios in this library (e.g. `premium-audit-investigation`), do not turn it off as part of this
-  rollback.
+ scenarios in this library (e.g. `premium-audit-investigation`), do not turn it off as part of this
+ rollback.
 
 ## Verification
 

@@ -60,28 +60,28 @@ Re-establishing the local artifact means re-running
 ## What rollback does **not** undo
 
 - **Advanced Hunting / `DeviceEvents` history.** Allow and deny audit events already generated are
-  retained per their own retention window regardless of policy state.
+ retained per their own retention window regardless of policy state.
 - **Access already denied or allowed.** A copy that was denied while the policy was enforcing was
-  not written to the removable device; a later rollback does not retroactively complete it.
+ not written to the removable device; a later rollback does not retroactively complete it.
 - **Device onboarding, or the Full Disk Access (PPPC) profile for `com.microsoft.dlp.daemon`.**
-  This scenario does not create or manage either, rollback here has no effect on them. In
-  particular, clearing the Device Control Policy property does **not** revoke the Full Disk Access
-  grant; that is a separate profile with its own lifecycle.
+ This scenario does not create or manage either, rollback here has no effect on them. In
+ particular, clearing the Device Control Policy property does **not** revoke the Full Disk Access
+ grant; that is a separate profile with its own lifecycle.
 - **The JAMF Pro Computer Group membership, or the physical approved drives.** This scenario does
-  not create or manage the pilot Computer Group or the approved-drive inventory.
+ not create or manage the pilot Computer Group or the approved-drive inventory.
 - **Any other setting in the shared "MDE Preferences" `com.microsoft.wdav` profile** (onboarding,
-  antivirus/EDR configuration, etc.), Stages 1-3 above are scoped to the Device Control property
-  and the `DC_in_dlp` feature flag only.
+ antivirus/EDR configuration, etc.), Stages 1-3 above are scoped to the Device Control property
+ and the `DC_in_dlp` feature flag only.
 
 ## Verification after rollback
 
 1. In the JAMF Pro console, confirm the profile's **Scope** (Stage 1), **Device Control Policy**
-   text box (Stage 2), and `DC_in_dlp` **State** (Stage 3) reflect the intended post-rollback state.
+ text box (Stage 2), and `DC_in_dlp` **State** (Stage 3) reflect the intended post-rollback state.
 2. On a pilot Mac, after its next check-in:
    ```sh
    mdatp health --details device_control
    ```
-   Confirm `v2_state` reflects the change (e.g. no longer `"enabled"` after Stage 3, or the policy
-   content changed after Stage 2).
+ Confirm `v2_state` reflects the change (e.g. no longer `"enabled"` after Stage 3, or the policy
+ content changed after Stage 2).
 3. Functional test: plug in a previously-denied drive and confirm the expected post-rollback
-   behavior (e.g. no longer blocked, if the control was fully removed).
+ behavior (e.g. no longer blocked, if the control was fully removed).

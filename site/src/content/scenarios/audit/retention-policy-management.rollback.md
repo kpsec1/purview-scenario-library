@@ -48,16 +48,16 @@ touch the **custom** policies they created.
 ## 4. Nothing else is touched
 
 - **Search and export** (`scenarios/audit/premium-audit-investigation/`) are unaffected, removing
-  a retention policy changes how long data is *kept*, not whether the Audit Search Graph API or
-  `Search-UnifiedAuditLog` can find data that's still within its retention window.
+ a retention policy changes how long data is *kept*, not whether the Audit Search Graph API or
+ `Search-UnifiedAuditLog` can find data that's still within its retention window.
 - **Roles and permissions** granted for this scenario (Organization Configuration role, e.g. via
-  the Compliance Data Administrator role group) are not changed by these scripts, revoke them
-  separately if no longer needed.
+ the Compliance Data Administrator role group) are not changed by these scripts, revoke them
+ separately if no longer needed.
 
 ## Verification
 
 Re-run `./validate/Test-AuditRetentionPolicy.ps1 -ConfigPath <same config>` after a removal, every
-entry that was removed now reports `[FAIL] ... does not exist in the tenant`, which is the expected
+entry that was removed now reports `[FAIL]... does not exist in the tenant`, which is the expected
 post-rollback state (not a script bug). To confirm a fully clean rollback with no unexpected
 remaining state, also run `Get-UnifiedAuditLogRetentionPolicy | Where-Object Name -in <removed names>`
 directly and confirm it returns nothing once the 30-minute removal window has passed.

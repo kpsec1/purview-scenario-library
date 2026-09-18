@@ -36,39 +36,39 @@ explicitly out of this scenario's scope (README.md §3).
 ## 2. Audit-trail export pipeline
 
 - **Stop the scheduled run** (disable whatever Task Scheduler entry / cron job / Azure Automation
-  runbook was calling `Export-DsiActivityAuditTrail.ps1`).
+ runbook was calling `Export-DsiActivityAuditTrail.ps1`).
 - **Secure or dispose of the exported CSV(s)** per your data-handling policy. The CSV itself does not
-  contain investigated content (README.md §11's "does NOT read investigation content" note), but it
-  does contain `UserIds` and `AuditData` for every logged DSI action, including who ran every purge, 
-  treat it with the same handling discipline as this library's other audit-export scripts
-  (`audit/premium-audit-investigation/rollback.md`).
+ contain investigated content (README.md §11's "does NOT read investigation content" note), but it
+ does contain `UserIds` and `AuditData` for every logged DSI action, including who ran every purge, 
+ treat it with the same handling discipline as this library's other audit-export scripts
+ (`audit/premium-audit-investigation/rollback.md`).
 - **If `-NdjsonOutDir` was used**, secure or dispose of the `DSI-Activity-*.ndjson` files the same
-  way, same fields, same sensitivity, just a different location (README.md §8). If that directory is
-  shared with `audit/streaming-to-sentinel-or-management-api`'s own Path B output, only remove this
-  scenario's `DSI-Activity-*.ndjson` files, leave that scenario's own `<contentType>-*.ndjson` files
-  alone; its own `rollback.md` covers those.
+ way, same fields, same sensitivity, just a different location (README.md §8). If that directory is
+ shared with `audit/streaming-to-sentinel-or-management-api`'s own Path B output, only remove this
+ scenario's `DSI-Activity-*.ndjson` files, leave that scenario's own `<contentType>-*.ndjson` files
+ alone; its own `rollback.md` covers those.
 - Nothing about the unified audit log itself is affected, this script only reads from it.
 
 ## 3. What this rollback does NOT and CANNOT undo
 
 - **A completed hard purge.** Hard purge is permanent and irreversible by Microsoft's own design
-  (README.md §6), there is no rollback for it, from this scenario's scripts, the Purview portal, or
-  Microsoft support. This is the single most important fact to communicate to a buyer before they
-  grant Investigator/Admin access: revoking role-group membership after the fact does not undo
-  anything already purged.
+ (README.md §6), there is no rollback for it, from this scenario's scripts, the Purview portal, or
+ Microsoft support. This is the single most important fact to communicate to a buyer before they
+ grant Investigator/Admin access: revoking role-group membership after the fact does not undo
+ anything already purged.
 - **A completed soft purge**, past its retention window. Soft-purged items sit in Recoverable Items
-  and are restorable *only* within the configured retention period (README.md §6), restoring one is
-  a source-mailbox operation (e.g. `Search-Mailbox`/the Recoverable Items folder in Outlook/OWA), not
-  something this scenario's scripts do or need to, since neither script ever calls the purge API
-  itself.
+ and are restorable *only* within the configured retention period (README.md §6), restoring one is
+ a source-mailbox operation (e.g. `Search-Mailbox`/the Recoverable Items folder in Outlook/OWA), not
+ something this scenario's scripts do or need to, since neither script ever calls the purge API
+ itself.
 - **Data already copied into DSI's investigation scope.** Purging a source item does not remove the
-  copy already stored in DSI's own Azure storage (README.md §11), that copy is only removed by
-  **deleting the investigation itself**, a portal-only action (`purview.microsoft.com/dsi` →
-  **Investigations** → select → **Delete**), which also stops that investigation's ongoing storage
-  billing (README.md §10).
+ copy already stored in DSI's own Azure storage (README.md §11), that copy is only removed by
+ **deleting the investigation itself**, a portal-only action (`purview.microsoft.com/dsi` →
+ **Investigations** → select → **Delete**), which also stops that investigation's ongoing storage
+ billing (README.md §10).
 - **Billing/AI capacity configuration.** Resetting the compute-unit maximum or processing location is
-  a portal-only setting; no script in this scenario touches it, and none is provided to reset it,
-  since there's no documented API to do so (`design.md` §6).
+ a portal-only setting; no script in this scenario touches it, and none is provided to reset it,
+ since there's no documented API to do so (`design.md` §6).
 
 ## Verification
 

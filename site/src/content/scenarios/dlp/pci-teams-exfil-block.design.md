@@ -17,35 +17,35 @@ a hard block, or the control will get disabled within a month of go-live.
 ## 2. Design goals
 
 1. Block, don't just audit, credit-card numbers leaving the tenant via Teams to external
-   participants, this is the PCI-DSS 4.0 Requirement 4 / Requirement 3 exposure this control
-   exists to close (cardholder data must not traverse open, unmonitored channels; DLP for Teams
-   is Microsoft's control point for that channel, see `README.md` §2 for the exact requirement
-   mapping).
+ participants, this is the PCI-DSS 4.0 Requirement 4 / Requirement 3 exposure this control
+ exists to close (cardholder data must not traverse open, unmonitored channels; DLP for Teams
+ is Microsoft's control point for that channel, see `README.md` §2 for the exact requirement
+ mapping).
 2. Give a single named security group (Card Operations) a narrower path: still blocked by
-   default, but able to override with a logged business justification, instead of being locked
-   out of a legitimate, already-approved workflow.
+ default, but able to override with a logged business justification, instead of being locked
+ out of a legitimate, already-approved workflow.
 3. Don't silently allow internal PAN sharing, audit it (alert + incident report) so the security
-   team has visibility to tighten the policy later, without breaking internal support workflows
-   on day one.
+ team has visibility to tighten the policy later, without breaking internal support workflows
+ on day one.
 4. Everything is idempotent and re-runnable: running `New-PciTeamsDlpPolicy.ps1` twice must not
-   create duplicate policies/rules or error out.
+ create duplicate policies/rules or error out.
 5. Ship "off" by default. The deploy script's default `-Mode` is `TestWithNotifications`
-   (simulation, no blocking, but policy tips/notifications fire) so a buyer can observe real
-   traffic against the policy before committing to `Enable`. This mirrors Microsoft's own
-   documented rollout sequence (see `README.md` §5, "Policy deployment steps").
+ (simulation, no blocking, but policy tips/notifications fire) so a buyer can observe real
+ traffic against the policy before committing to `Enable`. This mirrors Microsoft's own
+ documented rollout sequence (see `README.md` §5, "Policy deployment steps").
 
 ## 3. Why Teams DLP (not IRM, not Communication Compliance) for this control
 
 - **Insider Risk Management** detects and scores risky behavior after the fact (exfiltration
-  indicators, cumulative risk), it does not block the message in real time. Good complementary
-  signal (see `scenarios/insider-risk/departing-employee-data-theft/`, not yet built), wrong tool
-  for a hard, deterministic block on a specific regulated data type.
+ indicators, cumulative risk), it does not block the message in real time. Good complementary
+ signal (see `scenarios/insider-risk/departing-employee-data-theft/`, not yet built), wrong tool
+ for a hard, deterministic block on a specific regulated data type.
 - **Communication Compliance** reviews messages for policy violations (harassment, regulatory
-  language) after they're sent, for human reviewers, again, not a real-time block.
+ language) after they're sent, for human reviewers, again, not a real-time block.
 - **DLP for Teams** is the only Purview control that inspects a chat/channel message before
-  delivery and can block it outright. It's also the mechanism Microsoft's own PCI-DSS Compliance
-  Manager premium assessment template expects to see evidenced for the cardholder-data-in-chat
-  control area.
+ delivery and can block it outright. It's also the mechanism Microsoft's own PCI-DSS Compliance
+ Manager premium assessment template expects to see evidenced for the cardholder-data-in-chat
+ control area.
 
 ## 3a. Why a new policy, not tuning the tenant's default Teams DLP policy
 
@@ -104,7 +104,7 @@ care about, not just the individual users.
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`), per `docs/automation-surface.md` surface 2 | DLP policy/rule objects are S&C PowerShell objects, no Graph equivalent for policy authoring exists today. |
+| Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`), per [Automation surface](/docs/automation-surface/) surface 2 | DLP policy/rule objects are S&C PowerShell objects, no Graph equivalent for policy authoring exists today. |
 | Sensitive info type | Built-in **Credit Card Number** SIT | Purpose-built, Luhn-checksum-validated, maintained by Microsoft; matches the SIT used in Microsoft's own default Teams DLP policy and every regional "Financial Data" DLP template. Building a custom regex SIT would be reinventing a well-tested control, flagged explicitly in the Microsoft Product Owner review (`reviews.md`). |
 | External-sharing condition | `AccessScope = NotInOrganization` (rule-level) | Documented S&C PowerShell condition equivalent to the portal's "Content is shared from Microsoft 365 > with people outside my organization." |
 | Card Ops exception mechanism | `FromMemberOf` / `ExceptIfFromMemberOf` on a mail-enabled security group, not a named-user list | Security-group membership is auditable, survives staff turnover without script edits, and is the same primitive `rbac-model.md` recommends for scoping Purview controls generally. |
@@ -115,9 +115,9 @@ care about, not just the individual users.
 ## 7. Non-goals
 
 - This scenario does not deploy the DLP-for-**documents** control (a card-number spreadsheet
-  shared via a Teams file tab is a SharePoint/OneDrive DLP concern, see the `information-protection`
-  and future `dlp` file-sharing scenarios). It is scoped to **message text**, matching the
-  `TeamsLocation` DLP surface only.
+ shared via a Teams file tab is a SharePoint/OneDrive DLP concern, see the `information-protection`
+ and future `dlp` file-sharing scenarios). It is scoped to **message text**, matching the
+ `TeamsLocation` DLP surface only.
 - This scenario does not configure Adaptive Protection risk-based enforcement
-  (`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`, planned), the block/audit
-  split here is static (group membership + share target), not risk-score-driven.
+ (`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`, planned), the block/audit
+ split here is static (group membership + share target), not risk-score-driven.

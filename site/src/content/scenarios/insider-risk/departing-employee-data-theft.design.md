@@ -21,49 +21,49 @@ the HR resignation-date data feed, and a Graph-based alert export path for SOC i
 ## 2. Design goals
 
 1. Start risk scoring for a user **before** their last working day, not after, the highest-
-   value exfiltration window is the notice period, and a policy triggered only by account
-   deletion (post-departure) misses it entirely.
+ value exfiltration window is the notice period, and a policy triggered only by account
+ deletion (post-departure) misses it entirely.
 2. Automate the parts of this template that have a genuinely scriptable, idempotent-safe
-   surface, the HR-connector app registration bootstrap, and uploading HR resignation/
-   termination data on a recurring schedule, rather than leaving them manual, easily-forgotten
-   portal tasks.
+ surface, the HR-connector app registration bootstrap, and uploading HR resignation/
+ termination data on a recurring schedule, rather than leaving them manual, easily-forgotten
+ portal tasks.
 3. Be explicit about what **cannot** be scripted. Unlike the DLP scenarios in this library,
-   Insider Risk Management policy authoring, priority-user-group management, and role-group
-   assignment have no PowerShell or Graph write surface as of this writing (`docs/
-   automation-surface.md` §6, "IRM has limited PowerShell coverage; most policy authoring is
-   portal-driven"). This scenario does not pretend otherwise: the README's step-by-step is
-   portal-first for those pieces, with a config manifest as the single source of truth for
-   what to enter, rather than a fabricated cmdlet.
+ Insider Risk Management policy authoring, priority-user-group management, and role-group
+ assignment have no PowerShell or Graph write surface as of this writing (`docs/
+ automation-surface.md` §6, "IRM has limited PowerShell coverage; most policy authoring is
+ portal-driven"). This scenario does not pretend otherwise: the README's step-by-step is
+ portal-first for those pieces, with a config manifest as the single source of truth for
+ what to enter, rather than a fabricated cmdlet.
 4. Close the operational loop: once alerts exist, get them out of the Purview portal and into
-   wherever the SOC actually works, via the Microsoft Graph security API, the one part of the
-   *output* side that is genuinely automatable and Microsoft's own documented integration path.
+ wherever the SOC actually works, via the Microsoft Graph security API, the one part of the
+ *output* side that is genuinely automatable and Microsoft's own documented integration path.
 5. Minimize the personal data footprint of the automation itself. The HR resignation CSV this
-   scenario uploads carries only `UserPrincipalName`, `ResignationDate`, and `LastWorkingDate`
+ scenario uploads carries only `UserPrincipalName`, `ResignationDate`, and `LastWorkingDate`
 , not the optional employee-profile fields (name, home address) that a different HR
-   scenario (job-level/performance data) would need. Least data in motion, least data at rest.
+ scenario (job-level/performance data) would need. Least data in motion, least data at rest.
 
 ## 3. Why Insider Risk Management (not DLP alone) for this scenario
 
 - **DLP** (see `scenarios/dlp/pci-teams-exfil-block/`) inspects and can block a single
-  message or upload against a fixed rule, in real time, at the moment of transmission. It has
-  no concept of "this user resigned nine days ago" and cannot correlate a SharePoint download
-  today with a printed folder yesterday and a personal-Dropbox upload the day before, 
-  each looks unremarkable in isolation.
+ message or upload against a fixed rule, in real time, at the moment of transmission. It has
+ no concept of "this user resigned nine days ago" and cannot correlate a SharePoint download
+ today with a printed folder yesterday and a personal-Dropbox upload the day before, 
+ each looks unremarkable in isolation.
 - **Insider Risk Management** is purpose-built for exactly that correlation: it ingests
-  Microsoft 365 and Microsoft Graph activity signals plus an HR/identity **triggering event**,
-  scores **risk indicators** over a rolling **activation window** (30 days by default, with up
-  to 90 days of retrospective lookback from the triggering event), and raises an alert when
-  the pattern, not a single event, crosses a threshold.
+ Microsoft 365 and Microsoft Graph activity signals plus an HR/identity **triggering event**,
+ scores **risk indicators** over a rolling **activation window** (30 days by default, with up
+ to 90 days of retrospective lookback from the triggering event), and raises an alert when
+ the pattern, not a single event, crosses a threshold.
 - The two are complementary, not competing: this scenario's design doc for the DLP PCI/Teams
-  template already flagged split-message and cumulative exfiltration as a residual risk it
-  couldn't close alone, and pointed here. This scenario is that follow-on: IRM's **cumulative
-  exfiltration** and **sequence detection** risk factors are exactly the cross-event
-  correlation a single-message DLP rule structurally cannot provide.
+ template already flagged split-message and cumulative exfiltration as a residual risk it
+ couldn't close alone, and pointed here. This scenario is that follow-on: IRM's **cumulative
+ exfiltration** and **sequence detection** risk factors are exactly the cross-event
+ correlation a single-message DLP rule structurally cannot provide.
 - **Adaptive Protection** (`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`,
-  planned next in `PROGRESS.md`) is the natural next step after this scenario: it consumes the
-  risk *level* this policy produces and uses it to dynamically tighten DLP/label enforcement
-  for that specific user, without a human in the loop for the first response. Out of scope
-  here, this scenario ends at detection and alerting, not automated enforcement.
+ planned next in `PROGRESS.md`) is the natural next step after this scenario: it consumes the
+ risk *level* this policy produces and uses it to dynamically tighten DLP/label enforcement
+ for that specific user, without a human in the loop for the first response. Out of scope
+ here, this scenario ends at detection and alerting, not automated enforcement.
 
 ## 4. Policy architecture (what's deployed where)
 
@@ -96,7 +96,7 @@ flowchart TD
 
 This mixed profile is the honest shape of this module today, not a shortfall of this
 scenario's build, see the Microsoft Product Owner review in `reviews.md` for the explicit
-check against `docs/automation-surface.md`.
+check against [Automation surface](/docs/automation-surface/).
 
 ## 5. Data flow / where scoring happens
 
@@ -123,7 +123,7 @@ run cycle, see Operations §8 in the README for the recommended cadence.
 | Triggering event | HR connector resignation/termination date, **with** `User account deleted from Microsoft Entra ID` also enabled as a fallback | Microsoft's own guidance treats the HR connector as optional for this template specifically *because* of this fallback, but the fallback alone only fires at account deletion, typically the *end* of the risk window, not the start. This scenario treats the HR connector as the primary signal and the Entra fallback as a safety net for any departure the HR feed missed (e.g., immediate termination with no advance CSV entry), not a substitute. |
 | Priority user group | Not deployed by default; scenario documents how to add one | A departing employee with elevated data access (finance, engineering with source access, an executive) should also be a priority user, which sharpens alert severity, but making that decision requires the buyer's own access-tier mapping, which this scenario can't assume. README §8 (Operations & tuning) covers when/how to add it. |
 | HR CSV data minimization | Only `UserPrincipalName`, `ResignationDate`, `LastWorkingDate` | The Employee resignation CSV schema supports only these three columns (per `import-hr-data`); this scenario does not use the separate, optional Employee profile connector (name/address/department), which this template doesn't require. |
-| HR connector auth | Client secret (`appSecret`), **not** the certificate-based app-only pattern used everywhere else in this repo (`docs/automation-surface.md` §3) | Microsoft's own documented HR-connector ingestion sample script (`import-hr-data` Step 4, GitHub `m365-compliance-connector-sample-scripts`) authenticates via OAuth 2.0 client-credentials with an application ID + secret against `login.windows.net`; no certificate-credential variant of this specific ingestion flow is documented. This is a deliberate, cited deviation, not an oversight, mitigated in README §3/§11 with short secret-rotation guidance, a hard requirement to store the secret in a vault (never in this repo or on disk in plaintext), and a single-purpose app registration with **no Microsoft Graph API permissions granted**, so a leaked secret can only submit HR resignation records, not read tenant data (Red Team finding, `reviews.md`). |
+| HR connector auth | Client secret (`appSecret`), **not** the certificate-based app-only pattern used everywhere else in this repo ([Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended)) | Microsoft's own documented HR-connector ingestion sample script (`import-hr-data` Step 4, GitHub `m365-compliance-connector-sample-scripts`) authenticates via OAuth 2.0 client-credentials with an application ID + secret against `login.windows.net`; no certificate-credential variant of this specific ingestion flow is documented. This is a deliberate, cited deviation, not an oversight, mitigated in README §3/§11 with short secret-rotation guidance, a hard requirement to store the secret in a vault (never in this repo or on disk in plaintext), and a single-purpose app registration with **no Microsoft Graph API permissions granted**, so a leaked secret can only submit HR resignation records, not read tenant data (Red Team finding, `reviews.md`). |
 | App registration creation | `deploy/Register-HrConnectorApp.ps1` (generic `Microsoft.Graph.Applications` cmdlets), interactive delegated auth (`Application.ReadWrite.All`) | Not this repo's usual app-only certificate pattern, deliberately: this is a one-time (or rarely-run, for rotation) bootstrap task performed by a human admin, not a scheduled unattended job. A standing app-only credential empowered to create other app registrations and mint their secrets would be a materially higher-value target than the interactive session this task actually needs. Idempotent by display-name lookup; `-RotateSecret` adds a secret without duplicating the app. |
 | Superseded-secret cleanup | `deploy/Remove-HrConnectorAppSecret.ps1 -RemoveExpired` (`Remove-MgApplicationPassword`), same interactive delegated auth | `-RotateSecret` above only ever adds a secret, Microsoft Entra applications support multiple concurrent client secrets by design, so nothing deletes the superseded one automatically. This script closes that gap as a separate, explicit step (not folded into `-RotateSecret` itself) so an operator can confirm the new secret works in production before retiring the old one, rather than the rotation script assuming that's already true. `-RemoveExpired` only ever targets already-dead credentials, so it can never reduce the app's working secret count; the separate `-KeyId`/`-Force` path exists for the rarer case of force-retiring a still-valid secret (e.g. suspected exposure). |
 | Alert export mechanism | Microsoft Graph Security API `/security/alerts_v2`, filtered client-side on `detectionSource eq 'microsoftInsiderRiskManagement'` | This is Microsoft's own documented integration path for getting IRM alert data into a SIEM (`irm-investigate-alerts-defender`). Client-side filtering (not server-side `$filter`) is used deliberately, see README §11 for why. |
@@ -132,13 +132,13 @@ run cycle, see Operations §8 in the README for the recommended cadence.
 ## 7. Non-goals
 
 - This scenario does not configure **Adaptive Protection** (risk-based dynamic DLP/label
-  enforcement), that consumes this policy's output and is `scenarios/adaptive-protection/
-  dynamic-risk-dlp-enforcement/` (planned, next in `PROGRESS.md`).
+ enforcement), that consumes this policy's output and is `scenarios/adaptive-protection/
+ dynamic-risk-dlp-enforcement/` (planned, next in `PROGRESS.md`).
 - This scenario does not configure the **Security policy violations by departing users**
-  template (a related but distinct template requiring Microsoft Defender for Endpoint
-  integration), that's a candidate follow-up fragment, not this one.
+ template (a related but distinct template requiring Microsoft Defender for Endpoint
+ integration), that's a candidate follow-up fragment, not this one.
 - This scenario does not configure **forensic evidence capture** (video/screen capture on
-  flagged devices), a licensed add-on this template can optionally use; noted as a possible
-  enhancement in README §11, not deployed here.
+ flagged devices), a licensed add-on this template can optionally use; noted as a possible
+ enhancement in README §11, not deployed here.
 - This scenario does not automate priority-user-group membership, role-group assignment, or
-  case/alert triage, all portal-only actions with no grounded scriptable surface (§6).
+ case/alert triage, all portal-only actions with no grounded scriptable surface (§6).

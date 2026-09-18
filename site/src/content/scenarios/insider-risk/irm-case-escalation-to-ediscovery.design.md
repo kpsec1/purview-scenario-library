@@ -7,7 +7,7 @@ parent: "insider-risk/irm-case-escalation-to-ediscovery"
 Microsoft's own documentation confirms the integration exists and names the mechanism: Insider
 Risk Management's **"Escalate for investigation"** case action opens a new eDiscovery (Premium)
 case, and the resulting case appears under **eDiscovery → Advanced** in the Microsoft Purview
-portal [[R1]](#references-design)[[R2]](#references-design). But the escalation action itself has
+portal. But the escalation action itself has
 **no Graph or PowerShell API**, it is reachable only through the case action toolbar in the
 Insider Risk Management **Cases** dashboard. This matches a pattern this library has already
 documented for several other Purview surfaces (Compliance Manager assessment creation,
@@ -18,21 +18,21 @@ and automates everything *downstream* of the one manual click, using APIs this l
 already grounded and used elsewhere:
 
 - **Custodian + hold provisioning**, the identical `applyHold` pattern from
-  `scenarios/ediscovery/premium-legal-hold-and-export/deploy/New-EdiscoveryPremiumLegalHold.ps1`,
-  duplicated (not dot-sourced) into this scenario's own `deploy/` tree per this repo's
-  one-scenario-one-self-contained-deploy-tree convention (every other scenario in this library
-  follows the same rule, see, for example, how `scenarios/unified-catalog/manage-data-products/`
-  re-implements rather than imports `curate-business-glossary`'s owner-resolution pattern).
+ `scenarios/ediscovery/premium-legal-hold-and-export/deploy/New-EdiscoveryPremiumLegalHold.ps1`,
+ duplicated (not dot-sourced) into this scenario's own `deploy/` tree per this repo's
+ one-scenario-one-self-contained-deploy-tree convention (every other scenario in this library
+ follows the same rule, see, for example, how `scenarios/unified-catalog/manage-data-products/`
+ re-implements rather than imports `curate-business-glossary`'s owner-resolution pattern).
 - **IRM alert lookup**, `Get-MgSecurityAlertV2 -AlertId`, the get-by-ID parameter set of the same
-  cmdlet `scenarios/insider-risk/departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1`
-  already uses for bulk alert export [[R3]](#references-design).
+ cmdlet `scenarios/insider-risk/departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1`
+ already uses for bulk alert export.
 
 ## 2. The provenance-linking problem, and why the case `description` field is the answer
 
 The `microsoft.graph.security.ediscoveryCase` resource has exactly eight writable/settable
 properties, and none of them identifies where the case came from: no `source`, `origin`,
 `caseType`, or foreign-key-shaped field of any kind exists on the resource
-[[R4]](#references-design). Once an investigator clicks "Escalate for investigation," the only
+. Once an investigator clicks "Escalate for investigation," the only
 programmatic trace connecting the new eDiscovery case back to the Insider Risk Management case
 and its alerts is whatever the investigator typed into the escalation dialog's own name/notes
 fields, and Microsoft's documentation doesn't specify a naming convention, so two different
@@ -44,17 +44,17 @@ only fields the v1.0 API actually exposes rather than inventing a linkage Micros
 support:
 
 1. **A documented naming convention** (`IRM-<IRM Case ID>-<UPN local part>`, README.md §5) for the
-   case name typed into the escalation dialog, this is *this repo's own convention*, not a
-   Microsoft one, and is the only way `deploy/Confirm-EdiscoveryEscalationLink.ps1` can find the
-   escalated case by `displayName` (the same client-side exact-match lookup pattern the sibling
-   scenario's `design.md` §4 already establishes for the "no documented case-name uniqueness
-   filter API" gap).
+ case name typed into the escalation dialog, this is *this repo's own convention*, not a
+ Microsoft one, and is the only way `deploy/Confirm-EdiscoveryEscalationLink.ps1` can find the
+ escalated case by `displayName` (the same client-side exact-match lookup pattern the sibling
+ scenario's `design.md` §4 already establishes for the "no documented case-name uniqueness
+ filter API" gap).
 2. **A delimited provenance block stamped into the case `description` field**, the one free-text
-   property `Update-MgSecurityCaseEdiscoveryCase` can write [[R5]](#references-design), recording
-   the source IRM case ID, the escalated user, and a best-effort resolved list of the IRM alerts
-   that led to the escalation. The block is delimited by fixed marker strings so a re-run can
-   detect it (idempotent, no duplicate stamp) without disturbing whatever notes an investigator
-   already typed into the description themselves.
+ property `Update-MgSecurityCaseEdiscoveryCase` can write, recording
+ the source IRM case ID, the escalated user, and a best-effort resolved list of the IRM alerts
+ that led to the escalation. The block is delimited by fixed marker strings so a re-run can
+ detect it (idempotent, no duplicate stamp) without disturbing whatever notes an investigator
+ already typed into the description themselves.
 
 Both mechanisms are disclosed as *this scenario's* design choice, not a Microsoft-native linkage, 
 see README.md §11 and the Product Owner review round in `reviews.md`.
@@ -75,15 +75,15 @@ Microsoft's documentation for "Escalate for investigation" describes the dialog 
 notice-template fields) and confirms the new case is created, but does not state whether the
 flagged user is automatically added as a custodian with a hold applied, or whether the new case
 starts empty and the legal team is expected to add custodians themselves (the same way they would
-for any newly created eDiscovery case) [[R2]](#references-design). Rather than guess either
+for any newly created eDiscovery case). Rather than guess either
 answer, `Confirm-EdiscoveryEscalationLink.ps1` treats custodian/userSource/hold provisioning as an
 idempotent target-state reconciliation, identical in mechanism to
 `New-EdiscoveryPremiumLegalHold.ps1`'s own find-or-create logic:
 
 - If the portal already added the user as a custodian with a hold, every step in this script is a
-  no-op (find-or-create finds; `HoldStatus == 'success'` skips the `applyHold` call), safe.
+ no-op (find-or-create finds; `HoldStatus == 'success'` skips the `applyHold` call), safe.
 - If it didn't, this script does the work that would otherwise require someone to remember to do
-  it manually after every escalation, the actual value this scenario adds beyond documentation.
+ it manually after every escalation, the actual value this scenario adds beyond documentation.
 
 This is the same "unconditionally reconcile to a declared target state, and let idempotency do the
 safety work" philosophy this library uses throughout (see, for example,
@@ -93,31 +93,31 @@ pattern), applied here to resolve a genuine unknown rather than a confirmed fact
 ## 4. Non-goals (explicitly out of scope for this fragment)
 
 - **Triggering the escalation itself.** No Graph/PowerShell write API exists for it, see §1. A
-  human with Insider Risk Management Investigator/Analyst access must complete the portal step
-  first; this scenario begins after that click.
+ human with Insider Risk Management Investigator/Analyst access must complete the portal step
+ first; this scenario begins after that click.
 - **A genuinely automatic, event-driven trigger for `Confirm-EdiscoveryEscalationLink.ps1` upon
-  escalation.** See §5, neither Power Automate's IRM triggers nor the IRM audit log offer one as
-  currently documented; a scheduled poll (README.md §8) is the only unattended option today.
+ escalation.** See §5, neither Power Automate's IRM triggers nor the IRM audit log offer one as
+ currently documented; a scheduled poll (README.md §8) is the only unattended option today.
 - **Resolving, assigning, or otherwise acting on the source Insider Risk Management case.** IRM
-  case management (as opposed to read-only alert export) has no documented Graph/PowerShell write
-  API, the same finding `scenarios/insider-risk/departing-employee-data-theft/design.md` §6
-  already recorded and left as a non-goal for that scenario. This scenario adds nothing new on
-  that front; it only reads alert metadata for the provenance block.
+ case management (as opposed to read-only alert export) has no documented Graph/PowerShell write
+ API, the same finding `scenarios/insider-risk/departing-employee-data-theft/design.md` §6
+ already recorded and left as a non-goal for that scenario. This scenario adds nothing new on
+ that front; it only reads alert metadata for the provenance block.
 - **Search, review set, and export.** Once this scenario's custodian/hold is in place, the case is
-  functionally identical to one built entirely by
-  `scenarios/ediscovery/premium-legal-hold-and-export/`, and that scenario's own
-  `New-EdiscoverySearchReviewSetExport.ps1` / `Get-EdiscoveryExportPackage.ps1` /
-  `Export-EdiscoveryAuditTrail.ps1` scripts apply unmodified from that point forward, deliberately
-  not duplicated here.
+ functionally identical to one built entirely by
+ `scenarios/ediscovery/premium-legal-hold-and-export/`, and that scenario's own
+ `New-EdiscoverySearchReviewSetExport.ps1` / `Get-EdiscoveryExportPackage.ps1` /
+ `Export-EdiscoveryAuditTrail.ps1` scripts apply unmodified from that point forward, deliberately
+ not duplicated here.
 - **Closing, reopening, or deleting the eDiscovery case.** Same reasoning, this scenario only adds
-  a custodian/description to an existing case; the sibling scenario's
-  `Remove-EdiscoveryPremiumLegalHold.ps1 -CaseId ... -CloseCase/-DeleteCase` already owns that
-  lifecycle for any case built with this library's tooling, escalated or not.
+ a custodian/description to an existing case; the sibling scenario's
+ `Remove-EdiscoveryPremiumLegalHold.ps1 -CaseId... -CloseCase/-DeleteCase` already owns that
+ lifecycle for any case built with this library's tooling, escalated or not.
 - **Auto-discovering escalated cases without the naming convention.** Given §2's finding (no
-  `source`/`origin` field on `ediscoveryCase`), there is no way to enumerate "all eDiscovery cases
-  that originated from an IRM escalation" without either the naming convention this scenario
-  establishes or a human manually cross-referencing case-creation timestamps against IRM case
-  escalation notes, a follow-up worth tracking only if Microsoft ships a linking field.
+ `source`/`origin` field on `ediscoveryCase`), there is no way to enumerate "all eDiscovery cases
+ that originated from an IRM escalation" without either the naming convention this scenario
+ establishes or a human manually cross-referencing case-creation timestamps against IRM case
+ escalation notes, a follow-up worth tracking only if Microsoft ships a linking field.
 
 ## 5. Why "wire this to run automatically on escalation" stays unresolved, not guessed
 
@@ -126,22 +126,22 @@ Automate flow triggered on escalation", implying the two were equally automatic.
 grounding pass on this fragment found that characterization wrong and corrected it:
 
 - Microsoft's own custom-flow documentation for Insider Risk Management states its case-scoped
-  trigger is something "you can select … from the Insider Risk Management Cases dashboard"
-  [[R6]](#references-design) and that running it is a three-step manual action, "Select **Automate**
-  on the case action toolbar," "Choose the Power Automate flow to run," "select **Run flow**"
-  [[R2]](#references-design), not a subscription that fires when a case is escalated. Of the five
-  documented Purview-connector actions available to a custom IRM flow (Get alert/case/user/
-  alerts-for-case, Add case note [[R6]](#references-design)), none is a trigger *or* action tied to
-  escalation specifically, and none can invoke an external script, a custom flow would need a
-  generic, non-Purview action (HTTP/webhook, Azure Automation, Functions) added on top, which is
-  ordinary Power Automate capability but is flagged in Microsoft's own licensing note as potentially
-  requiring **more Power Automate licenses** than the recommended templates need
-  [[R6]](#references-design).
+ trigger is something "you can select … from the Insider Risk Management Cases dashboard"
+ and that running it is a three-step manual action, "Select **Automate**
+ on the case action toolbar," "Choose the Power Automate flow to run," "select **Run flow**"
+, not a subscription that fires when a case is escalated. Of the five
+ documented Purview-connector actions available to a custom IRM flow (Get alert/case/user/
+ alerts-for-case, Add case note), none is a trigger *or* action tied to
+ escalation specifically, and none can invoke an external script, a custom flow would need a
+ generic, non-Purview action (HTTP/webhook, Azure Automation, Functions) added on top, which is
+ ordinary Power Automate capability but is flagged in Microsoft's own licensing note as potentially
+ requiring **more Power Automate licenses** than the recommended templates need
+.
 - The **Insider Risk Management audit log**, a plausible alternative "poll for the escalation event
-  instead of polling the case itself" mechanism, is explicitly documented as "independent" of the
-  Microsoft 365 unified audit log this library's other audit-trail scripts query via
-  `Search-UnifiedAuditLog`, and is viewable/exportable only through the Purview portal, with no
-  Graph/REST endpoint of its own found during this pass [[R7]](#references-design).
+ instead of polling the case itself" mechanism, is explicitly documented as "independent" of the
+ Microsoft 365 unified audit log this library's other audit-trail scripts query via
+ `Search-UnifiedAuditLog`, and is viewable/exportable only through the Purview portal, with no
+ Graph/REST endpoint of its own found during this pass.
 
 Neither path is a Microsoft-documented, automatable, event-driven trigger. Rather than build a
 custom Power Automate flow whose value (skipping a tool-switch, not skipping a manual click) doesn't

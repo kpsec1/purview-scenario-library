@@ -16,24 +16,24 @@ Microsoft's own sample demonstrates, no more, no less.
 ## 2. Design goals
 
 1. **Reproduce Microsoft's own worked sample shape exactly, not a generalized approximation.** The
-   `deny_all_bluetooth_devices_except_samsung.json` sample (fetched directly from GitHub during this
-   fragment's build, §3) is the only confirmed reference for a Bluetooth exception; this fragment's
-   group/rule shapes match it clause-for-clause and entry-for-entry, adapted only where this shared
-   policy's own already-established `defaultEnforcement` setting requires a difference (§4).
+ `deny_all_bluetooth_devices_except_samsung.json` sample (fetched directly from GitHub during this
+ fragment's build, §3) is the only confirmed reference for a Bluetooth exception; this fragment's
+ group/rule shapes match it clause-for-clause and entry-for-entry, adapted only where this shared
+ policy's own already-established `defaultEnforcement` setting requires a difference (§4).
 2. **Extend the existing shared rule, don't create a competing one.** Per this repository's own
-   established precedent (design goal 1 of the portable-device-coverage fragment this one extends),
-   modifying the existing `Deny-AllBluetoothDevices` rule's `excludeGroups` in place is the only
-   conflict-free way to add an exception, a second, independent Bluetooth rule targeting an
-   overlapping device set has no documented precedence semantics against the first.
+ established precedent (design goal 1 of the portable-device-coverage fragment this one extends),
+ modifying the existing `Deny-AllBluetoothDevices` rule's `excludeGroups` in place is the only
+ conflict-free way to add an exception, a second, independent Bluetooth rule targeting an
+ overlapping device set has no documented precedence semantics against the first.
 3. **Preserve every existing group/rule exactly**, including the very entries of the rule this
-   fragment modifies. The deploy script reproduces `Deny-AllBluetoothDevices`'s two entries
-   byte-for-byte from the live object (not re-derived from a hardcoded literal), see §4.
+ fragment modifies. The deploy script reproduces `Deny-AllBluetoothDevices`'s two entries
+ byte-for-byte from the live object (not re-derived from a hardcoded literal), see §4.
 4. **Cap scope at exactly one approved device in v1**, matching the PROGRESS.md follow-up's own
-   framing and Microsoft's sample (one device, "Samsung Galaxy S21"). Explicitly refuse, not
-   silently mishandle, more than one configured device, per `AGENTS.md` §4's grounding discipline
-   (§6, §8).
+ framing and Microsoft's sample (one device, "Samsung Galaxy S21"). Explicitly refuse, not
+ silently mishandle, more than one configured device, per `AGENTS.md` §4's grounding discipline
+ (§6, §8).
 5. **State the model-not-unit identifier weakness and the cross-fragment ordering hazard honestly**,
-   both disclosed in `README.md` §11 rather than left implicit.
+ both disclosed in `README.md` §11 rather than left implicit.
 
 ## 3. Grounding: the confirmed worked sample
 
@@ -104,18 +104,18 @@ without requiring a single connecting device to match both vendor+product pairs 
 which is impossible. Two independent workarounds exist, both deliberately deferred:
 
 - **A separate allow rule + exception group per device.** Mechanically straightforward, but scales
-  the shared policy's rule/group count linearly with approved-device count and needs a config-driven
-  loop generating deterministic fixed GUIDs per array index, a heavier idempotency surface than
-  this fragment's current fixed-four-GUID design, better scoped as its own follow-up once there's a
-  concrete multi-device requirement to design against.
+ the shared policy's rule/group count linearly with approved-device count and needs a config-driven
+ loop generating deterministic fixed GUIDs per array index, a heavier idempotency surface than
+ this fragment's current fixed-four-GUID design, better scoped as its own follow-up once there's a
+ concrete multi-device requirement to design against.
 - **A combining group using `groupId` clauses** (Microsoft's Clause reference documents `groupId`:
-  "Match if a device is a member of another group") to OR together multiple per-device sub-groups
-  under one combining group, referenced once in `includeGroups`/`excludeGroups`. This is the same
-  per-device sub-group + dynamic-`groupId`-clause-nesting technique this repository's sibling
-  scenarios (`defender-device-control-usb-allowlist-macos-vendor-product-matching/`,
-  `defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md` §5) already defer
-  as unverified complexity requiring a stable, deterministic GUID-per-device scheme not yet
-  independently confirmed against a pilot tenant.
+ "Match if a device is a member of another group") to OR together multiple per-device sub-groups
+ under one combining group, referenced once in `includeGroups`/`excludeGroups`. This is the same
+ per-device sub-group + dynamic-`groupId`-clause-nesting technique this repository's sibling
+ scenarios (`defender-device-control-usb-allowlist-macos-vendor-product-matching/`,
+ `defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md` §5) already defer
+ as unverified complexity requiring a stable, deterministic GUID-per-device scheme not yet
+ independently confirmed against a pilot tenant.
 
 Rather than build either without a concrete second-device requirement to validate the design
 against, this fragment ships exactly Microsoft's own demonstrated shape, one approved device, and
@@ -160,20 +160,20 @@ that script has no knowledge this fragment exists, and was already reviewed and 
 this fragment's PROGRESS.md follow-up was written. Two options were considered:
 
 1. **Modify the earlier, already-reviewed script to be aware of this fragment's exclusion.** Rejected
-   for this v1: it reopens a finished, four-lens-reviewed fragment to add cross-fragment coupling in
-   the opposite direction (a foundational script depending on knowledge of an optional extension
-   three layers up), which is a larger and riskier change than this fragment's own stated scope, and
-   isn't the kind of small, targeted backport this repository otherwise reserves for genuine
-   corrections (compare the doc-only prerequisite backport tracked elsewhere in `PROGRESS.md`, not a
-   behavioral change to a shared script).
+ for this v1: it reopens a finished, four-lens-reviewed fragment to add cross-fragment coupling in
+ the opposite direction (a foundational script depending on knowledge of an optional extension
+ three layers up), which is a larger and riskier change than this fragment's own stated scope, and
+ isn't the kind of small, targeted backport this repository otherwise reserves for genuine
+ corrections (compare the doc-only prerequisite backport tracked elsewhere in `PROGRESS.md`, not a
+ behavioral change to a shared script).
 2. **Disclose the hazard explicitly and detect it at validation time.** Adopted. This fragment's
-   `deploy/Add-MacBluetoothDeviceAllowlist.ps1` always rebuilds `Deny-AllBluetoothDevices` itself on
-   every run (so running this fragment last always produces the correct state), and
-   `validate/Test-MacBluetoothDeviceAllowlist.ps1` distinguishes "never configured" from "drifted
-   because the prerequisite fragment's `-Force` ran afterward" as two different check outcomes, with
-   the exact remediation named in the failure message. This is the same "state genuinely open gaps
-   honestly rather than resolve them by guessing or by an out-of-scope fix" discipline `AGENTS.md`
-   §4 establishes, applied to an operational/sequencing gap rather than a product-fact gap.
+ `deploy/Add-MacBluetoothDeviceAllowlist.ps1` always rebuilds `Deny-AllBluetoothDevices` itself on
+ every run (so running this fragment last always produces the correct state), and
+ `validate/Test-MacBluetoothDeviceAllowlist.ps1` distinguishes "never configured" from "drifted
+ because the prerequisite fragment's `-Force` ran afterward" as two different check outcomes, with
+ the exact remediation named in the failure message. This is the same "state genuinely open gaps
+ honestly rather than resolve them by guessing or by an out-of-scope fix" discipline `AGENTS.md`
+ §4 establishes, applied to an operational/sequencing gap rather than a product-fact gap.
 
 ## 9. Non-goals
 
@@ -181,17 +181,17 @@ this fragment's PROGRESS.md follow-up was written. Two options were considered:
 - This scenario does not resolve the `vendorId`/`productId`-identifies-a-model-not-a-unit limitation
 , no stronger mechanism is Microsoft-documented for this device family (§6).
 - This scenario does not modify `defender-device-control-usb-allowlist-macos-portable-device-
-  coverage/deploy/Add-MacPortableDeviceCoverage.ps1` to make it aware of this fragment (§8), the
-  ordering hazard is disclosed and detected, not engineered away by coupling the two scripts.
+ coverage/deploy/Add-MacPortableDeviceCoverage.ps1` to make it aware of this fragment (§8), the
+ ordering hazard is disclosed and detected, not engineered away by coupling the two scripts.
 - This scenario does not deploy via JAMF as a separate build. Because the underlying
-  `deviceControl.policy` JSON schema is identical across the Intune and JAMF deployment paths (the
-  same reasoning the portable-device-coverage fragment's own `design.md` §8 already establishes for
-  its own scope), the group/rule shape this fragment grounds applies equally to
-  `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`'s JAMF-managed sibling, a JAMF
-  admin can apply the identical JSON delta through that scenario's own manual-console workflow.
+ `deviceControl.policy` JSON schema is identical across the Intune and JAMF deployment paths (the
+ same reasoning the portable-device-coverage fragment's own `design.md` §8 already establishes for
+ its own scope), the group/rule shape this fragment grounds applies equally to
+ `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`'s JAMF-managed sibling, a JAMF
+ admin can apply the identical JSON delta through that scenario's own manual-console workflow.
 - This scenario does not address `serialNumber`, `mediaSerialNumber`/`mediaProductName`/
-  `mediaApplicationId`, or `encryption: apfs` clauses for Bluetooth, out of scope, matching every
-  sibling fragment's own non-goals.
+ `mediaApplicationId`, or `encryption: apfs` clauses for Bluetooth, out of scope, matching every
+ sibling fragment's own non-goals.
 
 ## References
 

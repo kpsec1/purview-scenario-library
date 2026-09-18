@@ -7,7 +7,7 @@ parent: "data-lifecycle-management/adaptive-scope-retention"
 This scenario deploys a **Keep-only** retention policy (`RetentionComplianceAction: Keep`), not a
 record or regulatory record label. Per Microsoft's own documented behavior for
 `Remove-RetentionComplianceRule`: removing the rule "causes the release of all Exchange mailbox and
-SharePoint site retentions that are associated with the rule" [[1]](#references), i.e. there is
+SharePoint site retentions that are associated with the rule", i.e. there is
 **no permanently locked content to force-release** the way there is for
 `scenarios/data-lifecycle-management/retention-labels-financial-records/`. Rollback here is
 materially lower-risk. The residual risk is different: an **over-broad adaptive scope query**
@@ -35,7 +35,7 @@ mis-scoped rollout while you fix the adaptive scope's query.
 ```
 
 `Remove-RetentionCompliancePolicy` removes the policy **and its rule together** (Microsoft's own
-documented behavior) [[2]](#references) and, per the citation above, releases the retention that
+documented behavior) and, per the citation above, releases the retention that
 was in force. This is a clean rollback: nothing is left locked.
 
 ### Stage 3, Also remove the adaptive scope (optional)
@@ -45,7 +45,7 @@ was in force. This is a clean rollback: nothing is left locked.
 ```
 
 Attempts `Remove-AdaptiveScope`. Adaptive scopes are reusable across retention policies, Insider
-Risk Management policies, and Communication Compliance policies [[3]](#references), **only remove
+Risk Management policies, and Communication Compliance policies, **only remove
 the scope if you're certain nothing else references it.** The script reports a failure rather than
 forcing it; pass `-ForceScopeDeletion` (→ `Remove-AdaptiveScope -ForceDeletion`) only after
 confirming that in the portal (**Settings** > **Roles and scopes** > **Adaptive scopes**).
@@ -53,11 +53,11 @@ confirming that in the portal (**Settings** > **Roles and scopes** > **Adaptive 
 ## What rollback does **not** undo
 
 - **Content that was deleted under a `KeepAndDelete`/`Delete` variant of this policy** (this
-  scenario's sample config is `Keep`-only, but the same object model supports the stronger
-  actions), deletion, once it happens, is not reversible by this or any rollback.
+ scenario's sample config is `Keep`-only, but the same object model supports the stronger
+ actions), deletion, once it happens, is not reversible by this or any rollback.
 - **The distribution/population delay on the way back in.** Re-enabling the policy or re-creating
-  the scope restarts the same up-to-5-day (scope) / multi-day (policy distribution) delays
-  documented in `README.md` Section 7/8, rollback is not instant to reverse either.
+ the scope restarts the same up-to-5-day (scope) / multi-day (policy distribution) delays
+ documented in `README.md` Section 7/8, rollback is not instant to reverse either.
 
 ## Verification after rollback
 

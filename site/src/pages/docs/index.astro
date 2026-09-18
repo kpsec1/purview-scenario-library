@@ -1,0 +1,108 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const docs = await getCollection('refdocs');
+
+const BLURBS: Record<string, string> = {
+  'licensing-matrix':
+    'Billing models, the capability to license matrix, add-on SKUs, and how scenarios cite licensing.',
+  'rbac-model':
+    'The distinct RBAC systems across Purview, Entra, Exchange, Intune, and Defender, and the roles each scenario needs.',
+  'automation-surface':
+    'The PowerShell and Graph automation surfaces, authentication patterns, and which surface each task uses.',
+  glossary: 'Shared terminology used across the scenario library.',
+};
+
+const order = ['licensing-matrix', 'rbac-model', 'automation-surface', 'glossary'];
+const sorted = [...docs].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+---
+
+<Base title="Reference docs" description="Shared reference material for the Purview scenario library.">
+  <section class="wrap head">
+    <p class="eyebrow">Reference</p>
+    <h1>Shared reference docs</h1>
+    <p class="lead">
+      The supporting material the scenarios cite: licensing, roles and permissions, automation
+      surfaces, and terminology. Each scenario links to the exact section it depends on.
+    </p>
+  </section>
+
+  <section class="wrap">
+    <div class="grid">
+      {
+        sorted.map((d) => (
+          <a class="card" href={`/docs/${d.id}/`}>
+            <span class="card-title">{d.data.title}</span>
+            {BLURBS[d.id] && <span class="card-blurb">{BLURBS[d.id]}</span>}
+            <span class="card-go" aria-hidden="true">Read →</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <style>
+    .head {
+      padding-top: 48px;
+    }
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 0 0 10px;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 2.6rem);
+      font-weight: 900;
+      margin: 0 0 12px;
+    }
+    .lead {
+      max-width: 66ch;
+      color: var(--body);
+      font-size: 1.08rem;
+    }
+    .grid {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 22px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--ink);
+      transition:
+        border-color 0.15s ease,
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+    .card:hover {
+      text-decoration: none;
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+    .card-blurb {
+      color: var(--muted);
+      font-size: 14.5px;
+      line-height: 1.5;
+    }
+    .card-go {
+      color: var(--accent);
+      font-weight: 700;
+      margin-top: 4px;
+    }
+  </style>
+</Base>

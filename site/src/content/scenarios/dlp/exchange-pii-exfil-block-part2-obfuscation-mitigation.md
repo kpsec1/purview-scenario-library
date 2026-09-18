@@ -45,7 +45,7 @@ CISO lens).
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md`.
+Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/).
 
 | Requirement | Minimum | Notes |
 |---|---|---|
@@ -54,9 +54,9 @@ Full licensing detail and citations: `docs/licensing-matrix.md`.
 | Adaptive Protection already enabled, with Elevated/Moderate/Minor risk levels defined | Portal-only prerequisite | Assumed already complete if `dynamic-risk-dlp-enforcement` is deployed; if not, complete its `README.md` §5 Steps 1-3, 5 first |
 | Role to configure IRM policies and the DLP-alerts indicator | **Insider Risk Management** or **Insider Risk Management Admins** role group | Same role used in `dynamic-risk-dlp-enforcement/README.md` §3 |
 | Role to extend the DLP policy | **Compliance Administrator**, **Compliance Data Administrator**, or **DLP Compliance Management** | Same DLP-authoring roles used throughout this library |
-| Automation identity for the deploy script | App-only certificate authentication to Security & Compliance PowerShell | `docs/automation-surface.md` §3 |
+| Automation identity for the deploy script | App-only certificate authentication to Security & Compliance PowerShell | [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms before
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) and the Product Terms before
 > a sales commitment, SKU names change.
 
 ## 4. Architecture
@@ -95,10 +95,10 @@ README.md` §5 Steps 1-3, 5) before continuing.
 Purview portal → **Insider Risk Management** → **Settings** → **Policy indicators** → **Built-in
 Indicators** tab → **Data loss prevention (DLP) indicators** → **Add DLP policies** → select
 **PII DLP - Exchange External Send Control** → **Add** → check **Generating alerts from selected
-DLP policies** → **Save** [[1]](#references). Confirm the parent policy's
+DLP policies** → **Save**. Confirm the parent policy's
 `PII-Exchange-Protect-External` and `PII-Exchange-Override-External` (if configured) rules are
 already at `ReportSeverityLevel: High`, the parent scenario's deploy script sets this by default,
-so no change should be needed [[2]](#references).
+so no change should be needed.
 
 ### Step 3, Create the feeder Insider Risk Management policy (portal, not scriptable)
 
@@ -107,12 +107,12 @@ Purview portal → **Insider Risk Management** → **Policies** → **Create pol
 checklist/reference while doing this:
 - **Users/groups:** same population as the parent scenario's DLP policy scope.
 - **Triggering event:** on the **Triggers for this policy** page, select **User matches a data
-  loss prevention (DLP) policy** and choose **PII DLP - Exchange External Send Control** from the
-  dropdown [[3]](#references), **not** "User performs an exfiltration activity" (that's the
-  correct choice only for the Teams sibling fragment, which has no direct DLP-alert path, see
-  `design.md` §6a for why the direct trigger is the better choice here).
+ loss prevention (DLP) policy** and choose **PII DLP - Exchange External Send Control** from the
+ dropdown, **not** "User performs an exfiltration activity" (that's the
+ correct choice only for the Teams sibling fragment, which has no direct DLP-alert path, see
+ `design.md` §6a for why the direct trigger is the better choice here).
 - **Cumulative exfiltration detection:** leave **ON** (default for this template)
-  [[4]](#references).
+.
 - **Prioritize content:** sensitive information types → SSN, Credit Card Number.
 
 ### Step 4, Add the feeder policy to Adaptive Protection's scope (portal, not scriptable)
@@ -163,48 +163,48 @@ policy, Adaptive Protection scope): `deploy/policy/irm-exchange-drip-exfiltratio
 ## 7. Validation / how to prove it works
 
 1. **Automated config check**, `./validate/Test-ExchangePiiElevatedRiskBlock.ps1` confirms the
-   new rule exists at priority 0 with the correct condition/action, and that every other rule on
-   the parent policy was compacted to unique, contiguous priorities starting at 1 without their
-   own conditions being altered. Exits non-zero on a hard failure.
+ new rule exists at priority 0 with the correct condition/action, and that every other rule on
+ the parent policy was compacted to unique, contiguous priorities starting at 1 without their
+ own conditions being altered. Exits non-zero on a hard failure.
 2. **Manual checklist**, the same script prints a checklist for everything it has no API to query
-   (Exchange DLP-alerts indicator enabled and pointed at the parent policy, feeder IRM policy
-   configuration, Adaptive Protection scope), see its output.
+ (Exchange DLP-alerts indicator enabled and pointed at the parent policy, feeder IRM policy
+ configuration, Adaptive Protection scope), see its output.
 3. **End-to-end functional test (non-production accounts only, pilot tenant), VERIFY, see §11:**
-   a. Confirm a test account's insider risk level is currently **not** Elevated (Purview portal →
-      Insider Risk Management → Users).
-   b. Drive that account's insider risk level to Elevated, either by waiting for a real detection
-      from the feeder policy's trigger (repeated High-severity matches against the parent DLP
-      policy), or via **Start scoring activity for users** (Purview portal → Insider Risk
-      Management → Policies) to manually add the test account to the feeder policy for a defined
-      window, then generating qualifying activity [[5]](#references).
-   c. From that account, attempt to send a test message (any content, containing no real PII) to
-      an external test mailbox. Expect: **blocked**, no override offered, even if the account is
-      an `-ExceptionGroupEmail` member.
-   d. From the same account, attempt an internal-only message. Expect: **not** blocked by this
-      rule (external-only scope), the parent scenario's own `PII-Exchange-Audit-Internal` rule
-      still applies if the content matches SSN/Credit Card Number.
+ a. Confirm a test account's insider risk level is currently **not** Elevated (Purview portal →
+ Insider Risk Management → Users).
+ b. Drive that account's insider risk level to Elevated, either by waiting for a real detection
+ from the feeder policy's trigger (repeated High-severity matches against the parent DLP
+ policy), or via **Start scoring activity for users** (Purview portal → Insider Risk
+ Management → Policies) to manually add the test account to the feeder policy for a defined
+ window, then generating qualifying activity.
+ c. From that account, attempt to send a test message (any content, containing no real PII) to
+ an external test mailbox. Expect: **blocked**, no override offered, even if the account is
+ an `-ExceptionGroupEmail` member.
+ d. From the same account, attempt an internal-only message. Expect: **not** blocked by this
+ rule (external-only scope), the parent scenario's own `PII-Exchange-Audit-Internal` rule
+ still applies if the content matches SSN/Credit Card Number.
 4. **Evidence for review**, confirm the blocked event appears in the DLP Alerts dashboard /
-   Microsoft Defender portal under rule name `PII-Exchange-ElevatedRisk-Block-AllExternal`, and
-   cross-reference the triggering IRM alert by user and timestamp (§8, no shared correlation ID
-   exists, same manual-correlation caveat `dynamic-risk-dlp-enforcement/README.md` §8 already
-   documents).
+ Microsoft Defender portal under rule name `PII-Exchange-ElevatedRisk-Block-AllExternal`, and
+ cross-reference the triggering IRM alert by user and timestamp (§8, no shared correlation ID
+ exists, same manual-correlation caveat `dynamic-risk-dlp-enforcement/README.md` §8 already
+ documents).
 
 ## 8. Operations & tuning
 
 **KPIs to watch (first 90 days), in addition to Part 1's own and `dynamic-risk-dlp-enforcement`'s
 own KPI sets:**
 - **Time from a user's first qualifying High-severity DLP alert to Elevated-risk assignment**, 
-  measures how long the exposure window actually is for this control, given Cumulative
-  exfiltration detection's ~daily evaluation cadence and up-to-36-hour Adaptive Protection
-  propagation (§11). If this is consistently multiple days, the compensating control is closing the
-  channel too late to matter for a fast, deliberate exfiltration attempt, a finding to escalate
-  to CISO review, not something to silently tune around.
+ measures how long the exposure window actually is for this control, given Cumulative
+ exfiltration detection's ~daily evaluation cadence and up-to-36-hour Adaptive Protection
+ propagation (§11). If this is consistently multiple days, the compensating control is closing the
+ channel too late to matter for a fast, deliberate exfiltration attempt, a finding to escalate
+ to CISO review, not something to silently tune around.
 - **`PII-Exchange-ElevatedRisk-Block-AllExternal` match volume vs. the parent policy's
-  `PII-Exchange-Protect-External`/`PII-Exchange-Override-External` volume**, a rule-0 match with
-  no preceding Protect-External match for the same user in recent history suggests the
-  Elevated-risk assignment came from a *different* IRM indicator entirely (e.g., SharePoint/OneDrive
-  exfiltration, or the Teams sibling fragment's own feeder policy), investigate via the feeder
-  policy's own alert before assuming an Exchange-specific pattern.
+ `PII-Exchange-Protect-External`/`PII-Exchange-Override-External` volume**, a rule-0 match with
+ no preceding Protect-External match for the same user in recent history suggests the
+ Elevated-risk assignment came from a *different* IRM indicator entirely (e.g., SharePoint/OneDrive
+ exfiltration, or the Teams sibling fragment's own feeder policy), investigate via the feeder
+ policy's own alert before assuming an Exchange-specific pattern.
 
 **Coordinate with HR/Legal before broad enforcement rollout**, same as
 `dynamic-risk-dlp-enforcement/README.md` §8 already requires for its own Elevated-block rule, this
@@ -215,19 +215,19 @@ deployment step.
 
 **Incident-response runbook (this rule's block event):**
 1. **Triage**, same first step as `dynamic-risk-dlp-enforcement/README.md` §8: open the DLP
-   Alerts dashboard/Defender incident, confirm the rule name and sender.
+ Alerts dashboard/Defender incident, confirm the rule name and sender.
 2. **Cross-reference the feeder IRM policy's alert** by user and timestamp (manual, no shared
-   correlation ID, §7) **and confirm which indicator actually drove the Elevated assignment**, a
-   repeated Exchange PII match, or an unrelated exfiltration indicator (including the Teams sibling
-   fragment's own feeder policy, if both are deployed) (§11). Don't assume a PII-data link without
-   checking.
+ correlation ID, §7) **and confirm which indicator actually drove the Elevated assignment**, a
+ repeated Exchange PII match, or an unrelated exfiltration indicator (including the Teams sibling
+ fragment's own feeder policy, if both are deployed) (§11). Don't assume a PII-data link without
+ checking.
 3. **Classify**, is the Elevated risk level a true or false positive? Same guidance as
-   `dynamic-risk-dlp-enforcement/README.md` §8, fix the *feeder policy's* tuning if it's a false
-   positive, not this rule.
+ `dynamic-risk-dlp-enforcement/README.md` §8, fix the *feeder policy's* tuning if it's a false
+ positive, not this rule.
 4. **If true positive:** treat as a live incident under the parent scenario's own regulatory
-   drivers, this user has already been blocked from further external Exchange sharing; escalate
-   per the org's incident-response process and consider a full account review, not just DLP-alert
-   closure, given the drip-feed evasion pattern this control exists to catch.
+ drivers, this user has already been blocked from further external Exchange sharing; escalate
+ per the org's incident-response process and consider a full account review, not just DLP-alert
+ closure, given the drip-feed evasion pattern this control exists to catch.
 
 **Review cadence:** quarterly, aligned with the parent scenario's own review cadence and
 `dynamic-risk-dlp-enforcement`'s.
@@ -243,124 +243,124 @@ action touches the parent scenario's own rules' content, the Encrypt-mode audit 
 ## 10. Cost & licensing notes
 
 - **This fragment moves the overall deployment onto the E5/Purview Suite licensing tier.** Part 1
-  alone (`exchange-pii-exfil-block/README.md` §10) deliberately stays on base **E3** by avoiding
-  advanced classification or Teams conditions. Adding this fragment requires Insider Risk
-  Management and Adaptive Protection, both **Microsoft 365 E5 / Purview Suite** capabilities, a
-  buyer choosing this fragment accepts that tier uplift for the whole deployment, not just an
-  incremental add-on charge. State this plainly when quoting: "Part 1 alone" and "Part 1 + Part 2"
-  are materially different licensing conversations.
+ alone (`exchange-pii-exfil-block/README.md` §10) deliberately stays on base **E3** by avoiding
+ advanced classification or Teams conditions. Adding this fragment requires Insider Risk
+ Management and Adaptive Protection, both **Microsoft 365 E5 / Purview Suite** capabilities, a
+ buyer choosing this fragment accepts that tier uplift for the whole deployment, not just an
+ incremental add-on charge. State this plainly when quoting: "Part 1 alone" and "Part 1 + Part 2"
+ are materially different licensing conversations.
 - **No incremental license cost beyond that tier uplift**, this fragment reuses the same
-  E5/Purview Suite entitlement for IRM, Adaptive Protection, and DLP that
-  `dynamic-risk-dlp-enforcement` and the Teams sibling fragment already require. No PAYG component.
+ E5/Purview Suite entitlement for IRM, Adaptive Protection, and DLP that
+ `dynamic-risk-dlp-enforcement` and the Teams sibling fragment already require. No PAYG component.
 - **No additional Azure subscription required.**
 
 ## 11. Known limitations & gotchas
 
 - **This control does NOT detect or block a single, perfectly-executed split-SSN/PAN message.** No
-  Microsoft Purview capability performs cross-message content reconstruction or correlation as of
-  this writing (grounded during this build, see `design.md` §1). This fragment is a behavioral
-  compensating control that shortens the *exposure window after* a qualifying signal, not a fix
-  for the underlying per-message pattern-matching limitation. State this plainly to a buyer, 
-  overclaiming here is the single easiest way to lose credibility with a technical reviewer.
+ Microsoft Purview capability performs cross-message content reconstruction or correlation as of
+ this writing (grounded during this build, see `design.md` §1). This fragment is a behavioral
+ compensating control that shortens the *exposure window after* a qualifying signal, not a fix
+ for the underlying per-message pattern-matching limitation. State this plainly to a buyer, 
+ overclaiming here is the single easiest way to lose credibility with a technical reviewer.
 - **Zero detectable signal against a maximally disciplined attacker.** If a sender splits an
-  SSN/PAN finely enough that *no single message* ever contains a recognizable fragment (e.g., one
-  digit per message) and generates no other exfiltration-type activity during the attempt, then
-  neither the parent DLP policy's High-severity alert nor any other Cumulative Exfiltration
-  Detection indicator this fragment relies on produces any scored signal for that user at all, 
-  Adaptive Protection has nothing to elevate. This control's real-world value is bounded to senders
-  whose evasion attempt is imperfect (some fragment still trips a SIT, or the attempt is paired
-  with other exfiltration-type behavior Cumulative Exfiltration Detection already tracks), not to a
-  theoretically perfect one. Communicate this bound plainly, it is the honest limit of what any
-  currently-documented Purview capability can do here, not a gap specific to this fragment's
-  design.
+ SSN/PAN finely enough that *no single message* ever contains a recognizable fragment (e.g., one
+ digit per message) and generates no other exfiltration-type activity during the attempt, then
+ neither the parent DLP policy's High-severity alert nor any other Cumulative Exfiltration
+ Detection indicator this fragment relies on produces any scored signal for that user at all, 
+ Adaptive Protection has nothing to elevate. This control's real-world value is bounded to senders
+ whose evasion attempt is imperfect (some fragment still trips a SIT, or the attempt is paired
+ with other exfiltration-type behavior Cumulative Exfiltration Detection already tracks), not to a
+ theoretically perfect one. Communicate this bound plainly, it is the honest limit of what any
+ currently-documented Purview capability can do here, not a gap specific to this fragment's
+ design.
 - **The parent scenario's `-ExceptionGroupEmail` population in `-Action Encrypt` mode gets ZERO
-  additional protection from this fragment, by construction.** The parent scenario's own `README.md`
-  §11 already documents that an exception-group member's matching external mail is a "silent
-  exception" in Encrypt mode, excluded from `PII-Exchange-Protect-External` (High severity) via
-  `ExceptIfFromMemberOf`, with no equivalent override rule created (Encrypt mode has no
-  `PII-Exchange-Override-External` rule at all). Unless
-  `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion` is *also* deployed, that
-  traffic generates **no alert of any severity**; even with the companion deployed, its rule is
-  fixed at **Low** severity by design (routine-audit priority for expected, approved-exception
-  traffic). This fragment's feeder IRM policy only triggers on **High**-severity alerts from the
-  parent policy (§5, Step 2), so a compromised or malicious exception-group member sending
-  split-SSN/PAN content externally in Encrypt mode never accumulates the signal this fragment relies
-  on, no matter how much they send. **This is not a gap this fragment can close without changing the
-  companion scenario's own severity default** (a decision that scenario's own docs already justify
-  for its stated purpose, routine-exception visibility, not high-risk detection, and this
-  fragment does not relitigate). A buyer running `-Action Encrypt` with an exception group who wants
-  this fragment's protection to actually cover that population should raise the companion rule's
-  `-ReportSeverityLevel` to `High` (a parameter that script already exposes) as a prerequisite,
-  understanding the resulting trade-off (routine exception traffic now triaged at the same priority
-  as this fragment's feeder trigger).
+ additional protection from this fragment, by construction.** The parent scenario's own `README.md`
+ §11 already documents that an exception-group member's matching external mail is a "silent
+ exception" in Encrypt mode, excluded from `PII-Exchange-Protect-External` (High severity) via
+ `ExceptIfFromMemberOf`, with no equivalent override rule created (Encrypt mode has no
+ `PII-Exchange-Override-External` rule at all). Unless
+ `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion` is *also* deployed, that
+ traffic generates **no alert of any severity**; even with the companion deployed, its rule is
+ fixed at **Low** severity by design (routine-audit priority for expected, approved-exception
+ traffic). This fragment's feeder IRM policy only triggers on **High**-severity alerts from the
+ parent policy (§5, Step 2), so a compromised or malicious exception-group member sending
+ split-SSN/PAN content externally in Encrypt mode never accumulates the signal this fragment relies
+ on, no matter how much they send. **This is not a gap this fragment can close without changing the
+ companion scenario's own severity default** (a decision that scenario's own docs already justify
+ for its stated purpose, routine-exception visibility, not high-risk detection, and this
+ fragment does not relitigate). A buyer running `-Action Encrypt` with an exception group who wants
+ this fragment's protection to actually cover that population should raise the companion rule's
+ `-ReportSeverityLevel` to `High` (a parameter that script already exposes) as a prerequisite,
+ understanding the resulting trade-off (routine exception traffic now triaged at the same priority
+ as this fragment's feeder trigger).
 - **A user can reach Elevated risk, and be fully blocked from external Exchange sharing by this
-  rule, from activity that has nothing to do with SSN/PAN data.** Cumulative Exfiltration
-  Detection scores *all* enabled indicators for an in-scope user, not just repeated matches against
-  the parent DLP policy. A legitimate bulk SharePoint migration, a large but authorized external
-  file share, or the Teams sibling fragment's own feeder-policy activity could independently drive
-  a user to Elevated and trigger this rule with no PII-data involvement at all. The
-  incident-response runbook (§8, step 2) exists specifically to catch this, always confirm the
-  underlying IRM alert's actual triggering source before assuming a PII-data drip-feed pattern.
+ rule, from activity that has nothing to do with SSN/PAN data.** Cumulative Exfiltration
+ Detection scores *all* enabled indicators for an in-scope user, not just repeated matches against
+ the parent DLP policy. A legitimate bulk SharePoint migration, a large but authorized external
+ file share, or the Teams sibling fragment's own feeder-policy activity could independently drive
+ a user to Elevated and trigger this rule with no PII-data involvement at all. The
+ incident-response runbook (§8, step 2) exists specifically to catch this, always confirm the
+ underlying IRM alert's actual triggering source before assuming a PII-data drip-feed pattern.
 - **Cumulative exfiltration detection is evaluated ~daily, not in real time**, Microsoft describes
-  it as identifying "unusual levels of risk activities when evaluated daily" [[4]](#references).
-  Combined with Adaptive Protection's own up-to-36-hour propagation delay after first enabling
-  (already documented in `dynamic-risk-dlp-enforcement/README.md` §11), the realistic end-to-end
-  exposure window between a user's first qualifying High-severity alert and this rule actually
-  blocking them can be **on the order of one to two days**, not minutes. Track this via the KPI in
-  §8 rather than assuming near-real-time response.
+ it as identifying "unusual levels of risk activities when evaluated daily".
+ Combined with Adaptive Protection's own up-to-36-hour propagation delay after first enabling
+ (already documented in `dynamic-risk-dlp-enforcement/README.md` §11), the realistic end-to-end
+ exposure window between a user's first qualifying High-severity alert and this rule actually
+ blocking them can be **on the order of one to two days**, not minutes. Track this via the KPI in
+ §8 rather than assuming near-real-time response.
 - **No shared correlation ID between a DLP incident report and the IRM alert that produced the
-  triggering risk level.** Same manual-correlation-by-user-and-timestamp caveat
-  `dynamic-risk-dlp-enforcement/README.md` §8 already documents, not resolved by this fragment.
+ triggering risk level.** Same manual-correlation-by-user-and-timestamp caveat
+ `dynamic-risk-dlp-enforcement/README.md` §8 already documents, not resolved by this fragment.
 - **This rule does not block internal Exchange mail.** Deliberately scoped to external recipients
-  only (§6), an Elevated-risk user can still email colleagues internally. See `design.md` §6 for
-  why this is the proportionate choice, not an oversight.
+ only (§6), an Elevated-risk user can still email colleagues internally. See `design.md` §6 for
+ why this is the proportionate choice, not an oversight.
 - **VERIFY (pilot tenant): rule priority compaction behavior.** This fragment's deploy script
-  explicitly reassigns every other rule's priority rather than relying on `New-DlpComplianceRule
-  -Priority 0` to auto-shift existing rules, because Microsoft's cmdlet reference does not document
-  whether that auto-shift happens, see `deploy/New-ExchangePiiElevatedRiskBlock.ps1` `.NOTES`.
-  This is the same open item already flagged for the Teams sibling fragment's analogous
-  reprioritization step. Confirm the resulting priority order with
-  `validate/Test-ExchangePiiElevatedRiskBlock.ps1` after deployment.
+ explicitly reassigns every other rule's priority rather than relying on `New-DlpComplianceRule
+ -Priority 0` to auto-shift existing rules, because Microsoft's cmdlet reference does not document
+ whether that auto-shift happens, see `deploy/New-ExchangePiiElevatedRiskBlock.ps1` `.NOTES`.
+ This is the same open item already flagged for the Teams sibling fragment's analogous
+ reprioritization step. Confirm the resulting priority order with
+ `validate/Test-ExchangePiiElevatedRiskBlock.ps1` after deployment.
 - **VERIFY (pilot tenant or a future Microsoft Learn pass): no single Microsoft-published example
-  validates this exact end-to-end composition** (a named DLP policy's High-severity alerts →
-  Data-leaks direct trigger → Cumulative exfiltration scoring → Adaptive Protection → a rule on
-  that same named policy). Every individual piece is independently grounded; the combination has
-  not been run against a live tenant during this build. See `design.md` §6b.
+ validates this exact end-to-end composition** (a named DLP policy's High-severity alerts →
+ Data-leaks direct trigger → Cumulative exfiltration scoring → Adaptive Protection → a rule on
+ that same named policy). Every individual piece is independently grounded; the combination has
+ not been run against a live tenant during this build. See `design.md` §6b.
 - **Inherits every "VERIFY before go-live" item already flagged in the parent scenario's and
-  `dynamic-risk-dlp-enforcement`'s own Known Limitations sections**, this fragment does not
-  re-verify `BlockAccess` behavior for `ExchangeLocation` rules, the `AccessScope`-only condition
-  form, or the exact `Get-RMSTemplate` name used when the parent policy runs `-Action Encrypt`; all
-  three are still open VERIFY items in those scenarios' own docs.
+ `dynamic-risk-dlp-enforcement`'s own Known Limitations sections**, this fragment does not
+ re-verify `BlockAccess` behavior for `ExchangeLocation` rules, the `AccessScope`-only condition
+ form, or the exact `Get-RMSTemplate` name used when the parent policy runs `-Action Encrypt`; all
+ three are still open VERIFY items in those scenarios' own docs.
 
 ## 12. References
 
 1. Configure policy indicators in Insider Risk Management, Data loss prevention alerts
-   indicators, supported workloads (Exchange Online, SharePoint Online, OneDrive for Business), <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#data-loss-prevention-alerts-indicators>
+ indicators, supported workloads (Exchange Online, SharePoint Online, OneDrive for Business), <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#data-loss-prevention-alerts-indicators>
 2. Learn about Insider Risk Management policy templates, Data leaks policy guidelines, the
-   Incident-reports-High-severity requirement for the DLP-policy triggering event, <https://learn.microsoft.com/purview/insider-risk-management-policy-templates#policy-templates>
+ Incident-reports-High-severity requirement for the DLP-policy triggering event, <https://learn.microsoft.com/purview/insider-risk-management-policy-templates#policy-templates>
 3. Get started with Insider Risk Management, Step 6, "Triggers for this policy" page: "User
-   matches a data loss prevention (DLP) policy" vs. "User performs an exfiltration activity", <https://learn.microsoft.com/purview/insider-risk-management-configure#step-6-required-create-an-insider-risk-management-policy>
+ matches a data loss prevention (DLP) policy" vs. "User performs an exfiltration activity", <https://learn.microsoft.com/purview/insider-risk-management-configure#step-6-required-create-an-insider-risk-management-policy>
 4. Create and manage Insider Risk Management policies, Cumulative exfiltration detection (daily
-   evaluation, 30-day comparison window, enabled-by-default templates), <https://learn.microsoft.com/purview/insider-risk-management-policies#cumulative-exfiltration-detection>
+ evaluation, 30-day comparison window, enabled-by-default templates), <https://learn.microsoft.com/purview/insider-risk-management-policies#cumulative-exfiltration-detection>
 5. Create and manage Insider Risk Management policies, Immediately start scoring user activity
-   ("Start scoring activity for users"), <https://learn.microsoft.com/purview/insider-risk-management-policies#immediately-start-scoring-user-activity>
+ ("Start scoring activity for users"), <https://learn.microsoft.com/purview/insider-risk-management-policies#immediately-start-scoring-user-activity>
 6. Help dynamically mitigate risks with Adaptive Protection, 36-hour propagation delay, <https://learn.microsoft.com/purview/insider-risk-management-adaptive-protection>
 7. New-DlpComplianceRule / Set-DlpComplianceRule reference (`SharedByIRMUserRisk`, `Priority`), <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule>, <https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancerule>
 8. Remove-DlpComplianceRule reference, <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancerule>
 9. Learn about Insider Risk Management policy templates, policy template prerequisites and
-   triggering events table (Data leaks: DLP policy configured for High severity alerts, Exchange
-   Online/SharePoint Online/OneDrive for Business workloads only), <https://learn.microsoft.com/purview/insider-risk-management-policy-templates#policy-template-prerequisites-and-triggering-events>
+ triggering events table (Data leaks: DLP policy configured for High severity alerts, Exchange
+ Online/SharePoint Online/OneDrive for Business workloads only), <https://learn.microsoft.com/purview/insider-risk-management-policy-templates#policy-template-prerequisites-and-triggering-events>
 10. Create and manage Insider Risk Management policies, Policy health notification messages
-    ("DLP policy doesn't meet requirements", "DLP policy isn't selected as the triggering event"), <https://learn.microsoft.com/purview/insider-risk-management-policies#policy-health>
+ ("DLP policy doesn't meet requirements", "DLP policy isn't selected as the triggering event"), <https://learn.microsoft.com/purview/insider-risk-management-policies#policy-health>
 11. `scenarios/dlp/exchange-pii-exfil-block/README.md` §11-12, the original documented gap and
-    Part 1's own citation list (SSN/Credit Card Number SITs, Exchange DLP conditions/actions).
+ Part 1's own citation list (SSN/Credit Card Number SITs, Exchange DLP conditions/actions).
 12. `scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/`, the sibling scenario this
-    one's compensating-control pattern (`-SharedByIRMUserRisk`, no-override, priority-0 rule)
-    directly reuses, and the source of the Teams-workload constraint this fragment's design.md §3
-    contrasts against.
+ one's compensating-control pattern (`-SharedByIRMUserRisk`, no-override, priority-0 rule)
+ directly reuses, and the source of the Teams-workload constraint this fragment's design.md §3
+ contrasts against.
 13. `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/README.md` §3-6, §11-12, the
-    `SharedByIRMUserRisk` grounding and Adaptive Protection prerequisites this fragment reuses
-    without re-deriving.
+ `SharedByIRMUserRisk` grounding and Adaptive Protection prerequisites this fragment reuses
+ without re-deriving.
 
 > Re-verify all links and product behavior against current Microsoft Learn before a
 > customer-facing assessment or sale, Insider Risk Management and Adaptive Protection are

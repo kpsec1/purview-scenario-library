@@ -7,9 +7,9 @@ parent: "records-management/regulatory-records-disposition"
 Two things this rollback **cannot** undo, by design of the records-management platform:
 
 1. **A triggered event cannot be cancelled.** Deleting an event does **not** stop the retention it
-   already started. Content whose `EventAgeInDays` clock a prior event began keeps counting down.
+ already started. Content whose `EventAgeInDays` clock a prior event began keeps counting down.
 2. **An applied record label cannot be deleted**, and its retention cannot be shortened. `Remove-ComplianceTag`
-   succeeds only for a label that has **not** been applied and is **not** in a policy.
+ succeeds only for a label that has **not** been applied and is **not** in a policy.
 
 So rollback here means "stop offering the label and clean up unused definitions", not "reverse
 retention already in force". Do not run any stage until **Records/Legal confirm** the schedule is being
@@ -40,20 +40,20 @@ Runs `Remove-RetentionCompliancePolicy` (removes the policy and its rule), then 
 last two **succeed only if the objects are unused**:
 
 - The **label** is removed only if it was never applied and isn't in a policy. If it has been applied to
-  any content, removal fails, the script reports this and leaves it in place (expected).
+ any content, removal fails, the script reports this and leaves it in place (expected).
 - The **event type** is removed only if no label still references it and (in practice) it has no
-  triggered events. Otherwise removal fails and is reported.
+ triggered events. Otherwise removal fails and is reported.
 
 Use Stage 2 only when permanently retiring an **unused** schedule, or cleaning up a lab.
 
 ## What rollback does **not** undo
 
 - **A triggered event / retention already in force.** No cmdlet here stops a running `EventAgeInDays`
-  clock, that's the records guarantee.
+ clock, that's the records guarantee.
 - **Content already retained or disposed.** Items already declared records, retained, or disposed
-  (with proof) are unaffected.
+ (with proof) are unaffected.
 - **Pending disposition items.** In-flight disposition reviews continue; manage them in the portal
-  (Records Management → Disposition).
+ (Records Management → Disposition).
 - **Proof of disposition** and audit records of the configuration, retained per their own policy.
 
 ## Verification after rollback

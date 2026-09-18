@@ -10,7 +10,7 @@ rather than silently assuming it away: that scenario authenticates to Exchange O
 domains, including the only place `DomainType ExternalRelay` is actually reachable (that scenario's
 `design.md` §2), are entirely invisible to it. `PROGRESS.md` tracked this as a follow-up: *"Consider
 an on-premises Exchange companion check for `accepted-domains-hygiene-check`, for a hybrid Exchange
-Online/on-premises tenant whose on-premises accepted domains ... are invisible to the current
+Online/on-premises tenant whose on-premises accepted domains... are invisible to the current
 Exchange-Online-only script."* This scenario is that companion, a second, independent hygiene check
 that runs the parent's same detection model against an **on-premises Exchange Management Shell**
 session instead of Exchange Online PowerShell.
@@ -27,39 +27,39 @@ source that Microsoft Learn itself renders from, and cited at `learn.microsoft.c
 differences from the parent scenario's Exchange Online-only model:
 
 1. **`Get-AcceptedDomain` is the same cmdlet, same object shape, on both sides.** Applicable to
-   Exchange Server 2010/2013/2016/2019/SE **and** Exchange Online (confirmed verbatim from Microsoft's
-   reference page). The `-DomainController` parameter is on-premises-only (specifies which Active
-   Directory domain controller to read from/write to, not supported on Edge Transport servers), this
-   scenario's deploy script exposes it as an optional passthrough, since a multi-DC on-premises
-   environment with AD replication lag is a realistic buyer scenario the cloud-only parent never needs
-   to consider.
+ Exchange Server 2010/2013/2016/2019/SE **and** Exchange Online (confirmed verbatim from Microsoft's
+ reference page). The `-DomainController` parameter is on-premises-only (specifies which Active
+ Directory domain controller to read from/write to, not supported on Edge Transport servers), this
+ scenario's deploy script exposes it as an optional passthrough, since a multi-DC on-premises
+ environment with AD replication lag is a realistic buyer scenario the cloud-only parent never needs
+ to consider.
 2. **`New-AcceptedDomain`/`Remove-AcceptedDomain` exist on-premises, closing part of the parent
-   scenario's disclosed attribution gap.** The parent's `design.md` §5 states Exchange Online has *no*
-   cmdlet to add or remove an accepted domain (confirmed: both cmdlets are on-premises-Exchange-only
-   per their own applicability statements), so a domain-addition/removal event can never be attributed
-   there via Exchange admin auditing. On-premises Exchange **does** have both cmdlets, meaning an
-   on-premises admin audit trail genuinely *can* attribute a domain add/remove to a specific action, a
-   capability the cloud side structurally lacks. §5 below builds this in.
+ scenario's disclosed attribution gap.** The parent's `design.md` §5 states Exchange Online has *no*
+ cmdlet to add or remove an accepted domain (confirmed: both cmdlets are on-premises-Exchange-only
+ per their own applicability statements), so a domain-addition/removal event can never be attributed
+ there via Exchange admin auditing. On-premises Exchange **does** have both cmdlets, meaning an
+ on-premises admin audit trail genuinely *can* attribute a domain add/remove to a specific action, a
+ capability the cloud side structurally lacks. §5 below builds this in.
 3. **The on-premises audit-log surface is a different cmdlet with a different retention model, not
-   `Search-UnifiedAuditLog`.** `Search-UnifiedAuditLog` (`docs/automation-surface.md` Surface 1) is an
-   Exchange Online/Microsoft 365 unified-audit-log capability the parent scenario queries. On-premises
-   Exchange has its own, older **administrator audit logging** feature (`Search-AdminAuditLog`,
-   applicable to Exchange Server 2010-2019/SE only, confirmed **not** listed as applicable to Exchange
-   Online on its own reference page, which separately confirms it is superseded there by unified audit
-   logging). Key facts grounded this build via `Set-AdminAuditLogConfig`'s own reference page:
-   - `-AdminAuditLogEnabled` defaults to `$true`, administrator audit logging is on by default on a
-     fresh on-premises install, not an opt-in the buyer must remember to enable.
-   - `-AdminAuditLogAgeLimit` defaults to **90 days**, sets this scenario's practical audit-lookback
-     ceiling; a `-AuditLookbackDays` value beyond 90 will find nothing regardless of what actually
-     happened, unless the buyer has widened this on their own server.
-   - **VERIFY (pilot tenant or a future Microsoft Learn pass):** the exact *default* value of
-     `-AdminAuditLogCmdlets` (which cmdlets are audited out of the box) was not stated with a
-     confirmed default on the reference page this build fetched, only that `*` audits everything and
-     that the parameter has no default explicitly documented in the fetched content. This scenario
-     does **not** assume `Set-`/`New-`/`Remove-AcceptedDomain` are covered by a fresh install's default
-     configuration; `README.md` §11 and the deploy script's `.NOTES` tell the buyer to confirm
-     `Get-AdminAuditLogConfig | Select-Object AdminAuditLogCmdlets` includes them (or `*`) before
-     relying on `-IncludeAuditAttribution`'s output for an incident investigation.
+ `Search-UnifiedAuditLog`.** `Search-UnifiedAuditLog` ([Automation surface](/docs/automation-surface/) Surface 1) is an
+ Exchange Online/Microsoft 365 unified-audit-log capability the parent scenario queries. On-premises
+ Exchange has its own, older **administrator audit logging** feature (`Search-AdminAuditLog`,
+ applicable to Exchange Server 2010-2019/SE only, confirmed **not** listed as applicable to Exchange
+ Online on its own reference page, which separately confirms it is superseded there by unified audit
+ logging). Key facts grounded this build via `Set-AdminAuditLogConfig`'s own reference page:
+ - `-AdminAuditLogEnabled` defaults to `$true`, administrator audit logging is on by default on a
+ fresh on-premises install, not an opt-in the buyer must remember to enable.
+ - `-AdminAuditLogAgeLimit` defaults to **90 days**, sets this scenario's practical audit-lookback
+ ceiling; a `-AuditLookbackDays` value beyond 90 will find nothing regardless of what actually
+ happened, unless the buyer has widened this on their own server.
+ - **VERIFY (pilot tenant or a future Microsoft Learn pass):** the exact *default* value of
+ `-AdminAuditLogCmdlets` (which cmdlets are audited out of the box) was not stated with a
+ confirmed default on the reference page this build fetched, only that `*` audits everything and
+ that the parameter has no default explicitly documented in the fetched content. This scenario
+ does **not** assume `Set-`/`New-`/`Remove-AcceptedDomain` are covered by a fresh install's default
+ configuration; `README.md` §11 and the deploy script's `.NOTES` tell the buyer to confirm
+ `Get-AdminAuditLogConfig | Select-Object AdminAuditLogCmdlets` includes them (or `*`) before
+ relying on `-IncludeAuditAttribution`'s output for an incident investigation.
 
 ## 3. Why this is a separate live session, not one combined script
 
@@ -68,7 +68,7 @@ scenario uses (§4) work by **importing proxy functions for remote cmdlets into 
 session**, `Connect-ExchangeOnline` does this implicitly; the on-premises pattern uses
 `Import-PSSession` explicitly. Both import a cmdlet literally named `Get-AcceptedDomain`. Grounded
 directly from Microsoft's own `Import-PSSession` reference this build: *"When you import commands
-that have the same names as commands in the current session, the imported commands can hide ...
+that have the same names as commands in the current session, the imported commands can hide...
 cmdlets in the session"*, whichever import runs second silently wins the unqualified `Get-AcceptedDomain`
 name, and there is no way to safely tell which environment a bare `Get-AcceptedDomain` call in a mixed
 script actually reached without extra bookkeeping. Microsoft's own mitigation for this exact class of
@@ -79,7 +79,7 @@ renames every imported command's noun (e.g. `-Prefix OnPrem` turns `Get-Accepted
 **Decision:** this scenario's deploy script never establishes its own connection (same author-only
 pattern as the parent, `README.md` §5) and is written to call the bare `Get-AcceptedDomain`/
 `Search-AdminAuditLog` names, the caller is expected to run it in a session where **only** the
-on-premises remote session has been imported (optionally via `Import-PSSession ... -Prefix OnPrem` if
+on-premises remote session has been imported (optionally via `Import-PSSession... -Prefix OnPrem` if
 the same session also needs the cloud parent's cmdlets side by side, in which case the caller renames
 this script's own calls accordingly, documented, not silently assumed, in `README.md` §5). The two
 scenarios' deploy scripts are never run as literally one combined script for this reason; §4's optional
@@ -114,28 +114,28 @@ three authoritative Microsoft Learn **conceptual** pages by name and URL rather 
 blogs/Q&A threads, and they resolve the question:
 
 - **"Accepted domains" (`exchange/mail-flow/accepted-domains/accepted-domains`)**, defines
-  `InternalRelay` precisely as the shared-namespace case: *"Some of the recipients in the internal
-  relay domain don't exist in the Exchange organization,"* citing as its own worked examples sharing
-  the domain "between the Exchange organization and a third-party messaging system" or "between
-  Exchange organizations in different Active Directory forests", a hybrid Exchange
-  Online/on-premises coexistence deployment is exactly this shape (two separate directories/mail
-  systems sharing one SMTP namespace while migration is in progress).
+ `InternalRelay` precisely as the shared-namespace case: *"Some of the recipients in the internal
+ relay domain don't exist in the Exchange organization,"* citing as its own worked examples sharing
+ the domain "between the Exchange organization and a third-party messaging system" or "between
+ Exchange organizations in different Active Directory forests", a hybrid Exchange
+ Online/on-premises coexistence deployment is exactly this shape (two separate directories/mail
+ systems sharing one SMTP namespace while migration is in progress).
 - **"Manage accepted domains in Exchange Online"
-  (`exchange/mail-flow-best-practices/manage-accepted-domains/manage-accepted-domains`)**, states
-  the shared-namespace procedure directly: create the accepted domain "with the type set to Internal
-  Relay," and for an in-progress migration, *"confirm that the accepted domain remains configured as
-  internal relay rather than authoritative because if the organization is authoritative for a domain,
-  unknown recipients will not be forwarded,"* which would cause mail loops/NDRs for the
-  not-yet-migrated recipients.
+ (`exchange/mail-flow-best-practices/manage-accepted-domains/manage-accepted-domains`)**, states
+ the shared-namespace procedure directly: create the accepted domain "with the type set to Internal
+ Relay," and for an in-progress migration, *"confirm that the accepted domain remains configured as
+ internal relay rather than authoritative because if the organization is authoritative for a domain,
+ unknown recipients will not be forwarded,"* which would cause mail loops/NDRs for the
+ not-yet-migrated recipients.
 - **"Use Directory-Based Edge Blocking..."
-  (`exchange/mail-flow-best-practices/use-directory-based-edge-blocking`)**, confirms the
-  `Authoritative`+DBEB combination the original community guidance described is a **different,
-  later** state than an active hybrid-coexistence domain: DBEB requires `Authoritative`, but *"until
-  all valid recipients have been added to Exchange Online and replicated,"* the domain "should be
-  left configured as Internal relay." A domain only becomes a good `Authoritative`+DBEB candidate
-  once migration is complete (or, for a domain fully cut over to Exchange Online, once on-premises no
-  longer holds any live recipients for it), not while it's still an active coexistence domain with
-  Remote Mailbox objects on both sides.
+ (`exchange/mail-flow-best-practices/use-directory-based-edge-blocking`)**, confirms the
+ `Authoritative`+DBEB combination the original community guidance described is a **different,
+ later** state than an active hybrid-coexistence domain: DBEB requires `Authoritative`, but *"until
+ all valid recipients have been added to Exchange Online and replicated,"* the domain "should be
+ left configured as Internal relay." A domain only becomes a good `Authoritative`+DBEB candidate
+ once migration is complete (or, for a domain fully cut over to Exchange Online, once on-premises no
+ longer holds any live recipients for it), not while it's still an active coexistence domain with
+ Remote Mailbox objects on both sides.
 
 **Extended in a later build to cover `MatchSubDomains` and `Default`, not just `DomainType`** (closing
 the non-goal §9 originally deferred, once a concrete buyer need surfaced as a `PROGRESS.md`
@@ -159,18 +159,18 @@ Same `ExternalRelay` exclusion as the `DomainType` check applies to both new che
 `Set-AcceptedDomain`'s reference page (fetched directly from the canonical MicrosoftDocs GitHub source
 in this build, `README.md` §12):
 - **`MatchSubDomains`** ("enables mail to be sent by and received from users on any subdomain of this
-  accepted domain," default `$false`): `FAIL` if either side has it `$true`, one environment silently
-  accepting mail for every subdomain while the other does not is a real asymmetric attack surface (an
-  attacker-registered subdomain is in-organization mail on one side only), the same severity logic the
-  same-environment `MatchSubDomainsChangedSincePreviousRun` check already applies (§6) to a `$true`
-  value on an in-organization domain.
+ accepted domain," default `$false`): `FAIL` if either side has it `$true`, one environment silently
+ accepting mail for every subdomain while the other does not is a real asymmetric attack surface (an
+ attacker-registered subdomain is in-organization mail on one side only), the same severity logic the
+ same-environment `MatchSubDomainsChangedSincePreviousRun` check already applies (§6) to a `$true`
+ value on an in-organization domain.
 - **`Default`** ("specifies whether the accepted domain is the default domain," via `-MakeDefault`, 
-  Microsoft's reference does not explicitly state only one domain can hold this flag per organization,
-  though the surrounding documentation implies a singular default): always `WARN`, never `FAIL`. Each
-  environment computes and enforces its own default accepted domain independently, a hybrid deployment
-  is two separate organizations sharing a namespace, not one organization with one default, so a
-  difference here is expected, unreviewed drift, not a trust-boundary violation the way `DomainType`/
-  `MatchSubDomains` divergence is.
+ Microsoft's reference does not explicitly state only one domain can hold this flag per organization,
+ though the surrounding documentation implies a singular default): always `WARN`, never `FAIL`. Each
+ environment computes and enforces its own default accepted domain independently, a hybrid deployment
+ is two separate organizations sharing a namespace, not one organization with one default, so a
+ difference here is expected, unreviewed drift, not a trust-boundary violation the way `DomainType`/
+ `MatchSubDomains` divergence is.
 
 **Conclusion:** the parent scenario's `deploy/KnownDomains.sample.json` sample entry, 
 `hybrid.contoso.com` as `expectedDomainType: InternalRelay`, labeled "on-premises Exchange hybrid
@@ -224,7 +224,7 @@ including `ExternalRelay` (parent `README.md` §6), so no schema change was need
 | Decision | Choice | Rationale |
 |---|---|---|
 | Module placement | `scenarios/dlp/`, sibling to the parent scenario | Same control family, same module, extends rather than duplicates, matches this repo's established sibling-scenario pattern (e.g. `defender-device-control-usb-allowlist` → `-macos` → `-macos-jamf`). |
-| Connection surface | On-premises Exchange Management Shell via remote PowerShell (`New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://<ServerFQDN>/PowerShell/ -Authentication Kerberos`), **not** one of `docs/automation-surface.md`'s five surfaces | That doc's five surfaces are deliberately all-cloud (§1 there); on-premises Exchange Management Shell is a sixth, narrower connection method this one scenario needs and documents itself rather than widening that cross-cutting doc's scope for a single-scenario need. |
+| Connection surface | On-premises Exchange Management Shell via remote PowerShell (`New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri http://<ServerFQDN>/PowerShell/ -Authentication Kerberos`), **not** one of [Automation surface](/docs/automation-surface/)'s five surfaces | That doc's five surfaces are deliberately all-cloud (§1 there); on-premises Exchange Management Shell is a sixth, narrower connection method this one scenario needs and documents itself rather than widening that cross-cutting doc's scope for a single-scenario need. |
 | Live combined session | Not supported by default (§3) | Real PowerShell proxy-function name collision between two remoting-imported `Get-AcceptedDomain` cmdlets; sidestepped via separate processes/sessions plus an optional file-based cross-check (§4), not a runtime guard this script could not itself enforce. |
 | Cross-environment check | Optional `-CloudBaselinePath`, reads the parent's last-written baseline file only | Answers the hybrid-specific "did the two sides diverge" question without a second live connection (§3, §4). |
 | Cross-environment check scope | `DomainType`, `MatchSubDomains`, `Default`, three fields, three separate finding categories | §4, mirrors the baseline-diff block's own per-field category pattern (§6) and avoids a `(RunId, Category, DomainName)` collision when a domain diverges on more than one field in the same run, a real bug this build's own functional test caught in a single-category draft. |
@@ -235,18 +235,18 @@ including `ExternalRelay` (parent `README.md` §6), so no schema change was need
 ## 9. Non-goals
 
 - Does not establish its own remote PowerShell session, the caller runs `New-PSSession`/
-  `Import-PSSession` first (§3, `README.md` §5), the same author-only pattern the parent scenario uses
-  for `Connect-ExchangeOnline`.
+ `Import-PSSession` first (§3, `README.md` §5), the same author-only pattern the parent scenario uses
+ for `Connect-ExchangeOnline`.
 - Does not attempt to run simultaneously with the parent scenario's live cloud session in one process
-  by default, §3.
+ by default, §3.
 - Does not resolve the open `hybrid.contoso.com` `InternalRelay`-vs-`Authoritative` sample-config
-  question (§4), tracked as a `PROGRESS.md` follow-up, not guessed at here.
+ question (§4), tracked as a `PROGRESS.md` follow-up, not guessed at here.
 - Does not manage, create, or remove any accepted domain, DLP rule, or any other Exchange/Purview
-  object, purely a read-only detection control, same as the parent (`rollback.md`).
+ object, purely a read-only detection control, same as the parent (`rollback.md`).
 - **Resolved (later build), no longer a non-goal:** cross-environment reconciliation of `MatchSubDomains`/
-  `Default`, once a concrete buyer need surfaced as a `PROGRESS.md` follow-up, see §4 for the design
-  and §8 for the key decision. Kept here as a record of the original scoping call, per this repo's
-  incremental-scoping discipline.
+ `Default`, once a concrete buyer need surfaced as a `PROGRESS.md` follow-up, see §4 for the design
+ and §8 for the key decision. Kept here as a record of the original scoping call, per this repo's
+ incremental-scoping discipline.
 
 ## 10. References
 

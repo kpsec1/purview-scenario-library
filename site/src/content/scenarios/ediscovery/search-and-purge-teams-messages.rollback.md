@@ -18,13 +18,13 @@ This is the most time-sensitive rollback-adjacent action in this scenario, and i
 optional even though it doesn't restore anything already deleted:
 
 - If a hold or retention policy was removed from a target mailbox to allow the purge to proceed
-  (README.md §5 step 3), **reapply it immediately** after the purge completes and is validated.
-  Leaving it off is a preservation-duty gap for that mailbox's other content, not just the purged
-  message.
+ (README.md §5 step 3), **reapply it immediately** after the purge completes and is validated.
+ Leaving it off is a preservation-duty gap for that mailbox's other content, not just the purged
+ message.
 - Microsoft notes that reapplying a hold **within 24 hours** of the purge can preserve the
-  **compliance copy** (not the already-deleted user copy) from the background deletion job that
-  would otherwise remove it in 1-7 days (README.md §6), a reason to treat this step as urgent, not
-  a background chore.
+ **compliance copy** (not the already-deleted user copy) from the background deletion job that
+ would otherwise remove it in 1-7 days (README.md §6), a reason to treat this step as urgent, not
+ a background chore.
 
 This scenario's scripts do not automate hold removal or reapplication (`design.md` §3 goal 5); track
 which holds you removed and confirm each is back in place using your organization's standard hold
@@ -67,9 +67,9 @@ for this case has been satisfied.
 ## What this rollback cannot do
 
 - **Restore a purged Teams message.** There is no stage for this, for either `-PurgeType` value, it
-  is irreversible by design once the purge operation succeeds (README.md §2, `design.md` §7).
+ is irreversible by design once the purge operation succeeds (README.md §2, `design.md` §7).
 - **Confirm a hold was reapplied correctly.** That is a manual verification against your hold
-  management tooling; this scenario's validation script cannot check hold state (README.md §11).
+ management tooling; this scenario's validation script cannot check hold state (README.md §11).
 - **Tell you whether a specific purge run needs to be reversed at all.** Review the purge job report
-  (`reportFileMetadata`, printed by `Invoke-TeamsMessagePurge.ps1`) and the Teams client tombstone
-  before deciding a purge was scoped incorrectly, by then, the message itself is already gone.
+ (`reportFileMetadata`, printed by `Invoke-TeamsMessagePurge.ps1`) and the Teams client tombstone
+ before deciding a purge was scoped incorrectly, by then, the message itself is already gone.

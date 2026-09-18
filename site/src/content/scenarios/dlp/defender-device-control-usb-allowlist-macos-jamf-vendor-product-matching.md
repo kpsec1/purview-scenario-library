@@ -45,13 +45,13 @@ same PCI DSS v4.0 improvement actions this technical control and its siblings su
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Base scenario | `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/` **prerequisites only** (device control licensing, JAMF Pro, MDE-on-JAMF onboarding, Full Disk Access for `com.microsoft.dlp.daemon`, the existing `com.microsoft.wdav` custom-schema profile) | This scenario adds no new prerequisite beyond the base scenario's own §3, it is a superset artifact, not a separately-deployed object (`design.md` §3). |
-| Device control (macOS) | **Microsoft Defender for Endpoint Plan 1** (bundled in Microsoft 365 E3) or higher | Confirmed against Microsoft's JAMF-specific device control deployment guide, same minimum as both siblings [[1]](#references). |
+| Device control (macOS) | **Microsoft Defender for Endpoint Plan 1** (bundled in Microsoft 365 E3) or higher | Confirmed against Microsoft's JAMF-specific device control deployment guide, same minimum as both siblings. |
 | Device management | **JAMF Pro** (macOS Configuration Profiles, Application & Custom Settings) | Same JAMF Pro tenant already managing the target Macs per the base scenario. |
 | Existing base policy JSON (recommended, not required) | The base scenario's `output/jamf-device-control-policy.json`, or its `deploy/config/*.json` config | Useful as a starting point for this scenario's combined config, see §5 Step 1. |
 | Approved devices' identifiers | The physical approved drives' serial numbers (if any) and/or their `vendorId`/`productId` (four-digit hex each) | Must be known before running this scenario's deploy script. `vendorId`/`productId` can be read from `system_profiler SPUSBDataType` on a Mac with the device connected, or from the device's own documentation. |
 | Automation identity | **None required for this scenario's script** | Same as the base JAMF scenario, reads a local config file and writes a local JSON file only; no Microsoft Graph or JAMF Pro API call (§11, `design.md` §3). |
 | Local tooling (optional) | `mdatp` CLI, only if using `-ValidateWithMdatp` | Requires running the deploy or validate script on an already-onboarded Mac's Terminal. |
-| Role to author in the JAMF Pro console (human operator) | JAMF Pro role with permission to edit **Configuration Profiles** | Same JAMF-issued RBAC as the base scenario, outside the scope of `docs/rbac-model.md`. |
+| Role to author in the JAMF Pro console (human operator) | JAMF Pro role with permission to edit **Configuration Profiles** | Same JAMF-issued RBAC as the base scenario, outside the scope of [RBAC model](/docs/rbac-model/). |
 
 > Verify current entitlement names and the Product Terms before a sales commitment, SKU names
 > change. This scenario's licensing story is identical to the base JAMF scenario's (§10); it adds no
@@ -157,7 +157,7 @@ this fragment), see the base scenario's `README.md` §5, Step 4.
 | Enable Device Control engine | JAMF Pro GUI property, **not** in this JSON | `{"name": "DC_in_dlp", "state": "enabled"}`, unchanged from the base scenario, not re-set by this fragment. |
 | Group: `AllRemovableStorage` (catch-all) | `groups[0]` | Unchanged from the base scenario. |
 | Group: `VendorProductMatch-<label>` (one per `vendorProductDevices` entry) | `groups[]`, inserted before `ApprovedBackupDrives` | `query: {"$type":"and","clauses":[{"$type":"primaryId","value":"removable_media_devices"},{"$type":"vendorId","value":"<hex>"},{"$type":"productId","value":"<hex>"}]}`; `id` is a deterministic UUIDv5 of `vendorId:productId`. |
-| Group: `ApprovedBackupDrives` | `groups[]` | `query: {"$type":"any","clauses":[...serialNumber clauses from approvedDevices..., ...groupId clauses referencing each VendorProductMatch- sub-group...]}` |
+| Group: `ApprovedBackupDrives` | `groups[]` | `query: {"$type":"any","clauses":[...serialNumber clauses from approvedDevices...,...groupId clauses referencing each VendorProductMatch- sub-group...]}` |
 | Rule: `Allow-ApprovedBackupDrives` | `rules[0]` | Unchanged from the base scenario, `includeGroups=[ApprovedBackupDrives]`; `allow` + `auditAllow(send_event)`, `access=[read,write,execute]`. |
 | Rule: `Deny-AllOtherRemovableStorage` | `rules[1]` | Unchanged from the base scenario. |
 
@@ -170,22 +170,22 @@ grounding: the deploy script's `.NOTES` block and §12 below.
 
 1. **Device onboarding/Full Disk Access check**, identical to the base scenario's §7 check 1.
 2. **Local artifact check**, `./validate/Test-JamfVendorProductDeviceAllowlistPolicyJson.ps1
-   -ConfigPath ./deploy/config/mac-jamf-vendor-product-device-allowlist.sample.json` confirms every
-   `approvedDevices` serialNumber and every `vendorProductDevices` sub-group (present, correctly
-   AND-clause-shaped, referenced from `ApprovedBackupDrives` via `groupId`, and correctly ordered
-   before it in the `groups` array) match the config, flags any orphaned `VendorProductMatch-` group,
-   and, if `mdatp` is available, re-runs the local schema validator. **This check cannot confirm
-   the JSON was actually pasted into JAMF Pro**, see §11.
+ -ConfigPath./deploy/config/mac-jamf-vendor-product-device-allowlist.sample.json` confirms every
+ `approvedDevices` serialNumber and every `vendorProductDevices` sub-group (present, correctly
+ AND-clause-shaped, referenced from `ApprovedBackupDrives` via `groupId`, and correctly ordered
+ before it in the `groups` array) match the config, flags any orphaned `VendorProductMatch-` group,
+ and, if `mdatp` is available, re-runs the local schema validator. **This check cannot confirm
+ the JSON was actually pasted into JAMF Pro**, see §11.
 3. **JAMF Pro console check**, identical to the base scenario's §7 check 3.
 4. **Client-side status check** (Terminal on a pilot Mac), identical to the base scenario's §7
-   check 4 (`mdatp health --details device_control`).
+ check 4 (`mdatp health --details device_control`).
 5. **Functional test (vendor/product-matched drive, no serial number)**, plug in a drive whose
-   `vendorId`/`productId` is in the config's `vendorProductDevices` list. Expect: read/write
-   succeeds, and a `RemovableStoragePolicyTriggered` event with `Verdict = Allow` appears in Advanced
-   Hunting (audited, not silent).
+ `vendorId`/`productId` is in the config's `vendorProductDevices` list. Expect: read/write
+ succeeds, and a `RemovableStoragePolicyTriggered` event with `Verdict = Allow` appears in Advanced
+ Hunting (audited, not silent).
 6. **Functional test (unapproved drive)**, identical to the base scenario's §7 check 5.
 7. **Advanced Hunting query** (identical to every sibling in this family, `DeviceEvents` is a single,
-   OS- and MDM-agnostic table):
+ OS- and MDM-agnostic table):
    ```kusto
    DeviceEvents
    | where ActionType == "RemovableStoragePolicyTriggered"
@@ -236,72 +236,72 @@ valid, simpler rollback step, see `rollback.md`.
 ## 10. Cost & licensing notes
 
 - **No PAYG component and no incremental licensing cost over the base JAMF scenario.** Device control
-  for macOS is bundled into Defender for Endpoint Plan 1 (itself bundled into Microsoft 365 E3)
-  [[1]](#references), this fragment adds no new licensed capability.
+ for macOS is bundled into Defender for Endpoint Plan 1 (itself bundled into Microsoft 365 E3)
+, this fragment adds no new licensed capability.
 - **JAMF Pro is a separate, third-party licensing line**, entirely outside Microsoft's Product Terms, 
-  unchanged from the base scenario.
+ unchanged from the base scenario.
 - **No Microsoft Graph application permission or Entra app registration required**, this fragment's
-  script, like the base scenario's, never calls Microsoft Graph or the JAMF Pro API.
+ script, like the base scenario's, never calls Microsoft Graph or the JAMF Pro API.
 
 ## 11. Known limitations & gotchas
 
 - **`vendorId`/`productId` identify a device model, not a unique physical unit.** Any device sharing
-  the configured pair, a colleague's identical drive model, or a unit with spoofed/reprogrammed USB
-  descriptor fields, matches the exception, not just the one physically approved unit. This is
-  **not** a variant of the same risk level as `serialNumber` matching; it is a strictly weaker
-  guarantee (`design.md` §6). Presented as such, not as an equivalent alternative for convenience.
+ the configured pair, a colleague's identical drive model, or a unit with spoofed/reprogrammed USB
+ descriptor fields, matches the exception, not just the one physically approved unit. This is
+ **not** a variant of the same risk level as `serialNumber` matching; it is a strictly weaker
+ guarantee (`design.md` §6). Presented as such, not as an equivalent alternative for convenience.
 - **This scenario's automation stops at generating and locally validating the policy JSON, it does
-  not deploy anything**, and pasting the result into JAMF Pro **replaces** the prior content
-  wholesale (§5 Step 3), identical, already-disclosed gap and mechanic to the base JAMF scenario
-  (`README.md` §11 there).
+ not deploy anything**, and pasting the result into JAMF Pro **replaces** the prior content
+ wholesale (§5 Step 3), identical, already-disclosed gap and mechanic to the base JAMF scenario
+ (`README.md` §11 there).
 - **No remote, at-scale way to confirm the pasted JSON matches the intended artifact**, identical gap
-  to the base JAMF scenario; the same JAMF-console-only audit trail limitation applies here, now also
-  covering vendor/product-matched entries.
+ to the base JAMF scenario; the same JAMF-console-only audit trail limitation applies here, now also
+ covering vendor/product-matched entries.
 - **A device presenting as a Portable Device, Apple (iOS/iPadOS) device, or Bluetooth media is
-  completely invisible to this control**, unchanged, disclosed scope boundary inherited from the
-  base scenario; this fragment does not extend vendor/product matching to those families (a separate
-  follow-up, tracked in `PROGRESS.md`, the same as for the Intune sibling).
+ completely invisible to this control**, unchanged, disclosed scope boundary inherited from the
+ base scenario; this fragment does not extend vendor/product matching to those families (a separate
+ follow-up, tracked in `PROGRESS.md`, the same as for the Intune sibling).
 - **VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples grounding pass):** no directly-
-  confirmed Microsoft worked example pairs a `groupId` clause with **more than one** sibling sub-group
-  inside one `any` query. The `groupId` clause type itself, its "match if a device is a member of
-  another group" semantics, and the "group must be defined within the policy before the clause"
-  ordering requirement are directly confirmed from Microsoft's own Clause reference table
-  [[1]](#references), but the N-sub-groups-in-one-OR-query composition this fragment performs is this
-  repository's own application of that documented primitive, inherited unresolved from the Intune
-  sibling's own equivalent VERIFY, not independently re-checked or newly resolved by this fragment.
+ confirmed Microsoft worked example pairs a `groupId` clause with **more than one** sibling sub-group
+ inside one `any` query. The `groupId` clause type itself, its "match if a device is a member of
+ another group" semantics, and the "group must be defined within the policy before the clause"
+ ordering requirement are directly confirmed from Microsoft's own Clause reference table
+, but the N-sub-groups-in-one-OR-query composition this fragment performs is this
+ repository's own application of that documented primitive, inherited unresolved from the Intune
+ sibling's own equivalent VERIFY, not independently re-checked or newly resolved by this fragment.
 - **VERIFY (`developer.jamf.com`, or a pilot JAMF Pro tenant):** whether a documented JAMF Pro
-  REST/Classic API exists for setting the Device Control Policy custom-schema property
-  programmatically, the same open item the base JAMF scenario's own `README.md` §11 already tracks.
-  If resolved, this fragment's Step 3 (§5) could be automated end-to-end the same way it would close
-  the base scenario's equivalent gap.
+ REST/Classic API exists for setting the Device Control Policy custom-schema property
+ programmatically, the same open item the base JAMF scenario's own `README.md` §11 already tracks.
+ If resolved, this fragment's Step 3 (§5) could be automated end-to-end the same way it would close
+ the base scenario's equivalent gap.
 - **Device control has no content awareness at all**, pair with a future macOS-scoped Endpoint DLP
-  control for content inspection on the approved path too, the same complementary-layers framing as
-  every sibling in this family.
+ control for content inspection on the approved path too, the same complementary-layers framing as
+ every sibling in this family.
 
 ## 12. References
 
 1. Device Control for macOS (Clause reference table, `groupId` "Match if a device is a member of
-   another group. The value represents the UUID of the group to match against. The group must be
-   defined within the policy before the clause."; `vendorId`/`productId` "Four digit hexadecimal
-   string"; query `any`/`or` OR semantics; Prepare your endpoints, Full Disk Access, `DC_in_dlp`,
-   minimum client version `101.91.92`), <https://learn.microsoft.com/defender-endpoint/mac-device-control-overview>
+ another group. The value represents the UUID of the group to match against. The group must be
+ defined within the policy before the clause."; `vendorId`/`productId` "Four digit hexadecimal
+ string"; query `any`/`or` OR semantics; Prepare your endpoints, Full Disk Access, `DC_in_dlp`,
+ minimum client version `101.91.92`), <https://learn.microsoft.com/defender-endpoint/mac-device-control-overview>
 2. Sample macOS device control policies (`deny_all_bluetooth_devices_except_samsung.json`, the
-   `vendorId`+`productId` AND-clause exception-group shape this fragment generalizes to N devices and
-   to the `removable_media_devices` family), <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_all_bluetooth_devices_except_samsung.json>
+ `vendorId`+`productId` AND-clause exception-group shape this fragment generalizes to N devices and
+ to the `removable_media_devices` family), <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_all_bluetooth_devices_except_samsung.json>
 3. Deploy and manage Device Control using JAMF (Steps 1-4: author JSON, validate with `mdatp`, update
-   the Defender for Endpoint preferences schema, add the Device Control Policy property; states the
-   Microsoft 365 E3 / Defender for Endpoint Plan 1 licensing minimum; frames JAMF as a third-party
-   tool with no Microsoft-provided API guidance), <https://learn.microsoft.com/defender-endpoint/mac-device-control-jamf>
+ the Defender for Endpoint preferences schema, add the Device Control Policy property; states the
+ Microsoft 365 E3 / Defender for Endpoint Plan 1 licensing minimum; frames JAMF as a third-party
+ tool with no Microsoft-provided API guidance), <https://learn.microsoft.com/defender-endpoint/mac-device-control-jamf>
 4. Device control policies in Microsoft Defender for Endpoint ("The rules and policies are combined
-   into a single JSON and configured by using JAMF as the device control policy"; shared
-   groups/rules/entries concepts across Windows and macOS), <https://learn.microsoft.com/defender-endpoint/device-control-policies>
+ into a single JSON and configured by using JAMF as the device control policy"; shared
+ groups/rules/entries concepts across Windows and macOS), <https://learn.microsoft.com/defender-endpoint/device-control-policies>
 5. RFC 4122, Section 4.3 (name-based UUID, algorithm for creating a version-5 UUID), <https://www.rfc-editor.org/rfc/rfc4122#section-4.3>
 6. `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`, the base JAMF scenario this
-   fragment extends; see that scenario's own references for the onboarding, Full Disk Access, and
-   JAMF-console-procedure citations.
+ fragment extends; see that scenario's own references for the onboarding, Full Disk Access, and
+ JAMF-console-procedure citations.
 7. `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/`, the Intune
-   sibling this fragment's group-generation logic and deterministic-UUID scheme are ported from
-   verbatim; see that scenario's own references for the Intune/Graph-side citations.
+ sibling this fragment's group-generation logic and deterministic-UUID scheme are ported from
+ verbatim; see that scenario's own references for the Intune/Graph-side citations.
 
 > Re-verify all links, and especially §11's open VERIFYs, against current Microsoft Learn, JAMF's own
 > developer documentation, and a pilot tenant before a customer-facing assessment or sale.

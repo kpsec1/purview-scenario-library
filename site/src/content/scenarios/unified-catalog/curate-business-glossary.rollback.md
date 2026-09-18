@@ -50,7 +50,7 @@ as a routine way to "reset and re-seed."
 
 **Prerequisite the script does not check for you:** Microsoft's portal guidance for deleting a
 governance domain requires first unpublishing it and removing all business concepts within it
-[[1]](README.md#12-references). This script deletes the terms it knows about (from the definition
+. This script deletes the terms it knows about (from the definition
 file) before deleting the domain, but if the domain has **other** terms, data products, OKRs, or
 critical data elements this script didn't create, the domain delete call may fail server-side
 until those are also removed, check the domain in the portal first if it's been used for anything
@@ -59,17 +59,17 @@ beyond this scenario's four terms.
 ## What rollback does **not** undo
 
 - **Term/domain history.** Microsoft Learn does not document a separate audit trail for
-  Unified Catalog object changes distinct from the general Microsoft Purview audit log; this
-  scenario does not script audit-log retrieval for these changes.
+ Unified Catalog object changes distinct from the general Microsoft Purview audit log; this
+ scenario does not script audit-log retrieval for these changes.
 - **Links from data products, other terms, or critical data elements to a deleted term.** If a
-  term this script deletes was linked to a data product or another domain's term (§7 non-goal
-  in `design.md` notwithstanding, a human could have added such a link via the portal after
-  deployment), that link becomes a dangling reference; check the portal's **Related** tab on
-  anything that might reference these terms before purging.
+ term this script deletes was linked to a data product or another domain's term (§7 non-goal
+ in `design.md` notwithstanding, a human could have added such a link via the portal after
+ deployment), that link becomes a dangling reference; check the portal's **Related** tab on
+ anything that might reference these terms before purging.
 - **Any custom attribute values a Governance Domain admin configured** on these terms via the
-  portal, the domain's custom-attribute-group definitions themselves are not touched by this
-  scenario's scripts (create/update/delete act only on the terms and domain object, not on the
-  tenant's custom-attribute schema).
+ portal, the domain's custom-attribute-group definitions themselves are not touched by this
+ scenario's scripts (create/update/delete act only on the terms and domain object, not on the
+ tenant's custom-attribute schema).
 
 ## Verification after rollback
 

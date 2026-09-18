@@ -51,16 +51,16 @@ first place before choosing to switch to it).
 ## What rollback does **not** undo
 
 - **Audit log / alert history.** Alerts already generated are retained per their own retention
-  windows regardless of policy state.
+ windows regardless of policy state.
 - **Responses already blocked from web grounding or content processing.** A Copilot response that
-  was already restricted while the policy was enforcing is not retroactively regenerated;
-  disabling or removing the policy afterward only affects future prompts.
+ was already restricted while the policy was enforcing is not retroactively regenerated;
+ disabling or removing the policy afterward only affects future prompts.
 - **Sensitivity labels.** This scenario does not create or manage the `Confidential`/`Highly
-  Confidential` labels it references, they are a dependency (see
-  `scenarios/information-protection/auto-label-confidential-sharepoint/`), not a deployed artifact.
-  Removing this policy has no effect on the labels or their own auto-labeling policies.
+ Confidential` labels it references, they are a dependency (see
+ `scenarios/information-protection/auto-label-confidential-sharepoint/`), not a deployed artifact.
+ Removing this policy has no effect on the labels or their own auto-labeling policies.
 - **DSPM for AI oversharing assessment.** It is not created or scoped by this scenario at all; it
-  keeps running automatically regardless of this policy's state.
+ keeps running automatically regardless of this policy's state.
 
 ## Verification after rollback
 

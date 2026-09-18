@@ -65,24 +65,24 @@ Deletes the locally generated JSON file only, no effect on anything already conf
 Identical list to the base JAMF scenario's `rollback.md`:
 
 - **Advanced Hunting / `DeviceEvents` history.** Retained per its own retention window regardless of
-  policy state.
+ policy state.
 - **Access already denied or allowed.** Not retroactively completed by a later rollback.
 - **Device onboarding, or the Full Disk Access (PPPC) profile.** This scenario does not create or
-  manage either.
+ manage either.
 - **The JAMF Pro Computer Group membership, or the physical approved drives.** Not created or managed
-  by this scenario.
+ by this scenario.
 - **Any other setting in the shared "MDE Preferences" `com.microsoft.wdav` profile.** Stages 1-4 above
-  are scoped to the Device Control property and the `DC_in_dlp` feature flag only.
+ are scoped to the Device Control property and the `DC_in_dlp` feature flag only.
 
 ## Verification after rollback
 
 1. In the JAMF Pro console, confirm the profile's **Scope**, **Device Control Policy** text box
-   content, and `DC_in_dlp` **State** reflect the intended post-rollback state.
+ content, and `DC_in_dlp` **State** reflect the intended post-rollback state.
 2. If you performed Stage 2 (revert to serialNumber-only), run
-   `defender-device-control-usb-allowlist-macos-jamf/validate/Test-JamfDeviceControlPolicyJson.ps1`
-   against the reverted artifact to confirm it matches the base scenario's expected shape.
+ `defender-device-control-usb-allowlist-macos-jamf/validate/Test-JamfDeviceControlPolicyJson.ps1`
+ against the reverted artifact to confirm it matches the base scenario's expected shape.
 3. On a pilot Mac, after its next check-in: `mdatp health --details device_control`, confirm
-   `v2_state` reflects the change.
+ `v2_state` reflects the change.
 4. Functional test: plug in a device previously approved only by `vendorId`/`productId` and confirm
-   it is now denied (if Stage 2, 3, or 4 was performed) while any `serialNumber`-approved device
-   (Stage 2 only) remains allowed.
+ it is now denied (if Stage 2, 3, or 4 was performed) while any `serialNumber`-approved device
+ (Stage 2 only) remains allowed.

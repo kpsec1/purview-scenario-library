@@ -8,12 +8,12 @@ This library ships two closely related, already-reviewed auto-labeling scenarios
 half of the gap this scenario finishes:
 
 - `scenarios/information-protection/auto-label-eu-personal-data-sharepoint/` applies
-  jurisdiction-appropriate EU/UK sensitive information types (SITs) to SharePoint/OneDrive content
-  **at rest**, but explicitly leaves Exchange out of scope (`design.md` §8 there).
+ jurisdiction-appropriate EU/UK sensitive information types (SITs) to SharePoint/OneDrive content
+ **at rest**, but explicitly leaves Exchange out of scope (`design.md` §8 there).
 - `scenarios/information-protection/auto-label-confidential-exchange/` applies the same
-  auto-labeling mechanism to Exchange email **in transit**, but defaults to U.S. Social Security
-  Number and Credit Card Number, the same U.S.-centric starter set the EU/UK SharePoint sibling
-  was built to move away from for a non-U.S. buyer.
+ auto-labeling mechanism to Exchange email **in transit**, but defaults to U.S. Social Security
+ Number and Credit Card Number, the same U.S.-centric starter set the EU/UK SharePoint sibling
+ was built to move away from for a non-U.S. buyer.
 
 An enterprise whose regulated population is EU/UK-only and has deployed both existing siblings
 still has no email-channel coverage for EU/UK personal data specifically: the SharePoint/OneDrive
@@ -31,44 +31,44 @@ regulatory driver for the exact data class this control protects (§2 of `README
 ## 2. Design goals
 
 1. Apply the **Confidential** label (parameterizable) automatically to Exchange email (subject,
-   body, and Office/PDF attachments evaluated for conditions) containing EU/UK personal
-   identifiers, national ID numbers, the EU Social-Security-or-equivalent family, and EU-format
-   debit card numbers, as messages are sent and received, without requiring any user action.
+ body, and Office/PDF attachments evaluated for conditions) containing EU/UK personal
+ identifiers, national ID numbers, the EU Social-Security-or-equivalent family, and EU-format
+ debit card numbers, as messages are sent and received, without requiring any user action.
 2. Reuse, unchanged, every Exchange-specific mechanical decision the `auto-label-confidential-
-   exchange` sibling already made and had reviewed: one rule (`-Workload` is single-valued),
-   sender-based exclusion (`-ExchangeSenderException`, not a location exception, no
-   `-ExchangeLocationException` parameter exists), `-ExchangeLocation All`, and the same
-   override-safety guarantee (never override a manual label; only a lower-priority auto-applied/
-   default one).
+ exchange` sibling already made and had reviewed: one rule (`-Workload` is single-valued),
+ sender-based exclusion (`-ExchangeSenderException`, not a location exception, no
+ `-ExchangeLocationException` parameter exists), `-ExchangeLocation All`, and the same
+ override-safety guarantee (never override a manual label; only a lower-priority auto-applied/
+ default one).
 3. Reuse, unchanged, every SIT-selection mechanical decision the `auto-label-eu-personal-data-
-   sharepoint` sibling already made and had reviewed: the three-SIT EU-wide bundle default (EU
-   national identification number, EU Social Security Number (SSN) or Equivalent ID, EU debit card
-   number), the `-SensitiveInfoTypeName` localization parameter, and resolving every configured
-   name against `Get-DlpSensitiveInformationType` at deploy time rather than trusting a literal
-   string.
+ sharepoint` sibling already made and had reviewed: the three-SIT EU-wide bundle default (EU
+ national identification number, EU Social Security Number (SSN) or Equivalent ID, EU debit card
+ number), the `-SensitiveInfoTypeName` localization parameter, and resolving every configured
+ name against `Get-DlpSensitiveInformationType` at deploy time rather than trusting a literal
+ string.
 4. Idempotent and re-runnable: running the deploy script twice must not create duplicate policies
-   or rules.
+ or rules.
 5. Ship "off" by default: simulation mode first, matching `AGENTS.md` §4 and this library's
-   established precedent.
+ established precedent.
 
 ## 3. Why a third scenario, not a parameter on either sibling
 
 Retrofitting either existing sibling to cover this scenario's combination would mean either:
 
 - Adding an Exchange location option to `auto-label-eu-personal-data-sharepoint`, but that
-  scenario's whole policy/rule naming, README prose, and `reviews.md` findings are written
-  specifically around SharePoint/OneDrive's at-rest, location-exception, two-workload model. An
-  Exchange branch bolted on would need a second, materially different exclusion mechanism
-  (sender-based, not location-based) and a second, materially different observability story (no
-  Labeled-items dashboard, live-traffic-only simulation) living inside one README, exactly the
-  "stops reading as the clean, niche format `AGENTS.md` §4 requires" problem the EU/UK SharePoint
-  sibling's own `design.md` §3 already used to justify *not* retrofitting the U.S.-SIT sibling.
+ scenario's whole policy/rule naming, README prose, and `reviews.md` findings are written
+ specifically around SharePoint/OneDrive's at-rest, location-exception, two-workload model. An
+ Exchange branch bolted on would need a second, materially different exclusion mechanism
+ (sender-based, not location-based) and a second, materially different observability story (no
+ Labeled-items dashboard, live-traffic-only simulation) living inside one README, exactly the
+ "stops reading as the clean, niche format `AGENTS.md` §4 requires" problem the EU/UK SharePoint
+ sibling's own `design.md` §3 already used to justify *not* retrofitting the U.S.-SIT sibling.
 - Adding an EU-SIT-set option to `auto-label-confidential-exchange`, but that scenario's identity
-  is specifically the U.S.-SIT Exchange scenario; parameterizing its SIT set open-endedly would
-  either require the same `Get-DlpSensitiveInformationType`-resolution machinery this scenario
-  needs anyway (duplicating it inside an already-shipped, already-reviewed fragment) or silently
-  changing what a buyer who deployed it for its documented U.S. SSN/Credit-Card-Number behavior
-  gets going forward.
+ is specifically the U.S.-SIT Exchange scenario; parameterizing its SIT set open-endedly would
+ either require the same `Get-DlpSensitiveInformationType`-resolution machinery this scenario
+ needs anyway (duplicating it inside an already-shipped, already-reviewed fragment) or silently
+ changing what a buyer who deployed it for its documented U.S. SSN/Credit-Card-Number behavior
+ gets going forward.
 
 A third, sibling scenario folder, same overall architecture as both, borrowing the Exchange
 mechanics from one and the SIT mechanics from the other, keeps all three scenarios independently
@@ -88,7 +88,7 @@ from that sibling's `design.md` §4 and is not re-derived here).
 
 | Setting | Value |
 |---|---|
-| `ExchangeLocation` | `All` (default), required for the policy to evaluate incoming mail from external senders [[7]](#references) |
+| `ExchangeLocation` | `All` (default), required for the policy to evaluate incoming mail from external senders |
 | `ExchangeSenderException` | `<ExcludedMailboxSmtpAddress>` (optional), one or more nominated mailboxes (e.g., a legal-hold mailbox) whose **outbound** mail is never evaluated |
 | `OverwriteLabel` | `$true`, never overrides a manual label, only a lower-priority auto-applied/default one |
 | `ExternalMailRightsManagementOwner` | Not set by default (optional parameter) |
@@ -139,10 +139,10 @@ this addition (2026-09-09) and confirmed identical to the SharePoint/OneDrive si
 grounding, not assumed to still match:
 
 - **EU passport number**: 25 EU member states' own entities + one combined **"U.S./U.K. passport
-  number"** entity, no standalone U.K. entity, and no Luxembourg or Netherlands entity either
-  [[9]](#references).
+ number"** entity, no standalone U.K. entity, and no Luxembourg or Netherlands entity either
+.
 - **EU driver's license number**: all 27 EU member states' own entities + a standalone **U.K.**
-  entity, the more complete of the two bundles [[10]](#references).
+ entity, the more complete of the two bundles.
 
 **The same U.S./U.K.-merge consequence the SharePoint/OneDrive sibling's `design.md` §4 already
 disclosed applies unchanged to email**: a buyer who enables this switch specifically for U.K.
@@ -165,28 +165,28 @@ Combining the two siblings' already-reviewed decisions was mechanical everywhere
 place, described here rather than glossed over:
 
 - **No conflict**: SIT selection and exclusion mechanism are orthogonal. `-ExchangeSenderException`
-  (from the Exchange sibling) and `-SensitiveInfoTypeName` (from the EU/UK sibling) apply to
-  different parts of the rule/policy object and don't interact, a sender exclusion works
-  identically regardless of which SIT set the rule matches on.
+ (from the Exchange sibling) and `-SensitiveInfoTypeName` (from the EU/UK sibling) apply to
+ different parts of the rule/policy object and don't interact, a sender exclusion works
+ identically regardless of which SIT set the rule matches on.
 - **No conflict**: rollout staging, override semantics (`OverwriteLabel = $true`), and idempotency
-  pattern are identical across all three scenarios in this family and required no reconciliation.
+ pattern are identical across all three scenarios in this family and required no reconciliation.
 - **The one place that needed an explicit decision, not a copy-paste**: which sibling's
-  regulatory framing (`README.md` §2) should lead. The EU/UK SharePoint sibling frames GDPR
-  Article 32 as directly defensible because its SITs genuinely match EU/UK formats (unlike the
-  U.S.-SIT Exchange sibling, which explicitly disclaims GDPR-completeness). Because this scenario
-  combines the EU/UK SIT set with the highest-volume exfiltration channel (email) for that data,
-  its GDPR framing is not just "as defensible as the SharePoint sibling's", it is the scenario in
-  this three-scenario family where a real external-mail data-loss event is both most GDPR-relevant
-  (Article 33/34 breach-notification exposure turns on data actually leaving the organization) and
-  least protected by the current default (§6 of `README.md`: external-sender encryption is opt-in,
-  not automatic). §2 and §11 of `README.md` state this plainly rather than inheriting the softer
-  "adjacent driver" framing either sibling alone would suggest.
+ regulatory framing (`README.md` §2) should lead. The EU/UK SharePoint sibling frames GDPR
+ Article 32 as directly defensible because its SITs genuinely match EU/UK formats (unlike the
+ U.S.-SIT Exchange sibling, which explicitly disclaims GDPR-completeness). Because this scenario
+ combines the EU/UK SIT set with the highest-volume exfiltration channel (email) for that data,
+ its GDPR framing is not just "as defensible as the SharePoint sibling's", it is the scenario in
+ this three-scenario family where a real external-mail data-loss event is both most GDPR-relevant
+ (Article 33/34 breach-notification exposure turns on data actually leaving the organization) and
+ least protected by the current default (§6 of `README.md`: external-sender encryption is opt-in,
+ not automatic). §2 and §11 of `README.md` state this plainly rather than inheriting the softer
+ "adjacent driver" framing either sibling alone would suggest.
 
 ## 7. Key decisions
 
 | Decision | Choice | Source / rationale |
 |---|---|---|
-| Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`) | Same as both siblings, `docs/automation-surface.md` surface 2. |
+| Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`) | Same as both siblings, [Automation surface](/docs/automation-surface/) surface 2. |
 | One rule, one workload | `-Workload Exchange` only | Inherited from `auto-label-confidential-exchange/design.md` §3, `New-AutoSensitivityLabelRule -Workload` is single-valued and this scenario targets exactly one workload. |
 | Exclusion mechanism | `-ExchangeSenderException` (sender-based) | Inherited from `auto-label-confidential-exchange/design.md` §3, no `-ExchangeLocationException` parameter exists; confirmed against the cmdlet's full parameter syntax. |
 | Default SITs | EU national identification number, EU Social Security Number (SSN) or Equivalent ID, EU debit card number | Inherited from `auto-label-eu-personal-data-sharepoint/design.md` §4, the same EU-wide bundle grounding, unchanged by the location switch. |
@@ -199,18 +199,18 @@ place, described here rather than glossed over:
 ## 8. Non-goals
 
 - This scenario does not author or publish the `Confidential` sensitivity label, same
-  prerequisite-dependency pattern as both siblings.
+ prerequisite-dependency pattern as both siblings.
 - This scenario does not cover mail already at rest in mailboxes, Exchange auto-labeling is
-  in-transit only, inherited unchanged from `auto-label-confidential-exchange/design.md` §5/§7.
+ in-transit only, inherited unchanged from `auto-label-confidential-exchange/design.md` §5/§7.
 - This scenario does not attempt EU personal-data-category completeness (names, physical
-  addresses, health data, biometric data are all "personal data" under GDPR Article 4(1) but are
-  covered by entirely separate SIT/named-entity families), inherited unchanged from
-  `auto-label-eu-personal-data-sharepoint/design.md` §8.
+ addresses, health data, biometric data are all "personal data" under GDPR Article 4(1) but are
+ covered by entirely separate SIT/named-entity families), inherited unchanged from
+ `auto-label-eu-personal-data-sharepoint/design.md` §8.
 - This scenario does not configure `-ExternalMailRightsManagementOwner`, left as an explicit,
-  buyer-specific extension point (§7), not a default.
+ buyer-specific extension point (§7), not a default.
 - This scenario does not re-validate or change either sibling scenario's own prerequisites,
-  scripts, or `reviews.md` findings, it is an additive, independent policy against the same
-  label, reusing (not re-opening) both siblings' already-reviewed designs.
+ scripts, or `reviews.md` findings, it is an additive, independent policy against the same
+ label, reusing (not re-opening) both siblings' already-reviewed designs.
 
 ## References
 

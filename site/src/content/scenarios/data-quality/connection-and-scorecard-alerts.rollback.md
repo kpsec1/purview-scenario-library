@@ -74,22 +74,22 @@ full re-create, and it preserves `createdAt`/`createdBy` history on the alert ob
 ## What rollback does **not** undo
 
 - **The managed-VNet compute location or private endpoint**, if `-EnableManagedVNet` was used.
-  Deleting the connection object does not de-provision either, both are shared, per-region,
-  per-Purview-account resources (`design.md` §3) that other connections in other governance
-  domains may also depend on. De-provision the region explicitly under **Settings > Unified
-  Catalog > Virtual network** only after confirming no other connection still needs it, deleting a
-  region cascades to remove *every* connection linked to it, not just this scenario's
-  (`README.md` reference 5).
+ Deleting the connection object does not de-provision either, both are shared, per-region,
+ per-Purview-account resources (`design.md` §3) that other connections in other governance
+ domains may also depend on. De-provision the region explicitly under **Settings > Unified
+ Catalog > Virtual network** only after confirming no other connection still needs it, deleting a
+ region cascades to remove *every* connection linked to it, not just this scenario's
+ (`README.md` reference 5).
 - **The source database's read grant** (e.g. `db_datareader`), a source-side action this scenario
-  never created; remove it separately if the intent is a full teardown.
+ never created; remove it separately if the intent is a full teardown.
 - **The governance domain, data product, or data asset.** None of these were created by this
-  scenario, see `design.md` §6/§7, so none are removed by rollback.
+ scenario, see `design.md` §6/§7, so none are removed by rollback.
 - **The Data Quality rules or scan schedule** from `scenarios/data-quality/rules-and-scorecards/`, 
-  a separate scenario with its own rollback procedure. Removing this scenario's connection without
-  also addressing that schedule leaves it pointing at a now-deleted connection (it will fail, not
-  silently no-op).
+ a separate scenario with its own rollback procedure. Removing this scenario's connection without
+ also addressing that schedule leaves it pointing at a now-deleted connection (it will fail, not
+ silently no-op).
 - **Prior alert-fire history** (past notification emails already sent), nothing to undo; email
-  delivery isn't a Purview-managed record.
+ delivery isn't a Purview-managed record.
 
 ## Verification after rollback
 

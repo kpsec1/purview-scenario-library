@@ -21,23 +21,23 @@ fragment removes that step, and only that step.
 ## 2. Design goals
 
 1. **Never handle secret material.** The deploy script must be structurally incapable of leaking a
-   scan password, not merely careful with one. It takes no secret parameter for the target data
-   source at all, only the Key Vault *coordinates*. See §3.
+ scan password, not merely careful with one. It takes no secret parameter for the target data
+ source at all, only the Key Vault *coordinates*. See §3.
 2. **Fail fast on a dangling reference.** A credential pointing at a non-existent Key Vault
-   connection is accepted as metadata and fails later, at scan time, with a confusing error. The
-   script refuses to create one: without `-KeyVaultBaseUrl` it `GET`s the named connection and
-   throws if it is absent.
+ connection is accepted as metadata and fails later, at scan time, with a confusing error. The
+ script refuses to create one: without `-KeyVaultBaseUrl` it `GET`s the named connection and
+ throws if it is absent.
 3. **Make the one genuine unknown adjustable, not hard-coded.** Exactly two field values in this
-   scenario are unconfirmed by any Purview-specific source (§5). They ship as parameters with
-   researched defaults, and `validate/` surfaces the observed values so a single pilot-tenant read
-   closes the question permanently. Guessing silently would have violated `AGENTS.md` §4; refusing
-   to build would have left the wall in place.
+ scenario are unconfirmed by any Purview-specific source (§5). They ship as parameters with
+ researched defaults, and `validate/` surfaces the observed values so a single pilot-tenant read
+ closes the question permanently. Guessing silently would have violated `AGENTS.md` §4; refusing
+ to build would have left the wall in place.
 4. **Idempotent by construction, not by extra logic.** Both mutating calls are `PUT`s against
-   documented create-or-replace endpoints, matching the pattern the sibling Data Map scenarios
-   already established.
+ documented create-or-replace endpoints, matching the pattern the sibling Data Map scenarios
+ already established.
 5. **Be one fragment.** Create the credential and its Key Vault connection. Do not create vaults,
-   write secrets, grant vault access, register data sources, or create scans, every one of those
-   is either an existing scenario or a deliberate out-of-band step (§3, §7).
+ write secrets, grant vault access, register data sources, or create scans, every one of those
+ is either an existing scenario or a deliberate out-of-band step (§3, §7).
 
 ## 3. Why the deploy script does not write the secret or grant vault access
 
@@ -148,18 +148,18 @@ pilot-tenant `GET` settle it. See `README.md` §11.
 
 - **Creating the Azure Key Vault, or writing the secret into it.** Deliberate, §3.
 - **Granting the Purview managed identity access to the vault.** Also deliberate, §3. It is an
-  Azure IAM/access-policy action, documented step-by-step in `README.md` §5 step 2.
+ Azure IAM/access-policy action, documented step-by-step in `README.md` §5 step 2.
 - **Registering data sources or creating scan objects.** Those are
-  `scenarios/data-map/scan-on-premises-sql-server-and-classify/` and
-  `scenarios/data-map/scan-azure-sql-and-classify/`. This fragment hands them a credential name.
+ `scenarios/data-map/scan-on-premises-sql-server-and-classify/` and
+ `scenarios/data-map/scan-azure-sql-and-classify/`. This fragment hands them a credential name.
 - **The other five credential kinds** (`AccountKey`, `AmazonARN`, `ConsumerKeyAuth`,
-  `DelegatedAuth`, `ManagedIdentity`), `README.md` §11 and `PROGRESS.md` follow-ups.
+ `DelegatedAuth`, `ManagedIdentity`), `README.md` §11 and `PROGRESS.md` follow-ups.
 - **A credential-to-scan reverse index.** The API documents no such lookup, so
-  `Remove-PurviewScanCredential.ps1` cannot warn that a live scan still references the credential
-  it is deleting. Disclosed in `README.md` §11 and the script's `.NOTES` rather than faked with a
-  brute-force enumeration this build could not verify the shape of.
+ `Remove-PurviewScanCredential.ps1` cannot warn that a live scan still references the credential
+ it is deleting. Disclosed in `README.md` §11 and the script's `.NOTES` rather than faked with a
+ brute-force enumeration this build could not verify the shape of.
 - **Rotating secrets.** This scenario makes rotation cheap (`README.md` §8) but does not perform
-  it; secret rotation is a Key Vault lifecycle concern with its own tooling.
+ it; secret rotation is a Key Vault lifecycle concern with its own tooling.
 - **Replacing managed identity where it works.** Microsoft recommends managed identity "whenever
-  possible," and so does this repo. This scenario serves the cases where it is genuinely
-  unavailable, see `README.md` §11.
+ possible," and so does this repo. This scenario serves the cases where it is genuinely
+ unavailable, see `README.md` §11.

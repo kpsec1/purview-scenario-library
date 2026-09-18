@@ -7,7 +7,7 @@ parent: "data-lifecycle-management/priority-cleanup-permanent-deletion"
 Unlike `priority-cleanup-sharepoint-onedrive`, this scenario's terminal state (once fully configured
 via the portal's "Delete data permanently" step and an approval completes) bypasses **both**
 SharePoint/OneDrive Recycle Bins. Microsoft states the deleted content is "no longer discoverable in
-SharePoint search, Microsoft 365 Copilot, or eDiscovery" [[1]](#references), there is no Recycle Bin
+SharePoint search, Microsoft 365 Copilot, or eDiscovery", there is no Recycle Bin
 recovery step for rollback.md to document here, because none exists. Everything below is about
 **stopping further items from being identified and disposed of**, it is not, and cannot be, an undo
 for anything already deleted.
@@ -32,7 +32,7 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 
 Sets the policy `-Enabled $false`, no *new* items are identified. Per Microsoft's own limitation
 notice for the base feature, **items already through the approval process may still be deleted even
-after the policy is disabled or deleted** [[2]](#references), disabling the policy is not a
+after the policy is disabled or deleted**, disabling the policy is not a
 guaranteed stop for items already in flight; use Stage 0 first for anything that must not be deleted.
 
 ### Stage 2, Delete the policy and rule
@@ -63,11 +63,11 @@ Purview-native recovery path, because none is documented.
 ## What rollback does **not** undo
 
 - **Anything for which `PriorityCleanupFileDeleted` has already fired.** No recovery path exists, 
-  this is this scenario's defining, disclosed risk (README.md §2/§11).
+ this is this scenario's defining, disclosed risk (README.md §2/§11).
 - **An in-flight approval that completes after you disable/delete the policy.** Use Stage 0 first.
 - **The audit trail.** `PriorityCleanupFileDeleted` events remain in the audit log regardless of
-  policy state, this is the evidentiary record of what happened and when, and should be preserved,
-  not treated as something to undo.
+ policy state, this is the evidentiary record of what happened and when, and should be preserved,
+ not treated as something to undo.
 
 ## Before you ever reach Stage 1, the real safeguard is upstream
 

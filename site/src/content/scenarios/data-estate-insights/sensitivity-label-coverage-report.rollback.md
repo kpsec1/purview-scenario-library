@@ -41,27 +41,27 @@ scenario.
 ## 3. Decide the fate of already-produced report files
 
 - **Trend-log CSV and per-run breakdown JSON files** (wherever `-TrendLogPath` /
-  `-BreakdownOutputDirectory` pointed) are ordinary files this scenario wrote outside of Purview, 
-  delete them, archive them, or leave them in place per the buyer's own data-retention policy. As
-  README.md §11 states, these files are themselves a sensitive-data-location index (which labels are
-  applied where), apply the same handling discipline at decommission time that governed them while
-  the scenario was active; do not move them to less-protected storage as part of "cleaning up."
+ `-BreakdownOutputDirectory` pointed) are ordinary files this scenario wrote outside of Purview, 
+ delete them, archive them, or leave them in place per the buyer's own data-retention policy. As
+ README.md §11 states, these files are themselves a sensitive-data-location index (which labels are
+ applied where), apply the same handling discipline at decommission time that governed them while
+ the scenario was active; do not move them to less-protected storage as part of "cleaning up."
 - If the trend log was committed to a source-control repository (the recommended pattern for
-  preserving history, README.md §4/§8), treat its removal like removing any other tracked file: a
-  deliberate commit, not an ad hoc delete, so the historical record itself isn't silently lost without
-  a decision to do so.
+ preserving history, README.md §4/§8), treat its removal like removing any other tracked file: a
+ deliberate commit, not an ad hoc delete, so the historical record itself isn't silently lost without
+ a decision to do so.
 
 ## What rollback does **not** undo
 
 - **Any Purview object.** There isn't one, see "What there is to roll back," above. Removing this
-  scenario's automation has zero effect on the assets, scans, classifications, or **sensitivity
-  labels** it read from.
+ scenario's automation has zero effect on the assets, scans, classifications, or **sensitivity
+ labels** it read from.
 - **The "extend sensitivity labels to Data Map" capability, any sensitivity label, or any autolabeling
-  policy**, entirely out of this scenario's scope to begin with (`design.md` §7); this scenario never
-  created or modified any of them, so there is nothing of theirs for this rollback to touch.
+ policy**, entirely out of this scenario's scope to begin with (`design.md` §7); this scenario never
+ created or modified any of them, so there is nothing of theirs for this rollback to touch.
 - **The scans or classifications themselves**, owned by `scenarios/data-map/
-  scan-azure-sql-and-classify/` (or whichever scan populated the collection(s) this scenario reported
-  on), not by this scenario, identical to the sibling scenario's own scope boundary.
+ scan-azure-sql-and-classify/` (or whichever scan populated the collection(s) this scenario reported
+ on), not by this scenario, identical to the sibling scenario's own scope boundary.
 
 ## Re-enabling later
 

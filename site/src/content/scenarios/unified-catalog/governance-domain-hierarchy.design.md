@@ -11,7 +11,7 @@ explicit follow-up (`PROGRESS.md`). A single flat domain does not survive contac
 enterprise: Microsoft's own sample data-governance walkthrough models exactly this next step, a
 **Corporate** parent domain with **Sales** as a child, because "these domains are key points of
 federation for collaboration and governance in your organization"
-[[8]](README.md#12-references). This scenario builds that parent/child domain tree, applies
+. This scenario builds that parent/child domain tree, applies
 admin-defined business-concept attribute values to each domain, and (optionally) records a
 recommended Data Map collection for each domain via the **Data estate mappings** relationship, 
 all from one declarative JSON file, idempotently.
@@ -19,27 +19,27 @@ all from one declarative JSON file, idempotently.
 ## 2. Design goals
 
 1. Author a **domain tree** (a root domain plus nested child domains, up to Microsoft's documented
-   five-level depth ceiling) from a single JSON file, in one script run, not one domain per portal
-   session.
+ five-level depth ceiling) from a single JSON file, in one script run, not one domain per portal
+ session.
 2. Set **business concept attribute values** (`managedAttributes`) on each domain from the same
-   file. This scenario does **not** create the attribute *definitions* themselves, see Section 7.
+ file. This scenario does **not** create the attribute *definitions* themselves, see Section 7.
 3. Optionally record a **data estate mapping**, the recommended Data Map collection for a domain, 
-   using the Business Domain object's own `domains[].relatedCollections[]` structure, with the
-   ambiguity that construction carries (Section 5) disclosed rather than guessed past.
+ using the Business Domain object's own `domains[].relatedCollections[]` structure, with the
+ ambiguity that construction carries (Section 5) disclosed rather than guessed past.
 4. Idempotent: re-running with an unchanged file makes no mutating calls; re-running after editing
-   a domain's description, attributes, or mapping reconciles it in place; re-running after adding a
-   new child domain creates only that domain, leaving its siblings untouched.
+ a domain's description, attributes, or mapping reconciles it in place; re-running after adding a
+ new child domain creates only that domain, leaving its siblings untouched.
 5. Deletion must go **child-before-parent**, Microsoft's own portal guidance states a domain can
-   only be deleted after "you unpublish it and delete all business concepts within it, **including
-   any subdomains**" [[6]](README.md#12-references), so `Remove-GovernanceDomainHierarchy.ps1`
-   walks the tree in the reverse order this scenario's deploy script uses.
+ only be deleted after "you unpublish it and delete all business concepts within it, **including
+ any subdomains**", so `Remove-GovernanceDomainHierarchy.ps1`
+ walks the tree in the reverse order this scenario's deploy script uses.
 6. `-WhatIf` dry-run and DRAFT-by-default publish gating, matching this repo's code standard
-   (`AGENTS.md` Section 4) and `curate-business-glossary`'s own precedent.
+ (`AGENTS.md` Section 4) and `curate-business-glossary`'s own precedent.
 
 ## 3. Why a full `Enumerate` pass, not a per-node lookup
 
 The Business Domain operation group has no `Query`/name-filter operation, only `Enumerate`
-(list all, paginated by `$skipToken`) [[7]](README.md#12-references), unlike Terms' dedicated
+(list all, paginated by `$skipToken`), unlike Terms' dedicated
 `Query` operation `curate-business-glossary` uses. This scenario's deploy script therefore performs
 **one** full, paginated `Enumerate` pass at the start of a run (identical pagination pattern to
 `curate-business-glossary`'s own `Find-BusinessDomainByName`, generalized to page through every
@@ -48,15 +48,15 @@ lookup table before touching the tree. This is deliberate for two reasons this s
 the glossary scenario's single-domain lookup:
 
 - **Name reuse across different parents is expected, not a bug.** The portal does not enforce
-  unique domain names tenant-wide (mirroring the same non-uniqueness Terms already has,
-  `curate-business-glossary/design.md` Section 4), a hierarchy with a `Sales` child under
-  `Corporate` and an unrelated `Sales` child under a `Personal Health` domain elsewhere in the
-  tenant is a realistic shape this scenario must not confuse. Matching on the **pair**
-  `(name, parentId)`, not name alone, avoids reconciling the wrong domain.
+ unique domain names tenant-wide (mirroring the same non-uniqueness Terms already has,
+ `curate-business-glossary/design.md` Section 4), a hierarchy with a `Sales` child under
+ `Corporate` and an unrelated `Sales` child under a `Personal Health` domain elsewhere in the
+ tenant is a realistic shape this scenario must not confuse. Matching on the **pair**
+ `(name, parentId)`, not name alone, avoids reconciling the wrong domain.
 - **A single pass amortizes the cost.** `Enumerate`'s 500-request/20-second rate limit is generous,
-  but a tree of `N` domains looked up one-by-one with per-node pagination would cost `O(N × pages)`
-  calls; one shared pass costs `O(pages)` regardless of tree size, then every node lookup is an
-  in-memory hash lookup.
+ but a tree of `N` domains looked up one-by-one with per-node pagination would cost `O(N × pages)`
+ calls; one shared pass costs `O(pages)` regardless of tree size, then every node lookup is an
+ in-memory hash lookup.
 
 **VERIFY** (pilot tenant, before relying on this at a scale approaching the 200-domain ceiling):
 `Enumerate`'s own reference documents no `$top`/page-size parameter, the page size and thus the
@@ -97,10 +97,10 @@ The Business Domain object's request/response schema nests a `domains` array
 (`CatalogModelPlatformDomain[]`) inside every Business Domain, each element carrying its own
 `name`/`friendlyName` and a `relatedCollections[]` array (`CatalogModelRelatedCollection[]`, each
 with `name`/`friendlyName`/`parentCollection.refName`/`parentCollection.type`)
-[[7]](README.md#12-references). The portal-facing feature this almost certainly backs is
+. The portal-facing feature this almost certainly backs is
 **Data estate mappings**, mapping a governance domain to "a specific Data Map collection," found
 on the domain's own **Data estate mappings** tab, described as "recommended guidance" for stewards
-and product owners rather than an access-control mechanism [[9]](README.md#12-references).
+and product owners rather than an access-control mechanism.
 
 That correspondence is this build's own inference, not something Microsoft's REST reference states
 directly. Two things support it: the nesting under a Business Domain object (Data estate mappings
@@ -122,8 +122,8 @@ part of every domain, with:
 - `collectionReferenceName` → sent as `domains[].relatedCollections[].name`.
 - `collectionFriendlyName` → sent as `domains[].relatedCollections[].friendlyName`.
 - `parentCollectionReferenceName` (defaults to `collectionReferenceName` if omitted) → sent as
-  `domains[].relatedCollections[].parentCollection.refName`, with `.type` hardcoded to
-  `CollectionReference` (the only enum value documented).
+ `domains[].relatedCollections[].parentCollection.refName`, with `.type` hardcoded to
+ `CollectionReference` (the only enum value documented).
 
 **VERIFY (pilot tenant) before relying on this in production**, flagged inline in the deploy
 script's `.NOTES`, `README.md` Section 11, and here: whether `refName` must reference a *different*,
@@ -143,16 +143,16 @@ Microsoft documents business concept attribute *definitions* (attribute groups, 
 required flags, scope) as created exclusively through **Unified Catalog → Catalog management →
 Custom metadata (preview)** by an admin, the Unified Catalog API's documented resource list
 (Objectives/Key Results, Business Domains, Critical Data Elements, Data Products, Glossary Terms,
-Data Access Policies, Data Assets, Data Columns [[10]](README.md#12-references)) has no
+Data Access Policies, Data Assets, Data Columns) has no
 "Attributes" resource of its own. This scenario's script can therefore only **set values** for
 attributes an admin has already defined and scoped to include Governance Domains
-[[11]](README.md#12-references), sending a `managedAttributes[].name` the tenant hasn't defined
+, sending a `managedAttributes[].name` the tenant hasn't defined
 yet fails at the API (an expected, not a script, error). See Section 7 for the explicit non-goal
 this implies.
 
 **Disclosed schema oddity, not resolved by guessing:** `CatalogModelManagedAttribute` includes an
 `isRequired` boolean **on each value entry itself**
-[[7]](README.md#12-references), an unusual place for a "required" flag to live, since
+, an unusual place for a "required" flag to live, since
 "required" is normally a property of the attribute *definition* (confirmed portal-only, above), not
 of each domain's individual value for it. This script never sets `isRequired` in a request body (it
 isn't meaningful input from this scenario's side); if the API ever echoes it back on a `GET`, treat
@@ -161,20 +161,20 @@ it as a read-only reflection of the admin-side definition, not a lever this auto
 ## 7. Non-goals
 
 - **Creating business concept attribute *definitions*, attribute groups, or their scope.**
-  Portal-only, admin-role work (Section 6), this scenario assumes the attributes named in its
-  definition file already exist and are scoped to Governance Domains.
+ Portal-only, admin-role work (Section 6), this scenario assumes the attributes named in its
+ definition file already exist and are scoped to Governance Domains.
 - **Creating the target Data Map collection** a data estate mapping references. This scenario
-  assumes the collection already exists in Data Map (see this repo's Data Map scenarios for
-  collection/source provisioning); it only records the mapping on the Unified Catalog side.
+ assumes the collection already exists in Data Map (see this repo's Data Map scenarios for
+ collection/source provisioning); it only records the mapping on the Unified Catalog side.
 - **Domain-level access policies** (the portal's **Configure access** / **Manage domain policies**
-  action), a distinct Unified Catalog capability with its own review surface, same non-goal
-  `curate-business-glossary/design.md` Section 7 already carves out for Term policies.
+ action), a distinct Unified Catalog capability with its own review surface, same non-goal
+ `curate-business-glossary/design.md` Section 7 already carves out for Term policies.
 - **Glossary terms, data products, critical data elements, or OKRs within each domain**, this
-  scenario stops at the domain tree itself; those are `curate-business-glossary`'s,
-  `manage-data-products`'s, `manage-critical-data-elements`'s, and `manage-okrs`'s jobs
-  respectively, each of which takes a `-DomainName` and can be pointed at any domain this scenario
-  creates.
+ scenario stops at the domain tree itself; those are `curate-business-glossary`'s,
+ `manage-data-products`'s, `manage-critical-data-elements`'s, and `manage-okrs`'s jobs
+ respectively, each of which takes a `-DomainName` and can be pointed at any domain this scenario
+ creates.
 - **The portal's role assignment step** (adding Data Stewards/Data Product Owners on each domain's
-  **Roles** tab), no REST operation for role assignment was found in this build's grounding pass;
-  treated as a manual, per-domain follow-up step, same conclusion `curate-business-glossary`
-  reached for its own single domain.
+ **Roles** tab), no REST operation for role assignment was found in this build's grounding pass;
+ treated as a manual, per-domain follow-up step, same conclusion `curate-business-glossary`
+ reached for its own single domain.

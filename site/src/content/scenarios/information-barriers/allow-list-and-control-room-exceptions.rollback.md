@@ -65,11 +65,11 @@ membership-change path documented in `README.md` §5, not a rollback.
 ## What rollback does **not** undo
 
 - **The `Trading`/`Research` wall.** Untouched by this scenario's rollback in every stage, roll that
-  back via `segregate-trading-and-research/deploy/Remove-TradingResearchBarrier.ps1` separately.
+ back via `segregate-trading-and-research/deploy/Remove-TradingResearchBarrier.ps1` separately.
 - **Anything that happened while the exception was active.** Cross-wall conversations/access that
-  occurred are not retroactively undone.
+ occurred are not retroactively undone.
 - **The source directory attribute** used for exception-segment membership, untouched; managed
-  independently.
+ independently.
 - **Audit records** of the IB configuration and application runs, retained per their own policy.
 
 ## Verification after rollback

@@ -20,7 +20,7 @@ Connect-ExchangeOnline -AppId $AppId -CertificateThumbprint $Thumbprint -Organiz
 ./deploy/Remove-DirectSendHardening.ps1 -UnsetRejectDirectSend
 ```
 
-Sets `Set-OrganizationConfig -RejectDirectSend $false` [[1]](#references). Direct Send traffic is
+Sets `Set-OrganizationConfig -RejectDirectSend $false`. Direct Send traffic is
 accepted again tenant-wide. Re-enable instantly with
 `deploy/New-DirectSendHardening.ps1 -RejectDirectSendTenantWide`.
 
@@ -34,7 +34,7 @@ delivery issue.
 ./deploy/Remove-DirectSendHardening.ps1 -RemoveAuditRule -Force
 ```
 
-Calls `Remove-TransportRule` [[2]](#references). Independent of Stage 1, the rule never blocked
+Calls `Remove-TransportRule`. Independent of Stage 1, the rule never blocked
 mail, so removing it only stops the tagging/evidence trail, it does not restore or change any mail
 flow. Re-create with `deploy/New-DirectSendHardening.ps1`.
 
@@ -45,7 +45,7 @@ flow. Re-create with `deploy/New-DirectSendHardening.ps1`.
     -RelayConnectorName 'Contoso Scan-to-Email (Certificate)' -Force
 ```
 
-Calls `Remove-InboundConnector` [[3]](#references). Any device/app still sending through this
+Calls `Remove-InboundConnector`. Any device/app still sending through this
 connector loses mail flow immediately once removed, confirm no legitimate sender still depends on
 it first (the same "review before you remove" discipline this library's other exception-path
 rollback docs apply). Re-create with
@@ -54,13 +54,13 @@ rollback docs apply). Re-create with
 ## What rollback does **not** undo
 
 - **`exchange-legacy-auth-block`'s or `block-legacy-authentication`'s own policy objects**, 
-  different, independent controls (`design.md` §8).
+ different, independent controls (`design.md` §8).
 - **A message that was rejected while `RejectDirectSend` was `$true`.** A rejected Direct Send
-  attempt was not delivered; rolling back afterward does not retroactively deliver it. The sender
-  must retry.
+ attempt was not delivered; rolling back afterward does not retroactively deliver it. The sender
+ must retry.
 - **Messages already tagged by the audit rule before it was removed.** The
-  `X-DirectSendHardening-Detected` header on already-delivered messages is part of those messages'
-  history; removing the rule only stops future tagging.
+ `X-DirectSendHardening-Detected` header on already-delivered messages is part of those messages'
+ history; removing the rule only stops future tagging.
 
 ## Verification after rollback
 

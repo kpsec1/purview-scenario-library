@@ -24,7 +24,7 @@ soc2-assessment/` (see any sibling's `design.md` §2 for the full grounding): Co
 **no write API**. Assessment creation, control mapping, and improvement-action status/evidence
 updates are portal- and Excel-wizard-driven only, re-confirmed during this build against the current
 `compliance-manager-assessments`, `compliance-manager-improvement-actions`, and `compliance-manager-
-setup` articles. `docs/automation-surface.md` §4 still has no routing-table row for Compliance
+setup` articles. [Automation surface §4](/docs/automation-surface/#4-routing-table-which-surface-for-which-purview-task) still has no routing-table row for Compliance
 Manager. Fabricating a `New-ComplianceManagerAssessment`-style cmdlet or a payload shape for the
 Excel "Action Update" bulk-import file would violate `AGENTS.md` §4 for the same reason it would
 have for any sibling scenario.
@@ -47,52 +47,52 @@ security-relevant audit code that could silently drift apart.
 done in full:
 
 1. A precise, repeatable **portal runbook** (`README.md` §5) backed by a structured, versioned,
-   explicitly-non-executable reference manifest at `deploy/policy/hipaa-hitech-assessment-
-   manifest.json`, same pattern as the three sibling scenarios, extended with a **HIPAA/HITECH
-   rule-structure crosswalk** this library's own scenarios map against (manifest's
-   `controlCrosswalk`, §7 below), an explicit group-placement decision that now accounts for a
-   **four-way** group membership, and a HIPAA-specific structural distinction (the "addressable is
-   not optional" flag) none of the three siblings' own crosswalks needed.
+ explicitly-non-executable reference manifest at `deploy/policy/hipaa-hitech-assessment-
+ manifest.json`, same pattern as the three sibling scenarios, extended with a **HIPAA/HITECH
+ rule-structure crosswalk** this library's own scenarios map against (manifest's
+ `controlCrosswalk`, §7 below), an explicit group-placement decision that now accounts for a
+ **four-way** group membership, and a HIPAA-specific structural distinction (the "addressable is
+ not optional" flag) none of the three siblings' own crosswalks needed.
 2. A validate script (`validate/Test-ComplianceManagerAuditTrail.ps1`, reused and extended with a
-   `-CrosswalkManifestPath` check) that adds HIPAA-specific structural validation of this scenario's
-   own manifest on top of the audit-trail file-integrity checks it already performs for the three
-   sibling scenarios. Its manifest-shape check is structurally different from all three siblings'
-   (5 named rule categories, three of which carry a `hasAddressableSpecifications` flag) because
-   HIPAA/HITECH's own published structure, Privacy Rule, three Security Rule safeguard categories,
-   Breach Notification Rule, is neither a numbered-goal shape (PCI DSS) nor a flat
-   Trust-Services-Criteria shape (SOC 2, ISO 27001's Annex A domains).
+ `-CrosswalkManifestPath` check) that adds HIPAA-specific structural validation of this scenario's
+ own manifest on top of the audit-trail file-integrity checks it already performs for the three
+ sibling scenarios. Its manifest-shape check is structurally different from all three siblings'
+ (5 named rule categories, three of which carry a `hasAddressableSpecifications` flag) because
+ HIPAA/HITECH's own published structure, Privacy Rule, three Security Rule safeguard categories,
+ Breach Notification Rule, is neither a numbered-goal shape (PCI DSS) nor a flat
+ Trust-Services-Criteria shape (SOC 2, ISO 27001's Annex A domains).
 3. An explicit **"no certification exists at all"** framing (`README.md` §2/§11) sharper than any
-   sibling scenario's own non-goal: SOC 2 at least has a real, CPA-issued report this scenario is
-   careful not to be confused with; ISO 27001 has a real third-party certification; HIPAA has
-   **no HHS-approved certification standard for anyone**, covered entity or business associate
-   [[16]](#references, `README.md`), so there is no possible legitimate "certificate" this
-   scenario's tooling could even be mistaken for, only the organization's own required Security Risk
-   Analysis and the CPA/QSA-equivalent-free reality of HIPAA enforcement (HHS OCR investigation,
-   not a scheduled third-party audit cycle).
+ sibling scenario's own non-goal: SOC 2 at least has a real, CPA-issued report this scenario is
+ careful not to be confused with; ISO 27001 has a real third-party certification; HIPAA has
+ **no HHS-approved certification standard for anyone**, covered entity or business associate
+, so there is no possible legitimate "certificate" this
+ scenario's tooling could even be mistaken for, only the organization's own required Security Risk
+ Analysis and the CPA/QSA-equivalent-free reality of HIPAA enforcement (HHS OCR investigation,
+ not a scheduled third-party audit cycle).
 
 ## 3. Design goals
 
 1. Stand up a **dedicated HIPAA/HITECH assessment**, not the tenant's default Data Protection
-   Baseline (§5 below, identical reasoning to the three sibling scenarios, strengthened here because
-   the Baseline's own documented composition (NIST CSF/ISO/FedRAMP/GDPR) does not even reference
-   HIPAA), and explicitly **not** the separately-listed "HITRUST" template that Compliance Manager's
-   regulation catalog also lists (§11), with a deliberate group-placement decision and a minimal,
-   correct services scope.
+ Baseline (§5 below, identical reasoning to the three sibling scenarios, strengthened here because
+ the Baseline's own documented composition (NIST CSF/ISO/FedRAMP/GDPR) does not even reference
+ HIPAA), and explicitly **not** the separately-listed "HITRUST" template that Compliance Manager's
+ regulation catalog also lists (§11), with a deliberate group-placement decision and a minimal,
+ correct services scope.
 2. Make explicit which of this library's already-built scenarios contribute to which of HIPAA/
-   HITECH's own rule categories, using this library's own crosswalk (§7) rather than fabricating
-   Microsoft's internal mapping.
+ HITECH's own rule categories, using this library's own crosswalk (§7) rather than fabricating
+ Microsoft's internal mapping.
 3. State plainly, up front, what this assessment is **not**: a HIPAA certification (none exists),
-   a substitute for the organization's own Security Risk Analysis, or a substitute for a signed
-   Business Associate Agreement. This is the single most important scoping statement in this
-   scenario, see `README.md` §2/§11 and the CISO lens in `reviews.md`.
+ a substitute for the organization's own Security Risk Analysis, or a substitute for a signed
+ Business Associate Agreement. This is the single most important scoping statement in this
+ scenario, see `README.md` §2/§11 and the CISO lens in `reviews.md`.
 4. Correctly represent HIPAA's own "addressable is not optional" Security Rule distinction, a fact
-   this build found directly grounded in Microsoft's own HIPAA configuration guidance, not inferred
+ this build found directly grounded in Microsoft's own HIPAA configuration guidance, not inferred
 , as a structural property of the crosswalk manifest, not just prose.
 5. Avoid duplicating the tenant-wide audit-trail script this scenario shares with its three
-   siblings, reuse it explicitly rather than re-shipping it (§2 above).
+ siblings, reuse it explicitly rather than re-shipping it (§2 above).
 6. Never fabricate what isn't documented, same standard as every other scenario in this library,
-   including where the Compliance Manager wizard does **not** expose a documented rule-category
-   selection step (§11's VERIFY item).
+ including where the Compliance Manager wizard does **not** expose a documented rule-category
+ selection step (§11's VERIFY item).
 
 ## 4. What Compliance Manager's audit log actually documents (identical grounding to all three sibling scenarios)
 
@@ -134,17 +134,17 @@ quote every sibling scenario's `design.md` §6 already cites:
 This means, unchanged from the smaller-N case the sibling scenarios document:
 
 - **Technical** improvement actions (e.g., a DLP policy is turned on, a sensitivity label is
-  auto-applied, MFA is enforced) already sync to **every** assessment in the tenant, regardless of
-  which group any of them belongs to. Placing this HIPAA/HITECH assessment in the same group as the
-  ISO 27001, PCI DSS, and/or SOC 2 assessments buys **nothing** for these, they were already
-  shared.
+ auto-applied, MFA is enforced) already sync to **every** assessment in the tenant, regardless of
+ which group any of them belongs to. Placing this HIPAA/HITECH assessment in the same group as the
+ ISO 27001, PCI DSS, and/or SOC 2 assessments buys **nothing** for these, they were already
+ shared.
 - **Nontechnical** improvement actions (documentation and operational actions, e.g., "a written
-  information security policy exists," "a personnel background-check policy is documented," "an
-  incident response plan is maintained") sync **only within a shared group**. HIPAA's Administrative
-  Safeguards, SOC 2's Security Common Criteria, PCI DSS Requirement 12, and ISO/IEC 27001:2022's
-  Annex A all require overlapping documentation of this kind. Placing all four assessments in the
-  same group (`deploy/policy/hipaa-hitech-assessment-manifest.json`'s `group.strategy:
-  joinExistingIfPresent`) is what lets completing that documentation work **once** credit all four
+ information security policy exists," "a personnel background-check policy is documented," "an
+ incident response plan is maintained") sync **only within a shared group**. HIPAA's Administrative
+ Safeguards, SOC 2's Security Common Criteria, PCI DSS Requirement 12, and ISO/IEC 27001:2022's
+ Annex A all require overlapping documentation of this kind. Placing all four assessments in the
+ same group (`deploy/policy/hipaa-hitech-assessment-manifest.json`'s `group.strategy:
+ joinExistingIfPresent`) is what lets completing that documentation work **once** credit all four
 , the genuine, narrower benefit group placement provides, correctly scoped rather than oversold.
 
 The grounded rule governing whether a **fourth** assessment can join the same group as the other
@@ -172,45 +172,45 @@ published shape is genuinely different from SOC 2's Trust Services Criteria or P
 goals:
 
 1. **The Privacy Rule and Physical Safeguards categories have little to no direct technical
-   coverage** from this Microsoft 365/Purview-only library, the Privacy Rule's core obligations
-   (minimum-necessary use/disclosure, patient right-of-access) are organizational/legal processes,
-   and Physical Safeguards are largely a facility/workstation-physical-security concern outside
-   Purview's reach entirely (an even sharper version of PCI DSS's Goal 1/3 network-and-vulnerability
-   gap, or SOC 2's Availability/Processing Integrity gap). Stated plainly in the manifest rather
-   than stretched to look like coverage that doesn't exist.
+ coverage** from this Microsoft 365/Purview-only library, the Privacy Rule's core obligations
+ (minimum-necessary use/disclosure, patient right-of-access) are organizational/legal processes,
+ and Physical Safeguards are largely a facility/workstation-physical-security concern outside
+ Purview's reach entirely (an even sharper version of PCI DSS's Goal 1/3 network-and-vulnerability
+ gap, or SOC 2's Availability/Processing Integrity gap). Stated plainly in the manifest rather
+ than stretched to look like coverage that doesn't exist.
 2. **HIPAA's Security Rule distinguishes "required" from "addressable" implementation
-   specifications, and this distinction is a genuine, well-documented source of misconfiguration
-   risk this crosswalk structurally guards against.** Microsoft's own HIPAA configuration guidance
-   states directly: "Addressable doesn't mean that an implementation specification is optional.
-   Therefore, subparts that are defined as addressable are also required" [[17]](#references,
-   `README.md`). None of the three sibling regulations (ISO 27001's Annex A, PCI DSS's numbered
-   requirements, SOC 2's Trust Services Criteria) have an equivalent named "this looks optional but
-   isn't" trap built into their own control taxonomy, so this crosswalk's `hasAddressableSpecifications:
-   true` flag on the three Security Rule categories, and the corresponding validate-script check
-   that the flag can't silently disappear, is new to this scenario rather than copied from a
-   sibling's pattern that happened to also apply here.
+ specifications, and this distinction is a genuine, well-documented source of misconfiguration
+ risk this crosswalk structurally guards against.** Microsoft's own HIPAA configuration guidance
+ states directly: "Addressable doesn't mean that an implementation specification is optional.
+ Therefore, subparts that are defined as addressable are also required" (#references,
+ `README.md`). None of the three sibling regulations (ISO 27001's Annex A, PCI DSS's numbered
+ requirements, SOC 2's Trust Services Criteria) have an equivalent named "this looks optional but
+ isn't" trap built into their own control taxonomy, so this crosswalk's `hasAddressableSpecifications:
+ true` flag on the three Security Rule categories, and the corresponding validate-script check
+ that the flag can't silently disappear, is new to this scenario rather than copied from a
+ sibling's pattern that happened to also apply here.
 
 ## 8. Non-goals
 
 - **Generating the "Action Update" bulk-import Excel file.** Same constraint and same reasoning as
-  every sibling scenario's `design.md`.
+ every sibling scenario's `design.md`.
 - **Reproducing Microsoft's per-control HIPAA/HITECH improvement-action mapping.** Out of reach for
-  the reason in §7 above.
+ the reason in §7 above.
 - **Multicloud (AWS/GCP/Azure via Defender for Cloud) service scoping.** Scoped to Microsoft 365
-  only, matching this library's tenant-only scope (`AGENTS.md` §5) and all three sibling scenarios'
-  identical non-goal.
+ only, matching this library's tenant-only scope (`AGENTS.md` §5) and all three sibling scenarios'
+ identical non-goal.
 - **Producing or substituting for any form of HIPAA certification.** No such HHS-approved
-  certification exists for anyone (§2, §11), this non-goal is even more absolute here than the
-  equivalent non-goal in the SOC 2 or ISO 27001 scenarios, where a real third-party certification or
-  report at least exists for this scenario to be careful not to be confused with.
+ certification exists for anyone (§2, §11), this non-goal is even more absolute here than the
+ equivalent non-goal in the SOC 2 or ISO 27001 scenarios, where a real third-party certification or
+ report at least exists for this scenario to be careful not to be confused with.
 - **Scripting or tracking the Breach Notification Rule's own notification obligations**
-  (notifying affected individuals, HHS, and, for large breaches, the media). These are
-  organizational/legal processes this library does not automate; this scenario's crosswalk maps
-  only to the evidence-gathering side of a breach response (§7, `README.md` §11).
+ (notifying affected individuals, HHS, and, for large breaches, the media). These are
+ organizational/legal processes this library does not automate; this scenario's crosswalk maps
+ only to the evidence-gathering side of a breach response (§7, `README.md` §11).
 - **Re-implementing the audit-trail export as a fourth, independent script.** Deliberately reused
-  from the three sibling scenarios instead, see §2 above.
+ from the three sibling scenarios instead, see §2 above.
 - **Scripting rule-category selection within the assessment.** No documented wizard step or API for
-  this was found during this build (§11's VERIFY item), not fabricated.
+ this was found during this build (§11's VERIFY item), not fabricated.
 
 ## 9. Key decisions
 

@@ -30,38 +30,38 @@ reviewable, not a one-off portal click-through.
 Data spillage, an employee accidentally emails sensitive information (M&A plans, PII, regulated
 data) to the wrong recipients, is a named Microsoft use case for this feature, alongside privacy
 deletion requests for departed employees whose mailboxes sit under a multi-year retention policy
-[[1]](#references). Waiting out a 2-year retention period, or a pending eDiscovery hold, is not an
+. Waiting out a 2-year retention period, or a pending eDiscovery hold, is not an
 option when the exposure is active today. Priority cleanup exists precisely to let an organization
 **compliantly override its own holds** for a specific, approved, audited reason, but that is also
 exactly why it is the most dangerous control in this repo: it is a **documented spoliation risk** if
 used to destroy content relevant to litigation, and Microsoft's own guidance to highly regulated
 organizations using Preservation Lock is that they *"might want the additional safeguard of turning
-off priority cleanup at the tenant level"* [[1]](#references) rather than relying on approvals alone.
+off priority cleanup at the tenant level"* rather than relying on approvals alone.
 
 > ⚠️ **This is not a normal retention control.** Once every required approval completes, matching
 > items are **permanently deleted and cannot be restored by users, by admins, or by Microsoft**
-> [[5]](#references). Get Legal sign-off, not just Compliance sign-off, before deploying, and treat
+>. Get Legal sign-off, not just Compliance sign-off, before deploying, and treat
 > every use as a documented, individually-justified exception, never a standing policy. Priority
 > cleanup is also, as of this writing, a Microsoft-labeled **preview** capability, "subject to change"
-> [[1]](#references). See §11.
+>. See §11.
 
 ## 3. Prerequisites
 
-Full licensing detail: `docs/licensing-matrix.md` §2. RBAC: `docs/rbac-model.md` §4. Automation
-surface: `docs/automation-surface.md` §3 (Security & Compliance PowerShell). Summary:
+Full licensing detail: [Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix). RBAC: [RBAC model §4](/docs/rbac-model/#4-purview-role-groups-by-module-representative-not-exhaustive). Automation
+surface: [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) (Security & Compliance PowerShell). Summary:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Licensing | **M365 E5/A5/G5**, **Microsoft Purview Suite**, **E5/A5/F5/G5 Information Protection and Governance**, or **Office 365 E5/A5/G5** | Same tier as Records Management; confirmed by the Purview service description [[6]](#references) |
-| Creator role | **Priority Cleanup Admin** (not included by default in Compliance Administrator; add manually) | `docs/rbac-model.md` §4 |
-| Approver roles (3 stages, Exchange) | Priority Cleanup Admin (+Data Classification Content/List Viewer, Disposition Management); Retention Management (+ same 3); Search And Purge + Hold + Review (+ same 3) for eDiscovery | Policy creation **fails with an error** if any listed reviewer lacks their stage's roles [[5]](#references) |
-| Approvers | 3 distinct individual users (not groups), one per stage, in addition to the creator | Mail-enabled security groups aren't supported as approvers [[5]](#references) |
-| Auditing | Enabled ≥1 day before first use | Required to view simulation results and monitor via Cleanup ID [[5]](#references) |
-| Mailbox size | ≥10 MB per mailbox | Smaller mailboxes aren't supported by priority cleanup [[5]](#references) |
-| Auth | `Connect-IPPSSession` (certificate app-only preferred) | `docs/automation-surface.md` §3 |
-| Feature toggle | Enabled tenant-wide by default; can be turned off entirely | Portal: Data Lifecycle Management → Priority cleanup settings [[1]](#references), no confirmed PowerShell equivalent found (§11) |
+| Licensing | **M365 E5/A5/G5**, **Microsoft Purview Suite**, **E5/A5/F5/G5 Information Protection and Governance**, or **Office 365 E5/A5/G5** | Same tier as Records Management; confirmed by the Purview service description |
+| Creator role | **Priority Cleanup Admin** (not included by default in Compliance Administrator; add manually) | [RBAC model §4](/docs/rbac-model/#4-purview-role-groups-by-module-representative-not-exhaustive) |
+| Approver roles (3 stages, Exchange) | Priority Cleanup Admin (+Data Classification Content/List Viewer, Disposition Management); Retention Management (+ same 3); Search And Purge + Hold + Review (+ same 3) for eDiscovery | Policy creation **fails with an error** if any listed reviewer lacks their stage's roles |
+| Approvers | 3 distinct individual users (not groups), one per stage, in addition to the creator | Mail-enabled security groups aren't supported as approvers |
+| Auditing | Enabled ≥1 day before first use | Required to view simulation results and monitor via Cleanup ID |
+| Mailbox size | ≥10 MB per mailbox | Smaller mailboxes aren't supported by priority cleanup |
+| Auth | `Connect-IPPSSession` (certificate app-only preferred) | [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
+| Feature toggle | Enabled tenant-wide by default; can be turned off entirely | Portal: Data Lifecycle Management → Priority cleanup settings, no confirmed PowerShell equivalent found (§11) |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` before a sales commitment.
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) before a sales commitment.
 
 ## 4. Architecture
 
@@ -123,7 +123,7 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 
 Skipping simulation (`-Enabled` instead of `-Simulate`) is supported, Microsoft states simulation is
 *"No (but recommended)"* for Exchange, unlike SharePoint/OneDrive where it's mandatory
-[[2]](#references), but this scenario's scripts still refuse to deploy with **no** explicit choice at
+, but this scenario's scripts still refuse to deploy with **no** explicit choice at
 all (`-Simulate`, `-Enabled`, or `-DryRun`); see `design.md` §5. The SharePoint/OneDrive sibling
 (`scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/`) has no `-Enabled` path
 at all, for exactly this reason.
@@ -131,7 +131,7 @@ at all, for exactly this reason.
 ### Portal reference
 
 The label, policy, and rule are visible under **Data Lifecycle Management → Priority cleanup** in the
-[Microsoft Purview portal](https://purview.microsoft.com) [[1]](#references). **Approving pending
+[Microsoft Purview portal](https://purview.microsoft.com). **Approving pending
 deletions happens only in the portal**, Data Lifecycle Management → Priority cleanup → Pending
 cleanups, there is no PowerShell or Graph cmdlet for this step (§7). `-WhatIf` is non-functional in
 S&C PowerShell; the scripts ship `-DryRun` instead.
@@ -140,14 +140,14 @@ S&C PowerShell; the scripts ship `-DryRun` instead.
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Label cmdlet | `New-ComplianceTag -PriorityCleanup` | Mandatory in this parameter set: `-RetentionAction`, `-RetentionDuration`, `-RetentionType`, `-MultiStageReviewProperty` [[7]](#references) |
+| Label cmdlet | `New-ComplianceTag -PriorityCleanup` | Mandatory in this parameter set: `-RetentionAction`, `-RetentionDuration`, `-RetentionType`, `-MultiStageReviewProperty` |
 | `RetentionAction` | `Delete` | Required value for priority cleanup |
 | `RetentionDuration` / `RetentionType` | `0` / `TaggedAgeInDays` | This scenario's best-effort mapping of "delete as soon as possible", **VERIFY**, see `design.md` §4 |
 | `MultiStageReviewProperty` | 3-stage JSON: `PriorityCleanupAdmin` → `RetentionManager` → `EDiscoveryAdmin` | This scenario's construction from the documented parameter shape, **VERIFY** stage naming/order, see `design.md` §4 |
-| Policy cmdlet | `New-RetentionCompliancePolicy -PriorityCleanup -SkipPriorityCleanupConfirmation` | Needs ≥1 `-ExchangeLocation` [[8]](#references) |
-| Simulation | `-IsSimulation` at create; `Set-RetentionCompliancePolicy -StartSimulation $true` to run it; `-EnforceSimulationPolicy $true` to go live | Recommended, not required, for Exchange [[2]](#references) |
-| Rule cmdlet | `New-RetentionComplianceRule -PriorityCleanup -ApplyComplianceTag -ContentMatchQuery` | KeyQL; excludes `SenderAuthor`, `SubjectTitle`, `(c:c)`, `(c:s)`, **not** supported for priority cleanup even though eDiscovery search otherwise allows them [[5]](#references) |
-| Classification check | `Get-ComplianceTag`/`Get-RetentionCompliancePolicy`/`Get-RetentionComplianceRule -PriorityCleanup` | Official filter switch; used instead of guessing an unconfirmed boolean property name [[9]](#references)[[10]](#references) |
+| Policy cmdlet | `New-RetentionCompliancePolicy -PriorityCleanup -SkipPriorityCleanupConfirmation` | Needs ≥1 `-ExchangeLocation` |
+| Simulation | `-IsSimulation` at create; `Set-RetentionCompliancePolicy -StartSimulation $true` to run it; `-EnforceSimulationPolicy $true` to go live | Recommended, not required, for Exchange |
+| Rule cmdlet | `New-RetentionComplianceRule -PriorityCleanup -ApplyComplianceTag -ContentMatchQuery` | KeyQL; excludes `SenderAuthor`, `SubjectTitle`, `(c:c)`, `(c:s)`, **not** supported for priority cleanup even though eDiscovery search otherwise allows them |
+| Classification check | `Get-ComplianceTag`/`Get-RetentionCompliancePolicy`/`Get-RetentionComplianceRule -PriorityCleanup` | Official filter switch; used instead of guessing an unconfirmed boolean property name |
 | Redistribute a stuck policy | `Set-RetentionCompliancePolicy -RetryDistribution` | Same mechanism as ordinary retention policies |
 
 Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
@@ -155,26 +155,26 @@ Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
 ## 7. Validation / how to prove it works
 
 1. **Automated (object-level)**, `./validate/Test-PriorityCleanupExchangePolicy.ps1` confirms the
-   label/policy/rule exist and are classified as priority cleanup objects (via the `-PriorityCleanup`
-   filter switch), the rule applies the expected label, and reports the policy's Enabled/Mode/
-   DistributionStatus. Exits non-zero on failure. **This does not, and cannot, confirm anything about
-   approvals or deletions**, see the next two items.
+ label/policy/rule exist and are classified as priority cleanup objects (via the `-PriorityCleanup`
+ filter switch), the rule applies the expected label, and reports the policy's Enabled/Mode/
+ DistributionStatus. Exits non-zero on failure. **This does not, and cannot, confirm anything about
+ approvals or deletions**, see the next two items.
 2. **Approval-queue check (portal only)**, Data Lifecycle Management → Priority cleanup → Pending
-   cleanups. No PowerShell/Graph read API exists for this queue.
+ cleanups. No PowerShell/Graph read API exists for this queue.
 3. **Deletion proof (auditing)**, search the audit log using the policy's **Cleanup ID** (shown after
-   creation) as the keyword; look for `PriorityCleanupTagApplied` (item identified/labeled) and
-   `PriorityCleanupDelete` (item permanently deleted) operations, neither has a friendly name in the
-   portal's audit UI yet, so search by raw operation name [[3]](#references).
+ creation) as the keyword; look for `PriorityCleanupTagApplied` (item identified/labeled) and
+ `PriorityCleanupDelete` (item permanently deleted) operations, neither has a friendly name in the
+ portal's audit UI yet, so search by raw operation name.
 4. **Idempotency proof**, re-run the deploy; the label/policy/rule report `exists` (not `created`)
-   and nothing is duplicated or silently mutated.
+ and nothing is duplicated or silently mutated.
 5. **Simulation-mode sanity check**, if deployed with `-Simulate`, confirm status shows **In
-   simulation** before `-EnforceSimulation`, and **Enabled (Success)** (not stuck at **Enabled
-   (Pending)**) after.
+ simulation** before `-EnforceSimulation`, and **Enabled (Success)** (not stuck at **Enabled
+ (Pending)**) after.
 
 ## 8. Operations & tuning
 
 **KPIs / signals:** count of `PriorityCleanupTagApplied`/`PriorityCleanupDelete` audit events per
-Cleanup ID; time-to-approval per stage (email reminders fire weekly [[5]](#references), so a stalled
+Cleanup ID; time-to-approval per stage (email reminders fire weekly, so a stalled
 approval is visible within a week); policy `DistributionStatus`. **Tuning:** the `ContentMatchQuery`
 is the single highest-leverage control, an over-broad query destroys content permanently and without
 recourse, so start as narrow as the confirmed spillage evidence allows (specific attachment name +
@@ -190,53 +190,53 @@ audit events to Sentinel/SIEM given their severity and the lack of friendly port
 See `rollback.md`. Quick reference: `./deploy/Remove-PriorityCleanupExchangePolicy.ps1` disables the
 policy (stops identifying *new* items); `-Delete` removes the policy + rule. **Neither undoes an
 approval that has already completed**, Microsoft states items may still be permanently deleted even
-after the policy is deleted, if the approval process for them was already complete [[5]](#references).
+after the policy is deleted, if the approval process for them was already complete.
 The label is not force-removed by default.
 
 ## 10. Cost & licensing notes
 
 - **Per-user E5-tier entitlement**, no separate Azure meter, same licensing family as Records
-  Management [[6]](#references).
+ Management.
 - **The real cost is process, not the meter**: 3 named approvers with the correct role assignments,
-  auditing enabled in advance, and a Legal/Compliance sign-off workflow around every use.
+ auditing enabled in advance, and a Legal/Compliance sign-off workflow around every use.
 - **The expensive mistake is scope creep on `ContentMatchQuery`**, an over-broad query permanently
-  destroys content with no possibility of recovery, unlike every other retention mistake in this repo
-  (which can usually be caught and reversed before the retention period ends).
+ destroys content with no possibility of recovery, unlike every other retention mistake in this repo
+ (which can usually be caught and reversed before the retention period ends).
 
 ## 11. Known limitations & gotchas
 
 - **PREVIEW.** Microsoft's own note: *"Priority cleanup is rolling out in preview and subject to
-  change"* [[1]](#references). Re-verify current status before a customer-facing commitment.
+ change"*. Re-verify current status before a customer-facing commitment.
 - **IRREVERSIBLE and HOLD-OVERRIDING.** This is the one control in this repo that is explicitly
-  designed to defeat retention policies, litigation holds, eDiscovery holds, and Preservation Lock
-  (delete-only). Once approved, deletion "cannot be restored by users, by admins, or by Microsoft"
-  [[5]](#references). Highly regulated organizations using Preservation Lock may prefer to leave the
-  tenant-wide toggle **off** entirely, Microsoft says so explicitly [[1]](#references).
+ designed to defeat retention policies, litigation holds, eDiscovery holds, and Preservation Lock
+ (delete-only). Once approved, deletion "cannot be restored by users, by admins, or by Microsoft"
+. Highly regulated organizations using Preservation Lock may prefer to leave the
+ tenant-wide toggle **off** entirely, Microsoft says so explicitly.
 - **No PowerShell/Graph approval API.** Approving or declining pending items is portal-only. This
-  scenario's scripts stop at provisioning and validation; they cannot drive or observe the approval
-  workflow itself.
+ scenario's scripts stop at provisioning and validation; they cannot drive or observe the approval
+ workflow itself.
 - **`-MultiStageReviewProperty` stage shape is this scenario's construction, not a confirmed one.**
-  See `design.md` §4, flagged as VERIFY, not asserted.
+ See `design.md` §4, flagged as VERIFY, not asserted.
 - **`RetentionDuration 0` / `TaggedAgeInDays` for "as soon as possible" is inferred, not confirmed.**
-  See `design.md` §4, VERIFY before production reliance.
+ See `design.md` §4, VERIFY before production reliance.
 - **No confirmed cmdlet for the tenant-wide on/off toggle.** The portal's "Priority cleanup settings"
-  page has no PowerShell/Graph equivalent found during this build's grounding pass across official
-  Microsoft Learn sources.
+ page has no PowerShell/Graph equivalent found during this build's grounding pass across official
+ Microsoft Learn sources.
 - **KeyQL exclusions.** `SenderAuthor`, `SubjectTitle`, `(c:c)`, `(c:s)` are **not** supported in a
-  priority cleanup `ContentMatchQuery`, even though ordinary eDiscovery search allows them
-  [[5]](#references), don't reuse an eDiscovery query unmodified.
+ priority cleanup `ContentMatchQuery`, even though ordinary eDiscovery search allows them
+, don't reuse an eDiscovery query unmodified.
 - **Records exception.** Priority cleanup cannot delete content already marked as a record or
-  regulatory record [[1]](#references), it does not override the strongest retention control in this
-  repo's own `retention-labels-financial-records` sibling.
+ regulatory record, it does not override the strongest retention control in this
+ repo's own `retention-labels-financial-records` sibling.
 - **eDiscovery review-set exception.** Content already copied into an eDiscovery review set survives
-  priority cleanup until the entire case is deleted by an eDiscovery admin [[1]](#references).
+ priority cleanup until the entire case is deleted by an eDiscovery admin.
 - **Approving a decline does not undo the label.** If an approver declines ("Relabel"), they must pick
-  an *existing* retention label to apply instead, approvers need to know in advance which labels are
-  appropriate [[5]](#references); this scenario's deploy does not provision that fallback label.
+ an *existing* retention label to apply instead, approvers need to know in advance which labels are
+ appropriate; this scenario's deploy does not provision that fallback label.
 - **`-WhatIf` is non-functional in S&C PowerShell**, the scripts ship `-DryRun` instead.
 - **Illustrative values.** The mailbox addresses, attachment name, and approver email addresses in the
-  sample config are placeholders, replace with the real, confirmed spillage recipients and named
-  approvers, validated by Legal, before deploying.
+ sample config are placeholders, replace with the real, confirmed spillage recipients and named
+ approvers, validated by Legal, before deploying.
 
 ## 12. References
 

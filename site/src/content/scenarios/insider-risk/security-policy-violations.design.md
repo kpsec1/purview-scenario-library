@@ -13,7 +13,7 @@ help-desk group with elevated troubleshooting permissions, none of whom necessar
 HR feed or warrant a formal priority-user-group definition. Microsoft's own **Security policy
 violations** base template exists for exactly this gap: no HR/departure trigger, no priority-group
 requirement, the Defender for Endpoint security-violation alert itself is the only triggering
-event [[1]](README.md#references). This scenario deploys that base template.
+event. This scenario deploys that base template.
 
 This scenario's originating backlog item (`PROGRESS.md`, "Follow-ups discovered while building the
 Security Policy Violations by Departing Users scenario") described this template as one that
@@ -23,41 +23,41 @@ once this build checked Microsoft's own limits reference, see §3 below.
 ## 2. Design goals
 
 1. **Deploy the base template correctly, not as a smaller copy of the departing-users sibling.**
-   The base template's prerequisite/triggering-event table is a genuine subset of the sibling's, 
-   no HR connector, no Entra-deletion toggle, no priority user group, confirmed directly against
-   Microsoft's policy-templates reference during this build, not assumed by removing steps from the
-   sibling's README.
+ The base template's prerequisite/triggering-event table is a genuine subset of the sibling's, 
+ no HR connector, no Entra-deletion toggle, no priority user group, confirmed directly against
+ Microsoft's policy-templates reference during this build, not assumed by removing steps from the
+ sibling's README.
 2. **Ship a genuinely new, scenario-specific capability: population sizing against the 1,000-user
-   cap**, not a copy of the sibling's HR-feed or alert-export scripts. Because this template has no
-   built-in population mechanism, `deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1` resolves
-   an operator-chosen Entra security group's (or groups') transitive user membership, dedupes
-   across groups, filters to enabled accounts, and checks the combined count against Microsoft's
-   fixed 1,000-user limit for this specific template, the one piece of pre-deployment diligence
-   this template's lack of a built-in population gate makes genuinely necessary, and genuinely
-   scriptable via `Get-MgGroupTransitiveMemberAsUser` [[2]](README.md#references).
+ cap**, not a copy of the sibling's HR-feed or alert-export scripts. Because this template has no
+ built-in population mechanism, `deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1` resolves
+ an operator-chosen Entra security group's (or groups') transitive user membership, dedupes
+ across groups, filters to enabled accounts, and checks the combined count against Microsoft's
+ fixed 1,000-user limit for this specific template, the one piece of pre-deployment diligence
+ this template's lack of a built-in population gate makes genuinely necessary, and genuinely
+ scriptable via `Get-MgGroupTransitiveMemberAsUser`.
 3. **Reuse, don't duplicate, the alert-export script.** The sibling scenario's
-   `Export-SecurityViolationInsiderRiskAlerts.ps1` applies no policy-specific filter, it pulls all
-   `alerts_v2` records matching `detectionSource ∈ {microsoftInsiderRiskManagement,
-   microsoftDefenderForEndpoint}` in a date window and joins them client-side by `incidentId`, with
-   no dependency on which "Security policy violations…" template produced a given alert. That means
-   it already works, unmodified, against this scenario's own policy's alerts. Shipping a second,
-   near-identical copy would be pure duplication of already-reviewed, already-grounded code, 
-   `AGENTS.md`'s no-unneeded-abstraction guidance applies directly, the same precedent the sibling
-   scenario itself established for the HR-feed script it reused from its own sibling
-   (`departing-employee-data-theft`).
+ `Export-SecurityViolationInsiderRiskAlerts.ps1` applies no policy-specific filter, it pulls all
+ `alerts_v2` records matching `detectionSource ∈ {microsoftInsiderRiskManagement,
+ microsoftDefenderForEndpoint}` in a date window and joins them client-side by `incidentId`, with
+ no dependency on which "Security policy violations…" template produced a given alert. That means
+ it already works, unmodified, against this scenario's own policy's alerts. Shipping a second,
+ near-identical copy would be pure duplication of already-reviewed, already-grounded code, 
+ `AGENTS.md`'s no-unneeded-abstraction guidance applies directly, the same precedent the sibling
+ scenario itself established for the HR-feed script it reused from its own sibling
+ (`departing-employee-data-theft`).
 4. **Correct the "scores every onboarded user continuously" framing before it reaches a buyer.**
-   §3 below documents why: the fixed 1,000-user, tenant-wide, per-template-type cap makes an
-   "all users" scope infeasible for any organization above roughly that headcount. This scenario's
-   README and this design doc state the correction explicitly rather than quietly building around
-   it without naming the discrepancy.
+ §3 below documents why: the fixed 1,000-user, tenant-wide, per-template-type cap makes an
+ "all users" scope infeasible for any organization above roughly that headcount. This scenario's
+ README and this design doc state the correction explicitly rather than quietly building around
+ it without naming the discrepancy.
 5. **Don't fabricate a policy-authoring or usage-count query API.** As with every other Insider
-   Risk Management scenario in this library, policy creation has no PowerShell/Graph write surface
-   (`docs/automation-surface.md` §6). This build additionally searched for a documented way to
-   query how many users are already actively scored under a given policy template tenant-wide (to
-   let the scope-sizing script account for other policies, not just the group(s) it's given) and
-   found none, Microsoft's own limits reference points only to the portal's **Users in scope**
-   column. `deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1` states this as a disclosed gap
-   in its own output and `.NOTES`, not a silently assumed zero.
+ Risk Management scenario in this library, policy creation has no PowerShell/Graph write surface
+ ([Automation surface §6](/docs/automation-surface/#6-cicd-and-unattended-execution-guidance)). This build additionally searched for a documented way to
+ query how many users are already actively scored under a given policy template tenant-wide (to
+ let the scope-sizing script account for other policies, not just the group(s) it's given) and
+ found none, Microsoft's own limits reference points only to the portal's **Users in scope**
+ column. `deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1` states this as a disclosed gap
+ in its own output and `.NOTES`, not a silently assumed zero.
 
 ## 3. Why "scores every onboarded user continuously" is not achievable at enterprise scale
 
@@ -65,23 +65,23 @@ The originating backlog item's phrasing implied this template could passively wa
 tenant with no scoping decision required, the natural reading of "no departure/HR trigger, scores
 every onboarded user continuously." Microsoft's limits reference contradicts that reading directly:
 **this template supports a maximum of 1,000 actively-scored users, tenant-wide, across every policy
-built from it** [[3]](README.md#references), smaller than the departing-users sibling's 15,000 and
+built from it**, smaller than the departing-users sibling's 15,000 and
 the risky-users sibling's 7,500, and identical to the priority-users sibling's own cap despite this
 template requiring no priority-group object to enforce a smaller population.
 
 Two consequences follow, both reflected in this scenario's README rather than glossed over:
 
 - **"All users and groups" is not a viable scope for this template in any tenant with more than
-  roughly 1,000 people**, Microsoft doesn't reject an over-scoped policy at creation time (no
-  client-side validation was found blocking this), it simply means the policy silently exceeds its
-  effective capacity and "policy performance reduces" per Microsoft's own limits page language
-  [[3]](README.md#references), a degraded, not a failed, state, which makes it a worse failure
-  mode than an outright error would be.
+ roughly 1,000 people**, Microsoft doesn't reject an over-scoped policy at creation time (no
+ client-side validation was found blocking this), it simply means the policy silently exceeds its
+ effective capacity and "policy performance reduces" per Microsoft's own limits page language
+, a degraded, not a failed, state, which makes it a worse failure
+ mode than an outright error would be.
 - **A deliberate, bounded, role-based population is the only sound way to deploy this template at
-  meaningful scale.** This scenario's §2 goal 2 (the scope-sizing script) exists specifically to
-  make that deliberate choice easy to size correctly *before* policy creation, rather than
-  discovering the cap has been exceeded only after the fact via a portal-visible **Users in scope**
-  count with no proactive warning.
+ meaningful scale.** This scenario's §2 goal 2 (the scope-sizing script) exists specifically to
+ make that deliberate choice easy to size correctly *before* policy creation, rather than
+ discovering the cap has been exceeded only after the fact via a portal-visible **Users in scope**
+ count with no proactive warning.
 
 This is not a limitation this scenario introduces, it's a direct reading of Microsoft's own
 documented limit, corrected here because the backlog item that scoped this fragment didn't
@@ -117,7 +117,7 @@ difference: there is no separate "triggering event" to configure at all. For the
 template, an HR resignation date or Entra deletion event is what makes a user "active" for scoring;
 for this base template, simply being in the policy's user/group scope *and* generating a qualifying
 Defender for Endpoint alert is sufficient, the alert itself is the trigger
-[[1]](README.md#references). This has a direct consequence for population design: because there is
+. This has a direct consequence for population design: because there is
 no secondary gate narrowing an already-in-scope population down further, the **user/group scope
 selected at policy creation is the only control available** to keep the actively-scored population
 within the 1,000-user cap (§3), unlike the departing-users template, where the HR/Entra-deletion
@@ -139,15 +139,15 @@ given time.
 ## 7. Non-goals
 
 - This scenario does not deploy the **…by priority users** or **…by risky users** templates, each
-  is a candidate follow-up fragment with its own distinct trigger/scoping model.
+ is a candidate follow-up fragment with its own distinct trigger/scoping model.
 - This scenario does not configure Defender for Endpoint itself, it assumes an already-operational
-  deployment and only adds the Purview-facing integration toggle as a documented manual
-  prerequisite, identical to the sibling scenario's own non-goal.
+ deployment and only adds the Purview-facing integration toggle as a documented manual
+ prerequisite, identical to the sibling scenario's own non-goal.
 - This scenario does not attempt to programmatically enforce the 1,000-user cap inside the IRM
-  policy itself, Insider Risk Management has no API to do so; the cap check in
-  `Get-SecurityPolicyViolationsScopeCandidates.ps1` is advisory, pre-deployment tooling only.
+ policy itself, Insider Risk Management has no API to do so; the cap check in
+ `Get-SecurityPolicyViolationsScopeCandidates.ps1` is advisory, pre-deployment tooling only.
 - This scenario does not configure Adaptive Protection, same non-goal as every other Insider Risk
-  Management scenario in this library.
+ Management scenario in this library.
 - This scenario does not maintain the source Entra security group's membership, group lifecycle
-  (adding/removing members as roles change) is assumed to already be handled by whatever process
-  governs that group; this scenario only reads it.
+ (adding/removing members as roles change) is assumed to already be handled by whatever process
+ governs that group; this scenario only reads it.

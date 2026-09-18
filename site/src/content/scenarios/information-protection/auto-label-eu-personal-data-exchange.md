@@ -56,24 +56,24 @@ avoid drift between three copies of the same caveat.
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md`. Identical to
+Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/). Identical to
 `auto-label-confidential-exchange`'s prerequisite set (same deploy surface, same location type),
 with the EU/UK sibling's SIT-name-resolution caveat added:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Automatic / policy-based labeling | **Microsoft 365 E5 / A5 / G5**, **Microsoft Purview Suite** (ex-E5 Compliance), or the **Information Protection & Governance (IP&G)** add-on | `docs/licensing-matrix.md` §2, Information Protection row, same entitlement as both sibling scenarios |
-| Role to author/edit the policy | **Information Protection Admin** role group | `docs/rbac-model.md` §3 |
-| Role to turn the policy on after simulation | **Compliance Administrator** or **Compliance Data Administrator** | Distinct from the authoring role, the **Turn on policy** action is greyed out in the portal even after a successful simulation [[8]](#references) |
-| Automation identity | App registration with **Exchange.ManageAsApp**, granted the Information Protection Admin role group (plus Compliance Administrator/Compliance Data Administrator if the same identity also enforces) | Certificate-based app-only auth, `docs/automation-surface.md` §3 |
+| Automatic / policy-based labeling | **Microsoft 365 E5 / A5 / G5**, **Microsoft Purview Suite** (ex-E5 Compliance), or the **Information Protection & Governance (IP&G)** add-on | [Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix), Information Protection row, same entitlement as both sibling scenarios |
+| Role to author/edit the policy | **Information Protection Admin** role group | [RBAC model §3](/docs/rbac-model/#3-microsoft-entra-roles-that-map-into-purview) |
+| Role to turn the policy on after simulation | **Compliance Administrator** or **Compliance Data Administrator** | Distinct from the authoring role, the **Turn on policy** action is greyed out in the portal even after a successful simulation |
+| Automation identity | App registration with **Exchange.ManageAsApp**, granted the Information Protection Admin role group (plus Compliance Administrator/Compliance Data Administrator if the same identity also enforces) | Certificate-based app-only auth, [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
 | Dependency (not deployed by this scenario) | A published sensitivity label named **Confidential** (parameterizable), with label scope including **Emails**, and **not** a parent label | Same scope requirement as `auto-label-confidential-exchange`, **different** from the SharePoint/OneDrive EU sibling's "Files & other data assets" requirement. If the label was published only for one of the file-scoped scenarios, confirm (or extend) its scope to include Emails first |
-| Tenant configuration: unified audit logging on | Audit log search enabled | Required for simulation results and Activity Explorer, this scenario's primary validation surface (§7) [[6]](#references) |
+| Tenant configuration: unified audit logging on | Audit log search enabled | Required for simulation results and Activity Explorer, this scenario's primary validation surface (§7) |
 | Tenant configuration: sensitivity labels enabled for SharePoint/OneDrive (`EnableAIPIntegration`) | **Not required for this scenario** | That toggle is SharePoint/OneDrive-specific and has no Exchange equivalent, same simplification `auto-label-confidential-exchange/README.md` §3 already documents |
-| Region availability | Auto-labeling available in tenant's region | Same regional-availability caveat as all three scenarios [[2]](#references) |
-| Scoping nuance | At least one **non-EDM** sensitive information type per rule | Same rule as all three scenarios [[2]](#references) |
+| Region availability | Auto-labeling available in tenant's region | Same regional-availability caveat as all three scenarios |
+| Scoping nuance | At least one **non-EDM** sensitive information type per rule | Same rule as all three scenarios |
 | SIT-name resolution risk | Byte-exact casing of the EU-wide bundle SIT names is unconfirmed against a live tenant | Same open item as the SharePoint/OneDrive EU sibling, see §11. The deploy script defends against it at runtime; this table flags it as a pre-flight awareness item, not a blocker |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) and the
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) (dated 2026-09-02) and the
 > Product Terms before a sales commitment, SKU names change.
 
 ## 4. Architecture
@@ -108,35 +108,35 @@ rationale: `design.md` §3, §7.
 ### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
 1. Confirm the **Confidential** label's scope includes **Emails** (Purview portal → Information
-   Protection → Labels → select **Confidential** → Edit → confirm **Emails** is checked under
-   scope). If it only covers Files & other data assets today (e.g., because only the SharePoint/
-   OneDrive EU sibling has been deployed so far), add Emails to its scope before continuing.
+ Protection → Labels → select **Confidential** → Edit → confirm **Emails** is checked under
+ scope). If it only covers Files & other data assets today (e.g., because only the SharePoint/
+ OneDrive EU sibling has been deployed so far), add Emails to its scope before continuing.
 2. Sign in to the [Microsoft Purview portal](https://purview.microsoft.com) → **Solutions** →
-   **Information Protection** → **Policies** → **Auto-labeling policies** → **+ Create
-   auto-labeling policy** → **Automatically apply label only**.
+ **Information Protection** → **Policies** → **Auto-labeling policies** → **+ Create
+ auto-labeling policy** → **Automatically apply label only**.
 3. Category: **Custom** → **Custom policy** → **Next**.
 4. Name: `Confidentiality - Auto-Label EU Personal Data in Exchange Email`.
 5. **Choose a label to auto-apply**: select the existing **Confidential** label. Confirm it is
-   *not* shown as a parent label in the picker.
+ *not* shown as a parent label in the picker.
 6. **Choose locations**: select **Exchange email** only (leave SharePoint/OneDrive unselected, 
-   those are covered by the SharePoint/OneDrive EU sibling's own policy). Keep **All** included and
-   **None** excluded if the policy must evaluate incoming mail from outside your organization;
-   otherwise exclude the nominated legal/eDiscovery mailbox under **Excluded**.
+ those are covered by the SharePoint/OneDrive EU sibling's own policy). Keep **All** included and
+ **None** excluded if the policy must evaluate incoming mail from outside your organization;
+ otherwise exclude the nominated legal/eDiscovery mailbox under **Excluded**.
 7. **Set up common or advanced rules** → **Common rules** → add condition **Content contains** →
-   **Sensitive info types** → add **EU national identification number**, **EU Social Security
-   Number (SSN) or Equivalent ID**, and **EU debit card number**, minimum count **1** each,
-   combined with **Any of these** (logical OR) [[4]](#references). To localize to specific member
-   states instead of the full EU-wide bundles, search the picker for the individual per-country SIT
-   (e.g. "Germany Identity Card Number") and use that in place of the bundle.
+ **Sensitive info types** → add **EU national identification number**, **EU Social Security
+ Number (SSN) or Equivalent ID**, and **EU debit card number**, minimum count **1** each,
+ combined with **Any of these** (logical OR). To localize to specific member
+ states instead of the full EU-wide bundles, search the picker for the individual per-country SIT
+ (e.g. "Germany Identity Card Number") and use that in place of the bundle.
 8. **Additional label settings**: leave default (don't force-override higher-priority labels).
 9. **Decide if you want to test out the policy now or later**: select **Run policy in simulation
-   mode**; do **not** enable "turn on automatically after 7 days", same deliberate-enable standard
-   as both sibling scenarios (§8).
+ mode**; do **not** enable "turn on automatically after 7 days", same deliberate-enable standard
+ as both sibling scenarios (§8).
 10. **Submit** → **Done**.
 11. **While simulation is running, send and receive representative test messages.** Exchange
-    simulation does not scan existing mailbox content, it only evaluates live traffic during the
-    simulation window [[6]](#references)(`design.md` §4 sibling reference). A simulation run with
-    no test traffic during the window will show zero matches even for a correctly configured rule.
+ simulation does not scan existing mailbox content, it only evaluates live traffic during the
+ simulation window (`design.md` §4 sibling reference). A simulation run with
+ no test traffic during the window will show zero matches even for a correctly configured rule.
 
 ### Script path (idempotent, parameterized, dry-run capable)
 
@@ -179,7 +179,7 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
 The deploy script uses Security & Compliance PowerShell (`New-AutoSensitivityLabelPolicy`,
 `New-AutoSensitivityLabelRule`, `Get-DlpSensitiveInformationType`), automation surface 2 per
-`docs/automation-surface.md` §1, the same surface both sibling scenarios use.
+[Automation surface §1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first), the same surface both sibling scenarios use.
 
 ## 6. Configuration reference
 
@@ -194,7 +194,7 @@ The deploy script uses Security & Compliance PowerShell (`New-AutoSensitivityLab
 | `ApplySensitivityLabel` | `<LabelName>` (default `Confidential`), must reference an existing, published, non-parent label whose scope includes **Emails** |
 | `ExchangeLocation` | `All` |
 | `ExchangeSenderException` | `<ExcludedMailboxSmtpAddress>` (optional; one or more SMTP addresses), excludes that mailbox's **outbound** mail only, not mail sent to it (`design.md` §4/§7, inherited from `auto-label-confidential-exchange`) |
-| `OverwriteLabel` | `$true`, overrides a lower-priority auto-applied/default label only, never a manual one [[5]](#references) |
+| `OverwriteLabel` | `$true`, overrides a lower-priority auto-applied/default label only, never a manual one |
 | `ExternalMailRightsManagementOwner` | Not set (optional; see §11) |
 | `Mode` | `TestWithNotifications` (deploy default) → `Enable` after review |
 
@@ -235,48 +235,48 @@ observability surface is genuinely thinner than the SharePoint/OneDrive siblings
 smaller.**
 
 1. **Automated config check**, `./validate/Test-EuPersonalDataAutoLabelExchangePolicy.ps1
-   -LabelName 'Confidential'` confirms the policy and rule exist with the expected location, SIT
-   conditions (checked individually against `-SensitiveInfoTypeName`, not just "at least one"), and
-   target label; exits non-zero on any hard failure. This proves the policy is *shaped* correctly,
-   not that it is *labeling anything*.
+ -LabelName 'Confidential'` confirms the policy and rule exist with the expected location, SIT
+ conditions (checked individually against `-SensitiveInfoTypeName`, not just "at least one"), and
+ target label; exits non-zero on any hard failure. This proves the policy is *shaped* correctly,
+ not that it is *labeling anything*.
 2. **Simulation results**, Purview portal → Information Protection → Auto-labeling policies →
-   select the policy → **Items to review** tab. This only shows messages sent/received **while the
-   simulation was actively running** [[6]](#references), re-running simulation with no test
-   traffic shows nothing, which is expected behavior, not a failure.
+ select the policy → **Items to review** tab. This only shows messages sent/received **while the
+ simulation was actively running**, re-running simulation with no test
+ traffic shows nothing, which is expected behavior, not a failure.
 3. **Functional test**, send a test email containing a documented test national-ID or card-brand
-   test number for one of the configured EU/UK countries (never real personal data) from an
-   in-scope mailbox to another in-scope mailbox, while the policy is in simulation or enabled.
-   Confirm the match appears on **Items to review** (simulation) or, once enforced, in **Activity
-   Explorer** (step 4).
+ test number for one of the configured EU/UK countries (never real personal data) from an
+ in-scope mailbox to another in-scope mailbox, while the policy is in simulation or enabled.
+ Confirm the match appears on **Items to review** (simulation) or, once enforced, in **Activity
+ Explorer** (step 4).
 4. **Post-enforcement confirmation, Activity Explorer, not Labeled items.** After moving to
-   `-Mode Enable`, Purview portal → **Data classification** → **Activity Explorer** → filter
-   **Activity type = Sensitivity label applied**, narrow by label/date/location. Allow **60-90
-   minutes** for the activity to appear [[7]](#references). Activity Explorer confirms the
-   resulting label and **How applied** (automatic vs. manual), but does **not** identify which
-   specific auto-labeling policy or rule applied it, if more than one auto-labeling policy targets
-   Exchange in the tenant (plausible once both this scenario and `auto-label-confidential-exchange`
-   are deployed against the same label), corroborate with the single-policy **Items to review**
-   history instead of assuming Activity Explorer disambiguates for you.
+ `-Mode Enable`, Purview portal → **Data classification** → **Activity Explorer** → filter
+ **Activity type = Sensitivity label applied**, narrow by label/date/location. Allow **60-90
+ minutes** for the activity to appear. Activity Explorer confirms the
+ resulting label and **How applied** (automatic vs. manual), but does **not** identify which
+ specific auto-labeling policy or rule applied it, if more than one auto-labeling policy targets
+ Exchange in the tenant (plausible once both this scenario and `auto-label-confidential-exchange`
+ are deployed against the same label), corroborate with the single-policy **Items to review**
+ history instead of assuming Activity Explorer disambiguates for you.
 5. **Exclusion test**, send a test message *from* the excluded mailbox. Confirm it is **not**
-   labeled. Then send a test message *to* the excluded mailbox from an unrelated in-scope sender.
-   Confirm it **is** labeled, the exclusion is sender-scoped, not mailbox-scoped, and this
-   asymmetry is exactly what this test is meant to catch (`design.md` §4/§7).
+ labeled. Then send a test message *to* the excluded mailbox from an unrelated in-scope sender.
+ Confirm it **is** labeled, the exclusion is sender-scoped, not mailbox-scoped, and this
+ asymmetry is exactly what this test is meant to catch (`design.md` §4/§7).
 6. **Override-safety test**, manually apply a different label to a test message before sending,
-   then confirm the policy does not replace it.
+ then confirm the policy does not replace it.
 7. **Localization test (if `-SensitiveInfoTypeName` was overridden)**, send a test message
-   matching a *removed* country's format (e.g. an Italy Fiscal Code, if the deployment was narrowed
-   to Germany + France only). Confirm it is **not** labeled, proving the narrower condition set is
-   actually enforced and not silently falling back to the full bundle.
+ matching a *removed* country's format (e.g. an Italy Fiscal Code, if the deployment was narrowed
+ to Germany + France only). Confirm it is **not** labeled, proving the narrower condition set is
+ actually enforced and not silently falling back to the full bundle.
 8. **Enforcement confirmation**, after moving to `-Mode Enable`, re-run the automated config check
-   and confirm it reports `Mode: Enable` rather than a `Test*` value.
+ and confirm it reports `Mode: Enable` rather than a `Test*` value.
 9. **Opt-in bundle test (if `-IncludeTravelDocumentSits` was used)**, run
-   `./validate/Test-EuPersonalDataAutoLabelExchangePolicy.ps1 -LabelName 'Confidential'
-   -IncludeTravelDocumentSits` to confirm the rule's condition list includes `EU passport number`
-   and `EU driver's license number` in addition to the base SIT set. Send a test email containing a
-   test U.S. or U.K. passport-number value (never a real one, and only while in simulation or
-   enabled) to confirm the combined-entity gotcha in §11 in practice, both should match on
-   **Items to review** or Activity Explorer, since this bundle has no way to select one without the
-   other.
+ `./validate/Test-EuPersonalDataAutoLabelExchangePolicy.ps1 -LabelName 'Confidential'
+ -IncludeTravelDocumentSits` to confirm the rule's condition list includes `EU passport number`
+ and `EU driver's license number` in addition to the base SIT set. Send a test email containing a
+ test U.S. or U.K. passport-number value (never a real one, and only while in simulation or
+ enabled) to confirm the combined-entity gotcha in §11 in practice, both should match on
+ **Items to review** or Activity Explorer, since this bundle has no way to select one without the
+ other.
 
 ## 8. Operations & tuning
 
@@ -287,22 +287,22 @@ days" option.
 
 **KPIs to watch (first 30-60 days):**
 - **Activity Explorer "Sensitivity label applied" volume for Exchange**, filtered to this label and
-  a How-applied value of automatic. Aggregates every auto-labeling policy applying this label, not
-  just this one, if more than one exists, same caveat as `auto-label-confidential-exchange`
-  README §8.
+ a How-applied value of automatic. Aggregates every auto-labeling policy applying this label, not
+ just this one, if more than one exists, same caveat as `auto-label-confidential-exchange`
+ README §8.
 - **Items-to-review match volume during any future re-simulation** (e.g., after a rule change), 
-  only reflects traffic sent during that specific window, so a "zero matches" result after a rule
-  change needs fresh test traffic before it can be trusted.
+ only reflects traffic sent during that specific window, so a "zero matches" result after a rule
+ change needs fresh test traffic before it can be trusted.
 - **Per-country match distribution**, inherited from the SharePoint/OneDrive EU sibling's own §8, 
-  Activity Explorer's contextual summary can show which specific country's pattern matched a given
-  message. A tenant that only ever sees matches from 2-3 countries is a signal to consider
-  narrowing to a per-country `-SensitiveInfoTypeName` list (§6) rather than running the full
-  26-country bundle indefinitely.
+ Activity Explorer's contextual summary can show which specific country's pattern matched a given
+ message. A tenant that only ever sees matches from 2-3 countries is a signal to consider
+ narrowing to a per-country `-SensitiveInfoTypeName` list (§6) rather than running the full
+ 26-country bundle indefinitely.
 - **False-positive rate**, the EU national ID bundle's checksum coverage varies by country: 19 of
-  26 members are checksum-validated, 7 are pattern-only (Austria, Croatia, Cyprus, France, Greece,
-  Malta, U.K., full table in the SharePoint/OneDrive sibling's `design.md` §4, cited from this
-  scenario's own §11); watch for user-reported "why was my email suddenly Confidential/encrypted"
-  tickets, since there is no per-item failure dashboard for email the way there is for files.
+ 26 members are checksum-validated, 7 are pattern-only (Austria, Croatia, Cyprus, France, Greece,
+ Malta, U.K., full table in the SharePoint/OneDrive sibling's `design.md` §4, cited from this
+ scenario's own §11); watch for user-reported "why was my email suddenly Confidential/encrypted"
+ tickets, since there is no per-item failure dashboard for email the way there is for files.
 
 **Alert routing:** no DLP-style incident-report email from auto-labeling itself. For Exchange
 specifically, also budget for the **encryption side-effect**: an internal sender whose message
@@ -332,22 +332,22 @@ locations and/or SIT sets. Confirm the exact policy name before disabling one du
 
 **Runbook, an email that should be labeled isn't:**
 1. Confirm the message wasn't sent/received outside a simulation window if you're still validating
-   in simulation (§7, step 2), this is expected, not a bug.
+ in simulation (§7, step 2), this is expected, not a bug.
 2. Confirm the sender isn't the excluded mailbox (§7, step 5), outbound mail from that mailbox is
-   never evaluated, by design.
+ never evaluated, by design.
 3. Confirm at least 60-90 minutes have passed before checking Activity Explorer
-   [[7]](#references).
+.
 4. If a localized `-SensitiveInfoTypeName` list is in use, confirm the test message's country
-   format is actually in the configured list (not the full default bundle) before treating it as a
-   policy failure, same EU-specific addition the SharePoint/OneDrive sibling's own runbook makes.
+ format is actually in the configured list (not the full default bundle) before treating it as a
+ policy failure, same EU-specific addition the SharePoint/OneDrive sibling's own runbook makes.
 5. Confirm the label's scope still includes **Emails**, an edit to the label (e.g., by someone
-   working on either file-scoped sibling scenario's use case) that narrows scope back to "Files &
-   other data assets only" would silently stop this policy from having any effect, with no portal
-   error surfaced.
+ working on either file-scoped sibling scenario's use case) that narrows scope back to "Files &
+ other data assets only" would silently stop this policy from having any effect, with no portal
+ error surfaced.
 6. If none of the above explains it, check for a **rule-load failure**, a malformed rule can
-   silently stop matching all Exchange traffic with no item-level failure to review, because the
-   rule never loaded in the first place [[9]](#references). Re-run the automated config check; if
-   it reports the rule missing or malformed, recreate it from this scenario's deploy script.
+ silently stop matching all Exchange traffic with no item-level failure to review, because the
+ rule never loaded in the first place. Re-run the automated config check; if
+ it reports the rule missing or malformed, recreate it from this scenario's deploy script.
 
 ## 9. Rollback / decommission
 
@@ -358,123 +358,123 @@ reference: `./deploy/Remove-EuPersonalDataAutoLabelExchangePolicy.ps1` disables 
 ## 10. Cost & licensing notes
 
 - **No PAYG component for M365 mail.** Covered by the same per-user E5-tier/IP&G entitlement as
-  both sibling scenarios, see `docs/licensing-matrix.md` §1-2. No separate licensing line for this
-  scenario if either sibling is already deployed; all three draw from the same entitlement.
+ both sibling scenarios, see [Licensing matrix §1](/docs/licensing-matrix/#1-the-two-billing-models-read-this-first), 2. No separate licensing line for this
+ scenario if either sibling is already deployed; all three draw from the same entitlement.
 - **No additional Azure subscription required.**
 - **Sizing note:** identical to `auto-label-confidential-exchange`, `ExchangeLocation = All` means
-  every licensed mailbox is effectively in scope, with no incremental licensing decision beyond
-  what any sibling already requires for the same user population.
+ every licensed mailbox is effectively in scope, with no incremental licensing decision beyond
+ what any sibling already requires for the same user population.
 
 ## 11. Known limitations & gotchas
 
 - **In-transit only, no backlog coverage.** Inherited unchanged from `auto-label-confidential-
-  exchange/README.md` §11 (`design.md` §8): mail delivered before this policy existed, or before it
-  was turned on, is never retroactively labeled. There is no on-demand-classification equivalent for
-  Exchange.
+ exchange/README.md` §11 (`design.md` §8): mail delivered before this policy existed, or before it
+ was turned on, is never retroactively labeled. There is no on-demand-classification equivalent for
+ Exchange.
 - **No "Labeled items" dashboard or policy-level Insights enforcement metrics for Exchange**, both
-  report only SharePoint/OneDrive files [[7]](#references). Use Activity Explorer instead (§7), and
-  budget for its 60-90 minute delay and its inability to name which specific policy/rule applied a
-  given label.
+ report only SharePoint/OneDrive files. Use Activity Explorer instead (§7), and
+ budget for its 60-90 minute delay and its inability to name which specific policy/rule applied a
+ given label.
 - **Exchange match counts shown during simulation Insights are estimates from sampled data, not
-  exact counts** [[8]](#references), do not report a simulation match count to a compliance
-  stakeholder as an exact figure.
+ exact counts**, do not report a simulation match count to a compliance
+ stakeholder as an exact figure.
 - **The exclusion mechanism is sender-scoped, not mailbox-scoped, and asymmetric, and that
-  asymmetry is also a standing exfiltration path, not just an under-protection gap.**
-  `-ExchangeSenderException` protects a nominated mailbox's outbound mail only; mail *sent to* that
-  mailbox by anyone else is still evaluated and can still be labeled/encrypted. Read the other
-  direction: **any mail this excluded mailbox sends, including EU/UK personal data, leaves
-  completely unlabeled and unencrypted by this control, by design.** If the excluded mailbox is
-  ever compromised, shared more broadly than intended, or simply repurposed, it is a standing,
-  control-free channel for exactly the data class this scenario protects, and, because this
-  scenario's regulatory driver is GDPR specifically, not the CCPA/GDPR pairing the U.S.-SIT sibling
-  cites, a breach through that channel is a direct GDPR Article 33/34 exposure, not a secondary
-  one. Treat the exclusion list as a monitored asset, reviewed periodically, not a "set once and
-  forget" configuration value. Inherited from `auto-label-confidential-exchange/README.md` §11 and
-  sharpened here for the GDPR-specific stakes (`design.md` §6).
+ asymmetry is also a standing exfiltration path, not just an under-protection gap.**
+ `-ExchangeSenderException` protects a nominated mailbox's outbound mail only; mail *sent to* that
+ mailbox by anyone else is still evaluated and can still be labeled/encrypted. Read the other
+ direction: **any mail this excluded mailbox sends, including EU/UK personal data, leaves
+ completely unlabeled and unencrypted by this control, by design.** If the excluded mailbox is
+ ever compromised, shared more broadly than intended, or simply repurposed, it is a standing,
+ control-free channel for exactly the data class this scenario protects, and, because this
+ scenario's regulatory driver is GDPR specifically, not the CCPA/GDPR pairing the U.S.-SIT sibling
+ cites, a breach through that channel is a direct GDPR Article 33/34 exposure, not a secondary
+ one. Treat the exclusion list as a monitored asset, reviewed periodically, not a "set once and
+ forget" configuration value. Inherited from `auto-label-confidential-exchange/README.md` §11 and
+ sharpened here for the GDPR-specific stakes (`design.md` §6).
 - **Encryption side effects are workload-specific, and the default is weaker for the more dangerous
-  direction of travel, the single most consequential finding for this scenario specifically.** If
-  `Confidential` applies encryption: internal senders are always encrypted once labeled; external
-  senders are **not** encrypted by default unless `-ExternalMailRightsManagementOwner` is configured
-  (`design.md` §4/§6). Read plainly: **out of the box, a message containing an EU national ID number
-  or EU debit card number sent to an external recipient is labeled Confidential but leaves the
-  tenant in cleartext**, the exact direction of travel that determines GDPR Article 33/34
-  breach-notification exposure. This risk is inherited mechanically from `auto-label-confidential-
-  exchange/README.md` §11, but it lands harder here: that sibling's regulatory framing treats
-  GDPR/CCPA as one of two adjacent drivers for a U.S.-format SIT pair, while this scenario's entire
-  premise is GDPR-format personal data specifically. A buyer deploying this scenario should treat
-  `-ExternalMailRightsManagementOwner` configuration, or pairing this scenario with a content-based
-  Exchange DLP rule for external send, as materially higher-priority than for the U.S.-SIT sibling, 
-  not an equally-optional extension.
+ direction of travel, the single most consequential finding for this scenario specifically.** If
+ `Confidential` applies encryption: internal senders are always encrypted once labeled; external
+ senders are **not** encrypted by default unless `-ExternalMailRightsManagementOwner` is configured
+ (`design.md` §4/§6). Read plainly: **out of the box, a message containing an EU national ID number
+ or EU debit card number sent to an external recipient is labeled Confidential but leaves the
+ tenant in cleartext**, the exact direction of travel that determines GDPR Article 33/34
+ breach-notification exposure. This risk is inherited mechanically from `auto-label-confidential-
+ exchange/README.md` §11, but it lands harder here: that sibling's regulatory framing treats
+ GDPR/CCPA as one of two adjacent drivers for a U.S.-format SIT pair, while this scenario's entire
+ premise is GDPR-format personal data specifically. A buyer deploying this scenario should treat
+ `-ExternalMailRightsManagementOwner` configuration, or pairing this scenario with a content-based
+ Exchange DLP rule for external send, as materially higher-priority than for the U.S.-SIT sibling, 
+ not an equally-optional extension.
 - **EU checksums vary by country, unlike the U.S.-SIT sibling's fully-checksummed SIT pair.**
-  Inherited unchanged from `auto-label-eu-personal-data-sharepoint/README.md` §11, now backed by a
-  full 26-country table in that sibling's `design.md` §4: **19 members are checksum-validated**
-  (e.g. Belgium, Germany post-2010, Spain), **7 are pattern-only** (Austria, Croatia, Cyprus, France,
-  Greece, Malta, U.K.), expect a higher false-positive rate from the bundle overall, and treat this
-  as one more reason a precision-conscious buyer should consider the per-country localization path
-  in §6, especially if the tenant's regulated population sits in one of the 7 pattern-only markets.
+ Inherited unchanged from `auto-label-eu-personal-data-sharepoint/README.md` §11, now backed by a
+ full 26-country table in that sibling's `design.md` §4: **19 members are checksum-validated**
+ (e.g. Belgium, Germany post-2010, Spain), **7 are pattern-only** (Austria, Croatia, Cyprus, France,
+ Greece, Malta, U.K.), expect a higher false-positive rate from the bundle overall, and treat this
+ as one more reason a precision-conscious buyer should consider the per-country localization path
+ in §6, especially if the tenant's regulated population sits in one of the 7 pattern-only markets.
 - **The `-SensitiveInfoTypeName` localization parameter is independent per scenario, and nothing
-  keeps this scenario's list in sync with `auto-label-eu-personal-data-sharepoint`'s.** Both
-  scripts accept the same-shaped parameter and default to the same three-SIT bundle, which invites
-  an operator to assume "our EU personal-data program is configured consistently." If a buyer later
-  narrows the SharePoint/OneDrive sibling to, say, Germany + France only but leaves this Exchange
-  scenario on the full 26-country default (or narrows this one and forgets the other), the two
-  channels silently diverge, a message containing an Italy Fiscal Code could be caught in email
-  but not in a SharePoint upload, or vice versa, with no error or warning from either script. There
-  is no shared configuration store between the two independent scenario folders (`design.md` §3
-  explains why they are separate folders at all), so this is a genuine, disclosed operational gap,
-  not a defect either script can fix alone: treat "confirm both scripts' `-SensitiveInfoTypeName`
-  lists match" as a standing item in the review cadence above, not a one-time deployment check.
+ keeps this scenario's list in sync with `auto-label-eu-personal-data-sharepoint`'s.** Both
+ scripts accept the same-shaped parameter and default to the same three-SIT bundle, which invites
+ an operator to assume "our EU personal-data program is configured consistently." If a buyer later
+ narrows the SharePoint/OneDrive sibling to, say, Germany + France only but leaves this Exchange
+ scenario on the full 26-country default (or narrows this one and forgets the other), the two
+ channels silently diverge, a message containing an Italy Fiscal Code could be caught in email
+ but not in a SharePoint upload, or vice versa, with no error or warning from either script. There
+ is no shared configuration store between the two independent scenario folders (`design.md` §3
+ explains why they are separate folders at all), so this is a genuine, disclosed operational gap,
+ not a defect either script can fix alone: treat "confirm both scripts' `-SensitiveInfoTypeName`
+ lists match" as a standing item in the review cadence above, not a one-time deployment check.
 - **"EU" as used by Microsoft's SIT naming does not track EU membership exactly.** Inherited
-  unchanged from the SharePoint/OneDrive EU sibling's §11: the national ID bundle includes the U.K.
-  (post-Brexit, no longer an EU member state) as one of its member entities [[10]](#references), 
-  treat "EU national identification number" as "EU + UK," not strictly EU-27, when explaining
-  coverage to a buyer.
+ unchanged from the SharePoint/OneDrive EU sibling's §11: the national ID bundle includes the U.K.
+ (post-Brexit, no longer an EU member state) as one of its member entities, 
+ treat "EU national identification number" as "EU + UK," not strictly EU-27, when explaining
+ coverage to a buyer.
 - **The opt-in `-IncludeTravelDocumentSits` bundle's U.K. passport coverage is merged with U.S.
-  passport coverage**, same gotcha as the SharePoint/OneDrive EU sibling's own switch of the same
-  name, ported here for email-channel parity (`design.md` §5). Microsoft's "EU passport number"
-  bundle has no standalone U.K. passport entity, U.K. coverage exists only as a single combined
-  "U.S./U.K. passport number" entity, per the bundle's own index page (re-fetched directly for this
-  addition, 2026-09-09). Enabling this switch to add U.K. passport-number detection to email also
-  enables U.S. passport-number detection with no way to select one without the other via this
-  bundle SIT. A buyer who needs U.K.-only passport detection without U.S. false positives would
-  need a custom SIT (out of scope here). Per-country checksum/confidence detail for both opt-in
-  bundles is now fully tabled in the SharePoint/OneDrive sibling's `design.md` §4 (not duplicated
-  here): only **8% of the 26 passport-bundle entities** (Germany, Poland) and **11% of the 28
-  driver's-license-bundle entities** (Germany, Spain, U.K.) are checksum-validated, versus 73% for
-  the default national-ID bundle, expect a materially higher false-positive rate from email
-  matches on either opt-in SIT than from the default condition set.
+ passport coverage**, same gotcha as the SharePoint/OneDrive EU sibling's own switch of the same
+ name, ported here for email-channel parity (`design.md` §5). Microsoft's "EU passport number"
+ bundle has no standalone U.K. passport entity, U.K. coverage exists only as a single combined
+ "U.S./U.K. passport number" entity, per the bundle's own index page (re-fetched directly for this
+ addition, 2026-09-09). Enabling this switch to add U.K. passport-number detection to email also
+ enables U.S. passport-number detection with no way to select one without the other via this
+ bundle SIT. A buyer who needs U.K.-only passport detection without U.S. false positives would
+ need a custom SIT (out of scope here). Per-country checksum/confidence detail for both opt-in
+ bundles is now fully tabled in the SharePoint/OneDrive sibling's `design.md` §4 (not duplicated
+ here): only **8% of the 26 passport-bundle entities** (Germany, Poland) and **11% of the 28
+ driver's-license-bundle entities** (Germany, Spain, U.K.) are checksum-validated, versus 73% for
+ the default national-ID bundle, expect a materially higher false-positive rate from email
+ matches on either opt-in SIT than from the default condition set.
 - **VERIFY (pilot tenant, before production reliance): byte-exact SIT name capitalization.**
-  Inherited unchanged from the SharePoint/OneDrive EU sibling's own open item (`design.md` §4), 
-  Microsoft's Learn pages render the same SIT names with inconsistent casing across pages. Mitigated
-  at runtime (the deploy script resolves every name against the tenant's live SIT catalog and fails
-  clearly on a mismatch) but not resolved with certainty.
+ Inherited unchanged from the SharePoint/OneDrive EU sibling's own open item (`design.md` §4), 
+ Microsoft's Learn pages render the same SIT names with inconsistent casing across pages. Mitigated
+ at runtime (the deploy script resolves every name against the tenant's live SIT catalog and fails
+ clearly on a mismatch) but not resolved with certainty.
 - **VERIFY (pilot tenant): `Get-AutoSensitivityLabelRule`'s read-back property casing for
-  `ContentContainsSensitiveInformation`** (`name` vs. `Name`), same open item as both sibling
-  scenarios. `validate/Test-EuPersonalDataAutoLabelExchangePolicy.ps1` checks both defensively
-  rather than assuming one.
+ `ContentContainsSensitiveInformation`** (`name` vs. `Name`), same open item as both sibling
+ scenarios. `validate/Test-EuPersonalDataAutoLabelExchangePolicy.ps1` checks both defensively
+ rather than assuming one.
 - **VERIFY (pilot tenant): whether a PDF attachment on a message an auto-labeling policy encrypts
-  ends up protected as part of the overall encrypted message envelope, or left effectively in the
-  clear alongside a protected email body.** Inherited unchanged from `auto-label-confidential-
-  exchange/README.md` §11, Microsoft's documentation confirms this behavior for unencrypted Office
-  (Word/PowerPoint/Excel) attachments specifically but doesn't state the PDF case with the same
-  confidence.
+ ends up protected as part of the overall encrypted message envelope, or left effectively in the
+ clear alongside a protected email body.** Inherited unchanged from `auto-label-confidential-
+ exchange/README.md` §11, Microsoft's documentation confirms this behavior for unencrypted Office
+ (Word/PowerPoint/Excel) attachments specifically but doesn't state the PDF case with the same
+ confidence.
 - **A rule-load failure has no item-level symptom.** Inherited unchanged from `auto-label-
-  confidential-exchange/README.md` §11 [[9]](#references), see the runbook in §8, step 6.
+ confidential-exchange/README.md` §11, see the runbook in §8, step 6.
 - **Config validation is not match validation**, same caveat as both sibling scenarios.
-  `validate/Test-EuPersonalDataAutoLabelExchangePolicy.ps1` confirms the policy and rule are shaped
-  correctly; it cannot confirm any email has actually been labeled. Always cross-check Activity
-  Explorer (§7, step 4) before treating a green validation run as end-to-end proof.
+ `validate/Test-EuPersonalDataAutoLabelExchangePolicy.ps1` confirms the policy and rule are shaped
+ correctly; it cannot confirm any email has actually been labeled. Always cross-check Activity
+ Explorer (§7, step 4) before treating a green validation run as end-to-end proof.
 - **A manually applied label permanently defeats this control**, same bypass class already
-  documented for both sibling scenarios. No auto-labeling-side mitigation exists; pair with a
-  content-based Exchange DLP condition for movement-blocking use cases that must not depend on the
-  label being correct.
+ documented for both sibling scenarios. No auto-labeling-side mitigation exists; pair with a
+ content-based Exchange DLP condition for movement-blocking use cases that must not depend on the
+ label being correct.
 - **This scenario does not cover mail already at rest in mailboxes.** Same as `auto-label-
-  confidential-exchange`, a historical-mail classification sweep is a separate eDiscovery/Content
-  Search-based project, not an extension of this scenario.
+ confidential-exchange`, a historical-mail classification sweep is a separate eDiscovery/Content
+ Search-based project, not an extension of this scenario.
 - **Don't repurpose this policy for mass encrypted mailings.** Microsoft explicitly documents that
-  auto-labeling policies aren't designed for bulk encrypted-distribution mailing and can cause
-  delivery failures if used that way [[3]](#references); Message Encryption's own "automatically
-  send emails" label setting is the correct mechanism for that use case, not this scenario.
+ auto-labeling policies aren't designed for bulk encrypted-distribution mailing and can cause
+ delivery failures if used that way; Message Encryption's own "automatically
+ send emails" label setting is the correct mechanism for that use case, not this scenario.
 
 ## 12. References
 

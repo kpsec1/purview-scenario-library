@@ -20,27 +20,27 @@ rather than duplicating them.
 ## 2. What Microsoft actually provides for this, and what doesn't exist anymore
 
 Microsoft's own current guidance frames a DSR as six activities, **Discovery, Access,
-Rectification, Restriction, Export, Deletion** [[1]](#references), and a dedicated
+Rectification, Restriction, Export, Deletion**, and a dedicated
 Microsoft 365-specific page states plainly what tooling implements the first two: eDiscovery
 search across Exchange (including mailboxes tied to Microsoft 365 Groups/Teams), Exchange public
-folders, SharePoint, and OneDrive [[2]](#references). Two things this scenario's grounding pass
+folders, SharePoint, and OneDrive. Two things this scenario's grounding pass
 confirmed are **not** the current mechanism, despite surfacing prominently in search results and
 older community writeups:
 
 1. **The classic "User Data Search" DSR case tool.** It was retired and its functionality merged
-   into eDiscovery (Standard) on **August 30, 2023**, over a year before the broader classic
-   eDiscovery/Content Search retirement, and the redirect on Microsoft's current
-   `ediscovery-search-for-content` page confirms the merge (its own URL carries the old DSR-tool
-   article's redirect slug) [[3]](#references)[[4]](#references). There is no dedicated "create a
-   DSR case" button or object type in the current experience; a DSR is just a regular eDiscovery
-   case, search, and (for Access) export.
+ into eDiscovery (Standard) on **August 30, 2023**, over a year before the broader classic
+ eDiscovery/Content Search retirement, and the redirect on Microsoft's current
+ `ediscovery-search-for-content` page confirms the merge (its own URL carries the old DSR-tool
+ article's redirect slug). There is no dedicated "create a
+ DSR case" button or object type in the current experience; a DSR is just a regular eDiscovery
+ case, search, and (for Access) export.
 2. **Priva Subject Rights Requests.** Microsoft's separate **Microsoft Priva** product has a
-   purpose-built Subject Rights Requests workflow with its own case-management UI and SLA tracking
+ purpose-built Subject Rights Requests workflow with its own case-management UI and SLA tracking
 , genuinely closer to what this scenario's ledger approximates. It is explicitly **out of
-   scope** for this library (`AGENTS.md` §10 default; `docs/automation-surface.md` §4 already lists
-   its Graph surface, `/security/subjectRightsRequests`, as "Priva-adjacent, out of default
-   scope"). This scenario does not reach for it, and does not reproduce its functionality beyond
-   the minimal ledger described below.
+ scope** for this library (`AGENTS.md` §10 default; [Automation surface §4](/docs/automation-surface/#4-routing-table-which-surface-for-which-purview-task) already lists
+ its Graph surface, `/security/subjectRightsRequests`, as "Priva-adjacent, out of default
+ scope"). This scenario does not reach for it, and does not reproduce its functionality beyond
+ the minimal ledger described below.
 
 Given both of those, the only current, non-retired, in-scope technical mechanism is the same
 Microsoft Graph `ediscoveryCase` object model this repo already built two scenarios on top of.
@@ -55,7 +55,7 @@ already identified by name and email at intake. This scenario therefore uses the
 **custodian-scoped** pattern `premium-legal-hold-and-export` already established, add the data
 subject as a single `ediscoveryCustodian`, add their `userSource` (`includedSources: 'mailbox,
 site'`, covering both Exchange and OneDrive/SharePoint), and scope the search to
-`dataSourceScopes: 'allCaseCustodians'` [[5]](#references)[[6]](#references)[[7]](#references), 
+`dataSourceScopes: 'allCaseCustodians'`, 
 narrower and lower-blast-radius than a tenant-wide sweep, and reuses an already-grounded,
 already-reviewed cmdlet sequence rather than inventing a new one.
 
@@ -75,12 +75,12 @@ than silently accepting it or defaulting to the higher-blast-radius tenant-wide 
 scenario exposes it as an explicit opt-in: `-IncludeParticipantSearch` adds a second search,
 `dataSourceScopes: allTenantMailboxes` with `contentQuery: "participants:<email>"`, the same KQL
 recipient-property expansion Microsoft documents for identity lookup across From/To/Cc/Bcc
-[[13]](#references), so the operator decides, per request, whether the completeness is worth the
+, so the operator decides, per request, whether the completeness is worth the
 broader scope, the same judgment call `search-and-purge-data-spillage`'s own Red Team review
 already established for its `allTenantMailboxes` default.
 
 **Empty `contentQuery` by default.** Microsoft's Create searches reference documents `contentQuery`
-as optional [[7]](#references). An Access or Erasure request is about *all* of the person's data
+as optional. An Access or Erasure request is about *all* of the person's data
 in scope, not a keyword subset, so the sample definition ships with `contentQuery: ""`, combined
 with `dataSourceScopes: allCaseCustodians`, this returns everything in the custodian's own
 mailbox and site. A Rectification/Restriction/Objection request scoped to specific, already-known
@@ -95,7 +95,7 @@ per `requestId`) as this scenario's own artifact, computing:
 
 - `dueDate` = `receivedDate` + 1 calendar month (Article 12(3) baseline)
 - `maxExtendedDueDate` = `receivedDate` + 3 calendar months (if the two-further-months extension is
-  invoked)
+ invoked)
 
 and a `status` field the operator drives manually (`Discovery` → `Reviewing` → `Fulfilled` →
 `Closed`), this scenario's scripts never infer status from Graph state, because "fulfilled" for a
@@ -116,15 +116,15 @@ Per `AGENTS.md` §5's Product Owner lens ("no reinventing a native capability"),
 not re-implement review-set/export or purge logic. Instead:
 
 - **Access / Portability** → `premium-legal-hold-and-export/deploy/New-EdiscoverySearchReviewSetExport.ps1`
-  and `Get-EdiscoveryExportPackage.ps1`, pointed at this scenario's `-CaseId`/`-SearchId`
-  (README.md §5). That sibling's own review-set/export cmdlet grounding, idempotency behavior, and
-  reviews.md findings all apply unchanged.
+ and `Get-EdiscoveryExportPackage.ps1`, pointed at this scenario's `-CaseId`/`-SearchId`
+ (README.md §5). That sibling's own review-set/export cmdlet grounding, idempotency behavior, and
+ reviews.md findings all apply unchanged.
 - **Erasure** → `search-and-purge-data-spillage/deploy/Invoke-DataSpillagePurge.ps1`, pointed at
-  this scenario's `-CaseId`/`-SearchId` (README.md §5). That sibling's own litigation-hold gap and
-  hand-off to `priority-cleanup-exchange-data-spillage` apply unchanged, a DSR erasure request
-  against held content is exactly the case that hand-off already covers.
+ this scenario's `-CaseId`/`-SearchId` (README.md §5). That sibling's own litigation-hold gap and
+ hand-off to `priority-cleanup-exchange-data-spillage` apply unchanged, a DSR erasure request
+ against held content is exactly the case that hand-off already covers.
 - **Rectification / Restriction / Objection** → no Purview-native technical fulfillment exists.
-  §6 states why, rather than inventing a control Microsoft doesn't document.
+ §6 states why, rather than inventing a control Microsoft doesn't document.
 
 ## 6. Rectification, Restriction, and Objection: an honest non-goal
 
@@ -132,24 +132,24 @@ Microsoft's own DSR-activity definitions make the scope boundary explicit, not j
 build happened not to fill:
 
 - **Rectification**, "make changes or implement other requested actions on the personal data,
-  **where applicable**" [[1]](#references). There is no generic Purview API to edit a message body
-  or a document's field-level content; correction happens in the system of record (HR system, CRM,
-  the document's own SharePoint/OneDrive location), not through eDiscovery. Where the record in
-  question is a M365 mailbox/file item, the practical mechanism (if any) is: locate it via this
-  scenario's Discovery search, then correct it through the native application (Outlook, Word,
-  SharePoint), which is a normal edit, not a Purview action worth scripting.
+ **where applicable**". There is no generic Purview API to edit a message body
+ or a document's field-level content; correction happens in the system of record (HR system, CRM,
+ the document's own SharePoint/OneDrive location), not through eDiscovery. Where the record in
+ question is a M365 mailbox/file item, the practical mechanism (if any) is: locate it via this
+ scenario's Discovery search, then correct it through the native application (Outlook, Word,
+ SharePoint), which is a normal edit, not a Purview action worth scripting.
 - **Restriction**, per Microsoft's own definition, restricting processing means "removing licenses
-  for various Azure services or turning off the desired services where possible... [or] remov[ing]
-  data from the Microsoft cloud and retain[ing] it on-premises or at another location"
-  [[1]](#references), an account/license administrative action, not a document-level "restrict
-  processing" flag Purview exposes. Scripting this would mean disabling a person's M365 services,
-  which is a decision with consequences well beyond this scenario's scope to make unilaterally; it
-  is left as an organizational decision informed by this scenario's Discovery search, not automated
-  here.
+ for various Azure services or turning off the desired services where possible... [or] remov[ing]
+ data from the Microsoft cloud and retain[ing] it on-premises or at another location"
+, an account/license administrative action, not a document-level "restrict
+ processing" flag Purview exposes. Scripting this would mean disabling a person's M365 services,
+ which is a decision with consequences well beyond this scenario's scope to make unilaterally; it
+ is left as an organizational decision informed by this scenario's Discovery search, not automated
+ here.
 - **Objection** (Article 21), has no dedicated Microsoft 365/Purview technical control at all in
-  any source this build found; like Rectification, it resolves to a business-process decision
-  (stop a specific processing activity) that Purview's discovery/export/deletion primitives don't
-  represent.
+ any source this build found; like Rectification, it resolves to a business-process decision
+ (stop a specific processing activity) that Purview's discovery/export/deletion primitives don't
+ represent.
 
 All three still get a ledger entry, an SLA timer, and a Discovery-stage search (so the organization
 at least knows what data exists and where), this scenario's honest claim is "we help you find it
@@ -171,15 +171,15 @@ and track the clock," not "we fulfill it."
 
 - **Priva Subject Rights Requests**, a materially different, purpose-built product surface; see §2.
 - **Automated notification of the data subject** (acknowledgment, extension notice, or final
-  response), Article 12(3)'s extension-notice requirement is a legal communication the
-  organization must send; this scenario tracks the deadline, it does not draft or send correspondence.
+ response), Article 12(3)'s extension-notice requirement is a legal communication the
+ organization must send; this scenario tracks the deadline, it does not draft or send correspondence.
 - **Rectification/Restriction/Objection technical fulfillment**, see §6.
 - **Multi-tenant/bulk DSR intake at scale** (e.g., a web form or ticketing-system integration), one
-  request, one definition file, one ledger entry at a time; a future follow-up could wrap this in a
-  queue-driven intake, tracked in `PROGRESS.md` rather than built speculatively here.
+ request, one definition file, one ledger entry at a time; a future follow-up could wrap this in a
+ queue-driven intake, tracked in `PROGRESS.md` rather than built speculatively here.
 - **Breach-notification tracking (Article 33/34)**, a related but distinct GDPR obligation, already
-  explicitly out of scope for `gdpr-assessment` itself
-  (`compliance-manager/gdpr-assessment/design.md` §8) and not folded in here.
+ explicitly out of scope for `gdpr-assessment` itself
+ (`compliance-manager/gdpr-assessment/design.md` §8) and not folded in here.
 
 ## References
 

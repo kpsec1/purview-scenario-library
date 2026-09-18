@@ -39,29 +39,29 @@ evidence for SOC 2/ISO 27001 audits, no single named regulatory requirement numb
 mechanism's own specific value:
 
 - **Coverage extension, not duplication.** A tenant already paying for a CASB or third-party DLP tool
-  covering, say, Salesforce or a niche SaaS app gets that tool's detections correlated with Microsoft's
-  own signal (SharePoint downloads, printing, personal-cloud copying) inside one Insider Risk Management
-  case, instead of two separate, uncorrelated alert queues an analyst has to manually cross-reference.
+ covering, say, Salesforce or a niche SaaS app gets that tool's detections correlated with Microsoft's
+ own signal (SharePoint downloads, printing, personal-cloud copying) inside one Insider Risk Management
+ case, instead of two separate, uncorrelated alert queues an analyst has to manually cross-reference.
 - **A path for SaaS apps outside Microsoft's fixed cloud-indicator list.** Cloud storage/cloud service
-  indicators cover exactly Box, Dropbox, Google Drive, Amazon S3, and Azure
-  (`data-leaks/README.md` §6), any other SaaS app (Salesforce, a niche vertical SaaS tool, an internal
-  system with its own audit log) has no native Insider Risk Management connector at all. This is the
-  only mechanism in this library that closes that gap, provided the buyer already has (or builds) an
-  upstream aggregation pipeline for it.
+ indicators cover exactly Box, Dropbox, Google Drive, Amazon S3, and Azure
+ (`data-leaks/README.md` §6), any other SaaS app (Salesforce, a niche vertical SaaS tool, an internal
+ system with its own audit log) has no native Insider Risk Management connector at all. This is the
+ only mechanism in this library that closes that gap, provided the buyer already has (or builds) an
+ upstream aggregation pipeline for it.
 - **Consolidated investigation surface.** Once ingested, a custom-indicator-driven alert appears
-  alongside every other Insider Risk Management alert in the same **Alerts dashboard**, **Activity
-  explorer**, and **User timeline**, the same evidence trail and case workflow this library's other
-  scenarios already document, not a bolt-on.
+ alongside every other Insider Risk Management alert in the same **Alerts dashboard**, **Activity
+ explorer**, and **User timeline**, the same evidence trail and case workflow this library's other
+ scenarios already document, not a bolt-on.
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md` §2 (Insider Risk Management row).
+Full licensing detail and citations: [Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix) (Insider Risk Management row).
 
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Insider Risk Management (all policies) | **Microsoft 365 E5/A5/G5**, **Microsoft Purview Suite**, or the **Microsoft 365 E5 Insider Risk Management** add-on | Same base entitlement as every IRM scenario in this library |
-| Role to configure policies/settings | **Insider Risk Management** or **Insider Risk Management Admins** role group | `docs/rbac-model.md` §4 |
-| Role to create the Insider Risk Indicators connector | **Data Connector Admin** role | Included by default in the role groups above, same role the HR-connector sibling scenario already documents, `docs/rbac-model.md` §11 |
+| Role to configure policies/settings | **Insider Risk Management** or **Insider Risk Management Admins** role group | [RBAC model §4](/docs/rbac-model/#4-purview-role-groups-by-module-representative-not-exhaustive) |
+| Role to create the Insider Risk Indicators connector | **Data Connector Admin** role | Included by default in the role groups above, same role the HR-connector sibling scenario already documents, [RBAC model §11](/docs/rbac-model/#11-microsoft-entra-app-registration-rbac-a-seventh-system-for-scenarios-that-create-their-own-app-registrations) |
 | Entra app registration for the connector | App registration + client secret, **no Microsoft Graph API permission granted** | **Reused unmodified**: `../departing-employee-data-theft/deploy/Register-HrConnectorApp.ps1 -DisplayName '<this connector's app>'`, §5 Step 2 |
 | A pre-aggregated, per-user third-party detection source | Any CASB, DLP tool, or SIEM (Microsoft's own examples: Microsoft Sentinel, Splunk) that can export **already-aggregated** detections to CSV | Microsoft: "you can't import 'raw' detection signals... you can only import preprocessed aggregations as a file." This scenario does not perform the aggregation, see `design.md` §7 |
 | Automation identity for scope-candidate resolution (reused) | App registration with the Microsoft Graph **`GroupMember.Read.All`** application permission, certificate-based | Reused unmodified from the base template's scoping pattern, §5 Step 8 |
@@ -69,7 +69,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md` §2 (Insider Ris
 | Firewall allowlist for the upload host | `webhook.ingestion.office.com` | Same requirement as the HR-connector sibling, §5 Step 5, `deploy/Send-InsiderRiskIndicatorRecord.ps1` |
 | **NOT required for this trigger path** | A Purview DLP policy, any built-in-indicator trigger configuration, Microsoft Defender for Cloud Apps connections, pay-as-you-go billing | Cloud/GenAI-indicator PAYG billing is a **different, unrelated** mechanism from this connector, this connector has no PAYG requirement of its own |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms before a
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) and the Product Terms before a
 > sales commitment, and re-check this connector's preview/GA status against the live portal.
 
 ## 4. Architecture
@@ -151,13 +151,13 @@ Purview portal → **Settings** → **Data connectors** → **My connectors** �
 
 1. **Authentication** page: name the connector, paste `$irmConnectorApp.AppId` from Step 2.
 2. **Sample file** page: upload the CSV from Step 3. If routing multiple indicators from one CSV, set
-   **Source column** to `Source_Workload` and enter the exact, comma-separated (no spaces) values in
-   **Related values in source column**, e.g. `Salesforce,Dropbox`. Otherwise select **None (Single
-   source)**. In **Verify sample data and data type**, confirm `Alert_Count` (or your own threshold
-   column) is assigned a **Number** data type.
+ **Source column** to `Source_Workload` and enter the exact, comma-separated (no spaces) values in
+ **Related values in source column**, e.g. `Salesforce,Dropbox`. Otherwise select **None (Single
+ source)**. In **Verify sample data and data type**, confirm `Alert_Count` (or your own threshold
+ column) is assigned a **Number** data type.
 3. **Data mapping** page: map **Event time (UTC time)** to `Aggregation_Date` and **Microsoft 365 user
-   email address** to `User_Principal_Name` (both mandatory), then select any other columns to carry
-   through as supporting context.
+ email address** to `User_Principal_Name` (both mandatory), then select any other columns to carry
+ through as supporting context.
 4. **Finish**: review and submit. **Copy the Job ID**, required for Step 5.
 
 Use `deploy/policy/data-leaks-custom-indicator-trigger-policy-manifest.json` as the checklist/reference
@@ -204,10 +204,10 @@ Indicators** tab → **Add custom indicator**, once per entry in the manifest's 
 1. Enter a name and optional description.
 2. **Data connector**: select the connector created in Step 4.
 3. If the connector used a Source column, select the specific value (`Salesforce` or `Dropbox` in this
-   worked example) this indicator represents.
+ worked example) this indicator represents.
 4. **Data from mapping file**: select the Number-typed threshold column (`Alert_Count`), **or** select
-   **Use only as a triggering event without any thresholds**, these are mutually exclusive; the latter
-   means this indicator can never be given a trigger threshold later.
+ **Use only as a triggering event without any thresholds**, these are mutually exclusive; the latter
+ means this indicator can never be given a trigger threshold later.
 5. **Add indicator**.
 
 ### Step 7, Resolve and size the policy-scope candidate list (scripted, read-only, reused)
@@ -228,15 +228,15 @@ lower value if either sibling's policy already consumes part of it.
 Purview portal → **Insider Risk Management** → **Policies** → **Create policy**:
 
 1. Template: **Data leaks** (base template, not a sibling Data-leaks-family template). Name:
-   `Data Leaks - Custom Indicator (Third-Party Connector) Trigger`.
+ `Data Leaks - Custom Indicator (Third-Party Connector) Trigger`.
 2. **Users and groups**: assign the scope resolved in Step 7.
 3. **Triggers for this policy**: select the custom indicator(s) created in Step 6. Set a **custom
-   threshold** for each, Microsoft provides no default/recommended threshold for a custom indicator, so
-   there is no "Use default thresholds" option to fall back on here, unlike either sibling scenario's
-   built-in-indicator triggers.
+ threshold** for each, Microsoft provides no default/recommended threshold for a custom indicator, so
+ there is no "Use default thresholds" option to fall back on here, unlike either sibling scenario's
+ built-in-indicator triggers.
 4. **Policy indicators**: select **Office indicators** and confirm **Cumulative exfiltration detection**
-   is selected. Optionally also select the same custom indicator(s) here to additionally score
-   already-in-scope users, with their own independently-configured custom threshold.
+ is selected. Optionally also select the same custom indicator(s) here to additionally score
+ already-in-scope users, with their own independently-configured custom threshold.
 5. **Review and submit.**
 
 Wait **24 hours** after this step (or any later change to the custom indicators or this policy) before
@@ -290,58 +290,58 @@ without modification.
 ## 7. Validation / how to prove it works
 
 1. **Automated CSV validation (client-side, before any upload)**, 
-   `validate/Test-DataLeaksCustomIndicatorTriggerSetup.ps1 -CsvPath ...` re-runs the same schema, ISO
-   8601, numeric-threshold, source-value, and duplicate-detection checks
-   `deploy/Send-InsiderRiskIndicatorRecord.ps1` performs before an upload, so a candidate file can be
-   checked without a Graph session or credentials.
+ `validate/Test-DataLeaksCustomIndicatorTriggerSetup.ps1 -CsvPath...` re-runs the same schema, ISO
+ 8601, numeric-threshold, source-value, and duplicate-detection checks
+ `deploy/Send-InsiderRiskIndicatorRecord.ps1` performs before an upload, so a candidate file can be
+ checked without a Graph session or credentials.
 2. **Automated Graph-side checks**, the same script, given `-GroupId`, confirms the Graph session and
-   `GroupMember.Read.All` permission work and reports the resolved scope-candidate count against the
-   15,000-user cap. Exits non-zero on a hard failure.
+ `GroupMember.Read.All` permission work and reports the resolved scope-candidate count against the
+ 15,000-user cap. Exits non-zero on a hard failure.
 3. **Ingestion confirmation**, Purview portal → **Settings** → **Data connectors** → this connector →
-   **Download log**: `RecordsSaved` for the most recent run should equal the row count of the CSV
-   actually uploaded (accounting for any rows this scenario's own duplicate check already flagged and
-   excluded, if `-AllowDuplicateRecords` wasn't used).
+ **Download log**: `RecordsSaved` for the most recent run should equal the row count of the CSV
+ actually uploaded (accounting for any rows this scenario's own duplicate check already flagged and
+ excluded, if `-AllowDuplicateRecords` wasn't used).
 4. **Manual checklist**, the same validation script prints a checklist for the portal-only
-   configuration: connector mapping, custom indicator creation and threshold-field selection, the
-   policy's trigger/scoring selection and mandatory custom threshold, the 24-hour sync wait, the
-   firewall allowlist, and role assignment, see `design.md` §4 for why these can't be automated.
+ configuration: connector mapping, custom indicator creation and threshold-field selection, the
+ policy's trigger/scoring selection and mandatory custom threshold, the 24-hour sync wait, the
+ firewall allowlist, and role assignment, see `design.md` §4 for why these can't be automated.
 5. **End-to-end functional test (non-production names only, pilot tenant)**, upload a small test CSV
-   containing a disposable test account's UPN with a threshold-column value exceeding the configured
-   custom threshold. Confirm the user is marked in-scope on the **Users dashboard** and that an alert
-   eventually surfaces in **Insider Risk Management** → **Alerts**, citing the custom indicator by name
-   in **Activity explorer**. This pipeline's exact end-to-end latency (upload → sync → scoring → alert)
-   was not independently measured in this build, §11.
+ containing a disposable test account's UPN with a threshold-column value exceeding the configured
+ custom threshold. Confirm the user is marked in-scope on the **Users dashboard** and that an alert
+ eventually surfaces in **Insider Risk Management** → **Alerts**, citing the custom indicator by name
+ in **Activity explorer**. This pipeline's exact end-to-end latency (upload → sync → scoring → alert)
+ was not independently measured in this build, §11.
 
 ## 8. Operations & tuning
 
 - **The threshold decision for a custom indicator has no "default" fallback, treat it as a
-  first-class tuning lever from day one, not something to defer.** Unlike either sibling scenario's
-  built-in indicators, there is no "Use default thresholds (Recommended)" option for a custom indicator
+ first-class tuning lever from day one, not something to defer.** Unlike either sibling scenario's
+ built-in indicators, there is no "Use default thresholds (Recommended)" option for a custom indicator
 , every custom indicator used as a trigger or scoring indicator needs a deliberately chosen numeric
-  value from the start.
+ value from the start.
 - **Monitor the upload pipeline's own health independently, a failed scheduled upload produces no
-  native Microsoft alert.** Unlike a native Microsoft connector whose health is visible to Microsoft
-  itself, this pipeline's only failure signal is the connector's own **Download log** (a manual pull) or
-  whatever exit-code/logging your task scheduler captures from
-  `deploy/Send-InsiderRiskIndicatorRecord.ps1`. Wire the scheduled task's exit code into existing
-  infrastructure monitoring rather than relying on someone remembering to check the portal log.
+ native Microsoft alert.** Unlike a native Microsoft connector whose health is visible to Microsoft
+ itself, this pipeline's only failure signal is the connector's own **Download log** (a manual pull) or
+ whatever exit-code/logging your task scheduler captures from
+ `deploy/Send-InsiderRiskIndicatorRecord.ps1`. Wire the scheduled task's exit code into existing
+ infrastructure monitoring rather than relying on someone remembering to check the portal log.
 - **Re-verify the third-party source's own detection coverage and tuning independently, this
-  scenario inherits whatever gaps and false-positive/negative rates the upstream CASB/DLP/SIEM
-  aggregation already has.** Insider Risk Management scores what it's given; it cannot compensate for a
-  third-party tool that under- or over-detects.
+ scenario inherits whatever gaps and false-positive/negative rates the upstream CASB/DLP/SIEM
+ aggregation already has.** Insider Risk Management scores what it's given; it cannot compensate for a
+ third-party tool that under- or over-detects.
 - **Coordinate policy naming explicitly if deploying alongside either sibling scenario**, same
-  reasoning both siblings already document for each other, now a three-way coordination point.
+ reasoning both siblings already document for each other, now a three-way coordination point.
 - **Re-scope on group-membership change**, same reasoning as every group-scoped IRM template in this
-  library, `security-policy-violations/README.md` §8, not repeated in full here.
+ library, `security-policy-violations/README.md` §8, not repeated in full here.
 - **Track the 15,000-user cap across all three Data-leaks-template siblings deliberately**, there is no
-  Graph/REST usage-count API to check current cumulative usage; maintain the sizing math manually if
-  more than one is deployed.
+ Graph/REST usage-count API to check current cumulative usage; maintain the sizing math manually if
+ more than one is deployed.
 - **Re-run the 24-hour sync wait after every custom-indicator or policy edit, not just the first
-  deployment**, the same wait applies to any subsequent change, not only initial setup.
+ deployment**, the same wait applies to any subsequent change, not only initial setup.
 - **Restrict write access to the CSV export path and the scheduled-task host as a security control
-  input, not just an operational convenience**, §11 discloses this pipeline validates shape, not
-  provenance; treat that file path and host with the same access discipline as any other input that can
-  influence a security alerting pipeline's output.
+ input, not just an operational convenience**, §11 discloses this pipeline validates shape, not
+ provenance; treat that file path and host with the same access discipline as any other input that can
+ influence a security alerting pipeline's output.
 
 ## 9. Rollback / decommission
 
@@ -352,126 +352,126 @@ revoking the app registration's certificate is not.
 ## 10. Cost & licensing notes
 
 - **No incremental Microsoft license cost beyond the base Insider Risk Management entitlement** if the
-  tenant already has E5/A5/G5, Purview Suite, or the E5 IRM add-on, `docs/licensing-matrix.md` §2. This
-  connector has **no pay-as-you-go billing requirement of its own**, a genuine difference from the
-  cloud-storage/cloud-service built-in indicators either sibling scenario can optionally add.
+ tenant already has E5/A5/G5, Purview Suite, or the E5 IRM add-on, [Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix). This
+ connector has **no pay-as-you-go billing requirement of its own**, a genuine difference from the
+ cloud-storage/cloud-service built-in indicators either sibling scenario can optionally add.
 - **The third-party CASB/DLP/SIEM tool supplying the source detections is a separate license and cost,
-  entirely outside this scenario's scope**, do not present this scenario as license-neutral if the
-  buyer doesn't already own that tooling; it is the prerequisite this scenario assumes, not something it
-  provisions (`design.md` §7).
+ entirely outside this scenario's scope**, do not present this scenario as license-neutral if the
+ buyer doesn't already own that tooling; it is the prerequisite this scenario assumes, not something it
+ provisions (`design.md` §7).
 - **Sizing note:** this template's actively-scored-user cap is 15,000, **shared cumulatively** across
-  every policy built from this exact template, now a three-way pool if both sibling scenarios in this
-  library are also deployed. No Graph/REST usage-count API exists to check current cumulative usage.
+ every policy built from this exact template, now a three-way pool if both sibling scenarios in this
+ library are also deployed. No Graph/REST usage-count API exists to check current cumulative usage.
 - **No additional Microsoft cost for the upload, scope-candidate resolution, alert-export, or validation
-  automation**, all scripts use standard HTTPS/Graph SDK calls, no metered API on the Microsoft side.
+ automation**, all scripts use standard HTTPS/Graph SDK calls, no metered API on the Microsoft side.
 
 ## 11. Known limitations & gotchas
 
 - **Microsoft's own wording for which policy templates support custom indicators is imprecise, this
-  scenario deliberately does not extend beyond the base `Data leaks` template.** The documentation
-  states custom indicators can be added to "any *Data theft* or *Data leaks* policies," which does not
-  clearly state whether this covers `Data leaks by priority users`/`Data leaks by risky users`, or only
-  `Data theft by departing users` among the "Data theft" family. **VERIFY (portal)** before assuming this
-  extends to a sibling template not built in this fragment (`design.md` §2 goal 7).
+ scenario deliberately does not extend beyond the base `Data leaks` template.** The documentation
+ states custom indicators can be added to "any *Data theft* or *Data leaks* policies," which does not
+ clearly state whether this covers `Data leaks by priority users`/`Data leaks by risky users`, or only
+ `Data theft by departing users` among the "Data theft" family. **VERIFY (portal)** before assuming this
+ extends to a sibling template not built in this fragment (`design.md` §2 goal 7).
 - **No documented confirmation of whether the connector's Source-column value matching is
-  case-sensitive.** `deploy/Send-InsiderRiskIndicatorRecord.ps1` treats it as case-sensitive (the
-  stricter, fail-safer assumption), **VERIFY (pilot tenant)** before relying on a specific casing
-  convention in production.
+ case-sensitive.** `deploy/Send-InsiderRiskIndicatorRecord.ps1` treats it as case-sensitive (the
+ stricter, fail-safer assumption), **VERIFY (pilot tenant)** before relying on a specific casing
+ convention in production.
 - **Re-ingestion/de-duplication behavior for an unchanged CSV re-uploaded on a subsequent scheduled run
-  is not documented by Microsoft**, the same open question the HR-connector sibling scenario already
-  discloses for its own webhook. Re-running the upload script is always safe in the sense that it never
-  deletes tenant state, but whether an unchanged row is re-scored, ignored, or duplicated server-side is
-  unconfirmed. **VERIFY (pilot tenant)**.
+ is not documented by Microsoft**, the same open question the HR-connector sibling scenario already
+ discloses for its own webhook. Re-running the upload script is always safe in the sense that it never
+ deletes tenant state, but whether an unchanged row is re-scored, ignored, or duplicated server-side is
+ unconfirmed. **VERIFY (pilot tenant)**.
 - **This scenario does not perform the third-party detection or its aggregation.** It starts from an
-  already-aggregated CSV; the buyer's own CASB/DLP/SIEM tooling and its own licensing, tuning, and
-  false-positive/negative rate are all prerequisites this scenario assumes, not something it builds or
-  can validate (`design.md` §7).
+ already-aggregated CSV; the buyer's own CASB/DLP/SIEM tooling and its own licensing, tuning, and
+ false-positive/negative rate are all prerequisites this scenario assumes, not something it builds or
+ can validate (`design.md` §7).
 - **This pipeline validates the uploaded CSV's *shape*, not its *provenance*, it introduces a new
-  trust boundary neither sibling scenario has.** `deploy/Send-InsiderRiskIndicatorRecord.ps1` checks
-  that a record is well-formed (valid UPN, ISO 8601 timestamp, numeric threshold, matching source
-  value); it has no way to confirm a record genuinely originated from the third-party tool it claims to,
-  or that no record was altered or omitted between the tool's export and this script's read of the file.
-  Anyone with write access to the export file or the host the scheduled script runs on could inject a
-  fabricated record (to generate noise, or to implicate another user) or silently drop their own record
-  before this script ever sees it, neither is detectable by anything in this scenario. Restrict write
-  access to the CSV export path and the scheduled-task host at least as tightly as any other security-
-  control input in your environment; this is a Red Team finding this scenario mitigates by disclosure,
-  not by a code control, since no schema-level check can confirm data provenance.
+ trust boundary neither sibling scenario has.** `deploy/Send-InsiderRiskIndicatorRecord.ps1` checks
+ that a record is well-formed (valid UPN, ISO 8601 timestamp, numeric threshold, matching source
+ value); it has no way to confirm a record genuinely originated from the third-party tool it claims to,
+ or that no record was altered or omitted between the tool's export and this script's read of the file.
+ Anyone with write access to the export file or the host the scheduled script runs on could inject a
+ fabricated record (to generate noise, or to implicate another user) or silently drop their own record
+ before this script ever sees it, neither is detectable by anything in this scenario. Restrict write
+ access to the CSV export path and the scheduled-task host at least as tightly as any other security-
+ control input in your environment; this is a Red Team finding this scenario mitigates by disclosure,
+ not by a code control, since no schema-level check can confirm data provenance.
 - **A network failure partway through a multi-chunk upload leaves a partial, non-atomic ingestion with
-  no automatic resume.** `deploy/Send-InsiderRiskIndicatorRecord.ps1` uploads chunks sequentially and
-  throws on the first failed chunk; any chunks already uploaded successfully before the failure remain
-  ingested (there is no all-or-nothing transaction, and no built-in retry/resume-from-last-chunk logic).
-  Re-running the script after fixing the underlying network issue re-uploads the **entire** CSV,
-  including the already-ingested chunks, the same documented UPN+timestamp uniqueness rule (§6) means
-  those specific rows are silently dropped as duplicates on the re-run rather than double-counted, but
-  confirm this reasoning holds for your data before relying on it, since Microsoft doesn't document
-  partial-upload recovery as a supported scenario.
+ no automatic resume.** `deploy/Send-InsiderRiskIndicatorRecord.ps1` uploads chunks sequentially and
+ throws on the first failed chunk; any chunks already uploaded successfully before the failure remain
+ ingested (there is no all-or-nothing transaction, and no built-in retry/resume-from-last-chunk logic).
+ Re-running the script after fixing the underlying network issue re-uploads the **entire** CSV,
+ including the already-ingested chunks, the same documented UPN+timestamp uniqueness rule (§6) means
+ those specific rows are silently dropped as duplicates on the re-run rather than double-counted, but
+ confirm this reasoning holds for your data before relying on it, since Microsoft doesn't document
+ partial-upload recovery as a supported scenario.
 - **A failed scheduled upload produces no native Microsoft alert or notification**, unlike a portal-
-  native connector failure, the only signals are the connector's own Download log (a manual pull) and
-  whatever the operator's own task-scheduler infrastructure captures. See §8's operational reminder.
+ native connector failure, the only signals are the connector's own Download log (a manual pull) and
+ whatever the operator's own task-scheduler infrastructure captures. See §8's operational reminder.
 - **No default/recommended threshold exists for a custom indicator, a real, easy-to-miss
-  operational gap versus either sibling scenario's built-in-indicator triggers**, where "Use default
-  thresholds (Recommended)" is always an option even if the underlying numeric value is unpublished. Here
-  there is no such fallback at all; an operator who doesn't deliberately choose a custom threshold cannot
-  create a working trigger from a custom indicator.
+ operational gap versus either sibling scenario's built-in-indicator triggers**, where "Use default
+ thresholds (Recommended)" is always an option even if the underlying numeric value is unpublished. Here
+ there is no such fallback at all; an operator who doesn't deliberately choose a custom threshold cannot
+ create a working trigger from a custom indicator.
 - **This end-to-end pipeline's latency (third-party detection → CSV export → upload → 24-hour-or-less
-  sync → scoring → alert) was not independently measured in this build**, no specific figure is
-  asserted; **VERIFY (pilot tenant)** before a customer-facing latency commitment.
+ sync → scoring → alert) was not independently measured in this build**, no specific figure is
+ asserted; **VERIFY (pilot tenant)** before a customer-facing latency commitment.
 - **Cannot disambiguate which Insider Risk Management policy produced a given exported alert if more
-  than one policy is deployed in the same tenant**, same disclosed gap as every IRM scenario in this
-  library, sharper here with up to three Data-leaks-template siblings potentially coexisting.
+ than one policy is deployed in the same tenant**, same disclosed gap as every IRM scenario in this
+ library, sharper here with up to three Data-leaks-template siblings potentially coexisting.
 - **This scenario does not configure Adaptive Protection**, a buyer who wants this policy's alerts to
-  drive DLP enforcement wires it into `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`
-  separately.
+ drive DLP enforcement wires it into `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`
+ separately.
 
 ## 12. References
 
 1. Set up a connector to import third-party insider risk detections (preview), the full three-step
-   process, CSV column-name flexibility ("not required parameters"), mandatory UPN/event-time roles,
-   Number-typed threshold-column requirement, Source-column multi-indicator worked example and its exact
-   documented failure mode, the UPN+timestamp uniqueness/silent-drop requirement, the 24-hour post-update
-   sync wait, the `webhook.ingestion.office.com` firewall allowlist requirement, and the **Data Connector
-   Admin** role requirement, confirmed via a direct Microsoft Learn fetch, 
-   <https://learn.microsoft.com/purview/import-insider-risk-indicators>
+ process, CSV column-name flexibility ("not required parameters"), mandatory UPN/event-time roles,
+ Number-typed threshold-column requirement, Source-column multi-indicator worked example and its exact
+ documented failure mode, the UPN+timestamp uniqueness/silent-drop requirement, the 24-hour post-update
+ sync wait, the `webhook.ingestion.office.com` firewall allowlist requirement, and the **Data Connector
+ Admin** role requirement, confirmed via a direct Microsoft Learn fetch, 
+ <https://learn.microsoft.com/purview/import-insider-risk-indicators>
 2. Configure policy indicators in Insider Risk Management, "Built-in indicators vs. custom indicators"
-   and "Custom indicators" sections: the three-step create-and-use flow, the custom-threshold-only rule
-   ("don't use the default thresholds"), the "Use only as a triggering event without any thresholds"
-   option, and "Insider Risk Management doesn't provide recommended thresholds for custom indicators", 
-   confirmed via a direct Microsoft Learn fetch, 
-   <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#custom-indicators>
+ and "Custom indicators" sections: the three-step create-and-use flow, the custom-threshold-only rule
+ ("don't use the default thresholds"), the "Use only as a triggering event without any thresholds"
+ option, and "Insider Risk Management doesn't provide recommended thresholds for custom indicators", 
+ confirmed via a direct Microsoft Learn fetch, 
+ <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#custom-indicators>
 3. Get started with Insider Risk Management, "Configure Insider Risk Indicator (preview) connector"
-   (Step 4) and Step 6's note pointing custom-trigger/indicator configuration at the Custom indicators
-   article, confirmed via a direct Microsoft Learn fetch, 
-   <https://learn.microsoft.com/purview/insider-risk-management-configure#configure-insider-risk-indicator-preview-connector>
+ (Step 4) and Step 6's note pointing custom-trigger/indicator configuration at the Custom indicators
+ article, confirmed via a direct Microsoft Learn fetch, 
+ <https://learn.microsoft.com/purview/insider-risk-management-configure#configure-insider-risk-indicator-preview-connector>
 4. Learn about Insider Risk Management policy templates, confirms custom indicators apply to "any
-   *Data theft* or *Data leaks* policies" (imprecise wording flagged in §11) and the base `Data leaks`
-   template's own triggering-event/prerequisite table, reused unmodified from both sibling scenarios, 
-   confirmed via a direct Microsoft Learn fetch, 
-   <https://learn.microsoft.com/purview/insider-risk-management-policy-templates>
+ *Data theft* or *Data leaks* policies" (imprecise wording flagged in §11) and the base `Data leaks`
+ template's own triggering-event/prerequisite table, reused unmodified from both sibling scenarios, 
+ confirmed via a direct Microsoft Learn fetch, 
+ <https://learn.microsoft.com/purview/insider-risk-management-policy-templates>
 5. Sample script source for the generic M365 compliance connector ingestion family, fetched directly
-   from GitHub during this build; confirmed identical OAuth token endpoint template, fixed resource ID,
-   and webhook URL to the already-grounded HR-connector sibling script, and confirmed a different
-   default chunk size (5,000 via `RecordsPerCall`) from the HR-connector Learn page's own documented
-   500-row limit, 
-   <https://github.com/microsoft/m365-compliance-connector-sample-scripts/blob/main/sample_script.ps1>
+ from GitHub during this build; confirmed identical OAuth token endpoint template, fixed resource ID,
+ and webhook URL to the already-grounded HR-connector sibling script, and confirmed a different
+ default chunk size (5,000 via `RecordsPerCall`) from the HR-connector Learn page's own documented
+ 500-row limit, 
+ <https://github.com/microsoft/m365-compliance-connector-sample-scripts/blob/main/sample_script.ps1>
 6. Limits in Insider Risk Management, "Maximum number of users in scope for a policy template": Data
-   leaks = **15,000**, reused unmodified from both sibling scenarios' own already-grounded citation, 
-   <https://learn.microsoft.com/purview/insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template>
+ leaks = **15,000**, reused unmodified from both sibling scenarios' own already-grounded citation, 
+ <https://learn.microsoft.com/purview/insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template>
 7. `data-leaks/README.md`, `data-leaks-exfiltration-activity-trigger/README.md`, and
-   `departing-employee-data-theft/README.md`/`design.md`, this scenario's direct siblings, whose own
-   already-grounded facts (max-users cap, population mechanism, the HR-connector app-registration and
-   ingestion-webhook pattern this scenario reuses/adapts) are cross-referenced rather than re-verified
-   independently. `security-policy-violations/deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1`,
-   `departing-employee-data-theft/deploy/Register-HrConnectorApp.ps1`,
-   `departing-employee-data-theft/validate/Test-HrConnectorAppRegistration.ps1`, and
-   `departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1`, reused unmodified.
+ `departing-employee-data-theft/README.md`/`design.md`, this scenario's direct siblings, whose own
+ already-grounded facts (max-users cap, population mechanism, the HR-connector app-registration and
+ ingestion-webhook pattern this scenario reuses/adapts) are cross-referenced rather than re-verified
+ independently. `security-policy-violations/deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1`,
+ `departing-employee-data-theft/deploy/Register-HrConnectorApp.ps1`,
+ `departing-employee-data-theft/validate/Test-HrConnectorAppRegistration.ps1`, and
+ `departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1`, reused unmodified.
 8. alert resource type, `AlertPolicyId`, `DetectionSource` properties, 
-   <https://learn.microsoft.com/graph/api/resources/security-alert>
+ <https://learn.microsoft.com/graph/api/resources/security-alert>
 9. List group transitive members (OData cast, required `ConsistencyLevel: eventual` header,
-   `GroupMember.Read.All` among the higher-privileged application permissions), 
-   <https://learn.microsoft.com/graph/api/group-list-transitivemembers?view=graph-rest-1.0>
+ `GroupMember.Read.All` among the higher-privileged application permissions), 
+ <https://learn.microsoft.com/graph/api/group-list-transitivemembers?view=graph-rest-1.0>
 10. Microsoft Graph permissions reference (`GroupMember.Read.All`, `SecurityAlert.Read.All`), 
-    <https://learn.microsoft.com/graph/permissions-reference>
+ <https://learn.microsoft.com/graph/permissions-reference>
 
 > Re-verify all links, cmdlet/API behavior, and licensing terms against current Microsoft Learn before a
 > customer-facing assessment or sale. This scenario's citations were grounded via a direct Microsoft

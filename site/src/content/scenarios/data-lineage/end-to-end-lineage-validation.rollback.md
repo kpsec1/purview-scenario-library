@@ -29,11 +29,11 @@ Add `-WhatIf` first to see which relationships would be deleted without deleting
 ## What rollback does **not** undo
 
 - **The upstream or downstream assets themselves.** Neither was created by this scenario (see
-  `design.md` §6/§7), so rollback doesn't touch either one, only the lineage edge between them.
+ `design.md` §6/§7), so rollback doesn't touch either one, only the lineage edge between them.
 - **The nightly transform job.** Not created, deployed, or managed by this scenario; removing the
-  lineage assertion has zero effect on whether the job itself keeps running.
+ lineage assertion has zero effect on whether the job itself keeps running.
 - **Any natively-captured lineage elsewhere in the graph** (e.g. a future Power BI report built on
-  `CustomerRiskSummary`), this scenario only ever touched the one custom edge it created.
+ `CustomerRiskSummary`), this scenario only ever touched the one custom edge it created.
 
 ## Manual portal alternative
 

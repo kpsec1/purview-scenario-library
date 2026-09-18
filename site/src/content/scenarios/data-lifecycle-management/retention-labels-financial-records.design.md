@@ -14,26 +14,26 @@ is irreversible once applied.
 ## 2. Design goals
 
 1. **Immutability that satisfies WORM obligations.** Use a **regulatory record** label so content
-   becomes non-rewriteable/non-erasable and the label/retention can't be weakened by anyone.
+ becomes non-rewriteable/non-erasable and the label/retention can't be weakened by anyone.
 2. **Reproducible as code.** One config → label + policy + rule; re-running is safe and reports rather
-   than silently mutates high-consequence objects.
+ than silently mutates high-consequence objects.
 3. **Guardrails proportional to irreversibility.** `-DryRun` by intent (S&C `-WhatIf` doesn't work),
-   create-or-report (never auto-edit an existing retention object), loud warnings, and a rollback that
-   refuses to pretend records can be released.
+ create-or-report (never auto-edit an existing retention object), loud warnings, and a rollback that
+ refuses to pretend records can be released.
 4. **PowerShell-first, honestly.** Regulatory records can only be created in PowerShell, so this is a
-   real automation requirement, not a portal shortcut, and the scenario says so.
+ real automation requirement, not a portal shortcut, and the scenario says so.
 5. **Narrow targeting.** Encourage a tightly-scoped location + match query, because over-scoping an
-   irreversible label is the dominant risk.
+ irreversible label is the dominant risk.
 
 ## 3. Why a record label by default, and the auto-apply/regulatory-record correction
 
 Purview offers a ladder of retention strength:
 - **Retention label (Keep)**, retains content but an admin can still remove the label / change
-  retention.
+ retention.
 - **Record label (`-IsRecordLabel`)**, locks the item (can't edit/delete while locked) but a record
-  can be **unlocked** and the label can be removed by a records manager, reversible with privilege.
+ can be **unlocked** and the label can be removed by a records manager, reversible with privilege.
 - **Regulatory record (`-Regulatory`)**, the strongest: **cannot** be removed, relabeled, unlocked, or
-  shortened, and content **cannot** be edited/deleted, by anyone, for the full period.
+ shortened, and content **cannot** be edited/deleted, by anyone, for the full period.
 
 **Correction (this build's grounding pass):** this scenario originally defaulted to **regulatory
 record** and auto-applied it, matching the SEC 17a-4-class obligation's ideal strength, but a
@@ -125,14 +125,14 @@ the irreversibility of the control.
 ## 7. Non-goals
 
 - **Publishing labels for manual application** (`-PublishComplianceTag`), **built** as the sibling
-  `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` scenario, which is now
-  the *required* completion for the regulatory-record case (§3), not merely an optional variant.
+ `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` scenario, which is now
+ the *required* completion for the regulatory-record case (§3), not merely an optional variant.
 - **Event-based retention / disposition review workflows** (`-EventType`, `KeepAndDelete`,
-  `-ReviewerEmail`), powerful RM features layered on the same cmdlets; candidate follow-ups.
+ `-ReviewerEmail`), powerful RM features layered on the same cmdlets; candidate follow-ups.
 - **Adaptive scopes**, used for large/dynamic estates; this scenario uses static locations.
 - **File plan descriptors** (`-FilePlanProperty`: categories, citations, authorities), valuable for
-  formal file plans; out of scope for the starter.
+ formal file plans; out of scope for the starter.
 - **Editing/strengthening an existing label**, the deploy reports and does not mutate; changes are a
-  deliberate, reviewed action.
+ deliberate, reviewed action.
 - **Releasing existing records**, impossible for a regulatory record by design, and requires
-  records-manager privilege for a plain record; rollback only stops future auto-labeling.
+ records-manager privilege for a plain record; rollback only stops future auto-labeling.

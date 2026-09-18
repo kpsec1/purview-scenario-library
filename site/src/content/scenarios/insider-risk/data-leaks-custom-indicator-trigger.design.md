@@ -25,85 +25,85 @@ for the same base `Data leaks` template.
 ## 2. Design goals
 
 1. **Ground the actual three-step process end to end, not just the connector-creation step.**
-   Microsoft's own documentation frames this as three sequential, cross-referenced articles: (1) create
-   the **Insider Risk Indicators (preview)** connector (`import-insider-risk-indicators`), (2) create a
-   **custom indicator** from it (`insider-risk-management-settings-policy-indicators#custom-indicators`),
-   (3) use the custom indicator as a trigger and/or scoring indicator with a threshold in the policy
-   workflow (`insider-risk-management-configure#step-6-required-create-an-insider-risk-management-policy`).
-   All three were fetched directly from Microsoft Learn during this build (not WebSearch snippets) and
-   are reflected as three distinct README §5 steps, not collapsed into one.
+ Microsoft's own documentation frames this as three sequential, cross-referenced articles: (1) create
+ the **Insider Risk Indicators (preview)** connector (`import-insider-risk-indicators`), (2) create a
+ **custom indicator** from it (`insider-risk-management-settings-policy-indicators#custom-indicators`),
+ (3) use the custom indicator as a trigger and/or scoring indicator with a threshold in the policy
+ workflow (`insider-risk-management-configure#step-6-required-create-an-insider-risk-management-policy`).
+ All three were fetched directly from Microsoft Learn during this build (not WebSearch snippets) and
+ are reflected as three distinct README §5 steps, not collapsed into one.
 2. **The CSV schema for this connector is genuinely, documentedly flexible, column names are not fixed
-   the way the HR-connector sibling's schema is.** Microsoft states this explicitly: "The column names
-   described in the following sections are examples, not required parameters. You can use any column
-   names in your CSV files." Only two roles are mandatory regardless of name: a Microsoft 365 user
-   email/UPN column, and an event-time column in ISO 8601 format (`yyyy-mm-ddThh:mm:ss.nnnnnn+|-hh:mm`).
-   A third role, a column used as a threshold value, is optional but, if used, must be a *Number*
-   data type. This is a materially different validation problem from
-   `departing-employee-data-theft/deploy/Send-HrTerminationRecord.ps1`'s fixed three-column schema
-   check, so this fragment's own upload script (`deploy/Send-InsiderRiskIndicatorRecord.ps1`) takes the
-   column names as parameters rather than hard-coding them, see §5.
+ the way the HR-connector sibling's schema is.** Microsoft states this explicitly: "The column names
+ described in the following sections are examples, not required parameters. You can use any column
+ names in your CSV files." Only two roles are mandatory regardless of name: a Microsoft 365 user
+ email/UPN column, and an event-time column in ISO 8601 format (`yyyy-mm-ddThh:mm:ss.nnnnnn+|-hh:mm`).
+ A third role, a column used as a threshold value, is optional but, if used, must be a *Number*
+ data type. This is a materially different validation problem from
+ `departing-employee-data-theft/deploy/Send-HrTerminationRecord.ps1`'s fixed three-column schema
+ check, so this fragment's own upload script (`deploy/Send-InsiderRiskIndicatorRecord.ps1`) takes the
+ column names as parameters rather than hard-coding them, see §5.
 3. **Document, and defensively check for, two real silent-data-loss/failure modes Microsoft's own
-   documentation discloses, rather than only the happy path.**
-   - **Duplicate UPN + event-time combinations are silently dropped, not rejected with an error**:
-     "Make sure that all combinations of UPN and timestamp to be imported are unique. If any record in
-     the uploaded CSV file contains the same timestamp and UPN as other records in the file, the record
-     is dropped." A security-relevant data-import pipeline that silently drops rows with no error is a
-     real operational risk if unmonitored, `deploy/Send-InsiderRiskIndicatorRecord.ps1` checks for this
-     client-side before upload and fails closed by default (§5, §6).
-   - **The `Source column` values in the CSV must exactly match the values entered in the connector's
-     own `Related values in source column` field, or the connector fails**: "Make sure that the values
-     you enter in the Related values in source column field match the values in the Source column list.
-     The connector fails if the column values don't match." This fragment's upload script also checks
-     this client-side when a source column is configured (§5).
+ documentation discloses, rather than only the happy path.**
+ - **Duplicate UPN + event-time combinations are silently dropped, not rejected with an error**:
+ "Make sure that all combinations of UPN and timestamp to be imported are unique. If any record in
+ the uploaded CSV file contains the same timestamp and UPN as other records in the file, the record
+ is dropped." A security-relevant data-import pipeline that silently drops rows with no error is a
+ real operational risk if unmonitored, `deploy/Send-InsiderRiskIndicatorRecord.ps1` checks for this
+ client-side before upload and fails closed by default (§5, §6).
+ - **The `Source column` values in the CSV must exactly match the values entered in the connector's
+ own `Related values in source column` field, or the connector fails**: "Make sure that the values
+ you enter in the Related values in source column field match the values in the Source column list.
+ The connector fails if the column values don't match." This fragment's upload script also checks
+ this client-side when a source column is configured (§5).
 4. **Reuse this template's already-grounded facts unmodified, same discipline as the exfiltration-
-   activity-trigger sibling's own design goal 1.** The 15,000-actively-scored-user cap, the plain-Entra-
-   group population mechanism, the reused scope-candidate script, and the reused alert-export script all
-   apply identically here and are cross-referenced, not re-derived. The cap is now **shared cumulatively
-   across three sibling policies** if all three Data-leaks-template scenarios in this library are
-   deployed in the same tenant, a sizing point sharper here than in either prior sibling, since this is
-   now the third policy drawing from the same 15,000-user pool.
+ activity-trigger sibling's own design goal 1.** The 15,000-actively-scored-user cap, the plain-Entra-
+ group population mechanism, the reused scope-candidate script, and the reused alert-export script all
+ apply identically here and are cross-referenced, not re-derived. The cap is now **shared cumulatively
+ across three sibling policies** if all three Data-leaks-template scenarios in this library are
+ deployed in the same tenant, a sizing point sharper here than in either prior sibling, since this is
+ now the third policy drawing from the same 15,000-user pool.
 5. **Ground the ingestion webhook mechanics by independently confirming they're identical to the
-   already-grounded HR-connector sibling's own mechanics, don't assume, verify.** Microsoft's
-   `import-insider-risk-indicators` article names the same underlying sample script family
-   (`https://github.com/microsoft/m365-compliance-connector-sample-scripts`) this repo's HR-connector
-   scenario (`departing-employee-data-theft/deploy/Send-HrTerminationRecord.ps1`) already grounded, but
-   points at the family's generic `sample_script.ps1` rather than the HR-specific
-   `upload_termination_records.ps1`. This build fetched `sample_script.ps1` directly from GitHub and
-   confirmed it uses the **identical** OAuth token endpoint template
-   (`https://login.windows.net/{tenantId}/oauth2/token`), the **identical** fixed resource ID
-   (`https://microsoft.onmicrosoft.com/86dfdabb-5089-4a0c-880a-cfa5a790c5b1`), and the **identical**
-   webhook upload URL (`https://webhook.ingestion.office.com/api/signals`) as the already-grounded HR
-   connector script, confirming this is one shared, generic M365 compliance-connector ingestion
-   surface, not a coincidental resemblance. The one confirmed difference: `sample_script.ps1`'s own
-   default chunk size is **5,000** records per call (`RecordsPerCall`, configurable), not the
-   HR-connector page's own documented 500-row-per-file limit, `deploy/Send-InsiderRiskIndicatorRecord.ps1`
-   defaults to 5,000 for this reason, sourced to the direct GitHub fetch, not silently copied from the
-   HR sibling's own different, page-documented figure.
+ already-grounded HR-connector sibling's own mechanics, don't assume, verify.** Microsoft's
+ `import-insider-risk-indicators` article names the same underlying sample script family
+ (`https://github.com/microsoft/m365-compliance-connector-sample-scripts`) this repo's HR-connector
+ scenario (`departing-employee-data-theft/deploy/Send-HrTerminationRecord.ps1`) already grounded, but
+ points at the family's generic `sample_script.ps1` rather than the HR-specific
+ `upload_termination_records.ps1`. This build fetched `sample_script.ps1` directly from GitHub and
+ confirmed it uses the **identical** OAuth token endpoint template
+ (`https://login.windows.net/{tenantId}/oauth2/token`), the **identical** fixed resource ID
+ (`https://microsoft.onmicrosoft.com/86dfdabb-5089-4a0c-880a-cfa5a790c5b1`), and the **identical**
+ webhook upload URL (`https://webhook.ingestion.office.com/api/signals`) as the already-grounded HR
+ connector script, confirming this is one shared, generic M365 compliance-connector ingestion
+ surface, not a coincidental resemblance. The one confirmed difference: `sample_script.ps1`'s own
+ default chunk size is **5,000** records per call (`RecordsPerCall`, configurable), not the
+ HR-connector page's own documented 500-row-per-file limit, `deploy/Send-InsiderRiskIndicatorRecord.ps1`
+ defaults to 5,000 for this reason, sourced to the direct GitHub fetch, not silently copied from the
+ HR sibling's own different, page-documented figure.
 6. **The Entra app registration step is generic and identical in shape to the HR-connector sibling's own
-   Step 1, reuse the existing script, don't fork it.** Microsoft's `import-insider-risk-indicators`
-   Step 1 asks for the same three artifacts (app ID, app secret, tenant ID) with no API permissions
-   named, the same shape `departing-employee-data-theft/deploy/Register-HrConnectorApp.ps1` already
-   scripts generically (no HR-specific logic in that script beyond its default `-DisplayName`). This
-   fragment reuses that script and its matching validation script
-   (`departing-employee-data-theft/validate/Test-HrConnectorAppRegistration.ps1`) unmodified, called
-   with a new `-DisplayName`, instead of writing a near-duplicate.
+ Step 1, reuse the existing script, don't fork it.** Microsoft's `import-insider-risk-indicators`
+ Step 1 asks for the same three artifacts (app ID, app secret, tenant ID) with no API permissions
+ named, the same shape `departing-employee-data-theft/deploy/Register-HrConnectorApp.ps1` already
+ scripts generically (no HR-specific logic in that script beyond its default `-DisplayName`). This
+ fragment reuses that script and its matching validation script
+ (`departing-employee-data-theft/validate/Test-HrConnectorAppRegistration.ps1`) unmodified, called
+ with a new `-DisplayName`, instead of writing a near-duplicate.
 7. **Ground which policy templates actually support custom indicators, without overstating Microsoft's
-   own imprecise wording.** The custom-indicators section states plainly: "add the custom indicator to
-   an insider risk policy in any *Data theft* or *Data leaks* policies." This is looser than the named
-   policy-template list elsewhere in the same documentation set (`Data theft by departing users`,
-   `Data leaks`, `Data leaks by priority users`, `Data leaks by risky users`), it is not clear from this
-   wording alone whether "Data theft" here means only `Data theft by departing users` or is shorthand for
-   a template family, nor whether "Data leaks" covers all three named Data-leaks templates or only the
-   base one. This fragment scopes itself to the base `Data leaks` template only, the scope
-   `PROGRESS.md`'s own follow-up item named, and states the broader-template-applicability question as
-   an open, unresolved reading of Microsoft's own wording rather than guessing either direction
-   (`README.md` §11).
+ own imprecise wording.** The custom-indicators section states plainly: "add the custom indicator to
+ an insider risk policy in any *Data theft* or *Data leaks* policies." This is looser than the named
+ policy-template list elsewhere in the same documentation set (`Data theft by departing users`,
+ `Data leaks`, `Data leaks by priority users`, `Data leaks by risky users`), it is not clear from this
+ wording alone whether "Data theft" here means only `Data theft by departing users` or is shorthand for
+ a template family, nor whether "Data leaks" covers all three named Data-leaks templates or only the
+ base one. This fragment scopes itself to the base `Data leaks` template only, the scope
+ `PROGRESS.md`'s own follow-up item named, and states the broader-template-applicability question as
+ an open, unresolved reading of Microsoft's own wording rather than guessing either direction
+ (`README.md` §11).
 8. **Do not fabricate a threshold-recommendation mechanism for custom indicators.** Microsoft states
-   plainly elsewhere in the same settings article: "Insider Risk Management doesn't provide recommended
-   thresholds for custom indicators." Real-time analytics (preview) explicitly does not cover them
-   either. This fragment's docs and manifest require **custom** thresholds for any custom indicator used
-   as a trigger, consistent with the documented rule: "After selecting your custom trigger or indicator,
-   make sure to set a custom threshold (don't use the default thresholds)."
+ plainly elsewhere in the same settings article: "Insider Risk Management doesn't provide recommended
+ thresholds for custom indicators." Real-time analytics (preview) explicitly does not cover them
+ either. This fragment's docs and manifest require **custom** thresholds for any custom indicator used
+ as a trigger, consistent with the documented rule: "After selecting your custom trigger or indicator,
+ make sure to set a custom threshold (don't use the default thresholds)."
 
 ## 3. Why this is its own scenario folder, not an edit to a sibling's files
 
@@ -172,26 +172,26 @@ provides no default/recommended threshold for a custom indicator (§2 goal 8).
 ## 7. Non-goals
 
 - **Does not build the DLP-policy trigger or the built-in-exfiltration-indicator trigger**, those are
-  `data-leaks/` and `data-leaks-exfiltration-activity-trigger/` respectively.
+ `data-leaks/` and `data-leaks-exfiltration-activity-trigger/` respectively.
 - **Does not perform the third-party detection or aggregation itself.** This scenario starts from an
-  already-aggregated CSV, building a Salesforce/Dropbox/CASB export pipeline, a Sentinel/Splunk
-  correlation rule, or any other upstream aggregation job is explicitly out of scope; those systems and
-  their own licensing are the buyer's existing tooling, not something this library provisions.
+ already-aggregated CSV, building a Salesforce/Dropbox/CASB export pipeline, a Sentinel/Splunk
+ correlation rule, or any other upstream aggregation job is explicitly out of scope; those systems and
+ their own licensing are the buyer's existing tooling, not something this library provisions.
 - **Does not attempt to resolve which exact named policy templates beyond the base `Data leaks`
-  template support custom indicators**, flagged as an open reading of Microsoft's own imprecise wording
-  (§2 goal 7, `README.md` §11), not guessed in either direction.
+ template support custom indicators**, flagged as an open reading of Microsoft's own imprecise wording
+ (§2 goal 7, `README.md` §11), not guessed in either direction.
 - **Does not build a Power Automate-based upload trigger** (Microsoft's own optional Step 7 in
-  `import-insider-risk-indicators`), the scheduled-script pattern this library already uses for the HR
-  connector (Windows Task Scheduler, `README.md` §8) is reused instead for consistency across this
-  repo's connector-based scenarios; a Power Automate variant is a candidate future fragment, not built
-  here.
+ `import-insider-risk-indicators`), the scheduled-script pattern this library already uses for the HR
+ connector (Windows Task Scheduler, `README.md` §8) is reused instead for consistency across this
+ repo's connector-based scenarios; a Power Automate variant is a candidate future fragment, not built
+ here.
 - **Does not configure Adaptive Protection**, same non-goal as every other base Insider Risk Management
-  scenario in this library.
+ scenario in this library.
 - **Does not attempt cross-policy alert disambiguation**, same disclosed `AlertPolicyId` gap as every
-  Insider Risk Management scenario in this library, sharper here with three Data-leaks-template siblings
-  potentially coexisting.
+ Insider Risk Management scenario in this library, sharper here with three Data-leaks-template siblings
+ potentially coexisting.
 - **Does not fabricate a case-sensitivity rule for source-column value matching.** Microsoft's own
-  wording ("make sure that the values... match") does not state whether the comparison is
-  case-sensitive; `deploy/Send-InsiderRiskIndicatorRecord.ps1` treats it as case-sensitive (the stricter,
-  fail-safer assumption) and this is flagged as an open VERIFY, not asserted as confirmed Microsoft
-  behavior (`README.md` §11).
+ wording ("make sure that the values... match") does not state whether the comparison is
+ case-sensitive; `deploy/Send-InsiderRiskIndicatorRecord.ps1` treats it as case-sensitive (the stricter,
+ fail-safer assumption) and this is flagged as an open VERIFY, not asserted as confirmed Microsoft
+ behavior (`README.md` §11).

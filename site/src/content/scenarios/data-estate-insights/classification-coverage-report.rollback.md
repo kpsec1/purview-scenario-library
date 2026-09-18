@@ -34,23 +34,23 @@ this scenario.
 ## 3. Decide the fate of already-produced report files
 
 - **Trend-log CSV and per-run breakdown JSON files** (wherever `-TrendLogPath` /
-  `-BreakdownOutputDirectory` pointed) are ordinary files this scenario wrote outside of Purview, 
-  delete them, archive them, or leave them in place per the buyer's own data-retention policy. There
-  is no Purview-side artifact tied to them that would become orphaned or inconsistent if they're kept
-  after the automation identity's role is removed.
+ `-BreakdownOutputDirectory` pointed) are ordinary files this scenario wrote outside of Purview, 
+ delete them, archive them, or leave them in place per the buyer's own data-retention policy. There
+ is no Purview-side artifact tied to them that would become orphaned or inconsistent if they're kept
+ after the automation identity's role is removed.
 - If the trend log was committed to a source-control repository (the recommended pattern for
-  preserving history, README.md §4/§8), treat its removal like removing any other tracked file:
-  a deliberate commit, not an ad hoc delete, so the historical record itself isn't silently lost
-  without a decision to do so.
+ preserving history, README.md §4/§8), treat its removal like removing any other tracked file:
+ a deliberate commit, not an ad hoc delete, so the historical record itself isn't silently lost
+ without a decision to do so.
 
 ## What rollback does **not** undo
 
 - **Any Purview object.** There isn't one, see "What there is to roll back," above. Removing this
-  scenario's automation has zero effect on the assets, classifications, scans, or collections it
-  read from.
+ scenario's automation has zero effect on the assets, classifications, scans, or collections it
+ read from.
 - **The scans or classifications themselves**, entirely owned by `scenarios/data-map/
-  scan-azure-sql-and-classify/` (or whichever scan populated the collection(s) this scenario
-  reported on), not by this scenario.
+ scan-azure-sql-and-classify/` (or whichever scan populated the collection(s) this scenario
+ reported on), not by this scenario.
 
 ## Re-enabling later
 

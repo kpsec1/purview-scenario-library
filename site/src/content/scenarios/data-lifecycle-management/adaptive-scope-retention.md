@@ -36,7 +36,7 @@ with a static scope for this population is turnover: a distribution list or expl
 requires someone to notice every promotion, hire, and departure and edit the policy. Microsoft's
 own documented adaptive-scopes guidance uses this exact scenario as its worked example: "For new
 executives, there's no need to reconfigure the retention policy because these new users... are
-automatically picked up" [[1]](#references). This scenario builds that pattern as reproducible
+automatically picked up". This scenario builds that pattern as reproducible
 code, generalizable to any attribute-driven population (department, country/region, a
 custom Entra extension attribute).
 
@@ -45,22 +45,22 @@ custom Entra extension attribute).
 > leaving content locked (see `rollback.md`). The real risk here is **scope precision**: an
 > over-broad or stale `Title` query retains (or fails to retain) the wrong population. Validate
 > actual scope membership (`Get-AdaptiveScopeMembers`) before relying on this operationally, and
-> allow up to 5 days for the query to populate after any change [[2]](#references).
+> allow up to 5 days for the query to populate after any change.
 
 ## 3. Prerequisites
 
-Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. Automation surface:
-`docs/automation-surface.md` (surface 2, Security & Compliance PowerShell). Summary:
+Full licensing detail: [Licensing matrix](/docs/licensing-matrix/). RBAC: [RBAC model](/docs/rbac-model/). Automation surface:
+[Automation surface](/docs/automation-surface/) (surface 2, Security & Compliance PowerShell). Summary:
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Licensing | Adaptive scopes, auto-apply, trainable-classifier retention: **M365 E5** (or Information Protection & Governance add-on) | This library's own `docs/licensing-matrix.md`, basic Data Lifecycle Management is E3, but adaptive scopes specifically require E5/IP&G [[3]](#references) |
-| Role | **Scope Manager** role (included in the Records Management, Compliance Administrator, Compliance Data Administrator, Organization Management, Communication Compliance / Communication Compliance Admins role groups) to create the scope; **Retention Management**/**Records Management** role group to create the policy/rule | `docs/rbac-model.md` |
-| Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell, `docs/automation-surface.md` §3 |
-| Entra attribute | `Title` (Job title) populated for the target population | Adaptive scopes query existing Entra attributes, no separate group to maintain [[4]](#references) |
+| Licensing | Adaptive scopes, auto-apply, trainable-classifier retention: **M365 E5** (or Information Protection & Governance add-on) | This library's own [Licensing matrix](/docs/licensing-matrix/), basic Data Lifecycle Management is E3, but adaptive scopes specifically require E5/IP&G |
+| Role | **Scope Manager** role (included in the Records Management, Compliance Administrator, Compliance Data Administrator, Organization Management, Communication Compliance / Communication Compliance Admins role groups) to create the scope; **Retention Management**/**Records Management** role group to create the policy/rule | [RBAC model](/docs/rbac-model/) |
+| Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell, [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
+| Entra attribute | `Title` (Job title) populated for the target population | Adaptive scopes query existing Entra attributes, no separate group to maintain |
 | Administrative units (optional) | Entra ID P1/P2, if restricting the scope to a delegated boundary | Not exercised in the sample config, `design.md` §7 |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-10) before a
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) (dated 2026-09-10) before a
 > sales commitment, SKU names change.
 
 ## 4. Architecture
@@ -120,9 +120,9 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 
 The scope is visible under **Settings** > **Roles and scopes** > **Adaptive scopes**; the policy
 under **Data Lifecycle Management** > **Policies** > **Retention policies**
-[[5]](#references)[[6]](#references). The portal's create-policy flow also lets you pick which
+. The portal's create-policy flow also lets you pick which
 locations an adaptive-scope policy covers on a **Choose adaptive policy scopes and locations**
-page [[6]](#references), the PowerShell path used here does not expose an equivalent parameter
+page, the PowerShell path used here does not expose an equivalent parameter
 (§11, `design.md` §4). `-WhatIf` is non-functional in S&C PowerShell, so the deploy/remove scripts
 ship a `-DryRun` instead.
 
@@ -130,37 +130,37 @@ ship a `-DryRun` instead.
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Scope cmdlet | `New-AdaptiveScope` | Adaptive scope [[7]](#references) |
-| `LocationType` | `User` | Also `Group` (M365 Groups) or `Site` (SharePoint); each supports different attributes [[4]](#references) |
+| Scope cmdlet | `New-AdaptiveScope` | Adaptive scope |
+| `LocationType` | `User` | Also `Group` (M365 Groups) or `Site` (SharePoint); each supports different attributes |
 | `FilterConditions` | Hashtable: `Conditions` (`Name`/`Operator`/`Value`) + `Conjunction` | Simple-query-builder shape; `Operator`: `Equals`/`NotEquals`/`StartsWith`/`NotStartsWith`. `-RawQuery` (OPATH for User/Group, KeyQL for Site) is the advanced-query alternative, not used by default |
-| Policy cmdlet | `New-RetentionCompliancePolicy -AdaptiveScopeLocation` | AdaptiveScopeLocation parameter set, no separate `-ExchangeLocation`/`-OneDriveLocation` toggles (§11) [[8]](#references) |
-| Rule cmdlet | `New-RetentionComplianceRule` | `-RetentionDuration`/`-RetentionComplianceAction`/`-ExpirationDateOption`, no `-ApplyComplianceTag` (this is a plain retention rule, not a label) [[9]](#references) |
+| Policy cmdlet | `New-RetentionCompliancePolicy -AdaptiveScopeLocation` | AdaptiveScopeLocation parameter set, no separate `-ExchangeLocation`/`-OneDriveLocation` toggles (§11) |
+| Rule cmdlet | `New-RetentionComplianceRule` | `-RetentionDuration`/`-RetentionComplianceAction`/`-ExpirationDateOption`, no `-ApplyComplianceTag` (this is a plain retention rule, not a label) |
 | `RetentionComplianceAction` | `Keep` | `Keep` / `Delete` / `KeepAndDelete` |
 | `RetentionDuration` | `3650` (~10 years) | Illustrative litigation-readiness baseline; tune to your obligation |
 | `ExpirationDateOption` | `CreationAgeInDays` | When the clock starts |
-| Adaptive scope population | Up to **5 days** | Daily query re-evaluation; changes aren't immediate [[2]](#references) |
-| Membership inspection | `Get-AdaptiveScopeMembers -Identity <scope> -State Added` | Paged; don't use `-PageResultSize Unlimited` on large scopes [[10]](#references) |
+| Adaptive scope population | Up to **5 days** | Daily query re-evaluation; changes aren't immediate |
+| Membership inspection | `Get-AdaptiveScopeMembers -Identity <scope> -State Added` | Paged; don't use `-PageResultSize Unlimited` on large scopes |
 
 Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
 
 ## 7. Validation / how to prove it works
 
 1. **Automated**, `./validate/Test-AdaptiveScopeRetention.ps1` confirms the scope exists with the
-   expected `LocationType`, the policy exists/enabled and references the scope, and the rule
-   applies the expected duration/action. Exits non-zero on failure.
+ expected `LocationType`, the policy exists/enabled and references the scope, and the rule
+ applies the expected duration/action. Exits non-zero on failure.
 2. **Membership sample**, the validate script also prints (informational, non-failing) a small
-   `Get-AdaptiveScopeMembers` sample so you can sanity-check actual coverage.
+ `Get-AdaptiveScopeMembers` sample so you can sanity-check actual coverage.
 3. **Idempotency proof**, re-run the deploy; the scope/policy/rule report `exists` (not `created`)
-   and nothing is duplicated or silently mutated.
+ and nothing is duplicated or silently mutated.
 4. **Population/distribution timing**, allow up to 5 days for the adaptive scope's query to
-   populate [[2]](#references), then confirm actual scope membership in the portal (**Adaptive
-   scopes** > select the scope > **Scope details**) or via
-   `Get-AdaptiveScopeMembers -Identity <scope> -State Added` before treating retention as "live"
-   for the intended population.
+ populate, then confirm actual scope membership in the portal (**Adaptive
+ scopes** > select the scope > **Scope details**) or via
+ `Get-AdaptiveScopeMembers -Identity <scope> -State Added` before treating retention as "live"
+ for the intended population.
 5. **Query correctness (lab tenant)**, before deploying, validate the equivalent OPATH filter
-   directly against Exchange Online PowerShell, e.g.
-   `Get-Recipient -RecipientTypeDetails UserMailbox,MailUser -Filter {Title -eq "Chief Financial Officer"} -ResultSize Unlimited`,
-   and compare the result to what you expect the scope to match [[11]](#references).
+ directly against Exchange Online PowerShell, e.g.
+ `Get-Recipient -RecipientTypeDetails UserMailbox,MailUser -Filter {Title -eq "Chief Financial Officer"} -ResultSize Unlimited`,
+ and compare the result to what you expect the scope to match.
 
 ## 8. Operations & tuning
 
@@ -184,7 +184,7 @@ existing adaptive scope"), `RemoveAdaptiveScope`, and `ApplicableAdaptiveScopeCh
 sites, or groups were added to or removed from the adaptive scope... Because the changes are
 system-initiated, the reported user displays as a GUID rather than a user account"), alongside
 `NewRetentionCompliancePolicy`/`SetRetentionCompliancePolicy`/`RemoveRetentionCompliancePolicy`
-and the matching `*RetentionComplianceRule` operations [[14]](#references). Alert on
+and the matching `*RetentionComplianceRule` operations. Alert on
 `SetAdaptiveScope` against this scenario's scope name outside a known change window, a query
 edit is the mechanism by which someone could narrow coverage (see `reviews.md` Red Team finding
 2). `Search-UnifiedAuditLog -Operations SetAdaptiveScope,RemoveAdaptiveScope` (add
@@ -197,75 +197,75 @@ types before building a saved query, rather than guessing one.
 See `rollback.md`. Quick reference: `./deploy/Remove-AdaptiveScopeRetention.ps1` **disables** the
 policy by default (stops new/changed content from being retained); `-Delete` removes the
 policy+rule and, because this is `Keep`-only, not a record, genuinely **releases** the retention
-already in force [[12]](#references); `-Delete -TryRemoveScope` also attempts to remove the
+already in force; `-Delete -TryRemoveScope` also attempts to remove the
 adaptive scope itself, but only if nothing else references it (adaptive scopes are shared,
 reusable objects across retention, Insider Risk Management, and Communication Compliance policies).
 
 ## 10. Cost & licensing notes
 
 - **Per-user E5 entitlement** (or the Information Protection & Governance add-on), adaptive
-  scopes specifically require E5, not just the E3 baseline that covers static-scope Data Lifecycle
-  Management [[3]](#references). No separate Azure consumption meter.
+ scopes specifically require E5, not just the E3 baseline that covers static-scope Data Lifecycle
+ Management. No separate Azure consumption meter.
 - **Cost is licensing + governance discipline, not storage growth** for this scenario in
-  particular: a 10-year `Keep`-only policy on a small executive population is a modest storage
-  delta compared to org-wide retention, the real cost driver is keeping the query accurate over
-  time (§8), not infrastructure.
+ particular: a 10-year `Keep`-only policy on a small executive population is a modest storage
+ delta compared to org-wide retention, the real cost driver is keeping the query accurate over
+ time (§8), not infrastructure.
 - **The expensive mistake is a stale or over-broad query**, not over-scoping a static list, the
-  failure mode moves from "someone forgot to update the distribution list" to "the query no longer
-  matches reality," which is easier to miss because nothing visibly breaks (§11).
+ failure mode moves from "someone forgot to update the distribution list" to "the query no longer
+ matches reality," which is easier to miss because nothing visibly breaks (§11).
 
 ## 11. Known limitations & gotchas
 
 - **Genuine parameter-surface gap, disclosed rather than guessed (VERIFY, pilot tenant):**
-  `New-RetentionCompliancePolicy`'s `AdaptiveScopeLocation` parameter set exposes
-  `-AdaptiveScopeLocation` and `-Applications` only, no documented `-ExchangeLocation`/
-  `-OneDriveLocation`/`-SharePointLocation` equivalent the way the static parameter set has. Which
-  of the scope's covered `User`-type locations (Exchange mailboxes, OneDrive, Teams chats, Copilot
-  experiences, etc.) the policy actually applies to is not exposed as a documented parameter on
-  this cmdlet, even though the portal's own flow implies per-policy location selection. Confirm the
-  actual applied-locations behavior in a pilot tenant before a customer-facing deployment, 
-  `design.md` §4.
+ `New-RetentionCompliancePolicy`'s `AdaptiveScopeLocation` parameter set exposes
+ `-AdaptiveScopeLocation` and `-Applications` only, no documented `-ExchangeLocation`/
+ `-OneDriveLocation`/`-SharePointLocation` equivalent the way the static parameter set has. Which
+ of the scope's covered `User`-type locations (Exchange mailboxes, OneDrive, Teams chats, Copilot
+ experiences, etc.) the policy actually applies to is not exposed as a documented parameter on
+ this cmdlet, even though the portal's own flow implies per-policy location selection. Confirm the
+ actual applied-locations behavior in a pilot tenant before a customer-facing deployment, 
+ `design.md` §4.
 - **`Get-AdaptiveScopeMembers`'s result-metadata property names aren't documented.** Microsoft's
-  reference describes the first returned element as carrying total-count/paging metadata but
-  doesn't name its properties; `validate/Test-AdaptiveScopeRetention.ps1`'s membership sample prints
-  it generically (`Format-List`) rather than guessing a property name.
+ reference describes the first returned element as carrying total-count/paging metadata but
+ doesn't name its properties; `validate/Test-AdaptiveScopeRetention.ps1`'s membership sample prints
+ it generically (`Format-List`) rather than guessing a property name.
 - **Up to 5-day population delay, and it's not instant to change either.** A newly created or
-  edited adaptive scope's membership isn't immediate, don't expect a same-day roster, and don't
-  assume the portal's Scope details view and a live `Get-AdaptiveScopeMembers` query will agree
-  within that window [[2]](#references).
+ edited adaptive scope's membership isn't immediate, don't expect a same-day roster, and don't
+ assume the portal's Scope details view and a live `Get-AdaptiveScopeMembers` query will agree
+ within that window.
 - **`-WhatIf` is non-functional in S&C PowerShell**, the scripts ship a `-DryRun` instead.
 - **Idempotency is create-or-report, not create-or-update.** The deploy locates objects by name
-  and does **not** silently modify an existing scope/policy/rule, edit deliberately (`Set-
-  AdaptiveScope`/`Set-RetentionCompliancePolicy`) if the query or retention settings must change.
+ and does **not** silently modify an existing scope/policy/rule, edit deliberately (`Set-
+ AdaptiveScope`/`Set-RetentionCompliancePolicy`) if the query or retention settings must change.
 - **Adaptive scopes are shared objects.** The same scope can be reused by other retention
-  policies, Insider Risk Management policies, and Communication Compliance policies, don't remove
-  one without checking what else references it (`rollback.md`).
+ policies, Insider Risk Management policies, and Communication Compliance policies, don't remove
+ one without checking what else references it (`rollback.md`).
 - **`Skype for Business` and `Exchange public folders` don't support adaptive scopes at all**, use
-  a static scope for those locations [[13]](#references).
+ a static scope for those locations.
 - **Whoever can edit the `Title` attribute controls who's in scope (see `reviews.md` Red Team
-  finding 2).** Because membership is entirely attribute-driven, anyone who can write a user's
-  `Title` in Entra ID (self-service profile edit, an HR system sync with lax field ownership, or an
-  admin) can add or remove that user from retention within the scope's own re-evaluation window.
-  Source `Title` from an authoritative HR feed rather than self-service profile edit, and monitor
-  `SetAdaptiveScope`/`ApplicableAdaptiveScopeChange` (§8), this scenario does not otherwise defend
-  against it.
+ finding 2).** Because membership is entirely attribute-driven, anyone who can write a user's
+ `Title` in Entra ID (self-service profile edit, an HR system sync with lax field ownership, or an
+ admin) can add or remove that user from retention within the scope's own re-evaluation window.
+ Source `Title` from an authoritative HR feed rather than self-service profile edit, and monitor
+ `SetAdaptiveScope`/`ApplicableAdaptiveScopeChange` (§8), this scenario does not otherwise defend
+ against it.
 - **This is `Keep`-only by design**, no record/regulatory-record semantics here; pair with
-  `scenarios/data-lifecycle-management/retention-labels-financial-records/` if immutability is
-  also required for part of this population.
+ `scenarios/data-lifecycle-management/retention-labels-financial-records/` if immutability is
+ also required for part of this population.
 - **This is a governance baseline, not a litigation hold.** A `Keep`-only retention policy retains
-  content on a schedule the org set in advance; it is not scoped to a matter, does not notify
-  custodians, and is not the control an active investigation or legal matter should rely on. For a
-  specific matter, use an eDiscovery hold (`scenarios/ediscovery/`), the two are complementary,
-  not substitutes.
+ content on a schedule the org set in advance; it is not scoped to a matter, does not notify
+ custodians, and is not the control an active investigation or legal matter should rely on. For a
+ specific matter, use an eDiscovery hold (`scenarios/ediscovery/`), the two are complementary,
+ not substitutes.
 - **Illustrative values.** The executive `Title` list, the 10-year duration, and the policy/scope
-  names are placeholders, set them to your actual executive-role taxonomy and retention
-  obligation, validated by HR/Legal, before deploying.
+ names are placeholders, set them to your actual executive-role taxonomy and retention
+ obligation, validated by HR/Legal, before deploying.
 
 ## 12. References
 
 1. Learn about retention policies and retention labels, adaptive-scope "executives" example, <https://learn.microsoft.com/purview/retention#adaptive-or-static-policy-scopes-for-retention>
 2. Adaptive scopes, up to 5 days for queries to populate/reflect changes, <https://learn.microsoft.com/purview/purview-adaptive-scopes#how-to-configure-an-adaptive-scope>
-3. Microsoft Purview service description, Data Lifecycle Management adaptive scopes/auto-apply licensing (E5/IP&G), this repo's `docs/licensing-matrix.md`, grounded from <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description>
+3. Microsoft Purview service description, Data Lifecycle Management adaptive scopes/auto-apply licensing (E5/IP&G), this repo's [Licensing matrix](/docs/licensing-matrix/), grounded from <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description>
 4. Adaptive scopes, scope types and supported attributes/properties table, <https://learn.microsoft.com/purview/purview-adaptive-scopes#configure-adaptive-scopes>
 5. Adaptive scopes, portal location (Settings > Roles and scopes > Adaptive scopes), <https://learn.microsoft.com/purview/purview-adaptive-scopes#how-to-configure-an-adaptive-scope>
 6. Create and configure retention policies, adaptive policy scope/location selection in the portal, <https://learn.microsoft.com/purview/create-retention-policies#create-and-configure-a-retention-policy>

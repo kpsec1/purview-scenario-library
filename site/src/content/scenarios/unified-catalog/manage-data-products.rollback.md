@@ -41,7 +41,7 @@ while the underlying asset or its data quality is under review.
     -DefinitionPath './deploy/config/customer-master-data-product.sample.json' -RemoveLinks
 ```
 
-Deletes the data-asset and both term relationships (`DELETE .../relationships`). The Unified
+Deletes the data-asset and both term relationships (`DELETE.../relationships`). The Unified
 Catalog data asset **wrapper** and the glossary terms themselves are left untouched, they may be
 referenced by other data products this scenario doesn't know about. A data product with no linked
 assets still exists but is no longer a meaningful grouping; re-run `New-DataProduct.ps1` to
@@ -73,20 +73,20 @@ and an unlinked wrapper with no relationships is effectively inert).
 ## What rollback does **not** undo
 
 - **The underlying Data Map asset.** `scenarios/data-map/scan-azure-sql-and-classify/` owns that
-  asset's lifecycle; this scenario's rollback never touches it.
+ asset's lifecycle; this scenario's rollback never touches it.
 - **The governance domain or glossary terms.** `scenarios/unified-catalog/curate-business-glossary/`
-  owns their lifecycle; this scenario only looks them up by name.
+ owns their lifecycle; this scenario only looks them up by name.
 - **Data product/asset history.** Microsoft Learn does not document a separate audit trail for
-  Unified Catalog object changes distinct from the general Microsoft Purview audit log; this
-  scenario does not script audit-log retrieval for these changes (same limitation
-  `curate-business-glossary/rollback.md` records).
+ Unified Catalog object changes distinct from the general Microsoft Purview audit log; this
+ scenario does not script audit-log retrieval for these changes (same limitation
+ `curate-business-glossary/rollback.md` records).
 - **In-flight or completed access requests.** If consumers already requested and were granted
-  access to this data product before rollback, `Remove-DataProduct.ps1` does not revoke that
-  access, per Microsoft's own documented process, the request approver must separately remove the
-  underlying data-asset provisioning *and* delete the access request in the portal
-  (README.md reference 4) before an unpublish/purge fully closes the loop.
+ access to this data product before rollback, `Remove-DataProduct.ps1` does not revoke that
+ access, per Microsoft's own documented process, the request approver must separately remove the
+ underlying data-asset provisioning *and* delete the access request in the portal
+ (README.md reference 4) before an unpublish/purge fully closes the loop.
 - **The data product access policy configuration itself**, portal-only, not scripted by this
-  scenario in either direction (`design.md` §5).
+ scenario in either direction (`design.md` §5).
 
 ## Verification after rollback
 

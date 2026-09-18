@@ -57,19 +57,19 @@ See that scenario's own `rollback.md` for the full staged Close/Delete procedure
 ## What rollback does **not** undo
 
 - **The source Insider Risk Management case's own status or notes.** This scenario never wrote to
-  the IRM case (no API exists to, design.md §4) and has nothing to roll back there. The IRM case's
-  own system-generated "A case escalation" note (README.md §8) is permanent regardless of what
-  happens on the eDiscovery side.
+ the IRM case (no API exists to, design.md §4) and has nothing to roll back there. The IRM case's
+ own system-generated "A case escalation" note (README.md §8) is permanent regardless of what
+ happens on the eDiscovery side.
 - **Custodian mailbox/OneDrive content itself**, or **downloaded export packages**, or **review-set
-  content**, identical to the sibling scenario's own `rollback.md` "What rollback does not undo"
-  section; nothing about this scenario's narrower scope changes those facts once a hold has been
-  released or content collected.
+ content**, identical to the sibling scenario's own `rollback.md` "What rollback does not undo"
+ section; nothing about this scenario's narrower scope changes those facts once a hold has been
+ released or content collected.
 - **The historical fact that a provenance block once existed.** Stage 1 removes the block from the
-  live description, but the update itself is an audited eDiscovery case-modification event in the
-  Microsoft 365 unified audit log (same caveat as the sibling scenario's README.md §8 on the
-  custodian-hold-vs-hold-policy audit-operation gap, this scenario's plain `Update-
-  MgSecurityCaseEdiscoveryCase` calls are ordinary case-modification audit events, not part of that
-  open VERIFY).
+ live description, but the update itself is an audited eDiscovery case-modification event in the
+ Microsoft 365 unified audit log (same caveat as the sibling scenario's README.md §8 on the
+ custodian-hold-vs-hold-policy audit-operation gap, this scenario's plain `Update-
+ MgSecurityCaseEdiscoveryCase` calls are ordinary case-modification audit events, not part of that
+ open VERIFY).
 
 ## Verification after rollback
 

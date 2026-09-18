@@ -53,11 +53,11 @@ immutable records depend on.
 ## What rollback does **not** undo
 
 - **Any content already labeled as a record**, locked for its full retention term; only a records
-  manager can unlock/remove the label early. **As a regulatory record**, no one can, ever.
+ manager can unlock/remove the label early. **As a regulatory record**, no one can, ever.
 - **Retention already in force**, a regulatory record's retention can't be shortened; a record
-  label's can only be changed by a records manager, deliberately.
+ label's can only be changed by a records manager, deliberately.
 - **The label object**, once records exist under it, it can't be deleted (regulatory: never
-  deletable once applied, regardless).
+ deletable once applied, regardless).
 - **Storage consumed** by retained content, it can't be deleted early.
 
 ## Verification after rollback

@@ -17,87 +17,87 @@ around portal roles rather than a least-privilege automation identity, and no du
 history beyond the report's own refresh cadence, plus a **fourth, specific to this report**:
 
 4. **It reports on the wrong term model for this repo's own glossary scenario.** The classic
-   glossary report's status vocabulary (**Draft → Approved → Alert → Expired**,
-   `README.md` reference 1) belongs to the **classic, Atlas-based Data Catalog glossary**, the
-   legacy object model behind the classic Purview Data Catalog (`README.md` reference 9). This
-   repo's own `scenarios/unified-catalog/curate-business-glossary/` deliberately builds terms
-   through the **current Unified Catalog Terms REST API** instead (`design.md` §3 of that scenario),
-   whose `Term.status` enum is **`DRAFT` → `PUBLISHED` → `EXPIRED`**, three values, no `Alert`
-   equivalent (`README.md` reference 4). Microsoft's own Unified Catalog API overview states the API
-   "only covers the Unified Catalog features that are available in General Availability (GA)"
-   (`README.md` reference 5), i.e. the forward path, not the classic model the native glossary
-   report targets. A report built by calling the classic report's own (nonexistent) API, or by
-   assuming its status vocabulary applies unchanged to the new term model, would misdescribe this
-   repo's own glossary scenario. See §2 goal 1 for how this scenario resolves that.
+ glossary report's status vocabulary (**Draft → Approved → Alert → Expired**,
+ `README.md` reference 1) belongs to the **classic, Atlas-based Data Catalog glossary**, the
+ legacy object model behind the classic Purview Data Catalog (`README.md` reference 9). This
+ repo's own `scenarios/unified-catalog/curate-business-glossary/` deliberately builds terms
+ through the **current Unified Catalog Terms REST API** instead (`design.md` §3 of that scenario),
+ whose `Term.status` enum is **`DRAFT` → `PUBLISHED` → `EXPIRED`**, three values, no `Alert`
+ equivalent (`README.md` reference 4). Microsoft's own Unified Catalog API overview states the API
+ "only covers the Unified Catalog features that are available in General Availability (GA)"
+ (`README.md` reference 5), i.e. the forward path, not the classic model the native glossary
+ report targets. A report built by calling the classic report's own (nonexistent) API, or by
+ assuming its status vocabulary applies unchanged to the new term model, would misdescribe this
+ repo's own glossary scenario. See §2 goal 1 for how this scenario resolves that.
 
 ## 2. Design goals
 
 1. **Reproduce the classic glossary report's KPI *categories* against the term model this repo
-   actually uses (Unified Catalog Terms), not the classic report itself, and say so plainly.** This
-   scenario does not call, scrape, or automate the classic glossary report's UI or any undocumented
-   API behind it. It computes the same four KPI *categories*, total terms, status/asset-attachment
-   snapshot, and incomplete-term breakdown, from the Unified Catalog **Terms** operation group
-   (`README.md` reference 7) directly, the same automation surface `curate-business-glossary`
-   already uses (automation surface 4 per `docs/automation-surface.md` §1). Every place this
-   scenario's terminology diverges from the classic report's own (status names, "steward" vs.
-   "owner") is called out explicitly in §4/§7 below and `README.md` §11, never silently assumed
-   equivalent.
+ actually uses (Unified Catalog Terms), not the classic report itself, and say so plainly.** This
+ scenario does not call, scrape, or automate the classic glossary report's UI or any undocumented
+ API behind it. It computes the same four KPI *categories*, total terms, status/asset-attachment
+ snapshot, and incomplete-term breakdown, from the Unified Catalog **Terms** operation group
+ (`README.md` reference 7) directly, the same automation surface `curate-business-glossary`
+ already uses (automation surface 4 per [Automation surface §1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first)). Every place this
+ scenario's terminology diverges from the classic report's own (status names, "steward" vs.
+ "owner") is called out explicitly in §4/§7 below and `README.md` §11, never silently assumed
+ equivalent.
 2. **Use the least-privileged role that can still answer the question asked, and disclose the one
-   place that isn't Data Reader-level.** Unlike `classification-coverage-report` (Data Reader
-   throughout), a status/completeness report that must see **`DRAFT`** terms cannot run as a pure
-   reader: Microsoft's own glossary-terms guide states a term in `DRAFT` status "is visible only to
-   Data Stewards and Governance Domain Owners" (`README.md` reference 6, already cited by
-   `curate-business-glossary/README.md` §8), and the **Global/Local Catalog Reader** roles are
-   documented as reading only **published** artifacts (`README.md` reference 8). This scenario is
-   honest about that constraint rather than pretending a reader-level credential can see the whole
-   picture: it defaults to requiring **Data Steward** on every domain in scope (full status
-   coverage), and offers an explicit `-PublishedOnly` mode that runs as **Global/Local Catalog
-   Reader** instead, at the cost of reporting Draft/Expired-dependent KPIs as `N/A` rather than a
-   false zero. See §5.
+ place that isn't Data Reader-level.** Unlike `classification-coverage-report` (Data Reader
+ throughout), a status/completeness report that must see **`DRAFT`** terms cannot run as a pure
+ reader: Microsoft's own glossary-terms guide states a term in `DRAFT` status "is visible only to
+ Data Stewards and Governance Domain Owners" (`README.md` reference 6, already cited by
+ `curate-business-glossary/README.md` §8), and the **Global/Local Catalog Reader** roles are
+ documented as reading only **published** artifacts (`README.md` reference 8). This scenario is
+ honest about that constraint rather than pretending a reader-level credential can see the whole
+ picture: it defaults to requiring **Data Steward** on every domain in scope (full status
+ coverage), and offers an explicit `-PublishedOnly` mode that runs as **Global/Local Catalog
+ Reader** instead, at the cost of reporting Draft/Expired-dependent KPIs as `N/A` rather than a
+ false zero. See §5.
 3. **Compute term-to-asset attachment honestly, from the documented relationship primitive, not a
-   guessed field.** The `Term` object itself (`README.md` reference 4) carries no
-   `hasAssets`/`assetCount` field. The only documented way to determine whether a term is linked to
-   any data asset is the **Terms - List Related Entities** operation
-   (`GET .../terms/{termId}/relationships?entityType=DATAASSET`, `README.md` reference 7) called
-   per term, an N+1 pattern this scenario names as a real, disclosed cost (§6/`README.md` §11),
-   exactly the same class of trade-off `classification-coverage-report/design.md` §2 goal 3 accepts
-   for its own per-record pagination rather than inventing an unconfirmed shortcut filter.
+ guessed field.** The `Term` object itself (`README.md` reference 4) carries no
+ `hasAssets`/`assetCount` field. The only documented way to determine whether a term is linked to
+ any data asset is the **Terms - List Related Entities** operation
+ (`GET.../terms/{termId}/relationships?entityType=DATAASSET`, `README.md` reference 7) called
+ per term, an N+1 pattern this scenario names as a real, disclosed cost (§6/`README.md` §11),
+ exactly the same class of trade-off `classification-coverage-report/design.md` §2 goal 3 accepts
+ for its own per-record pagination rather than inventing an unconfirmed shortcut filter.
 4. **A trend log, not just a snapshot**, same replace-by-`RunId` idempotency pattern as
-   `classification-coverage-report` (§5 below), so the longitudinal history the native report's own
-   refresh cadence doesn't preserve is kept in a source-controllable CSV.
+ `classification-coverage-report` (§5 below), so the longitudinal history the native report's own
+ refresh cadence doesn't preserve is kept in a source-controllable CSV.
 5. **Idempotent in the read-only-report sense**: this scenario creates no Purview object. Re-running
-   for the same `-RunId` replaces that RunId's row(s) rather than duplicating them. A `-WhatIf` dry
-   run still performs the live reads needed to report accurate numbers (same precedent as
-   `curate-business-glossary/README.md` §11's "-WhatIf still performs live, read-only calls") but
-   writes nothing to disk.
+ for the same `-RunId` replaces that RunId's row(s) rather than duplicating them. A `-WhatIf` dry
+ run still performs the live reads needed to report accurate numbers (same precedent as
+ `curate-business-glossary/README.md` §11's "-WhatIf still performs live, read-only calls") but
+ writes nothing to disk.
 6. **Compose with, don't duplicate, this repo's existing Unified Catalog narrative.** The worked
-   example reports on the `Customer Experience` domain `curate-business-glossary` already creates
-   (`Customer`, `Customer ID`, `Customer Lifetime Value`, `Net Promoter Score`), this report is the
-   natural "how healthy is the glossary we just curated, over time" companion to that scenario, the
-   same relationship `classification-coverage-report` has to `scan-azure-sql-and-classify`.
+ example reports on the `Customer Experience` domain `curate-business-glossary` already creates
+ (`Customer`, `Customer ID`, `Customer Lifetime Value`, `Net Promoter Score`), this report is the
+ natural "how healthy is the glossary we just curated, over time" companion to that scenario, the
+ same relationship `classification-coverage-report` has to `scan-azure-sql-and-classify`.
 
 ## 3. Why the Unified Catalog Terms REST API (not the classic report, not Discovery - Query)
 
 - **The classic glossary report** (`README.md` reference 1) targets the classic, Atlas-based
-  glossary model (§1, point 4), a different object model from the one this repo's own glossary
-  scenario builds. Reproducing *its* exact KPIs against terms that don't exist in that model would
-  require either misrepresenting the new model's three-value status as the classic model's four, or
-  silently pretending the classic report covers Unified Catalog terms at all, neither is
-  supportable without a Microsoft statement confirming the classic report reads the new term model,
-  which this build's grounding pass did not find. See §7 for what this rules out.
+ glossary model (§1, point 4), a different object model from the one this repo's own glossary
+ scenario builds. Reproducing *its* exact KPIs against terms that don't exist in that model would
+ require either misrepresenting the new model's three-value status as the classic model's four, or
+ silently pretending the classic report covers Unified Catalog terms at all, neither is
+ supportable without a Microsoft statement confirming the classic report reads the new term model,
+ which this build's grounding pass did not find. See §7 for what this rules out.
 - **Discovery - Query** (`classification-coverage-report`'s own data source) returns Data Map search
-  results with a documented `classification`/`label` array per asset (`classification-coverage-
-  report/design.md` §2 goal 1) but its documented response schema carries no glossary-term
-  attachment field for the *new* Unified Catalog term model, that relationship lives in the
-  **Terms** operation group's own `List Related Entities` operation instead (§2 goal 3), a different
-  primitive for a different object model, exactly as `classification-coverage-report/design.md` §7
-  already anticipated ("would need a different REST primitive (likely the Unified Catalog Terms
-  operation group)").
+ results with a documented `classification`/`label` array per asset (`classification-coverage-
+ report/design.md` §2 goal 1) but its documented response schema carries no glossary-term
+ attachment field for the *new* Unified Catalog term model, that relationship lives in the
+ **Terms** operation group's own `List Related Entities` operation instead (§2 goal 3), a different
+ primitive for a different object model, exactly as `classification-coverage-report/design.md` §7
+ already anticipated ("would need a different REST primitive (likely the Unified Catalog Terms
+ operation group)").
 - **The Unified Catalog Terms REST API** is the same, already-grounded automation surface
-  `curate-business-glossary` uses to author these exact terms (`README.md` reference 7), reusing it
-  here means this report's numbers are computed from the same object graph a Data Steward sees when
-  editing a term in the portal, with no separate ingestion or duplication of Purview's own metadata
-  store.
+ `curate-business-glossary` uses to author these exact terms (`README.md` reference 7), reusing it
+ here means this report's numbers are computed from the same object graph a Data Steward sees when
+ editing a term in the portal, with no separate ingestion or duplication of Purview's own metadata
+ store.
 
 ## 4. Status- and role-vocabulary mapping (stated explicitly, not assumed)
 
@@ -166,36 +166,36 @@ Full grounding: `deploy/Export-GlossaryCurationCoverageReport.ps1`'s inline comm
 ## 7. What this scenario assumes already exists
 
 - A Microsoft Purview account with Unified Catalog enabled and at least one governance domain
-  containing glossary terms, the worked example reuses the `Customer Experience` domain and its
-  four terms from `scenarios/unified-catalog/curate-business-glossary/`.
+ containing glossary terms, the worked example reuses the `Customer Experience` domain and its
+ four terms from `scenarios/unified-catalog/curate-business-glossary/`.
 - An app registration holding **Data Steward** (default mode) or **Global/Local Catalog Reader**
-  (`-PublishedOnly` mode) on the domain(s) in scope.
+ (`-PublishedOnly` mode) on the domain(s) in scope.
 - Wherever the trend-log CSV is written persists between runs, this scenario does not provision
-  that storage; see `README.md` §6/§9.
+ that storage; see `README.md` §6/§9.
 
 ## 8. Non-goals
 
 - **This scenario does not call, scrape, or reverse-engineer the classic glossary report's own UI or
-  any internal API behind it**, only the public Unified Catalog Terms REST operations (§2 goal 1).
+ any internal API behind it**, only the public Unified Catalog Terms REST operations (§2 goal 1).
 - **No `Alert`-status equivalent is computed or invented.** The classic report's data-quality-style
-  `Alert` state has no documented field on the new `Term` object (§4), this scenario reports three
-  statuses (`DRAFT`/`PUBLISHED`/`EXPIRED`), not four, and says why rather than fabricating a fourth.
+ `Alert` state has no documented field on the new `Term` object (§4), this scenario reports three
+ statuses (`DRAFT`/`PUBLISHED`/`EXPIRED`), not four, and says why rather than fabricating a fourth.
 - **"Weekly/monthly active users of the catalog" (the native Data Stewardship/Catalog Adoption
-  dashboards' usage-telemetry metric, `README.md` reference 2) is explicitly out of scope.** That
-  metric is Microsoft-internal portal-usage telemetry, not glossary metadata, no documented REST
-  operation on the Terms (or any Unified Catalog) operation group exposes it, and this scenario does
-  not attempt to approximate it from an unrelated signal (e.g. `systemData.lastModifiedAt` recency is
-  an edit-activity proxy, not a view/search-activity count, and this scenario does not present it as
-  one). This was the specific gap the original `PROGRESS.md` follow-up flagged as needing "a
-  different REST primitive", this build confirms none exists, rather than guessing one.
+ dashboards' usage-telemetry metric, `README.md` reference 2) is explicitly out of scope.** That
+ metric is Microsoft-internal portal-usage telemetry, not glossary metadata, no documented REST
+ operation on the Terms (or any Unified Catalog) operation group exposes it, and this scenario does
+ not attempt to approximate it from an unrelated signal (e.g. `systemData.lastModifiedAt` recency is
+ an edit-activity proxy, not a view/search-activity count, and this scenario does not present it as
+ one). This was the specific gap the original `PROGRESS.md` follow-up flagged as needing "a
+ different REST primitive", this build confirms none exists, rather than guessing one.
 - **This scenario does not reconcile against the classic Data Catalog's own Atlas-based glossary
-  terms** (the object model the classic report actually reads, per §1 point 4), a buyer who has
-  *not* migrated to Unified Catalog terms would see this scenario's KPIs report zero/empty results
-  against the classic report's non-zero classic-glossary numbers. That migration gap is a real,
-  disclosed limitation (`README.md` §11), not a bug in this scenario's logic.
+ terms** (the object model the classic report actually reads, per §1 point 4), a buyer who has
+ *not* migrated to Unified Catalog terms would see this scenario's KPIs report zero/empty results
+ against the classic report's non-zero classic-glossary numbers. That migration gap is a real,
+ disclosed limitation (`README.md` §11), not a bug in this scenario's logic.
 - **No native Purview alert or SIEM sink**, same treatment as `classification-coverage-report/
-  design.md` §7: this scenario writes flat CSV/JSON files and leaves routing them into a SIEM or BI
-  tool as the buyer's own integration.
+ design.md` §7: this scenario writes flat CSV/JSON files and leaves routing them into a SIEM or BI
+ tool as the buyer's own integration.
 - **At very large glossary scale**, the per-term `List Related Entities` call (§2 goal 3) has a real,
-  non-trivial API-call cost (one call per term, every run, unless `-SkipAssetLinkCheck` is set), 
-  this scenario does not implement incremental/delta asset-link tallying; see `README.md` §11.
+ non-trivial API-call cost (one call per term, every run, unless `-SkipAssetLinkCheck` is set), 
+ this scenario does not implement incremental/delta asset-link tallying; see `README.md` §11.

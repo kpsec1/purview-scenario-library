@@ -26,28 +26,28 @@ carried forward as an open non-goal.
 ## 2. Design goals
 
 1. **Reuse the sibling scenarios' proven shape, don't fork it.** Same two-object model (data source +
-   scan, both create-or-replace), same idempotency mechanism (native REST create-or-replace
-   semantics), same dry-run design, same four-lens review structure. A buyer who has already deployed
-   any of the three Azure siblings should find this scenario immediately familiar, with the diffs
-   confined to what Microsoft's own docs say is actually different about on-premises SQL Server.
+ scan, both create-or-replace), same idempotency mechanism (native REST create-or-replace
+ semantics), same dry-run design, same four-lens review structure. A buyer who has already deployed
+ any of the three Azure siblings should find this scenario immediately familiar, with the diffs
+ confined to what Microsoft's own docs say is actually different about on-premises SQL Server.
 2. **Name every genuine difference explicitly, in one place.** §4 below is the single source of truth
-   for "what's different about on-premises SQL Server" so neither this design doc, the README, nor the
-   scripts re-derive it inconsistently.
+ for "what's different about on-premises SQL Server" so neither this design doc, the README, nor the
+ scripts re-derive it inconsistently.
 3. **Close a real gap the three Azure siblings left open, don't just repeat it.** Every prior Data Map
-   scenario in this repo left credential/SHIR provisioning as a manual portal step because no
-   documented REST endpoint was found for it during those builds. This build independently confirmed
-   (by direct fetch of Microsoft's own canonical REST reference pages) that **two** of the three
-   on-premises prerequisites this scenario needs, the SHIR *resource* and its auth key, do have
-   documented REST operations (`Integration Runtimes - Create Or Replace` and
-   `Integration Runtimes - Regenerate Auth Key`), even though the credential-object step (storing the
-   SQL/Windows login's password and turning it into a Purview `credential`) still has none, matching
-   the siblings' own carried-forward gap. This scenario's deploy script therefore automates SHIR
-   provisioning end-to-end at the Purview-resource layer, installing the SHIR *software* on a host and
-   pasting in the key it retrieves remains a manual, physical step no REST API can perform.
+ scenario in this repo left credential/SHIR provisioning as a manual portal step because no
+ documented REST endpoint was found for it during those builds. This build independently confirmed
+ (by direct fetch of Microsoft's own canonical REST reference pages) that **two** of the three
+ on-premises prerequisites this scenario needs, the SHIR *resource* and its auth key, do have
+ documented REST operations (`Integration Runtimes - Create Or Replace` and
+ `Integration Runtimes - Regenerate Auth Key`), even though the credential-object step (storing the
+ SQL/Windows login's password and turning it into a Purview `credential`) still has none, matching
+ the siblings' own carried-forward gap. This scenario's deploy script therefore automates SHIR
+ provisioning end-to-end at the Purview-resource layer, installing the SHIR *software* on a host and
+ pasting in the key it retrieves remains a manual, physical step no REST API can perform.
 4. **Don't re-litigate what the siblings already decided correctly.** Create-or-replace-native
-   idempotency, system-default-not-fabricated-custom scan rule set, the "register + scan, don't act on
-   results" scope boundary, and the dry-run-by-default code standard all carry over unchanged, see
-   `scan-azure-sql-and-classify/design.md` §2-3 for that reasoning, not repeated here.
+ idempotency, system-default-not-fabricated-custom scan rule set, the "register + scan, don't act on
+ results" scope boundary, and the dry-run-by-default code standard all carry over unchanged, see
+ `scan-azure-sql-and-classify/design.md` §2-3 for that reasoning, not repeated here.
 
 ## 3. Why a separate scenario, not a `-SourceKind` parameter on a sibling script
 
@@ -90,35 +90,35 @@ All five mutating operations below were directly fetched from Microsoft's own ca
 during this build (not reconstructed from SDK types alone, except where noted):
 
 1. **`Integration Runtimes - Create Or Replace`**, `PUT {endpoint}/scan/integrationruntimes/{name}?
-   api-version=2023-09-01`, body `{ "kind": "SelfHosted", "properties": { "description": "..." } }`.
-   Directly fetched, including a full worked HTTP request/response example.
+ api-version=2023-09-01`, body `{ "kind": "SelfHosted", "properties": { "description": "..." } }`.
+ Directly fetched, including a full worked HTTP request/response example.
 2. **`Integration Runtimes - Regenerate Auth Key`**, `POST {endpoint}/scan/integrationruntimes/
-   {name}:regenerateAuthKey?api-version=2023-09-01`, body `{ "keyName": "authKey1" }`, response
-   `{ "authKey1": "...", "authKey2": null }`. Directly fetched, including a full worked HTTP
-   request/response example. This is the key the operator pastes into the SHIR installer's "Register
-   Integration Runtime (Self-hosted)" screen (§8), Microsoft's own disaster-recovery/migration
-   best-practices article independently corroborates that SHIR auth keys are retrievable this way
-   ("Get a list of SHIR and get updated keys from the new account"), while also confirming the
-   physical registration step itself "must be done manually inside the SHIRs' hosts."
+ {name}:regenerateAuthKey?api-version=2023-09-01`, body `{ "keyName": "authKey1" }`, response
+ `{ "authKey1": "...", "authKey2": null }`. Directly fetched, including a full worked HTTP
+ request/response example. This is the key the operator pastes into the SHIR installer's "Register
+ Integration Runtime (Self-hosted)" screen (§8), Microsoft's own disaster-recovery/migration
+ best-practices article independently corroborates that SHIR auth keys are retrievable this way
+ ("Get a list of SHIR and get updated keys from the new account"), while also confirming the
+ physical registration step itself "must be done manually inside the SHIRs' hosts."
 3. **`Data Sources - Create Or Replace`** (`SqlServerDatabaseDataSource`/`SqlServerDatabaseProperties`
-   shapes), directly fetched from the same canonical Data Sources reference page the three sibling
-   scenarios already ground, confirming the on-premises-specific property set (§4).
+ shapes), directly fetched from the same canonical Data Sources reference page the three sibling
+ scenarios already ground, confirming the on-premises-specific property set (§4).
 4. **`Scans - Create Or Replace`** (`SqlServerDatabaseCredentialScan`/
-   `SqlServerDatabaseCredentialScanProperties`, `ConnectedVia`, `CredentialReference` shapes), 
-   property names directly fetched from Microsoft's REST definitions; the full worked
-   parameter-to-JSON mapping is independently corroborated by Microsoft's own
-   `New-AzPurviewSqlServerDatabaseCredentialScanObject` worked PowerShell example, which exercises
-   every field this script's JSON body sets (`CollectionReferenceName`, `CredentialReferenceName`,
-   `CredentialType 'SqlAuth'`, `DatabaseName`, `ScanRulesetName`, `ScanRulesetType`, `ServerEndpoint`,
-   `ConnectedViaReferenceName`) with real example values.
+ `SqlServerDatabaseCredentialScanProperties`, `ConnectedVia`, `CredentialReference` shapes), 
+ property names directly fetched from Microsoft's REST definitions; the full worked
+ parameter-to-JSON mapping is independently corroborated by Microsoft's own
+ `New-AzPurviewSqlServerDatabaseCredentialScanObject` worked PowerShell example, which exercises
+ every field this script's JSON body sets (`CollectionReferenceName`, `CredentialReferenceName`,
+ `CredentialType 'SqlAuth'`, `DatabaseName`, `ScanRulesetName`, `ScanRulesetType`, `ServerEndpoint`,
+ `ConnectedViaReferenceName`) with real example values.
 5. **Triggers and Scan Result (Run Scan / List Scan History)**, reused unchanged from
-   `scan-azure-sql-managed-instance-and-classify`'s already-corrected shapes (that scenario's own
-   `design.md` §5 documents the two discrepancies it found and fixed relative to the first sibling
-   scenario), the action-style `POST .../scans/{name}:run?runId=...` shape and the nested
-   `discoveryExecutionDetails.statistics.assets.discovered`/`.classified` scan-history shape. Not
-   re-fetched independently in this build since they're source-type-agnostic (the same Scan Result
-   operations serve every data source `kind`), and re-confirming an already-directly-confirmed shape
-   would add no grounding value.
+ `scan-azure-sql-managed-instance-and-classify`'s already-corrected shapes (that scenario's own
+ `design.md` §5 documents the two discrepancies it found and fixed relative to the first sibling
+ scenario), the action-style `POST.../scans/{name}:run?runId=...` shape and the nested
+ `discoveryExecutionDetails.statistics.assets.discovered`/`.classified` scan-history shape. Not
+ re-fetched independently in this build since they're source-type-agnostic (the same Scan Result
+ operations serve every data source `kind`), and re-confirming an already-directly-confirmed shape
+ would add no grounding value.
 
 One item this build could **not** confirm despite trying: the literal system scan rule set name for
 `SqlServerDatabase` (§4's last row), no worked PowerShell/REST example pairs `scanRulesetName` with
@@ -177,7 +177,7 @@ credentials, and by the physical nature of installing Windows service software f
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Deploy surface | Purview Data Map REST API (`Invoke-RestMethod`), per `docs/automation-surface.md` surface 4 | Same as every Data Map sibling scenario, no PowerShell module or Graph equivalent exists for data source/scan/integration-runtime objects |
+| Deploy surface | Purview Data Map REST API (`Invoke-RestMethod`), per [Automation surface](/docs/automation-surface/) surface 4 | Same as every Data Map sibling scenario, no PowerShell module or Graph equivalent exists for data source/scan/integration-runtime objects |
 | Scan authentication | Stored credential only (`SqlServerDatabaseCredential`) | The only authentication path Microsoft documents for this source type, no managed-identity option exists |
 | SHIR provisioning scope | Script the Purview-side resource + auth key retrieval; leave the physical software install manual | Matches exactly what a REST API can and cannot do, installing a Windows service on a host and pasting in a key is not scriptable from a Purview data-plane token, but retrieving that key is, and no prior scenario in this repo had scripted even that much |
 | Default `-CredentialType` | `SqlAuth` | Matches Microsoft's own confirmed worked PowerShell example exactly; Windows Authentication is documented as a supported alternative but the REST `CredentialType` enum has no distinct value confirmed for it (§4/`README.md` §11 VERIFY) |
@@ -188,22 +188,22 @@ credentials, and by the physical nature of installing Windows service software f
 ## 8. Non-goals
 
 - This scenario does not install the self-hosted integration runtime software, register a node with
-  the retrieved auth key, or manage SHIR high-availability/multi-node setups. Microsoft's own
-  documentation describes this as a manual download-and-install step on a Windows host (or a
-  Kubernetes-based SHIR for the containerized alternative, SQL-authentication-only); this script's job
-  ends at handing the operator a valid registration key.
+ the retrieved auth key, or manage SHIR high-availability/multi-node setups. Microsoft's own
+ documentation describes this as a manual download-and-install step on a Windows host (or a
+ Kubernetes-based SHIR for the containerized alternative, SQL-authentication-only); this script's job
+ ends at handing the operator a valid registration key.
 - This scenario does not create the Key Vault-backed credential object (the SQL/Windows login's
-  password), the SQL/Windows login and `db_datareader` grant on the target instance, or the Key
-  Vault-to-Purview connection. Same open gap every Data Map sibling scenario in this repo already
-  carries, no documented REST endpoint for credential-object creation was found in this build either,
-  consistent with those siblings' own findings.
+ password), the SQL/Windows login and `db_datareader` grant on the target instance, or the Key
+ Vault-to-Purview connection. Same open gap every Data Map sibling scenario in this repo already
+ carries, no documented REST endpoint for credential-object creation was found in this build either,
+ consistent with those siblings' own findings.
 - This scenario does not script the Kubernetes-based self-hosted data integration runtime alternative
-  (SQL-authentication-only, containerized, a *different* Purview capability announced separately from
-  the classic Windows-host SHIR this scenario uses), out of scope, a materially different deployment
-  model worth its own fragment if a buyer specifically needs it.
+ (SQL-authentication-only, containerized, a *different* Purview capability announced separately from
+ the classic Windows-host SHIR this scenario uses), out of scope, a materially different deployment
+ model worth its own fragment if a buyer specifically needs it.
 - This scenario does not create a custom, PII-only scan rule set, same non-goal every sibling carries
-  forward (`scan-azure-sql-and-classify/design.md` §7).
+ forward (`scan-azure-sql-and-classify/design.md` §7).
 - This scenario does not act on the classification results it produces, same scope boundary as every
-  other Data Map scenario in this repo.
+ other Data Map scenario in this repo.
 - This scenario does not stand up the Purview account, the collection hierarchy, or the on-premises SQL
-  Server instance itself, prerequisites, not deliverables, of this fragment.
+ Server instance itself, prerequisites, not deliverables, of this fragment.

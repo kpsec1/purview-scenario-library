@@ -57,17 +57,17 @@ in the instance, then apply this scenario once the program's classification scop
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md` §1-2 (unchanged from the base
+Full licensing detail and citations: [Licensing matrix §1](/docs/licensing-matrix/#1-the-two-billing-models-read-this-first), 2 (unchanged from the base
 scenario, this scenario adds no new licensing surface, only a different scan rule set object).
 
 | Requirement | Minimum | Notes |
 |---|---|---|
 | **`scenarios/data-map/scan-on-premises-sql-server-and-classify/` already deployed and running successfully** | The self-hosted integration runtime node must be registered and **Running**, the data source and scan must already exist, and the Purview credential object must already exist | This scenario reconciles an EXISTING scan onto a new ruleset, `deploy/New-PiiOnlyScanRuleset.ps1` fails fast with a clear error if the scan is not found. It assumes the base scenario's own unusually long prerequisite list (SHIR resource + software install + node registration, SQL/Windows login + `db_datareader` grant, Key Vault secret, Purview credential object) is already satisfied, see that scenario's `README.md` §3. This scenario never grants, verifies, or troubleshoots any of it |
-| Create/update the custom scan rule set and reconcile the scan | **Data Source Administrator** role on the target collection | Same role the base scenario's deploy script requires, Microsoft Learn does not document a role specific to scan rule sets; ruleset management falls under the same "configure and run a scan" boundary as the scan itself (`docs/rbac-model.md` §5) |
+| Create/update the custom scan rule set and reconcile the scan | **Data Source Administrator** role on the target collection | Same role the base scenario's deploy script requires, Microsoft Learn does not document a role specific to scan rule sets; ruleset management falls under the same "configure and run a scan" boundary as the scan itself ([RBAC model §5](/docs/rbac-model/#5-data-governance-roles-data-map--unified-catalog-a-separate-model)) |
 | Read the ruleset/scan for validation | **Data Reader** role on the target collection | Least-privilege for the read-only `validate/` script |
-| Automation identity for the REST calls | App registration with the roles above, app-only OAuth2 | Same client-credentials flow as the base scenario, `docs/automation-surface.md` §3 |
+| Automation identity for the REST calls | App registration with the roles above, app-only OAuth2 | Same client-credentials flow as the base scenario, [Automation surface §3](/docs/automation-surface/#3-authentication-patterns-interactive-vs-unattended) |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) before a
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) (dated 2026-09-02) before a
 > sales commitment.
 
 ## 4. Architecture
@@ -84,14 +84,14 @@ stored-credential reference untouched.
 
 1. **Data Map → Management → Scan rule sets → New**.
 2. Select **SQL Server** as the source type, name the ruleset (e.g. `SqlServerDatabase-PiiOnly`),
-   and choose **Select classification rules**.
+ and choose **Select classification rules**.
 3. On the classification-rule picker, Microsoft's default view shows *all* system classifications
-   selected, deselect every one except the classifications you want to retain (U.S. Social Security
-   Number, Credit Card Number, or whatever your program's driver requires). There is no documented
-   "select none, then add back" toggle; for ~200 entries the portal path is significantly more
-   tedious than the script below, which is precisely why this scenario exists.
+ selected, deselect every one except the classifications you want to retain (U.S. Social Security
+ Number, Credit Card Number, or whatever your program's driver requires). There is no documented
+ "select none, then add back" toggle; for ~200 entries the portal path is significantly more
+ tedious than the script below, which is precisely why this scenario exists.
 4. Save the ruleset, then open the target scan's configuration and change its scan rule set from
-   **System default** to the new custom ruleset.
+ **System default** to the new custom ruleset.
 
 ### Script path (recommended for anything beyond a one-off)
 
@@ -162,35 +162,35 @@ retained classification types appear on newly classified columns.
 ## 8. Operations & tuning (KPIs, alert thresholds, what to watch)
 
 - **Scan duration delta.** Compare the run duration of the first post-ruleset-change scan against the
-  prior System-default run, a narrower classification set should measurably reduce per-column
-  comparison time.
+ prior System-default run, a narrower classification set should measurably reduce per-column
+ comparison time.
 - **Drift between the retained list and the program's actual driver.** If the compliance driver
-  changes (e.g. a new regulatory scope adds a data category), `-RetainedSystemClassifications` must be
-  updated and the script re-run, there is no automatic sync between a program's stated scope and
-  this ruleset's contents. Review the retained list at the same cadence as the licensing matrix
-  review.
+ changes (e.g. a new regulatory scope adds a data category), `-RetainedSystemClassifications` must be
+ updated and the script re-run, there is no automatic sync between a program's stated scope and
+ this ruleset's contents. Review the retained list at the same cadence as the licensing matrix
+ review.
 - **New system classifications Microsoft adds.** Because the exclusion list is derived live at deploy
-  time (design.md §1), a classification Microsoft adds after this ruleset was last applied is
-  automatically excluded on the *next* run of `New-PiiOnlyScanRuleset.ps1`, but not retroactively on
-  the existing ruleset object until that script is re-run. Re-run it periodically (e.g. quarterly)
-  rather than treating "deployed once" as "current forever."
+ time (design.md §1), a classification Microsoft adds after this ruleset was last applied is
+ automatically excluded on the *next* run of `New-PiiOnlyScanRuleset.ps1`, but not retroactively on
+ the existing ruleset object until that script is re-run. Re-run it periodically (e.g. quarterly)
+ rather than treating "deployed once" as "current forever."
 - **Every scan rule set change is audit-logged, so treat the change itself as security-relevant.**
-  Narrowing a scan's classification scope is a monitoring-coverage decision, not just a performance
-  tweak, a scan under this ruleset will never surface a credential, key, or out-of-program data
-  category that the System default would have caught. This is a genuinely elevated concern for this
-  specific source type (§2): on-premises SQL Server instances are the estate most likely to hold an
-  undocumented sensitive column the System default's ~200-classification sweep would have caught.
-  Pull **Scan rule set: Create / Update / Delete** Management-category audit events (via the
-  `PurviewDataMapOperation` Microsoft Graph security audit log record type) into the same
-  SIEM/Sentinel pipeline that already ingests this repo's other Purview audit activity, and correlate
-  a ruleset-narrowing event with the SHIR node's own health signal, a narrower ruleset on a scan that
-  is *also* silently failing at the SHIR layer compounds two independent coverage gaps into one blind
-  spot that neither Purview's own UI nor a naive "scan succeeded" check would surface on its own.
+ Narrowing a scan's classification scope is a monitoring-coverage decision, not just a performance
+ tweak, a scan under this ruleset will never surface a credential, key, or out-of-program data
+ category that the System default would have caught. This is a genuinely elevated concern for this
+ specific source type (§2): on-premises SQL Server instances are the estate most likely to hold an
+ undocumented sensitive column the System default's ~200-classification sweep would have caught.
+ Pull **Scan rule set: Create / Update / Delete** Management-category audit events (via the
+ `PurviewDataMapOperation` Microsoft Graph security audit log record type) into the same
+ SIEM/Sentinel pipeline that already ingests this repo's other Purview audit activity, and correlate
+ a ruleset-narrowing event with the SHIR node's own health signal, a narrower ruleset on a scan that
+ is *also* silently failing at the SHIR layer compounds two independent coverage gaps into one blind
+ spot that neither Purview's own UI nor a naive "scan succeeded" check would surface on its own.
 - **SHIR-specific operational risks are unchanged by this scenario**, see the base scenario's
-  `README.md` §8 for the full on-premises incident-response list (SHIR node down, credential password
-  rotated without the Purview credential object being updated, network/firewall change, SHIR software
-  expiration). This scenario does not add or remove any of those risks; it only changes what a
-  *successful* scan run classifies.
+ `README.md` §8 for the full on-premises incident-response list (SHIR node down, credential password
+ rotated without the Purview credential object being updated, network/firewall change, SHIR software
+ expiration). This scenario does not add or remove any of those risks; it only changes what a
+ *successful* scan run classifies.
 
 ## 9. Rollback / decommission
 
@@ -200,7 +200,7 @@ the custom ruleset object).
 ## 10. Cost & licensing notes
 
 No new licensing surface, this scenario uses the same PAYG Data Map billing as the base scenario
-(`docs/licensing-matrix.md` §1-2), plus the base scenario's own SHIR host cost (a dedicated VM or
+([Licensing matrix §1](/docs/licensing-matrix/#1-the-two-billing-models-read-this-first), 2), plus the base scenario's own SHIR host cost (a dedicated VM or
 on-premises server, not a Data Map billing meter). A narrower scan rule set may modestly reduce scan
 **compute** time (fewer classification comparisons per column), which is a cost factor under
 Purview's consumption-based Data Map billing, though Microsoft does not publish a per-classification
@@ -209,137 +209,137 @@ cost breakdown to quantify the exact savings.
 ## 11. Known limitations & gotchas
 
 - **This source type's custom ruleset `kind` is confirmed `SqlServerDatabase`, independently
-  grounded via THREE converging Microsoft sources in this build, not inherited from any sibling by
-  assumption.** Unlike the Azure Synapse Analytics and Azure SQL Managed Instance sibling builds
-  (both of which hit `EGRESS_BLOCKED` against `learn.microsoft.com`), this build reached
-  `learn.microsoft.com` directly and confirmed the `kind` value against: (1) the
-  `New-AzPurviewSqlServerDatabaseScanRulesetObject` PowerShell reference's own worked example
-  (`Kind: SqlServerDatabase`); (2) the Scan Rulesets - Get REST API reference's
-  `SqlServerDatabaseScanRuleset` object definition; and (3) the `@azure-rest/purview-scanning`
-  JavaScript SDK's `SqlServerDatabaseScanRuleset`/`SqlServerDatabaseSystemScanRuleset` TypeScript
-  interfaces, all three independently agree on the literal string `"SqlServerDatabase"`, and
-  notably the System *and* Custom ruleset variants share the identical `kind` discriminator. This is
-  the SAME string as the base scenario's own already-shipped `-ScanRulesetName` default and as the
-  data source `kind` itself, consistent with the Azure SQL Database/Managed Instance siblings'
-  simpler name-equals-kind pattern, **not** the Azure Synapse Analytics sibling's naming trap
-  (`AzureSynapseSQL` name vs. `AzureSynapseWorkspace` kind, two different strings).
+ grounded via THREE converging Microsoft sources in this build, not inherited from any sibling by
+ assumption.** Unlike the Azure Synapse Analytics and Azure SQL Managed Instance sibling builds
+ (both of which hit `EGRESS_BLOCKED` against `learn.microsoft.com`), this build reached
+ `learn.microsoft.com` directly and confirmed the `kind` value against: (1) the
+ `New-AzPurviewSqlServerDatabaseScanRulesetObject` PowerShell reference's own worked example
+ (`Kind: SqlServerDatabase`); (2) the Scan Rulesets - Get REST API reference's
+ `SqlServerDatabaseScanRuleset` object definition; and (3) the `@azure-rest/purview-scanning`
+ JavaScript SDK's `SqlServerDatabaseScanRuleset`/`SqlServerDatabaseSystemScanRuleset` TypeScript
+ interfaces, all three independently agree on the literal string `"SqlServerDatabase"`, and
+ notably the System *and* Custom ruleset variants share the identical `kind` discriminator. This is
+ the SAME string as the base scenario's own already-shipped `-ScanRulesetName` default and as the
+ data source `kind` itself, consistent with the Azure SQL Database/Managed Instance siblings'
+ simpler name-equals-kind pattern, **not** the Azure Synapse Analytics sibling's naming trap
+ (`AzureSynapseSQL` name vs. `AzureSynapseWorkspace` kind, two different strings).
 - **VERIFY (still open, NOT resolved by this build): the System default scan rule set's literal
-  resource `name` for this source type.** The base scenario's own `README.md` §11 already flagged
-  this as unconfirmed (`-ScanRulesetName` default `'SqlServerDatabase'` is inferred from the
-  "system ruleset name == data source kind" pattern, not confirmed by a worked example). This build
-  confirmed the ruleset **`kind`** (above) but found no worked example anywhere, despite searching
-  specifically for one, pairing a literal `scanRulesetName: "SqlServerDatabase"` with
-  `scanRulesetType: "System"` in a live scan object. The one worked scan-creation example this build
-  found (`New-AzPurviewSqlServerDatabaseCredentialScanObject`) uses an arbitrary custom ruleset name,
-  `'SqlServer'`, not the System default, so it doesn't close this gap either way. `deploy/
-  Remove-PiiOnlyScanRuleset.ps1`'s `-RevertToRulesetName` default (`'SqlServerDatabase'`) is
-  therefore still an inherited best-effort default, not an independently confirmed one, precisely
-  the distinction `design.md` §2 goal 6 draws out. Confirm the real name (Purview portal →
-  **Management Center → Scan rule sets → System** tab → filter by source type) before relying on the
-  default in an unattended pipeline, a wrong name fails the scan loudly (400/404) rather than
-  silently under-classifying, so the blast radius of shipping this unconfirmed default is bounded,
-  but should still be closed.
+ resource `name` for this source type.** The base scenario's own `README.md` §11 already flagged
+ this as unconfirmed (`-ScanRulesetName` default `'SqlServerDatabase'` is inferred from the
+ "system ruleset name == data source kind" pattern, not confirmed by a worked example). This build
+ confirmed the ruleset **`kind`** (above) but found no worked example anywhere, despite searching
+ specifically for one, pairing a literal `scanRulesetName: "SqlServerDatabase"` with
+ `scanRulesetType: "System"` in a live scan object. The one worked scan-creation example this build
+ found (`New-AzPurviewSqlServerDatabaseCredentialScanObject`) uses an arbitrary custom ruleset name,
+ `'SqlServer'`, not the System default, so it doesn't close this gap either way. `deploy/
+ Remove-PiiOnlyScanRuleset.ps1`'s `-RevertToRulesetName` default (`'SqlServerDatabase'`) is
+ therefore still an inherited best-effort default, not an independently confirmed one, precisely
+ the distinction `design.md` §2 goal 6 draws out. Confirm the real name (Purview portal →
+ **Management Center → Scan rule sets → System** tab → filter by source type) before relying on the
+ default in an unattended pipeline, a wrong name fails the scan loudly (400/404) rather than
+ silently under-classifying, so the blast radius of shipping this unconfirmed default is bounded,
+ but should still be closed.
 - **Grounding method note (repo-wide relevance): this build's execution environment reached
-  `learn.microsoft.com` directly** via the Microsoft Learn MCP tool, with no `EGRESS_BLOCKED`
-  restriction encountered, unlike every recent fragment noted in `PROGRESS.md`'s own "Blocked /
-  needs user" section. Future runs that also have this access should prefer it, and, time permitting,
-  could re-verify the Azure Synapse Analytics and Azure SQL Managed Instance siblings' own
-  GitHub-raw-source-only citations against the full `learn.microsoft.com` REST reference pages now
-  that access appears to have been restored (not attempted in this build, out of scope for a
-  fragment focused on a fourth, different source type).
+ `learn.microsoft.com` directly** via the Microsoft Learn MCP tool, with no `EGRESS_BLOCKED`
+ restriction encountered, unlike every recent fragment noted in `PROGRESS.md`'s own "Blocked /
+ needs user" section. Future runs that also have this access should prefer it, and, time permitting,
+ could re-verify the Azure Synapse Analytics and Azure SQL Managed Instance siblings' own
+ GitHub-raw-source-only citations against the full `learn.microsoft.com` REST reference pages now
+ that access appears to have been restored (not attempted in this build, out of scope for a
+ fragment focused on a fourth, different source type).
 - **The exclusion list is derived live, not hard-coded, same reasoning as every sibling.** The Data
-  Map classification-supported-list page has no exact `MICROSOFT.*` identifier strings, only
-  human-readable names, so the deploy script queries the tenant's live Types API instead of shipping
-  a hand-typed snapshot (design.md §2 goal 1).
-- **VERIFY (pilot tenant): Types API pagination.** `GET .../types/typedefs?type=CLASSIFICATION`'s
-  documented response shape has no continuation-token field, and no documentation addressing
-  pagination behavior for a tenant with an unusually large number of custom classification rules
-  layered on top of the ~200 system ones was found, the same open item every sibling scenario
-  carries. `deploy/New-PiiOnlyScanRuleset.ps1` does not implement paging; flagged inline in its
-  `.NOTES`.
+ Map classification-supported-list page has no exact `MICROSOFT.*` identifier strings, only
+ human-readable names, so the deploy script queries the tenant's live Types API instead of shipping
+ a hand-typed snapshot (design.md §2 goal 1).
+- **VERIFY (pilot tenant): Types API pagination.** `GET.../types/typedefs?type=CLASSIFICATION`'s
+ documented response shape has no continuation-token field, and no documentation addressing
+ pagination behavior for a tenant with an unusually large number of custom classification rules
+ layered on top of the ~200 system ones was found, the same open item every sibling scenario
+ carries. `deploy/New-PiiOnlyScanRuleset.ps1` does not implement paging; flagged inline in its
+ `.NOTES`.
 - **Custom classification rule authoring stays out of scope.** Same finding as every Data Map sibling
-  scenario, no documented REST endpoint for *creating* a custom classification rule was found.
-  `-IncludedCustomClassificationRuleNames` only references rules that already exist.
+ scenario, no documented REST endpoint for *creating* a custom classification rule was found.
+ `-IncludedCustomClassificationRuleNames` only references rules that already exist.
 - **Deleting an in-use ruleset is unconfirmed either way.** No Microsoft documentation confirms
-  whether deleting a scan rule set still referenced by a scan succeeds, is rejected, or orphans the
-  reference. `deploy/Remove-PiiOnlyScanRuleset.ps1` never assumes either behavior, it always detaches
-  the scan first (see `design.md` §2 goal 5).
+ whether deleting a scan rule set still referenced by a scan succeeds, is rejected, or orphans the
+ reference. `deploy/Remove-PiiOnlyScanRuleset.ps1` never assumes either behavior, it always detaches
+ the scan first (see `design.md` §2 goal 5).
 - **Reclassification is not retroactive.** Narrowing the ruleset does not retroactively change
-  classification tags already recorded from prior scan runs, see §8.
+ classification tags already recorded from prior scan runs, see §8.
 - **Only ONE compatible scan kind exists for this source type.** Unlike the Azure siblings (each with
-  a managed-identity and a credential-authenticated variant), on-premises SQL Server has only
-  `SqlServerDatabaseCredential`, no managed-identity path exists at all (base scenario's own
-  `design.md` §4). The deploy script's scan-kind compatibility guard reflects this, there is no
-  second kind to accept.
+ a managed-identity and a credential-authenticated variant), on-premises SQL Server has only
+ `SqlServerDatabaseCredential`, no managed-identity path exists at all (base scenario's own
+ `design.md` §4). The deploy script's scan-kind compatibility guard reflects this, there is no
+ second kind to accept.
 - **Inherits the base scenario's own open items unchanged.** The Windows-Authentication
-  `CredentialType` VERIFY (`'BasicAuth'` is a best-effort, unconfirmed mapping), the credential
-  object's portal-only creation (no documented REST endpoint), and the printed-SHIR-auth-key
-  handling discipline are all the base scenario's own concerns, this scenario's reconcile step is
-  neutral toward whichever authentication configuration the base scenario's scan already uses, and
-  does not resolve or restate any of them beyond what's needed here.
+ `CredentialType` VERIFY (`'BasicAuth'` is a best-effort, unconfirmed mapping), the credential
+ object's portal-only creation (no documented REST endpoint), and the printed-SHIR-auth-key
+ handling discipline are all the base scenario's own concerns, this scenario's reconcile step is
+ neutral toward whichever authentication configuration the base scenario's scan already uses, and
+ does not resolve or restate any of them beyond what's needed here.
 - **This is the last remaining Data Map PII-ruleset sibling.** No further "apply the same pattern to
-  source type X" follow-up remains in `PROGRESS.md`'s Data Map PII-ruleset chain after this scenario.
+ source type X" follow-up remains in `PROGRESS.md`'s Data Map PII-ruleset chain after this scenario.
 
 ## 12. References
 
 1. New-AzPurviewSqlServerDatabaseScanRulesetObject (Az.Purview PowerShell module, confirms the
-   Custom `SqlServerDatabaseScanRuleset` object shape and the `Kind: "SqlServerDatabase"` value,
-   direct fetch from `learn.microsoft.com` in this build's environment), 
-   <https://learn.microsoft.com/powershell/module/az.purview/new-azpurviewsqlserverdatabasescanrulesetobject>
+ Custom `SqlServerDatabaseScanRuleset` object shape and the `Kind: "SqlServerDatabase"` value,
+ direct fetch from `learn.microsoft.com` in this build's environment), 
+ <https://learn.microsoft.com/powershell/module/az.purview/new-azpurviewsqlserverdatabasescanrulesetobject>
 2. Scan Rulesets - Get / Create Or Replace REST API reference (API version 2023-09-01; confirms the
-   `SqlServerDatabaseScanRuleset` object definition and `kind` literal alongside every sibling source
-   type's own analogous object; generic call shape shared across source types; direct fetch this
-   build), 
-   <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/get>
-   <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/create-or-replace>
+ `SqlServerDatabaseScanRuleset` object definition and `kind` literal alongside every sibling source
+ type's own analogous object; generic call shape shared across source types; direct fetch this
+ build), 
+ <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/get>
+ <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/create-or-replace>
 3. SqlServerDatabaseScanRuleset / SqlServerDatabaseSystemScanRuleset interfaces
-   (`@azure-rest/purview-scanning` JavaScript SDK, confirms `kind: "SqlServerDatabase"` for BOTH the
-   Custom and System ruleset variants of this source type, direct fetch this build), 
-   <https://learn.microsoft.com/javascript/api/@azure-rest/purview-scanning/sqlserverdatabasescanruleset>
-   <https://learn.microsoft.com/javascript/api/@azure-rest/purview-scanning/sqlserverdatabasesystemscanruleset>
+ (`@azure-rest/purview-scanning` JavaScript SDK, confirms `kind: "SqlServerDatabase"` for BOTH the
+ Custom and System ruleset variants of this source type, direct fetch this build), 
+ <https://learn.microsoft.com/javascript/api/@azure-rest/purview-scanning/sqlserverdatabasescanruleset>
+ <https://learn.microsoft.com/javascript/api/@azure-rest/purview-scanning/sqlserverdatabasesystemscanruleset>
 4. New-AzPurviewSqlServerDatabaseCredentialScanObject (Az.Purview PowerShell module, confirms the
-   scan object's field names via a worked example; that example uses an arbitrary custom ruleset
-   name `'SqlServer'`, not the System default, which is why reference 1/2/3's `kind` confirmation
-   does not also close the System ruleset's literal `name`, see §11), 
-   <https://learn.microsoft.com/powershell/module/az.purview/new-azpurviewsqlserverdatabasecredentialscanobject>
+ scan object's field names via a worked example; that example uses an arbitrary custom ruleset
+ name `'SqlServer'`, not the System default, which is why reference 1/2/3's `kind` confirmation
+ does not also close the System ruleset's literal `name`, see §11), 
+ <https://learn.microsoft.com/powershell/module/az.purview/new-azpurviewsqlserverdatabasecredentialscanobject>
 5. Type - List REST API reference (Types API; confirms `type=CLASSIFICATION` query filter and the
-   `classificationDefs[].name` response shape, tenant-wide, source-type-agnostic; reused unchanged
-   from the Azure SQL Database sibling's own direct fetch), 
-   <https://learn.microsoft.com/rest/api/purview/catalogdataplane/types/get-all-type-definitions>
+ `classificationDefs[].name` response shape, tenant-wide, source-type-agnostic; reused unchanged
+ from the Azure SQL Database sibling's own direct fetch), 
+ <https://learn.microsoft.com/rest/api/purview/catalogdataplane/types/get-all-type-definitions>
 6. Custom classifications in Data Map ("The Microsoft system classifications are grouped under the
-   reserved `MICROSOFT.` namespace."), <https://learn.microsoft.com/purview/data-map-classification-custom>
+ reserved `MICROSOFT.` namespace."), <https://learn.microsoft.com/purview/data-map-classification-custom>
 7. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary, 
-   Data Source Administrator, Data Curator, Data Reader, Collection Admin), 
-   <https://learn.microsoft.com/purview/data-gov-classic-permissions>
+ Data Source Administrator, Data Curator, Data Reader, Collection Admin), 
+ <https://learn.microsoft.com/purview/data-gov-classic-permissions>
 8. Connect to and manage an on-premises SQL server instance in Microsoft Purview (base scenario's
-   registration/scan reference this scenario extends; confirms the mandatory SHIR requirement and
-   the stored-credential-only authentication story this scenario's reconcile step preserves), 
-   <https://learn.microsoft.com/purview/register-scan-on-premises-sql-server>
+ registration/scan reference this scenario extends; confirms the mandatory SHIR requirement and
+ the stored-credential-only authentication story this scenario's reconcile step preserves), 
+ <https://learn.microsoft.com/purview/register-scan-on-premises-sql-server>
 9. Data Map classification supported list (confirmed to list classifications by human-readable
-   name/description only, with no exact `MICROSOFT.*` identifier strings), 
-   <https://learn.microsoft.com/purview/data-map-classification-supported-list>
+ name/description only, with no exact `MICROSOFT.*` identifier strings), 
+ <https://learn.microsoft.com/purview/data-map-classification-supported-list>
 10. Remove-AzPurviewScanRuleset (Az.Purview PowerShell module, corroborates the scan rule set
-    delete operation and its 204 response), 
-    <https://learn.microsoft.com/powershell/module/az.purview/remove-azpurviewscanruleset>
+ delete operation and its 204 response), 
+ <https://learn.microsoft.com/powershell/module/az.purview/remove-azpurviewscanruleset>
 11. Scans - Create Or Replace REST API reference (reused here to reconcile the existing scan's
-    ruleset reference), 
-    <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scans/create-or-replace>
+ ruleset reference), 
+ <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scans/create-or-replace>
 12. `scenarios/data-map/scan-on-premises-sql-server-and-classify/` (base scenario this fragment
-    extends; confirms `SqlServerDatabaseCredential` as the only compatible scan kind, and discloses
-    the System-ruleset-name VERIFY this scenario inherits unresolved), this repository.
+ extends; confirms `SqlServerDatabaseCredential` as the only compatible scan kind, and discloses
+ the System-ruleset-name VERIFY this scenario inherits unresolved), this repository.
 13. Audit logs, diagnostics, and activity history in Microsoft Purview governance portal (confirms
-    "Scan rule set: Create/Update/Delete" as an audited Management-category event), 
-    <https://learn.microsoft.com/purview/data-gov-classic-audit-logs-diagnostics#audit-event-categories>
+ "Scan rule set: Create/Update/Delete" as an audited Management-category event), 
+ <https://learn.microsoft.com/purview/data-gov-classic-audit-logs-diagnostics#audit-event-categories>
 14. microsoftPurviewDataMapOperationRecord resource type / `PurviewDataMapOperation` audit log
-    record type (Microsoft Graph security API, the SIEM-consumable record type for Data Map
-    Management-category events, including scan rule set changes), 
-    <https://learn.microsoft.com/graph/api/resources/security-microsoftpurviewdatamapoperationrecord>
+ record type (Microsoft Graph security API, the SIEM-consumable record type for Data Map
+ Management-category events, including scan rule set changes), 
+ <https://learn.microsoft.com/graph/api/resources/security-microsoftpurviewdatamapoperationrecord>
 15. `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/`,
-    `scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/`, and
-    `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/` (sibling
-    scenarios this fragment mirrors, pattern precedent for the live-Types-API exclusion-list
-    design, the reconcile-not-reconstruct scan update, and the name-vs-kind independent-verification
-    discipline), this repository.
+ `scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/`, and
+ `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/` (sibling
+ scenarios this fragment mirrors, pattern precedent for the live-Types-API exclusion-list
+ design, the reconcile-not-reconstruct scan update, and the name-vs-kind independent-verification
+ discipline), this repository.
 
 > Re-verify all links, API versions, and REST body shapes against current Microsoft Learn before a
 > customer-facing deployment. One VERIFY remains open in §11 (the System default scan rule set's

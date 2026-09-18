@@ -43,12 +43,12 @@ deploy. Use this only when the wall is being permanently retired.
 ## What rollback does **not** undo
 
 - **Anything that happened while the wall was up.** Removed chat memberships, blocked access, lifting
-  the wall restores future communication, it doesn't retroactively recreate conversations that were
-  disabled.
+ the wall restores future communication, it doesn't retroactively recreate conversations that were
+ disabled.
 - **SharePoint/OneDrive IB enablement** (if you enabled it separately), disable that via its own
-  configuration if fully decommissioning.
+ configuration if fully decommissioning.
 - **The source directory attribute** used for segmentation, untouched; the wall's segmentation logic
-  lives in that attribute, which you manage independently.
+ lives in that attribute, which you manage independently.
 - **Audit records** of the IB configuration and application runs, retained per their own policy.
 
 ## Verification after rollback

@@ -23,26 +23,26 @@ shape the parent already established, not a new design, an extension of the prov
 ## 2. Design goals
 
 1. **Extend, don't duplicate.** `SecuredDevicesConfiguration` is a single setting on a single
-   Intune device configuration object; two competing objects both trying to set it would be a
-   genuine deployment conflict, not two independent controls. This fragment PATCHes the parent
-   object in place rather than creating a second profile.
+ Intune device configuration object; two competing objects both trying to set it would be a
+ genuine deployment conflict, not two independent controls. This fragment PATCHes the parent
+ object in place rather than creating a second profile.
 2. **Preserve the parent's coverage exactly.** The deploy script never touches the parent's
-   `DeviceControlEnabled`, `DefaultEnforcement`, `ApprovedBackupDrives` group, `AllRemovableStorage`
-   group, or either `RemovableMediaDevices` rule, only the scope string and the four new WPD
-   entries are added or changed. `validate/Test-WpdDeviceControlCoverage.ps1` explicitly checks
-   that the parent's original settings survive unmodified.
+ `DeviceControlEnabled`, `DefaultEnforcement`, `ApprovedBackupDrives` group, `AllRemovableStorage`
+ group, or either `RemovableMediaDevices` rule, only the scope string and the four new WPD
+ entries are added or changed. `validate/Test-WpdDeviceControlCoverage.ps1` explicitly checks
+ that the parent's original settings survive unmodified.
 3. **Mirror the parent's mutually-exclusive rule shape.** One approved-WPD group, one WPD catch-all
-   group, one allow rule (included = approved), one deny rule (included = catch-all, excluded =
-   approved), a device matches exactly one WPD rule by construction, identical to the parent's own
-   `RemovableMediaDevices` pair.
+ group, one allow rule (included = approved), one deny rule (included = catch-all, excluded =
+ approved), a device matches exactly one WPD rule by construction, identical to the parent's own
+ `RemovableMediaDevices` pair.
 4. **Both paths audited, not just the deny path**, same principle as the parent (`design.md` §2
-   there), extended to WPD.
+ there), extended to WPD.
 5. **State the identity-matching gap honestly rather than resolve it by guessing.** The available,
-   confirmed group-matching property for WPD-classified hardware is `FriendlyNameId`; whether the
-   parent's stronger per-unit properties (`SerialNumberId`/`VID_PID`) also apply to this device
-   family is not confirmed by Microsoft's reference documentation either way. This scenario accepts
-   both, uses `FriendlyNameId` as the grounded default, and flags the stronger properties as
-   unconfirmed rather than asserting they work (or that they don't), see §6.
+ confirmed group-matching property for WPD-classified hardware is `FriendlyNameId`; whether the
+ parent's stronger per-unit properties (`SerialNumberId`/`VID_PID`) also apply to this device
+ family is not confirmed by Microsoft's reference documentation either way. This scenario accepts
+ both, uses `FriendlyNameId` as the grounded default, and flags the stronger properties as
+ unconfirmed rather than asserting they work (or that they don't), see §6.
 
 ## 3. Why widen `SecuredDevicesConfiguration` instead of a second policy
 
@@ -103,15 +103,15 @@ addition that references the parent rather than duplicating its content.
 ## 7. Non-goals
 
 - This scenario does not create a new Intune device configuration object, a new assignment, or
-  change the parent policy's assignment scope, it only widens the shared object's `omaSettings`.
+ change the parent policy's assignment scope, it only widens the shared object's `omaSettings`.
 - This scenario does not resolve the `SerialNumberId`/`VID_PID`-for-WPD VERIFY (§6), it is
-  deliberately left open per `AGENTS.md` §4 rather than guessed, and is trackable in `PROGRESS.md`
-  for a future pilot-tenant confirmation pass.
+ deliberately left open per `AGENTS.md` §4 rather than guessed, and is trackable in `PROGRESS.md`
+ for a future pilot-tenant confirmation pass.
 - This scenario does not cover macOS portable-device control (a separate JSON/`mobileconfig`
-  authoring path, `mac-device-control-overview`), same Windows-only scope boundary as the parent.
+ authoring path, `mac-device-control-overview`), same Windows-only scope boundary as the parent.
 - This scenario does not address Bluetooth-connected devices, which Microsoft documents as a
-  distinct device control surface again from `WpdDevices`, out of scope here, a candidate for a
-  further follow-up fragment.
+ distinct device control surface again from `WpdDevices`, out of scope here, a candidate for a
+ further follow-up fragment.
 
 ## 8. References
 

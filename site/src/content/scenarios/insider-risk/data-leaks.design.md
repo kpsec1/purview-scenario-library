@@ -22,66 +22,66 @@ population, general trigger, not tied to any one parent DLP policy or narrowly-s
 ## 2. Design goals
 
 1. **No employment-stressor or message-count gate.** This is the entire reason this fragment
-   exists. Population scope is an ordinary Entra group (or groups) the operator chooses, no HR
-   connector, no Communication Compliance trigger integration, no priority-user-group
-   requirement. `README.md` §2 states this explicitly as the scenario's defining trait relative to
-   every other Insider Risk Management scenario in this library.
+ exists. Population scope is an ordinary Entra group (or groups) the operator chooses, no HR
+ connector, no Communication Compliance trigger integration, no priority-user-group
+ requirement. `README.md` §2 states this explicitly as the scenario's defining trait relative to
+ every other Insider Risk Management scenario in this library.
 2. **Use the template's own two documented triggering-event mechanisms, don't invent a third.**
-   Microsoft's Insider Risk Management policy workflow for this template offers exactly two
-   triggering-event choices, "User matches a data loss prevention (DLP) policy" and "User
-   performs an exfiltration activity", sourced from the same "Triggers for this policy" reference
-   page already grounded in this library's `exchange-pii-exfil-block-part2-obfuscation-mitigation/
-   design.md` §6a for the identical template [[3]](README.md#references). This fragment documents
-   and worked-examples the DLP-policy trigger as the primary path (§3), because it is the specific
-   shape `PROGRESS.md`'s own backlog item scoped this fragment around, and documents the
-   exfiltration-activity trigger as a fully valid, Microsoft-documented alternative for a tenant
-   with no qualifying DLP policy yet (§6), without building a second full worked example for it,
-   to keep this one fragment scoped (§7).
+ Microsoft's Insider Risk Management policy workflow for this template offers exactly two
+ triggering-event choices, "User matches a data loss prevention (DLP) policy" and "User
+ performs an exfiltration activity", sourced from the same "Triggers for this policy" reference
+ page already grounded in this library's `exchange-pii-exfil-block-part2-obfuscation-mitigation/
+ design.md` §6a for the identical template. This fragment documents
+ and worked-examples the DLP-policy trigger as the primary path (§3), because it is the specific
+ shape `PROGRESS.md`'s own backlog item scoped this fragment around, and documents the
+ exfiltration-activity trigger as a fully valid, Microsoft-documented alternative for a tenant
+ with no qualifying DLP policy yet (§6), without building a second full worked example for it,
+ to keep this one fragment scoped (§7).
 3. **Ground, don't guess, the DLP-policy trigger's double-scoping requirement.** This build's
-   grounding pass surfaced a specific, easy-to-miss operational fact not previously documented
-   anywhere else in this library: a user's DLP-policy-triggered alert is only processed by this
-   template if that user is in scope of **both** the parent DLP policy's own rule scope **and**
-   the IRM policy's own "Users and groups" scope, matching neither alone is insufficient
-   [[2]](README.md#references). `README.md` §5 Step 3/§6/§11 and `deploy/
-   Test-DlpPolicyIrmTriggerReadiness.ps1` treat this as a first-class configuration check, not a
-   footnote.
+ grounding pass surfaced a specific, easy-to-miss operational fact not previously documented
+ anywhere else in this library: a user's DLP-policy-triggered alert is only processed by this
+ template if that user is in scope of **both** the parent DLP policy's own rule scope **and**
+ the IRM policy's own "Users and groups" scope, matching neither alone is insufficient
+. `README.md` §5 Step 3/§6/§11 and `deploy/
+ Test-DlpPolicyIrmTriggerReadiness.ps1` treat this as a first-class configuration check, not a
+ footnote.
 4. **Reuse the scope-candidate and alert-export scripts already generalized for this purpose, 
-   don't fork them a third time.** Identical reasoning to `data-leaks-by-risky-users/design.md`
-   §2 goals 1-3: this template's population mechanism is a plain Entra group with no
-   template-specific resolution logic, and this template has no Microsoft Defender for Endpoint
-   signal to join against, so the plain (non-MDE-joining) alert-export script is the correct reuse
-   target. Both scripts are called with this scenario's own parameters, not modified.
+ don't fork them a third time.** Identical reasoning to `data-leaks-by-risky-users/design.md`
+ §2 goals 1-3: this template's population mechanism is a plain Entra group with no
+ template-specific resolution logic, and this template has no Microsoft Defender for Endpoint
+ signal to join against, so the plain (non-MDE-joining) alert-export script is the correct reuse
+ target. Both scripts are called with this scenario's own parameters, not modified.
 5. **Build the one genuinely new, missing building block: a DLP-policy trigger-readiness check.**
-   Unlike the two "part2" DLP scenarios that each point this template at one specific,
-   already-known parent policy, this fragment must work for **any** operator-chosen DLP policy
-   (or up to 20 of them [[2]](README.md#references)). No script in this library validates whether
-   a candidate DLP policy actually qualifies as a Data-leaks trigger (supported workload, High
-   severity present) before the operator wires it up in the portal, `deploy/
-   Test-DlpPolicyIrmTriggerReadiness.ps1` is that missing check, not a duplicate of any existing
-   script.
+ Unlike the two "part2" DLP scenarios that each point this template at one specific,
+ already-known parent policy, this fragment must work for **any** operator-chosen DLP policy
+ (or up to 20 of them). No script in this library validates whether
+ a candidate DLP policy actually qualifies as a Data-leaks trigger (supported workload, High
+ severity present) before the operator wires it up in the portal, `deploy/
+ Test-DlpPolicyIrmTriggerReadiness.ps1` is that missing check, not a duplicate of any existing
+ script.
 6. **Check the parent DLP policy's `Mode`, not just its workload and severity.** This build's own
-   four-lens review (`reviews.md`) surfaced a gap the first draft of `deploy/
-   Test-DlpPolicyIrmTriggerReadiness.ps1` didn't check: this library's own DLP scenarios commonly
-   deploy a new policy in `TestWithNotifications` mode for a first, safe rollout, and whether a
-   Test-mode policy still generates the High-severity alerts this indicator consumes is
-   unconfirmed in this build's WebSearch-only grounding. The script now WARNs (not FAILs, since
-   test-mode policies are documented to still generate incident reports for their own purpose) on
-   `Mode -ne 'Enable'`, and `README.md` §5 Step 2/§11 disclose the open question rather than
-   silently assuming test-mode policies work identically to enforced ones.
+ four-lens review (`reviews.md`) surfaced a gap the first draft of `deploy/
+ Test-DlpPolicyIrmTriggerReadiness.ps1` didn't check: this library's own DLP scenarios commonly
+ deploy a new policy in `TestWithNotifications` mode for a first, safe rollout, and whether a
+ Test-mode policy still generates the High-severity alerts this indicator consumes is
+ unconfirmed in this build's WebSearch-only grounding. The script now WARNs (not FAILs, since
+ test-mode policies are documented to still generate incident reports for their own purpose) on
+ `Mode -ne 'Enable'`, and `README.md` §5 Step 2/§11 disclose the open question rather than
+ silently assuming test-mode policies work identically to enforced ones.
 7. **Ground, don't guess, the max-users cap for this specific template.** Every sibling
-   Insider-Risk-Management scenario in this library states a specific, Microsoft-documented
-   actively-scored-user cap (1,000 for `security-policy-violations`; 7,500 for the
-   risky/priority-users family). This scenario's original build session's grounding tooling, 
-   WebSearch only; direct `learn.microsoft.com` fetch returned `EGRESS_BLOCKED` from that
-   session's network environment for every URL attempted, not just Microsoft's domain, could not
-   retrieve the `Limits in Insider Risk Management` page's specific row for the base `Data leaks`
-   template, so this cap was left as an explicit, unresolved VERIFY. A later follow-up fragment,
-   from a session whose network environment did not block a direct Microsoft Learn fetch,
-   confirmed the base `Data leaks` template's own row at **15,000** (distinct from `Data leaks by
-   priority users` at 1,000 and `Data leaks by risky users` at 7,500), 
-   <https://learn.microsoft.com/purview/insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template>.
-   `README.md` §3/§6/§11 and both scripts' `-MaxUsers` parameters now state/default to this
-   confirmed number rather than an unresolved VERIFY.
+ Insider-Risk-Management scenario in this library states a specific, Microsoft-documented
+ actively-scored-user cap (1,000 for `security-policy-violations`; 7,500 for the
+ risky/priority-users family). This scenario's original build session's grounding tooling, 
+ WebSearch only; direct `learn.microsoft.com` fetch returned `EGRESS_BLOCKED` from that
+ session's network environment for every URL attempted, not just Microsoft's domain, could not
+ retrieve the `Limits in Insider Risk Management` page's specific row for the base `Data leaks`
+ template, so this cap was left as an explicit, unresolved VERIFY. A later follow-up fragment,
+ from a session whose network environment did not block a direct Microsoft Learn fetch,
+ confirmed the base `Data leaks` template's own row at **15,000** (distinct from `Data leaks by
+ priority users` at 1,000 and `Data leaks by risky users` at 7,500), 
+ <https://learn.microsoft.com/purview/insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template>.
+ `README.md` §3/§6/§11 and both scripts' `-MaxUsers` parameters now state/default to this
+ confirmed number rather than an unresolved VERIFY.
 
 ## 3. Why the DLP-policy trigger, not the exfiltration-activity trigger, is this fragment's worked example
 
@@ -93,17 +93,17 @@ options are genuinely valid per Microsoft's own documentation (§2 goal 2), but 
 trigger is:
 
 - **The more general building block.** A DLP-policy trigger works with **any** existing,
-  already-tuned Purview DLP policy the tenant has deployed for Exchange/SharePoint/OneDrive, this
-  library alone already has several qualifying candidates (`exchange-pii-exfil-block`,
-  and whatever SharePoint/OneDrive DLP policies a buyer already runs). The exfiltration-activity
-  trigger instead depends on Microsoft's own built-in indicator thresholds, with no connection to
-  content a buyer has already classified as sensitive via DLP.
+ already-tuned Purview DLP policy the tenant has deployed for Exchange/SharePoint/OneDrive, this
+ library alone already has several qualifying candidates (`exchange-pii-exfil-block`,
+ and whatever SharePoint/OneDrive DLP policies a buyer already runs). The exfiltration-activity
+ trigger instead depends on Microsoft's own built-in indicator thresholds, with no connection to
+ content a buyer has already classified as sensitive via DLP.
 - **The one this library has not yet given a general-purpose worked example for.** Both existing
-  "part2" scenarios that already deploy this template do so narrowly, pointed at one specific
-  named parent policy as an Adaptive Protection feeder, neither is written as a standalone,
-  reusable "wire any qualifying DLP policy into a Data-leaks IRM policy" runbook. This fragment is
-  that general runbook; the two "part2" scenarios' own narrower deployments remain unmodified
-  (§7).
+ "part2" scenarios that already deploy this template do so narrowly, pointed at one specific
+ named parent policy as an Adaptive Protection feeder, neither is written as a standalone,
+ reusable "wire any qualifying DLP policy into a Data-leaks IRM policy" runbook. This fragment is
+ that general runbook; the two "part2" scenarios' own narrower deployments remain unmodified
+ (§7).
 
 ## 4. Policy architecture (what's deployed where)
 
@@ -147,22 +147,22 @@ by name, unlike the open question that sibling's own README carries for itself).
 ## 7. Non-goals
 
 - **Does not build a second full worked example for the "User performs an exfiltration activity"
-  triggering event.** Documented as a valid alternative in `README.md` §6/§11, not implemented
-  end-to-end, see §3/§6 above.
+ triggering event.** Documented as a valid alternative in `README.md` §6/§11, not implemented
+ end-to-end, see §3/§6 above.
 - **Does not modify either existing "part2" scenario's own narrower `Data leaks`-template
-  deployment** (`exchange-pii-exfil-block-part2-obfuscation-mitigation`,
-  `pci-teams-exfil-block-part2-obfuscation-mitigation`), both remain independent, single-purpose
-  feeder policies for their own Adaptive Protection rules; this fragment is a separate,
-  general-purpose policy an operator would create in addition to (not instead of) either.
+ deployment** (`exchange-pii-exfil-block-part2-obfuscation-mitigation`,
+ `pci-teams-exfil-block-part2-obfuscation-mitigation`), both remain independent, single-purpose
+ feeder policies for their own Adaptive Protection rules; this fragment is a separate,
+ general-purpose policy an operator would create in addition to (not instead of) either.
 - **Does not deploy `Data leaks by risky users` or `Data leaks by priority users`**, the former
-  is already built as its own scenario, the latter remains open in `PROGRESS.md`.
+ is already built as its own scenario, the latter remains open in `PROGRESS.md`.
 - **Does not create or modify any DLP policy.** The candidate policies this scenario points at
-  are assumed to already exist and be independently owned/tuned; `deploy/
-  Test-DlpPolicyIrmTriggerReadiness.ps1` only reads and reports.
+ are assumed to already exist and be independently owned/tuned; `deploy/
+ Test-DlpPolicyIrmTriggerReadiness.ps1` only reads and reports.
 - **Does not configure Adaptive Protection.** Same non-goal as every base Insider Risk Management
-  scenario in this library that isn't itself an Adaptive Protection scenario, a buyer who wants
-  this policy's alerts to drive DLP enforcement wires it into
-  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` separately.
+ scenario in this library that isn't itself an Adaptive Protection scenario, a buyer who wants
+ this policy's alerts to drive DLP enforcement wires it into
+ `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` separately.
 - **Does not attempt cross-policy alert disambiguation**, the same disclosed gap every Insider
-  Risk Management scenario in this library carries (`AlertPolicyId` has no documented
-  policy-name mapping).
+ Risk Management scenario in this library carries (`AlertPolicyId` has no documented
+ policy-name mapping).

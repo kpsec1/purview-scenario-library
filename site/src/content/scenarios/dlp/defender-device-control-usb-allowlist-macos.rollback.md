@@ -49,20 +49,20 @@ permanently retired or replaced by a successor policy with a different name.
 ## What rollback does **not** undo
 
 - **Advanced Hunting / `DeviceEvents` history.** Allow and deny audit events already generated are
-  retained per their own retention window regardless of policy state.
+ retained per their own retention window regardless of policy state.
 - **Access already denied or allowed.** A copy that was denied while the policy was enforcing was
-  not written to the removable device; a later rollback does not retroactively complete it.
+ not written to the removable device; a later rollback does not retroactively complete it.
 - **Device onboarding, Intune enrollment, or the Full Disk Access (PPPC) profile for
-  `com.microsoft.dlp.daemon`.** This scenario does not create or manage any of these, rollback
-  here has no effect on any of them. In particular, removing this scenario's policy does **not**
-  revoke the Full Disk Access grant; that is a separate profile with its own lifecycle.
+ `com.microsoft.dlp.daemon`.** This scenario does not create or manage any of these, rollback
+ here has no effect on any of them. In particular, removing this scenario's policy does **not**
+ revoke the Full Disk Access grant; that is a separate profile with its own lifecycle.
 - **The pilot/target Entra ID group, or the physical approved drives.** This scenario does not
-  create or manage the assignment group or the approved-drive inventory.
+ create or manage the assignment group or the approved-drive inventory.
 - **A separate, independently-deployed `com.microsoft.wdav` preferences profile**, if one exists
-  for other Defender for Endpoint on macOS settings, removing this scenario's profile has no
-  effect on any other profile of that type (see README.md §11's open VERIFY on multi-profile
-  conflict behavior, which cuts both ways: if two profiles were merging, removing one may change
-  the merged result in a way not independently confirmed by this build).
+ for other Defender for Endpoint on macOS settings, removing this scenario's profile has no
+ effect on any other profile of that type (see README.md §11's open VERIFY on multi-profile
+ conflict behavior, which cuts both ways: if two profiles were merging, removing one may change
+ the merged result in a way not independently confirmed by this build).
 
 ## Verification after rollback
 

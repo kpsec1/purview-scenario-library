@@ -40,19 +40,19 @@ same general-population, no-precursor-gate control, distinguished from the DLP-t
 what determines when a user enters scope:
 
 - **No DLP policy dependency.** A tenant licensed for Insider Risk Management but without a
-  suitably-scoped, High-severity DLP policy already tuned for Exchange/SharePoint/OneDrive can
-  still deploy this exact template today, using only Insider Risk Management's own built-in
-  indicator thresholds as the gate.
+ suitably-scoped, High-severity DLP policy already tuned for Exchange/SharePoint/OneDrive can
+ still deploy this exact template today, using only Insider Risk Management's own built-in
+ indicator thresholds as the gate.
 - **Threshold-level control over the trigger itself**, not just the eventual scoring. Choosing
-  which specific activities (SharePoint downloads, external sharing, printing, personal-cloud
-  copying) and at what daily volume bring a user into scope is a materially different tuning lever
-  than "any High-severity DLP rule match," useful where a buyer wants the trigger threshold itself
-  to reflect organization-specific exfiltration-volume norms rather than a DLP policy's own
-  independently-tuned severity model.
+ which specific activities (SharePoint downloads, external sharing, printing, personal-cloud
+ copying) and at what daily volume bring a user into scope is a materially different tuning lever
+ than "any High-severity DLP rule match," useful where a buyer wants the trigger threshold itself
+ to reflect organization-specific exfiltration-volume norms rather than a DLP policy's own
+ independently-tuned severity model.
 - **SOC 2 / ISO 27001 exfiltration-monitoring evidence with no DLP-policy prerequisite**, the same
-  audit-evidence rationale `data-leaks/README.md` §2 documents, available to a tenant mid-DLP-
-  rollout or one that has deliberately chosen not to gate this control behind a separate product's
-  policy configuration.
+ audit-evidence rationale `data-leaks/README.md` §2 documents, available to a tenant mid-DLP-
+ rollout or one that has deliberately chosen not to gate this control behind a separate product's
+ policy configuration.
 
 No regulation names this specific control by requirement number, the same honest framing every
 Insider Risk Management scenario in this library uses. No HR/Legal governance review is needed for
@@ -61,20 +61,20 @@ management data.
 
 ## 3. Prerequisites
 
-Full licensing detail and citations: `docs/licensing-matrix.md` §2 (Insider Risk Management row).
+Full licensing detail and citations: [Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix) (Insider Risk Management row).
 
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Insider Risk Management (all policies) | **Microsoft 365 E5/A5/G5**, **Microsoft Purview Suite**, or the **Microsoft 365 E5 Insider Risk Management** add-on | Same base entitlement as every IRM scenario in this library |
 | At least one built-in exfiltration indicator turned on (Settings → Policy indicators) | Required, the policy workflow can't select an indicator that isn't first enabled tenant-wide | §5 Step 2; `design.md` §5 |
-| Role to configure policies/settings | **Insider Risk Management** or **Insider Risk Management Admins** role group | `docs/rbac-model.md` §4 |
+| Role to configure policies/settings | **Insider Risk Management** or **Insider Risk Management Admins** role group | [RBAC model §4](/docs/rbac-model/#4-purview-role-groups-by-module-representative-not-exhaustive) |
 | Automation identity for scope-candidate resolution (reused) | App registration with the Microsoft Graph **`GroupMember.Read.All`** application permission, certificate-based | Reused unmodified from the base template's scoping pattern, §5 Step 3 |
 | Automation identity for alert export (optional, reused) | App registration with the Microsoft Graph **`SecurityAlert.Read.All`** application permission, certificate-based | Only needed if reusing `../departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1` per §5 Step 5 |
 | (Optional) Insider risk analytics enabled, policy scoped to "Include all users and groups" | Only if using **real-time analytics (preview)** threshold recommendations | §6; not required to use fixed/custom thresholds instead |
 | (Optional) Microsoft Defender for Cloud Apps connections | Box, Dropbox, Google Drive (cloud storage indicators) and/or Amazon S3, Azure (cloud service indicators), each connected in the Microsoft Defender portal | **Not required**, this template scores without them. Requires **pay-as-you-go billing**; §6 |
 | **NOT required, unlike either data-leaks sibling** | Any Purview DLP policy at all, Microsoft 365 HR connector, Communication Compliance trigger integration, Microsoft Defender for Endpoint | The defining simplification of this specific trigger path, §1/§2 |
 
-> Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms before
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) and the Product Terms before
 > a sales commitment, and re-check this template's GA/preview status against the live portal, 
 > same disclosed grounding caveat `data-leaks/README.md` §3 already carries for this template.
 
@@ -139,39 +139,39 @@ limit. Pass a lower value if another `Data leaks`-template policy already consum
 Purview portal → **Insider Risk Management** → **Policies** → **Create policy**:
 
 1. Template: **Data leaks**. Confirm this is the base template and not `Data leaks by risky users`
-   or `Data leaks by priority users`, all three share overlapping naming in the template picker.
+ or `Data leaks by priority users`, all three share overlapping naming in the template picker.
 2. Name: `Data Leaks - Exfiltration Activity Trigger` (distinct from the DLP-trigger sibling's own
-   `Data Leaks` policy name, so both can coexist in the same tenant if desired, pending §6/§11's
-   open question on whether a single policy can use both trigger types at once). The template and
-   name can't be changed after policy creation, confirm before continuing.
+ `Data Leaks` policy name, so both can coexist in the same tenant if desired, pending §6/§11's
+ open question on whether a single policy can use both trigger types at once). The template and
+ name can't be changed after policy creation, confirm before continuing.
 3. **Users and groups**: assign the scope resolved in Step 3. If you intend to use **real-time
-   analytics (preview)** threshold recommendations (optional), scope to **Include all users and
-   groups** instead, that feature requires it.
+ analytics (preview)** threshold recommendations (optional), scope to **Include all users and
+ groups** instead, that feature requires it.
 4. **Triggers for this policy**: select **User performs an exfiltration activity**, then choose one
-   or more of the listed built-in indicators as the trigger (only indicators turned on in Step 2
-   are selectable).
+ or more of the listed built-in indicators as the trigger (only indicators turned on in Step 2
+ are selectable).
 5. **Trigger threshold** (sub-step 5 of this same policy-creation workflow, not a separate
-   top-level step in this README): choose **Use default thresholds (Recommended)**, or **Use
-   custom thresholds for the triggering events** and set a level per selected trigger indicator.
-   Microsoft does not publish the specific numeric values behind the default option for any
-   indicator, if default behavior needs to be documented precisely for a customer commitment, use
-   custom thresholds instead so the exact values are explicit and recorded in the configuration
-   manifest referenced below. See §6's worked example for how a custom threshold level maps to
-   daily event counts.
+ top-level step in this README): choose **Use default thresholds (Recommended)**, or **Use
+ custom thresholds for the triggering events** and set a level per selected trigger indicator.
+ Microsoft does not publish the specific numeric values behind the default option for any
+ indicator, if default behavior needs to be documented precisely for a customer commitment, use
+ custom thresholds instead so the exact values are explicit and recorded in the configuration
+ manifest referenced below. See §6's worked example for how a custom threshold level maps to
+ daily event counts.
 6. **Policy indicators** (sub-step 6, a separate page, a separate decision from sub-step 5's
-   trigger threshold above): select **Office indicators** (SharePoint Online downloads/syncing,
-   sharing internal files/folders externally, printing files, copying data to personal cloud
-   storage/messaging services), this template's primary, built-in scoring category. Optionally
-   add Communication Compliance content indicators, generative AI app indicators, and/or cloud
-   storage/cloud service indicators (requires those apps connected in Microsoft Defender for Cloud
-   Apps and pay-as-you-go billing).
+ trigger threshold above): select **Office indicators** (SharePoint Online downloads/syncing,
+ sharing internal files/folders externally, printing files, copying data to personal cloud
+ storage/messaging services), this template's primary, built-in scoring category. Optionally
+ add Communication Compliance content indicators, generative AI app indicators, and/or cloud
+ storage/cloud service indicators (requires those apps connected in Microsoft Defender for Cloud
+ Apps and pay-as-you-go billing).
 7. Select **Cumulative exfiltration detection** (enabled by default for this template, confirm it
-   is actually selected).
+ is actually selected).
 8. **Decide whether to use default or custom indicator thresholds** for the **scoring** indicators
-   selected in sub-step 6 above, this is Microsoft's own separate workflow page from sub-step 5's
-   trigger threshold, not the same setting reused. Choose **Use default thresholds for all
-   indicators** or **Specify custom thresholds**, independently of whatever was chosen for the
-   trigger.
+ selected in sub-step 6 above, this is Microsoft's own separate workflow page from sub-step 5's
+ trigger threshold, not the same setting reused. Choose **Use default thresholds for all
+ indicators** or **Specify custom thresholds**, independently of whatever was chosen for the
+ trigger.
 9. **Review and submit.**
 
 Use `deploy/policy/data-leaks-exfiltration-activity-trigger-policy-manifest.json` as the checklist/
@@ -229,60 +229,60 @@ has no documented way to map back to a named Purview policy.
 ## 7. Validation / how to prove it works
 
 1. **Automated checks (Graph side)**, `validate/Test-DataLeaksExfiltrationActivityTriggerSetup.ps1`
-   confirms the Graph session and `GroupMember.Read.All` permission actually work, and (if
-   `-GroupId` is supplied) reports the resolved scope-candidate count against the 15,000-user cap.
-   Exits non-zero on a hard failure.
+ confirms the Graph session and `GroupMember.Read.All` permission actually work, and (if
+ `-GroupId` is supplied) reports the resolved scope-candidate count against the 15,000-user cap.
+ Exits non-zero on a hard failure.
 2. **Manual checklist**, the same validation script prints a checklist for the portal-only
-   configuration: indicator(s) turned on in Settings, the **trigger** indicator selection and
-   threshold mode, the **separate** scoring-indicator selection and threshold mode, Cumulative
-   exfiltration detection, policy existence/template/state, and role groups, see `design.md` §5
-   for why these can't be automated.
+ configuration: indicator(s) turned on in Settings, the **trigger** indicator selection and
+ threshold mode, the **separate** scoring-indicator selection and threshold mode, Cumulative
+ exfiltration detection, policy existence/template/state, and role groups, see `design.md` §5
+ for why these can't be automated.
 3. **End-to-end functional test (non-production names only, pilot tenant)**, from a disposable
-   test account in the scope group, perform an action matching one of the selected trigger
-   indicators at a volume exceeding the configured threshold (e.g., if the SharePoint-download
-   trigger indicator uses a low custom threshold of 10+/day per §6's worked example, download 11+
-   distinct test files from a disposable SharePoint site in one day). Confirm the user is marked
-   in-scope on the **Users dashboard**, and that a corresponding alert eventually surfaces in
-   **Insider Risk Management** → **Alerts** once the same or another selected scoring indicator's
-   activity also crosses its own threshold. This pipeline's exact end-to-end latency was not
-   independently measured in this build, §11.
+ test account in the scope group, perform an action matching one of the selected trigger
+ indicators at a volume exceeding the configured threshold (e.g., if the SharePoint-download
+ trigger indicator uses a low custom threshold of 10+/day per §6's worked example, download 11+
+ distinct test files from a disposable SharePoint site in one day). Confirm the user is marked
+ in-scope on the **Users dashboard**, and that a corresponding alert eventually surfaces in
+ **Insider Risk Management** → **Alerts** once the same or another selected scoring indicator's
+ activity also crosses its own threshold. This pipeline's exact end-to-end latency was not
+ independently measured in this build, §11.
 4. **Evidence trail**, the alert's **Activity explorer** tab shows the specific trigger and
-   scoring activity that contributed to the score.
+ scoring activity that contributed to the score.
 
 ## 8. Operations & tuning
 
 - **Two independent threshold decisions, not one, re-tune both deliberately, not just the one you
-  remember configuring.** A common operational mistake this scenario's own review surfaced:
-  treating "the threshold" as a single setting. Lowering the trigger-indicator threshold brings
-  more users into scope sooner; lowering a scoring-indicator threshold raises alert severity sooner
-  for users already in scope. Confirm which one actually needs adjustment before changing either.
+ remember configuring.** A common operational mistake this scenario's own review surfaced:
+ treating "the threshold" as a single setting. Lowering the trigger-indicator threshold brings
+ more users into scope sooner; lowering a scoring-indicator threshold raises alert severity sooner
+ for users already in scope. Confirm which one actually needs adjustment before changing either.
 - **If real-time analytics (preview) is used, re-run it periodically as organizational activity
-  norms shift**, its recommendations are based on a rolling 10-day window, not a one-time
-  calculation; a threshold tuned for a prior activity baseline can under- or over-alert as normal
-  usage patterns change.
+ norms shift**, its recommendations are based on a rolling 10-day window, not a one-time
+ calculation; a threshold tuned for a prior activity baseline can under- or over-alert as normal
+ usage patterns change.
 - **Coordinate policy naming and trigger choice explicitly if deploying this scenario alongside the
-  DLP-trigger sibling in the same tenant**, until §6/§11's open combinability question is
-  resolved, treat them as two separate, distinctly-named policies (as this scenario's own §5 Step 4
-  already directs) rather than assuming either can absorb the other's trigger mechanism.
+ DLP-trigger sibling in the same tenant**, until §6/§11's open combinability question is
+ resolved, treat them as two separate, distinctly-named policies (as this scenario's own §5 Step 4
+ already directs) rather than assuming either can absorb the other's trigger mechanism.
 - **Re-scope on group-membership change**, same reasoning as every group-scoped IRM template in
-  this library, `security-policy-violations/README.md` §8, not repeated here in full.
+ this library, `security-policy-violations/README.md` §8, not repeated here in full.
 - **Cumulative exfiltration detection depends on Microsoft Entra data sharing** for peer-group
-  accuracy, same disclosed dependency as `data-leaks/README.md` §8.
+ accuracy, same disclosed dependency as `data-leaks/README.md` §8.
 - **If cloud-app indicators are enabled, monitor Defender for Cloud Apps connector health
-  independently**, a disconnected connector silently stops contributing to this policy's scoring.
+ independently**, a disconnected connector silently stops contributing to this policy's scoring.
 - **Pair with the HR-connector-triggered siblings for defense in depth, not as a replacement**, 
-  same framing `data-leaks/README.md` §8 already establishes for the DLP-trigger sibling, applies
-  identically here.
+ same framing `data-leaks/README.md` §8 already establishes for the DLP-trigger sibling, applies
+ identically here.
 - **Confirm at deployment sign-off which specific indicators were selected as the trigger versus as
-  a scoring indicator**, the two lists can differ, and a reviewer assuming they're identical could
-  misjudge what actually brings a user into this policy's scope.
+ a scoring indicator**, the two lists can differ, and a reviewer assuming they're identical could
+ misjudge what actually brings a user into this policy's scope.
 - **Re-check tenant-wide indicator enablement (Settings → Policy indicators) whenever another team
-  changes it, not just at initial deployment.** Because a trigger indicator must first be turned on
-  tenant-wide (§5 Step 2) before it's selectable in this policy, another administrator disabling
-  that same indicator later, for an unrelated reason, e.g. reducing noise on a different policy, 
-  silently removes it from this policy's trigger set too, with no error or notification. This is
-  the same class of shared-tenant-wide-setting risk `data-leaks/README.md` §8 documents for its own
-  global DLP-alerts indicator, applied here to built-in indicator enablement instead.
+ changes it, not just at initial deployment.** Because a trigger indicator must first be turned on
+ tenant-wide (§5 Step 2) before it's selectable in this policy, another administrator disabling
+ that same indicator later, for an unrelated reason, e.g. reducing noise on a different policy, 
+ silently removes it from this policy's trigger set too, with no error or notification. This is
+ the same class of shared-tenant-wide-setting risk `data-leaks/README.md` §8 documents for its own
+ global DLP-alerts indicator, applied here to built-in indicator enablement instead.
 
 ## 9. Rollback / decommission
 
@@ -293,135 +293,135 @@ app registration's certificate is not.
 ## 10. Cost & licensing notes
 
 - **No incremental license cost beyond the base Insider Risk Management entitlement** if the
-  tenant already has E5/A5/G5, Purview Suite, or the E5 IRM add-on, `docs/licensing-matrix.md` §2.
+ tenant already has E5/A5/G5, Purview Suite, or the E5 IRM add-on, [Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix).
 - **No Microsoft Defender for Endpoint, HR connector, Communication Compliance, or DLP-policy
-  entitlement or deployment required for this trigger mechanism**, the defining licensing/
-  operational simplification versus every other Insider Risk Management scenario in this library,
-  including its own DLP-trigger sibling.
+ entitlement or deployment required for this trigger mechanism**, the defining licensing/
+ operational simplification versus every other Insider Risk Management scenario in this library,
+ including its own DLP-trigger sibling.
 - **Pay-as-you-go billing, if cloud storage/cloud service indicators are used**, 
-  `docs/licensing-matrix.md` §2's "Cloud/GenAI indicators on non-M365 → PAYG" note applies
-  directly. **Not** required for this template's core built-in Office indicators.
+ [Licensing matrix §2](/docs/licensing-matrix/#2-master-capability--license-matrix)'s "Cloud/GenAI indicators on non-M365 → PAYG" note applies
+ directly. **Not** required for this template's core built-in Office indicators.
 - **Sizing note:** this template's actively-scored-user cap is 15,000, **shared cumulatively**
-  with the DLP-trigger sibling and any other policy built from this exact template, confirm no
-  other `Data leaks`-template policy already consumes part of it before sizing this deployment. No
-  Graph/REST usage-count API exists to check current cumulative usage against that cap.
+ with the DLP-trigger sibling and any other policy built from this exact template, confirm no
+ other `Data leaks`-template policy already consumes part of it before sizing this deployment. No
+ Graph/REST usage-count API exists to check current cumulative usage against that cap.
 - **No additional cost for the scope-candidate resolution, alert-export, or validation
-  automation**, all scripts use application permissions already covered by the base Microsoft
-  Graph SDK, no metered API.
+ automation**, all scripts use application permissions already covered by the base Microsoft
+ Graph SDK, no metered API.
 
 ## 11. Known limitations & gotchas
 
 - **Microsoft does not publish the specific numeric default threshold values behind "Use default
-  thresholds (Recommended)" for any indicator.** This scenario's `deploy/policy/
-  data-leaks-exfiltration-activity-trigger-policy-manifest.json` and `README.md` §5 Step 4
-  (trigger-threshold sub-step)/§6 recommend using custom thresholds instead whenever the exact
-  trigger sensitivity needs to be documented precisely for a customer commitment, **VERIFY
-  (portal)** the live default values if they must be stated.
+ thresholds (Recommended)" for any indicator.** This scenario's `deploy/policy/
+ data-leaks-exfiltration-activity-trigger-policy-manifest.json` and `README.md` §5 Step 4
+ (trigger-threshold sub-step)/§6 recommend using custom thresholds instead whenever the exact
+ trigger sensitivity needs to be documented precisely for a customer commitment, **VERIFY
+ (portal)** the live default values if they must be stated.
 - **Whether the two triggering-event options (DLP-policy match and exfiltration activity) can be
-  enabled simultaneously on one policy is still not confirmed**, though this build's direct fetch of
-  "Get started with Insider Risk Management" Step 6 found the two options worded as alternative
-  "if you select X... if you select Y..." branches, a stronger single-select signal than this
-  library's DLP-trigger sibling scenario disclosed from its own WebSearch-only grounding, but not
-  an explicit "cannot be combined" statement. `design.md` §2 goal 6/§6. This scenario's own §5
-  Step 4 treats the two as separate, independently-named policies pending confirmation either way.
+ enabled simultaneously on one policy is still not confirmed**, though this build's direct fetch of
+ "Get started with Insider Risk Management" Step 6 found the two options worded as alternative
+ "if you select X... if you select Y..." branches, a stronger single-select signal than this
+ library's DLP-trigger sibling scenario disclosed from its own WebSearch-only grounding, but not
+ an explicit "cannot be combined" statement. `design.md` §2 goal 6/§6. This scenario's own §5
+ Step 4 treats the two as separate, independently-named policies pending confirmation either way.
 - **The trigger-indicator threshold and the scoring-indicator threshold are two separate decisions
-  in the same policy-creation workflow, a real and easy misconfiguration to make is assuming they
-  are one setting.** `design.md` §2 goal 2/§5; §6/§8 above call this out explicitly because no
-  Microsoft documentation page states this distinction as plainly as the step-by-step workflow
-  itself implies it.
+ in the same policy-creation workflow, a real and easy misconfiguration to make is assuming they
+ are one setting.** `design.md` §2 goal 2/§5; §6/§8 above call this out explicitly because no
+ Microsoft documentation page states this distinction as plainly as the step-by-step workflow
+ itself implies it.
 - **A user is never analyzed for an exfiltration channel this policy scores but did not select as a
-  trigger indicator, no matter how much of that specific activity they generate.** Only the
-  indicator(s) chosen on the Triggers page bring a user into scope in the first place; a scoring
-  indicator selected on the separate Indicators page only evaluates activity for a user who is
-  *already* in scope through some trigger indicator. A tenant that selects, say, only "Downloading
-  content from SharePoint" as the trigger but also enables "Copying data to personal cloud storage"
-  as a scoring indicator gets zero alerts for a user who exclusively copies to personal cloud
-  storage and never downloads from SharePoint above the trigger threshold, that activity is scored
-  only for users already brought into scope by a different behavior. Select trigger indicators
-  broadly enough to cover every exfiltration channel this policy is meant to catch; do not assume
-  scoring-indicator selection alone provides coverage. Flagged during this scenario's four-lens
-  review (`reviews.md`, Red Team finding 1) and reflected in §8's operational reminder above.
+ trigger indicator, no matter how much of that specific activity they generate.** Only the
+ indicator(s) chosen on the Triggers page bring a user into scope in the first place; a scoring
+ indicator selected on the separate Indicators page only evaluates activity for a user who is
+ *already* in scope through some trigger indicator. A tenant that selects, say, only "Downloading
+ content from SharePoint" as the trigger but also enables "Copying data to personal cloud storage"
+ as a scoring indicator gets zero alerts for a user who exclusively copies to personal cloud
+ storage and never downloads from SharePoint above the trigger threshold, that activity is scored
+ only for users already brought into scope by a different behavior. Select trigger indicators
+ broadly enough to cover every exfiltration channel this policy is meant to catch; do not assume
+ scoring-indicator selection alone provides coverage. Flagged during this scenario's four-lens
+ review (`reviews.md`, Red Team finding 1) and reflected in §8's operational reminder above.
 - **This scenario does not create, modify, or read back the trigger/scoring threshold selections
-  via any script**, both are portal-only decisions with no Graph/PowerShell surface; `deploy/
-  policy/data-leaks-exfiltration-activity-trigger-policy-manifest.json` is a manually-maintained
-  reference, not a live query, same limitation every portal-only IRM scenario in this library
-  discloses.
+ via any script**, both are portal-only decisions with no Graph/PowerShell surface; `deploy/
+ policy/data-leaks-exfiltration-activity-trigger-policy-manifest.json` is a manually-maintained
+ reference, not a live query, same limitation every portal-only IRM scenario in this library
+ discloses.
 - **Real-time analytics (preview) threshold recommendations require the policy to be scoped to
-  "Include all users and groups"**, not compatible with a narrowly-scoped group population if that
-  specific feature is used; a tenant that wants both a narrow population and data-driven threshold
-  guidance must choose custom thresholds set manually instead of real-time analytics for this
-  policy. Not a limitation of this scenario specifically, but disclosed here because it directly
-  affects the population-vs-analytics tradeoff for this particular trigger path.
+ "Include all users and groups"**, not compatible with a narrowly-scoped group population if that
+ specific feature is used; a tenant that wants both a narrow population and data-driven threshold
+ guidance must choose custom thresholds set manually instead of real-time analytics for this
+ policy. Not a limitation of this scenario specifically, but disclosed here because it directly
+ affects the population-vs-analytics tradeoff for this particular trigger path.
 - **Coverage is bounded by the specific trigger and scoring indicators actually selected, not "all
-  exfiltration."** Office indicators cover SharePoint/OneDrive/printing and copying to personal
-  cloud storage/messaging services, they do not cover Teams messages, removable media/USB, or
-  content sent from a personal (non-Microsoft-365) email account unless a separately-scoped control
-  elsewhere in this library also covers that channel.
+ exfiltration."** Office indicators cover SharePoint/OneDrive/printing and copying to personal
+ cloud storage/messaging services, they do not cover Teams messages, removable media/USB, or
+ content sent from a personal (non-Microsoft-365) email account unless a separately-scoped control
+ elsewhere in this library also covers that channel.
 - **A disciplined insider aware of the specific trigger indicator and threshold in use can pace
-  activity to stay just under it**, the same threshold-aware evasion property every fixed-count
-  trigger in this library's Insider Risk Management scenarios discloses (e.g.
-  `data-leaks-by-risky-users/README.md` §11's Communication Compliance message-count gate). The
-  anomalous-activity ("above user's usual activity for the day") option, where available, is
-  Microsoft's own documented mitigation for a *static* threshold's predictability, but has its own
-  disclosed evasion property: a user who paces activity to stay within their **own** historical
-  norm generates no anomalous-activity signal by design.
+ activity to stay just under it**, the same threshold-aware evasion property every fixed-count
+ trigger in this library's Insider Risk Management scenarios discloses (e.g.
+ `data-leaks-by-risky-users/README.md` §11's Communication Compliance message-count gate). The
+ anomalous-activity ("above user's usual activity for the day") option, where available, is
+ Microsoft's own documented mitigation for a *static* threshold's predictability, but has its own
+ disclosed evasion property: a user who paces activity to stay within their **own** historical
+ norm generates no anomalous-activity signal by design.
 - **Cumulative exfiltration detection's 30-day peer-group baseline has the same two disclosed
-  evasion properties already documented for this template family**, a recently hired user has no
-  established personal baseline yet, and a paced/slow-drip exfiltrator staying under peer-group
-  norms is not detected by this indicator by design (`data-leaks-by-risky-users/README.md` §11).
+ evasion properties already documented for this template family**, a recently hired user has no
+ established personal baseline yet, and a paced/slow-drip exfiltrator staying under peer-group
+ norms is not detected by this indicator by design (`data-leaks-by-risky-users/README.md` §11).
 - **This scenario does not configure Adaptive Protection**, a buyer who wants this policy's
-  alerts to drive DLP enforcement wires it into
-  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` separately.
+ alerts to drive DLP enforcement wires it into
+ `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` separately.
 - **Cannot disambiguate which Insider Risk Management policy produced a given exported alert if
-  more than one policy is deployed in the same tenant**, same disclosed gap as every IRM scenario
-  in this library, and directly relevant if both this scenario and its DLP-trigger sibling are
-  deployed together.
+ more than one policy is deployed in the same tenant**, same disclosed gap as every IRM scenario
+ in this library, and directly relevant if both this scenario and its DLP-trigger sibling are
+ deployed together.
 - **This end-to-end trigger-to-alert pipeline's latency was not independently measured in this
-  build**, `README.md` §7 Step 3 borrows no specific figure from elsewhere rather than asserting
-  one; VERIFY against a pilot tenant before a customer-facing latency commitment.
+ build**, `README.md` §7 Step 3 borrows no specific figure from elsewhere rather than asserting
+ one; VERIFY against a pilot tenant before a customer-facing latency commitment.
 
 ## 12. References
 
 1. Get started with Insider Risk Management, Step 6 "Create an Insider Risk Management policy,"
-   sub-steps 12/14/15: the "User matches a data loss prevention (DLP) policy" vs. "User performs an
-   exfiltration activity" triggering-event choice, phrased as alternative "if you select X... if
-   you select Y..." branches; the trigger-indicator default-vs-custom-vs-anomalous threshold choice
-   (a separate decision from the later policy/scoring-indicator threshold page, sub-step 17), 
-   confirmed via a direct Microsoft Learn fetch, 
-   <https://learn.microsoft.com/purview/insider-risk-management-configure#step-6-required-create-an-insider-risk-management-policy>
+ sub-steps 12/14/15: the "User matches a data loss prevention (DLP) policy" vs. "User performs an
+ exfiltration activity" triggering-event choice, phrased as alternative "if you select X... if
+ you select Y..." branches; the trigger-indicator default-vs-custom-vs-anomalous threshold choice
+ (a separate decision from the later policy/scoring-indicator threshold page, sub-step 17), 
+ confirmed via a direct Microsoft Learn fetch, 
+ <https://learn.microsoft.com/purview/insider-risk-management-configure#step-6-required-create-an-insider-risk-management-policy>
 2. Learn about Insider Risk Management policy templates, Data leaks template description and the
-   "Policy template prerequisites and triggering events" table: "Data leak policy activity that
-   creates a High severity alert **or** built-in exfiltration event triggers," prerequisite "DLP
-   policy configured for High severity alerts... **OR** Customized triggering indicators", 
-   confirmed via a direct Microsoft Learn fetch, 
-   <https://learn.microsoft.com/purview/insider-risk-management-policy-templates#data-leaks>
+ "Policy template prerequisites and triggering events" table: "Data leak policy activity that
+ creates a High severity alert **or** built-in exfiltration event triggers," prerequisite "DLP
+ policy configured for High severity alerts... **OR** Customized triggering indicators", 
+ confirmed via a direct Microsoft Learn fetch, 
+ <https://learn.microsoft.com/purview/insider-risk-management-policy-templates#data-leaks>
 3. Configure policy indicators in Insider Risk Management, "Indicator level settings": the fully
-   worked SharePoint-download custom-threshold example (10+/20+/30+ events per day → low/medium/
-   high impact on risk score and alert severity), explicitly framed as an illustrative example, not
-   a stated default; the "Activity is above user's usual activity for the day" anomalous-activity
-   trigger option; "Use real-time analytics recommendations to set thresholds" (preview, requires
-   insider risk analytics enabled and "Include all users and groups" scope, 10-day activity
-   window); "you can only modify triggering events for policies created from the Data leaks or
-   Data leaks by priority users templates", confirmed via a direct Microsoft Learn fetch, 
-   <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#indicator-level-settings>,
-   <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#use-real-time-analytics-recommendations-to-set-thresholds>
+ worked SharePoint-download custom-threshold example (10+/20+/30+ events per day → low/medium/
+ high impact on risk score and alert severity), explicitly framed as an illustrative example, not
+ a stated default; the "Activity is above user's usual activity for the day" anomalous-activity
+ trigger option; "Use real-time analytics recommendations to set thresholds" (preview, requires
+ insider risk analytics enabled and "Include all users and groups" scope, 10-day activity
+ window); "you can only modify triggering events for policies created from the Data leaks or
+ Data leaks by priority users templates", confirmed via a direct Microsoft Learn fetch, 
+ <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#indicator-level-settings>,
+ <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#use-real-time-analytics-recommendations-to-set-thresholds>
 4. Limits in Insider Risk Management, "Maximum number of users in scope for a policy template":
-   Data leaks = **15,000**, a per-template (not per-trigger-event) limit, already confirmed via a
-   direct Microsoft Learn fetch for the DLP-trigger sibling scenario, reused here unmodified, 
-   <https://learn.microsoft.com/purview/insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template>
+ Data leaks = **15,000**, a per-template (not per-trigger-event) limit, already confirmed via a
+ direct Microsoft Learn fetch for the DLP-trigger sibling scenario, reused here unmodified, 
+ <https://learn.microsoft.com/purview/insider-risk-management-limits#maximum-number-of-users-in-scope-for-a-policy-template>
 5. `data-leaks/README.md` and `design.md`, this scenario's direct sibling and template source,
-   whose own already-grounded facts (max-users cap, population mechanism, cumulative exfiltration
-   detection default, optional indicator applicability) this scenario reuses and cross-references
-   rather than re-verifying independently. `security-policy-violations/deploy/
-   Get-SecurityPolicyViolationsScopeCandidates.ps1` and `departing-employee-data-theft/deploy/
-   Export-InsiderRiskAlerts.ps1`, reused unmodified.
+ whose own already-grounded facts (max-users cap, population mechanism, cumulative exfiltration
+ detection default, optional indicator applicability) this scenario reuses and cross-references
+ rather than re-verifying independently. `security-policy-violations/deploy/
+ Get-SecurityPolicyViolationsScopeCandidates.ps1` and `departing-employee-data-theft/deploy/
+ Export-InsiderRiskAlerts.ps1`, reused unmodified.
 6. alert resource type, `AlertPolicyId`, `DetectionSource` properties, 
-   <https://learn.microsoft.com/graph/api/resources/security-alert>
+ <https://learn.microsoft.com/graph/api/resources/security-alert>
 7. List group transitive members (OData cast, required `ConsistencyLevel: eventual` header,
-   `GroupMember.Read.All` among the higher-privileged application permissions), 
-   <https://learn.microsoft.com/graph/api/group-list-transitivemembers?view=graph-rest-1.0>
+ `GroupMember.Read.All` among the higher-privileged application permissions), 
+ <https://learn.microsoft.com/graph/api/group-list-transitivemembers?view=graph-rest-1.0>
 8. Microsoft Graph permissions reference (`GroupMember.Read.All`, `SecurityAlert.Read.All`), 
-   <https://learn.microsoft.com/graph/permissions-reference>
+ <https://learn.microsoft.com/graph/permissions-reference>
 
 > Re-verify all links, cmdlet/API behavior, and licensing terms against current Microsoft Learn
 > before a customer-facing assessment or sale. This scenario's citations were grounded via a direct

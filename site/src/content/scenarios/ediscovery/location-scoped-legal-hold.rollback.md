@@ -4,7 +4,7 @@ parent: "ediscovery/location-scoped-legal-hold"
 ---
 This hold mechanism has **no reversible "pause" on v1.0** (`design.md` §4), `enablePolicy`/
 `disablePolicy` exist only in the beta Graph namespace, which this library's automation does not
-call (`docs/automation-surface.md` §2). Every stage below is either narrowly scoped (release one
+call ([Automation surface §2](/docs/automation-surface/#2-module-install)). Every stage below is either narrowly scoped (release one
 location) or fully destructive (delete the whole policy); there is no "turn it off, turn it back
 on next week" middle ground the way there is for a custodian's hold release/re-apply cycle in the
 sibling scenario. **Confirm with counsel that the preservation duty for the affected location(s)
@@ -18,7 +18,7 @@ Both removal paths carry Microsoft's own documented warning, quoted directly:
 > being preserved.", and, for delete: "When you delete a hold policy, you remove all associated
 > holds and release all sites and mailboxes. This action might result in permanent deletion of
 > any content currently being preserved."
-> [[reference below]]
+> 
 
 There is no v1.0 "turn off" action distinct from delete/remove (`design.md` §4), the stages below
 are the only two supported release mechanisms.
@@ -69,21 +69,21 @@ which apply identically to a case holding this scenario's location-scoped hold.
 ## What rollback does **not** undo
 
 - **Mailbox/site content itself.** Removing a source or deleting the policy removes *eDiscovery's*
-  preservation of that location, it does not delete anything, and it does not restore anything.
-  Whatever normal retention/deletion policy would otherwise apply to that mailbox or site (if any)
-  resumes governing it once the hold is gone. Per Microsoft's own warning above, if nothing else
-  was independently preserving that content, it can become **immediately eligible for permanent
-  deletion** the moment the hold is removed, this is the sharpest practical difference from the
-  custodian scenario's `release`, which does not carry the same explicit permanent-deletion
-  warning in Microsoft's documentation.
+ preservation of that location, it does not delete anything, and it does not restore anything.
+ Whatever normal retention/deletion policy would otherwise apply to that mailbox or site (if any)
+ resumes governing it once the hold is gone. Per Microsoft's own warning above, if nothing else
+ was independently preserving that content, it can become **immediately eligible for permanent
+ deletion** the moment the hold is removed, this is the sharpest practical difference from the
+ custodian scenario's `release`, which does not carry the same explicit permanent-deletion
+ warning in Microsoft's documentation.
 - **Distribution-list membership changes that occurred while the hold was active.** If a
-  distribution-list `userSource` was relying on server-side expansion (§11's VERIFY), anyone who
-  left the list before the hold was removed was preserved only for their time as a member, this
-  scenario's automation has no visibility into list-membership history to reconstruct who was
-  covered when.
+ distribution-list `userSource` was relying on server-side expansion (§11's VERIFY), anyone who
+ left the list before the hold was removed was preserved only for their time as a member, this
+ scenario's automation has no visibility into list-membership history to reconstruct who was
+ covered when.
 - **Audit log entries.** Every source-removal and policy-delete action is itself an audited event
-  in the Microsoft 365 unified audit log, independent of the hold's own lifecycle, rollback of
-  the *control* does not roll back the *record that it existed*.
+ in the Microsoft 365 unified audit log, independent of the hold's own lifecycle, rollback of
+ the *control* does not roll back the *record that it existed*.
 
 ## Verification after rollback
 

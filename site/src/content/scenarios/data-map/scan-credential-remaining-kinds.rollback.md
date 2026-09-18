@@ -58,15 +58,15 @@ kinds.
 Identical to the parent scenario's `rollback.md`, plus two kind-specific notes:
 
 - **`AmazonARN`:** deleting the Purview credential does **not** delete or modify the AWS IAM role,
-  or its trust policy naming Microsoft's account ID and external ID. That is AWS-side state, entirely
-  outside this scenario and the Purview API. Remove it in the AWS console if this is a full teardown.
+ or its trust policy naming Microsoft's account ID and external ID. That is AWS-side state, entirely
+ outside this scenario and the Purview API. Remove it in the AWS console if this is a full teardown.
 - **`ManagedIdentity`:** deleting the Purview credential does **not** delete the user-assigned managed
-  identity, or remove whatever access grant it holds at the target source. Both are Azure-side
-  resources this scenario never created, remove them separately (the Purview account's **Managed
-  identities** blade, and the source's own IAM/RBAC surface) if this is a full teardown.
+ identity, or remove whatever access grant it holds at the target source. Both are Azure-side
+ resources this scenario never created, remove them separately (the Purview account's **Managed
+ identities** blade, and the source's own IAM/RBAC surface) if this is a full teardown.
 - Everything else, catalog assets, scan run history, the Key Vault secret's value (for the three
-  secret-bearing kinds here), and any scan object referencing the credential, behaves exactly as
-  documented in the parent scenario's `rollback.md`.
+ secret-bearing kinds here), and any scan object referencing the credential, behaves exactly as
+ documented in the parent scenario's `rollback.md`.
 
 ## Verification after rollback
 

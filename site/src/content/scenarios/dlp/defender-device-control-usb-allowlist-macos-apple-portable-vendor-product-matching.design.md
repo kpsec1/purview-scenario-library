@@ -25,25 +25,25 @@ condition for revisiting this item is now satisfied.
 ## 2. Design goals
 
 1. **Extend, don't replace.** `ApprovedAppleDevices`/`ApprovedPortableDevices`'s existing
-   `serialNumber`-based clauses stay fully intact; this fragment adds vendorId/productId-matched
-   devices as additional OR-branches of the *same* groups, per family, independently.
+ `serialNumber`-based clauses stay fully intact; this fragment adds vendorId/productId-matched
+ devices as additional OR-branches of the *same* groups, per family, independently.
 2. **No new rule, per family.** `Allow-ApprovedAppleDevices`/`Allow-ApprovedPortableDevices` and
-   `Deny-AllOtherAppleDevices`/`Deny-AllOtherPortableDevices` all key off their family's Approved
-   group's **id**, not its internal clause contents (portable-device-coverage's own
-   `design.md`/README table), the identical "extend the group, not the rule" reasoning the
-   vendor-product-matching fragment already established (its own `design.md` §2).
+ `Deny-AllOtherAppleDevices`/`Deny-AllOtherPortableDevices` all key off their family's Approved
+ group's **id**, not its internal clause contents (portable-device-coverage's own
+ `design.md`/README table), the identical "extend the group, not the rule" reasoning the
+ vendor-product-matching fragment already established (its own `design.md` §2).
 3. **Two independent families, one fragment, one config file.** A tenant can configure
-   vendorId/productId devices for Apple only, Portable only, both, or neither in one run, mirrors
-   how portable-device-coverage itself handles Apple and Portable as two independent, optionally
-   populated lists in one script.
+ vendorId/productId devices for Apple only, Portable only, both, or neither in one run, mirrors
+ how portable-device-coverage itself handles Apple and Portable as two independent, optionally
+ populated lists in one script.
 4. **A materially narrower prerequisite than the removable-media sibling: the buyer must already
-   have at least one `serialNumber`-approved device configured for a family before this fragment can
-   add a vendorId/productId device to it** (§3 below), a deliberate scope boundary, not an oversight.
+ have at least one `serialNumber`-approved device configured for a family before this fragment can
+ add a vendorId/productId device to it** (§3 below), a deliberate scope boundary, not an oversight.
 5. **Idempotent and re-runnable per family**, including self-healing drift and clean removal of a
-   device no longer in the config file.
+ device no longer in the config file.
 6. **Disclose the cross-fragment ordering hazard this fragment inherits (a more severe version of
-   the one the Bluetooth sibling fragment already disclosed and detected), rather than silently
-   engineer around it by modifying an already-reviewed prerequisite script** (§7 below).
+ the one the Bluetooth sibling fragment already disclosed and detected), rather than silently
+ engineer around it by modifying an already-reviewed prerequisite script** (§7 below).
 
 ## 3. Why this fragment requires the Approved group to already exist (a deliberate, narrower scope than the removable-media sibling)
 
@@ -65,17 +65,17 @@ portable-device-coverage's own conditional branch already produces. This fragmen
 **not** attempt that:
 
 - It would require this fragment's script to also own creating and, on removal, tearing down an
-  `Allow-Approved{Family}Devices` rule and reconciling `Deny-AllOtherOrPortableDevices`'s
-  `excludeGroups` in place, object ownership that belongs to portable-device-coverage's own script
-  today, not this fragment's.
+ `Allow-Approved{Family}Devices` rule and reconciling `Deny-AllOtherOrPortableDevices`'s
+ `excludeGroups` in place, object ownership that belongs to portable-device-coverage's own script
+ today, not this fragment's.
 - It would double this fragment's own state space (four possible starting states per family, group
-  absent/present × rule absent/present, instead of the two the current design handles) without a
-  concrete buyer requirement to design that expansion against.
+ absent/present × rule absent/present, instead of the two the current design handles) without a
+ concrete buyer requirement to design that expansion against.
 - This repository already has a direct precedent for refusing rather than silently building a missing
-  prerequisite object: the removable-media vendor-product-matching fragment itself refuses to run if
-  `ApprovedBackupDrives` is absent (impossible in practice there, since it's mandatory, but the same
-  refusal-not-fabrication principle applies), and the Bluetooth sibling fragment refuses to run if
-  `AllBluetoothDevices`/`Deny-AllBluetoothDevices` are absent.
+ prerequisite object: the removable-media vendor-product-matching fragment itself refuses to run if
+ `ApprovedBackupDrives` is absent (impossible in practice there, since it's mandatory, but the same
+ refusal-not-fabrication principle applies), and the Bluetooth sibling fragment refuses to run if
+ `AllBluetoothDevices`/`Deny-AllBluetoothDevices` are absent.
 
 A buyer with zero `serialNumber`-matched devices for a family who wants only a vendorId/productId
 exception must first configure at least one `serialNumber` device for that family via
@@ -139,31 +139,31 @@ it, and unconditionally rebuilds the objects it owns from its own `-ConfigPath` 
 This fragment inherits the identical hazard, in a **more severe form**:
 
 - **Bluetooth's hazard:** a rerun nulls `Deny-AllBluetoothDevices`'s `excludeGroups`, the Bluetooth
-  sibling fragment's own group/rule survive untouched; only the cross-reference is dropped.
+ sibling fragment's own group/rule survive untouched; only the cross-reference is dropped.
 - **This fragment's hazard:** `Add-MacPortableDeviceCoverage.ps1`'s `Get-SerialNumberGroup` helper
-  *fully rebuilds* `ApprovedAppleDevices`/`ApprovedPortableDevices`'s `query.clauses` from that
-  script's own `serialNumber` list only (never preserving a `groupId` clause it didn't itself write)
-  on every reconcile where that family has ≥1 `serialNumber` device, silently dropping this
-  fragment's `groupId` clauses. Worse, if that family's `serialNumber` list is rerun down to **zero**
-  entries, `Add-MacPortableDeviceCoverage.ps1` takes its own "else" branch and removes the Approved
-  group **and** its Allow rule entirely, orphaning this fragment's sub-groups completely (they
-  remain in the policy JSON, referenced by nothing).
+ *fully rebuilds* `ApprovedAppleDevices`/`ApprovedPortableDevices`'s `query.clauses` from that
+ script's own `serialNumber` list only (never preserving a `groupId` clause it didn't itself write)
+ on every reconcile where that family has ≥1 `serialNumber` device, silently dropping this
+ fragment's `groupId` clauses. Worse, if that family's `serialNumber` list is rerun down to **zero**
+ entries, `Add-MacPortableDeviceCoverage.ps1` takes its own "else" branch and removes the Approved
+ group **and** its Allow rule entirely, orphaning this fragment's sub-groups completely (they
+ remain in the policy JSON, referenced by nothing).
 
 Two options were considered, the same two the Bluetooth fragment's own `design.md` §8 already
 weighed:
 
 1. **Modify `Add-MacPortableDeviceCoverage.ps1` to be aware of this fragment.** Rejected for the same
-   reason the Bluetooth fragment rejected it: it reopens an already-reviewed, finished fragment to add
-   coupling to an optional extension built on top of it, out of proportion to this fragment's own
-   scope.
+ reason the Bluetooth fragment rejected it: it reopens an already-reviewed, finished fragment to add
+ coupling to an optional extension built on top of it, out of proportion to this fragment's own
+ scope.
 2. **Disclose the hazard explicitly and detect it at validation time.** Adopted. This fragment's own
-   deploy script always fully reconciles both families' groups on every run (so running it last always
-   produces the correct state), and its validate script distinguishes three outcomes per family:
-   "never configured" (no Approved group, no owned sub-groups, clean), "correctly reconciled" (every
-   check passes), and "drifted because the prerequisite fragment's own reconcile ran afterward and
-   the Approved group vanished while this fragment's sub-groups are still present, now orphaned", a
-   distinct `[FAIL]` with the exact remediation named, not conflated with "never deployed" (README.md
-   §11).
+ deploy script always fully reconciles both families' groups on every run (so running it last always
+ produces the correct state), and its validate script distinguishes three outcomes per family:
+ "never configured" (no Approved group, no owned sub-groups, clean), "correctly reconciled" (every
+ check passes), and "drifted because the prerequisite fragment's own reconcile ran afterward and
+ the Approved group vanished while this fragment's sub-groups are still present, now orphaned", a
+ distinct `[FAIL]` with the exact remediation named, not conflated with "never deployed" (README.md
+ §11).
 
 ## 8. Key decisions
 
@@ -180,24 +180,24 @@ weighed:
 ## 9. Non-goals
 
 - This scenario does not create `ApprovedAppleDevices`, `ApprovedPortableDevices`,
-  `Allow-ApprovedAppleDevices`, `Allow-ApprovedPortableDevices`, either family's catch-all group, or
-  either family's `Deny-AllOtherAppleDevices`/`Deny-AllOtherPortableDevices` rule, all are
-  prerequisites owned by `defender-device-control-usb-allowlist-macos-portable-device-coverage`, not
-  deployed artifacts of this fragment (§3).
+ `Allow-ApprovedAppleDevices`, `Allow-ApprovedPortableDevices`, either family's catch-all group, or
+ either family's `Deny-AllOtherAppleDevices`/`Deny-AllOtherPortableDevices` rule, all are
+ prerequisites owned by `defender-device-control-usb-allowlist-macos-portable-device-coverage`, not
+ deployed artifacts of this fragment (§3).
 - This scenario does not build the Approved group/Allow rule pair from a zero-`serialNumber`
-  starting state for either family (§3), tracked as a follow-up in `PROGRESS.md`.
+ starting state for either family (§3), tracked as a follow-up in `PROGRESS.md`.
 - This scenario does not extend vendorId/productId matching to the Bluetooth family, that family
-  already has its own, single-device vendorId/productId exception
-  (`defender-device-control-usb-allowlist-macos-bluetooth-allowlist/`), built on a structurally
-  different (no OR'd multi-device sub-groups) model.
+ already has its own, single-device vendorId/productId exception
+ (`defender-device-control-usb-allowlist-macos-bluetooth-allowlist/`), built on a structurally
+ different (no OR'd multi-device sub-groups) model.
 - This scenario does not modify `Add-MacPortableDeviceCoverage.ps1` to make it aware of this fragment
-  (§7), the ordering hazard is disclosed and detected, not engineered away by coupling the two
-  scripts, the same choice the Bluetooth sibling fragment already made for its own analogous hazard.
+ (§7), the ordering hazard is disclosed and detected, not engineered away by coupling the two
+ scripts, the same choice the Bluetooth sibling fragment already made for its own analogous hazard.
 - This scenario does not deploy via JAMF as a separate build. Because the underlying
-  `deviceControl.policy` JSON schema is identical across the Intune and JAMF deployment paths (the
-  same reasoning the portable-device-coverage fragment's own `design.md` §8 already establishes), the
-  group delta this fragment grounds applies equally to
-  `defender-device-control-usb-allowlist-macos-jamf/`'s JAMF-managed sibling.
+ `deviceControl.policy` JSON schema is identical across the Intune and JAMF deployment paths (the
+ same reasoning the portable-device-coverage fragment's own `design.md` §8 already establishes), the
+ group delta this fragment grounds applies equally to
+ `defender-device-control-usb-allowlist-macos-jamf/`'s JAMF-managed sibling.
 
 ## References
 

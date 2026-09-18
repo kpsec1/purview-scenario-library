@@ -21,29 +21,29 @@ they omit Microsoft's actual second-choice authentication method entirely.
 ## 2. Design goals
 
 1. **One script, five kinds, same shape as the parent's one script, three kinds.** A `-CredentialType`
-   switch dispatches to kind-specific parameter validation and body construction, exactly mirroring
-   `New-PurviewScanCredential.ps1`'s structure so a reader of one script recognizes the other
-   immediately.
+ switch dispatches to kind-specific parameter validation and body construction, exactly mirroring
+ `New-PurviewScanCredential.ps1`'s structure so a reader of one script recognizes the other
+ immediately.
 2. **Don't force a Key Vault connection onto kinds that don't have one.** `AmazonARN` and
-   `ManagedIdentity` carry no `KeyVaultSecret` reference anywhere in their schema. Requiring
-   `-KeyVaultConnectionName` for them the way the parent scenario requires it universally would be
-   asking for state the credential object never uses, the script instead **rejects** Key
-   Vault-related parameters for those two kinds rather than silently ignoring them.
+ `ManagedIdentity` carry no `KeyVaultSecret` reference anywhere in their schema. Requiring
+ `-KeyVaultConnectionName` for them the way the parent scenario requires it universally would be
+ asking for state the credential object never uses, the script instead **rejects** Key
+ Vault-related parameters for those two kinds rather than silently ignoring them.
 3. **Treat `ConsumerKeyAuth`'s two independent secret references as two, not one.** A naive port of
-   the parent script's single-`KeyVaultSecret` assumption would either drop the second reference or
-   conflate the two. This fragment's parameter surface (`-SecretName` for the password,
-   `-ConsumerSecretName` for the consumer secret, independently versionable) keeps them distinct
-   because Microsoft's schema keeps them distinct.
+ the parent script's single-`KeyVaultSecret` assumption would either drop the second reference or
+ conflate the two. This fragment's parameter surface (`-SecretName` for the password,
+ `-ConsumerSecretName` for the consumer secret, independently versionable) keeps them distinct
+ because Microsoft's schema keeps them distinct.
 4. **Disclose preview status where it exists, and a documentation quirk where it doesn't clarify
-   itself.** `ManagedIdentity` is labeled preview on the product page but not on the REST reference;
-   `RoleARNCredential`'s own description overstates its schema. Both are stated plainly rather than
-   smoothed over, `AGENTS.md` §4.
+ itself.** `ManagedIdentity` is labeled preview on the product page but not on the REST reference;
+ `RoleARNCredential`'s own description overstates its schema. Both are stated plainly rather than
+ smoothed over, `AGENTS.md` §4.
 5. **Do not build a consuming scan scenario for any of these five kinds.** That would be five new
-   fragments (Amazon S3, Salesforce, Fabric, Power BI, plus a UAMI variant of an existing Azure SQL
-   scenario), each with its own source-side prerequisites this fragment's grounding pass did not
-   verify to that depth. This fragment's job is "make the credential object creatable and
-   verifiable"; §7 lists the natural next fragments explicitly rather than silently implying they
-   don't matter.
+ fragments (Amazon S3, Salesforce, Fabric, Power BI, plus a UAMI variant of an existing Azure SQL
+ scenario), each with its own source-side prerequisites this fragment's grounding pass did not
+ verify to that depth. This fragment's job is "make the credential object creatable and
+ verifiable"; §7 lists the natural next fragments explicitly rather than silently implying they
+ don't matter.
 
 ## 3. Why Key Vault involvement is kind-conditional, not universal
 
@@ -126,22 +126,22 @@ unit for a buyer who takes only one folder.
 ## 7. Non-goals
 
 - **Creating the Azure Key Vault, secret, AWS IAM role, or user-assigned managed identity.** All
-  four are out-of-band prerequisites, the same posture the parent scenario takes toward the Key
-  Vault and its secret.
+ four are out-of-band prerequisites, the same posture the parent scenario takes toward the Key
+ Vault and its secret.
 - **A consuming scan scenario for any of these five kinds.** Explicitly deferred, tracked as
-  follow-ups in `PROGRESS.md`:
-  - Amazon S3 scan scenario (would consume `AmazonARN`)
-  - Salesforce scan scenario (would consume `ConsumerKeyAuth`)
-  - Microsoft Fabric / Power BI scan scenario (would consume `DelegatedAuth`)
-  - A `ManagedIdentity`(UAMI) variant of `scan-azure-sql-and-classify`,
-    `scan-azure-sql-managed-instance-and-classify`, or `scan-azure-synapse-and-classify`, swapping
-    their current SAMI-based credential-less path for an explicit UAMI credential, the most
-    directly actionable of the four, since the target scan scenarios already exist
-  - `AccountKey`-based scan scenarios for Azure Blob Storage / ADLS Gen1 / ADLS Gen2 / Azure Files /
-    Azure Cosmos DB, none of these source types has a scan scenario in this library yet at all,
-    with any credential kind
+ follow-ups in `PROGRESS.md`:
+ - Amazon S3 scan scenario (would consume `AmazonARN`)
+ - Salesforce scan scenario (would consume `ConsumerKeyAuth`)
+ - Microsoft Fabric / Power BI scan scenario (would consume `DelegatedAuth`)
+ - A `ManagedIdentity`(UAMI) variant of `scan-azure-sql-and-classify`,
+ `scan-azure-sql-managed-instance-and-classify`, or `scan-azure-synapse-and-classify`, swapping
+ their current SAMI-based credential-less path for an explicit UAMI credential, the most
+ directly actionable of the four, since the target scan scenarios already exist
+ - `AccountKey`-based scan scenarios for Azure Blob Storage / ADLS Gen1 / ADLS Gen2 / Azure Files /
+ Azure Cosmos DB, none of these source types has a scan scenario in this library yet at all,
+ with any credential kind
 - **Confirming the `AmazonARN` account ID/external ID's source.** §4, tracked as a `PROGRESS.md`
-  VERIFY rather than resolved by inference.
+ VERIFY rather than resolved by inference.
 - **Re-litigating the parent scenario's open VERIFYs.** The two `KeyVaultSecret` discriminator
-  literals, omitted-`secretVersion` semantics, and the credential re-point detection gap are
-  inherited, not rediscovered, see parent `design.md` §5 and `reviews.md`.
+ literals, omitted-`secretVersion` semantics, and the credential re-point detection gap are
+ inherited, not rediscovered, see parent `design.md` §5 and `reviews.md`.

@@ -34,17 +34,17 @@ this scenario.
 ## 3. Decide the fate of already-produced report files
 
 - **Trend-log CSV and per-run drift-report JSON files** (wherever `-TrendLogPath` /
-  `-DriftReportDirectory` pointed) are ordinary files this scenario wrote outside of Purview, 
-  delete them, archive them, or leave them in place per the buyer's own data-retention policy. There
-  is no Purview-side artifact tied to them that would become orphaned or inconsistent if they're
-  kept after the automation identity's role is removed.
+ `-DriftReportDirectory` pointed) are ordinary files this scenario wrote outside of Purview, 
+ delete them, archive them, or leave them in place per the buyer's own data-retention policy. There
+ is no Purview-side artifact tied to them that would become orphaned or inconsistent if they're
+ kept after the automation identity's role is removed.
 - **Treat these files with the same handling discipline `README.md` §11 describes**, they name Key
-  Vault secret names and identity fields (never secret values) for every scan credential in scope,
-  which is reconnaissance value even without a single password or key inside them. Don't move them
-  to less-protected storage as part of "just archiving" them.
+ Vault secret names and identity fields (never secret values) for every scan credential in scope,
+ which is reconnaissance value even without a single password or key inside them. Don't move them
+ to less-protected storage as part of "just archiving" them.
 - If the trend log was committed to a source-control repository (the recommended pattern for
-  preserving history, `README.md` §4/§8), treat its removal like removing any other tracked file: a
-  deliberate commit, not an ad hoc delete.
+ preserving history, `README.md` §4/§8), treat its removal like removing any other tracked file: a
+ deliberate commit, not an ad hoc delete.
 
 ## 4. Decide the fate of the checked-in expected-state file
 
@@ -58,11 +58,11 @@ later, unrelated investigation needs to reconstruct what was approved.
 ## What rollback does **not** undo
 
 - **Any Purview object.** There isn't one, see "What there is to roll back," above. Removing this
-  scenario's automation has zero effect on the credentials, Key Vault connections, or scans it read
-  from.
+ scenario's automation has zero effect on the credentials, Key Vault connections, or scans it read
+ from.
 - **The credentials themselves**, entirely owned by `scenarios/data-map/
-  scan-credential-key-vault-backed/`, not by this scenario. Rolling back this reporting scenario does
-  **not** remove the detective-control gap `README.md` §2 describes reopening, see the next section.
+ scan-credential-key-vault-backed/`, not by this scenario. Rolling back this reporting scenario does
+ **not** remove the detective-control gap `README.md` §2 describes reopening, see the next section.
 
 ## A rollback of this scenario reopens a named risk
 

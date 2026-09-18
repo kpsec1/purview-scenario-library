@@ -58,19 +58,19 @@ definition file), not what removing them means.
 ## What rollback does **not** undo
 
 - **The underlying roster or group.** This scenario never creates, modifies, or deletes a Team,
-  Microsoft 365 Group, or any individual's mailbox, it only reads a roster CSV someone else
-  produced and, optionally, references addresses from it in a hold. Removing the hold has zero
-  effect on the group or its members.
+ Microsoft 365 Group, or any individual's mailbox, it only reads a roster CSV someone else
+ produced and, optionally, references addresses from it in a hold. Removing the hold has zero
+ effect on the group or its members.
 - **The selection file's own history.** Deleting a merged output file removes that file, not any
-  record of what selection produced it, this scenario never persists selection decisions anywhere
-  beyond the `-SelectionPath` file itself and the `note` field it copies into the merged output;
-  treat `-SelectionPath` files as records worth keeping (in version control, in a matter file) if
-  the decision they represent needs a durable audit trail beyond this scenario's own outputs.
+ record of what selection produced it, this scenario never persists selection decisions anywhere
+ beyond the `-SelectionPath` file itself and the `note` field it copies into the merged output;
+ treat `-SelectionPath` files as records worth keeping (in version control, in a matter file) if
+ the decision they represent needs a durable audit trail beyond this scenario's own outputs.
 
 ## Verification after rollback
 
-Re-run `./validate/Test-RosterHoldDefinitionMerge.ps1 -RosterPath ... -SelectionPath ... -MergedDefinitionPath
-... -CaseId $caseId -HoldId $holdId ...` after a Stage 2 release, the hold-reconciliation check
+Re-run `./validate/Test-RosterHoldDefinitionMerge.ps1 -RosterPath... -SelectionPath... -MergedDefinitionPath
+... -CaseId $caseId -HoldId $holdId...` after a Stage 2 release, the hold-reconciliation check
 should report `FAIL` (userSource not found) for the released member, the expected post-rollback
 state, not a validate-script bug. For a Stage 1-only rollback (no `-AddToHold` was ever used),
 re-running the merge from the restored/deleted state simply reproduces the same result as a fresh

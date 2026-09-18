@@ -54,21 +54,21 @@ or locations).
 ## What rollback does **not** undo
 
 - **Labels already applied to files.** This scenario's controls (disable, simulation, or purge)
-  stop the policy from applying *new* labels going forward. They do **not** retroactively remove
-  the `Confidential` label from files the policy already labeled. Removing a label from
-  already-labeled content is a separate action (an auto-labeling policy configured to
-  **automatically remove a label**, or a manual per-file/library action) and is out of this
-  scenario's scope.
+ stop the policy from applying *new* labels going forward. They do **not** retroactively remove
+ the `Confidential` label from files the policy already labeled. Removing a label from
+ already-labeled content is a separate action (an auto-labeling policy configured to
+ **automatically remove a label**, or a manual per-file/library action) and is out of this
+ scenario's scope.
 - **Encryption, if the label applies it.** If `Confidential` is configured to apply encryption,
-  disabling or removing this auto-labeling policy has no effect on files already encrypted under
-  that label, the encryption is a property of the label assignment on the file, not of this
-  policy.
+ disabling or removing this auto-labeling policy has no effect on files already encrypted under
+ that label, the encryption is a property of the label assignment on the file, not of this
+ policy.
 - **The `Confidential` label itself.** This scenario never created the label, it's a
-  prerequisite dependency (see `design.md` §7). Removing this policy has no effect on the label's
-  existence, definition, or publication to users.
+ prerequisite dependency (see `design.md` §7). Removing this policy has no effect on the label's
+ existence, definition, or publication to users.
 - **The `Set-SPOTenant -EnableAIPIntegration` tenant toggle.** That is a separate, tenant-wide
-  setting outside this policy's lifecycle (see `README.md` §3, §11), this scenario's rollback
-  does not touch it.
+ setting outside this policy's lifecycle (see `README.md` §3, §11), this scenario's rollback
+ does not touch it.
 
 ## Verification after rollback
 

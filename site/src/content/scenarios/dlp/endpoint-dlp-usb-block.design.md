@@ -17,42 +17,42 @@ watched more closely than everyone else.
 ## 2. Design goals
 
 1. Block, don't just audit, copying of SSN/Credit-Card-Number content to removable USB storage
-   from any onboarded Windows or macOS device, this is the exfiltration channel Endpoint DLP
-   exists to close (`README.md` §2).
+ from any onboarded Windows or macOS device, this is the exfiltration channel Endpoint DLP
+ exists to close (`README.md` §2).
 2. Give a single named security group (IT Data Custodians) a narrower path: audited, not blocked,
-   because backup/imaging operations are a legitimate, already-approved workflow that a hard
-   block would break, same shape as the Card Operations override in
-   `scenarios/dlp/pci-teams-exfil-block/`, adapted to a device-control action instead of a
-   Teams-message action.
+ because backup/imaging operations are a legitimate, already-approved workflow that a hard
+ block would break, same shape as the Card Operations override in
+ `scenarios/dlp/pci-teams-exfil-block/`, adapted to a device-control action instead of a
+ Teams-message action.
 3. Reuse the exact SIT pair (`U.S. Social Security Number (SSN)`, `Credit Card Number`, minimum
-   count 1) already deployed by `auto-label-confidential-sharepoint`, so the two scenarios form a
-   single coherent control: content gets classified/labeled Confidential in one scenario and is
-   then blocked from leaving via USB in this one, without redefining what "sensitive" means twice.
+ count 1) already deployed by `auto-label-confidential-sharepoint`, so the two scenarios form a
+ single coherent control: content gets classified/labeled Confidential in one scenario and is
+ then blocked from leaving via USB in this one, without redefining what "sensitive" means twice.
 4. Everything is idempotent and re-runnable: running `New-EndpointDlpUsbBlockPolicy.ps1` twice
-   must not create duplicate policies/rules or error out.
+ must not create duplicate policies/rules or error out.
 5. Ship "off" by default (`-Mode TestWithNotifications`), matching the staged-rollout default used
-   by every other scenario in this repo (`AGENTS.md` §4, `pci-teams-exfil-block/design.md` §2).
+ by every other scenario in this repo (`AGENTS.md` §4, `pci-teams-exfil-block/design.md` §2).
 
 ## 3. Why Endpoint DLP (not Defender for Endpoint device control, not DLP for SharePoint/OneDrive)
 
 - **Microsoft Defender for Endpoint device control** (`device-control-overview`,
-  <https://learn.microsoft.com/defender-endpoint/device-control-overview>) can deny a USB device
-  outright at the driver/PnP level, allow, block, or audit a *device*, regardless of what's on
-  it. That's the right tool for "no unapproved USB drives, period." It is **content-blind**: it
-  cannot distinguish a spreadsheet of card numbers from a screenshot of a cat. This scenario needs
-  a content-aware decision (let non-sensitive files copy freely; stop only the regulated content),
-  which is Endpoint DLP's job, not device control's. The two are complementary, not competing, 
-  see `README.md` §11 for how a buyer combines them.
+ <https://learn.microsoft.com/defender-endpoint/device-control-overview>) can deny a USB device
+ outright at the driver/PnP level, allow, block, or audit a *device*, regardless of what's on
+ it. That's the right tool for "no unapproved USB drives, period." It is **content-blind**: it
+ cannot distinguish a spreadsheet of card numbers from a screenshot of a cat. This scenario needs
+ a content-aware decision (let non-sensitive files copy freely; stop only the regulated content),
+ which is Endpoint DLP's job, not device control's. The two are complementary, not competing, 
+ see `README.md` §11 for how a buyer combines them.
 - **DLP for SharePoint/OneDrive** protects content only while it's *inside* Microsoft 365 cloud
-  storage/sync locations. Once a file is already resident on a laptop's local disk (downloaded,
-  created locally, synced then taken offline), SharePoint/OneDrive DLP has no visibility into a
-  local copy-to-USB action, only Endpoint DLP, which requires the device to be **onboarded**, can
-  see and act on that local file-system activity (`endpoint-dlp-learn-about`, "Learn about
-  Endpoint data loss prevention").
+ storage/sync locations. Once a file is already resident on a laptop's local disk (downloaded,
+ created locally, synced then taken offline), SharePoint/OneDrive DLP has no visibility into a
+ local copy-to-USB action, only Endpoint DLP, which requires the device to be **onboarded**, can
+ see and act on that local file-system activity (`endpoint-dlp-learn-about`, "Learn about
+ Endpoint data loss prevention").
 - **Endpoint DLP** is the only Purview control that (a) inspects file content for the same SITs
-  used elsewhere in the tenant, in real time, at the point of the copy attempt, and (b) can take a
-  content-aware action (audit/block/block-with-override) scoped to the **removable media**
-  activity specifically, leaving every other file activity on the device unaffected.
+ used elsewhere in the tenant, in real time, at the point of the copy attempt, and (b) can take a
+ content-aware action (audit/block/block-with-override) scoped to the **removable media**
+ activity specifically, leaving every other file activity on the device unaffected.
 
 ## 4. Policy architecture
 
@@ -100,7 +100,7 @@ already exists rather than creating it.
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`), per `docs/automation-surface.md` surface 2 | Same as every other DLP scenario in this repo, DLP policy/rule objects have no Graph authoring equivalent today. |
+| Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`), per [Automation surface](/docs/automation-surface/) surface 2 | Same as every other DLP scenario in this repo, DLP policy/rule objects have no Graph authoring equivalent today. |
 | Sensitive content condition | Same SIT pair as `auto-label-confidential-sharepoint` (SSN, Credit Card Number; min count 1) | Keeps "what counts as sensitive" consistent across the two scenarios that together form one classify-then-control chain; avoids a buyer having two different, drifting definitions of "sensitive" for the same data. |
 | Restricted activity | **Copy to a removable device** only (`EndpointDlpRestrictions` Setting `RemovableMedia`) | Matches the scenario's stated scope (USB exfiltration). Print, clipboard, network share, Bluetooth, and RDP are separate `EndpointDlpRestrictions` activities this scenario deliberately leaves untouched, see `README.md` §7, non-goals. |
 | IT exception mechanism | `FromMemberOf` / `ExceptIfFromMemberOf` on a security group, not a device-based Removable USB device group allowlist | Consistent with the Card Ops precedent in `pci-teams-exfil-block` (auditable, survives staff turnover, no script edits on membership change) and avoids depending on the **Removable USB device groups** portal feature. A dedicated grounding pass confirmed this is portal-only end-to-end, not just the device-registration step: `Set-PolicyConfig -DlpRemovableMediaGroups` exists but its hashtable shape is undocumented (placeholder text in Microsoft's own reference), and `New-DlpComplianceRule`/`Set-DlpComplianceRule` expose no parameter for referencing a device group as a rule condition/exception at all (`README.md` §11). |
@@ -110,21 +110,21 @@ already exists rather than creating it.
 ## 7. Non-goals
 
 - This scenario does not configure **Microsoft Defender for Endpoint device control** (device-ID/
-  vendor-ID allow/deny lists, BitLocker-encryption-required policies). That's a complementary,
-  device-identity-based control, see `README.md` §11 for how the two combine.
+ vendor-ID allow/deny lists, BitLocker-encryption-required policies). That's a complementary,
+ device-identity-based control, see `README.md` §11 for how the two combine.
 - This scenario does not restrict **Print, clipboard, network share, Bluetooth, or RDP** file
-  activities, only **copy to removable media**. A buyer wanting those covered too extends the
-  `EndpointDlpRestrictions` array in `deploy/New-EndpointDlpUsbBlockPolicy.ps1` (each additional
-  activity is one more `@{Setting=...; Value=...}` hashtable in the same array), using Microsoft's
-  now-confirmed `Setting` names for four of them, `Print`, `CopyPaste`, `ScreenCapture`,
-  `NetworkShare`, plus `UnallowedApps`. Bluetooth and RDP `Setting` names remain unconfirmed
-  (`README.md` §11).
+ activities, only **copy to removable media**. A buyer wanting those covered too extends the
+ `EndpointDlpRestrictions` array in `deploy/New-EndpointDlpUsbBlockPolicy.ps1` (each additional
+ activity is one more `@{Setting=...; Value=...}` hashtable in the same array), using Microsoft's
+ now-confirmed `Setting` names for four of them, `Print`, `CopyPaste`, `ScreenCapture`,
+ `NetworkShare`, plus `UnallowedApps`. Bluetooth and RDP `Setting` names remain unconfirmed
+ (`README.md` §11).
 - This scenario does not create or manage the `ITCustodiansGroupEmail` security group, or perform
-  device onboarding, both are dependencies, not deployed artifacts (§5 above).
+ device onboarding, both are dependencies, not deployed artifacts (§5 above).
 - This scenario does not configure **Removable USB device groups** (per-physical-device
-  allowlisting of, e.g., specific IT-issued encrypted backup drives), a dedicated grounding pass
-  (`PROGRESS.md`) confirmed this stays portal-only in full: the group is created in Endpoint DLP
-  settings and referenced back in a rule's actions/exceptions entirely through the portal UI;
-  `Set-PolicyConfig -DlpRemovableMediaGroups` exists but Microsoft's own reference leaves its
-  hashtable shape (and that of every sibling device-group parameter) undocumented, and no
-  rule-authoring cmdlet exposes a matching parameter, see `README.md` §11.
+ allowlisting of, e.g., specific IT-issued encrypted backup drives), a dedicated grounding pass
+ (`PROGRESS.md`) confirmed this stays portal-only in full: the group is created in Endpoint DLP
+ settings and referenced back in a rule's actions/exceptions entirely through the portal UI;
+ `Set-PolicyConfig -DlpRemovableMediaGroups` exists but Microsoft's own reference leaves its
+ hashtable shape (and that of every sibling device-group parameter) undocumented, and no
+ rule-authoring cmdlet exposes a matching parameter, see `README.md` §11.

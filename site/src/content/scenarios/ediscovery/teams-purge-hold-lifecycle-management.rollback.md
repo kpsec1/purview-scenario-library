@@ -34,18 +34,18 @@ record your incident ticket carries.
 ### Stage 3, What cannot be undone by this scenario
 
 - **A `-IncludeComplianceTagHold` clear.** Once `ComplianceTagHoldApplied` is cleared, no documented
-  cmdlet sets it back to `True` (design.md §5). If this was done in error, the only path forward is
-  re-labeling the affected content so the property naturally re-sets itself, or accepting the mailbox
-  no longer carries this specific hold signal, there is no scripted or portal "undo" for this one
-  property.
+ cmdlet sets it back to `True` (design.md §5). If this was done in error, the only path forward is
+ re-labeling the affected content so the property naturally re-sets itself, or accepting the mailbox
+ no longer carries this specific hold signal, there is no scripted or portal "undo" for this one
+ property.
 - **A delay hold's own 30-day timer.** This scenario can clear a *pre-existing* delay hold
-  (`-RemoveDelayHoldApplied`/`-RemoveDelayReleaseHoldApplied`), but cannot prevent the Managed Folder
-  Assistant from applying a *new* one after this scenario's own removal, that's system-scheduled, not
-  reversible on demand (design.md §5).
+ (`-RemoveDelayHoldApplied`/`-RemoveDelayReleaseHoldApplied`), but cannot prevent the Managed Folder
+ Assistant from applying a *new* one after this scenario's own removal, that's system-scheduled, not
+ reversible on demand (design.md §5).
 - **Anything this scenario never touched.** eDiscovery case holds and legacy In-Place Holds were never
-  removed by this scenario in the first place (design.md §6), so there is nothing to roll back for
-  them here, any change to those was made manually, outside this scenario's scripts, and must be
-  reversed the same way.
+ removed by this scenario in the first place (design.md §6), so there is nothing to roll back for
+ them here, any change to those was made manually, outside this scenario's scripts, and must be
+ reversed the same way.
 
 ### Stage 4, Clean up state files (optional, incident-closure only)
 
@@ -62,9 +62,9 @@ no ongoing cost and can help a later audit confirm exactly what was changed and 
 
 - **Reverse a `ComplianceTagHoldApplied` clear.** See Stage 3, no cmdlet exists for this.
 - **Guarantee a restored hold has actually finished re-synchronizing tenant-wide.** Microsoft documents
-  up to a 24-hour synchronization window for the org-wide-exclusion path specifically
-  (`README.md` §11); `validate/Test-TeamsPurgeMailboxHoldLifecycle.ps1` reports current observed state,
-  which may lag the true target state shortly after a Restore run.
+ up to a 24-hour synchronization window for the org-wide-exclusion path specifically
+ (`README.md` §11); `validate/Test-TeamsPurgeMailboxHoldLifecycle.ps1` reports current observed state,
+ which may lag the true target state shortly after a Restore run.
 - **Undo anything the sibling `search-and-purge-teams-messages` scenario's own purge already did.**
-  That scenario's own `rollback.md` covers its irreversible-purge limitations; this scenario's rollback
-  is scoped entirely to hold state, not message content.
+ That scenario's own `rollback.md` covers its irreversible-purge limitations; this scenario's rollback
+ is scoped entirely to hold state, not message content.

@@ -50,17 +50,17 @@ a definition file), not what removing them means.
 ## What rollback does **not** undo
 
 - **The group itself, its mailbox, or its SharePoint site.** This scenario never creates, modifies,
-  or deletes a Team/Microsoft 365 Group, it only reads and, optionally, references its existing
-  mailbox/site in a hold. Removing the hold has zero effect on the group.
+ or deletes a Team/Microsoft 365 Group, it only reads and, optionally, references its existing
+ mailbox/site in a hold. Removing the hold has zero effect on the group.
 - **Member-roster CSV history.** Deleting the CSV (Stage 1 rollback, above) removes the file, not
-  any record of who was a member at resolution time, this scenario never persisted that anywhere
-  else, and Microsoft's own audit trail for group-membership changes is a separate Entra/Exchange
-  concern, not something this scenario's rollback touches.
+ any record of who was a member at resolution time, this scenario never persisted that anywhere
+ else, and Microsoft's own audit trail for group-membership changes is a separate Entra/Exchange
+ concern, not something this scenario's rollback touches.
 
 ## Verification after rollback
 
-Re-run `./validate/Test-TeamsGroupHoldLocations.ps1 -DefinitionPath ... -CaseId $caseId -HoldId
-$holdId ...` after a Stage 2 release, the hold-reconciliation check should report `FAIL` (location
+Re-run `./validate/Test-TeamsGroupHoldLocations.ps1 -DefinitionPath... -CaseId $caseId -HoldId
+$holdId...` after a Stage 2 release, the hold-reconciliation check should report `FAIL` (location
 not found) for the released group, the expected post-rollback state, not a validate-script bug. The
 group-drift check (Stage 1's own concern) is unaffected by a Stage 2 release and will continue to
 pass as long as the group itself still resolves normally.

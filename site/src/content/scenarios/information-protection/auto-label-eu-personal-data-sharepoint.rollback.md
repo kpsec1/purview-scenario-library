@@ -57,16 +57,16 @@ per-country-scoped replacement).
 ## What rollback does **not** undo
 
 - **Labels already applied to files.** This scenario's controls (disable, simulation, or purge)
-  stop the policy from applying *new* labels going forward. They do **not** retroactively remove
-  the `Confidential` label from files the policy already labeled.
+ stop the policy from applying *new* labels going forward. They do **not** retroactively remove
+ the `Confidential` label from files the policy already labeled.
 - **Encryption, if the label applies it.** Same as the sibling scenario, encryption is a property
-  of the label assignment on the file, not of this policy.
+ of the label assignment on the file, not of this policy.
 - **The `Confidential` label itself.** This scenario never created the label, it's a prerequisite
-  dependency (see `design.md` §8). Removing this policy has no effect on the label's existence,
-  definition, or publication to users.
+ dependency (see `design.md` §8). Removing this policy has no effect on the label's existence,
+ definition, or publication to users.
 - **The `Set-SPOTenant -EnableAIPIntegration` tenant toggle.** A separate, tenant-wide setting
-  outside this policy's lifecycle (see `README.md` §3, §11), shared with, and not re-toggled
-  independently for, the sibling U.S.-SIT scenario if both are deployed in the same tenant.
+ outside this policy's lifecycle (see `README.md` §3, §11), shared with, and not re-toggled
+ independently for, the sibling U.S.-SIT scenario if both are deployed in the same tenant.
 
 ## Interaction with the sibling scenario
 

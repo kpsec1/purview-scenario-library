@@ -18,26 +18,26 @@ auto-applied to its content, not a Keep-only retention action. `PROGRESS.md` rec
 ## 2. Design goals
 
 1. **Reuse, don't reinvent, both existing object models.** Adaptive scope creation mirrors
-   `adaptive-scope-retention/deploy/New-AdaptiveScopeRetention.ps1` exactly (same cmdlet, same
-   config shape); label + auto-apply mirrors `retention-labels-financial-records/deploy/
-   New-FinancialRecordsRetention.ps1` (same cmdlets, same regulatory-record guard), minus one
-   corrected defect (§3).
+ `adaptive-scope-retention/deploy/New-AdaptiveScopeRetention.ps1` exactly (same cmdlet, same
+ config shape); label + auto-apply mirrors `retention-labels-financial-records/deploy/
+ New-FinancialRecordsRetention.ps1` (same cmdlets, same regulatory-record guard), minus one
+ corrected defect (§3).
 2. **Share the adaptive scope object, don't duplicate it.** Adaptive scopes are documented as shared,
-   reusable objects across retention policies (and Insider Risk Management, Communication
-   Compliance). This scenario's config defaults to the *same scope name* as the `adaptive-scope-
-   retention` sibling so a tenant that deploys both scenarios ends up with one scope, two policies, 
-   not two competing scopes with drifting queries. The deploy script detects and reuses an existing
-   scope by name (`Get-AdaptiveScope`) rather than creating a duplicate.
+ reusable objects across retention policies (and Insider Risk Management, Communication
+ Compliance). This scenario's config defaults to the *same scope name* as the `adaptive-scope-
+ retention` sibling so a tenant that deploys both scenarios ends up with one scope, two policies, 
+ not two competing scopes with drifting queries. The deploy script detects and reuses an existing
+ scope by name (`Get-AdaptiveScope`) rather than creating a duplicate.
 3. **Be honest that this raises the consequence of scope error, not just its shape.** The Keep-only
-   sibling releases retention cleanly on rollback (`Remove-RetentionComplianceRule` "causes the
-   release of... retentions"). A record label does not release the same way, only a records manager
-   can unlock/remove it, and rollback here explicitly does not attempt to. `README.md` §2/§11 and
-   `rollback.md` state this plainly rather than reusing the Keep-only sibling's lower-irreversibility
-   framing where it no longer applies.
+ sibling releases retention cleanly on rollback (`Remove-RetentionComplianceRule` "causes the
+ release of... retentions"). A record label does not release the same way, only a records manager
+ can unlock/remove it, and rollback here explicitly does not attempt to. `README.md` §2/§11 and
+ `rollback.md` state this plainly rather than reusing the Keep-only sibling's lower-irreversibility
+ framing where it no longer applies.
 4. **Correct a real defect found while grounding this fragment, rather than propagate it.** See §3.
 5. **Same regulatory-record guard as the static-scope sibling.** Auto-apply does not support
-   regulatory records regardless of whether the scope is static or adaptive, this is a property of
-   auto-apply itself, not of adaptive scopes, so the guard carries over unchanged.
+ regulatory records regardless of whether the scope is static or adaptive, this is a property of
+ auto-apply itself, not of adaptive scopes, so the guard carries over unchanged.
 
 ## 3. Grounding correction: `-Name` and `-ApplyComplianceTag` are mutually exclusive
 
@@ -47,7 +47,7 @@ the `ApplyComplianceTag` or `PublishComplianceTag` parameters."** The `Complianc
 (the one `-ApplyComplianceTag` belongs to) does not list `-Name` at all, only `-Policy`,
 `-ApplyComplianceTag`, and the optional `-ContentMatchQuery`/`-ContentContainsSensitiveInformation`/
 `-ExpirationDateOption`/`-RetentionComplianceAction`/`-IRMRiskyUserProfiles`/
-`-MachineLearningModelIDs`/`-PriorityCleanup` [[1]](#references).
+`-MachineLearningModelIDs`/`-PriorityCleanup`.
 
 `scenarios/data-lifecycle-management/retention-labels-financial-records/deploy/
 New-FinancialRecordsRetention.ps1` passes **both** `-Name` and `-ApplyComplianceTag` in the same
@@ -124,18 +124,18 @@ out of scope for this or any automated rollback here.
 ## 7. Non-goals
 
 - **Regulatory records via this scenario's own policy/rule**, not supported by auto-apply at all;
-  use `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` for that
-  distribution path, same as the financial-records sibling.
+ use `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` for that
+ distribution path, same as the financial-records sibling.
 - **Fixing the `-Name`/`-ApplyComplianceTag` defect in the financial-records sibling's own script**, 
-  recorded as a follow-up in `PROGRESS.md`, not fixed here (a different, already-`DONE` fragment).
+ recorded as a follow-up in `PROGRESS.md`, not fixed here (a different, already-`DONE` fragment).
 - **`-LocationType Site` / `Group` adaptive scopes, or non-`Title` attributes**, same non-goal as the
-  Keep-only sibling; this scenario reuses that sibling's exact scope shape by design (§2).
+ Keep-only sibling; this scenario reuses that sibling's exact scope shape by design (§2).
 - **Content-condition auto-apply (trainable classifiers, sensitive-information-type matching)**, the
-  financial-records sibling already demonstrates `-ContentMatchQuery`; this scenario's config exposes
-  the same field but defaults it empty, since the point being demonstrated here is population-based
-  (adaptive-scope) targeting, not content-signal targeting.
+ financial-records sibling already demonstrates `-ContentMatchQuery`; this scenario's config exposes
+ the same field but defaults it empty, since the point being demonstrated here is population-based
+ (adaptive-scope) targeting, not content-signal targeting.
 - **Unlocking or removing an already-applied record label**, a records-manager action, out of scope
-  for this scenario's automation (`rollback.md`).
+ for this scenario's automation (`rollback.md`).
 
 ## References
 

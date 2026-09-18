@@ -27,4 +27,16 @@ const scenarios = defineCollection({
   }),
 });
 
-export const collections = { scenarios };
+const refdocs = defineCollection({
+  loader: glob({
+    pattern: '*.md',
+    base: './src/content/refdocs',
+    generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+  }),
+  schema: z.object({
+    title: z.string(),
+    name: z.string().optional(),
+  }),
+});
+
+export const collections = { scenarios, refdocs };

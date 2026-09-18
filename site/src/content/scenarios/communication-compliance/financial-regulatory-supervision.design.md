@@ -28,7 +28,7 @@ appears on both pages:
 
 > "PowerShell isn't supported for creating and managing Communication Compliance policies. To create
 > and manage these policies, use the policy management controls in the Communication Compliance
-> solution." [[12]](#12-references) [[13]](#12-references)
+> solution." 
 
 This is the current, correct state of the product, confirmed independently by this build via
 WebSearch corroboration across multiple secondary sources referencing the same two Microsoft Learn
@@ -36,7 +36,7 @@ pages (this build's network environment cannot fetch `learn.microsoft.com` direc
 Grounding note at the end of this file). Inventing a write API to make this scenario look more
 "scriptable" would violate `AGENTS.md` §4's no-invented-cmdlets rule.
 
-**Cross-cutting doc-drift found and fixed as part of this fragment:** `docs/automation-surface.md`
+**Cross-cutting doc-drift found and fixed as part of this fragment:** [Automation surface](/docs/automation-surface/)
 §4's routing table had a stale row claiming Communication Compliance policy config runs through
 "Surface 2" (Security & Compliance PowerShell) via unnamed "Communication-compliance-specific S&C
 cmdlets", directly contradicting the no-write-API finding both this scenario and its
@@ -48,18 +48,18 @@ as a silent inconsistency for a future reader to trip over.
 **What this scenario ships instead**, per `AGENTS.md` §9's definition of done:
 
 1. A precise, repeatable **portal runbook** (`README.md` §5), backed by a structured, versioned,
-   explicitly non-executable JSON manifest at
-   `deploy/policy/financial-regulatory-supervision-manifest.json`, same "reference manifest, not an
-   API payload" pattern as the harassment sibling and `scenarios/insider-risk/
-   departing-employee-data-theft/`.
+ explicitly non-executable JSON manifest at
+ `deploy/policy/financial-regulatory-supervision-manifest.json`, same "reference manifest, not an
+ API payload" pattern as the harassment sibling and `scenarios/insider-risk/
+ departing-employee-data-theft/`.
 2. One genuinely scriptable deliverable with a documented, grounded API:
-   `deploy/Export-FinraSupervisionEvidence.ps1`. This is **not a copy of the sibling's audit-trail
-   script**, it reuses the same three `Search-UnifiedAuditLog` query categories (identical
-   Communication-Compliance-wide operations, not policy-specific, so re-deriving them per scenario
-   would be pointless duplication, `design.md` §5 below), but adds a second, derived output this
-   scenario specifically needs and the sibling does not: a **FINRA Rule 3110(b)(4) evidence-of-review
-   log**, reshaping the raw `ReviewTag` audit events into the four fields Rule 3110(b)(4) requires a
-   firm to document (reviewer, content reviewed, date, action taken), §5.
+ `deploy/Export-FinraSupervisionEvidence.ps1`. This is **not a copy of the sibling's audit-trail
+ script**, it reuses the same three `Search-UnifiedAuditLog` query categories (identical
+ Communication-Compliance-wide operations, not policy-specific, so re-deriving them per scenario
+ would be pointless duplication, `design.md` §5 below), but adds a second, derived output this
+ scenario specifically needs and the sibling does not: a **FINRA Rule 3110(b)(4) evidence-of-review
+ log**, reshaping the raw `ReviewTag` audit events into the four fields Rule 3110(b)(4) requires a
+ firm to document (reviewer, content reviewed, date, action taken), §5.
 
 ## 3. Population scope: FINRA-registered/supervised persons, not "All users"
 
@@ -81,20 +81,20 @@ this scenario deliberately does not attempt to automate (deriving that populatio
 Same reasoning as `harassment-and-code-of-conduct/design.md` §3, restated for the financial context:
 
 - **DLP** can block a message in real time on deterministic sensitive-information-type/pattern
-  matches, but has no trainable-classifier concept for "this message describes a plan to manipulate a
-  stock price" or "this message discusses laundering proceeds", those require the nuanced,
-  natural-language classifiers Communication Compliance ships, not a DLP rule.
+ matches, but has no trainable-classifier concept for "this message describes a plan to manipulate a
+ stock price" or "this message discusses laundering proceeds", those require the nuanced,
+ natural-language classifiers Communication Compliance ships, not a DLP rule.
 - **Insider Risk Management** scores cumulative user risk from many signal types and can *consume*
-  Communication Compliance's Threat/Harassment/Discrimination-classifier signals via a documented
-  integration, but its own policy templates target data theft/leakage/security-policy violations, 
-  not the specific regulatory-collusion/stock-manipulation/money-laundering classifier family this
-  scenario needs.
+ Communication Compliance's Threat/Harassment/Discrimination-classifier signals via a documented
+ integration, but its own policy templates target data theft/leakage/security-policy violations, 
+ not the specific regulatory-collusion/stock-manipulation/money-laundering classifier family this
+ scenario needs.
 - **Communication Compliance** is Microsoft's purpose-built solution here: its "Regulatory compliance"
-  classifier family (Corporate sabotage, Customer complaints, Gifts & entertainment, Money
-  laundering, [Workplace/Regulatory] collusion, naming VERIFY below, Stock manipulation,
-  Unauthorized disclosure) exists specifically for "regulated customers such as banking or financial
-  services who have specific regulatory compliance obligations" (Microsoft's own classifier
-  description, corroborated across multiple independent secondary sources, see §12 sourcing note).
+ classifier family (Corporate sabotage, Customer complaints, Gifts & entertainment, Money
+ laundering, [Workplace/Regulatory] collusion, naming VERIFY below, Stock manipulation,
+ Unauthorized disclosure) exists specifically for "regulated customers such as banking or financial
+ services who have specific regulatory compliance obligations" (Microsoft's own classifier
+ description, corroborated across multiple independent secondary sources, see §12 sourcing note).
 
 Communication Compliance remains **detective, not preventive** here too, it reviews messages *after*
 they're sent. For the preventive half of this problem (blocking messages that reference specific
@@ -146,7 +146,7 @@ dictionary this repository publishes openly would be actively harmful, see the R
 ## 6. Reviewer role choice, and the FINRA-registration gap Communication Compliance cannot close
 
 Same **Investigators**, not **Analysts**, choice as the harassment sibling, for the same
-full-content-visibility reason (`README.md` §3, `docs/rbac-model.md` §4), a supervisory reviewer who
+full-content-visibility reason (`README.md` §3, [RBAC model §4](/docs/rbac-model/#4-purview-role-groups-by-module-representative-not-exhaustive)), a supervisory reviewer who
 can only see "a message matched the Stock manipulation classifier" without reading the message cannot
 form the substantive judgment Rule 3110(b)(4) requires.
 
@@ -165,41 +165,41 @@ own written supervisory procedures) Rule 3110(b)(4) requires, separately from co
 ## 7. Non-goals
 
 - **Deriving the FINRA-registered-person population from Microsoft 365 identity data.** This scenario
-  assumes the firm already has (or maintains, in its own broker-dealer registration/HR system) an
-  authoritative list of registered representatives, and that this list is kept current in whatever
-  Entra ID group or adaptive-scope query `deploy/policy/financial-regulatory-supervision-manifest.json`
-  targets. Reconciling that group against FINRA's own registration data (e.g., via BrokerCheck/CRD)
-  is outside this scenario's scope, a natural candidate for an HR-connector-style reconciliation
-  script, the same class of gap `scenarios/insider-risk/departing-employee-data-theft/`'s HR-connector
-  follow-up already tracks for a different population.
+ assumes the firm already has (or maintains, in its own broker-dealer registration/HR system) an
+ authoritative list of registered representatives, and that this list is kept current in whatever
+ Entra ID group or adaptive-scope query `deploy/policy/financial-regulatory-supervision-manifest.json`
+ targets. Reconciling that group against FINRA's own registration data (e.g., via BrokerCheck/CRD)
+ is outside this scenario's scope, a natural candidate for an HR-connector-style reconciliation
+ script, the same class of gap `scenarios/insider-risk/departing-employee-data-theft/`'s HR-connector
+ follow-up already tracks for a different population.
 - **Third-party financial messaging connectors** (Bloomberg Message/Mail, ICE Chat, Reuters Eikon
-  Messenger, Symphony, and the ~30 others Microsoft documents a native data-connector path for). Real
-  trading-floor communication in many firms happens substantially over these platforms, not Exchange/
-  Teams, omitting them is a genuine, disclosed scope boundary (§11 Known limitations), not an
-  oversight, and each connector has its own distinct setup workflow that deserves its own scoped
-  fragment rather than being bolted onto this one (`PROGRESS.md`).
+ Messenger, Symphony, and the ~30 others Microsoft documents a native data-connector path for). Real
+ trading-floor communication in many firms happens substantially over these platforms, not Exchange/
+ Teams, omitting them is a genuine, disclosed scope boundary (§11 Known limitations), not an
+ oversight, and each connector has its own distinct setup workflow that deserves its own scoped
+ fragment rather than being bolted onto this one (`PROGRESS.md`).
 - **SEC Rule 17a-4 / FINRA Rule 4511 books-and-records retention of the underlying communications.**
-  This scenario's audit-trail/evidence-of-review export is a **supervision and review-evidence**
-  record, it is not, and does not attempt to be, the multi-year immutable retention system of record
-  those rules require for the communications themselves. `scenarios/data-lifecycle-management/
-  retention-labels-financial-records/` already builds exactly that (a regulatory-record retention
-  label with WORM-style immutability), deploy both scenarios together for a complete regulatory
-  posture; this scenario's own README §8 cross-links the two explicitly so a reader doesn't mistake
-  one for the other.
+ This scenario's audit-trail/evidence-of-review export is a **supervision and review-evidence**
+ record, it is not, and does not attempt to be, the multi-year immutable retention system of record
+ those rules require for the communications themselves. `scenarios/data-lifecycle-management/
+ retention-labels-financial-records/` already builds exactly that (a regulatory-record retention
+ label with WORM-style immutability), deploy both scenarios together for a complete regulatory
+ posture; this scenario's own README §8 cross-links the two explicitly so a reader doesn't mistake
+ one for the other.
 - **Preventive, real-time blocking of messages referencing restricted-list securities.**
-  `scenarios/information-barriers/segregate-trading-and-research/` is the preventive control for
-  segregating trading/research communication entirely; a DLP policy matching specific restricted-list
-  tickers in real time is a plausible companion fragment this scenario does not build (`PROGRESS.md`).
+ `scenarios/information-barriers/segregate-trading-and-research/` is the preventive control for
+ segregating trading/research communication entirely; a DLP policy matching specific restricted-list
+ tickers in real time is a plausible companion fragment this scenario does not build (`PROGRESS.md`).
 - **The "Detect conflict of interest" built-in policy template**, as its own standalone scenario, a
-  candidate follow-up once its exact classifier bundling can be confirmed (§5).
+ candidate follow-up once its exact classifier bundling can be confirmed (§5).
 - **Trade-surveillance/market-abuse analytics** (correlating message content against actual trade
-  blotters, FINRA CAT reporting, or similar), a fundamentally different product category outside
-  Microsoft Purview entirely.
+ blotters, FINRA CAT reporting, or similar), a fundamentally different product category outside
+ Microsoft Purview entirely.
 - **SIEM/Sentinel wiring**, same scope boundary as the harassment sibling: this scenario's exported
-  CSVs are SIEM-ingestible, and Microsoft documents a native Sentinel/`OfficeActivity` integration
-  path; building a Sentinel workbook is not part of this fragment.
+ CSVs are SIEM-ingestible, and Microsoft documents a native Sentinel/`OfficeActivity` integration
+ path; building a Sentinel workbook is not part of this fragment.
 - **Reproducing the remediation-action API surface** (Resolve/Tag as/Escalate/Notify/Remove) as
-  scriptable automation, same no-write-API boundary as §2, distinct from the policy-authoring gap.
+ scriptable automation, same no-write-API boundary as §2, distinct from the policy-authoring gap.
 
 ## 8. Key decisions
 
