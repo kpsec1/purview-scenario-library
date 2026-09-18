@@ -5,6 +5,10 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 slug: "data-leaks"
 repoPath: "scenarios/insider-risk/data-leaks"
+parts: ["design","deploy","validate","rollback"]
+related: ["adaptive-protection/dynamic-risk-dlp-enforcement","dlp/pci-teams-exfil-block-part2-obfuscation-mitigation"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -393,7 +397,7 @@ the policy or revoking an app registration's certificate is not.
   not implemented end-to-end (`design.md` §3/§7).
 - **This scenario does not configure Adaptive Protection** — a buyer who wants this policy's
   alerts to drive DLP enforcement wires it into
-  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` separately.
+  [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) separately.
 - **Cannot disambiguate which Insider Risk Management policy produced a given exported alert if
   more than one policy is deployed in the same tenant** — same disclosed gap as every IRM scenario
   in this library.

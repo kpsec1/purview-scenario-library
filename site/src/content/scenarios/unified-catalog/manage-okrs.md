@@ -5,6 +5,10 @@ category: "Unified Catalog"
 categorySlug: "unified-catalog"
 slug: "manage-okrs"
 repoPath: "scenarios/unified-catalog/manage-okrs"
+parts: ["design","deploy","validate","rollback"]
+related: ["unified-catalog/curate-business-glossary","unified-catalog/manage-data-products","unified-catalog/manage-critical-data-elements"]
+deployCount: 4
+validateCount: 2
 ---
 ## 1. Scenario summary
 
@@ -17,8 +21,8 @@ scenarios (`manage-data-products`, `manage-critical-data-elements`) — which de
 data is* and *which columns matter* — to *why any of it matters to the business*.
 
 **Who it's for:** a governance-domain owner or data steward who has already run
-`scenarios/unified-catalog/curate-business-glossary/` (to create the governance domain) and
-`scenarios/unified-catalog/manage-data-products/` (to create a data product), and now wants to
+[`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) (to create the governance domain) and
+[`unified-catalog/manage-data-products`](/scenarios/unified-catalog/manage-data-products/) (to create a data product), and now wants to
 express a board-legible business objective and wire it, as code, to the data product that backs
 it — reviewed and versioned via a pull request, not clicked together once in the portal.
 
@@ -52,8 +56,8 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Unified Catalog data governance | **Pay-as-you-go (PAYG)**, billed on unique **governed assets/day** | §10 — this scenario adds **no** governed-asset billing event of its own (it never attaches a raw data asset to anything; it links an objective to an already-governed data product) |
-| The governance domain | `scenarios/unified-catalog/curate-business-glossary/` run at least once, **published** before `-Publish` | This scenario looks up the domain by name rather than creating one; Microsoft's docs require the domain to already be published before an OKR within it can be published [[6]](#12-references) |
-| A data product to link to (recommended, not required) | `scenarios/unified-catalog/manage-data-products/` run at least once | The default definition file links to `manage-data-products`' own "Customer Master Data" product; omit `relatedDataProducts` to create a standalone OKR with nothing to link yet |
+| The governance domain | [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) run at least once, **published** before `-Publish` | This scenario looks up the domain by name rather than creating one; Microsoft's docs require the domain to already be published before an OKR within it can be published [[6]](#12-references) |
+| A data product to link to (recommended, not required) | [`unified-catalog/manage-data-products`](/scenarios/unified-catalog/manage-data-products/) run at least once | The default definition file links to `manage-data-products`' own "Customer Master Data" product; omit `relatedDataProducts` to create a standalone OKR with nothing to link yet |
 | Role to create/edit OKRs | **Steward role**, domain-scoped | Microsoft's own prerequisite: "To create and edit OKRs, you need the steward role" [[2]](#12-references) — a *lighter* requirement than `manage-critical-data-elements`' combined Data Steward + Data Product Owner requirement (`README.md` §3 there), matching `curate-business-glossary`'s own steward-only bar for glossary terms. `docs/rbac-model.md` §5 |
 | Role to link a data product (the relationship call is made on the *product*, not the OKR — design.md §4) | **Data Product Owner**, domain-scoped | Same role `manage-data-products/README.md` §3 already requires for its own `Create Relationship` calls |
 | Automation identity (Unified Catalog + Graph) | Data Steward + Data Product Owner in Unified Catalog, `User.Read.All` application permission in Graph | Same service-principal pattern as `manage-data-products`/`manage-critical-data-elements` |

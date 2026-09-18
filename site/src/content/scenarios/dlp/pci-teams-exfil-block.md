@@ -5,6 +5,10 @@ category: "DLP"
 categorySlug: "dlp"
 slug: "pci-teams-exfil-block"
 repoPath: "scenarios/dlp/pci-teams-exfil-block"
+parts: ["design","deploy","validate","rollback"]
+related: ["dlp/endpoint-dlp-usb-block","insider-risk/departing-employee-data-theft","adaptive-protection/dynamic-risk-dlp-enforcement"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -293,7 +297,7 @@ permanently delete the policy and its rules.
 - **Copy/paste of an image containing a card number is not caught** by this text-pattern SIT
   match — DLP for Teams inspects message text, not OCR'd image content. If card images (e.g.
   screenshots) are a realistic exfiltration path in the target environment, pair this control with
-  endpoint DLP (`scenarios/dlp/endpoint-dlp-usb-block/`, planned) or a broader review of allowed
+  endpoint DLP ([`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/), planned) or a broader review of allowed
   attachment types.
 - **This scenario does not cover Teams meeting chat/transcript export**, voice/video content, or
   third-party bridged meeting participants — scope is limited to the DLP-inspectable chat and
@@ -304,8 +308,8 @@ permanently delete the policy and its rules.
   zero-width/unusual separators the pattern doesn't tolerate) will not trigger a match on any
   single message. This is an inherent limitation of per-message, pattern-based DLP, not a
   configuration gap this scenario can close. Residual-risk mitigation: pair with
-  `scenarios/insider-risk/departing-employee-data-theft/` (planned) or
-  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` (planned) for cumulative,
+  [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) (planned) or
+  [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) (planned) for cumulative,
   behavior-based detection that correlates multiple near-in-time messages from the same sender,
   rather than relying on this control as the sole line of defense.
 - **VERIFY before go-live:** confirm in a pilot tenant that `BlockAccess $true` on a

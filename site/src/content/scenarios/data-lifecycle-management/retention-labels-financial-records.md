@@ -5,6 +5,10 @@ category: "Data Lifecycle Management"
 categorySlug: "data-lifecycle-management"
 slug: "retention-labels-financial-records"
 repoPath: "scenarios/data-lifecycle-management/retention-labels-financial-records"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-lifecycle-management/publish-labels-for-manual-application","data-lifecycle-management/adaptive-scope-auto-apply-label"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -43,7 +47,7 @@ deleted** — for anyone, including admins — until the retention period expire
 > auto-applied a regulatory record label by default — a configuration Microsoft doesn't support. It
 > now defaults to a plain **record** label for auto-apply (fully supported), and creates but does
 > **not** auto-apply a regulatory record label if you configure one — see the sibling
-> `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` scenario, which is the
+> [`data-lifecycle-management/publish-labels-for-manual-application`](/scenarios/data-lifecycle-management/publish-labels-for-manual-application/) scenario, which is the
 > *only* Microsoft-supported way to distribute a regulatory record label. Full grounding: that
 > scenario's `design.md` §3 and this scenario's `reviews.md` correction addendum.
 
@@ -207,13 +211,13 @@ never releases content already labeled.
   would not have resolved at runtime. `deploy/New-FinancialRecordsRetention.ps1` now omits `-Name`; the
   existing idempotency check (`Get-RetentionComplianceRule -Policy`) already locates the rule by policy,
   not by name, so nothing else depended on it. Found while grounding the sibling
-  `scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/` scenario, whose own script
+  [`data-lifecycle-management/adaptive-scope-auto-apply-label`](/scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/) scenario, whose own script
   never repeated the defect. See §6 and `reviews.md`'s correction addendum.
 - **Auto-apply does not support regulatory records — this is a hard product limitation, not a bug in
   this scenario.** Microsoft: "This scenario isn't supported for regulatory records... These scenarios
   require a published retention label policy" [[3]](#references). This script creates the label
   either way, but skips policy/rule creation and tells you to use
-  `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` instead when
+  [`data-lifecycle-management/publish-labels-for-manual-application`](/scenarios/data-lifecycle-management/publish-labels-for-manual-application/) instead when
   `regulatory: true`. See §2's correction note and `design.md` §3/§6.
 - **A record label is lockable, not irreversible; a regulatory record is irreversible.** Only pick
   `Regulatory: true` if your obligation genuinely needs WORM immutability that even admins can't

@@ -5,6 +5,10 @@ category: "Adaptive Protection"
 categorySlug: "adaptive-protection"
 slug: "block-legacy-authentication"
 repoPath: "scenarios/adaptive-protection/block-legacy-authentication"
+parts: ["design","deploy","validate","rollback"]
+related: ["adaptive-protection/conditional-access-insider-risk-block","adaptive-protection/exchange-legacy-auth-block"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -19,7 +23,7 @@ configured elsewhere.
 
 **Who it's for:** any Microsoft 365 tenant with **Microsoft Entra ID P1 or higher** that has not
 already confirmed legacy authentication is blocked — including a buyer deploying this library's
-own `scenarios/adaptive-protection/conditional-access-insider-risk-block/`, whose own four-lens
+own [`adaptive-protection/conditional-access-insider-risk-block`](/scenarios/adaptive-protection/conditional-access-insider-risk-block/), whose own four-lens
 review flagged this exact gap as a Red Team finding (`reviews.md` there, Finding 2: legacy-auth
 clients may not fully honor that scenario's Insider Risk condition). This scenario is a general
 Conditional Access hardening prerequisite, not specific to Adaptive Protection or Insider Risk —
@@ -244,7 +248,7 @@ exclusions) is a Microsoft Entra admin center action outside this scenario's scr
   credential-stuffing/password-spray attempt from confirming valid credentials, only from
   establishing a session with them. Exchange-side authentication policies are a separate,
   workload-specific control that acts earlier — built as the companion scenario
-  `scenarios/adaptive-protection/exchange-legacy-auth-block/`, not scripted by this scenario itself
+  [`adaptive-protection/exchange-legacy-auth-block`](/scenarios/adaptive-protection/exchange-legacy-auth-block/), not scripted by this scenario itself
   (`design.md` §7).
 - **This scenario does not script the "exclude guests/external users" nested Users condition**
   Microsoft's own guide's procedure also recommends for some Conditional Access scenarios — the
@@ -294,7 +298,7 @@ exclusions) is a Microsoft Entra admin center action outside this scenario's scr
    mutual-exclusivity guidance with Conditional Access) — <https://learn.microsoft.com/entra/fundamentals/security-defaults>
 9. Block legacy authentication in Exchange 2019 hybrid (a separate, workload-specific,
    earlier-in-the-flow control surface — see the companion scenario
-   `scenarios/adaptive-protection/exchange-legacy-auth-block/`, which targets pure Exchange Online
+   [`adaptive-protection/exchange-legacy-auth-block`](/scenarios/adaptive-protection/exchange-legacy-auth-block/), which targets pure Exchange Online
    instead) — <https://learn.microsoft.com/exchange/hybrid-deployment/block-legacy-auth-2019-hybrid>
 10. Manage emergency access (break-glass) accounts — <https://learn.microsoft.com/entra/identity/role-based-access-control/security-emergency-access>
 11. Sign-ins using legacy authentication workbook — <https://learn.microsoft.com/entra/identity/monitoring-health/workbook-legacy-authentication>
@@ -307,7 +311,7 @@ exclusions) is a Microsoft Entra admin center action outside this scenario's scr
     this build.
 15. `docs/rbac-model.md` §10 — Microsoft Entra Conditional Access (reused unchanged from the
     sibling scenarios).
-16. `scenarios/adaptive-protection/conditional-access-insider-risk-block/` — the sibling scenario
+16. [`adaptive-protection/conditional-access-insider-risk-block`](/scenarios/adaptive-protection/conditional-access-insider-risk-block/) — the sibling scenario
     whose four-lens review originally flagged this gap.
 
 > Re-verify all links, API behavior, and licensing terms against current Microsoft Learn before a

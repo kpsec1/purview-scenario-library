@@ -5,6 +5,10 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 slug: "security-policy-violations-by-priority-users"
 repoPath: "scenarios/insider-risk/security-policy-violations-by-priority-users"
+parts: ["design","deploy","validate","rollback"]
+related: ["insider-risk/security-policy-violations"]
+deployCount: 2
+validateCount: 1
 ---
 > **Preview feature.** Microsoft labels the "Security policy violations" template family — and its
 > core Microsoft Defender for Endpoint indicator category — **(preview)** as of this writing
@@ -14,7 +18,7 @@ repoPath: "scenarios/insider-risk/security-policy-violations-by-priority-users"
 ## 1. Scenario summary
 
 Deploys Microsoft Purview Insider Risk Management's **Security policy violations by priority
-users** policy template — a sibling of `scenarios/insider-risk/security-policy-violations/` (the
+users** policy template — a sibling of [`insider-risk/security-policy-violations`](/scenarios/insider-risk/security-policy-violations/) (the
 base template) that scores the identical triggering event, **Microsoft Defender for Endpoint
 security alerts** (malware/harmful-app installs, disabling or bypassing security controls), but
 against a materially different population mechanism: a formal, Microsoft-managed **priority user

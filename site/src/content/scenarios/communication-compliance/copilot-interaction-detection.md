@@ -5,6 +5,10 @@ category: "Communication Compliance"
 categorySlug: "communication-compliance"
 slug: "copilot-interaction-detection"
 repoPath: "scenarios/communication-compliance/copilot-interaction-detection"
+parts: ["design","deploy","validate","rollback"]
+related: ["communication-compliance/harassment-and-code-of-conduct","dspm-for-ai/copilot-prompt-full-block","dspm-for-ai/copilot-sensitive-data-exposure"]
+deployCount: 2
+validateCount: 1
 ---
 > **Scope note (read before implementation):** Microsoft Purview Communication Compliance has **no
 > documented PowerShell, Graph, or REST write API** for policy creation or management, including
@@ -13,7 +17,7 @@ repoPath: "scenarios/communication-compliance/copilot-interaction-detection"
 > itself, backed by a structured reference manifest, and a genuinely scriptable **audit-trail
 > export** for the one piece of this solution that *is* reachable through a documented API. This is
 > the same shape this repo already established for
-> `scenarios/communication-compliance/harassment-and-code-of-conduct/` — not a shortcut for this
+> [`communication-compliance/harassment-and-code-of-conduct`](/scenarios/communication-compliance/harassment-and-code-of-conduct/) — not a shortcut for this
 > scenario.
 
 ## 1. Scenario summary
@@ -375,8 +379,8 @@ the portal for a reversible stop; **Delete** only when permanently retiring the 
   cover.
 - **This is a detective, not a preventive, control.** By the time an Investigator reviews a flagged
   interaction, the jailbroken response or the copyrighted content has already reached the user.
-  Preventive controls for Copilot prompts live in `scenarios/dspm-for-ai/copilot-prompt-full-block/`
-  and `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` (blocking on sensitive-information
+  Preventive controls for Copilot prompts live in [`dspm-for-ai/copilot-prompt-full-block`](/scenarios/dspm-for-ai/copilot-prompt-full-block/)
+  and [`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/) (blocking on sensitive-information
   matches, not on jailbreak intent or protected material) — pair this scenario with those, not as a
   substitute for them.
 - **Prompt Shields and Protected material, as configured in Communication Compliance, are
@@ -395,7 +399,7 @@ the portal for a reversible stop; **Delete** only when permanently retiring the 
   looks for jailbreak intent, not sensitive-content presence, in prompts; Protected material
   evaluates responses only. A user pasting a customer's protected health information or a
   competitor's leaked source code into a prompt is invisible to this policy — that is DLP-for-Copilot
-  territory (`scenarios/dspm-for-ai/copilot-sensitive-data-exposure/`), not this scenario's job
+  territory ([`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/)), not this scenario's job
   (`design.md` §5).
 - **No remediation action can retract an already-delivered Copilot response.** Unlike Teams chat
   remediation's **Remove message** action, there is no documented equivalent for un-sending or

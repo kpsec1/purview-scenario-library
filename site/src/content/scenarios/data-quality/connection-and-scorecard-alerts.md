@@ -5,6 +5,10 @@ category: "Data Quality"
 categorySlug: "data-quality"
 slug: "connection-and-scorecard-alerts"
 repoPath: "scenarios/data-quality/connection-and-scorecard-alerts"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-quality/rules-and-scorecards","unified-catalog/curate-business-glossary"]
+deployCount: 6
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -13,7 +17,7 @@ repoPath: "scenarios/data-quality/connection-and-scorecard-alerts"
 > scenario's *automation* rides on a preview API that can change without the notice a GA surface
 > gets. Pilot before relying on it for a compliance commitment.
 
-Scripts the two prerequisites the sibling scenario `scenarios/data-quality/rules-and-scorecards/`
+Scripts the two prerequisites the sibling scenario [`data-quality/rules-and-scorecards`](/scenarios/data-quality/rules-and-scorecards/)
 deliberately left as portal-only steps: the **data-source connection** a Data Quality scan
 authenticates through, and the **score-threshold alerts** that turn a score regression into an
 email notification. Without a connection, no scan can run at all. Without an alert, a score
@@ -48,7 +52,7 @@ licensing/role family as `rules-and-scorecards/README.md` Section 3 — not repe
 | Microsoft Purview Data Quality | **PAYG only** — DGPU-metered, Basic/Standard/Advanced SKUs | No per-user M365 entitlement covers this feature — `docs/licensing-matrix.md` §2 [[1]](#references) |
 | Deploy/manage the connection and alerts | **Data Quality Steward** role on the target governance domain | Same governance-domain-wide, sub-role composition (also requires Governance Domain Reader + Data Product Owner) as `rules-and-scorecards/README.md` §3 documents — [[2]](#references). Concretely for **this** scenario: that role lets its holder retarget an alert's `receivers` to any mailbox, or point a connection at any source, for **any** asset in the domain, not just "Customer" — a compromised or malicious holder of this role could silently redirect (not delete) a monitoring alert, which passes an existence check but defeats the control. §8 wires the validate script's receivers check into a recurring pipeline specifically to catch this. |
 | Read the connection and alerts only (validation) | **Data Quality Reader** role on the target governance domain | Least-privilege for `validate/` — [[2]](#references) |
-| The target governance domain, data product, and data asset already exist | Created by `scenarios/unified-catalog/curate-business-glossary/` (domain) and assumed by `scenarios/data-quality/rules-and-scorecards/` (product/asset) | This scenario does not create any of the three — see `design.md` §6/§7 |
+| The target governance domain, data product, and data asset already exist | Created by [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) (domain) and assumed by [`data-quality/rules-and-scorecards`](/scenarios/data-quality/rules-and-scorecards/) (product/asset) | This scenario does not create any of the three — see `design.md` §6/§7 |
 | The source database's own read grant | e.g. `db_datareader` on `customerdb` for the Purview managed identity | Source-side action, not scripted here — same grant `scenarios/data-map/scan-azure-sql-and-classify/README.md` §8 already documents for the same source |
 | (Managed-VNet path only) A VNet compute location provisioned for the connection's Azure region | **Governance Domain Administrator** role, portal-only (**Settings > Unified Catalog > Virtual network**) | No REST provisioning endpoint found — see §11 and `design.md` §3 |
 | Automation identity for the REST calls | App registration with **Data Quality Steward** (deploy) or **Data Quality Reader** (validate) Purview role on the governance domain | Client-secret app-only OAuth2, same token endpoint as `rules-and-scorecards` — `docs/automation-surface.md` §3 |

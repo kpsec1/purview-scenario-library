@@ -5,6 +5,10 @@ category: "Audit (Premium)"
 categorySlug: "audit"
 slug: "premium-audit-investigation"
 repoPath: "scenarios/audit/premium-audit-investigation"
+parts: ["design","deploy","validate","rollback"]
+related: []
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 

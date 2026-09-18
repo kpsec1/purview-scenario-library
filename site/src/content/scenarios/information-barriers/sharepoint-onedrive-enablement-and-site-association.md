@@ -5,6 +5,10 @@ category: "Information Barriers"
 categorySlug: "information-barriers"
 slug: "sharepoint-onedrive-enablement-and-site-association"
 repoPath: "scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association"
+parts: ["design","deploy","validate","rollback"]
+related: []
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 

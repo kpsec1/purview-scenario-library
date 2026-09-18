@@ -16,7 +16,10 @@ const bioBody =
   'My hands-on work covers the full E5 security stack, including Purview information protection, DLP and insider risk, the Defender family, Sentinel, Entra ID with Conditional Access and PIM, plus Intune and SCCM. I stay with an engagement the whole way, from the first assessment through design, phased rollout, testing, and handover.';
 
 // Only the Purview scenario library is published to this site.
-const scenarios = await getCollection('scenarios');
+// Filter to overview entries (exclude lifecycle-part entries like ".deploy").
+const scenarios = (await getCollection('scenarios')).filter(
+  (e) => !e.id.split('/').pop()!.includes('.')
+);
 
 const areas = new Map<string, { label: string; count: number }>();
 for (const s of scenarios) {

@@ -5,11 +5,15 @@ category: "Audit (Premium)"
 categorySlug: "audit"
 slug: "compromised-account-incident-response"
 repoPath: "scenarios/audit/compromised-account-incident-response"
+parts: ["design","deploy","validate","rollback"]
+related: ["audit/premium-audit-investigation"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
 Scripts the **containment** half of a confirmed mailbox compromise, as the deliberate,
-**mutating** counterpart to this library's read-only `scenarios/audit/premium-audit-investigation/`.
+**mutating** counterpart to this library's read-only [`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/).
 From one config naming the target account, it: disables the Entra ID account, revokes all active
 sign-in sessions/refresh tokens, resets the password, clears mailbox forwarding, removes Inbox rules
 (including hidden ones), and removes non-owner mailbox delegate grants (`FullAccess`/`SendAs`) —

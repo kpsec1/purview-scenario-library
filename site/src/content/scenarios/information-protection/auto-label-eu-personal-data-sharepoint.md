@@ -5,6 +5,10 @@ category: "Information Protection"
 categorySlug: "information-protection"
 slug: "auto-label-eu-personal-data-sharepoint"
 repoPath: "scenarios/information-protection/auto-label-eu-personal-data-sharepoint"
+parts: ["design","deploy","validate","rollback"]
+related: ["information-protection/auto-label-confidential-sharepoint","dlp/pci-teams-exfil-block","information-protection/auto-label-eu-personal-data-exchange","information-protection/auto-label-confidential-exchange"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -19,7 +23,7 @@ site so an active hold's content isn't relabeled mid-matter.
 significant EU/UK segment) and needs classification coverage built on the jurisdiction-appropriate
 identifiers Microsoft actually ships for that region — not the U.S. Social Security Number
 condition this library's sibling scenario defaults to. This is the direct EU/UK counterpart of
-`scenarios/information-protection/auto-label-confidential-sharepoint/`, built specifically because
+[`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/), built specifically because
 that sibling scenario's own Red Team review flagged its U.S.-centric default as materially weaker
 coverage for a non-U.S. buyer (see §11 and `design.md` §1).
 
@@ -36,7 +40,7 @@ U.S. SSN condition).
 
 This scenario is the **classification and marking control**, distinct from (and a prerequisite
 signal for) any movement-blocking DLP control keyed off the same label — the same relationship the
-sibling scenario has to `scenarios/dlp/pci-teams-exfil-block/`.
+sibling scenario has to [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/).
 
 **Scope note:** the default condition set — EU national identification number, EU Social Security
 Number (SSN) or Equivalent ID, EU debit card number — is a representative **starter set**, not a
@@ -376,7 +380,7 @@ to permanently delete the policy and its rules.
   false-positive rate than the default condition set and should weigh the per-country
   `-SensitiveInfoTypeName` narrowing in §6 more heavily than for the default bundle.
 - **This scenario does not cover Exchange (email).** The Exchange companion is now built as
-  `scenarios/information-protection/auto-label-eu-personal-data-exchange/` (closed 2026-09-08) — a
+  [`information-protection/auto-label-eu-personal-data-exchange`](/scenarios/information-protection/auto-label-eu-personal-data-exchange/) (closed 2026-09-08) — a
   separate policy object, not an additional rule on this scenario's own policy, because Exchange
   auto-labeling has a materially different exclusion mechanism (sender-based, not location-based)
   and observability model — see that scenario's `design.md` §3 and this scenario's own

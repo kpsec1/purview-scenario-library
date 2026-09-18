@@ -5,6 +5,10 @@ category: "Data Lifecycle Management"
 categorySlug: "data-lifecycle-management"
 slug: "priority-cleanup-permanent-deletion"
 repoPath: "scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion"
+parts: ["design","deploy","validate","rollback"]
+related: ["dspm-for-ai/copilot-sensitive-data-exposure"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -17,7 +21,7 @@ final enough. Rolling out to **public preview from 2026-08-24**.
 
 **Who it's for:** a compliance/security team that has a **confirmed data-exposure incident** —
 typically a file identified by a DSPM for AI oversharing assessment
-(`scenarios/dspm-for-ai/copilot-sensitive-data-exposure`) as broadly shared and already
+([`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/)) as broadly shared and already
 summarizable by Copilot, or a DLP alert on a specific SharePoint/OneDrive location — and needs
 guaranteed, non-recoverable removal, not a time-bounded Recycle Bin window.
 

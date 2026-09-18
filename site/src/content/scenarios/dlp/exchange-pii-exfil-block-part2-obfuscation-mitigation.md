@@ -5,10 +5,14 @@ category: "DLP"
 categorySlug: "dlp"
 slug: "exchange-pii-exfil-block-part2-obfuscation-mitigation"
 repoPath: "scenarios/dlp/exchange-pii-exfil-block-part2-obfuscation-mitigation"
+parts: ["design","deploy","validate","rollback"]
+related: ["dlp/exchange-pii-exfil-block","dlp/pci-teams-exfil-block-part2-obfuscation-mitigation","insider-risk/departing-employee-data-theft","dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion","adaptive-protection/dynamic-risk-dlp-enforcement"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends `scenarios/dlp/exchange-pii-exfil-block/` with a behavioral compensating control for the
+Extends [`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/) with a behavioral compensating control for the
 gap that scenario's own `README.md` §11 and `reviews.md` deliberately left open: a sender who
 splits a Social Security Number (SSN) or credit-card number (PAN) across multiple emails, or
 otherwise obfuscates it so no single message matches the SSN/Credit Card Number sensitive
@@ -18,11 +22,11 @@ repeated, exfiltration-adjacent activity such an attempt produces, and automatic
 sender from any further external Exchange mail once their insider risk level reaches **Elevated**
 — closing the channel for continued attempts, not the first one.
 
-**Who it's for:** a buyer who has already deployed `scenarios/dlp/exchange-pii-exfil-block/` and
+**Who it's for:** a buyer who has already deployed [`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/) and
 wants the documented residual risk in its `reviews.md` addressed with a real, working control
 rather than left as a permanent gap — while understanding plainly what this control can and cannot
 do (§11). This fragment is the Exchange-workload sibling of
-`scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/`, reusing the same
+[`dlp/pci-teams-exfil-block-part2-obfuscation-mitigation`](/scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/), reusing the same
 Adaptive-Protection compensating-control pattern with a materially simpler feeder-policy design —
 see §4 and `design.md` §3.
 
@@ -43,7 +47,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`.
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| `scenarios/dlp/exchange-pii-exfil-block/` already deployed | The named policy `PII DLP - Exchange External Send Control` with at least one existing rule | This fragment's deploy script errors out if the parent policy has no rules to compact around — see `design.md` §6 |
+| [`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/) already deployed | The named policy `PII DLP - Exchange External Send Control` with at least one existing rule | This fragment's deploy script errors out if the parent policy has no rules to compact around — see `design.md` §6 |
 | Insider Risk Management + Adaptive Protection | **Microsoft 365 E5**, **Purview Suite**, or the underlying add-ons | Same entitlement `dynamic-risk-dlp-enforcement/README.md` §3 already documents in full. **This is a new licensing requirement beyond what Part 1 alone needs** — Part 1's own §10 notes DLP for Exchange is included at base **E3**; adding this fragment moves the overall deployment onto the E5/Purview Suite tier. See §10 below. |
 | Adaptive Protection already enabled, with Elevated/Moderate/Minor risk levels defined | Portal-only prerequisite | Assumed already complete if `dynamic-risk-dlp-enforcement` is deployed; if not, complete its `README.md` §5 Steps 1–3, 5 first |
 | Role to configure IRM policies and the DLP-alerts indicator | **Insider Risk Management** or **Insider Risk Management Admins** role group | Same role used in `dynamic-risk-dlp-enforcement/README.md` §3 |
@@ -80,7 +84,7 @@ rationale and the reasoning behind this simplification are in `design.md` §3–
 
 ### Step 1 — Confirm Part 1 and Adaptive Protection are already deployed
 
-This fragment extends, rather than replaces, `scenarios/dlp/exchange-pii-exfil-block/`'s policy.
+This fragment extends, rather than replaces, [`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/)'s policy.
 Confirm it exists and Adaptive Protection is already enabled (per `dynamic-risk-dlp-enforcement/
 README.md` §5 Steps 1–3, 5) before continuing.
 
@@ -113,7 +117,7 @@ checklist/reference while doing this:
 
 Purview portal → **Insider Risk Management** → **Adaptive protection** → **Insider risk levels** →
 confirm the new policy from Step 3 is included, alongside any existing feeder policy (e.g.
-`scenarios/insider-risk/departing-employee-data-theft/` or the Teams sibling fragment's own feeder
+[`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) or the Teams sibling fragment's own feeder
 policy). Insider risk levels are tenant-wide and computed from every in-scope feeder policy — see
 `dynamic-risk-dlp-enforcement/README.md` §11.
 
@@ -273,7 +277,7 @@ action touches the parent scenario's own rules' content, the Encrypt-mode audit 
   exception" in Encrypt mode — excluded from `PII-Exchange-Protect-External` (High severity) via
   `ExceptIfFromMemberOf`, with no equivalent override rule created (Encrypt mode has no
   `PII-Exchange-Override-External` rule at all). Unless
-  `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion` is *also* deployed, that
+  [`dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion`](/scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion/) is *also* deployed, that
   traffic generates **no alert of any severity**; even with the companion deployed, its rule is
   fixed at **Low** severity by design (routine-audit priority for expected, approved-exception
   traffic). This fragment's feeder IRM policy only triggers on **High**-severity alerts from the
@@ -348,7 +352,7 @@ action touches the parent scenario's own rules' content, the Encrypt-mode audit 
     ("DLP policy doesn't meet requirements", "DLP policy isn't selected as the triggering event") — <https://learn.microsoft.com/purview/insider-risk-management-policies#policy-health>
 11. `scenarios/dlp/exchange-pii-exfil-block/README.md` §11–12 — the original documented gap and
     Part 1's own citation list (SSN/Credit Card Number SITs, Exchange DLP conditions/actions).
-12. `scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/` — the sibling scenario this
+12. [`dlp/pci-teams-exfil-block-part2-obfuscation-mitigation`](/scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/) — the sibling scenario this
     one's compensating-control pattern (`-SharedByIRMUserRisk`, no-override, priority-0 rule)
     directly reuses, and the source of the Teams-workload constraint this fragment's design.md §3
     contrasts against.

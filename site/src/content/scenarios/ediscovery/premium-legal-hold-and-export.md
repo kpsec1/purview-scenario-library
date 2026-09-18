@@ -5,6 +5,10 @@ category: "eDiscovery (Premium)"
 categorySlug: "ediscovery"
 slug: "premium-legal-hold-and-export"
 repoPath: "scenarios/ediscovery/premium-legal-hold-and-export"
+parts: ["design","deploy","validate","rollback"]
+related: ["compliance-manager/assess-against-iso27001","communication-compliance/harassment-and-code-of-conduct","ediscovery/location-scoped-legal-hold","data-quality/rules-and-scorecards","insider-risk/irm-case-escalation-to-ediscovery"]
+deployCount: 6
+validateCount: 2
 ---
 ## 1. Scenario summary
 
@@ -253,13 +257,13 @@ routes around this by pulling case-lifecycle events (`CaseAdded`/`CaseUpdated`/`
 `HoldRemoved`/`HoldRetryDistributionSync`) from the Microsoft 365 unified audit log
 (`Search-UnifiedAuditLog`, automation surface 1, `RecordType Discovery`) into a rolling,
 de-duplicated CSV — the same pattern this library's other no-independent-audit-trail scenarios use
-(`scenarios/compliance-manager/assess-against-iso27001/`,
-`scenarios/communication-compliance/harassment-and-code-of-conduct/`), both `Operation` sets
+([`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/),
+[`communication-compliance/harassment-and-code-of-conduct`](/scenarios/communication-compliance/harassment-and-code-of-conduct/)), both `Operation` sets
 confirmed verbatim against Microsoft's own "Audit log activities" eDiscovery reference rather than
 guessed by analogy [[25]](#references). **One real gap remains, disclosed rather than papered
 over:** those four hold-policy `Operation` values are documented against the case-level
 `ediscoveryHoldPolicy` object (the "Hold policies" tab, and this repo's sibling
-`scenarios/ediscovery/location-scoped-legal-hold/` scenario) — whether they also fire for *this*
+[`ediscovery/location-scoped-legal-hold`](/scenarios/ediscovery/location-scoped-legal-hold/) scenario) — whether they also fire for *this*
 scenario's own custodian-scoped `ediscoveryCustodian: applyHold`/`release` calls is not confirmed
 for the current, non-legacy eDiscovery experience; the one Microsoft Learn page describing
 per-custodian audit search carries a caution banner limiting it to organizations hosted by

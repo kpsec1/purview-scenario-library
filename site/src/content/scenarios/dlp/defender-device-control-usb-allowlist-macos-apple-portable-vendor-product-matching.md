@@ -5,17 +5,21 @@ category: "DLP"
 categorySlug: "dlp"
 slug: "defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching"
 repoPath: "scenarios/dlp/defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching"
+parts: ["design","deploy","validate","rollback"]
+related: ["dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage","dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching","dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/`'s
+Extends [`dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/)'s
 `serialNumber`-only Apple and Portable device allowlists with a second, independent matching
 mechanism — **vendorId+productId compound matching** — for approved iPhones/iPads or
 cameras/Android-in-PTP-mode devices that have no readable serial number. Any number of
 vendorId/productId-matched devices can be added per family, on top of (never instead of) each
 family's existing `serialNumber`-matched devices, with no new Intune profile and no new policy rule.
 This is the direct Apple/Portable analog of
-`scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/`, which already
+[`dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/), which already
 closed the identical gap for removable-media (USB mass-storage) devices.
 
 **Who it's for:** a buyer already running the portable-device-coverage scenario with at least one
@@ -298,15 +302,15 @@ entry from the relevant family's array in the config file and re-run
    <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_mobile_devices.json>
 5. RFC 4122, Section 4.3 — Algorithm for Creating a Name-Based UUID (version 5, SHA-1) —
    <https://www.rfc-editor.org/rfc/rfc4122#section-4.3>
-6. `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/` — the
+6. [`dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/) — the
    prerequisite fragment whose `ApprovedAppleDevices`/`ApprovedPortableDevices` groups and Allow
    rules this fragment extends; see that scenario's own references for the shared macOS
    device-control citations not repeated here.
-7. `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/` — the direct
+7. [`dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/) — the direct
    precedent this fragment generalizes from `removable_media_devices` to `apple_devices`/
    `portable_devices`; same deterministic-GUID technique, same "extend the group, not the rule"
    reasoning.
-8. `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/` — the sibling
+8. [`dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/) — the sibling
    fragment whose own disclosed-and-detected cross-fragment ordering hazard (`design.md` §8 there)
    this fragment's own, more severe variant follows the same resolution pattern for.
 

@@ -5,6 +5,10 @@ category: "Unified Catalog"
 categorySlug: "unified-catalog"
 slug: "curate-business-glossary"
 repoPath: "scenarios/unified-catalog/curate-business-glossary"
+parts: ["design","deploy","validate","rollback"]
+related: []
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 

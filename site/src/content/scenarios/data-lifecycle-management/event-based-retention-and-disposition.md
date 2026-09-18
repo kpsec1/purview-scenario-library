@@ -5,6 +5,10 @@ category: "Data Lifecycle Management"
 categorySlug: "data-lifecycle-management"
 slug: "event-based-retention-and-disposition"
 repoPath: "scenarios/data-lifecycle-management/event-based-retention-and-disposition"
+parts: ["design","deploy","validate","rollback"]
+related: []
+deployCount: 4
+validateCount: 1
 ---
 ## 1. Scenario summary
 

@@ -5,12 +5,16 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 slug: "teams-group-hold-resolution"
 repoPath: "scenarios/ediscovery/teams-group-hold-resolution"
+parts: ["design","deploy","validate","rollback"]
+related: ["ediscovery/location-scoped-legal-hold"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
 Resolves a Microsoft Teams team or Microsoft 365 Group's own preservable content locations — its
 group mailbox and its SharePoint site — into the `userSource`/`siteSource` pair that
-`scenarios/ediscovery/location-scoped-legal-hold/`'s hold scripts already accept, and optionally
+[`ediscovery/location-scoped-legal-hold`](/scenarios/ediscovery/location-scoped-legal-hold/)'s hold scripts already accept, and optionally
 reconciles those locations directly onto an existing hold policy.
 
 **Who it's for:** the same legal/compliance operator running `location-scoped-legal-hold`, at the
@@ -244,7 +248,7 @@ or metered cost.
 6. Manage holds in eDiscovery — "Place a hold on Microsoft Teams and Microsoft 365 groups" — <https://learn.microsoft.com/purview/edisc-hold-manage#place-a-hold-on-microsoft-teams-and-microsoft-365-groups>
 7. Groups page in the Microsoft 365 admin center — <https://go.microsoft.com/fwlink/p/?linkid=2052855>
 8. Microsoft 365 Group behaviors and provisioning options (`resourceBehaviorOptions.ProvisionSiteOnDemand`) — <https://learn.microsoft.com/graph/group-set-options>
-9. `scenarios/ediscovery/location-scoped-legal-hold/` — the sibling scenario this fragment feeds; see its own README §12 for the full `ediscoveryHoldPolicy` v1.0 REST citation set (case/hold/userSource/siteSource create, retry, delete) not repeated here.
+9. [`ediscovery/location-scoped-legal-hold`](/scenarios/ediscovery/location-scoped-legal-hold/) — the sibling scenario this fragment feeds; see its own README §12 for the full `ediscoveryHoldPolicy` v1.0 REST citation set (case/hold/userSource/siteSource create, retry, delete) not repeated here.
 10. Manage holds in eDiscovery — "Manage hold status errors" ("Distribution group has too many members," >1,000 addresses; current page, re-fetched 2026-09-04) — <https://learn.microsoft.com/purview/edisc-hold-manage#manage-hold-status-errors>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing deployment —

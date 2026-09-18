@@ -5,11 +5,15 @@ category: "DLP"
 categorySlug: "dlp"
 slug: "defender-device-control-usb-allowlist-macos-bluetooth-allowlist"
 repoPath: "scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist"
+parts: ["design","deploy","validate","rollback"]
+related: ["dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage","dlp/defender-device-control-usb-allowlist-macos","dlp/defender-device-control-usb-allowlist-macos-jamf"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
 Adds a single, vendor+product-matched approved-device exception to the unconditional Bluetooth
-deny rule that `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/`
+deny rule that [`dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/)
 ships — closing that fragment's deliberately deferred "Bluetooth is always default-deny, no
 exceptions" scope boundary using the exact `vendorId`+`productId` AND-match shape Microsoft's own
 published sample policy demonstrates. This is a third-layer companion fragment, not a standalone
@@ -306,11 +310,11 @@ device list, and the ordering-hazard runbook step (§8).
    `vendorId`+`productId` AND-match exception-group and allow-rule shape this fragment reproduces;
    fetched directly from the raw file during this fragment's build) —
    <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_all_bluetooth_devices_except_samsung.json>
-3. `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/` — the
+3. [`dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/) — the
    prerequisite fragment this scenario extends; owns the `AllBluetoothDevices` group and
    `Deny-AllBluetoothDevices` rule this fragment adds an exception to. See that scenario's own
    references for every citation not repeated here.
-4. `scenarios/dlp/defender-device-control-usb-allowlist-macos/` — the root parent scenario; see its
+4. [`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/) — the root parent scenario; see its
    own references for licensing, onboarding, Full Disk Access, and Graph resource schemas.
 
 > Re-verify all links, and especially the `AdditionalFields` VendorId/ProductId VERIFY (§11) and the

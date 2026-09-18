@@ -5,11 +5,15 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 slug: "teams-purge-hold-lifecycle-management"
 repoPath: "scenarios/ediscovery/teams-purge-hold-lifecycle-management"
+parts: ["design","deploy","validate","rollback"]
+related: ["ediscovery/search-and-purge-teams-messages"]
+deployCount: 4
+validateCount: 1
 ---
 ## 1. Scenario summary
 
 Scripts the hold-identification, hold-removal, and hold-reapplication sequence that
-`scenarios/ediscovery/search-and-purge-teams-messages/` deliberately left manual: before a Teams
+[`ediscovery/search-and-purge-teams-messages`](/scenarios/ediscovery/search-and-purge-teams-messages/) deliberately left manual: before a Teams
 message purge can remove anything, every hold and retention policy on each target mailbox must be
 removed, and Microsoft states plainly that skipping this step means **the content is silently
 retained, not deleted** [[1]](#references). This companion scenario identifies every documented hold
@@ -299,7 +303,7 @@ life of the incident, matching the sibling scenario's own guidance for its searc
    `-AddExchangeLocationException`/`-RemoveExchangeLocationException`) — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-retentioncompliancepolicy>
 8. PowerShell cmdlets for retention policies and retention labels (`*-AppRetentionCompliancePolicy`
    newer-locations table) — <https://learn.microsoft.com/purview/retention-cmdlets>
-9. `scenarios/ediscovery/search-and-purge-teams-messages/` — the parent scenario this companion
+9. [`ediscovery/search-and-purge-teams-messages`](/scenarios/ediscovery/search-and-purge-teams-messages/) — the parent scenario this companion
    removes/restores holds for; shares its `-DefinitionPath` JSON schema.
 10. Common settings for retention policies and retention label policies (confirms the Exchange-mailboxes
     location — org-wide or specific-location — never covers a Microsoft 365 Group mailbox, including

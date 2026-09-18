@@ -5,6 +5,10 @@ category: "Data Quality"
 categorySlug: "data-quality"
 slug: "rules-and-scorecards"
 repoPath: "scenarios/data-quality/rules-and-scorecards"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-map/scan-azure-sql-and-classify","unified-catalog/curate-business-glossary","dspm-for-ai/copilot-sensitive-data-exposure"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -19,8 +23,8 @@ uniqueness, conformity, and accuracy — against an already-governed data asset 
 registered in Data Map, scanned, and added to a Unified Catalog data product), then schedules a
 one-time scan so those rules produce a **data quality score**: at the rule level, rolled up to the
 asset, the data product, and the governance domain. This is the scenario that turns "we scanned and
-classified the data" (`scenarios/data-map/scan-azure-sql-and-classify/`) and "we named and governed
-the data" (`scenarios/unified-catalog/curate-business-glossary/`) into "we can prove, with a number,
+classified the data" ([`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/)) and "we named and governed
+the data" ([`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/)) into "we can prove, with a number,
 whether the data is actually trustworthy" — the third leg of this repo's Data Governance stack.
 
 **Who it's for:** a data governance team or data product owner who has a data asset already onboarded
@@ -38,7 +42,7 @@ kept up to date." SOX financial-reporting controls depend on the integrity of th
 And in the AI era, Microsoft's own product framing for this feature is explicit: "the reliability of
 data directly impacts the accuracy of AI-driven insights... without trustworthy data, there's a risk
 of eroding trust in AI systems and hindering their adoption" [[1]](#references) — directly relevant to
-any buyer already running `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` in this repo, since
+any buyer already running [`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/) in this repo, since
 a Copilot answer is only as trustworthy as the governed data it's grounded in.
 
 This scenario gives that claim a number: a **Customer** data asset's data quality score, computed from
@@ -54,7 +58,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Microsoft Purview Data Quality | **PAYG only** — metered in **Data Governance Processing Units (DGPU)**, Basic/Standard/Advanced SKUs | No per-user M365 entitlement covers this feature — see `docs/licensing-matrix.md` §2 [[2]](#references) |
 | Deploy/manage rules, schedules, and alerts | **Data Quality Steward** role on the target governance domain | A *sub-role*: requires the user/service principal to **also** hold **Governance Domain Reader** and **Data Product Owner** on that domain — see §5 and [[3]](#references). **This role is granted at the governance-domain level, not per data product or per asset** — a service principal holding it for "Customer Experience" can create, edit, or delete Data Quality rules on *any* asset in *any* data product inside that domain, not just the one this scenario targets. There is no narrower, asset-scoped role documented for this action; treat the automation identity's credential with the same care as any domain-wide write credential, and review governance-domain role membership periodically (`docs/rbac-model.md` §9) |
 | Read rules and scores only (validation) | **Data Quality Reader** role on the target governance domain | Least-privilege for the read-only `validate/` script; same sub-role composition as above [[3]](#references) |
-| The target data asset already exists in Unified Catalog | Registered + scanned in Data Map (`scenarios/data-map/scan-azure-sql-and-classify/`), then added to a data product in a governance domain | This scenario does **not** create the governance domain, data product, or data asset — see §7/`design.md` §7 |
+| The target data asset already exists in Unified Catalog | Registered + scanned in Data Map ([`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/)), then added to a data product in a governance domain | This scenario does **not** create the governance domain, data product, or data asset — see §7/`design.md` §7 |
 | A Data Quality **connection** to the source is configured | Portal-only in this build (§5) — managed identity is the **only** supported authentication option for DQ scans on Microsoft-native sources (Azure SQL, ADLS Gen2, Fabric, Synapse, Azure SQL Managed Instance) [[4]](#references) | See §11 for why this scenario doesn't script the connection object |
 | Automation identity for the REST calls themselves | App registration with **Data Quality Steward** (deploy) or **Data Quality Reader** (validate) Purview role on the governance domain | Client-secret app-only OAuth2, same token endpoint as Data Map/Unified Catalog — `docs/automation-surface.md` §3 |
 
@@ -116,7 +120,7 @@ this repo already uses for Data Map scanning. Full design rationale: `design.md`
    governance domain → **Manage** → **Connections** → **New**. Choose **Data Map** as the source type
    (simplest — reuses the already-scanned Data Map registration), test the connection, and **Submit**
    [[4]](#references). Grant the Purview managed identity the source-appropriate read role (e.g.
-   `db_datareader` for Azure SQL — the same grant `scenarios/data-map/scan-azure-sql-and-classify/`
+   `db_datareader` for Azure SQL — the same grant [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/)
    already documents) [[4]](#references).
 4. Navigate to the asset's **Data quality** page (**Health management** → **Data quality** → domain →
    data product → asset) and select **Rules** → **New rule** to author each rule interactively — this
@@ -311,8 +315,8 @@ reference: `./deploy/Remove-DataQualityRulesAndSchedule.ps1` removes the schedul
   replace the expression with the organization's actual email-validation standard before trusting
   the resulting score in a compliance narrative.
 - **This scenario does not create the governance domain, data product, or data asset it targets.**
-  It assumes the Data Governance path (`scenarios/data-map/scan-azure-sql-and-classify/` →
-  `scenarios/unified-catalog/curate-business-glossary/` or a future data-products scenario) has
+  It assumes the Data Governance path ([`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) →
+  [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) or a future data-products scenario) has
   already run — see `design.md` §7.
 - **Public Preview.** The entire Data Quality REST API for Unified Catalog is Public Preview as of
   this build and covers GA Data Quality features only — no alerting, schema-import, or preview-feature

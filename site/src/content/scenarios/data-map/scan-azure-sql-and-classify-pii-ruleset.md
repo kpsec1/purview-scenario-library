@@ -5,10 +5,14 @@ category: "Data Map"
 categorySlug: "data-map"
 slug: "scan-azure-sql-and-classify-pii-ruleset"
 repoPath: "scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-map/scan-azure-sql-and-classify","information-protection/auto-label-confidential-sharepoint","dlp/pci-teams-exfil-block"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends `scenarios/data-map/scan-azure-sql-and-classify/`: creates a **custom, PII-only** Data Map
+Extends [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/): creates a **custom, PII-only** Data Map
 scan rule set for Azure SQL Database — every system classification excluded except the ones you
 name to keep (U.S. Social Security Number and Credit Card Number by default) — and reconciles the
 base scenario's already-registered scan onto it. The exclusion list is derived at deploy time from
@@ -45,7 +49,7 @@ scenario — this scenario adds no new licensing surface, only a different scan 
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| **`scenarios/data-map/scan-azure-sql-and-classify/` already deployed** | The target data source and scan must already exist | This scenario reconciles an EXISTING scan onto a new ruleset — `deploy/New-PiiOnlyScanRuleset.ps1` fails fast with a clear error if the scan is not found |
+| **[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) already deployed** | The target data source and scan must already exist | This scenario reconciles an EXISTING scan onto a new ruleset — `deploy/New-PiiOnlyScanRuleset.ps1` fails fast with a clear error if the scan is not found |
 | Create/update the custom scan rule set and reconcile the scan | **Data Source Administrator** role on the target collection | Same role the base scenario's deploy script requires — Microsoft Learn does not document a role specific to scan rule sets; ruleset management falls under the same "configure and run a scan" boundary as the scan itself (`docs/rbac-model.md` §5) [[7]](#references) |
 | Read the ruleset/scan for validation | **Data Reader** role on the target collection | Least-privilege for the read-only `validate/` script |
 | Automation identity for the REST calls | App registration with the roles above, app-only OAuth2 | Same client-credentials flow as the base scenario — `docs/automation-surface.md` §3 |

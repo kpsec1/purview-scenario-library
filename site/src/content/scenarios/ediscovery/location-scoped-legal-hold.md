@@ -5,6 +5,10 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 slug: "location-scoped-legal-hold"
 repoPath: "scenarios/ediscovery/location-scoped-legal-hold"
+parts: ["design","deploy","validate","rollback"]
+related: ["ediscovery/premium-legal-hold-and-export"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -16,7 +20,7 @@ preservation obligation attaches to a **location**, not a **named custodian**.
 **Who it's for:** a legal/compliance team (or an MSSP acting on their behalf) responding to a
 regulatory inquiry or internal sweep that names a shared departmental mailbox, a compliance
 distribution list, or a team site rather than a specific individual — the companion scenario to
-`scenarios/ediscovery/premium-legal-hold-and-export/`, which covers the named-custodian path.
+[`ediscovery/premium-legal-hold-and-export`](/scenarios/ediscovery/premium-legal-hold-and-export/), which covers the named-custodian path.
 Run both against the same case when a matter needs both kinds of preservation.
 
 ## 2. Business/regulatory driver

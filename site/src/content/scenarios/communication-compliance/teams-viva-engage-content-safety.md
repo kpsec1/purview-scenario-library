@@ -5,6 +5,10 @@ category: "Communication Compliance"
 categorySlug: "communication-compliance"
 slug: "teams-viva-engage-content-safety"
 repoPath: "scenarios/communication-compliance/teams-viva-engage-content-safety"
+parts: ["design","deploy","validate","rollback"]
+related: []
+deployCount: 2
+validateCount: 1
 ---
 > **Scope note (read before implementation):** Microsoft Purview Communication Compliance has **no
 > documented PowerShell, Graph, or REST write API** for policy creation or management, including

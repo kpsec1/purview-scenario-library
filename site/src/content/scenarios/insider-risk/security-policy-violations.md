@@ -5,6 +5,10 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 slug: "security-policy-violations"
 repoPath: "scenarios/insider-risk/security-policy-violations"
+parts: ["design","deploy","validate","rollback"]
+related: ["insider-risk/security-policy-violations-by-departing-users"]
+deployCount: 2
+validateCount: 1
 ---
 > **Preview feature.** Microsoft groups this template with its departing-users, priority-users, and
 > risky-users siblings under the "Intentional or unintentional security policy violations
@@ -16,7 +20,7 @@ repoPath: "scenarios/insider-risk/security-policy-violations"
 
 Deploys Microsoft Purview Insider Risk Management's **Security policy violations** policy
 template — the base member of the same template family as
-`scenarios/insider-risk/security-policy-violations-by-departing-users/`, but with a materially
+[`insider-risk/security-policy-violations-by-departing-users`](/scenarios/insider-risk/security-policy-violations-by-departing-users/), but with a materially
 different scoping model: **no HR/departure trigger and no priority-user-group requirement.** Its
 own triggering event *is* the security signal itself — "Defense evasion of security controls or
 unwanted software detected by Microsoft Defender for Endpoint" [[2]](#references) — so any

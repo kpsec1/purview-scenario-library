@@ -5,13 +5,17 @@ category: "DLP"
 categorySlug: "dlp"
 slug: "defender-device-control-usb-allowlist-macos-jamf"
 repoPath: "scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf"
+parts: ["design","deploy","validate","rollback"]
+related: ["dlp/defender-device-control-usb-allowlist-macos","compliance-manager/pci-dss-assessment","dlp/defender-device-control-usb-allowlist"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
 Denies **all** removable USB storage devices on JAMF-managed macOS endpoints by default, allowing
 only a short, named allowlist of IT-issued, identity-verified backup/imaging drives (matched by
 serial number) to read and write. This is the **JAMF-managed sibling** of
-`scenarios/dlp/defender-device-control-usb-allowlist-macos/` (Intune-managed) — the identical
+[`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/) (Intune-managed) — the identical
 policy content, delivered through JAMF Pro's own device-control mechanism instead of Microsoft
 Graph, for organizations whose Mac fleet is managed by JAMF rather than Intune.
 
@@ -31,7 +35,7 @@ JAMF-managed Macs in scope has the same "no unapproved USB storage device, perio
 that scenario itself closes for Intune-managed Macs — this scenario closes the JAMF-managed half
 of that same gap.
 
-A companion assessment-side scenario, `scenarios/compliance-manager/pci-dss-assessment/`, tracks
+A companion assessment-side scenario, [`compliance-manager/pci-dss-assessment`](/scenarios/compliance-manager/pci-dss-assessment/), tracks
 the same PCI DSS v4.0 improvement actions this technical control and its siblings support.
 
 ## 3. Prerequisites
@@ -330,11 +334,11 @@ the Device Control Policy property, or unscope the profile).
    across Windows and macOS; the Mac JSON entry syntax and access-type table) — <https://learn.microsoft.com/defender-endpoint/device-control-policies>
 9. Microsoft Defender for Endpoint on macOS (system requirements, Device Control capability
    summary) — <https://learn.microsoft.com/defender-endpoint/microsoft-defender-endpoint-mac>
-10. `scenarios/dlp/defender-device-control-usb-allowlist-macos/` — the Intune-managed sibling
+10. [`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/) — the Intune-managed sibling
     scenario this control is functionally identical to; see that scenario's own references for the
     Intune/Graph-side citations (`macOSCustomConfiguration`, demo `.mobileconfig`, JSON policy
     schema).
-11. `scenarios/dlp/defender-device-control-usb-allowlist/` — the Windows sibling scenario (Intune
+11. [`dlp/defender-device-control-usb-allowlist`](/scenarios/dlp/defender-device-control-usb-allowlist/) — the Windows sibling scenario (Intune
     OMA-URI/XML mechanism); see that scenario's own references for the Windows-side citations.
 
 > Re-verify all links, and especially §11's open VERIFY on the JAMF Pro API, against current

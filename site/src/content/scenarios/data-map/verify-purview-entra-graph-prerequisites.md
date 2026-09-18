@@ -5,11 +5,15 @@ category: "Data Map"
 categorySlug: "data-map"
 slug: "verify-purview-entra-graph-prerequisites"
 repoPath: "scenarios/data-map/verify-purview-entra-graph-prerequisites"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-map/scan-azure-sql-managed-instance-and-classify","compliance-manager/entra-privileged-role-monitoring","ediscovery/roster-to-hold-locations"]
+deployCount: 1
+validateCount: 1
 ---
 ## 1. Scenario summary
 
 A read-only Microsoft Graph checker that confirms every Azure SQL Managed Instance backing a
-Microsoft Purview Data Map source (`scenarios/data-map/scan-azure-sql-managed-instance-and-classify/`)
+Microsoft Purview Data Map source ([`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/))
 still has its system-assigned managed identity as a current member of the Microsoft Entra ID
 **Directory Readers** role — the prerequisite Managed Instance requires before Microsoft Entra
 authentication works at all — and flags any *other*, unexpected member of that same tenant-wide role
@@ -216,7 +220,7 @@ Wire your scheduler to also inspect the JSON report's `DriftMemberCount` (or dif
 array against the previous run) and alert a human on any increase, not just on a non-zero exit.
 
 **Report history — timestamp `-ReportPath` per run.** Unlike this repo's rolling audit-trail export
-scripts (e.g. `scenarios/compliance-manager/entra-privileged-role-monitoring/`), this script's
+scripts (e.g. [`compliance-manager/entra-privileged-role-monitoring`](/scenarios/compliance-manager/entra-privileged-role-monitoring/)), this script's
 report is a **point-in-time snapshot** that overwrites whatever is at `-ReportPath` — it does not
 merge or accumulate history itself (`design.md` §7). To trend the FAIL-count KPI above over time,
 have the calling scheduler pass a date-stamped path each run (e.g.
@@ -258,7 +262,7 @@ Graph API call in this scenario is separately metered.
   Entra role, by object ID and (best-effort) display name — exactly the information an attacker
   attempting privilege escalation would want. Do not write `-ReportPath` to a broadly-readable
   location (a public share, an unrestricted CI artifact bucket); restrict it the same way you would
-  restrict output from `scenarios/compliance-manager/entra-privileged-role-monitoring/`'s own
+  restrict output from [`compliance-manager/entra-privileged-role-monitoring`](/scenarios/compliance-manager/entra-privileged-role-monitoring/)'s own
   privileged-role audit trail. Flagged as a Red Team finding in `reviews.md`.
 - **The inventory CSV's integrity determines the drift check's integrity.** Because drift is
   computed as "current members minus inventory rows," anyone who can edit
@@ -297,7 +301,7 @@ Graph API call in this scenario is separately metered.
 
 ## 12. References
 
-1. `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` — the sibling scenario this
+1. [`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/) — the sibling scenario this
    fragment protects; see its README.md §3/§7/§8 and `reviews.md` (Blue Team finding 1) for the
    original gap this scenario closes.
 2. Get-MgDirectoryRole (Microsoft.Graph.Identity.DirectoryManagement module, `-Filter` parameter) — <https://learn.microsoft.com/powershell/module/microsoft.graph.identity.directorymanagement/get-mgdirectoryrole>

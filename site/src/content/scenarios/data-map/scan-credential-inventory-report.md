@@ -5,6 +5,10 @@ category: "Data Map"
 categorySlug: "data-map"
 slug: "scan-credential-inventory-report"
 repoPath: "scenarios/data-map/scan-credential-inventory-report"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-map/scan-credential-key-vault-backed","data-map/scan-credential-remaining-kinds","data-estate-insights/classification-coverage-report"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -53,7 +57,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Microsoft Purview account + Data Map | Active Azure subscription; Data Map is PAYG-billed Azure consumption | `docs/licensing-matrix.md` §1–2. This scenario is read-only and adds no metered consumption beyond the `Credential - List` calls themselves — see §10 |
-| At least one credential already created | e.g. via `scenarios/data-map/scan-credential-key-vault-backed/` | This scenario does not create any credential — see §6/`design.md` §6 |
+| At least one credential already created | e.g. via [`data-map/scan-credential-key-vault-backed`](/scenarios/data-map/scan-credential-key-vault-backed/) | This scenario does not create any credential — see §6/`design.md` §6 |
 | Run this scenario's report script | **Data Reader** role on the collection(s) whose credentials should be visible | **VERIFY, by analogy — same open question `scan-credential-key-vault-backed/README.md` §3 already carries**: Microsoft's role reference never names *credentials* in any Data Map collection role's description. Credential is a Scanning-plane object alongside data sources and scans (which Data Reader *is* documented to read), so this scenario assumes the same role as its sibling's own read path. Confirm on a pilot tenant before designing least-privilege around it |
 | Grant the automation identity a Purview role at all | **Collection Admin** at root (or the relevant sub-collection) | Only a Collection Admin can assign Data Map data-plane roles — `docs/rbac-model.md` §5 |
 | Automation identity for the REST calls | App registration with the Data Reader role above; client-secret app-only OAuth2 | `docs/automation-surface.md` §3 and surface 4 |
@@ -347,12 +351,12 @@ the already-produced trend-log/drift-report files and the checked-in expected-st
 5. [Audit logs, diagnostics, and activity history](https://learn.microsoft.com/purview/data-gov-classic-audit-logs-diagnostics) — the enumerated Management audit-event categories that do **not** include credentials or Key Vault connections, the documented absence this scenario's drift detection compensates for.
 
 Related scenarios in this library:
-- `scenarios/data-map/scan-credential-key-vault-backed/` — creates the credentials this scenario
+- [`data-map/scan-credential-key-vault-backed`](/scenarios/data-map/scan-credential-key-vault-backed/) — creates the credentials this scenario
   reports on; its `README.md` §11 names the silent-re-point gap this scenario closes.
-- `scenarios/data-map/scan-credential-remaining-kinds/` — creates the other five credential kinds
+- [`data-map/scan-credential-remaining-kinds`](/scenarios/data-map/scan-credential-remaining-kinds/) — creates the other five credential kinds
   (`AccountKey`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, `ManagedIdentity`) this scenario's
   fingerprint table already covers; no change was needed here to support them.
-- `scenarios/data-estate-insights/classification-coverage-report/` — the sibling reporting scenario
+- [`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/) — the sibling reporting scenario
   this fragment's trend-log/replace-by-RunId idempotency pattern is reused from verbatim.
 - `docs/rbac-model.md` §5 — Data Map collection roles.
 - `docs/automation-surface.md` — surface 4 (Purview data-plane REST).

@@ -5,6 +5,10 @@ category: "Information Barriers"
 categorySlug: "information-barriers"
 slug: "segregate-trading-and-research"
 repoPath: "scenarios/information-barriers/segregate-trading-and-research"
+parts: ["design","deploy","validate","rollback"]
+related: []
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 

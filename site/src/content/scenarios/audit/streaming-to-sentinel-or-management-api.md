@@ -5,6 +5,10 @@ category: "Audit"
 categorySlug: "audit"
 slug: "streaming-to-sentinel-or-management-api"
 repoPath: "scenarios/audit/streaming-to-sentinel-or-management-api"
+parts: ["design","deploy","validate","rollback"]
+related: []
+deployCount: 4
+validateCount: 1
 ---
 ## 1. Scenario summary
 

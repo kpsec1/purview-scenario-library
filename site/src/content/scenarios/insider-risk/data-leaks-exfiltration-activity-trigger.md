@@ -5,11 +5,15 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 slug: "data-leaks-exfiltration-activity-trigger"
 repoPath: "scenarios/insider-risk/data-leaks-exfiltration-activity-trigger"
+parts: ["design","deploy","validate","rollback"]
+related: ["insider-risk/data-leaks","adaptive-protection/dynamic-risk-dlp-enforcement"]
+deployCount: 1
+validateCount: 1
 ---
 ## 1. Scenario summary
 
 Deploys Microsoft Purview Insider Risk Management's base **Data leaks** policy template — the same
-template `scenarios/insider-risk/data-leaks/` builds — using its **second** documented triggering-
+template [`insider-risk/data-leaks`](/scenarios/insider-risk/data-leaks/) builds — using its **second** documented triggering-
 event option: **"User performs an exfiltration activity"** (one or more built-in indicators, with
 default or custom thresholds), instead of that sibling scenario's DLP-policy trigger. Same policy
 template, same 15,000-actively-scored-user cap, same population mechanism (a plain Entra group, no
@@ -365,7 +369,7 @@ app registration's certificate is not.
   norms is not detected by this indicator by design (`data-leaks-by-risky-users/README.md` §11).
 - **This scenario does not configure Adaptive Protection** — a buyer who wants this policy's
   alerts to drive DLP enforcement wires it into
-  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` separately.
+  [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) separately.
 - **Cannot disambiguate which Insider Risk Management policy produced a given exported alert if
   more than one policy is deployed in the same tenant** — same disclosed gap as every IRM scenario
   in this library, and directly relevant if both this scenario and its DLP-trigger sibling are

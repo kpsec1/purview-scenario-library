@@ -5,6 +5,10 @@ category: "Data Lineage"
 categorySlug: "data-lineage"
 slug: "end-to-end-lineage-validation"
 repoPath: "scenarios/data-lineage/end-to-end-lineage-validation"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-map/scan-azure-sql-and-classify"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -43,7 +47,7 @@ downstream consumer," which is the worst possible failure mode for a control who
 is visibility.
 
 This scenario also ties directly into this repo's existing Data Governance narrative:
-`scenarios/data-map/scan-azure-sql-and-classify/` already classifies `customerdb.dbo.Customers`
+[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) already classifies `customerdb.dbo.Customers`
 with SSN/Credit Card Number sensitive information types. Without lineage connecting it to
 `analyticsdb.dbo.CustomerRiskSummary`, a reviewer asking "where else does this classified data end
 up" gets an incomplete answer purely because the connecting job happens to be a custom script
@@ -60,7 +64,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Create/update the custom lineage relationship | **Data Curator** role on the collection containing both target assets | Classic Data Map role — grants access to the **Catalog Data plane**, which is what the entity/relationship/lineage REST operations this scenario uses live on [[7]](#references). **This role is granted at the collection level, not per asset or per relationship** — a service principal holding Data Curator on the collection containing these two tables can create, edit, or delete entities and relationships on *any* asset in that collection, not just the two this scenario targets. See `docs/rbac-model.md` §5 and treat this credential with the same care as any collection-wide write grant, reviewing membership periodically |
 | Read lineage only (validation) | **Data Reader** role on the same collection | Least-privilege for the read-only `validate/` script [[7]](#references) |
 | Grant the automation identity a Purview role at all | **Collection Admin** role at root (or the relevant sub-collection) to perform the role assignment | Only a Collection Admin can assign Data Curator/Data Reader to a service principal [[7]](#references) |
-| The upstream and downstream assets already exist | Both registered and scanned via Data Map (e.g. `scenarios/data-map/scan-azure-sql-and-classify/` for `customerdb.dbo.Customers`, and an equivalent scan of the analytics database for `analyticsdb.dbo.CustomerRiskSummary`) | This scenario does **not** register or scan either source — see §6/`design.md` §6 |
+| The upstream and downstream assets already exist | Both registered and scanned via Data Map (e.g. [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) for `customerdb.dbo.Customers`, and an equivalent scan of the analytics database for `analyticsdb.dbo.CustomerRiskSummary`) | This scenario does **not** register or scan either source — see §6/`design.md` §6 |
 | Automation identity for the REST calls themselves | App registration with **Data Curator** (deploy) or **Data Reader** (validate) Purview role on the collection | Client-secret app-only OAuth2, same token endpoint as this repo's other surface-4 scripts — `docs/automation-surface.md` §3 |
 
 > Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) before a
@@ -106,7 +110,7 @@ connected, not just that this scenario's one link exists. Full design rationale:
 ### Portal path (for a first manual walkthrough / to validate intent before scripting)
 
 1. Confirm both assets already exist: **Data Map** → the source registered and scanned (for
-   `customerdb.dbo.Customers`, this is `scenarios/data-map/scan-azure-sql-and-classify/`'s own
+   `customerdb.dbo.Customers`, this is [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/)'s own
    output); repeat the same scan pattern against the analytics database for
    `analyticsdb.dbo.CustomerRiskSummary`.
 2. Open each asset's **Overview** page in the Purview portal and copy its exact **Qualified name**
@@ -252,7 +256,7 @@ didn't create them).
 
 - **PAYG, not per-user, and effectively free at this scenario's scale.** Entity/relationship/
   lineage REST calls bill through the same Data Map / Azure-consumption metering as
-  `scenarios/data-map/scan-azure-sql-and-classify/` — see `docs/licensing-matrix.md` §1–2. Unlike a
+  [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) — see `docs/licensing-matrix.md` §1–2. Unlike a
   scan, this scenario's calls are lightweight, low-volume metadata writes (one relationship per
   custom hop), not a data-scanning workload — cost impact at typical scale (tens to low hundreds of
   custom links) is negligible compared to the Data Map scanning this scenario depends on as a

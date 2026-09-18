@@ -5,10 +5,14 @@ category: "Data Lineage"
 categorySlug: "data-lineage"
 slug: "custom-process-lineage"
 repoPath: "scenarios/data-lineage/custom-process-lineage"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-lineage/end-to-end-lineage-validation","data-map/scan-azure-sql-and-classify"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends `scenarios/data-lineage/end-to-end-lineage-validation/` from a single unattributed
+Extends [`data-lineage/end-to-end-lineage-validation`](/scenarios/data-lineage/end-to-end-lineage-validation/) from a single unattributed
 DataSet-to-DataSet edge into the richer **DataSet -> Process -> DataSet** lineage shape: the
 nightly custom transform job itself becomes a queryable, Process-typed entity in the Purview lineage
 graph - carrying a runbook URL and a schedule expression - rather than an invisible hop a reviewer
@@ -48,7 +52,7 @@ README.md Section 3 for the full PAYG framing, not repeated here):
 | Create the custom Process **type definition** | **VERIFY** - at minimum Data Curator on a collection (confirmed sufficient for the closely related "create a custom **classification**" action [[7]](#references)); this scenario's grounding pass found no equally explicit permission statement specifically for creating a custom **entity type definition** via Type - Bulk Create. Not independently confirmed whether type creation is collection-scoped or requires a broader/root-level grant - flagged in Section 11 rather than asserted. **Residual risk regardless of which way this resolves**: Apache Atlas type definitions are account-wide objects, not partitioned per collection the way entities are - if type creation turns out to require (or merely be possible with) only collection-level Data Curator, that credential can create/pollute the tenant's entire shared type namespace, not just objects inside its own collection. Treat the deploy credential's blast radius as tenant-wide for this specific action, on top of the collection-wide entity/relationship blast radius the sibling scenario's own Red Team review already flagged |
 | Read lineage and the type definition only (validation) | **Data Reader** role on the same collection | Least-privilege for the read-only `validate/` script [[9]](#references) |
 | Grant the automation identity a Purview role at all | **Collection Admin** role at root (or the relevant sub-collection) | Only a Collection Admin can assign Data Curator/Data Reader to a service principal [[9]](#references) |
-| The upstream and downstream assets already exist | Both registered and scanned via Data Map - same assets `end-to-end-lineage-validation` already targets (`scenarios/data-map/scan-azure-sql-and-classify/` for `customerdb.dbo.Customers`) | This scenario does not register or scan either source - see §6/`design.md` §7 |
+| The upstream and downstream assets already exist | Both registered and scanned via Data Map - same assets `end-to-end-lineage-validation` already targets ([`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) for `customerdb.dbo.Customers`) | This scenario does not register or scan either source - see §6/`design.md` §7 |
 | Automation identity for the REST calls themselves | App registration with Data Curator (deploy) or Data Reader (validate) Purview role | Client-secret app-only OAuth2, same token endpoint as this repo's other surface-4 scripts - `docs/automation-surface.md` §3 |
 
 > Verify current entitlement names against `docs/licensing-matrix.md` before a sales commitment.

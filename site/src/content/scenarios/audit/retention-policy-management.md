@@ -5,6 +5,10 @@ category: "Audit"
 categorySlug: "audit"
 slug: "retention-policy-management"
 repoPath: "scenarios/audit/retention-policy-management"
+parts: ["design","deploy","validate","rollback"]
+related: ["audit/premium-audit-investigation","dlp/pci-teams-exfil-block"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -14,7 +18,7 @@ to Microsoft Teams, or to a specific regulated user group) and shortening it for
 low-investigative-value activity — as a version-controlled, idempotently-reconciled set, using
 Security & Compliance PowerShell.
 
-**Who it's for:** an org that has run `scenarios/audit/premium-audit-investigation/` (or plans to)
+**Who it's for:** an org that has run [`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/) (or plans to)
 and needs the data that investigation searches to actually still be *retained* when it's needed —
 plus any compliance/records team that wants an as-code, reviewable definition of "how long do we
 keep which audit activity" instead of a set of hand-clicked portal policies nobody has a change
@@ -33,7 +37,7 @@ SOC 2 CC7 (monitoring). Two concrete drivers this scenario addresses directly:
 - **Closing the Teams gap.** Audit (Premium)'s default one-year retention policy covers only
   Entra ID, Exchange, OneDrive, and SharePoint. Microsoft Teams — a primary channel for regulated
   communication in many of this library's buyer profiles (see
-  `scenarios/dlp/pci-teams-exfil-block/`, `scenarios/communication-compliance/
+  [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/), `scenarios/communication-compliance/
   harassment-and-code-of-conduct/`) — silently falls back to the 180-day default unless a custom
   policy extends it. A buyer who has deployed Teams-focused DLP/Communication Compliance controls
   but never extended Teams' own audit retention has a real gap between "we can detect this" and
@@ -154,7 +158,7 @@ Full cmdlet parameter grounding: `deploy/New-AuditRetentionPolicy.ps1`'s inline 
    representative activity matching a newly-widened policy (e.g. a Teams action for the sample
    config's `Extended-Teams-Audit-1Year` policy) and, after the policy's original shorter
    retention window would have expired the record under the *old* rule, confirm via
-   `scenarios/audit/premium-audit-investigation/` (or `Search-UnifiedAuditLog`) that the record is
+   [`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/) (or `Search-UnifiedAuditLog`) that the record is
    still retrievable. This is the only test that actually proves retention, not just
    policy-object configuration, but by construction it can't be run start-to-finish until the
    original (shorter) window has passed.
@@ -251,7 +255,7 @@ retained audit records or the tenant's default policy.
   confirmed for those two parameters specifically — confirm against a pilot tenant before relying
   on a config change that narrows-then-widens a policy's `RecordTypes`/`Operations` scope.
 - **This scenario does not perform the audit search itself.** It only configures retention. Use
-  `scenarios/audit/premium-audit-investigation/` (or `Search-UnifiedAuditLog`) to actually query
+  [`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/) (or `Search-UnifiedAuditLog`) to actually query
   the data these policies keep around for longer.
 
 ## 12. References

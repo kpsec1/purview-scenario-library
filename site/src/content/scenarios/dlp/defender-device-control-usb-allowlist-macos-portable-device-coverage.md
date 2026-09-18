@@ -5,10 +5,14 @@ category: "DLP"
 categorySlug: "dlp"
 slug: "defender-device-control-usb-allowlist-macos-portable-device-coverage"
 repoPath: "scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage"
+parts: ["design","deploy","validate","rollback"]
+related: ["dlp/defender-device-control-usb-allowlist-macos","dlp/defender-device-control-usb-allowlist-wpd-coverage","dlp/pci-teams-exfil-block-part2-obfuscation-mitigation","dlp/defender-device-control-usb-allowlist-macos-jamf"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends `scenarios/dlp/defender-device-control-usb-allowlist-macos/`'s default-deny USB allowlist
+Extends [`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/)'s default-deny USB allowlist
 to also cover **Apple (iOS/iPadOS) devices**, **Portable devices** (cameras, Android phones in
 PTP-analogous modes), and **Bluetooth media** — three device families that scenario's own Red Team
 review confirmed are **completely invisible** to a policy scoped to `removable_media_devices` only.
@@ -21,7 +25,7 @@ scenario and wants the same "no unapproved device, period" posture to also close
 iPhone-in-sync-mode, camera-in-PTP-mode, and Bluetooth-file-transfer gaps — typically after a Red
 Team finding, a DLP audit, or an incident where data left over a device that never enumerated as
 removable media and so was never subject to the parent policy at all. This is the **direct macOS
-analog** of `scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/` (the Windows WPD
+analog** of [`dlp/defender-device-control-usb-allowlist-wpd-coverage`](/scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/) (the Windows WPD
 sibling), translated to macOS's own `primaryId` family model.
 
 ## 2. Business/regulatory driver
@@ -354,10 +358,10 @@ is operational: reviewing and maintaining up to two additional approved-device l
    here on the strength of the parent macOS scenario's own established, cross-platform
    `DeviceEvents` schema assumption, not an independent macOS-side worked example) —
    <https://learn.microsoft.com/defender-endpoint/device-control-overview>
-5. `scenarios/dlp/defender-device-control-usb-allowlist-macos/` — the parent scenario this fragment
+5. [`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/) — the parent scenario this fragment
    extends; see that scenario's own references for every citation not repeated here (licensing,
    onboarding, Full Disk Access, Graph resource schemas, Advanced Hunting/Sentinel alert routing).
-6. `scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/` — the Windows sibling
+6. [`dlp/defender-device-control-usb-allowlist-wpd-coverage`](/scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/) — the Windows sibling
    fragment this scenario is the direct macOS analog of.
 
 > Re-verify all links, and especially the `portable_devices`-`serialNumber` VERIFY (§11) and the

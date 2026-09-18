@@ -5,11 +5,15 @@ category: "Data Map"
 categorySlug: "data-map"
 slug: "bulk-grant-synapse-serverless-access"
 repoPath: "scenarios/data-map/bulk-grant-synapse-serverless-access"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-map/scan-azure-synapse-and-classify"]
+deployCount: 1
+validateCount: 1
 ---
 ## 1. Scenario summary
 
 Automates the per-serverless-database `CREATE LOGIN`/`CREATE USER`/`db_datareader` grants
-`scenarios/data-map/scan-azure-synapse-and-classify/`'s serverless-SQL-pool scanning path depends on,
+[`data-map/scan-azure-synapse-and-classify`](/scenarios/data-map/scan-azure-synapse-and-classify/)'s serverless-SQL-pool scanning path depends on,
 across every serverless database in an Azure Synapse Analytics workspace (or an explicit subset) in one
 idempotent run, instead of the manual, per-database Synapse Studio SQL-script walkthrough Microsoft
 documents. This is a **companion/prerequisite-automation scenario**, not a standalone one - it exists
@@ -274,7 +278,7 @@ for the parent scenario's own PAYG/Azure-consumption notes, which this scenario 
    `db_owner` permission on the serverless pool and its authority to grant others access) — <https://learn.microsoft.com/azure/synapse-analytics/security/synapse-workspace-access-control-overview>
 6. SQL Authentication in Azure Synapse Analytics (confirms bracket-quoted `CREATE LOGIN`/`CREATE USER`
    syntax forms for both SQL and Microsoft Entra-backed principals) — <https://learn.microsoft.com/azure/synapse-analytics/sql/sql-authentication>
-7. `scenarios/data-map/scan-azure-synapse-and-classify/` — the parent scenario this one is a
+7. [`data-map/scan-azure-synapse-and-classify`](/scenarios/data-map/scan-azure-synapse-and-classify/) — the parent scenario this one is a
    prerequisite-automation companion to; see its `README.md` §3 (the CISO-flagged cost note this
    scenario resolves) and `reviews.md` (CISO finding 1).
 

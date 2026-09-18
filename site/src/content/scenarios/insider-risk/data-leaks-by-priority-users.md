@@ -5,6 +5,10 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 slug: "data-leaks-by-priority-users"
 repoPath: "scenarios/insider-risk/data-leaks-by-priority-users"
+parts: ["design","deploy","validate","rollback"]
+related: []
+deployCount: 1
+validateCount: 1
 ---
 ## 1. Scenario summary
 

@@ -5,12 +5,16 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 slug: "roster-to-hold-locations"
 repoPath: "scenarios/ediscovery/roster-to-hold-locations"
+parts: ["design","deploy","validate","rollback"]
+related: ["ediscovery/teams-group-hold-resolution","ediscovery/location-scoped-legal-hold"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
 Merges a human-selected subset of a Microsoft Teams / Microsoft 365 Group member roster —
-produced by `scenarios/ediscovery/teams-group-hold-resolution/`'s `-ResolveMembers` roster CSV —
-into `scenarios/ediscovery/location-scoped-legal-hold/`'s `location-hold-definition.json` shape as
+produced by [`ediscovery/teams-group-hold-resolution`](/scenarios/ediscovery/teams-group-hold-resolution/)'s `-ResolveMembers` roster CSV —
+into [`ediscovery/location-scoped-legal-hold`](/scenarios/ediscovery/location-scoped-legal-hold/)'s `location-hold-definition.json` shape as
 new `userSources[]` entries, and optionally reconciles them directly onto an existing hold policy.
 
 **Who it's for:** the same legal/compliance operator running the other two eDiscovery scenarios in
@@ -238,8 +242,8 @@ Graph calls are the same no-PAYG/metered-cost reads/writes both sibling scenario
 1. Create holds in eDiscovery — "Create a hold" (adding an individual custodian mailbox as a data source) — <https://learn.microsoft.com/purview/edisc-hold-create>
 2. Create userSource (v1.0, `ediscoveryHoldPolicy` context) — <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-post-usersources?view=graph-rest-1.0>
 3. Manage holds in eDiscovery — "Check the status of a hold" — <https://learn.microsoft.com/purview/edisc-hold-manage>
-4. `scenarios/ediscovery/teams-group-hold-resolution/` — the roster-producing sibling this fragment consumes; see its own README §12 for the `Get-UnifiedGroup`/`Get-UnifiedGroupLinks` grounding not repeated here.
-5. `scenarios/ediscovery/location-scoped-legal-hold/` — the hold-definition-consuming sibling this fragment feeds; see its own README §12 for the full `ediscoveryHoldPolicy` v1.0 REST citation set not repeated here.
+4. [`ediscovery/teams-group-hold-resolution`](/scenarios/ediscovery/teams-group-hold-resolution/) — the roster-producing sibling this fragment consumes; see its own README §12 for the `Get-UnifiedGroup`/`Get-UnifiedGroupLinks` grounding not repeated here.
+5. [`ediscovery/location-scoped-legal-hold`](/scenarios/ediscovery/location-scoped-legal-hold/) — the hold-definition-consuming sibling this fragment feeds; see its own README §12 for the full `ediscoveryHoldPolicy` v1.0 REST citation set not repeated here.
 
 > This fragment introduces no new Microsoft Learn citations beyond confirming the portal path
 > (reference 1) and re-linking the already-grounded `Create userSource` endpoint (reference 2) —

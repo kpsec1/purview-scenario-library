@@ -5,6 +5,10 @@ category: "DLP"
 categorySlug: "dlp"
 slug: "accepted-domains-hygiene-check"
 repoPath: "scenarios/dlp/accepted-domains-hygiene-check"
+parts: ["design","deploy","validate","rollback"]
+related: ["dspm-for-ai/copilot-external-email-block","dlp/accepted-domains-hygiene-check-on-premises","data-estate-insights/classification-coverage-report"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -23,7 +27,7 @@ configuration those rules silently depend on hasn't drifted out from under them.
 ## 2. Business/regulatory driver
 
 Every `FromScope`-consuming DLP condition in this tenant — including
-`scenarios/dspm-for-ai/copilot-external-email-block`'s Rule 3, which this scenario was scoped as a
+[`dspm-for-ai/copilot-external-email-block`](/scenarios/dspm-for-ai/copilot-external-email-block/)'s Rule 3, which this scenario was scoped as a
 follow-up from (that scenario's `reviews.md`, Red Team finding 1) — evaluates "internal vs. external"
 entirely against the tenant's accepted-domains configuration, specifically each domain's `DomainType`
 (§4/§6, `design.md` §2). No DLP rule, alert, or dashboard in Purview surfaces when that underlying
@@ -281,7 +285,7 @@ nothing tenant-side to undo.
 - **Cloud-only visibility — now closed by a companion scenario.** This scenario authenticates to
   Exchange Online exclusively (`Connect-ExchangeOnline`). A hybrid tenant's on-premises accepted
   domains — including the only place `DomainType ExternalRelay` is actually reachable, see next bullet
-  — are entirely invisible to it. `scenarios/dlp/accepted-domains-hygiene-check-on-premises/` is the
+  — are entirely invisible to it. [`dlp/accepted-domains-hygiene-check-on-premises`](/scenarios/dlp/accepted-domains-hygiene-check-on-premises/) is the
   on-premises companion that closes this gap, reusing this scenario's own `KnownDomains.json` and
   optionally cross-referencing this scenario's own baseline file to detect the two environments
   drifting apart from each other — see that scenario's `README.md` for the full hybrid-specific
@@ -356,9 +360,9 @@ nothing tenant-side to undo.
    domain`/`Add unverified domain`/`Remove unverified domain`/`Update domain` exist as named
    `DirectoryManagement`-category audit activities (exact `Search-UnifiedAuditLog` `Operations`
    string not independently confirmed by this build — §11) — <https://learn.microsoft.com/entra/identity/monitoring-health/reference-audit-activities>
-8. `scenarios/dspm-for-ai/copilot-external-email-block/` — the originating scenario whose Red Team
+8. [`dspm-for-ai/copilot-external-email-block`](/scenarios/dspm-for-ai/copilot-external-email-block/) — the originating scenario whose Red Team
    review (`reviews.md`, finding 1) scoped this follow-up.
-9. `scenarios/data-estate-insights/classification-coverage-report/` — the sibling read-only reporting
+9. [`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/) — the sibling read-only reporting
    scenario this fragment's baseline/drift-log/idempotency model and `rollback.md` structure follow.
 10. `docs/rbac-model.md` §6 — Exchange Online RBAC dependency, and §14's citation convention this
     scenario's §3 follows.

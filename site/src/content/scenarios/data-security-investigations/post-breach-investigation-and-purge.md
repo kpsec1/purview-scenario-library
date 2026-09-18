@@ -5,6 +5,10 @@ category: "Data Security Investigations"
 categorySlug: "data-security-investigations"
 slug: "post-breach-investigation-and-purge"
 repoPath: "scenarios/data-security-investigations/post-breach-investigation-and-purge"
+parts: ["design","deploy","validate","rollback"]
+related: []
+deployCount: 4
+validateCount: 1
 ---
 ## 1. Scenario summary
 

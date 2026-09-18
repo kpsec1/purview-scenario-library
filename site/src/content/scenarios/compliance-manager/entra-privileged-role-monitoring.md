@@ -5,10 +5,14 @@ category: "Compliance Manager"
 categorySlug: "compliance-manager"
 slug: "entra-privileged-role-monitoring"
 repoPath: "scenarios/compliance-manager/entra-privileged-role-monitoring"
+parts: ["design","deploy","validate","rollback"]
+related: ["compliance-manager/assess-against-iso27001"]
+deployCount: 2
+validateCount: 2
 ---
 ## 1. Scenario summary
 
-Closes a specific, disclosed blind spot in `scenarios/compliance-manager/assess-against-iso27001/`:
+Closes a specific, disclosed blind spot in [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/):
 its audit-trail script can only see an **explicit** Compliance Manager role grant, not the
 **implicit** Compliance Manager Administration-equivalent access that **Global Administrator**,
 **Compliance Administrator**, **Compliance Data Administrator**, and **Security Administrator**
@@ -18,7 +22,7 @@ directory audit log via Microsoft Graph — a separate system from the Microsoft
 log every other audit-trail script in this library reads.
 
 **Who it's for:** a security/compliance team that has already deployed
-`scenarios/compliance-manager/assess-against-iso27001/` (or any other scenario whose technical
+[`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/) (or any other scenario whose technical
 control assumes "only people with an explicit Purview role grant can touch this") and wants
 real visibility into a population of accounts that can bypass that assumption entirely, without
 generating a single Purview-specific audit event.
@@ -57,7 +61,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Additional permissions for `Export-RoleAssignableGroupMembershipAuditTrail.ps1` only | **`Group.Read.All`** and **`RoleManagement.Read.Directory`** | Needed for Phase 1 discovery (listing role-assignable groups and their current role assignments) — not needed by `Export-EntraPrivilegedRoleAuditTrail.ps1`, which only reads the audit log. `Group.Read.All` is directly listed on the `Get-MgGroup` cmdlet's own Application-permissions table (the cmdlet this script actually calls) [[15]](#references); `RoleManagement.Read.Directory` is the least-privileged application permission documented for `Get-MgRoleManagementDirectoryRoleAssignment`/`Get-MgRoleManagementDirectoryRoleDefinition` [[16]](#references) |
 | Automation identity's Entra role (delegated/interactive use only) | **Reports Reader**, **Security Reader**, or **Security Administrator** | Only required for **delegated** (signed-in user) calls to this API; **not** required for the app-only pattern this scenario's script defaults to — Microsoft's own permissions table lists this role requirement specifically under "delegated access using work or school accounts" [[4]](#references) |
 | Longer retention (optional) | **Microsoft Entra ID P1/P2** (30 days) or **Microsoft Purview Audit (Premium)** (1 year, `AzureActiveDirectory` workload, via the E5/Purview Suite/E5 eDiscovery-and-Audit-add-on license already covering `assess-against-iso27001`) | Neither is required to *run* this scenario — only to extend the underlying log's own retention beyond Free tier's 7 days (§11) [[7]](#references)[[8]](#references) |
-| Dependency (not deployed by this scenario) | `scenarios/compliance-manager/assess-against-iso27001/` strongly recommended, not required | This scenario closes a specific gap that scenario's own Red Team review disclosed — see `design.md` §1/§7. The script itself has no hard dependency and is useful standalone for any module relying on `rbac-model.md` §3's four-role mapping |
+| Dependency (not deployed by this scenario) | [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/) strongly recommended, not required | This scenario closes a specific gap that scenario's own Red Team review disclosed — see `design.md` §1/§7. The script itself has no hard dependency and is useful standalone for any module relying on `rbac-model.md` §3's four-role mapping |
 
 > Verify current entitlement names and retention figures against `docs/licensing-matrix.md` and
 > the cited Microsoft Learn pages before a sales commitment — Entra ID's audit-log retention model

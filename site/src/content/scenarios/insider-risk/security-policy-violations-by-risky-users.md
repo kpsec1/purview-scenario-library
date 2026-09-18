@@ -5,6 +5,10 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 slug: "security-policy-violations-by-risky-users"
 repoPath: "scenarios/insider-risk/security-policy-violations-by-risky-users"
+parts: ["design","deploy","validate","rollback"]
+related: []
+deployCount: 2
+validateCount: 1
 ---
 > **Preview feature.** Microsoft labels the "Security policy violations" template family — and its
 > core Microsoft Defender for Endpoint indicator category — **(preview)** as of this writing

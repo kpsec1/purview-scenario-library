@@ -2,7 +2,9 @@
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 
-const scenarios = await getCollection('scenarios');
+const scenarios = (await getCollection('scenarios')).filter(
+  (e) => !e.id.split('/').pop()!.includes('.')
+);
 
 // Short descriptions per solution area (keyed by folder slug).
 const AREA_BLURBS: Record<string, string> = {

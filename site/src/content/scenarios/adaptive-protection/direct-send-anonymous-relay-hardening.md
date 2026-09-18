@@ -5,10 +5,14 @@ category: "Adaptive Protection"
 categorySlug: "adaptive-protection"
 slug: "direct-send-anonymous-relay-hardening"
 repoPath: "scenarios/adaptive-protection/direct-send-anonymous-relay-hardening"
+parts: ["design","deploy","validate","rollback"]
+related: ["adaptive-protection/exchange-legacy-auth-block"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
-Closes a bypass path this library's own `scenarios/adaptive-protection/exchange-legacy-auth-block/`
+Closes a bypass path this library's own [`adaptive-protection/exchange-legacy-auth-block`](/scenarios/adaptive-protection/exchange-legacy-auth-block/)
 Red Team review named explicitly (`reviews.md` finding 3 there): blocking authenticated legacy
 protocols (SMTP AUTH) does nothing to stop **Direct Send** — Exchange Online's unauthenticated,
 internal-recipients-only SMTP path — or a mail flow connector that accepts **anonymous relay** from
@@ -327,7 +331,7 @@ complementary controls covering different abuse surfaces (`design.md` §2).
 10. `docs/automation-surface.md` §1/§3 — automation surface 1 (Exchange Online PowerShell), app-only
     authentication pattern.
 11. `docs/rbac-model.md` §6 — Exchange Online RBAC dependency.
-12. `scenarios/adaptive-protection/exchange-legacy-auth-block/` — the sibling scenario whose Red
+12. [`adaptive-protection/exchange-legacy-auth-block`](/scenarios/adaptive-protection/exchange-legacy-auth-block/) — the sibling scenario whose Red
     Team review (finding 3) named this exact gap.
 
 > Re-verify all links and exact cmdlet parameter behavior against current Microsoft Learn before a

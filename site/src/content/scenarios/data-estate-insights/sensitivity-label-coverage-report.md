@@ -5,6 +5,10 @@ category: "Data Estate Insights"
 categorySlug: "data-estate-insights"
 slug: "sensitivity-label-coverage-report"
 repoPath: "scenarios/data-estate-insights/sensitivity-label-coverage-report"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-estate-insights/classification-coverage-report","data-map/scan-azure-sql-and-classify","data-lineage/end-to-end-lineage-validation","information-protection/auto-label-confidential-sharepoint"]
+deployCount: 1
+validateCount: 1
 ---
 > **Public Preview dependency.** This scenario reads labels applied via "Extend sensitivity labels to
 > assets in Microsoft Purview Data Map," which is itself a Microsoft-labeled **preview** capability as
@@ -23,7 +27,7 @@ and a full label-value breakdown, per object type — using the same Purview Dat
 Query** REST API this repo's other Data Governance scenarios already treat as automation surface 4,
 and appends the result to a source-controllable trend log so the history the native report discards
 after 30 days is actually kept. It is the direct sibling of
-`scenarios/data-estate-insights/classification-coverage-report/`, applying the identical,
+[`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/), applying the identical,
 already-reviewed design to the `label` field instead of `classification`.
 
 **Who it's for:** a security-administrator or data-governance reporting function that needs
@@ -51,8 +55,8 @@ scenario's driver names for classifications.
 
 This scenario ties directly into this repo's existing Data Governance narrative and its own sibling
 report: the worked example scopes to the same `customerdb` collection
-`scenarios/data-map/scan-azure-sql-and-classify/` scans and
-`scenarios/data-estate-insights/classification-coverage-report/` already reports classification
+[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) scans and
+[`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/) already reports classification
 coverage for. A buyer who wants the full "what's classified, and separately, what's actually
 protected-by-label" picture runs both sibling scripts against the same estate.
 
@@ -199,7 +203,7 @@ cadence for a board/GRC reporting use case; a higher-frequency SIEM feed should 
 | Fast-path alternative | `-Mode Facets` — one faceted query per object type, using the confirmed `label` facet, top-N label counts only | Matches the native "Top labels applied across sources/files/tables" charts' own double-counting behavior for multi-labeled assets; cannot compute an unlabeled count — see §11 |
 | Report role | **Data Reader** | Catalog Data-plane read access [[3]](#references)[[8]](#references) — narrower than the native report's own Data-Curator-only export gate [[4]](#references) |
 | API version pinned by both scripts | `2023-09-01` | Same Discovery - Query REST reference page and version already confirmed current for the sibling `classification-coverage-report` scenario, re-confirmed via direct fetch for this build [[2]](#references) |
-| `-PurviewAccountEndpoint` accepted values | `https://api.purview-service.microsoft.com` (new portal) or `https://<account>.purview.azure.com` (classic portal) | Both explicitly confirmed valid for this `/datamap/api/...` path family [[10]](#references) — same dual-endpoint precedent as the sibling scenario and `scenarios/data-lineage/end-to-end-lineage-validation/` |
+| `-PurviewAccountEndpoint` accepted values | `https://api.purview-service.microsoft.com` (new portal) or `https://<account>.purview.azure.com` (classic portal) | Both explicitly confirmed valid for this `/datamap/api/...` path family [[10]](#references) — same dual-endpoint precedent as the sibling scenario and [`data-lineage/end-to-end-lineage-validation`](/scenarios/data-lineage/end-to-end-lineage-validation/) |
 | Idempotency key | `-RunId` (default: current UTC date, `yyyy-MM-dd`) | Re-running for the same `RunId` **replaces** that RunId's trend-log row(s) rather than duplicating — see `design.md` §5 |
 
 Full REST-body grounding: `deploy/Export-SensitivityLabelCoverageReport.ps1` and
@@ -296,7 +300,7 @@ already-produced trend-log/breakdown files per the buyer's own data-retention po
 
 - **PAYG for the Discovery - Query calls themselves, not per-user, and lightweight at this scenario's
   scale.** Calls bill through the same Data Map / Unified Catalog PAYG metering as
-  `scenarios/data-estate-insights/classification-coverage-report/` — see `docs/licensing-matrix.md`
+  [`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/) — see `docs/licensing-matrix.md`
   §1–2. This scenario's calls are read-only search queries, not a scan — cost impact is negligible
   relative to the scanning this scenario depends on as a prerequisite.
 - **A separate, real license cost sits upstream of this scenario and is easy to miss:** the "extend

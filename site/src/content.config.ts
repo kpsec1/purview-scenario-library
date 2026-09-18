@@ -5,17 +5,26 @@ const scenarios = defineCollection({
   loader: glob({
     pattern: '**/*.md',
     base: './src/content/scenarios',
-    // Preserve the "<category>/<slug>" path as the entry id so routes are
-    // /scenarios/<category>/<slug>/ and slugs can never collide across areas.
+    // Preserve the "<category>/<slug>" (and "<category>/<slug>.<part>") path as
+    // the entry id so routes are /scenarios/<category>/<slug>/ and lifecycle
+    // parts can be looked up by id.
     generateId: ({ entry }) => entry.replace(/\.md$/, ''),
   }),
   schema: z.object({
-    title: z.string(),
-    fullTitle: z.string(),
-    category: z.string(),
-    categorySlug: z.string(),
-    slug: z.string(),
-    repoPath: z.string(),
+    // Overview entries
+    title: z.string().optional(),
+    fullTitle: z.string().optional(),
+    category: z.string().optional(),
+    categorySlug: z.string().optional(),
+    slug: z.string().optional(),
+    repoPath: z.string().optional(),
+    parts: z.array(z.string()).optional(),
+    related: z.array(z.string()).optional(),
+    deployCount: z.number().optional(),
+    validateCount: z.number().optional(),
+    // Lifecycle-part entries (design / deploy / validate / rollback)
+    part: z.string().optional(),
+    parent: z.string().optional(),
   }),
 });
 

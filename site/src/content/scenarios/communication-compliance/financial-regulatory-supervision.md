@@ -5,10 +5,14 @@ category: "Communication Compliance"
 categorySlug: "communication-compliance"
 slug: "financial-regulatory-supervision"
 repoPath: "scenarios/communication-compliance/financial-regulatory-supervision"
+parts: ["design","deploy","validate","rollback"]
+related: ["communication-compliance/harassment-and-code-of-conduct","data-lifecycle-management/retention-labels-financial-records","information-barriers/segregate-trading-and-research","insider-risk/departing-employee-data-theft"]
+deployCount: 3
+validateCount: 1
 ---
 > **Scope note (read before implementation):** Microsoft Purview Communication Compliance has **no
 > documented PowerShell, Graph, or REST write API** for policy creation or management — the same
-> constraint `scenarios/communication-compliance/harassment-and-code-of-conduct/` already documents
+> constraint [`communication-compliance/harassment-and-code-of-conduct`](/scenarios/communication-compliance/harassment-and-code-of-conduct/) already documents
 > (§2 there, `design.md` §2 here). Sections 5–6 below describe a precise **portal runbook** for the
 > policy itself, backed by a structured reference manifest, and a genuinely scriptable **audit-trail
 > and evidence-of-review export** for the one piece of this solution reachable through a documented
@@ -68,7 +72,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Audit log | Enabled (default for most tenants) | Communication Compliance alerts and remediation history depend on it |
 | Automation identity (audit-trail/evidence-of-review script only) | App registration or account holding **Exchange.ManageAsApp** plus the **View-Only Audit Logs** (or **Audit Logs**) Exchange Online role | `Search-UnifiedAuditLog` requires an **Exchange Online** RBAC role — see `docs/rbac-model.md` §6 and `docs/automation-surface.md` §3 |
 | Dependency (not deployed by this scenario) | The firm's own written supervisory procedures (WSPs) documenting the review percentage, escalation path, and registered-principal assignments this policy implements | This scenario ships a defensible technical default (§8); the WSP itself is the firm's own compliance/legal artifact |
-| Complementary control (separate scenario) | `scenarios/data-lifecycle-management/retention-labels-financial-records/` for SEC 17a-4/FINRA 4511 books-and-records retention of the underlying communications | See §8 — this scenario does not replace it |
+| Complementary control (separate scenario) | [`data-lifecycle-management/retention-labels-financial-records`](/scenarios/data-lifecycle-management/retention-labels-financial-records/) for SEC 17a-4/FINRA 4511 books-and-records retention of the underlying communications | See §8 — this scenario does not replace it |
 
 > Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms before a
 > sales commitment — SKU names change.
@@ -266,7 +270,7 @@ upon any storage-limit-approaching warning.
 **Cross-link — retention is a separate control.** This scenario's evidence-of-review export proves
 *who reviewed what, when*; it is not the system of record for SEC 17a-4/FINRA 4511's multi-year
 immutable retention of the underlying communications. Deploy
-`scenarios/data-lifecycle-management/retention-labels-financial-records/` alongside this scenario for
+[`data-lifecycle-management/retention-labels-financial-records`](/scenarios/data-lifecycle-management/retention-labels-financial-records/) alongside this scenario for
 that separate, equally mandatory obligation — see `design.md` §7/§8.
 
 **Incident-response runbook (alert triage):**

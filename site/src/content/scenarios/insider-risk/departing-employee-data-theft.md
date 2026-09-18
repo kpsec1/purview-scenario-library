@@ -5,6 +5,10 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 slug: "departing-employee-data-theft"
 repoPath: "scenarios/insider-risk/departing-employee-data-theft"
+parts: ["design","deploy","validate","rollback"]
+related: ["dlp/pci-teams-exfil-block","dlp/endpoint-dlp-usb-block","insider-risk/irm-case-escalation-to-ediscovery","adaptive-protection/dynamic-risk-dlp-enforcement"]
+deployCount: 5
+validateCount: 2
 ---
 ## 1. Scenario summary
 
@@ -18,7 +22,7 @@ exportable via the Microsoft Graph security API for SIEM/ticketing integration.
 **Who it's for:** any Microsoft 365 E5 (or equivalent add-on) tenant with an HR system that can
 export resignation/termination dates, that wants a *behavioral, cross-event* detection control
 for departing-employee data theft — complementing, not replacing, point controls like DLP
-(`scenarios/dlp/pci-teams-exfil-block/`) that can only evaluate one message or upload at a time.
+([`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/)) that can only evaluate one message or upload at a time.
 
 ## 2. Business/regulatory driver
 
@@ -60,7 +64,7 @@ row) and §3 (add-on SKUs). Summary for this scenario:
 | HR data source | Any system that can export **UserPrincipalName, ResignationDate, LastWorkingDate** to CSV | This scenario's `deploy/Send-HrTerminationRecord.ps1` uploads the CSV — it does not connect to or extract from the HR system itself |
 | Entra app registration for the HR connector | App registration + client secret | Scripted — `deploy/Register-HrConnectorApp.ps1`, idempotent, `-WhatIf`-capable; see §5 step 2 below. No special Entra role is needed to run it unless the tenant has disabled self-service app registration, in which case the operator needs the **Application Developer** role — `docs/rbac-model.md` §11 [[5]](#references) |
 | Automation identity for alert export | App registration with the Microsoft Graph **`SecurityAlert.Read.All`** application permission, certificate-based (this repo's default pattern) | See `docs/automation-surface.md` §3; this is a *separate* app registration from the HR connector one above — different surface, different credential type [[6]](#references) |
-| Device onboarding (optional) | Required only if device indicators (USB copy, printing, network-share transfer) are enabled | Same onboarding prerequisite as `scenarios/dlp/endpoint-dlp-usb-block/` — see that scenario's README §3 |
+| Device onboarding (optional) | Required only if device indicators (USB copy, printing, network-share transfer) are enabled | Same onboarding prerequisite as [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/) — see that scenario's README §3 |
 
 > **HR-connector app registration hygiene:** the Entra app `deploy/Register-HrConnectorApp.ps1`
 > creates in Step 2 below is **single-purpose by construction** — it grants no Microsoft Graph
@@ -317,7 +321,7 @@ roles without a second policy.
 3. **Escalate if warranted** — assign the alert/case to an Investigator; Insider Risk
    Management cases can escalate directly to eDiscovery (Premium) for legal hold and further
    investigation if the pattern indicates genuine misappropriation. See
-   `scenarios/insider-risk/irm-case-escalation-to-ediscovery/` for the scripted follow-through
+   [`insider-risk/irm-case-escalation-to-ediscovery`](/scenarios/insider-risk/irm-case-escalation-to-ediscovery/) for the scripted follow-through
    (provenance linkage + custodian/hold reconciliation) once that portal escalation step is done.
 4. **Coordinate with HR/Legal/IT offboarding** — this policy is a detection control, not an
    offboarding-automation control; a true-positive finding should trigger the org's standard
@@ -352,7 +356,7 @@ deleting the policy, connector, or the HR-connector app registration's client se
 - **Sizing note:** license scope should match who is *scored*, not just who administers the
   policy — every user in the policy's scope (§6, default "All users") needs the qualifying
   entitlement, which for most enterprise buyers targeting this control means org-wide E5, not
-  a narrow subset (contrast with `scenarios/dlp/pci-teams-exfil-block/`, which scopes licensing
+  a narrow subset (contrast with [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/), which scopes licensing
   to a narrow user population).
 
 ## 11. Known limitations & gotchas
@@ -417,7 +421,7 @@ deleting the policy, connector, or the HR-connector app registration's client se
   [[15]](#references).
 - **This scenario does not configure Adaptive Protection.** Alerts here are detection-only;
   automatically tightening DLP/label enforcement for a flagged user is a separate, planned
-  scenario (`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`) — `design.md` §7.
+  scenario ([`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/)) — `design.md` §7.
 - **Content preview coverage is partial.** Content preview (early triage without opening a
   case) supports SharePoint/OneDrive/Exchange activities but explicitly does **not** support
   endpoint activities (USB transfer, printing, file deletion) or browser/removable-media

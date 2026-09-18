@@ -5,6 +5,10 @@ category: "Compliance Manager"
 categorySlug: "compliance-manager"
 slug: "gdpr-assessment"
 repoPath: "scenarios/compliance-manager/gdpr-assessment"
+parts: ["design","deploy","validate","rollback"]
+related: ["compliance-manager/assess-against-iso27001","compliance-manager/soc2-assessment","compliance-manager/hipaa-hitech-assessment","data-map/scan-azure-sql-and-classify-pii-ruleset","data-estate-insights/sensitivity-label-coverage-report","information-protection/auto-label-confidential-sharepoint","dlp/exchange-pii-exfil-block","data-lifecycle-management/event-based-retention-and-disposition","unified-catalog/governance-domain-hierarchy","audit/premium-audit-investigation","audit/compromised-account-incident-response","compliance-manager/pci-dss-assessment","ediscovery/gdpr-dsr-fulfillment"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -13,9 +17,9 @@ Stands up a dedicated **Microsoft Purview Compliance Manager** assessment agains
 library's other Compliance Manager assessments, and cross-references it against the GDPR-relevant
 technical controls this library already ships (Data Map classification, Information Protection
 labeling, DLP exfiltration blocking, Data Lifecycle Management retention, Unified Catalog data
-inventory, Audit). Like `scenarios/compliance-manager/assess-against-iso27001/`, `scenarios/
-compliance-manager/pci-dss-assessment/`, `scenarios/compliance-manager/soc2-assessment/`, and
-`scenarios/compliance-manager/hipaa-hitech-assessment/`, Compliance Manager itself has no write API,
+inventory, Audit). Like [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/), `scenarios/
+compliance-manager/pci-dss-assessment/`, [`compliance-manager/soc2-assessment`](/scenarios/compliance-manager/soc2-assessment/), and
+[`compliance-manager/hipaa-hitech-assessment`](/scenarios/compliance-manager/hipaa-hitech-assessment/), Compliance Manager itself has no write API,
 so most of this scenario is a precise, repeatable **portal runbook** — see §2 and `design.md` §2.
 
 **Who it's for:** any organization — regardless of where it is headquartered — that offers goods or
@@ -83,8 +87,8 @@ and premium-template licensing are tenant-wide, not per-regulation):
 | Organizational designation (not a Compliance Manager role, and unlike HIPAA, **conditional**) | A **Data Protection Officer (DPO)** under GDPR Article 37, if the organization's core activities involve large-scale systematic monitoring of data subjects, large-scale processing of special-category/criminal-conviction data, or processing by a public authority | Determine applicability first — Article 37 does **not** require a DPO for every organization the way HIPAA requires a Privacy Officer and Security Officer for every covered entity/business associate [[10]](#references) |
 | Automation identity (audit-trail script only) | App registration or account holding the **View-Only Audit Logs** (or **Audit Logs**) Exchange Online role, plus `Exchange.ManageAsApp` | Same requirement as the four sibling scenarios — `docs/rbac-model.md` §6 and `docs/automation-surface.md` §3 |
 | Prerequisite (not deployed by this scenario) | Reviewed Article 28 processor-agreement terms with Microsoft (Online Services Terms / Data Protection Addendum) and, for cross-border transfers, the Standard Contractual Clauses Microsoft incorporates into its Volume Licensing agreements | A contractual, not a technical, prerequisite — see §2, §11. This scenario does not create or track these agreements itself [[11]](#references) |
-| Dependency (not deployed by this scenario) | Nothing hard-required, but strongly recommended: `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/` (+ siblings), `scenarios/data-estate-insights/sensitivity-label-coverage-report/`, `scenarios/information-protection/auto-label-confidential-sharepoint/` (+ Exchange sibling), `scenarios/dlp/exchange-pii-exfil-block/` (+ Part 2), `scenarios/data-lifecycle-management/event-based-retention-and-disposition/`, `scenarios/unified-catalog/governance-domain-hierarchy/` and `.../manage-data-products/`, `scenarios/audit/premium-audit-investigation/`, `scenarios/audit/compromised-account-incident-response/` | Reduces the manual-testing backlog and maps directly to GDPR's own structure — see the manifest's `controlCrosswalk` and `design.md` §7 |
-| Recommended (not required) | `scenarios/compliance-manager/assess-against-iso27001/`, `scenarios/compliance-manager/pci-dss-assessment/`, `scenarios/compliance-manager/soc2-assessment/`, and/or `scenarios/compliance-manager/hipaa-hitech-assessment/` already deployed | Not a hard dependency, but if present, this scenario's group-placement decision (§5, `design.md` §6) gets meaningfully better — join, don't duplicate |
+| Dependency (not deployed by this scenario) | Nothing hard-required, but strongly recommended: [`data-map/scan-azure-sql-and-classify-pii-ruleset`](/scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/) (+ siblings), [`data-estate-insights/sensitivity-label-coverage-report`](/scenarios/data-estate-insights/sensitivity-label-coverage-report/), [`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/) (+ Exchange sibling), [`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/) (+ Part 2), [`data-lifecycle-management/event-based-retention-and-disposition`](/scenarios/data-lifecycle-management/event-based-retention-and-disposition/), [`unified-catalog/governance-domain-hierarchy`](/scenarios/unified-catalog/governance-domain-hierarchy/) and `.../manage-data-products/`, [`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/), [`audit/compromised-account-incident-response`](/scenarios/audit/compromised-account-incident-response/) | Reduces the manual-testing backlog and maps directly to GDPR's own structure — see the manifest's `controlCrosswalk` and `design.md` §7 |
+| Recommended (not required) | [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/), [`compliance-manager/pci-dss-assessment`](/scenarios/compliance-manager/pci-dss-assessment/), [`compliance-manager/soc2-assessment`](/scenarios/compliance-manager/soc2-assessment/), and/or [`compliance-manager/hipaa-hitech-assessment`](/scenarios/compliance-manager/hipaa-hitech-assessment/) already deployed | Not a hard dependency, but if present, this scenario's group-placement decision (§5, `design.md` §6) gets meaningfully better — join, don't duplicate |
 
 > Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms before a
 > sales commitment — SKU names and the premium-template licensing model change over time.
@@ -112,8 +116,8 @@ flowchart TD
 1. Before starting, decide the group and role assignments — see `deploy/policy/gdpr-assessment-
    manifest.json`. **Both decisions are effectively permanent**: an assessment's group can't be
    changed after creation, and groups themselves can't be deleted [[12]](#references).
-2. **Check whether `scenarios/compliance-manager/assess-against-iso27001/`, `scenarios/compliance-
-   manager/pci-dss-assessment/`, `scenarios/compliance-manager/soc2-assessment/`, and/or `scenarios/
+2. **Check whether [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/), `scenarios/compliance-
+   manager/pci-dss-assessment/`, [`compliance-manager/soc2-assessment`](/scenarios/compliance-manager/soc2-assessment/), and/or `scenarios/
    compliance-manager/hipaa-hitech-assessment/` (or any other Compliance Manager assessment using
    the `Security & Compliance Assessments` group) are already deployed in this tenant.** If yes, plan
    to **add** this assessment to that group in step 6 below, not create a new one — see `design.md`
@@ -285,7 +289,7 @@ scenario:
   `assess-against-iso27001`/`pci-dss-assessment`/`soc2-assessment`/`hipaa-hitech-assessment` is
   updated in one but the update doesn't appear in the other(s) within a reasonable time, treat it as
   a signal the assessments may no longer share a group, not as a Compliance Manager bug.
-- **Data Subject Request volume and SLA** — `scenarios/ediscovery/gdpr-dsr-fulfillment/` now
+- **Data Subject Request volume and SLA** — [`ediscovery/gdpr-dsr-fulfillment`](/scenarios/ediscovery/gdpr-dsr-fulfillment/) now
   provides the request-tracking/SLA layer this section originally flagged as missing (§11,
   `design.md` §7 updated accordingly). If DSR volume grows past what that scenario's flat-file
   ledger can support (its own README.md §10/§11 name the point at which Microsoft Priva's
@@ -378,7 +382,7 @@ it.
 - **The `controlCrosswalk` in `deploy/policy/gdpr-assessment-manifest.json` is this library's own
   scenario-to-article correlation, not Microsoft's published improvement-action mapping** — see
   `design.md` §7. The Data Subject Rights category's technical building block is now
-  `scenarios/ediscovery/gdpr-dsr-fulfillment/`, which adds the request-tracking/SLA layer this
+  [`ediscovery/gdpr-dsr-fulfillment`](/scenarios/ediscovery/gdpr-dsr-fulfillment/), which adds the request-tracking/SLA layer this
   section previously flagged as missing on top of the same eDiscovery mechanics — it still has no
   rectification/restriction technical fulfillment, because no Purview-native control exists for
   either (that sibling's `design.md` §6 states why, rather than this assessment repeating an

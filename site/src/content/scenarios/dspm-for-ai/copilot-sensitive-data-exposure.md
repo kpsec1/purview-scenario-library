@@ -5,6 +5,10 @@ category: "DSPM for AI"
 categorySlug: "dspm-for-ai"
 slug: "copilot-sensitive-data-exposure"
 repoPath: "scenarios/dspm-for-ai/copilot-sensitive-data-exposure"
+parts: ["design","deploy","validate","rollback"]
+related: ["information-protection/auto-label-confidential-sharepoint","dspm-for-ai/copilot-prompt-full-block","dspm-for-ai/copilot-external-email-block","adaptive-protection/dynamic-risk-dlp-enforcement"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -65,7 +69,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Microsoft 365 Copilot license | Per-user add-on | Required for any user this scenario's controls apply to; DSPM for AI itself and the underlying Purview capabilities don't require a Copilot license, but they have no Copilot-specific data to act on without it |
 | DLP to restrict Copilot from processing **files and emails** (label-based rule) | **Microsoft 365/Office 365 E5/A5**, **Microsoft Purview Suite/EDU/FLW**, or **Microsoft 365/A5/F5 Information Protection and Governance** | **Not available** on Microsoft 365 Business Basic/Standard/Premium or the E3/A3/A1/G3/F3/F1 tiers — this is an E5-tier capability [[4]](#references) |
 | DLP to **safeguard prompts** (SIT-based web-grounding rule) | **All Microsoft 365 Copilot and Copilot Chat licenses**, any tier | Unlike the label-based rule, prompt-safeguard DLP is available regardless of the underlying Microsoft 365 license tier [[4]](#references) — do not over-quote E5 as a requirement for this half of the policy |
-| Published sensitivity labels | At least one label (this scenario defaults to **Confidential** and **Highly Confidential**, parameterizable) | Reuses the label taxonomy from `scenarios/information-protection/auto-label-confidential-sharepoint/` — label authoring is a separate prerequisite, not deployed by this scenario |
+| Published sensitivity labels | At least one label (this scenario defaults to **Confidential** and **Highly Confidential**, parameterizable) | Reuses the label taxonomy from [`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/) — label authoring is a separate prerequisite, not deployed by this scenario |
 | Role to author/edit the Copilot-location DLP policy | One of: **Microsoft Entra AI Admin**, **Purview Data Security AI Admin(s)**, **Purview Compliance Administrator**, **Purview Compliance Data Administrator**, **Purview Information Protection (Admin)**, **Purview Security Administrator**, or **Microsoft Entra Global Admin** | This is a **narrower, Copilot-location-specific role list** than the generic "DLP Compliance Management" role used by every other DLP scenario in this repo (Teams/Endpoint) — confirm the automation identity holds one of these specific roles, not just generic DLP authoring rights [[5]](#references) |
 | DSPM for AI (classic) view/manage permissions | **Microsoft Entra Compliance Administrator**, **Microsoft Entra Global Administrator**, or **Microsoft Purview Compliance Administrator** role group | See `docs/rbac-model.md` §3; view-only via **Microsoft Purview Security Reader** or **Purview Data Security AI Viewer** [[6]](#references) |
 | Automation identity | App registration with **Exchange Online Protection → `Exchange.ManageAsApp`** application permission, granted one of the Copilot-DLP-authoring roles above | Certificate-based app-only auth — see `docs/automation-surface.md` §3 |
@@ -143,7 +147,7 @@ other DLP scenarios cite.
 > web-search grounding). A dedicated re-grounding pass (`PROGRESS.md`, 2026-09-10) found Microsoft
 > has since published a fuller worked use case for this action (still preview, still no worked
 > PowerShell example for this exact condition/action combination) — see
-> `scenarios/dspm-for-ai/copilot-prompt-full-block/`, which adds this action as a third rule on this
+> [`dspm-for-ai/copilot-prompt-full-block`](/scenarios/dspm-for-ai/copilot-prompt-full-block/), which adds this action as a third rule on this
 > same policy, with the remaining PowerShell-grounding gap explicitly disclosed rather than resolved
 > by guessing (`AGENTS.md` §4).
 
@@ -331,7 +335,7 @@ by this scenario (portal-only, automatic) and has nothing to roll back.
   invisible to this DLP policy and will be summarized by Copilot exactly as if this scenario did
   not exist. The DSPM for AI oversharing assessment (§5, §8) is how a buyer finds that exposure;
   fixing it means SharePoint/OneDrive permissions remediation and/or expanding auto-labeling
-  coverage (`scenarios/information-protection/auto-label-confidential-sharepoint/`), not more DLP
+  coverage ([`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/)), not more DLP
   rules.
 - **Citations still leak existence and a clickable link.** A user who already has access to a
   labeled-excluded item can still see it referenced in Copilot's citations and open it directly —
@@ -345,7 +349,7 @@ by this scenario (portal-only, automatic) and has nothing to roll back.
   general "block sensitive prompts" control — it solves a narrower, real problem (sensitive prompt
   fragments leaking to a web search provider), not the oversharing problem.
 - **Full prompt-response blocking ("Processing prompts" action) is now scripted separately.** See
-  the callout in §5 and `scenarios/dspm-for-ai/copilot-prompt-full-block/`, which adds it as a third
+  the callout in §5 and [`dspm-for-ai/copilot-prompt-full-block`](/scenarios/dspm-for-ai/copilot-prompt-full-block/), which adds it as a third
   rule on this same policy. It remains a preview feature without a published PowerShell worked
   example for this exact condition/action combination as of that scenario's build — see its own
   `README.md` §5/§11 for the disclosed gap.

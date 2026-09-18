@@ -5,11 +5,15 @@ category: "DLP"
 categorySlug: "dlp"
 slug: "exchange-pii-exfil-block-encrypt-mode-audit-companion"
 repoPath: "scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion"
+parts: ["design","deploy","validate","rollback"]
+related: ["dlp/exchange-pii-exfil-block"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
 A single, additive DLP rule that closes a specific, previously-documented gap in
-`scenarios/dlp/exchange-pii-exfil-block/`: when that scenario is deployed with `-Action Encrypt`
+[`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/): when that scenario is deployed with `-Action Encrypt`
 **and** a business-exception group (`-ExceptionGroupEmail`), a member of that group who sends
 matching PII content (SSN / Credit Card Number) to an external recipient currently leaves the
 tenant in **cleartext with zero alert, incident report, or override record** — because
@@ -20,7 +24,7 @@ event is at least visible even though — by design, and by the base scenario's 
 trade-off — it is not blocked or encrypted.
 
 **Who it's for:** any buyer who has deployed (or is deploying)
-`scenarios/dlp/exchange-pii-exfil-block/` with `-Action Encrypt` and an `-ExceptionGroupEmail`, and
+[`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/) with `-Action Encrypt` and an `-ExceptionGroupEmail`, and
 wants the documented silent-exception residual risk in that scenario's `README.md` §11 turned into
 at least a detected-and-reported one. Not applicable to Block-mode deployments — that mode already
 has a logged override rule (`PII-Exchange-Override-External`) and does not need this companion.
@@ -40,7 +44,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`.
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| `scenarios/dlp/exchange-pii-exfil-block/` already deployed | `-Action Encrypt` and a non-empty `-ExceptionGroupEmail` | This companion is meaningless without both — see §11 "Dependency, not a standalone control." |
+| [`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/) already deployed | `-Action Encrypt` and a non-empty `-ExceptionGroupEmail` | This companion is meaningless without both — see §11 "Dependency, not a standalone control." |
 | DLP for Exchange Online | **Microsoft 365 E3** (basic) | Same tier as the parent scenario — this companion adds only a `GenerateAlert`/`GenerateIncidentReport` rule, no advanced classification or Teams condition. |
 | Role to author/edit the DLP rule | **Compliance Administrator**, **Compliance Data Administrator**, or a custom role group with the **DLP Compliance Management** role | `docs/rbac-model.md` §3, DLP row — identical to the parent scenario. |
 | Automation identity | App registration with **Exchange.ManageAsApp**, granted a role group with DLP Compliance Management | Certificate-based app-only auth — `docs/automation-surface.md` §3 |

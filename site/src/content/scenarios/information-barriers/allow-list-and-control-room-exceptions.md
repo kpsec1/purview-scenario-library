@@ -5,6 +5,10 @@ category: "Information Barriers"
 categorySlug: "information-barriers"
 slug: "allow-list-and-control-room-exceptions"
 repoPath: "scenarios/information-barriers/allow-list-and-control-room-exceptions"
+parts: ["design","deploy","validate","rollback"]
+related: ["information-barriers/segregate-trading-and-research"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -42,7 +46,7 @@ Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. A
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| **Base scenario deployed** | `scenarios/information-barriers/segregate-trading-and-research/` | This scenario hard-fails if the `Trading`/`Research` segments don't already exist |
+| **Base scenario deployed** | [`information-barriers/segregate-trading-and-research`](/scenarios/information-barriers/segregate-trading-and-research/) | This scenario hard-fails if the `Trading`/`Research` segments don't already exist |
 | Licensing | **M365 E5 / E5 Compliance / Insider Risk Management** or the **IB add-on** | Same entitlement as the base scenario [[7]](#references) |
 | Role | **Information Barriers** roles / **Compliance Administrator** / **Organization Management** | To create segments, policies, and run application |
 | Auth | `Connect-IPPSSession` (certificate app-only preferred) | Security & Compliance PowerShell — `docs/automation-surface.md` §3 |

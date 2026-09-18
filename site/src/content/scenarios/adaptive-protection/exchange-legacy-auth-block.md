@@ -5,6 +5,10 @@ category: "Adaptive Protection"
 categorySlug: "adaptive-protection"
 slug: "exchange-legacy-auth-block"
 repoPath: "scenarios/adaptive-protection/exchange-legacy-auth-block"
+parts: ["design","deploy","validate","rollback"]
+related: ["adaptive-protection/block-legacy-authentication"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -17,7 +21,7 @@ controls are evaluated **inside Exchange Online itself, before a session is ever
 
 **Who it's for:** any Exchange Online tenant that wants legacy-authentication coverage that
 doesn't depend on Conditional Access licensing or evaluation order — including a buyer deploying
-this library's own `scenarios/adaptive-protection/block-legacy-authentication/`, whose own
+this library's own [`adaptive-protection/block-legacy-authentication`](/scenarios/adaptive-protection/block-legacy-authentication/), whose own
 `design.md` §7/§8 and `reviews.md` (Red Team) flagged this exact companion control as a documented,
 more-effective mitigation for credential-stuffing/password-spray lockout attempts specifically,
 and deferred it to this dedicated fragment. Especially relevant for any tenant that still has
@@ -372,7 +376,7 @@ scenarios are independent, complementary controls (`design.md` §6).
 14. `docs/automation-surface.md` §1/§3 — automation surface 1 (Exchange Online PowerShell),
     app-only authentication pattern.
 15. `docs/rbac-model.md` §6 — Exchange Online RBAC dependency.
-16. `scenarios/adaptive-protection/block-legacy-authentication/` — the Conditional Access sibling
+16. [`adaptive-protection/block-legacy-authentication`](/scenarios/adaptive-protection/block-legacy-authentication/) — the Conditional Access sibling
     scenario whose four-lens review and `design.md` §7 deferred this fragment.
 17. Audit log activities (Microsoft Purview) — the Exchange mailbox/admin activity reference
     confirming no RecordType/Operation exists for a rejected authentication attempt of any protocol

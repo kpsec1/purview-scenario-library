@@ -5,6 +5,10 @@ category: "Information Protection"
 categorySlug: "information-protection"
 slug: "auto-label-confidential-sharepoint"
 repoPath: "scenarios/information-protection/auto-label-confidential-sharepoint"
+parts: ["design","deploy","validate","rollback"]
+related: ["dlp/pci-teams-exfil-block","information-protection/auto-label-eu-personal-data-sharepoint","information-protection/auto-label-confidential-exchange"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -33,7 +37,7 @@ auto-labeling for SharePoint/OneDrive/Exchange as the mechanism for closing that
 
 This scenario is the **classification and marking control**, distinct from (and a prerequisite
 signal for) the **movement-blocking control** already in this library
-(`scenarios/dlp/pci-teams-exfil-block/`): a DLP rule that conditions on "sensitivity label is
+([`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/)): a DLP rule that conditions on "sensitivity label is
 Confidential" needs files to actually carry that label first. Auto-labeling is what makes that
 condition reliably true across the tenant's existing and newly created content, not just the
 subset a user happened to label.
@@ -45,7 +49,7 @@ emails, health data, national IDs outside the U.S., etc.). SSN in particular is 
 identifier; a tenant whose regulated population is EU/UK-only should swap in the relevant
 EU national-ID and equivalent built-in SITs (§6 shows exactly where in the rule definition to
 change this) rather than treating this scenario's default condition set as regulatory coverage
-by itself — or deploy `scenarios/information-protection/auto-label-eu-personal-data-sharepoint/`
+by itself — or deploy [`information-protection/auto-label-eu-personal-data-sharepoint`](/scenarios/information-protection/auto-label-eu-personal-data-sharepoint/)
 directly, the built EU/UK-region sibling of this scenario, which ships that swap already made
 (EU national identification number, EU Social Security Number (SSN) or Equivalent ID, EU debit
 card number) plus a `-SensitiveInfoTypeName` parameter for narrowing to specific member states.
@@ -302,7 +306,7 @@ to permanently delete the policy and its rules.
 - **This scenario does not cover Exchange (email).** `New-AutoSensitivityLabelPolicy` supports an
   Exchange location and rule in the same policy family, but this scenario is scoped to
   SharePoint/OneDrive at-rest content per its title. The Exchange companion is now built as
-  `scenarios/information-protection/auto-label-confidential-exchange/` (closed 2026-09-04) — a
+  [`information-protection/auto-label-confidential-exchange`](/scenarios/information-protection/auto-label-confidential-exchange/) (closed 2026-09-04) — a
   separate policy object, not an additional rule on this scenario's own policy, because Exchange
   auto-labeling has materially different location, exclusion, and encryption semantics (see that
   scenario's `design.md`).
@@ -319,7 +323,7 @@ to permanently delete the policy and its rules.
   most direct way to defeat the control, whether by accident (a template file pre-labeled early in
   its life) or deliberately. There is no auto-labeling-side mitigation for this; it's a case for
   pairing this control with content-based DLP conditions that key directly off the sensitive
-  information type rather than the label alone (as `scenarios/dlp/pci-teams-exfil-block/` already
+  information type rather than the label alone (as [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/) already
   does), so a mislabeled file with sensitive content is still caught by a control that doesn't
   depend on the label being correct.
 - **The exclusion list is a permanent blind spot, not just a legal-hold accommodation.** Any site

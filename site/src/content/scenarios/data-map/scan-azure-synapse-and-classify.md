@@ -5,6 +5,10 @@ category: "Data Map"
 categorySlug: "data-map"
 slug: "scan-azure-synapse-and-classify"
 repoPath: "scenarios/data-map/scan-azure-synapse-and-classify"
+parts: ["design","deploy","validate","rollback"]
+related: ["data-map/scan-azure-sql-and-classify","data-map/scan-azure-sql-managed-instance-and-classify"]
+deployCount: 3
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -15,8 +19,8 @@ rule set for this source type (`AzureSynapseSQL`) — which includes the SSN and
 sensitive information types (SITs) this repo already uses elsewhere — against the workspace's
 dedicated and/or serverless SQL pools, so sensitive columns are automatically classified and surfaced
 in the catalog. This is the third scenario in this repo's Azure-SQL-family Data Map series, alongside
-`scenarios/data-map/scan-azure-sql-and-classify/` (logical-server Azure SQL Database) and
-`scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` (Azure SQL Managed Instance) —
+[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) (logical-server Azure SQL Database) and
+[`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/) (Azure SQL Managed Instance) —
 following the same proven pattern but adapted for the genuine registration, authentication, and
 network differences a Synapse **workspace** has as its own Purview data source `kind` — see
 `design.md` §4 for the full diff.
@@ -367,7 +371,7 @@ out of scope for this scenario's cost notes, same as the compute layer of both s
 9. Az.Purview PowerShell module reference (`Remove-AzPurviewDataSource`, `Remove-AzPurviewScan`) — <https://learn.microsoft.com/powershell/module/az.purview/>
 10. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary) — <https://learn.microsoft.com/purview/data-gov-classic-permissions>
 11. Managed virtual networks and private endpoints in Microsoft Purview (confirms Azure Synapse Analytics is among the data sources Microsoft documents as reachable via a Purview-managed private endpoint, distinct from the flat SAMI-over-private-endpoint restriction the Managed Instance sibling scenario documents — not exercised by this scenario's default public/firewall-open path) — <https://learn.microsoft.com/purview/data-governance-private-endpoints-managed-virtual-network>
-12. `scenarios/data-map/scan-azure-sql-and-classify/` and `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` — the sibling scenarios this fragment extends; see their README.md and design.md for shared reasoning not repeated here.
+12. [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) and [`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/) — the sibling scenarios this fragment extends; see their README.md and design.md for shared reasoning not repeated here.
 13. Connect to and manage dedicated SQL pools (formerly SQL DW) in Microsoft Purview — the older, standalone data source this scenario deliberately does **not** use; cited here so a reader who lands on this page while researching Synapse scanning understands it documents a different, separate Purview data source `kind` from the workspace-based one this scenario automates — <https://learn.microsoft.com/purview/register-scan-azure-synapse-analytics>
 
 > Re-verify all links, API versions, and the `resourceTypes` VERIFY item against current Microsoft

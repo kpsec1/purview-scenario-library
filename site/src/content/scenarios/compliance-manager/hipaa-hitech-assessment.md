@@ -5,6 +5,10 @@ category: "Compliance Manager"
 categorySlug: "compliance-manager"
 slug: "hipaa-hitech-assessment"
 repoPath: "scenarios/compliance-manager/hipaa-hitech-assessment"
+parts: ["design","deploy","validate","rollback"]
+related: ["compliance-manager/pci-dss-assessment","compliance-manager/soc2-assessment","information-protection/auto-label-confidential-sharepoint","dlp/exchange-pii-exfil-block","dlp/endpoint-dlp-usb-block","adaptive-protection/block-legacy-authentication","insider-risk/departing-employee-data-theft","audit/premium-audit-investigation","audit/compromised-account-incident-response","compliance-manager/assess-against-iso27001"]
+deployCount: 2
+validateCount: 1
 ---
 ## 1. Scenario summary
 
@@ -13,8 +17,8 @@ Stands up a dedicated **Microsoft Purview Compliance Manager** assessment agains
 Compliance Manager assessments, and cross-references it against the HIPAA/HITECH-relevant technical
 controls this library already ships (Information Protection labeling, DLP exfiltration blocking,
 Adaptive Protection access control, Insider Risk Management, Audit). Like `scenarios/compliance-
-manager/assess-against-iso27001/`, `scenarios/compliance-manager/pci-dss-assessment/`, and
-`scenarios/compliance-manager/soc2-assessment/`, Compliance Manager itself has no write API, so most
+manager/assess-against-iso27001/`, [`compliance-manager/pci-dss-assessment`](/scenarios/compliance-manager/pci-dss-assessment/), and
+[`compliance-manager/soc2-assessment`](/scenarios/compliance-manager/soc2-assessment/), Compliance Manager itself has no write API, so most
 of this scenario is a precise, repeatable **portal runbook** — see §2 and `design.md` §2.
 
 **Who it's for:** a HIPAA **covered entity** (a health care provider, health plan, or health care
@@ -72,8 +76,8 @@ licensing are tenant-wide, not per-regulation):
 | Organizational designation (not a Compliance Manager role) | A formally designated **HIPAA Privacy Officer** (45 CFR §164.530(a)(1)) and **Security Officer** (45 CFR §164.308(a)(2)) | Legally required designations under the Privacy Rule and Security Rule respectively — not satisfied by assigning anyone Compliance Manager Administration [[9]](#references)[[10]](#references) |
 | Automation identity (audit-trail script only) | App registration or account holding the **View-Only Audit Logs** (or **Audit Logs**) Exchange Online role, plus `Exchange.ManageAsApp` | Same requirement as the three sibling scenarios — `docs/rbac-model.md` §6 and `docs/automation-surface.md` §3 |
 | Prerequisite (not deployed by this scenario) | A **Business Associate Agreement (BAA)** with Microsoft already in place if PHI will be processed in this tenant | A contractual, not a technical, prerequisite — see §2. This scenario does not create or track the BAA itself [[5]](#references) |
-| Dependency (not deployed by this scenario) | Nothing hard-required, but strongly recommended: `scenarios/information-protection/auto-label-confidential-sharepoint/` (+ Exchange sibling), `scenarios/dlp/exchange-pii-exfil-block/` (+ Part 2), `scenarios/dlp/endpoint-dlp-usb-block/`, `scenarios/adaptive-protection/block-legacy-authentication/` (+ Exchange sibling), `scenarios/insider-risk/departing-employee-data-theft/`, `scenarios/audit/premium-audit-investigation/`, `scenarios/audit/compromised-account-incident-response/` | Reduces the manual-testing backlog and maps directly to HIPAA's Security Rule safeguard categories and Breach Notification Rule — see the manifest's `controlCrosswalk` and `design.md` §7 |
-| Recommended (not required) | `scenarios/compliance-manager/assess-against-iso27001/`, `scenarios/compliance-manager/pci-dss-assessment/`, and/or `scenarios/compliance-manager/soc2-assessment/` already deployed | Not a hard dependency, but if present, this scenario's group-placement decision (§5, `design.md` §6) gets meaningfully better — join, don't duplicate |
+| Dependency (not deployed by this scenario) | Nothing hard-required, but strongly recommended: [`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/) (+ Exchange sibling), [`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/) (+ Part 2), [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/), [`adaptive-protection/block-legacy-authentication`](/scenarios/adaptive-protection/block-legacy-authentication/) (+ Exchange sibling), [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/), [`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/), [`audit/compromised-account-incident-response`](/scenarios/audit/compromised-account-incident-response/) | Reduces the manual-testing backlog and maps directly to HIPAA's Security Rule safeguard categories and Breach Notification Rule — see the manifest's `controlCrosswalk` and `design.md` §7 |
+| Recommended (not required) | [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/), [`compliance-manager/pci-dss-assessment`](/scenarios/compliance-manager/pci-dss-assessment/), and/or [`compliance-manager/soc2-assessment`](/scenarios/compliance-manager/soc2-assessment/) already deployed | Not a hard dependency, but if present, this scenario's group-placement decision (§5, `design.md` §6) gets meaningfully better — join, don't duplicate |
 
 > Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms before
 > a sales commitment — SKU names and the premium-template licensing model change over time.
@@ -102,8 +106,8 @@ flowchart TD
    `deploy/policy/hipaa-hitech-assessment-manifest.json`. **Both decisions are effectively
    permanent**: an assessment's group can't be changed after creation, and groups themselves can't
    be deleted [[11]](#references).
-2. **Check whether `scenarios/compliance-manager/assess-against-iso27001/`, `scenarios/compliance-
-   manager/pci-dss-assessment/`, and/or `scenarios/compliance-manager/soc2-assessment/` (or any
+2. **Check whether [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/), `scenarios/compliance-
+   manager/pci-dss-assessment/`, and/or [`compliance-manager/soc2-assessment`](/scenarios/compliance-manager/soc2-assessment/) (or any
    other Compliance Manager assessment using the `Security & Compliance Assessments` group) are
    already deployed in this tenant.** If yes, plan to **add** this assessment to that group in step
    6 below, not create a new one — see `design.md` §6 for exactly what that buys you (nontechnical
@@ -277,7 +281,7 @@ scenario:
 `assess-against-iso27001/README.md` §8 steps 1–5 — triage the `AuditData` JSON, classify
 planned/unplanned, document or escalate accordingly. **If the automation-trust change coincides
 with a suspected or confirmed breach of unsecured PHI**: separately trigger this library's
-`scenarios/audit/compromised-account-incident-response/` runbook and the organization's own Breach
+[`audit/compromised-account-incident-response`](/scenarios/audit/compromised-account-incident-response/) runbook and the organization's own Breach
 Notification Rule procedure (§11) — this scenario's audit trail is evidence for that response, not
 a substitute for it.
 
