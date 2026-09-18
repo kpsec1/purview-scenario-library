@@ -6,13 +6,12 @@ categorySlug: "dlp"
 slug: "defender-device-control-usb-allowlist-wpd-coverage"
 repoPath: "scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage"
 parts: ["design","deploy","validate","rollback"]
-related: ["dlp/defender-device-control-usb-allowlist","dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion","dlp/pci-teams-exfil-block-part2-obfuscation-mitigation"]
 deployCount: 3
 validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends [`dlp/defender-device-control-usb-allowlist`](/scenarios/dlp/defender-device-control-usb-allowlist/)'s default-deny USB allowlist to
+Extends `scenarios/dlp/defender-device-control-usb-allowlist/`'s default-deny USB allowlist to
 also cover **Windows Portable Devices (WPD)** — phones, tablets, and cameras connected in MTP/PTP
 mode — which that scenario's own Red Team review confirmed are **completely invisible** to a
 policy scoped to `RemovableMediaDevices` only. This is a companion fragment, not a standalone
@@ -313,7 +312,7 @@ approved-device list.
    devices property-support table for `FriendlyNameId`/`VID_PID`/`SerialNumberId`, not broken down
    by `PrimaryId` family; Intune reusable-settings-groups device-group type table showing only
    Printer device / Removable storage, not WPD) — <https://learn.microsoft.com/defender-endpoint/device-control-policies#groups>
-5. [`dlp/defender-device-control-usb-allowlist`](/scenarios/dlp/defender-device-control-usb-allowlist/) — the parent scenario this fragment
+5. `scenarios/dlp/defender-device-control-usb-allowlist/` — the parent scenario this fragment
    extends; see that scenario's own references for every citation not repeated here (licensing,
    onboarding, Graph resource schemas, PowerShell cmdlet references, Advanced Hunting/Sentinel
    alert routing).

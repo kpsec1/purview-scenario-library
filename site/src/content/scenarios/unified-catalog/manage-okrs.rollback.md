@@ -88,9 +88,9 @@ scenario's use), not as part of Stage 1–3 above.
 
 ## What rollback does **not** undo
 
-- **The underlying data product(s).** [`unified-catalog/manage-data-products`](/scenarios/unified-catalog/manage-data-products/) owns
+- **The underlying data product(s).** `scenarios/unified-catalog/manage-data-products/` owns
   their lifecycle; this scenario only looks them up by name.
-- **The governance domain.** [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) owns its
+- **The governance domain.** `scenarios/unified-catalog/curate-business-glossary/` owns its
   lifecycle; this scenario only looks it up by name.
 - **A data-product link created outside this scenario's own `relatedDataProducts` list** — see
   Stage 2's explicit caveat above.

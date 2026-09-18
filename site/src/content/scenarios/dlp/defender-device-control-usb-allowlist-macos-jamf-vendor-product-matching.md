@@ -6,18 +6,17 @@ categorySlug: "dlp"
 slug: "defender-device-control-usb-allowlist-macos-jamf-vendor-product-matching"
 repoPath: "scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-vendor-product-matching"
 parts: ["design","deploy","validate","rollback"]
-related: ["dlp/defender-device-control-usb-allowlist-macos-jamf","dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching","compliance-manager/pci-dss-assessment"]
 deployCount: 2
 validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends [`dlp/defender-device-control-usb-allowlist-macos-jamf`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/)'s default-deny USB
+Extends `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`'s default-deny USB
 allowlist for JAMF-managed macOS endpoints with a second, independent device-matching mechanism:
 **vendorId+productId compound matching**, for approved backup/imaging drives that have no readable
 `serialNumber` (bulk-imaged imaging docks, some third-party enclosures, certain OEM hardware). This
 is the **JAMF-managed sibling** of
-[`dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/) (Intune-managed)
+`scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/` (Intune-managed)
 — the identical policy content, generated as a single local artifact instead of an incremental Graph
 PATCH, because JAMF's device control deployment path has no documented API to patch.
 
@@ -35,14 +34,14 @@ JAMF scenario but has any approved drive with no readable serial number has a re
 that scenario's own `README.md` §11 — this scenario closes it for JAMF-managed fleets, the same way
 its Intune sibling closes it for Intune-managed fleets.
 
-A companion assessment-side scenario, [`compliance-manager/pci-dss-assessment`](/scenarios/compliance-manager/pci-dss-assessment/), tracks the
+A companion assessment-side scenario, `scenarios/compliance-manager/pci-dss-assessment/`, tracks the
 same PCI DSS v4.0 improvement actions this technical control and its siblings support.
 
 ## 3. Prerequisites
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Base scenario | [`dlp/defender-device-control-usb-allowlist-macos-jamf`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/) **prerequisites only** (device control licensing, JAMF Pro, MDE-on-JAMF onboarding, Full Disk Access for `com.microsoft.dlp.daemon`, the existing `com.microsoft.wdav` custom-schema profile) | This scenario adds no new prerequisite beyond the base scenario's own §3 — it is a superset artifact, not a separately-deployed object (`design.md` §3). |
+| Base scenario | `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/` **prerequisites only** (device control licensing, JAMF Pro, MDE-on-JAMF onboarding, Full Disk Access for `com.microsoft.dlp.daemon`, the existing `com.microsoft.wdav` custom-schema profile) | This scenario adds no new prerequisite beyond the base scenario's own §3 — it is a superset artifact, not a separately-deployed object (`design.md` §3). |
 | Device control (macOS) | **Microsoft Defender for Endpoint Plan 1** (bundled in Microsoft 365 E3) or higher | Confirmed against Microsoft's JAMF-specific device control deployment guide — same minimum as both siblings [[1]](#references). |
 | Device management | **JAMF Pro** (macOS Configuration Profiles, Application & Custom Settings) | Same JAMF Pro tenant already managing the target Macs per the base scenario. |
 | Existing base policy JSON (recommended, not required) | The base scenario's `output/jamf-device-control-policy.json`, or its `deploy/config/*.json` config | Useful as a starting point for this scenario's combined config — see §5 Step 1. |
@@ -294,10 +293,10 @@ valid, simpler rollback step — see `rollback.md`.
    into a single JSON and configured by using JAMF as the device control policy"; shared
    groups/rules/entries concepts across Windows and macOS) — <https://learn.microsoft.com/defender-endpoint/device-control-policies>
 5. RFC 4122, Section 4.3 (name-based UUID, algorithm for creating a version-5 UUID) — <https://www.rfc-editor.org/rfc/rfc4122#section-4.3>
-6. [`dlp/defender-device-control-usb-allowlist-macos-jamf`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/) — the base JAMF scenario this
+6. `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/` — the base JAMF scenario this
    fragment extends; see that scenario's own references for the onboarding, Full Disk Access, and
    JAMF-console-procedure citations.
-7. [`dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/) — the Intune
+7. `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/` — the Intune
    sibling this fragment's group-generation logic and deterministic-UUID scheme are ported from
    verbatim; see that scenario's own references for the Intune/Graph-side citations.
 

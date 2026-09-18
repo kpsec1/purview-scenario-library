@@ -6,13 +6,12 @@ categorySlug: "dlp"
 slug: "pci-teams-exfil-block-part2-obfuscation-mitigation"
 repoPath: "scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation"
 parts: ["design","deploy","validate","rollback"]
-related: ["dlp/pci-teams-exfil-block","communication-compliance/harassment-and-code-of-conduct","insider-risk/departing-employee-data-theft","adaptive-protection/dynamic-risk-dlp-enforcement"]
 deployCount: 3
 validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/) with a behavioral compensating control for the
+Extends `scenarios/dlp/pci-teams-exfil-block/` with a behavioral compensating control for the
 one gap that scenario's own Red Team review flagged and deliberately left open: a sender who
 splits a credit-card number (PAN) across multiple Teams messages, or otherwise obfuscates it so
 no single message matches the Credit Card Number sensitive information type (SIT), defeats
@@ -22,7 +21,7 @@ exfiltration-adjacent activity such an attempt produces, and automatically block
 from any further external Teams sharing once their insider risk level reaches **Elevated** —
 closing the channel for continued attempts, not the first one.
 
-**Who it's for:** a buyer who has already deployed [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/) and
+**Who it's for:** a buyer who has already deployed `scenarios/dlp/pci-teams-exfil-block/` and
 wants the documented residual risk in its `reviews.md` addressed with a real, working control
 rather than left as a permanent gap — while understanding plainly what this control can and
 cannot do (§11).
@@ -47,9 +46,9 @@ Risk Management are all built on the same Microsoft 365 E5 / Purview Suite entit
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/) already deployed | The named policy `PCI DSS - Teams Card Data Exfiltration Block` with its original three rules | This fragment's deploy script errors out if the parent policy or its rules aren't found — see `design.md` §5 |
+| `scenarios/dlp/pci-teams-exfil-block/` already deployed | The named policy `PCI DSS - Teams Card Data Exfiltration Block` with its original three rules | This fragment's deploy script errors out if the parent policy or its rules aren't found — see `design.md` §5 |
 | Insider Risk Management + Adaptive Protection | **Microsoft 365 E5**, **Purview Suite**, or the underlying add-ons | Same entitlement `dynamic-risk-dlp-enforcement/README.md` §3 already documents in full |
-| Communication Compliance (for the SIT-in-Teams-messages indicator) | Included in the same E5/Purview Suite entitlement | This fragment enables one specific Communication Compliance indicator, not a standalone Communication Compliance deployment — see [`communication-compliance/harassment-and-code-of-conduct`](/scenarios/communication-compliance/harassment-and-code-of-conduct/) for that module's own scenario |
+| Communication Compliance (for the SIT-in-Teams-messages indicator) | Included in the same E5/Purview Suite entitlement | This fragment enables one specific Communication Compliance indicator, not a standalone Communication Compliance deployment — see `scenarios/communication-compliance/harassment-and-code-of-conduct/` for that module's own scenario |
 | Adaptive Protection already enabled, with Elevated/Moderate/Minor risk levels defined | Portal-only prerequisite | Assumed already complete if `dynamic-risk-dlp-enforcement` is deployed; if not, complete its README.md §5 Steps 1–3, 5 first |
 | Role to configure IRM policies and Communication Compliance indicators | **Insider Risk Management** or **Insider Risk Management Admins** role group | Same role used in `dynamic-risk-dlp-enforcement/README.md` §3 |
 | Role to extend the DLP policy | **Compliance Administrator**, **Compliance Data Administrator**, or **DLP Compliance Management** | Same DLP-authoring roles used throughout this library |
@@ -81,7 +80,7 @@ Full rule-by-rule rationale and the Teams-coverage constraint that shapes this d
 
 ### Step 1 — Confirm Part 1 and Adaptive Protection are already deployed
 
-This fragment extends, rather than replaces, [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/)'s policy.
+This fragment extends, rather than replaces, `scenarios/dlp/pci-teams-exfil-block/`'s policy.
 Confirm it exists and Adaptive Protection is already enabled (per `dynamic-risk-dlp-enforcement/
 README.md` §5 Steps 1–3, 5) before continuing.
 
@@ -113,7 +112,7 @@ checklist/reference while doing this:
 
 Purview portal → **Insider Risk Management** → **Adaptive protection** → **Insider risk levels**
 → confirm the new policy from Step 3 is included, alongside any existing feeder policy (e.g.
-[`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/)). Insider risk levels are tenant-wide and
+`scenarios/insider-risk/departing-employee-data-theft/`). Insider risk levels are tenant-wide and
 computed from every in-scope feeder policy — see `dynamic-risk-dlp-enforcement/README.md` §11.
 
 ### Step 5 — Deploy the new DLP rule (scripted, dry-run capable)

@@ -4,7 +4,7 @@ parent: "unified-catalog/manage-critical-data-elements"
 ---
 ## 1. Problem statement
 
-[`unified-catalog/manage-data-products`](/scenarios/unified-catalog/manage-data-products/) groups a scanned table into one requestable
+`scenarios/unified-catalog/manage-data-products/` groups a scanned table into one requestable
 "Customer Master Data" product. That solves discovery at the *table* level. It doesn't solve a
 different, narrower problem: the same logical piece of information — a customer's identifier —
 usually exists as differently-named **columns** scattered across several source systems

@@ -4,9 +4,9 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-apple-portable-vendor-p
 ---
 ## 1. Problem statement
 
-[`dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/) matches
+`scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/` matches
 approved Apple and Portable devices by `serialNumber` only (that scenario's own `README.md` §11 and
-`design.md` §6). [`dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/)
+`design.md` §6). `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/`
 already closed the identical gap for the `removable_media_devices` family, resolving the "stable,
 deterministic GUID per config-file device entry" blocker its own parent scenario had deferred
 (`defender-device-control-usb-allowlist-macos/design.md` §5) with an RFC 4122 §4.3 version-5 UUID

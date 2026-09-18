@@ -5,7 +5,7 @@ parent: "records-management/graph-event-automation"
 ## 1. Problem statement
 
 Event-based retention is only as good as the **trigger**. The sibling scenario
-([`records-management/regulatory-records-disposition`](/scenarios/records-management/regulatory-records-disposition/)) defines the event type, the
+(`scenarios/records-management/regulatory-records-disposition/`) defines the event type, the
 event-based record label, and the publish policy — but firing the event by hand in the portal doesn't
 scale and isn't auditable for a high-volume flow (every expiring contract, every departing employee).
 This scenario builds the **machine trigger**: a Microsoft Graph integration that a line-of-business

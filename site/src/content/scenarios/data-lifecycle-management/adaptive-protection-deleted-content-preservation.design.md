@@ -4,7 +4,7 @@ parent: "data-lifecycle-management/adaptive-protection-deleted-content-preservat
 ---
 ## 1. Problem statement
 
-[`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) builds the DLP half of Adaptive
+`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` builds the DLP half of Adaptive
 Protection (block/audit an Elevated-risk user's *outbound sharing*). That scenario's own §7
 (Non-goals) explicitly deferred a second, independent Adaptive Protection integration: a **Data
 Lifecycle Management** control that answers a different question entirely — not "can this risky
@@ -126,8 +126,8 @@ downstream control.
   elsewhere in this library — see `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/
   design.md` §7 and `scenarios/insider-risk/`.
 - **This scenario does not configure the DLP or Conditional Access halves of Adaptive
-  Protection.** Those are [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) and
-  [`adaptive-protection/conditional-access-insider-risk-block`](/scenarios/adaptive-protection/conditional-access-insider-risk-block/) respectively.
+  Protection.** Those are `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` and
+  `scenarios/adaptive-protection/conditional-access-insider-risk-block/` respectively.
 - **This scenario does not build a restore mechanism.** No self-service restore API is documented
   for content preserved by this control [[2]](#references) — `README.md` §9 documents the
   Microsoft Support path instead of fabricating one.

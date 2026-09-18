@@ -4,8 +4,8 @@ parent: "adaptive-protection/dynamic-risk-dlp-enforcement"
 ---
 ## 1. Problem statement
 
-Every DLP scenario elsewhere in this library ([`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/),
-[`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/)) applies the **same** rule to **every** user in scope,
+Every DLP scenario elsewhere in this library (`scenarios/dlp/pci-teams-exfil-block/`,
+`scenarios/dlp/endpoint-dlp-usb-block/`) applies the **same** rule to **every** user in scope,
 all the time. That's correct for a static regulatory control (PCI card-number handling
 shouldn't depend on who's typing), but it's the wrong shape for a different, very common buyer
 need: *tighten controls automatically and immediately for the specific users Insider Risk
@@ -13,7 +13,7 @@ Management has just identified as risky, without waiting for a human analyst to 
 alert and hand-build an exception, and without permanently over-restricting the other 99% of
 the workforce who aren't a risk today.*
 
-[`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) already built the detection half of
+`scenarios/insider-risk/departing-employee-data-theft/` already built the detection half of
 this: an IRM policy that scores users and raises alerts. That scenario's own `design.md` §3 and
 `README.md` §11 explicitly named this as the next fragment — Adaptive Protection is the
 mechanism that consumes an IRM policy's risk-level output and turns it into an *enforcement*
@@ -58,7 +58,7 @@ the case is still open and before an analyst has necessarily looked at it.
    supports **Devices** (Endpoint DLP) and **Conditional Access** locations [[1]](#references)
    [[3]](#references). Both are explicitly out of scope for this fragment — see §7 (Non-goals)
    for why; Conditional Access is now built as a sibling scenario
-   ([`adaptive-protection/conditional-access-insider-risk-block`](/scenarios/adaptive-protection/conditional-access-insider-risk-block/)), see the correction
+   (`scenarios/adaptive-protection/conditional-access-insider-risk-block/`), see the correction
    note there. (Corrected 2026-09-09 — Conditional Access is no longer Microsoft-labeled
    preview; see §7.)
 
@@ -143,7 +143,7 @@ policy this scenario creates.
 
 - **This scenario does not create or configure an Insider Risk Management policy.** It assumes
   one already exists and is in Adaptive Protection's scope — see
-  [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) for this library's own IRM scenario,
+  `scenarios/insider-risk/departing-employee-data-theft/` for this library's own IRM scenario,
   or Microsoft's built-in **Data leaks** template.
 - **This scenario does not enable Adaptive Protection itself, or define/customize insider risk
   level thresholds.** Both are portal-only actions (§4) with no documented Graph/PowerShell
@@ -160,7 +160,7 @@ policy this scenario creates.
   Microsoft Entra admin center policy, a different admin surface entirely, and (per Microsoft
   Entra's own recommendation page) requires **Microsoft Entra ID P2** specifically —  a license
   this scenario's DLP-only design doesn't otherwise require [[9]](#references). Built as the
-  sibling scenario [`adaptive-protection/conditional-access-insider-risk-block`](/scenarios/adaptive-protection/conditional-access-insider-risk-block/)
+  sibling scenario `scenarios/adaptive-protection/conditional-access-insider-risk-block/`
   instead of bundled here. **Correction (2026-09-09):** this bullet
   previously called the integration "a Microsoft-labeled preview integration as of this
   writing" — that was accurate at the time this scenario was first built but is stale. The
@@ -173,7 +173,7 @@ policy this scenario creates.
   preservation policy** (also a Microsoft-labeled **preview** integration [[1]](#references))
   that Adaptive Protection can auto-create for Elevated-risk users — a separate opt-in with its
   own retention-policy implications. Built as the sibling scenario
-  [`data-lifecycle-management/adaptive-protection-deleted-content-preservation`](/scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/) instead
+  `scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/` instead
   of bundled here.
 - **This scenario does not modify or manage the feeder IRM policy's alert/case workflow.**
   Alert triage, case escalation, and analyst response remain exactly as documented in

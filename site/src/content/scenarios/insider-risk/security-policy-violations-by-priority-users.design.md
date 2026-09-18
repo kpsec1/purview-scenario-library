@@ -4,7 +4,7 @@ parent: "insider-risk/security-policy-violations-by-priority-users"
 ---
 ## 1. Problem statement
 
-[`insider-risk/security-policy-violations`](/scenarios/insider-risk/security-policy-violations/) (the base template) scores the same
+`scenarios/insider-risk/security-policy-violations/` (the base template) scores the same
 Microsoft Defender for Endpoint security-violation signal against a population chosen once, at
 policy-creation time, from a plain Entra security group — with no formal, auditable "this
 population is elevated risk" object behind it, and no way to restrict who inside the Insider Risk

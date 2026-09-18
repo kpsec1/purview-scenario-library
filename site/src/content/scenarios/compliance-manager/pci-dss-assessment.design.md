@@ -8,8 +8,8 @@ An organization that stores, processes, or transmits cardholder data must be abl
 you PCI DSS compliant?" with evidence, not a narrative claim — for an acquiring bank, a card
 network, a customer security questionnaire, or its own internal risk committee. This library
 already ships technical controls squarely aimed at PCI DSS's cardholder-data-protection
-requirements ([`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/) and its Part 2, `scenarios/information-
-protection/auto-label-confidential-sharepoint/`, [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/)). This
+requirements (`scenarios/dlp/pci-teams-exfil-block/` and its Part 2, `scenarios/information-
+protection/auto-label-confidential-sharepoint/`, `scenarios/dlp/endpoint-dlp-usb-block/`). This
 scenario stands up the Microsoft Purview Compliance Manager **PCI DSS v4.0 premium template** to
 give those controls — and the rest of the Microsoft 365 estate — a scored, audit-ready view against
 PCI DSS's 12 requirements, and correctly scopes what that view is (and is not) worth toward actual
@@ -17,7 +17,7 @@ PCI DSS validation.
 
 ## 2. Why this scenario looks different from most other scenarios in this repo
 
-Identical starting constraint to [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/) (see that
+Identical starting constraint to `scenarios/compliance-manager/assess-against-iso27001/` (see that
 scenario's `design.md` §2 for the full grounding): Compliance Manager has **no write API**.
 Assessment creation, control mapping, and improvement-action status/evidence updates are portal-
 and Excel-wizard-driven only, confirmed again during this build against the current

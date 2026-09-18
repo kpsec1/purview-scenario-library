@@ -6,7 +6,6 @@ categorySlug: "compliance-manager"
 slug: "soc2-assessment"
 repoPath: "scenarios/compliance-manager/soc2-assessment"
 parts: ["design","deploy","validate","rollback"]
-related: ["compliance-manager/assess-against-iso27001","information-protection/auto-label-confidential-sharepoint","information-protection/auto-label-eu-personal-data-sharepoint","dlp/exchange-pii-exfil-block","dlp/endpoint-dlp-usb-block","adaptive-protection/block-legacy-authentication","insider-risk/departing-employee-data-theft","audit/premium-audit-investigation","compliance-manager/pci-dss-assessment"]
 deployCount: 2
 validateCount: 1
 ---
@@ -17,7 +16,7 @@ Organization Controls (SOC) 2** premium regulatory template, places it correctly
 library's other Compliance Manager assessments, and cross-references it against the SOC 2-relevant
 technical controls this library already ships (Information Protection labeling, DLP exfiltration
 blocking, Adaptive Protection access control, Insider Risk Management, Audit). Like
-[`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/) and `scenarios/compliance-manager/
+`scenarios/compliance-manager/assess-against-iso27001/` and `scenarios/compliance-manager/
 pci-dss-assessment/`, Compliance Manager itself has no write API, so most of this scenario is a
 precise, repeatable **portal runbook** — see §5 and `design.md` §2.
 
@@ -69,8 +68,8 @@ per-regulation):
 | Role to edit/test without creating | **Compliance Manager Contribution** (create + edit) or **Compliance Manager Assessor** (edit only, no create) | Assign the narrowest role per person — see `deploy/policy/soc2-assessment-manifest.json` |
 | Role for read-only visibility | **Compliance Manager Reader** | Extend to the engaged CPA firm if they need portal visibility, not just exported evidence |
 | Automation identity (audit-trail script only) | App registration or account holding the **View-Only Audit Logs** (or **Audit Logs**) Exchange Online role, plus `Exchange.ManageAsApp` | Same requirement as `assess-against-iso27001/README.md` §3 and `pci-dss-assessment/README.md` §3 — `docs/rbac-model.md` §6 and `docs/automation-surface.md` §3 |
-| Dependency (not deployed by this scenario) | Nothing hard-required, but strongly recommended: [`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/) (+ Exchange sibling), [`information-protection/auto-label-eu-personal-data-sharepoint`](/scenarios/information-protection/auto-label-eu-personal-data-sharepoint/) (+ Exchange sibling), [`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/) (+ Part 2), [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/), [`adaptive-protection/block-legacy-authentication`](/scenarios/adaptive-protection/block-legacy-authentication/), [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/), [`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/) | Reduces the manual-testing backlog and maps directly to the Security, Confidentiality, and Privacy TSC categories — see the manifest's `controlCrosswalk` and `design.md` §7 |
-| Recommended (not required) | [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/) and/or [`compliance-manager/pci-dss-assessment`](/scenarios/compliance-manager/pci-dss-assessment/) already deployed | Not a hard dependency, but if present, this scenario's group-placement decision (§5, `design.md` §6) gets meaningfully better — join, don't duplicate |
+| Dependency (not deployed by this scenario) | Nothing hard-required, but strongly recommended: `scenarios/information-protection/auto-label-confidential-sharepoint/` (+ Exchange sibling), `scenarios/information-protection/auto-label-eu-personal-data-sharepoint/` (+ Exchange sibling), `scenarios/dlp/exchange-pii-exfil-block/` (+ Part 2), `scenarios/dlp/endpoint-dlp-usb-block/`, `scenarios/adaptive-protection/block-legacy-authentication/`, `scenarios/insider-risk/departing-employee-data-theft/`, `scenarios/audit/premium-audit-investigation/` | Reduces the manual-testing backlog and maps directly to the Security, Confidentiality, and Privacy TSC categories — see the manifest's `controlCrosswalk` and `design.md` §7 |
+| Recommended (not required) | `scenarios/compliance-manager/assess-against-iso27001/` and/or `scenarios/compliance-manager/pci-dss-assessment/` already deployed | Not a hard dependency, but if present, this scenario's group-placement decision (§5, `design.md` §6) gets meaningfully better — join, don't duplicate |
 
 > Verify current entitlement names against `docs/licensing-matrix.md` and the Product Terms before
 > a sales commitment — SKU names and the premium-template licensing model change over time.
@@ -99,7 +98,7 @@ flowchart TD
    `deploy/policy/soc2-assessment-manifest.json`. **Both decisions are effectively permanent**: an
    assessment's group can't be changed after creation, and groups themselves can't be deleted
    [[8]](#references).
-2. **Check whether [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/) and/or `scenarios/
+2. **Check whether `scenarios/compliance-manager/assess-against-iso27001/` and/or `scenarios/
    compliance-manager/pci-dss-assessment/` (or any other Compliance Manager assessment using the
    `Security & Compliance Assessments` group) are already deployed in this tenant.** If yes, plan to
    **add** this assessment to that group in step 6 below, not create a new one — see `design.md` §6

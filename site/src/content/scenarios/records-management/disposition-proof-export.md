@@ -6,7 +6,6 @@ categorySlug: "records-management"
 slug: "disposition-proof-export"
 repoPath: "scenarios/records-management/disposition-proof-export"
 parts: ["design","deploy","validate","rollback"]
-related: ["records-management/regulatory-records-disposition","records-management/multi-stage-disposition-review","audit/streaming-to-sentinel-or-management-api","data-estate-insights/sensitivity-label-coverage-report","data-lifecycle-management/adaptive-protection-deleted-content-preservation"]
 deployCount: 1
 validateCount: 1
 ---
@@ -23,9 +22,9 @@ scoped to one retention label.
 answer "prove item X was disposed of correctly — when, by whom, after what review" for an examiner,
 regulator, or litigation hold release, without relying solely on a manual, one-off portal export.
 
-**Companion to:** [`records-management/regulatory-records-disposition`](/scenarios/records-management/regulatory-records-disposition/) (whose README.md
+**Companion to:** `scenarios/records-management/regulatory-records-disposition/` (whose README.md
 Section 7 references this scenario for the evidence loop) and
-[`records-management/multi-stage-disposition-review`](/scenarios/records-management/multi-stage-disposition-review/) — both scenarios produce the
+`scenarios/records-management/multi-stage-disposition-review/` — both scenarios produce the
 disposition activity this scenario reports on; neither creates or configures anything itself.
 
 ## 2. Business/regulatory driver
@@ -173,7 +172,7 @@ disposition process entirely, rather than through it. This scenario's scripts su
 `LockRecord`/`UnlockRecord`/`ApproveDisposal`/`RecordDelete` events so this reconciliation is
 possible; they do not themselves compute or alert on the pattern — for continuous, alerting-grade
 monitoring at scale, feed this scenario's `-Operations` list into
-[`audit/streaming-to-sentinel-or-management-api`](/scenarios/audit/streaming-to-sentinel-or-management-api/) rather than relying on a scheduled CSV
+`scenarios/audit/streaming-to-sentinel-or-management-api/` rather than relying on a scheduled CSV
 pull alone.
 
 **Cadence:** schedule `deploy/Export-DispositionProofEvidence.ps1` **daily or weekly** — deliberate
@@ -189,7 +188,7 @@ is not safe on a Standard-only tenant; a monthly or more frequent cadence is.
 
 **Change management:** treat the rolling CSV like any other compliance evidence artifact — if
 committed to source control, its removal should be a deliberate, reviewed commit, not an ad hoc
-delete (same discipline as [`data-estate-insights/sensitivity-label-coverage-report`](/scenarios/data-estate-insights/sensitivity-label-coverage-report/)).
+delete (same discipline as `scenarios/data-estate-insights/sensitivity-label-coverage-report/`).
 
 ## 9. Rollback / decommission
 

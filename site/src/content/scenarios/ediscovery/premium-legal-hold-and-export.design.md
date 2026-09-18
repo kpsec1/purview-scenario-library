@@ -60,7 +60,7 @@ across a distribution list) — explicitly out of scope here and tracked as a fo
 Every object this scenario creates is found-or-created by exact-match lookup on a stable key,
 mirroring the pattern this library already established for other name-less-unique Purview REST
 surfaces (`scenarios/unified-catalog/curate-business-glossary/design.md` §2,
-[`data-quality/rules-and-scorecards`](/scenarios/data-quality/rules-and-scorecards/)):
+`scenarios/data-quality/rules-and-scorecards/`):
 
 | Object | Lookup key | Why this key |
 |---|---|---|
@@ -95,7 +95,7 @@ failure this script should misreport.
 | `deploy/Remove-EdiscoveryPremiumLegalHold.ps1` | Staged rollback: release hold → close case → delete case | Each stage gated by an explicit switch; `-DeleteCase` implies `-CloseCase` |
 | `deploy/policy/ediscovery-case-definition.json` | Declarative case/custodian/search/reviewSet/export definition | Single source of truth all four scripts read, so a re-run against the same file is a true no-op once the target state is reached |
 | `validate/Test-EdiscoveryPremiumCaseSetup.ps1` | Read-only proof the case/custodians/hold/search/review-set/export state matches the definition file | `eDiscovery.Read.All` only; never calls a mutating endpoint |
-| `deploy/Export-EdiscoveryAuditTrail.ps1` | Independent case-lifecycle/hold-policy-lifecycle audit trail via `Search-UnifiedAuditLog` (automation surface 1, not Graph) — closes the Red Team finding in `reviews.md` that this scenario's own Graph objects carry no actor/history trail | Rolling CSV merge, de-duplicated by a composite key hashing `AuditData`, identical mechanism to [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/)'s and [`communication-compliance/harassment-and-code-of-conduct`](/scenarios/communication-compliance/harassment-and-code-of-conduct/)'s own audit-trail scripts |
+| `deploy/Export-EdiscoveryAuditTrail.ps1` | Independent case-lifecycle/hold-policy-lifecycle audit trail via `Search-UnifiedAuditLog` (automation surface 1, not Graph) — closes the Red Team finding in `reviews.md` that this scenario's own Graph objects carry no actor/history trail | Rolling CSV merge, de-duplicated by a composite key hashing `AuditData`, identical mechanism to `scenarios/compliance-manager/assess-against-iso27001/`'s and `scenarios/communication-compliance/harassment-and-code-of-conduct/`'s own audit-trail scripts |
 | `validate/Test-EdiscoveryAuditTrail.ps1` | Read-only CSV schema/de-duplication/operation-value/sort-order checks for the audit trail file | Needs no tenant connection; never calls a mutating endpoint |
 
 ## 7. Non-goals (explicitly out of scope for this fragment)
@@ -128,7 +128,7 @@ failure this script should misreport.
   *destination* of an escalated IRM case [[R8]](#references-design); wiring that integration is a
   natural follow-up once `scenarios/insider-risk/` has a scenario that produces an escalatable
   case, not something this fragment builds standalone. **Built** as
-  [`insider-risk/irm-case-escalation-to-ediscovery`](/scenarios/insider-risk/irm-case-escalation-to-ediscovery/), which reuses this scenario's
+  `scenarios/insider-risk/irm-case-escalation-to-ediscovery/`, which reuses this scenario's
   custodian/hold pattern unmodified and picks up exactly where the manual "Escalate for
   investigation" portal click leaves off.
 
@@ -140,7 +140,7 @@ Microsoft's "Audit log activities" eDiscovery reference [[R9]](#references-desig
 (`CaseAdded`/`CaseUpdated`/`CaseClosed`/`CaseReopened`/`CaseRemoved`) and hold-**policy** lifecycle
 (`HoldCreated`/`HoldUpdated`/`HoldRemoved`/`HoldRetryDistributionSync`). The reference page itself
 carries no legacy-experience caution banner and is the same page this repo's
-[`ediscovery/location-scoped-legal-hold`](/scenarios/ediscovery/location-scoped-legal-hold/) scenario's design already cites for its own
+`scenarios/ediscovery/location-scoped-legal-hold/` scenario's design already cites for its own
 `ediscoveryHoldPolicy` object — so the hold-policy category is confidently grounded for *that*
 object model.
 

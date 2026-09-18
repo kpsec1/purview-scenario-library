@@ -47,7 +47,7 @@ touch the **custom** policies they created.
 
 ## 4. Nothing else is touched
 
-- **Search and export** ([`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/)) are unaffected — removing
+- **Search and export** (`scenarios/audit/premium-audit-investigation/`) are unaffected — removing
   a retention policy changes how long data is *kept*, not whether the Audit Search Graph API or
   `Search-UnifiedAuditLog` can find data that's still within its retention window.
 - **Roles and permissions** granted for this scenario (Organization Configuration role, e.g. via

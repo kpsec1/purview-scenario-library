@@ -6,7 +6,6 @@ categorySlug: "data-map"
 slug: "scan-azure-sql-managed-instance-and-classify"
 repoPath: "scenarios/data-map/scan-azure-sql-managed-instance-and-classify"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-azure-sql-and-classify","data-map/verify-purview-entra-graph-prerequisites","ediscovery/location-scoped-legal-hold"]
 deployCount: 3
 validateCount: 1
 ---
@@ -18,7 +17,7 @@ credential-free, no Key Vault link to manage), and runs that scan with Microsoft
 scan rule set for this source type — which includes the SSN and Credit Card Number sensitive
 information types (SITs) this repo already uses elsewhere — so sensitive columns are automatically
 classified and surfaced in the catalog. This is the Managed Instance sibling of
-[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/), following the same proven pattern but adapted for
+`scenarios/data-map/scan-azure-sql-and-classify/`, following the same proven pattern but adapted for
 the genuine registration, network, and Microsoft Entra differences Managed Instance has as its own
 Purview data source `kind` — see `design.md` §4 for the full diff.
 
@@ -228,7 +227,7 @@ and its `.NOTES` block cite the exact Microsoft Learn reference pages.
    Reader-scoped Purview role; confirming Directory Readers membership needs a separate Microsoft
    Graph token and a directory-read permission this scenario's automation identity has no other
    reason to hold — automated instead by the dedicated companion scenario
-   [`data-map/verify-purview-entra-graph-prerequisites`](/scenarios/data-map/verify-purview-entra-graph-prerequisites/), which checks Directory Readers
+   `scenarios/data-map/verify-purview-entra-graph-prerequisites/`, which checks Directory Readers
    membership (and drift) across every Managed-Instance-backed Purview source, not just this one.
 5. **Access-path evidence** — confirm in the database (`SELECT * FROM sys.database_principals WHERE
    type = 'E'`) that the Purview account's SAMI appears as an external-provider database user with
@@ -326,7 +325,7 @@ same way regardless of the underlying Azure SQL source type.
 13. Connect to and manage an Azure SQL Managed Instance in Microsoft Purview — "System or user assigned managed identity to register" (private-endpoint managed-identity limitation) — <https://learn.microsoft.com/purview/register-scan-azure-sql-managed-instance#register>
 14. Az.Purview PowerShell module reference (`Remove-AzPurviewDataSource`, `Remove-AzPurviewScan`) — <https://learn.microsoft.com/powershell/module/az.purview/>
 15. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary) — <https://learn.microsoft.com/purview/data-gov-classic-permissions>
-16. [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) — the sibling scenario this fragment extends; see its README.md and design.md for the shared reasoning not repeated here.
+16. `scenarios/data-map/scan-azure-sql-and-classify/` — the sibling scenario this fragment extends; see its README.md and design.md for the shared reasoning not repeated here.
 
 > Re-verify all links, API versions, and the default public-endpoint port against current Microsoft
 > Learn before a customer-facing deployment — the Data Map REST surface is explicitly called out by

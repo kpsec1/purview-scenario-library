@@ -4,7 +4,7 @@ parent: "ediscovery/teams-purge-hold-lifecycle-management"
 ---
 ## 1. Problem statement
 
-[`ediscovery/search-and-purge-teams-messages`](/scenarios/ediscovery/search-and-purge-teams-messages/) deliberately left the hold-removal and
+`scenarios/ediscovery/search-and-purge-teams-messages/` deliberately left the hold-removal and
 reapplication sequence manual: "identify and remove any hold or retention policy on every target
 mailbox... reapply every hold/retention policy removed" (that scenario's `README.md` §5 steps 3/6,
 `design.md` §3 goal 5). Microsoft's own guidance for that workflow states plainly why this step

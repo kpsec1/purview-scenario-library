@@ -4,8 +4,8 @@ parent: "unified-catalog/manage-data-products"
 ---
 ## 1. Problem statement
 
-A governance domain and a curated glossary ([`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/))
-and a scanned, classified table ([`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/)) each solve one
+A governance domain and a curated glossary (`scenarios/unified-catalog/curate-business-glossary/`)
+and a scanned, classified table (`scenarios/data-map/scan-azure-sql-and-classify/`) each solve one
 piece of "can a consumer find and trust this data" — but none of them, alone, answer "which table
 is *the* authoritative customer table, and how do I get access to it." That is what a **data
 product** is for: a named, ownable, requestable grouping of one or more data assets with a
@@ -20,7 +20,7 @@ terms this repo's two prior Unified Catalog/Data Map scenarios already created.
 ## 2. Design goals
 
 1. Create/update a data product from a declarative JSON file, the same idempotent-upsert pattern
-   [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/)'s `New-BusinessGlossary.ps1` established
+   `scenarios/unified-catalog/curate-business-glossary/`'s `New-BusinessGlossary.ps1` established
    for terms (Section 3).
 2. Wrap an already-scanned Data Map asset as the newer (2026-03-20-preview) Unified Catalog "data
    asset" object type, and link it to the data product — closing the follow-up this repo's
@@ -118,5 +118,5 @@ it is an open **VERIFY** — see `README.md` Section 11.
   not an update-safe glossary/product-as-code mechanism, since Microsoft's own bulk-import feature
   cannot edit existing records.
 - **Registering or scanning the underlying Data Map asset.** This scenario assumes
-  [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) has already run at least once; it consumes that
+  `scenarios/data-map/scan-azure-sql-and-classify/` has already run at least once; it consumes that
   scenario's output (a Data Map asset GUID), it does not produce one.

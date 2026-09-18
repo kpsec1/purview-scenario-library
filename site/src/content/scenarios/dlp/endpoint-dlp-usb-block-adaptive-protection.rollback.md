@@ -59,9 +59,9 @@ is being permanently retired.
   `rollback.md` for the full portal-based procedure to fully disable Adaptive Protection, not
   repeated here.
 - **The Exchange/Teams sibling scenario's own DLP policy.** Rolling back this scenario has no
-  effect on [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/)'s policy — each rolls
+  effect on `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement`'s policy — each rolls
   back independently via its own script.
-- **[`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/)'s own DLP policy**, if also deployed. A separate,
+- **`scenarios/dlp/endpoint-dlp-usb-block`'s own DLP policy**, if also deployed. A separate,
   always-on Devices policy with its own lifecycle.
 - **Device onboarding or Advanced classification scanning and protection.** Both remain as
   configured after this scenario's policy is disabled or removed — they are shared,

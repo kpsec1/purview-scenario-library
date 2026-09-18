@@ -6,14 +6,13 @@ categorySlug: "records-management"
 slug: "multi-stage-disposition-review"
 repoPath: "scenarios/records-management/multi-stage-disposition-review"
 parts: ["design","deploy","validate","rollback"]
-related: ["records-management/regulatory-records-disposition","records-management/disposition-proof-export"]
 deployCount: 3
 validateCount: 1
 ---
 ## 1. Scenario summary
 
 Extends the event-based records-disposition pattern
-([`records-management/regulatory-records-disposition`](/scenarios/records-management/regulatory-records-disposition/)) with a **multi-stage disposition review**
+(`scenarios/records-management/regulatory-records-disposition/`) with a **multi-stage disposition review**
 panel: a record label whose disposal requires **sequential sign-off from up to 5 reviewer stages**
 (`-MultiStageReviewProperty` on `New-ComplianceTag`), not a single reviewer set. Built here for **employee
 separation records** — HR Business Partner → Employment Counsel → Records Management — the representative
@@ -184,7 +183,7 @@ Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
    chain is not re-sent or mutated on an existing label; no event is created without `-TriggerEvent` +
    `event.create`.
 7. **Evidence export for an auditor/examiner** —
-   [`records-management/disposition-proof-export`](/scenarios/records-management/disposition-proof-export/) adds a scriptable, schedulable rolling
+   `scenarios/records-management/disposition-proof-export/` adds a scriptable, schedulable rolling
    audit trail of `AddReviewer`/`ApproveDisposal`/`ExtendRetention`/`RelabelItem`/`RecordDelete`
    events (companion to the portal's own per-label Filter+Export `.csv`), applicable to this
    scenario's multi-stage chain the same way it applies to the parent single-reviewer scenario.

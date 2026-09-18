@@ -9,7 +9,7 @@ items to the **second-stage Recycle Bin** — real remediation, but not final: a
 technically recoverable within the Recycle Bin's retention window, still occupies storage until
 that window lapses, and (until it lapses) is not guaranteed absent from every downstream index. For
 a genuine data-exposure incident — most concretely, a file identified by a **DSPM for AI oversharing
-assessment** ([`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/)) as broadly shared and already
+assessment** (`scenarios/dspm-for-ai/copilot-sensitive-data-exposure`) as broadly shared and already
 summarizable by Microsoft 365 Copilot — "recoverable for up to N days" is not an acceptable answer;
 the requirement is content that is immediately no longer discoverable in SharePoint search, Copilot,
 or eDiscovery, with no recovery path at all [[1]](#references). Microsoft's **permanent deletion**

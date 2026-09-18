@@ -6,13 +6,12 @@ categorySlug: "data-map"
 slug: "scan-on-premises-sql-server-and-classify-pii-ruleset"
 repoPath: "scenarios/data-map/scan-on-premises-sql-server-and-classify-pii-ruleset"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-on-premises-sql-server-and-classify","data-map/scan-azure-sql-and-classify-pii-ruleset","data-map/scan-azure-synapse-and-classify-pii-ruleset","data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset"]
 deployCount: 2
 validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends [`data-map/scan-on-premises-sql-server-and-classify`](/scenarios/data-map/scan-on-premises-sql-server-and-classify/): creates a **custom,
+Extends `scenarios/data-map/scan-on-premises-sql-server-and-classify/`: creates a **custom,
 PII-only** Data Map scan rule set for on-premises SQL Server — every system classification excluded
 except the ones you name to keep (U.S. Social Security Number and Credit Card Number by default) —
 and reconciles the base scenario's already-registered, self-hosted-integration-runtime-backed scan
@@ -60,7 +59,7 @@ scenario — this scenario adds no new licensing surface, only a different scan 
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| **[`data-map/scan-on-premises-sql-server-and-classify`](/scenarios/data-map/scan-on-premises-sql-server-and-classify/) already deployed and running successfully** | The self-hosted integration runtime node must be registered and **Running**, the data source and scan must already exist, and the Purview credential object must already exist | This scenario reconciles an EXISTING scan onto a new ruleset — `deploy/New-PiiOnlyScanRuleset.ps1` fails fast with a clear error if the scan is not found. It assumes the base scenario's own unusually long prerequisite list (SHIR resource + software install + node registration, SQL/Windows login + `db_datareader` grant, Key Vault secret, Purview credential object) is already satisfied — see that scenario's `README.md` §3. This scenario never grants, verifies, or troubleshoots any of it |
+| **`scenarios/data-map/scan-on-premises-sql-server-and-classify/` already deployed and running successfully** | The self-hosted integration runtime node must be registered and **Running**, the data source and scan must already exist, and the Purview credential object must already exist | This scenario reconciles an EXISTING scan onto a new ruleset — `deploy/New-PiiOnlyScanRuleset.ps1` fails fast with a clear error if the scan is not found. It assumes the base scenario's own unusually long prerequisite list (SHIR resource + software install + node registration, SQL/Windows login + `db_datareader` grant, Key Vault secret, Purview credential object) is already satisfied — see that scenario's `README.md` §3. This scenario never grants, verifies, or troubleshoots any of it |
 | Create/update the custom scan rule set and reconcile the scan | **Data Source Administrator** role on the target collection | Same role the base scenario's deploy script requires — Microsoft Learn does not document a role specific to scan rule sets; ruleset management falls under the same "configure and run a scan" boundary as the scan itself (`docs/rbac-model.md` §5) |
 | Read the ruleset/scan for validation | **Data Reader** role on the target collection | Least-privilege for the read-only `validate/` script |
 | Automation identity for the REST calls | App registration with the roles above, app-only OAuth2 | Same client-credentials flow as the base scenario — `docs/automation-surface.md` §3 |
@@ -322,7 +321,7 @@ cost breakdown to quantify the exact savings.
 11. Scans - Create Or Replace REST API reference (reused here to reconcile the existing scan's
     ruleset reference) —
     <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scans/create-or-replace>
-12. [`data-map/scan-on-premises-sql-server-and-classify`](/scenarios/data-map/scan-on-premises-sql-server-and-classify/) (base scenario this fragment
+12. `scenarios/data-map/scan-on-premises-sql-server-and-classify/` (base scenario this fragment
     extends; confirms `SqlServerDatabaseCredential` as the only compatible scan kind, and discloses
     the System-ruleset-name VERIFY this scenario inherits unresolved) — this repository.
 13. Audit logs, diagnostics, and activity history in Microsoft Purview governance portal (confirms
@@ -332,9 +331,9 @@ cost breakdown to quantify the exact savings.
     record type (Microsoft Graph security API — the SIEM-consumable record type for Data Map
     Management-category events, including scan rule set changes) —
     <https://learn.microsoft.com/graph/api/resources/security-microsoftpurviewdatamapoperationrecord>
-15. [`data-map/scan-azure-sql-and-classify-pii-ruleset`](/scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/),
-    [`data-map/scan-azure-synapse-and-classify-pii-ruleset`](/scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/), and
-    [`data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/) (sibling
+15. `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/`,
+    `scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/`, and
+    `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/` (sibling
     scenarios this fragment mirrors — pattern precedent for the live-Types-API exclusion-list
     design, the reconcile-not-reconstruct scan update, and the name-vs-kind independent-verification
     discipline) — this repository.

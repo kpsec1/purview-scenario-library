@@ -6,7 +6,6 @@ categorySlug: "data-map"
 slug: "scan-azure-sql-and-classify"
 repoPath: "scenarios/data-map/scan-azure-sql-and-classify"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-credential-key-vault-backed","information-protection/auto-label-confidential-sharepoint","dlp/pci-teams-exfil-block","data-estate-insights/classification-coverage-report","data-map/scan-azure-sql-managed-instance-and-classify"]
 deployCount: 3
 validateCount: 1
 ---
@@ -187,9 +186,9 @@ acquisition follows `docs/automation-surface.md` §3's client-credentials patter
 |---|---|---|
 | Data source `kind` | `AzureSqlDatabase` | [[5]](#references) |
 | Scan `kind` (default) | `AzureSqlDatabaseMsi` | SAMI-authenticated — no credential object to create or rotate |
-| Scan `kind` (alternative) | `AzureSqlDatabaseCredential` | SQL authentication or service principal, both requiring a Key Vault-backed credential object. Create it with [`data-map/scan-credential-key-vault-backed`](/scenarios/data-map/scan-credential-key-vault-backed/) (scripted via `PUT /scan/credentials/{name}`) and reference it by name — the "portal-only" claim this scenario originally carried here was incorrect; see §11 |
+| Scan `kind` (alternative) | `AzureSqlDatabaseCredential` | SQL authentication or service principal, both requiring a Key Vault-backed credential object. Create it with `scenarios/data-map/scan-credential-key-vault-backed/` (scripted via `PUT /scan/credentials/{name}`) and reference it by name — the "portal-only" claim this scenario originally carried here was incorrect; see §11 |
 | Collection reference | `{ "referenceName": "<5-char collection ID>", "type": "CollectionReference" }` | The ID is **not** the collection's friendly name — read it from the collection's URL in the portal or the `List Collections` API [[6]](#references) |
-| Scan rule set (this scenario's default) | `scanRulesetName: "AzureSqlDatabase"`, `scanRulesetType: "System"` | Microsoft's system rule set — every classification available for this source type, roughly 200 built-in SITs including **U.S. Social Security Number (SSN)** and **Credit Card Number**, the same pair already established in [`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/) and [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/) [[11]](#references) |
+| Scan rule set (this scenario's default) | `scanRulesetName: "AzureSqlDatabase"`, `scanRulesetType: "System"` | Microsoft's system rule set — every classification available for this source type, roughly 200 built-in SITs including **U.S. Social Security Number (SSN)** and **Credit Card Number**, the same pair already established in `scenarios/information-protection/auto-label-confidential-sharepoint/` and `scenarios/dlp/pci-teams-exfil-block/` [[11]](#references) |
 | Scan rule set (narrower, PII-only) | A **custom** rule set built from the system default with unwanted classifications excluded | Supported by the product (portal, and the `Az.Purview` module's `New-AzPurviewAzureSqlDatabaseScanRulesetObject -ExcludedSystemClassification`) — this scenario's script does not create one programmatically; see §11 VERIFY |
 | Scan level | `Full` (first run) → `Incremental` (subsequent scheduled runs) | Customizable per-source scan levels (L1/L2/L3) are supported for Azure SQL Database specifically [[7]](#references) |
 | Recurring trigger | Optional; `RecurrenceFrequency`/`RecurrenceInterval` parameters | Trigger resource name is always `default` — one trigger per scan [[8]](#references) |
@@ -272,7 +271,7 @@ relevant.
 
 **Downstream use:** once columns are classified, they become groundwork for
 `scenarios/information-protection/` auto-labeling scope decisions, `scenarios/dlp/` policy
-targeting, and [`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/) — which turns this
+targeting, and `scenarios/data-estate-insights/classification-coverage-report/` — which turns this
 scenario's own `customerdb.dbo.Customers` classification output into an exportable, historical
 coverage trend line — this scenario intentionally stops at "classify and make visible," not "act on
 the classification."
@@ -327,7 +326,7 @@ data source registration.
   lineage extraction by default; see the source documentation before turning it on
   [[1]](#references).
 - **RESOLVED (2026-09-04) — Run Scan / List Scan History REST shapes were corrected, not just
-  verified.** The sibling [`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/) build
+  verified.** The sibling `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` build
   independently direct-fetched the canonical **Scan Result - Run Scan** and **Scan Result - List
   Scan History** REST reference pages this scenario's own build could not reach, and found both of
   this scenario's original reconstructed shapes were wrong: Run Scan is an action-style
@@ -370,7 +369,7 @@ data source registration.
   data-plane API exposes **Credential** (`PUT /scan/credentials/{credentialName}`) and **Key Vault
   Connections** (`PUT /scan/azureKeyVaults/{azureKeyVaultName}`) as first-class documented
   operation groups at `api-version=2023-09-01`. Both are now scripted end-to-end by
-  [`data-map/scan-credential-key-vault-backed`](/scenarios/data-map/scan-credential-key-vault-backed/), which also documents the one field shape
+  `scenarios/data-map/scan-credential-key-vault-backed/`, which also documents the one field shape
   that genuinely remains unconfirmed (the two `KeyVaultSecret` discriminator literals). A buyer
   needing SQL-auth or service-principal scanning should build the credential with that scenario and
   reference it by name here — no portal step required. This scenario's own script still defaults to

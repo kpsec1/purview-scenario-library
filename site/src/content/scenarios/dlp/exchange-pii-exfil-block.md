@@ -6,7 +6,6 @@ categorySlug: "dlp"
 slug: "exchange-pii-exfil-block"
 repoPath: "scenarios/dlp/exchange-pii-exfil-block"
 parts: ["design","deploy","validate","rollback"]
-related: ["information-protection/auto-label-confidential-exchange","dlp/pci-teams-exfil-block-part2-obfuscation-mitigation","dlp/pci-teams-exfil-block"]
 deployCount: 2
 validateCount: 1
 ---
@@ -22,7 +21,7 @@ Protection auto-labeling scenarios, this policy never references a sensitivity l
 content directly and independently of whether any label has been applied.
 
 **Who it's for:** any enterprise that has deployed
-[`information-protection/auto-label-confidential-exchange`](/scenarios/information-protection/auto-label-confidential-exchange/) (or plans to) and needs the
+`scenarios/information-protection/auto-label-confidential-exchange/` (or plans to) and needs the
 movement control that labeling alone cannot provide — a real-time check against the recipient's
 domain, not just a classification tag. Also stands alone for a buyer that wants Exchange PII
 exfiltration control without an auto-labeling program at all.
@@ -266,7 +265,7 @@ permanently delete the policy and its rules.
   two separate emails, or spelled out to defeat pattern matching, is not detected by this policy —
   the same accepted, documented residual risk as `pci-teams-exfil-block/reviews.md` (Red Team
   finding 1). Cross-message behavioral detection is a different capability
-  ([`dlp/pci-teams-exfil-block-part2-obfuscation-mitigation`](/scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/)'s Adaptive Protection /
+  (`scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/`'s Adaptive Protection /
   IRM pattern), not something this content-based DLP rule alone can provide.
 - **Bifurcation means "one message" is not always "one decision."** A message to a mixed
   internal/external recipient list is split into independent forks per recipient before rules
@@ -349,7 +348,7 @@ permanently delete the policy and its rules.
 15. U.S. Social Security Number (SSN) SIT definition — <https://learn.microsoft.com/purview/sit-defn-us-social-security-number>
 16. `scenarios/information-protection/auto-label-confidential-exchange/README.md` §11 — the
     documented gap this scenario closes.
-17. [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/) — the sibling scenario this one's rule pattern (override
+17. `scenarios/dlp/pci-teams-exfil-block/` — the sibling scenario this one's rule pattern (override
     group, `AccessScope`, `StopPolicyProcessing`) directly reuses.
 
 > Re-verify all links against current Microsoft Learn before a customer-facing assessment or

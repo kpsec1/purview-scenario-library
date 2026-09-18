@@ -30,7 +30,7 @@ goes stale on the next schema change.
    Microsoft's system scan rule set (every built-in SIT for this source type) rather than
    fabricating a narrower custom rule set body this build couldn't independently verify — SSN and
    Credit Card Number, the pair already used in `scenarios/information-protection/
-   auto-label-confidential-sharepoint/` and [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/), are included
+   auto-label-confidential-sharepoint/` and `scenarios/dlp/pci-teams-exfil-block/`, are included
    in that system set, so a buyer evaluating this repo end-to-end still sees a consistent
    classification vocabulary across Data Governance and Data Security.
 4. **Separate the two identities cleanly.** The identity that *calls the Purview REST API*
@@ -137,7 +137,7 @@ distinction.
   this build originally concluded no documented REST endpoint existed for credential creation and
   that the portal was the only path — that was wrong. `PUT /scan/credentials/{credentialName}` and
   `PUT /scan/azureKeyVaults/{azureKeyVaultName}` are documented operation groups at
-  `api-version=2023-09-01`, and [`data-map/scan-credential-key-vault-backed`](/scenarios/data-map/scan-credential-key-vault-backed/) now scripts
+  `api-version=2023-09-01`, and `scenarios/data-map/scan-credential-key-vault-backed/` now scripts
   both. Creating that object stays out of scope *here* (it is a separate, reusable object shared
   across many scans, not a per-scan concern), but it is no longer a manual step anywhere in this
   repo. A buyer needing that path builds the credential there and passes its name in.

@@ -14,7 +14,7 @@ labeled, top labels applied across sources/files/tables, and a 30-day labeling-a
 for anyone exploring their estate's labeling posture interactively.
 
 It has the same three structural limits this repo's sibling
-[`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/) scenario already documents for the
+`scenarios/data-estate-insights/classification-coverage-report/` scenario already documents for the
 **Classic classifications** report — because both reports are two faces of the same Data Estate
 Insights "Curation and governance" application, built on the same underlying Data Map search index
 [[9]](#references):
@@ -168,13 +168,13 @@ is the local (or blob-stored) report file it writes, wrapped in `$PSCmdlet.Shoul
   "extend sensitivity labels to Data Map" capability itself.** It reads whatever labels already exist
   on already-scanned assets. Authoring/publishing sensitivity labels and their autolabeling rules is a
   distinct concern this repo's Information Protection module scenarios
-  ([`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/)) already cover for the
+  (`scenarios/information-protection/auto-label-confidential-sharepoint/`) already cover for the
   Microsoft 365 workload side; extending an existing label's scope to "Files & other data assets" so
   it becomes visible to Data Map, and turning on the Data Map extension capability itself, remain
   manual portal prerequisites for this scenario (`README.md` §5) — a natural follow-up fragment,
   tracked in `PROGRESS.md`.
 - **Classification coverage** is out of scope here — already covered by the sibling
-  [`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/) scenario this fragment is
+  `scenarios/data-estate-insights/classification-coverage-report/` scenario this fragment is
   deliberately structured to sit alongside, not replace.
 - **Glossary/curation-rate coverage** (the native report's "Glossary insights"/"Data stewardship"
   dashboards) is likewise out of scope — different underlying data this scenario's Discovery -

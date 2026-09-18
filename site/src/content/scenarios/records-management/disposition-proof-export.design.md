@@ -41,7 +41,7 @@ closes that evidence loop.
    [[3]](#references)[[5]](#references) — an unresolved cross-workload ambiguity, not a documented
    dual-RecordType behavior. This repo already carries the identical class of gap for a different
    pair of Operations (`SharePointDataProactivelyPreserved`/`ExchangeDataProactivelyPreserved` in
-   [`data-lifecycle-management/adaptive-protection-deleted-content-preservation`](/scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/)) and
+   `scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/`) and
    resolved it the same way: **query by `-Operations` only, no `-RecordType` filter**, so a wrong
    guess never silently under-matches real evidence.
 4. **No documented PowerShell/Graph equivalent of the portal's Filter+Export button.** The
@@ -149,7 +149,7 @@ this scenario's scriptable, tenant-wide, schedulable rolling trail.
   raw `AuditData` JSON is preserved so this can be extracted later once the field is identified.
 - **Alerting/SIEM streaming** — this scenario produces a CSV; wiring it (or the underlying
   `Search-UnifiedAuditLog` query) into a SIEM is the documented extension covered by
-  [`audit/streaming-to-sentinel-or-management-api`](/scenarios/audit/streaming-to-sentinel-or-management-api/).
+  `scenarios/audit/streaming-to-sentinel-or-management-api/`.
 - **Creating or configuring any retention label, event type, or policy** — purely read-only against
   existing disposition activity; the objects it reports on are created by
   `regulatory-records-disposition`, `multi-stage-disposition-review`, or any other

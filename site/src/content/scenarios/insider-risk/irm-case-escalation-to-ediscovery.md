@@ -6,7 +6,6 @@ categorySlug: "insider-risk"
 slug: "irm-case-escalation-to-ediscovery"
 repoPath: "scenarios/insider-risk/irm-case-escalation-to-ediscovery"
 parts: ["design","deploy","validate","rollback"]
-related: ["insider-risk/departing-employee-data-theft","ediscovery/premium-legal-hold-and-export","unified-catalog/manage-data-products"]
 deployCount: 3
 validateCount: 1
 ---
@@ -50,8 +49,8 @@ specifically matter for a defensible investigation and, later, litigation postur
 
 Full licensing and role detail: `docs/licensing-matrix.md` and `docs/rbac-model.md`. This scenario
 is additive on top of two scenarios this library already covers in full —
-[`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) (or any other IRM policy producing cases)
-and [`ediscovery/premium-legal-hold-and-export`](/scenarios/ediscovery/premium-legal-hold-and-export/) — so its own incremental requirements
+`scenarios/insider-risk/departing-employee-data-theft/` (or any other IRM policy producing cases)
+and `scenarios/ediscovery/premium-legal-hold-and-export/` — so its own incremental requirements
 are narrow:
 
 | Requirement | Minimum | Notes |
@@ -89,7 +88,7 @@ flowchart TD
 The escalation click (portal-only, no API — design.md §1) is the one step this scenario cannot
 automate. Everything after it — provenance linkage and custodian/hold reconciliation — runs
 through Microsoft Graph (`microsoft.graph.security` namespace, automation surface 3), the same
-surface and auth pattern as [`ediscovery/premium-legal-hold-and-export`](/scenarios/ediscovery/premium-legal-hold-and-export/).
+surface and auth pattern as `scenarios/ediscovery/premium-legal-hold-and-export/`.
 
 ## 5. Step-by-step implementation
 
@@ -237,8 +236,8 @@ duplicated here (design.md §4).
 
 ## 10. Cost & licensing notes
 
-No incremental licensing beyond what [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) and
-[`ediscovery/premium-legal-hold-and-export`](/scenarios/ediscovery/premium-legal-hold-and-export/) already require — this scenario adds no new
+No incremental licensing beyond what `scenarios/insider-risk/departing-employee-data-theft/` and
+`scenarios/ediscovery/premium-legal-hold-and-export/` already require — this scenario adds no new
 Purview feature, only automation gluing two already-licensed capabilities together. See those two
 scenarios' README.md §10 for the underlying licensing/PAYG notes (IRM's cloud/GenAI PAYG
 processing units; eDiscovery Export API's PAYG metering).

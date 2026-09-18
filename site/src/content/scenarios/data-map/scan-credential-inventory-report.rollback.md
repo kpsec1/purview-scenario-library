@@ -4,7 +4,7 @@ parent: "data-map/scan-credential-inventory-report"
 ---
 ## What there is to roll back
 
-Like [`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/), this scenario creates **no
+Like `scenarios/data-estate-insights/classification-coverage-report/`, this scenario creates **no
 object inside Microsoft Purview at all** — no credential, no Key Vault connection, no scan. Every
 call it makes is a read-only `GET /scan/credentials`. "Rollback" here means four things, none of
 which touch the Purview account itself or any credential it reports on:

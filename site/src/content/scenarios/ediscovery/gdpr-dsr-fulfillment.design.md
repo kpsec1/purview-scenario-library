@@ -4,9 +4,9 @@ parent: "ediscovery/gdpr-dsr-fulfillment"
 ---
 ## 1. Problem statement
 
-[`compliance-manager/gdpr-assessment`](/scenarios/compliance-manager/gdpr-assessment/) names the gap directly: this library's closest
+`scenarios/compliance-manager/gdpr-assessment/` names the gap directly: this library's closest
 existing technical building block for a GDPR Data Subject Request,
-[`ediscovery/search-and-purge-data-spillage`](/scenarios/ediscovery/search-and-purge-data-spillage/), was built for inadvertent data-spillage
+`scenarios/ediscovery/search-and-purge-data-spillage/`, was built for inadvertent data-spillage
 remediation. It has no request-tracking, no per-request SLA timer against Article 12(3)'s
 one-month (extendable by two further months) response deadline, and no rectification/restriction
 workflow — only discovery/export/deletion, and only for one incident at a time, not a repeatable

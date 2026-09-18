@@ -4,7 +4,7 @@ parent: "ediscovery/teams-group-hold-resolution"
 ---
 ## 1. Why this is a separate fragment, not a flag on the sibling scenario
 
-[`ediscovery/location-scoped-legal-hold`](/scenarios/ediscovery/location-scoped-legal-hold/)'s `design.md` §8 explicitly named this as a
+`scenarios/ediscovery/location-scoped-legal-hold/`'s `design.md` §8 explicitly named this as a
 non-goal: "resolving *which* group/site pair to use from a Team name is a distinct, separately
 scoped lookup this fragment doesn't automate." Two reasons that separation holds up under design,
 not just convenience:

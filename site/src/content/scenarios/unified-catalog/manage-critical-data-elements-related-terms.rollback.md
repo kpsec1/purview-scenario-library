@@ -96,9 +96,9 @@ that scenario's own `rollback.md` documents.
 
 ## What rollback does **not** undo
 
-- **The critical data element itself.** [`unified-catalog/manage-critical-data-elements`](/scenarios/unified-catalog/manage-critical-data-elements/)
+- **The critical data element itself.** `scenarios/unified-catalog/manage-critical-data-elements/`
   owns its lifecycle; this scenario only looks it up by name.
-- **The glossary term(s) themselves.** [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) owns
+- **The glossary term(s) themselves.** `scenarios/unified-catalog/curate-business-glossary/` owns
   their lifecycle; this scenario only looks them up by name. Unlinking a term from a CDE never
   deletes, unpublishes, or edits the term itself.
 - **The governance domain.** Neither this scenario nor either of its two prerequisite siblings own

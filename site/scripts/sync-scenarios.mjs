@@ -96,20 +96,6 @@ function prettyCategory(slug) {
     .join(' ');
 }
 
-// Rewrite backticked `scenarios/<cat>/<slug>/` refs into on-site links, and
-// collect the related scenario ids. Only rewrites refs to scenarios we publish.
-function internalizeRefs(markdown, validSet, selfId, relatedOut) {
-  return markdown.replace(
-    /`scenarios\/([a-z0-9-]+)\/([a-z0-9-]+)\/?`/g,
-    (match, cat, slug) => {
-      const id = `${cat}/${slug}`;
-      if (!validSet.has(id)) return match;
-      if (id !== selfId && relatedOut && !relatedOut.includes(id)) relatedOut.push(id);
-      return `[\`${cat}/${slug}\`](/scenarios/${cat}/${slug}/)`;
-    }
-  );
-}
-
 function fenceFor(content) {
   // Use a fence longer than any run of backticks inside the content.
   let max = 0;
@@ -162,20 +148,6 @@ async function main() {
     .map((d) => d.name)
     .sort();
 
-  // First pass: the set of valid scenario ids, for cross-ref linking.
-  const validSet = new Set();
-  for (const category of categories) {
-    const catDir = path.join(scenariosRoot, category);
-    const slugs = (await fs.readdir(catDir, { withFileTypes: true }))
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name);
-    for (const slug of slugs) {
-      if (await readMaybe(path.join(catDir, slug, 'README.md'))) {
-        validSet.add(`${category}/${slug}`);
-      }
-    }
-  }
-
   let count = 0;
   for (const category of categories) {
     const catDir = path.join(scenariosRoot, category);
@@ -192,8 +164,7 @@ async function main() {
       const id = `${category}/${slug}`;
       const rawTitle = extractTitle(readme, prettyCategory(slug));
       const { category: catLabel, short } = splitCategory(rawTitle, prettyCategory(category));
-      const related = [];
-      const overviewBody = internalizeRefs(stripFirstH1(readme), validSet, id, related);
+      const overviewBody = stripFirstH1(readme);
 
       const outDir = path.join(outRoot, category);
       await fs.mkdir(outDir, { recursive: true });
@@ -203,7 +174,7 @@ async function main() {
       // Design
       const designRaw = await readMaybe(path.join(dir, 'design.md'));
       if (designRaw) {
-        const body = internalizeRefs(stripFirstH1(designRaw), validSet, id, related);
+        const body = stripFirstH1(designRaw);
         await fs.writeFile(
           path.join(outDir, `${slug}.design.md`),
           frontmatter({ part: 'design', parent: id }) + body,
@@ -237,7 +208,7 @@ async function main() {
       // Rollback
       const rollbackRaw = await readMaybe(path.join(dir, 'rollback.md'));
       if (rollbackRaw) {
-        const body = internalizeRefs(stripFirstH1(rollbackRaw), validSet, id, related);
+        const body = stripFirstH1(rollbackRaw);
         await fs.writeFile(
           path.join(outDir, `${slug}.rollback.md`),
           frontmatter({ part: 'rollback', parent: id }) + body,
@@ -255,7 +226,6 @@ async function main() {
         slug,
         repoPath: `scenarios/${category}/${slug}`,
         parts: parts.sort((a, b) => PART_ORDER.indexOf(a) - PART_ORDER.indexOf(b)),
-        related,
         deployCount: deploy.count,
         validateCount: validate.count,
       });

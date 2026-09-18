@@ -4,7 +4,7 @@ parent: "unified-catalog/manage-critical-data-elements-related-terms"
 ---
 ## 1. Problem statement
 
-[`unified-catalog/manage-critical-data-elements`](/scenarios/unified-catalog/manage-critical-data-elements/) maps physical columns into a named,
+`scenarios/unified-catalog/manage-critical-data-elements/` maps physical columns into a named,
 governance-domain-scoped concept (a CDE) but explicitly deferred one capability as a non-goal:
 "Linking the CDE to glossary terms. Microsoft's portal exposes a 'Manage related terms' action on
 a CDE's details page; this scenario's definition file and scripts don't script it... would extend

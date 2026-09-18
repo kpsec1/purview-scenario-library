@@ -4,8 +4,8 @@ parent: "compliance-manager/gdpr-assessment"
 ---
 This scenario has two independent things to roll back: the **assessment itself** (portal-only, no
 script touches it) and the **audit-trail export**, which is a **reused** script shared with
-[`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/), `scenarios/compliance-manager/
-pci-dss-assessment/`, [`compliance-manager/soc2-assessment`](/scenarios/compliance-manager/soc2-assessment/), and `scenarios/compliance-
+`scenarios/compliance-manager/assess-against-iso27001/`, `scenarios/compliance-manager/
+pci-dss-assessment/`, `scenarios/compliance-manager/soc2-assessment/`, and `scenarios/compliance-
 manager/hipaa-hitech-assessment/` (`design.md` §2). Handle them separately, and read the
 group-sharing note in Stage 3 before deleting anything if this assessment shares a group with any of
 the four siblings.

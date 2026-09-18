@@ -6,7 +6,6 @@ categorySlug: "data-estate-insights"
 slug: "glossary-curation-coverage-report"
 repoPath: "scenarios/data-estate-insights/glossary-curation-coverage-report"
 parts: ["design","deploy","validate","rollback"]
-related: ["unified-catalog/curate-business-glossary"]
 deployCount: 1
 validateCount: 1
 ---
@@ -18,7 +17,7 @@ a status/asset-attachment snapshot, and an incomplete-terms breakdown — but it
 Atlas-based glossary model, has no REST API of its own, and keeps no durable history beyond its own
 refresh cadence. This scenario scripts the *same category* of KPIs against the object model this
 repo's own glossary scenario actually uses — the current **Unified Catalog Terms REST API**
-([`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/)) — and appends the result to a
+(`scenarios/unified-catalog/curate-business-glossary/`) — and appends the result to a
 source-controllable trend log, using the Terms operation group's documented `List` and
 `List Related Entities` operations.
 
@@ -61,7 +60,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Unified Catalog data governance | **Pay-as-you-go (PAYG)** Purview account, Unified Catalog enabled | See §10 — this scenario only reads existing domain/term metadata; it creates no billable governed asset |
-| A populated governance domain | At least one domain with glossary terms (e.g. [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/)'s `Customer Experience` domain) | This scenario does not create or curate terms — see §6/`design.md` §7 |
+| A populated governance domain | At least one domain with glossary terms (e.g. `scenarios/unified-catalog/curate-business-glossary/`'s `Customer Experience` domain) | This scenario does not create or curate terms — see §6/`design.md` §7 |
 | Report role (default mode, full status coverage) | **Data Steward** on every `-DomainIds` value | Only documented role that can see `DRAFT`-status terms [[6]](#12-references) — more privileged than this report's own `-PublishedOnly` mode, see next row |
 | Report role (`-PublishedOnly` mode) | **Global Catalog Reader** or **Local Catalog Reader** | Documented as reading only **published** artifacts across (Global) or within (Local) governance domains [[8]](#12-references) — Draft/Expired-dependent KPIs are reported as `N/A` in this mode, never a false zero |
 | Grant the automation identity a Unified Catalog role at all | A **Governance Domain Owner** (or a Data Governance Administrator delegating one) assigns roles on the domain's **Roles** tab | Same assignment path `curate-business-glossary/README.md` §3 already documents |
@@ -114,7 +113,7 @@ queries the Unified Catalog Terms REST API directly, the same object model
    from the classic glossary model, not the Unified Catalog Terms model this scenario reports on
    (§11, `design.md` §1 point 4).
 2. Confirm the target domain(s) already have glossary terms authored (e.g.
-   [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/)'s `Customer Experience` domain).
+   `scenarios/unified-catalog/curate-business-glossary/`'s `Customer Experience` domain).
 3. On each domain's **Roles** tab, assign the automation identity's service principal the
    **Data Steward** role (for full status coverage) or **Local Catalog Reader** (for
    `-PublishedOnly` mode) [[6]](#12-references)[[8]](#12-references).

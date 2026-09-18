@@ -6,7 +6,6 @@ categorySlug: "dspm-for-ai"
 slug: "copilot-prompt-full-block"
 repoPath: "scenarios/dspm-for-ai/copilot-prompt-full-block"
 parts: ["design","deploy","validate","rollback"]
-related: ["dspm-for-ai/copilot-sensitive-data-exposure","dspm-for-ai/copilot-external-email-block"]
 deployCount: 2
 validateCount: 1
 ---
@@ -15,7 +14,7 @@ validateCount: 1
 Adds a third, stronger DLP rule to the Microsoft 365 Copilot and Copilot Chat DLP policy: when a
 user's prompt itself contains a configured sensitive information type (SIT), Copilot **refuses to
 respond at all** — not just to web-grounded searches, but to internal Microsoft 365 grounding too.
-This extends [`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/), which already deploys a
+This extends `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/`, which already deploys a
 policy with a label-exclusion rule and a web-grounding-restriction rule; this scenario adds the
 missing third documented Copilot-location action, **"Prevent Copilot from processing content >
 Processing prompts"**, which Microsoft's own use-case guidance frames as the control for the
@@ -320,7 +319,7 @@ policy intact.
    `-RestrictAccess` pair, worked for a label condition, reused by the parent scenario's Rule 0) — <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy>
 5. Set-DlpComplianceRule reference (`-Disabled` parameter, used by this scenario's rollback path) — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancerule>
 6. Remove-DlpComplianceRule reference (rule-level deletion, used by this scenario's `-Purge` path) — <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancerule>
-7. [`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/) — the parent scenario this fragment
+7. `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` — the parent scenario this fragment
    extends; shared prerequisites, architecture, and policy object.
 
 > Re-verify the preview/GA status of this specific action and the `-RestrictAccess` setting-value

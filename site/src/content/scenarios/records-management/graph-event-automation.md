@@ -6,7 +6,6 @@ categorySlug: "records-management"
 slug: "graph-event-automation"
 repoPath: "scenarios/records-management/graph-event-automation"
 parts: ["design","deploy","validate","rollback"]
-related: ["records-management/regulatory-records-disposition"]
 deployCount: 3
 validateCount: 1
 ---
@@ -16,7 +15,7 @@ Wires a **business system** (HR, contract management, ERP) into Microsoft Purvie
 retention** using the **Microsoft Graph records-management APIs**: it ensures a **retention event
 type** exists, and — gated behind an explicit switch and sign-off — **fires a retention event** that
 starts the retention clock for matching event-based-labeled content. This is the **automation
-complement** to the PowerShell scenario in [`records-management/regulatory-records-disposition`](/scenarios/records-management/regulatory-records-disposition/)
+complement** to the PowerShell scenario in `scenarios/records-management/regulatory-records-disposition/`
 (which defines the event type, the event-based record label, and the publish policy in Security &
 Compliance PowerShell). Here the same lifecycle's **trigger** is driven programmatically over Graph, so
 "the contract expired" or "the employee left" can start retention **automatically** the moment the

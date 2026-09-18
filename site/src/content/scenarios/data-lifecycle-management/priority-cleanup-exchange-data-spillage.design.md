@@ -52,7 +52,7 @@ This fragment builds the **Exchange, data-spillage** variant — the use case Mi
 with, and the one with the richest (3-stage) approval model. The SharePoint/OneDrive variant (stale
 Teams recordings / Preservation Hold library cleanup, and the separate public-preview **permanent
 deletion** sub-feature for that workload [[3]](#references)) is now built as its own sibling fragment,
-[`data-lifecycle-management/priority-cleanup-sharepoint-onedrive`](/scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/) — a different approver
+`scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/` — a different approver
 model (eDiscovery-admin-only, conditional) and a required (not merely recommended) simulation step,
 per that scenario's own `design.md` §3.
 
@@ -130,7 +130,7 @@ already completed, matching Microsoft's own limitation notice [[5]](#references)
 ## 7. Non-goals
 
 - **SharePoint/OneDrive priority cleanup** (stale recordings, Preservation Hold library) — now built
-  as [`data-lifecycle-management/priority-cleanup-sharepoint-onedrive`](/scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/). That sibling's own
+  as `scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/`. That sibling's own
   separate public-preview **permanent-deletion** sub-feature remains out of scope and tracked as a
   follow-up in `PROGRESS.md`.
 - **Adaptive-scope targeting** (needed for group mailboxes) — this scenario is static-scope only.
@@ -141,7 +141,7 @@ already completed, matching Microsoft's own limitation notice [[5]](#references)
 - **eDiscovery search-and-purge as an alternative path** — Microsoft's own tip suggests purging
   (soft-delete) first, then applying priority cleanup to permanently delete the already-soft-deleted
   items, to avoid showing end users the "Retention: ... (-1 days)" message bar [[1]](#references).
-  **Built** as [`ediscovery/search-and-purge-data-spillage`](/scenarios/ediscovery/search-and-purge-data-spillage/) — that scenario's `README.md`
+  **Built** as `scenarios/ediscovery/search-and-purge-data-spillage/` — that scenario's `README.md`
   §5 step 4 documents the combined workflow explicitly (its own `-PurgeType Recoverable` run, then
   this scenario's `ContentMatchQuery` pointed at the same content) rather than leaving it as an
   implied follow-up.

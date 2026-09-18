@@ -4,7 +4,7 @@ parent: "data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset"
 ---
 ## 1. Problem statement
 
-[`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/) scans an Azure SQL Managed
+`scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` scans an Azure SQL Managed
 Instance database against Microsoft's **system default** scan rule set (named
 `AzureSqlDatabaseManagedInstance`): every built-in classification Purview ships for this source
 type, roughly 200 sensitive information types (SITs). That is the right default for a first,

@@ -4,7 +4,7 @@ parent: "dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion"
 ---
 ## 1. Problem statement
 
-[`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/)'s own `reviews.md` (Red Team finding 1) and `README.md`
+`scenarios/dlp/exchange-pii-exfil-block/`'s own `reviews.md` (Red Team finding 1) and `README.md`
 §11 document a specific, accepted-but-flagged residual risk:
 
 > In Block mode, the nominated exception group gets a block-with-justification override — every use

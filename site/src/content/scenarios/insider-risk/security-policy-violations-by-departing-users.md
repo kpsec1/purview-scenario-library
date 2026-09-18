@@ -6,7 +6,6 @@ categorySlug: "insider-risk"
 slug: "security-policy-violations-by-departing-users"
 repoPath: "scenarios/insider-risk/security-policy-violations-by-departing-users"
 parts: ["design","deploy","validate","rollback"]
-related: ["insider-risk/departing-employee-data-theft"]
 deployCount: 2
 validateCount: 1
 ---
@@ -18,7 +17,7 @@ validateCount: 1
 ## 1. Scenario summary
 
 Deploys Microsoft Purview Insider Risk Management's **Security policy violations by departing
-users** policy template — a sibling of [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/)
+users** policy template — a sibling of `scenarios/insider-risk/departing-employee-data-theft/`
 that scores the same resignation/termination (or Entra account-deletion) triggering event against
 a different signal: **Microsoft Defender for Endpoint security alerts** (malware or other
 potentially harmful application installs, disabling device security features) instead of
@@ -124,7 +123,7 @@ its triage status changes if more than one status is selected [[6]](#references)
 
 ### Step 4 — Confirm or configure the HR data feed (reused from the sibling scenario)
 
-If [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) is already deployed in this tenant,
+If `scenarios/insider-risk/departing-employee-data-theft/` is already deployed in this tenant,
 its HR connector already satisfies this template's optional trigger — **skip to Step 5**.
 Otherwise, follow that scenario's README.md §5 Steps 2–4 to register the connector app, create
 the HR connector, and run `../departing-employee-data-theft/deploy/Send-HrTerminationRecord.ps1`

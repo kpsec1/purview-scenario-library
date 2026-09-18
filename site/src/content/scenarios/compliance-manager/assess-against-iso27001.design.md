@@ -49,7 +49,7 @@ shortcut.
 1. A precise, repeatable **portal runbook** (`README.md` §5, backed by a structured, versioned,
    explicitly-non-executable JSON manifest at `deploy/policy/iso27001-assessment-manifest.json` —
    the same "reference manifest, not an API payload" pattern this repo already established in
-   [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) for Insider Risk Management policy
+   `scenarios/insider-risk/departing-employee-data-theft/` for Insider Risk Management policy
    authoring, which has the identical no-write-API constraint).
 2. One genuinely scriptable, genuinely useful piece of real automation that **does** have a
    documented, grounded API: `deploy/Export-ComplianceManagerAuditTrail.ps1`, which pulls the
@@ -66,9 +66,9 @@ shortcut.
    strategy and a minimal, correct services scope.
 2. Make the connection between this assessment and this library's **already-built technical
    controls** explicit, so a buyer who has already deployed
-   [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/), `scenarios/information-protection/
-   auto-label-confidential-sharepoint/`, [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/), or
-   [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) understands that those controls feed
+   `scenarios/dlp/pci-teams-exfil-block/`, `scenarios/information-protection/
+   auto-label-confidential-sharepoint/`, `scenarios/dlp/endpoint-dlp-usb-block/`, or
+   `scenarios/insider-risk/departing-employee-data-theft/` understands that those controls feed
    Compliance Manager's **built-in automation** directly (§6 below) rather than treating this
    assessment as a from-scratch effort.
 3. Give the security team a way to detect the two categories of **silent, score-invalidating
@@ -115,7 +115,7 @@ Administrator, or Security Administrator **Entra ID role** generates no such eve
 confirms these users don't even appear on the Compliance Manager **User access** settings page
 [[3]](#references, `README.md`). This script's audit trail is therefore a record of explicit
 Compliance Manager role grants, not a complete record of everyone who could edit this assessment —
-[`compliance-manager/entra-privileged-role-monitoring`](/scenarios/compliance-manager/entra-privileged-role-monitoring/) now scripts the Entra
+`scenarios/compliance-manager/entra-privileged-role-monitoring/` now scripts the Entra
 directory role-assignment cross-check this gap requires, as a companion scenario rather than a
 change to this one's own script; see `README.md` §11.
 
@@ -222,7 +222,7 @@ scenarios first, then creating this assessment, is the recommended order (`READM
 | Assessment creation method | Portal wizard, documented as a runbook, not a script | No write API exists — see §2. Faking one would violate `AGENTS.md` §4. |
 | Reference manifest format | Structured JSON, explicitly labeled non-executable | Matches the precedent `scenarios/insider-risk/departing-employee-data-theft/deploy/policy/departing-employee-policy-manifest.json` already set for a portal-only Purview surface — gives a diffable source of truth for review, per its own `_comment` field pattern. |
 | Scriptable deliverable | Audit-trail export for the 3 documented Compliance Manager operations, via `Search-UnifiedAuditLog` (automation surface 1) | The only Compliance-Manager-adjacent surface with a real, grounded API — see §4. Chosen over inventing anything closer to "deploy the assessment" because it's real, not because it's the most obviously on-theme. |
-| Idempotency model for the audit-trail script | De-duplicate by a composite key (`CreationDate` + `Operations` + `UserIds` + a stable hash of the full `AuditData` JSON payload) on every run, not a `RunId`-replace pattern | Unlike [`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/) (which computes one fresh KPI snapshot per run and replaces that day's row), this script's job is to accumulate a **rolling history** of discrete events across overlapping date-range calls (e.g. a daily scheduled run whose window overlaps the prior run's tail) — replace-by-RunId would be wrong here because two different runs can legitimately both need to report on the *same* underlying event without one being "stale." A flat `ObjectId` property is deliberately not assumed to exist on the cmdlet's output — see `README.md` §11. |
+| Idempotency model for the audit-trail script | De-duplicate by a composite key (`CreationDate` + `Operations` + `UserIds` + a stable hash of the full `AuditData` JSON payload) on every run, not a `RunId`-replace pattern | Unlike `scenarios/data-estate-insights/classification-coverage-report/` (which computes one fresh KPI snapshot per run and replaces that day's row), this script's job is to accumulate a **rolling history** of discrete events across overlapping date-range calls (e.g. a daily scheduled run whose window overlaps the prior run's tail) — replace-by-RunId would be wrong here because two different runs can legitimately both need to report on the *same* underlying event without one being "stale." A flat `ObjectId` property is deliberately not assumed to exist on the cmdlet's output — see `README.md` §11. |
 | Assessment grouping strategy | A dedicated group (e.g. `Security & Compliance Assessments`) documented in the manifest, not the assessment's own auto-created group | Groups can't be deleted and an assessment's group can't be changed after creation (`README.md` §12) — planning this before clicking **Create assessment** avoids a permanent, uncorrectable structural mistake. |
 | Services scope | Microsoft 365 only, at initial creation | Matches this library's tenant-only, author-only scope (`AGENTS.md` §5) — see Non-goals §7. |
 

@@ -6,7 +6,6 @@ categorySlug: "unified-catalog"
 slug: "governance-domain-hierarchy"
 repoPath: "scenarios/unified-catalog/governance-domain-hierarchy"
 parts: ["design","deploy","validate","rollback"]
-related: ["unified-catalog/curate-business-glossary"]
 deployCount: 3
 validateCount: 1
 ---
@@ -16,7 +15,7 @@ Stands up a multi-level Microsoft Purview Unified Catalog **governance domain hi
 parent domain with nested child (and grandchild) domains, each carrying its own admin-defined
 business-concept attribute values and an optional recommended Data Map collection ("data estate
 mapping") — from a single declarative JSON file, with one idempotent deploy script instead of one
-domain per portal session. This extends [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/),
+domain per portal session. This extends `scenarios/unified-catalog/curate-business-glossary/`,
 which deliberately scoped itself to a single standalone domain and named this exact
 gap — multi-domain hierarchies, custom attributes, data estate mappings — as a follow-up (§11 of
 that scenario, `PROGRESS.md`).

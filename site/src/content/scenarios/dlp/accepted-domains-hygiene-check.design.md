@@ -149,7 +149,7 @@ follow-up in `PROGRESS.md`.
 | Decision | Choice | Rationale |
 |---|---|---|
 | Module placement | `scenarios/dlp/` | The control exists to protect `FromScope`-consuming DLP rules (Exchange, Teams, Copilot); cross-linked from `copilot-external-email-block/README.md`'s originating Red Team finding rather than nested under `dspm-for-ai`, since the risk applies to any `FromScope` rule in the tenant, not just the Copilot one. |
-| Deploy-script shape | A read-only reporting/checking script (`Export-AcceptedDomainsHygieneReport.ps1`), not a policy-deploying script | Same archetype as [`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/) — this scenario creates no Purview or Exchange object; its only side effect is the files it writes. `rollback.md` follows that scenario's "nothing to undo in the tenant" model. |
+| Deploy-script shape | A read-only reporting/checking script (`Export-AcceptedDomainsHygieneReport.ps1`), not a policy-deploying script | Same archetype as `scenarios/data-estate-insights/classification-coverage-report` — this scenario creates no Purview or Exchange object; its only side effect is the files it writes. `rollback.md` follows that scenario's "nothing to undo in the tenant" model. |
 | Trust boundary rule | `DomainType` (`Authoritative`/`InternalRelay` = in-organization; `ExternalRelay` = not, and unreachable on a pure-cloud tenant per §2) | Directly grounded in Microsoft's own accepted-domain-type definitions, not an assumption. |
 | Known-domains source of truth | A buyer-edited JSON config (`deploy/KnownDomains.sample.json`), not an attempt to auto-derive "expected" domains from any Purview/Exchange signal | No Microsoft-documented source distinguishes a "reviewed and approved" partner domain from any other accepted domain — this has to be a human-curated list, the same limitation any allowlist-based hygiene control has. |
 | Baseline storage | A single JSON file, overwritten each run (not a history) | Only the immediately-prior state is needed to compute drift; the separate drift log (CSV, replace-by-RunId) is the historical record — see §4. |
@@ -161,7 +161,7 @@ follow-up in `PROGRESS.md`.
   object — purely a read-only detection control. See `rollback.md`.
 - Does not check on-premises Exchange accepted domains in a hybrid deployment — this script
   authenticates to Exchange Online only (§2). **Built as a companion scenario, not in this fragment:**
-  [`dlp/accepted-domains-hygiene-check-on-premises`](/scenarios/dlp/accepted-domains-hygiene-check-on-premises/), which reuses this scenario's own
+  `scenarios/dlp/accepted-domains-hygiene-check-on-premises/`, which reuses this scenario's own
   `KnownDomains.json` and baseline file rather than duplicating them (that scenario's `design.md`
   §3/§7 explains why the two run as separate live sessions, not one combined script).
 - Does not attempt to attribute a domain **addition or removal** to a specific admin action — see

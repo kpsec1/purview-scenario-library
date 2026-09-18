@@ -4,7 +4,7 @@ parent: "compliance-manager/entra-privileged-role-monitoring"
 ---
 ## 1. Problem statement
 
-[`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/)'s own Red Team review (`reviews.md` finding
+`scenarios/compliance-manager/assess-against-iso27001/`'s own Red Team review (`reviews.md` finding
 1 in that scenario) surfaced a real, disclosed gap: its
 `deploy/Export-ComplianceManagerAuditTrail.ps1` only detects an **explicit** Compliance Manager
 role grant (`ComplianceManagerRolesChange`). Four Entra ID roles — **Global Administrator**,
@@ -180,7 +180,7 @@ claim against its own source" discipline `AGENTS.md` §4 asks for.
 
 Now that this scenario exists, `assess-against-iso27001/README.md` §8 and §11, and its `design.md`
 §4, are updated in this same fragment to point at
-[`compliance-manager/entra-privileged-role-monitoring`](/scenarios/compliance-manager/entra-privileged-role-monitoring/) instead of describing the gap as
+`scenarios/compliance-manager/entra-privileged-role-monitoring/` instead of describing the gap as
 unmitigated — the quarterly "cross-check Entra directory role-assignment history" operational
 mitigation that scenario's own Red Team round recommended is now a real, scriptable, dailyable
 control instead of a manual portal task. `assess-against-iso27001`'s own audit-trail script and

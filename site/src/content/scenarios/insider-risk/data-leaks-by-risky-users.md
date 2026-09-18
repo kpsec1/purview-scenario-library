@@ -6,7 +6,6 @@ categorySlug: "insider-risk"
 slug: "data-leaks-by-risky-users"
 repoPath: "scenarios/insider-risk/data-leaks-by-risky-users"
 parts: ["design","deploy","validate","rollback"]
-related: []
 deployCount: 1
 validateCount: 1
 ---

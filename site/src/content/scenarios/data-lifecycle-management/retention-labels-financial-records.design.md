@@ -94,7 +94,7 @@ record or standard label, never a regulatory record (§3).
 current reference documents `-Name` as mutually exclusive with `-ApplyComplianceTag`/
 `-PublishComplianceTag` — the `ComplianceTag` parameter set `-ApplyComplianceTag` belongs to has no
 `-Name` parameter — so that combination would not have resolved at runtime. Found and corrected while
-grounding the sibling [`data-lifecycle-management/adaptive-scope-auto-apply-label`](/scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/) scenario,
+grounding the sibling `scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/` scenario,
 whose own rule call never included `-Name`. The existing idempotency check
 (`Get-RetentionComplianceRule -Policy`) already locates the rule by policy, so dropping the name has no
 other effect. See `README.md` §6/§11 and `reviews.md`'s correction addendum.
@@ -125,7 +125,7 @@ the irreversibility of the control.
 ## 7. Non-goals
 
 - **Publishing labels for manual application** (`-PublishComplianceTag`) — **built** as the sibling
-  [`data-lifecycle-management/publish-labels-for-manual-application`](/scenarios/data-lifecycle-management/publish-labels-for-manual-application/) scenario, which is now
+  `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` scenario, which is now
   the *required* completion for the regulatory-record case (§3), not merely an optional variant.
 - **Event-based retention / disposition review workflows** (`-EventType`, `KeepAndDelete`,
   `-ReviewerEmail`) — powerful RM features layered on the same cmdlets; candidate follow-ups.

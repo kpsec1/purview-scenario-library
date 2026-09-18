@@ -6,7 +6,6 @@ categorySlug: "dlp"
 slug: "endpoint-dlp-usb-block"
 repoPath: "scenarios/dlp/endpoint-dlp-usb-block"
 parts: ["design","deploy","validate","rollback"]
-related: ["information-protection/auto-label-confidential-sharepoint","dlp/pci-teams-exfil-block"]
 deployCount: 3
 validateCount: 1
 ---
@@ -17,7 +16,7 @@ onboarded Windows/macOS endpoints to USB removable storage, using Microsoft Purv
 Loss Prevention (Endpoint DLP). A named exception path (audit-only, not blocked) is carved out for
 the IT Data Custodians group, who perform legitimate offline backup/imaging work that a hard block
 would otherwise break. This is the same classify-then-control pattern as
-[`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/), extended from "label it
+`scenarios/information-protection/auto-label-confidential-sharepoint/`, extended from "label it
 Confidential" to "stop it leaving via USB" using the same sensitive-content definition.
 
 **Who it's for:** any organization with Windows or macOS laptops/desktops in scope for data-loss
@@ -241,7 +240,7 @@ Review **Rule 1 (IT Data Custodians) audit volume** on a **weekly** cadence, not
 audit-only group is the one path in this design that can move real regulated data onto removable
 media with no block at all, so it is the highest-value target for a compromised or malicious
 insider and deserves the same weekly-review discipline as the Card Operations override in
-[`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/).
+`scenarios/dlp/pci-teams-exfil-block/`.
 
 **Incident-response runbook (Rule 0 block alert, or a Rule 1 audit event that looks anomalous):**
 1. **Triage** — open the alert in the DLP Alerts dashboard or Microsoft Defender portal incident
@@ -380,7 +379,7 @@ permanently delete the policy and its rules.
 15. Device control in Microsoft Defender for Endpoint (content-blind device-level USB control, complementary to Endpoint DLP) — <https://learn.microsoft.com/defender-endpoint/device-control-overview>
 16. Creating Endpoint DLP Rules using PowerShell - Part 1 (Microsoft Security Blog, Tech Community — secondary/corroborating EndpointDlpRestrictions Setting/Value hashtable example for RemovableMedia and Print, superseded as primary citation by items 9–10) — <https://techcommunity.microsoft.com/blog/microsoft-security-blog/creating-endpoint-dlp-rules-using-powershell---part-1/4286999>
 17. Connect-IPPSSession reference (app-only certificate auth) — <https://learn.microsoft.com/powershell/module/exchangepowershell/connect-ippssession>
-18. U.S. Social Security Number (SSN) / Credit Card Number sensitive information types — reused from [`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/) (see that scenario's own references for SIT definition citations).
+18. U.S. Social Security Number (SSN) / Credit Card Number sensitive information types — reused from `scenarios/information-protection/auto-label-confidential-sharepoint/` (see that scenario's own references for SIT definition citations).
 19. Configure endpoint DLP settings (Removable USB device groups — creation workflow, Vendor ID/Product ID/Instance ID device identification, per-device alias) — <https://learn.microsoft.com/purview/dlp-configure-endpoint-settings>
 20. Configuring USB hardware ID exceptions in Microsoft Purview endpoint DLP (Microsoft Q&A — confirms the rule-level workflow: create the device group in Endpoint DLP settings, then add an exclusion for it under the rule's actions/exceptions) — <https://learn.microsoft.com/answers/questions/5942592/configuring-usb-hardware-id-exceptions-in-microsof>
 21. Set-PolicyConfig reference (`-DlpRemovableMediaGroups`/`-DlpPrinterGroups`/`-DlpNetworkShareGroups`/`-DlpAppGroups`/`-DlpExtensionGroups` — confirmed to exist as `PswsHashtable`/`PswsHashtable[]` parameters; description text and the cmdlet's EXAMPLES section are unpublished placeholder content as of this pass) — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-policyconfig>

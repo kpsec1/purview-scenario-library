@@ -4,7 +4,7 @@ parent: "data-estate-insights/sensitivity-label-coverage-report"
 ---
 ## What there is to roll back
 
-Identical in kind to the sibling [`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/)
+Identical in kind to the sibling `scenarios/data-estate-insights/classification-coverage-report/`
 scenario: this scenario creates **no object inside Microsoft Purview at all** — no DLP policy, no
 label, no lineage relationship, no scan, and (importantly) no sensitivity label or autolabeling
 policy either. Every call it makes is a read-only `POST search/query`. "Rollback" here means three

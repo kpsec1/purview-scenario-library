@@ -4,7 +4,7 @@ parent: "data-map/scan-azure-sql-and-classify-pii-ruleset"
 ---
 ## 1. Problem statement
 
-[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) scans an Azure SQL Database against Microsoft's
+`scenarios/data-map/scan-azure-sql-and-classify/` scans an Azure SQL Database against Microsoft's
 **system default** scan rule set: every built-in classification Purview ships for this source
 type, roughly 200 sensitive information types (SITs). That is the right default for a first,
 exploratory scan — you don't yet know what's in the database, so cast the widest net. It is the
@@ -103,7 +103,7 @@ flowchart TD
 |---|---|---|
 | Ruleset `kind` | `AzureSqlDatabase` | Matches the base scenario's source type — a scan rule set's `kind` must match the scan's data source type [[1]](#references) |
 | Ruleset `scanRulesetType` | `Custom` | The only type that supports `excludedSystemClassifications`/`includedCustomClassificationRuleNames` — `System` rulesets are Microsoft-managed and read-only [[1]](#references) [[6]](#references) |
-| Retained classifications (default) | `MICROSOFT.GOVERNMENT.US.SOCIAL_SECURITY_NUMBER`, `MICROSOFT.FINANCIAL.CREDIT_CARD_NUMBER` | Same pair already established in [`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/) and [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/) — a consistent classification vocabulary across this repo's Data Governance and Data Security scenarios [[2]](#references) [[3]](#references) |
+| Retained classifications (default) | `MICROSOFT.GOVERNMENT.US.SOCIAL_SECURITY_NUMBER`, `MICROSOFT.FINANCIAL.CREDIT_CARD_NUMBER` | Same pair already established in `scenarios/information-protection/auto-label-confidential-sharepoint/` and `scenarios/dlp/pci-teams-exfil-block/` — a consistent classification vocabulary across this repo's Data Governance and Data Security scenarios [[2]](#references) [[3]](#references) |
 | Exclusion-list source | Live `GET .../types/typedefs?type=CLASSIFICATION`, filtered to the `MICROSOFT.` namespace | Never a hard-coded snapshot — see Design goal 1 |
 | Ruleset scope | Account-wide (no `collection` property) | Confirmed via direct fetch of `AzureSqlDatabaseScanRulesetProperties` — see Design goal 3 |
 | Reconciliation strategy | `GET` scan, copy all properties, overwrite only the two ruleset fields, `PUT` | See Design goal 2 |

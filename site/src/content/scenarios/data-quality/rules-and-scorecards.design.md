@@ -120,7 +120,7 @@ implements.
   product or add a data asset to one (see that scenario's own `design.md` §7 non-goals) — a data
   products scenario is a tracked follow-up in `PROGRESS.md`.
 - The target data asset's source already registered and scanned in Data Map
-  ([`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) for the Azure SQL example this scenario reuses).
+  (`scenarios/data-map/scan-azure-sql-and-classify/` for the Azure SQL example this scenario reuses).
 - A Data Quality connection to that source already configured via the portal, with the Purview
   managed identity granted read access (§7 below covers why this isn't scripted).
 

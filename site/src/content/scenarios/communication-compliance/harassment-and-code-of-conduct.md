@@ -6,7 +6,6 @@ categorySlug: "communication-compliance"
 slug: "harassment-and-code-of-conduct"
 repoPath: "scenarios/communication-compliance/harassment-and-code-of-conduct"
 parts: ["design","deploy","validate","rollback"]
-related: ["compliance-manager/assess-against-iso27001","insider-risk/departing-employee-data-theft","dlp/pci-teams-exfil-block"]
 deployCount: 3
 validateCount: 1
 ---
@@ -16,8 +15,8 @@ validateCount: 1
 > a precise **portal runbook** for the policy itself, backed by a structured reference manifest, and
 > a genuinely scriptable **audit-trail export** for the one piece of this solution that *is*
 > reachable through a documented API. This is the same shape this repo already established for
-> Compliance Manager ([`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/)) and Insider Risk
-> Management policy authoring ([`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/)) — not a
+> Compliance Manager (`scenarios/compliance-manager/assess-against-iso27001/`) and Insider Risk
+> Management policy authoring (`scenarios/insider-risk/departing-employee-data-theft/`) — not a
 > shortcut for this scenario.
 
 ## 1. Scenario summary
@@ -340,7 +339,7 @@ in the portal for a reversible stop; **Delete** only when permanently retiring t
   is not a scoping shortcut — no such API exists as of this writing (`design.md` §2). Every DLP/
   Information Protection scenario in this library ships a `New-*`/`Set-*` deploy script; this one
   cannot, and says so rather than fabricating one.
-- **This is a detective, not a preventive, control.** Unlike [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/),
+- **This is a detective, not a preventive, control.** Unlike `scenarios/dlp/pci-teams-exfil-block/`,
   this scenario cannot block a harassing message before delivery — the recipient(s) already saw it
   before a reviewer ever triages the alert. Pair with clear internal reporting channels and manager
   training as complementary, non-technical controls.

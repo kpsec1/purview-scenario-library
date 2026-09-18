@@ -6,7 +6,6 @@ categorySlug: "communication-compliance"
 slug: "teams-viva-engage-content-safety"
 repoPath: "scenarios/communication-compliance/teams-viva-engage-content-safety"
 parts: ["design","deploy","validate","rollback"]
-related: []
 deployCount: 2
 validateCount: 1
 ---

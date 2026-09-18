@@ -49,7 +49,7 @@ this scenario.
   scenario's automation has zero effect on the domains, terms, contacts, or asset relationships it
   read from.
 - **The glossary terms themselves** — entirely owned by
-  [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) (or whichever process authored the domain(s)
+  `scenarios/unified-catalog/curate-business-glossary/` (or whichever process authored the domain(s)
   this scenario reported on), not by this scenario.
 
 ## Re-enabling later

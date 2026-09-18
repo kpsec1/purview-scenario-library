@@ -6,7 +6,6 @@ categorySlug: "dlp"
 slug: "defender-device-control-usb-allowlist"
 repoPath: "scenarios/dlp/defender-device-control-usb-allowlist"
 parts: ["design","deploy","validate","rollback"]
-related: ["dlp/endpoint-dlp-usb-block","dlp/defender-device-control-usb-allowlist-macos","records-management/graph-event-automation"]
 deployCount: 3
 validateCount: 1
 ---
@@ -16,7 +15,7 @@ Denies **all** removable USB storage devices on onboarded Windows endpoints by d
 only a short, named allowlist of IT-issued, identity-verified backup/imaging drives (matched by
 serial number or USB vendor/product ID) to read and write. This is a **device-identity** control —
 it does not inspect file content at all — and is the direct companion to
-[`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/)'s **content-aware** control: that scenario stops regulated
+`scenarios/dlp/endpoint-dlp-usb-block/`'s **content-aware** control: that scenario stops regulated
 data leaving on *any* USB drive; this one stops *any* USB drive that isn't on the approved list,
 regardless of what is or isn't on the file being copied.
 
@@ -63,7 +62,7 @@ directly against Microsoft Learn.
 | Device control (Windows) | **Microsoft Defender for Endpoint Plan 1** (bundled in **Microsoft 365 E3**, or standalone) or higher | Device control is listed as a Plan 1 attack-surface-reduction capability [[1]](#references); Plan 2 (bundled in Microsoft 365 E5) also includes it. |
 | Device management | **Microsoft Intune** (any plan that includes device configuration profiles — bundled in Microsoft 365 E3/E5, or standalone Intune Plan 1) | This scenario deploys via an Intune Custom device configuration profile; Intune device enrollment/management is a separate prerequisite from Defender for Endpoint licensing [[2]](#references). |
 | Device onboarding | Devices onboarded to **Microsoft Defender for Endpoint** and enrolled in **Intune**, running anti-malware client `4.18.2103.3` or later | Not performed by this scenario's deploy script — same onboarding dependency the sibling `endpoint-dlp-usb-block` scenario documents (shared onboarding package) [[3]](#references) |
-| Supported OS | Windows 10/11 (client only — **device control is not supported on Windows Server**) | macOS device control uses a separate JSON/`mobileconfig` authoring path not covered by this scenario — see `design.md` §8 and the sibling scenario [`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/) [[3]](#references) |
+| Supported OS | Windows 10/11 (client only — **device control is not supported on Windows Server**) | macOS device control uses a separate JSON/`mobileconfig` authoring path not covered by this scenario — see `design.md` §8 and the sibling scenario `scenarios/dlp/defender-device-control-usb-allowlist-macos/` [[3]](#references) |
 | Role to author via the Intune portal (human operator, not this scenario's automation) | **Policy and Profile manager** Intune role, at minimum | Built-in Intune RBAC role; see `docs/rbac-model.md` §9 [[4]](#references) |
 | Automation identity | Entra app registration granted the Microsoft Graph **application** permission `DeviceManagementConfiguration.ReadWrite.All`, admin-consented | This is what actually authorizes this scenario's app-only Graph calls — the Intune RBAC role above governs human/portal access, not app-only Graph calls made with an admin-consented application permission [[5]](#references) |
 | Dependency (not deployed by this scenario) | An Entra ID group scoping the **pilot** set of Windows endpoints (device group recommended), and the physical **approved backup drives'** serial numbers or VID/PID values | Must exist/be known before running `deploy/New-DeviceControlUsbAllowlistPolicy.ps1` — see §5 |
@@ -346,7 +345,7 @@ the policy definition remains); add `-Purge` to permanently delete the device co
 12. groupAssignmentTarget / deviceConfigurationAssignment resource types (Microsoft Graph v1.0) — <https://learn.microsoft.com/graph/api/resources/intune-shared-groupassignmenttarget>, <https://learn.microsoft.com/graph/api/resources/intune-deviceconfig-deviceconfigurationassignment>
 13. New-MgDeviceManagementDeviceConfiguration / Update-MgDeviceManagementDeviceConfiguration / Remove-MgDeviceManagementDeviceConfiguration (Microsoft.Graph.DeviceManagement PowerShell module, v1.0) — <https://learn.microsoft.com/powershell/module/microsoft.graph.devicemanagement/new-mgdevicemanagementdeviceconfiguration>
 14. Device control in Microsoft Defender for Endpoint — control access to USB devices (device installation restrictions vs. device control vs. Endpoint DLP comparison) — <https://learn.microsoft.com/defender-endpoint/device-control-overview#control-access-to-usb-devices>
-15. [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/) — the content-aware sibling scenario this control complements; see that scenario's own references for the Endpoint DLP-side citations.
+15. `scenarios/dlp/endpoint-dlp-usb-block/` — the content-aware sibling scenario this control complements; see that scenario's own references for the Endpoint DLP-side citations.
 16. Microsoft Defender Streaming API (raw event export for long-term retention / external SIEM ingestion) — <https://learn.microsoft.com/defender-xdr/streaming-api>
 17. Microsoft Defender XDR integration with Microsoft Sentinel ("Connect events" — `DeviceEvents` and other advanced hunting tables streamed into a Sentinel workspace) — <https://learn.microsoft.com/azure/sentinel/microsoft-365-defender-sentinel-integration>
 

@@ -135,7 +135,7 @@ different and more useful question. Full grounding: `deploy/New-CustomLineageRel
 
 - A Microsoft Purview account with Data Map enabled.
 - The upstream asset, `customerdb.dbo.Customers`, already registered and scanned via
-  [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) (or an equivalent Azure SQL Database scan).
+  `scenarios/data-map/scan-azure-sql-and-classify/` (or an equivalent Azure SQL Database scan).
 - The downstream asset, `analyticsdb.dbo.CustomerRiskSummary`, already registered and scanned the
   same way, against a second (analytics) Azure SQL Database - this scenario does not create,
   register, or scan either database or table.

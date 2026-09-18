@@ -16,40 +16,17 @@ export async function getStaticPaths() {
     }
   }
 
-  const byId = new Map(overviews.map((o) => [o.id, o]));
-  const byCat = new Map<string, typeof overviews>();
-  for (const o of overviews) {
-    const list = byCat.get(o.data.categorySlug!) ?? [];
-    list.push(o);
-    byCat.set(o.data.categorySlug!, list);
-  }
-  for (const list of byCat.values()) list.sort((a, b) => a.data.title!.localeCompare(b.data.title!));
-
-  return overviews.map((entry) => {
-    const list = byCat.get(entry.data.categorySlug!)!;
-    const idx = list.findIndex((x) => x.id === entry.id);
-    const prev = idx > 0 ? list[idx - 1] : null;
-    const next = idx < list.length - 1 ? list[idx + 1] : null;
-    const related = (entry.data.related ?? [])
-      .map((id) => byId.get(id))
-      .filter((o): o is (typeof overviews)[number] => Boolean(o))
-      .map((o) => ({ id: o.id, title: o.data.title, category: o.data.category }));
-    return {
-      params: { slug: entry.id },
-      props: {
-        entry,
-        parts: partsByParent.get(entry.id) ?? {},
-        related,
-        prev: prev ? { id: prev.id, title: prev.data.title } : null,
-        next: next ? { id: next.id, title: next.data.title } : null,
-      },
-    };
-  });
+  return overviews.map((entry) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      parts: partsByParent.get(entry.id) ?? {},
+    },
+  }));
 }
 
-const { entry, parts, related, prev, next } = Astro.props;
+const { entry, parts } = Astro.props;
 const data = entry.data;
-const githubUrl = `https://github.com/kpsec1/purview-scenario-library/tree/main/${data.repoPath}`;
 
 // Render overview + each available lifecycle part.
 const { Content: OverviewContent } = await render(entry);
@@ -131,50 +108,6 @@ const badge: Record<string, number | undefined> = {
       }
     </div>
 
-    {
-      related.length > 0 && (
-        <section class="related">
-          <h2>Related scenarios</h2>
-          <div class="related-grid">
-            {related.map((r) => (
-              <a class="related-card" href={`/scenarios/${r.id}/`}>
-                <span class="related-cat">{r.category}</span>
-                <span class="related-title">{r.title}</span>
-                <span class="related-go" aria-hidden="true">→</span>
-              </a>
-            ))}
-          </div>
-        </section>
-      )
-    }
-
-    <nav class="prevnext" aria-label="More in this area">
-      {
-        prev ? (
-          <a class="pn pn-prev" href={`/scenarios/${prev.id}/`}>
-            <span class="pn-dir">← Previous</span>
-            <span class="pn-title">{prev.title}</span>
-          </a>
-        ) : (
-          <span />
-        )
-      }
-      {
-        next ? (
-          <a class="pn pn-next" href={`/scenarios/${next.id}/`}>
-            <span class="pn-dir">Next →</span>
-            <span class="pn-title">{next.title}</span>
-          </a>
-        ) : (
-          <span />
-        )
-      }
-    </nav>
-
-    <p class="source-note">
-      Everything above lives on this page. Prefer the raw files?
-      <a href={githubUrl} rel="noopener" target="_blank">View this scenario on GitHub ↗</a>
-    </p>
   </div>
 
   <script>
@@ -358,103 +291,6 @@ const badge: Record<string, number | undefined> = {
       border-top: 1px solid var(--border);
     }
 
-    /* Related */
-    .related {
-      margin-top: 52px;
-      padding-top: 28px;
-      border-top: 1px solid var(--border);
-    }
-    .related h2 {
-      font-size: 1.3rem;
-      margin: 0 0 16px;
-    }
-    .related-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 12px;
-    }
-    .related-card {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 15px 16px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #fff;
-      color: var(--ink);
-      transition:
-        border-color 0.15s ease,
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
-    }
-    .related-card:hover {
-      text-decoration: none;
-      border-color: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-    }
-    .related-cat {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 700;
-      color: var(--accent);
-    }
-    .related-title {
-      font-weight: 600;
-      line-height: 1.35;
-    }
-    .related-go {
-      color: var(--accent);
-      font-weight: 800;
-      margin-top: 2px;
-    }
-
-    /* Prev / next */
-    .prevnext {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 40px;
-    }
-    .pn {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 16px 18px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--bg-soft);
-      color: var(--ink);
-    }
-    .pn:hover {
-      text-decoration: none;
-      border-color: var(--accent);
-    }
-    .pn-next {
-      text-align: right;
-    }
-    .pn-dir {
-      font-size: 12.5px;
-      font-weight: 700;
-      color: var(--accent);
-    }
-    .pn-title {
-      font-weight: 600;
-      font-size: 14.5px;
-    }
-
-    .source-note {
-      margin-top: 36px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-      font-size: 14px;
-      color: var(--muted);
-    }
-    .source-note a {
-      margin-left: 6px;
-    }
-
     .prose :global(h1:first-of-type) {
       display: none;
     }
@@ -463,12 +299,6 @@ const badge: Record<string, number | undefined> = {
       .stepper {
         grid-auto-flow: row;
         grid-auto-columns: unset;
-      }
-      .prevnext {
-        grid-template-columns: 1fr;
-      }
-      .pn-next {
-        text-align: left;
       }
     }
   </style>

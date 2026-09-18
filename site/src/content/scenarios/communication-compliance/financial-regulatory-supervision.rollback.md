@@ -71,7 +71,7 @@ unified audit log and writes to two local CSV files. Decommissioning this piece 
   regardless of the policy's later pause/deletion.
 - **An examination or litigation-hold obligation already triggered** by an alert this policy
   generated — governed independently of this scenario's technical control.
-- **The retention obligations [`data-lifecycle-management/retention-labels-financial-records`](/scenarios/data-lifecycle-management/retention-labels-financial-records/)
+- **The retention obligations `scenarios/data-lifecycle-management/retention-labels-financial-records/`
   addresses.** Rolling back this scenario has no effect on that separate scenario's own regulatory
   record labels — see `README.md` §8/§9 for why the two are independent controls.
 

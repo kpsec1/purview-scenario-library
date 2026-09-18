@@ -6,7 +6,6 @@ categorySlug: "adaptive-protection"
 slug: "dynamic-risk-dlp-enforcement"
 repoPath: "scenarios/adaptive-protection/dynamic-risk-dlp-enforcement"
 parts: ["design","deploy","validate","rollback"]
-related: ["insider-risk/departing-employee-data-theft","adaptive-protection/conditional-access-insider-risk-block","dlp/pci-teams-exfil-block","dlp/endpoint-dlp-usb-block","data-lifecycle-management/adaptive-protection-deleted-content-preservation"]
 deployCount: 3
 validateCount: 1
 ---
@@ -22,7 +21,7 @@ build or lift an exception.
 
 **Who it's for:** any Microsoft 365 E5 (or Purview Suite) tenant that already has an Insider
 Risk Management policy generating risk signal — this library's own
-[`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/), or Microsoft's built-in **Data leaks**
+`scenarios/insider-risk/departing-employee-data-theft/`, or Microsoft's built-in **Data leaks**
 template — and wants the *first* technical response to a risk-level change to be automatic and
 immediate, rather than waiting on an analyst to triage the alert and hand-build a DLP exception.
 
@@ -97,7 +96,7 @@ genuinely scriptable, independently-grounded PowerShell surface.
 
 Adaptive Protection needs at least one Insider Risk Management policy already generating
 alerts/insights before insider risk levels mean anything. Use
-[`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) in this library, or Microsoft's built-in
+`scenarios/insider-risk/departing-employee-data-theft/` in this library, or Microsoft's built-in
 **Data leaks** template (Purview portal → **Insider Risk Management** → **Policies** → **Create
 policy**). Not created by this scenario — see `design.md` §7.
 
@@ -318,7 +317,7 @@ Protection itself, the feeder IRM policy, or resets any user's current insider r
   Data Lifecycle Management (preview integration)** — all three are Adaptive
   Protection-integrated but out of scope here; see `design.md` §7 and `PROGRESS.md` for the
   follow-up fragments this build opened. Conditional Access is now built as the sibling scenario
-  [`adaptive-protection/conditional-access-insider-risk-block`](/scenarios/adaptive-protection/conditional-access-insider-risk-block/), and Data Lifecycle
+  `scenarios/adaptive-protection/conditional-access-insider-risk-block/`, and Data Lifecycle
   Management as `scenarios/data-lifecycle-management/
   adaptive-protection-deleted-content-preservation/`. **Correction
   (2026-09-09):** this bullet previously called Conditional Access a "preview integration" too —
@@ -337,7 +336,7 @@ Protection itself, the feeder IRM policy, or resets any user's current insider r
   DLP follow-up fragment lands.
 - **VERIFY the `AccessScope`-only condition form against a pilot tenant.** This scenario's rules
   use `-AccessScope NotInOrganization` (the same, already-reviewed pattern from
-  [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/)) to represent the portal's "Content is shared from
+  `scenarios/dlp/pci-teams-exfil-block`) to represent the portal's "Content is shared from
   Microsoft 365 with people outside my organization" condition. Whether the portal's compound
   condition additionally requires a separate `-ContentIsShared` boolean to be a byte-for-byte
   match was not independently confirmed during this build — deploy in `TestWithNotifications`

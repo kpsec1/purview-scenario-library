@@ -4,13 +4,13 @@ parent: "information-protection/auto-label-confidential-exchange"
 ---
 ## 1. Problem statement
 
-[`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/) closes the classification
+`scenarios/information-protection/auto-label-confidential-sharepoint/` closes the classification
 gap for data **at rest** in SharePoint and OneDrive. It explicitly does not cover Exchange
 (`design.md` §7 of that scenario), even though the exact same policy family
 (`New-AutoSensitivityLabelPolicy` / `New-AutoSensitivityLabelRule`) supports an Exchange location
 and workload. Email is a distinct, high-volume exfiltration channel for the same regulated PII
 (SSNs, card numbers) this library already protects in SharePoint/OneDrive and blocks in Teams
-([`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/)) — an enterprise that has closed the file-storage gap but
+(`scenarios/dlp/pci-teams-exfil-block/`) — an enterprise that has closed the file-storage gap but
 not the email gap still has an unlabeled, unclassified channel for the same data leaving the
 tenant every day. This scenario closes that gap.
 

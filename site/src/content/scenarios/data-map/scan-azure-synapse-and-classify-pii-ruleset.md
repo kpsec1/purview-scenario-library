@@ -6,13 +6,12 @@ categorySlug: "data-map"
 slug: "scan-azure-synapse-and-classify-pii-ruleset"
 repoPath: "scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-azure-synapse-and-classify","data-map/scan-azure-sql-and-classify-pii-ruleset"]
 deployCount: 2
 validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends [`data-map/scan-azure-synapse-and-classify`](/scenarios/data-map/scan-azure-synapse-and-classify/): creates a **custom, PII-only** Data
+Extends `scenarios/data-map/scan-azure-synapse-and-classify/`: creates a **custom, PII-only** Data
 Map scan rule set for Azure Synapse Analytics (dedicated and/or serverless SQL pools) — every
 system classification excluded except the ones you name to keep (U.S. Social Security Number and
 Credit Card Number by default) — and reconciles the base scenario's already-registered scan onto
@@ -49,7 +48,7 @@ scenario — this scenario adds no new licensing surface, only a different scan 
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| **[`data-map/scan-azure-synapse-and-classify`](/scenarios/data-map/scan-azure-synapse-and-classify/) already deployed** | The target data source and scan must already exist | This scenario reconciles an EXISTING scan onto a new ruleset — `deploy/New-PiiOnlyScanRuleset.ps1` fails fast with a clear error if the scan is not found |
+| **`scenarios/data-map/scan-azure-synapse-and-classify/` already deployed** | The target data source and scan must already exist | This scenario reconciles an EXISTING scan onto a new ruleset — `deploy/New-PiiOnlyScanRuleset.ps1` fails fast with a clear error if the scan is not found |
 | Create/update the custom scan rule set and reconcile the scan | **Data Source Administrator** role on the target collection | Same role the base scenario's deploy script requires — Microsoft Learn does not document a role specific to scan rule sets; ruleset management falls under the same "configure and run a scan" boundary as the scan itself (`docs/rbac-model.md` §5) [[7]](#references) |
 | Read the ruleset/scan for validation | **Data Reader** role on the target collection | Least-privilege for the read-only `validate/` script |
 | Automation identity for the REST calls | App registration with the roles above, app-only OAuth2 | Same client-credentials flow as the base scenario — `docs/automation-surface.md` §3 |
@@ -285,10 +284,10 @@ per-classification cost breakdown to quantify the exact savings.
 13. microsoftPurviewDataMapOperationRecord resource type / `PurviewDataMapOperation` audit log
     record type (Microsoft Graph security API) —
     <https://learn.microsoft.com/graph/api/resources/security-microsoftpurviewdatamapoperationrecord>
-14. [`data-map/scan-azure-sql-and-classify-pii-ruleset`](/scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/) (sibling scenario this fragment
+14. `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/` (sibling scenario this fragment
     mirrors — pattern precedent for the live-Types-API exclusion-list design and the reconcile-not-
     reconstruct scan update) — this repository.
-15. [`data-map/scan-azure-synapse-and-classify`](/scenarios/data-map/scan-azure-synapse-and-classify/) (base scenario this fragment extends) —
+15. `scenarios/data-map/scan-azure-synapse-and-classify/` (base scenario this fragment extends) —
     this repository.
 
 > Re-verify all links, API versions, and REST body shapes against current Microsoft Learn before a

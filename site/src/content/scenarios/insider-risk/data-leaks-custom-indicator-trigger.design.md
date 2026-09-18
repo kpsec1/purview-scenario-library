@@ -4,7 +4,7 @@ parent: "insider-risk/data-leaks-custom-indicator-trigger"
 ---
 ## 1. Problem statement
 
-[`insider-risk/data-leaks`](/scenarios/insider-risk/data-leaks/) and [`insider-risk/data-leaks-exfiltration-activity-trigger`](/scenarios/insider-risk/data-leaks-exfiltration-activity-trigger/)
+`scenarios/insider-risk/data-leaks/` and `scenarios/insider-risk/data-leaks-exfiltration-activity-trigger/`
 build the base **Data leaks** template's two Microsoft-native triggering-event options: a DLP-policy
 match, and a built-in exfiltration indicator. Both are bounded to what Insider Risk Management can see
 natively — Exchange Online/SharePoint Online/OneDrive activity, plus (if Defender for Cloud Apps is

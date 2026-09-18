@@ -60,7 +60,7 @@ call. There is no "undo" — re-establishing the control means re-running
   on the label's existence, definition, publication, or whether its scope includes Emails.
 - **The sibling SharePoint/OneDrive scenario's own policy.** These are two separate policy
   objects (`design.md` §7) — rolling back this one has no effect on
-  [`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/)'s policy, and vice versa.
+  `scenarios/information-protection/auto-label-confidential-sharepoint/`'s policy, and vice versa.
 - **Any `-ExternalMailRightsManagementOwner` configuration on a different policy or on the label
   itself** — this scenario's own use of that parameter (if configured) is removed with the policy,
   but the parameter is scoped per-policy, not global.

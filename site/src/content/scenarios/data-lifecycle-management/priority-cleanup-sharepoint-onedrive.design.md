@@ -128,7 +128,7 @@ undone" framing.
 
 - **Permanent deletion sub-feature** (bypasses the Recycle Bin; public preview from 2026-08-24) —
   a distinct capability with its own approval model and irreversibility profile; built as its own
-  sibling scenario, [`data-lifecycle-management/priority-cleanup-permanent-deletion`](/scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/).
+  sibling scenario, `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/`.
 - **Adaptive-scope targeting** — this scenario is static-scope only, same non-goal as the Exchange
   sibling.
 - **Scripting the approval workflow itself** — no documented API exists; portal-only by design.

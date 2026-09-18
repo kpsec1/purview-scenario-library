@@ -18,8 +18,8 @@ starkly than any sibling scenario, is **not**) worth toward actual legal HIPAA c
 
 ## 2. Why this scenario looks identical in shape to its three Compliance Manager siblings
 
-Identical starting constraint to [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/),
-[`compliance-manager/pci-dss-assessment`](/scenarios/compliance-manager/pci-dss-assessment/), and `scenarios/compliance-manager/
+Identical starting constraint to `scenarios/compliance-manager/assess-against-iso27001/`,
+`scenarios/compliance-manager/pci-dss-assessment/`, and `scenarios/compliance-manager/
 soc2-assessment/` (see any sibling's `design.md` §2 for the full grounding): Compliance Manager has
 **no write API**. Assessment creation, control mapping, and improvement-action status/evidence
 updates are portal- and Excel-wizard-driven only, re-confirmed during this build against the current

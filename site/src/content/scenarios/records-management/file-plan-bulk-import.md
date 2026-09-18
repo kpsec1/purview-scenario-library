@@ -6,7 +6,6 @@ categorySlug: "records-management"
 slug: "file-plan-bulk-import"
 repoPath: "scenarios/records-management/file-plan-bulk-import"
 parts: ["design","deploy","validate","rollback"]
-related: []
 deployCount: 5
 validateCount: 1
 ---

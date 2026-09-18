@@ -6,7 +6,6 @@ categorySlug: "information-protection"
 slug: "auto-label-confidential-exchange"
 repoPath: "scenarios/information-protection/auto-label-confidential-exchange"
 parts: ["design","deploy","validate","rollback"]
-related: ["information-protection/auto-label-confidential-sharepoint","dlp/exchange-pii-exfil-block","dlp/pci-teams-exfil-block"]
 deployCount: 2
 validateCount: 1
 ---
@@ -21,7 +20,7 @@ rule, staged simulation-first, with an optional sender-based exclusion for a nom
 legal/eDiscovery mailbox.
 
 **Who it's for:** the exact buyer of
-[`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/) — any enterprise that needs
+`scenarios/information-protection/auto-label-confidential-sharepoint/` — any enterprise that needs
 systematic, evidenced classification coverage for regulated personal data — extended to close the
 email channel that scenario explicitly leaves open. Deploy this **alongside**, not instead of, the
 SharePoint/OneDrive scenario; they share a label and a design philosophy but are otherwise
@@ -317,11 +316,11 @@ reference: `./deploy/Remove-ConfidentialAutoLabelExchangePolicy.ps1` disables (r
   review (`reviews.md`), not a minor configuration nuance: a buyer whose primary concern is
   external data loss (not just internal classification hygiene) should configure
   `-ExternalMailRightsManagementOwner` deliberately, or pair this scenario with
-  [`dlp/exchange-pii-exfil-block`](/scenarios/dlp/exchange-pii-exfil-block/) — a content-based Exchange DLP policy, built
+  `scenarios/dlp/exchange-pii-exfil-block/` — a content-based Exchange DLP policy, built
   specifically to close this gap, that blocks or forces encryption on outbound SSN/Credit-Card-
   Number mail to external recipients regardless of whether this auto-labeling policy has run —
   the same "don't rely on the label alone for real-time protection" pattern already established for
-  the sibling scenario (§11 there) and for [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/). Unencrypted
+  the sibling scenario (§11 there) and for `scenarios/dlp/pci-teams-exfil-block/`. Unencrypted
   Office (Word/PowerPoint/Excel) attachments on a matching, encryption-applying message are
   documented to be separately encrypted to match the email; whether a PDF attachment on the same
   message ends up protected as part of the overall encrypted message envelope, or left effectively

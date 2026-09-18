@@ -5,8 +5,8 @@ parent: "data-map/scan-azure-synapse-and-classify"
 ## 1. Problem statement
 
 A tenant that has already stood up Microsoft Purview Data Map against Azure SQL Database
-([`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/)) and, separately, Azure SQL Managed Instance
-([`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/)) frequently also runs **Azure
+(`scenarios/data-map/scan-azure-sql-and-classify/`) and, separately, Azure SQL Managed Instance
+(`scenarios/data-map/scan-azure-sql-managed-instance-and-classify/`) frequently also runs **Azure
 Synapse Analytics** — a workspace that can host both a **dedicated SQL pool** (the modern name for
 SQL Data Warehouse) and one or more **serverless SQL pools**, each with its own enumeration and
 scan-authentication story. Registering a Synapse workspace is not a variant of either sibling

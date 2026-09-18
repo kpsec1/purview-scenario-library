@@ -4,7 +4,7 @@ parent: "insider-risk/security-policy-violations"
 ---
 ## 1. Problem statement
 
-[`insider-risk/security-policy-violations-by-departing-users`](/scenarios/insider-risk/security-policy-violations-by-departing-users/) scores security-violation
+`scenarios/insider-risk/security-policy-violations-by-departing-users/` scores security-violation
 signals against a population gated by employment status (resignation/termination or Entra account
 deletion). That gate is exactly right for a departing-employee use case, but it's the wrong shape
 for a tenant that wants continuous coverage of a population defined by **role or access level**

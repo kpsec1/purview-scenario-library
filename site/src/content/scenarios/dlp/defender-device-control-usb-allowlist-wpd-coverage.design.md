@@ -4,7 +4,7 @@ parent: "dlp/defender-device-control-usb-allowlist-wpd-coverage"
 ---
 ## 1. Problem statement
 
-[`dlp/defender-device-control-usb-allowlist`](/scenarios/dlp/defender-device-control-usb-allowlist/) deploys a default-deny allowlist scoped to
+`scenarios/dlp/defender-device-control-usb-allowlist/` deploys a default-deny allowlist scoped to
 `SecuredDevicesConfiguration = RemovableMediaDevices` — the device family that creates a disk
 letter in Windows. Microsoft's own device control documentation is explicit that this is a
 narrower definition than "any USB device": a device that instead enumerates as a **Windows
@@ -58,8 +58,8 @@ separated multi-value syntax Microsoft's own reference documents — is the only
 add WPD coverage to devices already assigned the parent policy.
 
 This mirrors this repository's own precedent for "add to, don't duplicate, an existing policy
-object" companions — [`dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion`](/scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion/) and
-[`dlp/pci-teams-exfil-block-part2-obfuscation-mitigation`](/scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/) both add rules to a parent
+object" companions — `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion/` and
+`scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/` both add rules to a parent
 scenario's existing named policy rather than standing up a second, overlapping one.
 
 ## 4. Policy architecture (delta from the parent)

@@ -6,7 +6,6 @@ categorySlug: "ediscovery"
 slug: "gdpr-dsr-fulfillment"
 repoPath: "scenarios/ediscovery/gdpr-dsr-fulfillment"
 parts: ["design","deploy","validate","rollback"]
-related: ["compliance-manager/gdpr-assessment","ediscovery/search-and-purge-data-spillage"]
 deployCount: 2
 validateCount: 1
 ---
@@ -21,7 +20,7 @@ Discovery search and an honest statement that Purview has no technical fulfillme
 (§6).
 
 **Who it's for:** a privacy/compliance team or Data Protection Officer that already has (or is
-about to build) [`compliance-manager/gdpr-assessment`](/scenarios/compliance-manager/gdpr-assessment/)'s regulatory posture assessment,
+about to build) `scenarios/compliance-manager/gdpr-assessment/`'s regulatory posture assessment,
 and needs the operational counterpart — a repeatable way to log a real DSR, know when it's due, and
 run the actual Microsoft 365 discovery/export/erasure work without reinventing this repo's
 already-reviewed eDiscovery scripts.

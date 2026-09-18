@@ -6,7 +6,6 @@ categorySlug: "data-lifecycle-management"
 slug: "adaptive-protection-deleted-content-preservation"
 repoPath: "scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation"
 parts: ["design","deploy","validate","rollback"]
-related: ["adaptive-protection/dynamic-risk-dlp-enforcement","insider-risk/departing-employee-data-theft","adaptive-protection/conditional-access-insider-risk-block"]
 deployCount: 1
 validateCount: 1
 ---
@@ -23,7 +22,7 @@ evidence bundle a Microsoft Support restore request needs, since self-service re
 exist.
 
 **Who it's for:** an insider risk / records-management / compliance team that has already
-deployed (or is evaluating) [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) and
+deployed (or is evaluating) `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` and
 wants the matching "don't lose the evidence if the risky user tries to delete it" control, plus a
 way to prove it's working and to prepare for the one recovery path Microsoft supports.
 
@@ -35,8 +34,8 @@ obvious incentive to delete the content first. A human analyst reacting after th
 hold once a case is escalated) is too slow for the exact window this control exists to close:
 Microsoft's own framing is that this proactively preserves content **the moment** a user is
 already flagged Elevated-risk, not after an investigator has caught up [[1]](#references). This
-complements — and does not replace — [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) (the
-detection) and [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) (the outbound-sharing
+complements — and does not replace — `scenarios/insider-risk/departing-employee-data-theft/` (the
+detection) and `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` (the outbound-sharing
 enforcement): together the three form detect → block-sharing → preserve-deletions.
 
 ## 3. Prerequisites
@@ -210,7 +209,7 @@ relevant (independent hold or a Microsoft Support restore request) **before** di
   the local copy has already exfiltrated it; this control only ensures the deletion itself doesn't
   destroy the evidence. It also only covers SharePoint, OneDrive, and Exchange Online (§6) — Teams
   chat messages, Viva Engage, and other workloads are not in scope. Pair this with
-  [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) (blocks/audits the outbound share
+  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` (blocks/audits the outbound share
   itself) rather than treating either scenario as sufficient alone.
 - **A privileged user who is also the risky user can destroy the evidence by turning the control
   off.** Disabling the toggle releases everything currently preserved, immediately and tenant-wide

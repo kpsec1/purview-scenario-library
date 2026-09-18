@@ -6,7 +6,6 @@ categorySlug: "unified-catalog"
 slug: "manage-critical-data-elements"
 repoPath: "scenarios/unified-catalog/manage-critical-data-elements"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-azure-sql-and-classify","unified-catalog/curate-business-glossary","unified-catalog/manage-data-products"]
 deployCount: 3
 validateCount: 1
 ---
@@ -23,8 +22,8 @@ data product) and not "what does this business term mean" (that's a glossary ter
 *columns*, across however many source systems, are actually the same piece of information."
 
 **Who it's for:** a data governance or platform team that has already run
-[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) (to scan a source) and
-[`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) (to create the governance domain), and now
+`scenarios/data-map/scan-azure-sql-and-classify/` (to scan a source) and
+`scenarios/unified-catalog/curate-business-glossary/` (to create the governance domain), and now
 wants a single governed concept for a column that shows up, differently spelled, in more than one
 system — defined, reviewed, and versioned via a pull request, not clicked together one column at
 a time in the portal.
@@ -63,8 +62,8 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Unified Catalog data governance | **Pay-as-you-go (PAYG)**, billed on unique **governed assets/day** | See §10 — this scenario typically adds **no incremental cost** when it maps a column that already belongs to an asset another data product or CDE already governs |
-| A completed scan | [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) run at least once | This scenario consumes that scenario's output (a Data Map asset GUID) — it does not scan anything itself |
-| The governance domain | [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) run at least once, **published** | This scenario looks up the domain by name rather than creating one; Microsoft's docs require the domain to be published before a CDE within it can be published (§8) |
+| A completed scan | `scenarios/data-map/scan-azure-sql-and-classify/` run at least once | This scenario consumes that scenario's output (a Data Map asset GUID) — it does not scan anything itself |
+| The governance domain | `scenarios/unified-catalog/curate-business-glossary/` run at least once, **published** | This scenario looks up the domain by name rather than creating one; Microsoft's docs require the domain to be published before a CDE within it can be published (§8) |
 | Role to create/edit a critical data element and add columns | **Data Steward AND Data Product Owner**, both, on the governance domain | Microsoft's own prerequisite: "To create critical data elements and add columns to them, you must have data steward and data product owner permissions" [[1]](#12-references) — a stricter combined requirement than `manage-data-products`' Data Product Owner-only prerequisite. `docs/rbac-model.md` §5 |
 | Role to resolve column GUIDs from Data Map | **Data Reader** on the asset's Data Map collection | Same as `manage-data-products/README.md` §3's Data Map access note; needed here because this scenario, unlike its siblings, reads the table entity directly from Data Map/Atlas (design.md §4) |
 | Automation identity (Unified Catalog + Data Map + Graph) | Data Steward + Data Product Owner in Unified Catalog, Data Reader on the Data Map collection, `User.Read.All` application permission in Graph | Same service-principal pattern as `manage-data-products`; this scenario's identity additionally calls the Data Map/Atlas Entity API directly |
@@ -185,7 +184,7 @@ repo, the **Data Map/Atlas Entity API** (the same surface 4 family
 Before step 1, replace `columns[].dataMapAssetId` in the definition file with the real Data Map
 asset GUID for `customerdb.dbo.Customers` — the same GUID `manage-data-products`' own definition
 file uses, copied from the asset's **Overview** page in the portal after
-[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) has scanned it at least once. Unlike
+`scenarios/data-map/scan-azure-sql-and-classify/` has scanned it at least once. Unlike
 `manage-data-products`, you do **not** need to separately find a column-level GUID — the script
 resolves it from `columnName` (§11, design.md §4). The script refuses to run against the
 placeholder nil GUID.

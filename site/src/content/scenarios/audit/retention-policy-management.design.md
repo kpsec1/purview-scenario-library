@@ -17,7 +17,7 @@ tenant-wide, un-editable, and often wrong for a specific buyer's needs in two di
   service-account operation, a chatty automated process) that a buyer would rather retain for a
   shorter, cheaper, faster-to-search window.
 
-[`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/) already assumes the data it searches is still
+`scenarios/audit/premium-audit-investigation/` already assumes the data it searches is still
 retained when an investigator needs it. This scenario is the **configuration counterpart**: it
 authors the custom audit log retention policies that make that assumption true for the workloads,
 users, and activities a buyer actually cares about, using the same automation-first,
@@ -136,7 +136,7 @@ pilot tenant) rather than asserting either reading as fact.
 - This scenario does not script the five portal-only durations (`7 Days`/`30 Days`/`3 Years`/
   `5 Years`/`7 Years`) — no PowerShell path for them was found; see §2 point 5 and `README.md` §11.
 - This scenario does not perform the **search** half of the audit story — that's
-  [`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/), which this scenario is the retention-side
+  `scenarios/audit/premium-audit-investigation/`, which this scenario is the retention-side
   companion to, not a replacement for.
 - This scenario does not implement a "disable without delete" state. Unlike this library's DLP/DLM
   scenarios (which stage `TestWithNotifications` → `Enable`), Microsoft documents no `-Enabled`/

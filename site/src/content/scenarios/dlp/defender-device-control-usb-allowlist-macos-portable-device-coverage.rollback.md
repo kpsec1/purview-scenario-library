@@ -5,7 +5,7 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-portable-device-coverag
 ## Recommended sequence
 
 This fragment shares one `macOSCustomConfiguration` object with its parent scenario
-([`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/)). Rolling back means removing
+(`scenarios/dlp/defender-device-control-usb-allowlist-macos/`). Rolling back means removing
 **only** this fragment's delta (three feature flags, up to five groups, five rules), not the
 parent's own `removableMedia` coverage.
 

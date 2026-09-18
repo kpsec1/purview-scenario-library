@@ -6,7 +6,6 @@ categorySlug: "information-protection"
 slug: "auto-label-eu-personal-data-exchange"
 repoPath: "scenarios/information-protection/auto-label-eu-personal-data-exchange"
 parts: ["design","deploy","validate","rollback"]
-related: ["information-protection/auto-label-eu-personal-data-sharepoint","information-protection/auto-label-confidential-exchange"]
 deployCount: 2
 validateCount: 1
 ---
@@ -22,8 +21,8 @@ mailbox and a localizable sensitive-information-type (SIT) list.
 
 **Who it's for:** an enterprise whose regulated population is EU/UK-only (or includes a
 significant EU/UK segment) that has already deployed, or is evaluating,
-[`information-protection/auto-label-eu-personal-data-sharepoint`](/scenarios/information-protection/auto-label-eu-personal-data-sharepoint/) (EU/UK coverage for
-files at rest) and/or [`information-protection/auto-label-confidential-exchange`](/scenarios/information-protection/auto-label-confidential-exchange/) (email
+`scenarios/information-protection/auto-label-eu-personal-data-sharepoint/` (EU/UK coverage for
+files at rest) and/or `scenarios/information-protection/auto-label-confidential-exchange/` (email
 coverage with U.S.-format SITs) — and needs the one combination neither of those two ships:
 EU/UK-format personal data, classified in email. This is the direct email-channel counterpart of
 the SharePoint/OneDrive EU/UK scenario, and the direct EU/UK-SIT counterpart of the U.S.-SIT

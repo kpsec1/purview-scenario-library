@@ -14,7 +14,7 @@ scope, regardless of actual exfiltration risk. That same README repeatedly cross
 **base `Data leaks` template — unconditional population scope, no employment-stressor or
 message-count gate at all — as the compensating control for exactly this gap**, and two DLP
 scenarios elsewhere in this library (`scenarios/dlp/exchange-pii-exfil-block-part2-obfuscation-
-mitigation/`, [`dlp/pci-teams-exfil-block-part2-obfuscation-mitigation`](/scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/)) already deploy
+mitigation/`, `scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/`) already deploy
 narrow, single-purpose instances of this exact template as feeder policies for their own Adaptive
 Protection rules. This fragment is the base template's own standalone scenario: general
 population, general trigger, not tied to any one parent DLP policy or narrowly-scoped population.
@@ -162,7 +162,7 @@ by name, unlike the open question that sibling's own README carries for itself).
 - **Does not configure Adaptive Protection.** Same non-goal as every base Insider Risk Management
   scenario in this library that isn't itself an Adaptive Protection scenario — a buyer who wants
   this policy's alerts to drive DLP enforcement wires it into
-  [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) separately.
+  `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` separately.
 - **Does not attempt cross-policy alert disambiguation** — the same disclosed gap every Insider
   Risk Management scenario in this library carries (`AlertPolicyId` has no documented
   policy-name mapping).

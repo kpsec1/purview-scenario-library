@@ -6,7 +6,6 @@ categorySlug: "data-lifecycle-management"
 slug: "adaptive-scope-auto-apply-label"
 repoPath: "scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-lifecycle-management/adaptive-scope-retention","data-lifecycle-management/retention-labels-financial-records","data-lifecycle-management/publish-labels-for-manual-application"]
 deployCount: 3
 validateCount: 1
 ---
@@ -14,7 +13,7 @@ validateCount: 1
 
 Locks executives' Exchange email and OneDrive content as a formal **record** using an **adaptive
 scope** — the same daily-refreshed query against the Entra `Title` attribute used by the sibling
-[`data-lifecycle-management/adaptive-scope-retention`](/scenarios/data-lifecycle-management/adaptive-scope-retention/) scenario — instead of a Keep-only
+`scenarios/data-lifecycle-management/adaptive-scope-retention/` scenario — instead of a Keep-only
 retention action or a static SharePoint site. Deployed as code via Security & Compliance PowerShell:
 one `New-AdaptiveScope` call (shared with the Keep-only sibling by name), one `New-ComplianceTag`
 call (the record label), one `New-RetentionCompliancePolicy -AdaptiveScopeLocation` call, one

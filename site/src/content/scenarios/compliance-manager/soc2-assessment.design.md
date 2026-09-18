@@ -16,8 +16,8 @@ worth toward an actual SOC 2 report.
 
 ## 2. Why this scenario looks identical in shape to its two Compliance Manager siblings
 
-Identical starting constraint to [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/) and
-[`compliance-manager/pci-dss-assessment`](/scenarios/compliance-manager/pci-dss-assessment/) (see either scenario's `design.md` §2 for the
+Identical starting constraint to `scenarios/compliance-manager/assess-against-iso27001/` and
+`scenarios/compliance-manager/pci-dss-assessment/` (see either scenario's `design.md` §2 for the
 full grounding): Compliance Manager has **no write API**. Assessment creation, control mapping, and
 improvement-action status/evidence updates are portal- and Excel-wizard-driven only, re-confirmed
 during this build against the current `compliance-manager-assessments`, `compliance-manager-

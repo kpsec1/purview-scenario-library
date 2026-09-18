@@ -21,7 +21,7 @@ already grounded and used elsewhere:
   `scenarios/ediscovery/premium-legal-hold-and-export/deploy/New-EdiscoveryPremiumLegalHold.ps1`,
   duplicated (not dot-sourced) into this scenario's own `deploy/` tree per this repo's
   one-scenario-one-self-contained-deploy-tree convention (every other scenario in this library
-  follows the same rule — see, for example, how [`unified-catalog/manage-data-products`](/scenarios/unified-catalog/manage-data-products/)
+  follows the same rule — see, for example, how `scenarios/unified-catalog/manage-data-products/`
   re-implements rather than imports `curate-business-glossary`'s owner-resolution pattern).
 - **IRM alert lookup** — `Get-MgSecurityAlertV2 -AlertId`, the get-by-ID parameter set of the same
   cmdlet `scenarios/insider-risk/departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1`
@@ -105,7 +105,7 @@ pattern), applied here to resolve a genuine unknown rather than a confirmed fact
   that front; it only reads alert metadata for the provenance block.
 - **Search, review set, and export.** Once this scenario's custodian/hold is in place, the case is
   functionally identical to one built entirely by
-  [`ediscovery/premium-legal-hold-and-export`](/scenarios/ediscovery/premium-legal-hold-and-export/), and that scenario's own
+  `scenarios/ediscovery/premium-legal-hold-and-export/`, and that scenario's own
   `New-EdiscoverySearchReviewSetExport.ps1` / `Get-EdiscoveryExportPackage.ps1` /
   `Export-EdiscoveryAuditTrail.ps1` scripts apply unmodified from that point forward — deliberately
   not duplicated here.

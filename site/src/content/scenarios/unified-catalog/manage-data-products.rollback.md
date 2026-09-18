@@ -72,9 +72,9 @@ and an unlinked wrapper with no relationships is effectively inert).
 
 ## What rollback does **not** undo
 
-- **The underlying Data Map asset.** [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) owns that
+- **The underlying Data Map asset.** `scenarios/data-map/scan-azure-sql-and-classify/` owns that
   asset's lifecycle; this scenario's rollback never touches it.
-- **The governance domain or glossary terms.** [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/)
+- **The governance domain or glossary terms.** `scenarios/unified-catalog/curate-business-glossary/`
   owns their lifecycle; this scenario only looks them up by name.
 - **Data product/asset history.** Microsoft Learn does not document a separate audit trail for
   Unified Catalog object changes distinct from the general Microsoft Purview audit log; this

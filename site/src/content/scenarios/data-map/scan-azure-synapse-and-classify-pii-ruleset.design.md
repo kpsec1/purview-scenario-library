@@ -4,7 +4,7 @@ parent: "data-map/scan-azure-synapse-and-classify-pii-ruleset"
 ---
 ## 1. Problem statement
 
-[`data-map/scan-azure-synapse-and-classify`](/scenarios/data-map/scan-azure-synapse-and-classify/) scans an Azure Synapse Analytics workspace's
+`scenarios/data-map/scan-azure-synapse-and-classify/` scans an Azure Synapse Analytics workspace's
 dedicated and/or serverless SQL pools against Microsoft's **system default** scan rule set
 (`AzureSynapseSQL`): every built-in classification Purview ships for this source type, roughly 200
 sensitive information types (SITs). That is the right default for a first, exploratory scan — you

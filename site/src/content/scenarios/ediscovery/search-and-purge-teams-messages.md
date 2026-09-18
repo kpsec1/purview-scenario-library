@@ -6,7 +6,6 @@ categorySlug: "ediscovery"
 slug: "search-and-purge-teams-messages"
 repoPath: "scenarios/ediscovery/search-and-purge-teams-messages"
 parts: ["design","deploy","validate","rollback"]
-related: ["ediscovery/teams-group-hold-resolution","ediscovery/search-and-purge-data-spillage"]
 deployCount: 3
 validateCount: 1
 ---
@@ -53,7 +52,7 @@ Premium-configured, same as the mailbox sibling; `design.md` §3 of that scenari
 | Graph permission | Application **`eDiscovery.ReadWrite.All`** | Same as the mailbox sibling; confirmed against the `purgeData`/`searches`/`noncustodialDataSources` Graph reference pages [[2]](#references)[[6]](#references)[[7]](#references) |
 | Auth | Certificate-based app-only via `Connect-MgGraph` | `docs/automation-surface.md` §3 |
 | PowerShell module | `Microsoft.Graph.Security` ≥ 2.25.0 | Same module/version floor as the mailbox sibling |
-| Pre-resolved target mailboxes | Parent-team mailbox ([`ediscovery/teams-group-hold-resolution`](/scenarios/ediscovery/teams-group-hold-resolution/)), or known participant/private-channel addresses | See `design.md` §4 — this scenario does not re-derive Teams/group mailbox resolution |
+| Pre-resolved target mailboxes | Parent-team mailbox (`scenarios/ediscovery/teams-group-hold-resolution/`), or known participant/private-channel addresses | See `design.md` §4 — this scenario does not re-derive Teams/group mailbox resolution |
 
 ## 4. Architecture
 
@@ -256,10 +255,10 @@ case, and the holds you removed and must reapply.
 7. Create nonCustodialDataSources (Graph v1.0; `userSource`/`siteSource` dataSource shape) — <https://learn.microsoft.com/graph/api/security-ediscoverycase-post-noncustodialdatasources>
 8. Add noncustodialDataSources (Graph v1.0; `$ref` bind to a search) — <https://learn.microsoft.com/graph/api/security-ediscoverysearch-post-noncustodialsources>
 9. Assign eDiscovery permissions — <https://learn.microsoft.com/purview/edisc-permissions>
-10. [`ediscovery/search-and-purge-data-spillage`](/scenarios/ediscovery/search-and-purge-data-spillage/) — the mailbox-purge sibling this scenario
+10. `scenarios/ediscovery/search-and-purge-data-spillage/` — the mailbox-purge sibling this scenario
     completes; shares its case/search/estimate helper patterns and `Get-OperationIdFromLocation`
     Location-header handling.
-11. [`ediscovery/teams-group-hold-resolution`](/scenarios/ediscovery/teams-group-hold-resolution/) — resolves a Team/Microsoft 365 Group's own
+11. `scenarios/ediscovery/teams-group-hold-resolution/` — resolves a Team/Microsoft 365 Group's own
     mailbox address, reused here for standard/shared-channel targets.
 
 > Re-verify all links, Graph SDK cmdlet names, and — especially — the private-channel storage model

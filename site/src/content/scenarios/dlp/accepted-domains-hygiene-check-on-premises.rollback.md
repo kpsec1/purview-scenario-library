@@ -4,7 +4,7 @@ parent: "dlp/accepted-domains-hygiene-check-on-premises"
 ---
 ## What there is to roll back
 
-Same archetype as the parent [`dlp/accepted-domains-hygiene-check`](/scenarios/dlp/accepted-domains-hygiene-check/): this scenario creates
+Same archetype as the parent `scenarios/dlp/accepted-domains-hygiene-check`: this scenario creates
 **no object inside the on-premises Exchange organization, Exchange Online, or Microsoft Purview at
 all** — no accepted domain, no DLP policy, no rule. Every call
 `deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1` and

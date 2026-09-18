@@ -27,7 +27,7 @@ someone who made a deliberate labeling decision.
 5. Idempotent and re-runnable: running the deploy script twice must not create duplicate policies
    or rules.
 6. Ship "off" by default: simulation mode first, matching the code standard in `AGENTS.md` §4 and
-   the pattern established in [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/).
+   the pattern established in `scenarios/dlp/pci-teams-exfil-block/`.
 
 ## 3. Why auto-labeling (not DLP, not a default library label, not manual-only)
 
@@ -101,7 +101,7 @@ with no error surfaced anywhere obvious.
 | Two rules instead of one | One rule per `-Workload` (SharePoint, OneDriveForBusiness) | `New-AutoSensitivityLabelRule -Workload` is single-valued — see `README.md` §11. |
 | Override setting | `OverwriteLabel $true` | Lets the control tighten classification on content that was previously auto-labeled to something less sensitive, without ever touching a human's manual choice — see design goal 2/3 and the override-behavior table cited in `README.md` §6. |
 | Exclusion mechanism | `SharePointLocationException` by site URL, not by content condition | A legal hold is a site-level concept in this scenario's assumed environment (a dedicated eDiscovery/hold site), so excluding at the location level is simpler and more auditable than trying to express "unless under hold" as a content condition — no such condition exists natively for auto-labeling rules. |
-| Default policy mode | `TestWithNotifications` | Matches the code standard in `AGENTS.md` §4 and the precedent set by [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/): nothing in this repo enforces by default against a live tenant without an explicit, deliberate flag. |
+| Default policy mode | `TestWithNotifications` | Matches the code standard in `AGENTS.md` §4 and the precedent set by `scenarios/dlp/pci-teams-exfil-block/`: nothing in this repo enforces by default against a live tenant without an explicit, deliberate flag. |
 | Encryption | Not configured by this scenario | Whether `Confidential` applies encryption is a property of the label itself, authored separately — see `README.md` §11 and §7 below. |
 
 ## 7. Non-goals
@@ -111,7 +111,7 @@ with no error surfaced anywhere obvious.
   `scenarios/dlp/pci-teams-exfil-block/design.md` §6), not a deployed artifact.
 - This scenario does not cover Exchange (email) auto-labeling, even though the same policy family
   supports it — scoped to SharePoint/OneDrive at-rest content per the scenario's title. Built as
-  [`information-protection/auto-label-confidential-exchange`](/scenarios/information-protection/auto-label-confidential-exchange/) (closed 2026-09-04).
+  `scenarios/information-protection/auto-label-confidential-exchange/` (closed 2026-09-04).
 - This scenario does not configure the one-time `EnableAIPIntegration` tenant toggle — it is a
   manual/portal prerequisite documented in `README.md` §3, not something this scenario's
   idempotent deploy script re-asserts on every run (it's a tenant-wide setting unrelated to this

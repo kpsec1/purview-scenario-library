@@ -6,7 +6,6 @@ categorySlug: "data-lifecycle-management"
 slug: "adaptive-scope-retention"
 repoPath: "scenarios/data-lifecycle-management/adaptive-scope-retention"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-lifecycle-management/retention-labels-financial-records"]
 deployCount: 3
 validateCount: 1
 ---
@@ -22,7 +21,7 @@ call, one `New-RetentionCompliancePolicy -AdaptiveScopeLocation` call, one `Keep
 **Who it's for:** a records-management / compliance / IT team at a large or fast-changing
 organization that needs different retention settings for a population defined by an attribute
 (job title, department, country/region) rather than a fixed list — the follow-up pattern flagged in
-the sibling [`data-lifecycle-management/retention-labels-financial-records`](/scenarios/data-lifecycle-management/retention-labels-financial-records/) scenario for
+the sibling `scenarios/data-lifecycle-management/retention-labels-financial-records/` scenario for
 "large/dynamic estates."
 
 ## 2. Business/regulatory driver
@@ -248,7 +247,7 @@ reusable objects across retention, Insider Risk Management, and Communication Co
   `SetAdaptiveScope`/`ApplicableAdaptiveScopeChange` (§8) — this scenario does not otherwise defend
   against it.
 - **This is `Keep`-only by design** — no record/regulatory-record semantics here; pair with
-  [`data-lifecycle-management/retention-labels-financial-records`](/scenarios/data-lifecycle-management/retention-labels-financial-records/) if immutability is
+  `scenarios/data-lifecycle-management/retention-labels-financial-records/` if immutability is
   also required for part of this population.
 - **This is a governance baseline, not a litigation hold.** A `Keep`-only retention policy retains
   content on a schedule the org set in advance; it is not scoped to a matter, does not notify

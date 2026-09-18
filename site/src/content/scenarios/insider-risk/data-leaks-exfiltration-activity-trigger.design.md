@@ -4,7 +4,7 @@ parent: "insider-risk/data-leaks-exfiltration-activity-trigger"
 ---
 ## 1. Problem statement
 
-[`insider-risk/data-leaks`](/scenarios/insider-risk/data-leaks/) builds the base **Data leaks** template's own primary,
+`scenarios/insider-risk/data-leaks/` builds the base **Data leaks** template's own primary,
 general-purpose worked example — the **"User matches a data loss prevention (DLP) policy"**
 triggering event. That scenario's own `design.md` §2 goal 2/§3/§7 explicitly scoped the template's
 **second**, equally valid triggering-event option — **"User performs an exfiltration activity"** —

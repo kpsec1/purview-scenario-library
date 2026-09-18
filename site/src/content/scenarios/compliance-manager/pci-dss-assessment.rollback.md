@@ -4,7 +4,7 @@ parent: "compliance-manager/pci-dss-assessment"
 ---
 This scenario has two independent things to roll back: the **assessment itself** (portal-only, no
 script touches it) and the **audit-trail export**, which is a **reused** script shared with
-[`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/) (`design.md` §2). Handle them separately,
+`scenarios/compliance-manager/assess-against-iso27001/` (`design.md` §2). Handle them separately,
 and read the group-sharing note in Stage 3 before deleting anything if this assessment shares a
 group with the ISO 27001 assessment.
 

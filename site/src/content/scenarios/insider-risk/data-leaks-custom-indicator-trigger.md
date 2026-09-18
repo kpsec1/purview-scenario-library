@@ -6,7 +6,6 @@ categorySlug: "insider-risk"
 slug: "data-leaks-custom-indicator-trigger"
 repoPath: "scenarios/insider-risk/data-leaks-custom-indicator-trigger"
 parts: ["design","deploy","validate","rollback"]
-related: ["insider-risk/data-leaks","insider-risk/data-leaks-exfiltration-activity-trigger","adaptive-protection/dynamic-risk-dlp-enforcement"]
 deployCount: 2
 validateCount: 1
 ---
@@ -17,8 +16,8 @@ import pre-aggregated, non-Microsoft-workload detections — Microsoft's own wor
 and Dropbox activity aggregated by a SIEM such as Microsoft Sentinel or Splunk — as one or more **custom
 indicators**, then uses those custom indicators as the triggering event (and optionally a scoring
 indicator) on the base **Data leaks** Insider Risk Management policy template. Same policy template as
-[`insider-risk/data-leaks`](/scenarios/insider-risk/data-leaks/) (DLP-policy trigger) and
-[`insider-risk/data-leaks-exfiltration-activity-trigger`](/scenarios/insider-risk/data-leaks-exfiltration-activity-trigger/) (built-in-indicator trigger) — this
+`scenarios/insider-risk/data-leaks/` (DLP-policy trigger) and
+`scenarios/insider-risk/data-leaks-exfiltration-activity-trigger/` (built-in-indicator trigger) — this
 is the **third** trigger mechanism this library builds for it, and the only one that brings in a
 detection Microsoft's own built-in indicators and cloud-app connectors don't cover.
 
@@ -419,7 +418,7 @@ revoking the app registration's certificate is not.
   than one policy is deployed in the same tenant** — same disclosed gap as every IRM scenario in this
   library, sharper here with up to three Data-leaks-template siblings potentially coexisting.
 - **This scenario does not configure Adaptive Protection** — a buyer who wants this policy's alerts to
-  drive DLP enforcement wires it into [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/)
+  drive DLP enforcement wires it into `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`
   separately.
 
 ## 12. References

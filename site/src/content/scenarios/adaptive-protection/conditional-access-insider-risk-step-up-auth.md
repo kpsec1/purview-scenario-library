@@ -6,7 +6,6 @@ categorySlug: "adaptive-protection"
 slug: "conditional-access-insider-risk-step-up-auth"
 repoPath: "scenarios/adaptive-protection/conditional-access-insider-risk-step-up-auth"
 parts: ["design","deploy","validate","rollback"]
-related: ["adaptive-protection/conditional-access-insider-risk-block","insider-risk/departing-employee-data-theft","adaptive-protection/dynamic-risk-dlp-enforcement"]
 deployCount: 2
 validateCount: 1
 ---
@@ -18,7 +17,7 @@ Use** acceptance requirement scoped to Microsoft Admin Portals (Moderate), and a
 **Report-only** visibility policy (Minor). Both read the same live insider risk level Microsoft
 Purview Adaptive Protection assigns, via Conditional Access's own Insider Risk condition
 (`conditions.insiderRiskLevels`) — the same condition
-[`adaptive-protection/conditional-access-insider-risk-block`](/scenarios/adaptive-protection/conditional-access-insider-risk-block/) uses for the **Elevated**
+`scenarios/adaptive-protection/conditional-access-insider-risk-block/` uses for the **Elevated**
 risk level's block policy.
 
 **Who it's for:** any Microsoft 365 E5 (or Purview Suite) tenant with **Microsoft Entra ID P2**
@@ -98,7 +97,7 @@ alternative, is in `design.md` §2–8.
 
 ### Step 1 — Confirm (or deploy) a feeder Insider Risk Management policy
 
-Same as both siblings — use [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/), or
+Same as both siblings — use `scenarios/insider-risk/departing-employee-data-theft/`, or
 Microsoft's built-in **Data leaks** template.
 
 ### Step 2 — Assign permissions
@@ -374,9 +373,9 @@ level.
 13. `docs/licensing-matrix.md` §8 — Entra ID P2 (Conditional Access risk-based conditions),
     updated in this build to reference both Conditional Access scenarios.
 14. `docs/rbac-model.md` §10 — Microsoft Entra Conditional Access.
-15. [`adaptive-protection/conditional-access-insider-risk-block`](/scenarios/adaptive-protection/conditional-access-insider-risk-block/) — the Elevated sibling
+15. `scenarios/adaptive-protection/conditional-access-insider-risk-block/` — the Elevated sibling
     scenario this fragment complements.
-16. [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) — the DLP sibling scenario; see
+16. `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` — the DLP sibling scenario; see
     `design.md` §8 for how its own Moderate/Minor audit treatment differs from this scenario's.
 
 > Re-verify all links, API behavior, and licensing terms against current Microsoft Learn before a

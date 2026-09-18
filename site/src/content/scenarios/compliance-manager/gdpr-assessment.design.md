@@ -20,9 +20,9 @@ actual legal GDPR obligations.
 
 ## 2. Why this scenario looks identical in shape to its four Compliance Manager siblings
 
-Identical starting constraint to [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/),
-[`compliance-manager/pci-dss-assessment`](/scenarios/compliance-manager/pci-dss-assessment/), [`compliance-manager/soc2-assessment`](/scenarios/compliance-manager/soc2-assessment/),
-and [`compliance-manager/hipaa-hitech-assessment`](/scenarios/compliance-manager/hipaa-hitech-assessment/) (see any sibling's `design.md` §2 for the
+Identical starting constraint to `scenarios/compliance-manager/assess-against-iso27001/`,
+`scenarios/compliance-manager/pci-dss-assessment/`, `scenarios/compliance-manager/soc2-assessment/`,
+and `scenarios/compliance-manager/hipaa-hitech-assessment/` (see any sibling's `design.md` §2 for the
 full grounding): Compliance Manager has **no write API**. Assessment creation, control mapping, and
 improvement-action status/evidence updates are portal- and Excel-wizard-driven only, re-confirmed
 during this build against the current `compliance-manager-assessments`, `compliance-manager-
@@ -196,7 +196,7 @@ goals, ISO 27001's Annex A domains, or HIPAA's rule-with-safeguard-categories st
    "required vs. addressable" trap in its own text — its own structural risk is different (item 3
    below).
 2. **Data Subject Rights has a real, if still incomplete, technical building block in this
-   library**: [`ediscovery/gdpr-dsr-fulfillment`](/scenarios/ediscovery/gdpr-dsr-fulfillment/), which composes this library's
+   library**: `scenarios/ediscovery/gdpr-dsr-fulfillment/`, which composes this library's
    `premium-legal-hold-and-export` and `search-and-purge-data-spillage` eDiscovery scenarios into a
    purpose-built DSR intake/SLA/fulfillment-hand-off workflow — a stronger starting position than
    HIPAA's Privacy Rule or GDPR's own Cross-Border Data Transfers category, both of which this

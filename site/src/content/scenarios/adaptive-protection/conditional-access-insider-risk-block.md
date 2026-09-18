@@ -6,7 +6,6 @@ categorySlug: "adaptive-protection"
 slug: "conditional-access-insider-risk-block"
 repoPath: "scenarios/adaptive-protection/conditional-access-insider-risk-block"
 parts: ["design","deploy","validate","rollback"]
-related: ["insider-risk/departing-employee-data-theft","adaptive-protection/dynamic-risk-dlp-enforcement"]
 deployCount: 2
 validateCount: 1
 ---
@@ -21,10 +20,10 @@ no analyst has to manually revoke access.
 
 **Who it's for:** any Microsoft 365 E5 (or Purview Suite) tenant with **Microsoft Entra ID P2**
 that already has an Insider Risk Management policy generating risk signal — this library's own
-[`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/), or Microsoft's built-in **Data leaks**
+`scenarios/insider-risk/departing-employee-data-theft/`, or Microsoft's built-in **Data leaks**
 template — and wants the broadest possible automated response (stop the user signing in at all)
 available alongside, or instead of, this library's narrower
-[`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) (which blocks only a specific
+`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` (which blocks only a specific
 Exchange/Teams external share). See `design.md` §3 for exactly how the two differ and when to use
 which.
 
@@ -93,7 +92,7 @@ itself**, the one piece with a genuinely scriptable, independently-grounded Grap
 ### Step 1 — Confirm (or deploy) a feeder Insider Risk Management policy
 
 Same as `dynamic-risk-dlp-enforcement/README.md` §5 Step 1 — use this library's own
-[`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/), or Microsoft's built-in **Data leaks**
+`scenarios/insider-risk/departing-employee-data-theft/`, or Microsoft's built-in **Data leaks**
 template. Not created by this scenario.
 
 ### Step 2 — Assign permissions
@@ -343,7 +342,7 @@ user's current insider risk level.
    this build.
 10. `docs/rbac-model.md` §10 — Microsoft Entra Conditional Access (a sixth RBAC system), new in
     this build.
-11. [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) — the DLP sibling scenario this
+11. `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` — the DLP sibling scenario this
     fragment complements; see `design.md` §3 for how the two differ.
 12. conditionalAccessUsers / conditionalAccessGuestsOrExternalUsers resource types
     (`excludeGuestsOrExternalUsers.guestOrExternalUserTypes`/`externalTenants` properties this

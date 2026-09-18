@@ -54,8 +54,8 @@ not actually correct" shortcut `AGENTS.md` §4 exists to prevent.
    explicitly non-executable JSON manifest at
    `deploy/policy/communication-compliance-policy-manifest.json` — the same "reference manifest,
    not an API payload" pattern this repo established in
-   [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) and
-   [`compliance-manager/assess-against-iso27001`](/scenarios/compliance-manager/assess-against-iso27001/) for other no-write-API Purview
+   `scenarios/insider-risk/departing-employee-data-theft/` and
+   `scenarios/compliance-manager/assess-against-iso27001/` for other no-write-API Purview
    surfaces) plus one genuinely uploadable artifact the portal wizard actually consumes: a custom
    keyword dictionary text file (§4 below).
 2. One genuinely scriptable, genuinely useful piece of real automation, with a documented,
@@ -147,7 +147,7 @@ Risk Management's risky-user detection (a dedicated auto-created "Insider risk t
 using the Threat/Harassment/Discrimination classifiers) [[10]](#references). This scenario's own
 policy is a standalone Communication Compliance deployment and does not configure that IRM
 integration — see §7, Non-goals. A buyer who has also deployed
-[`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) should be aware the two solutions *can* be
+`scenarios/insider-risk/departing-employee-data-theft/` should be aware the two solutions *can* be
 wired together but are independent unless that specific IRM-side option is explicitly selected.
 
 ## 7. Non-goals
@@ -164,7 +164,7 @@ wired together but are independent unless that specific IRM-side option is expli
   concretely needed.
 - **SIEM/Sentinel wiring.** This scenario's audit-trail script produces a CSV a SIEM connector can
   ingest, and Microsoft documents a native Sentinel/`OfficeActivity` integration path
-  [[11]](#references), matching the same scope boundary [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/)
+  [[11]](#references), matching the same scope boundary `scenarios/dlp/pci-teams-exfil-block/`
   already established (document the native alert surface and the SIEM path; don't build a
   Sentinel workbook as part of this fragment).
 - **Third-party source connectors** (e.g. Instant Bloomberg) — requires a connector configured

@@ -4,7 +4,7 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-jamf"
 ---
 ## 1. Problem statement
 
-[`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/) deploys the same default-deny,
+`scenarios/dlp/defender-device-control-usb-allowlist-macos/` deploys the same default-deny,
 named-allowlist removable-storage control for **Intune-managed** Macs. That scenario's own
 non-goals (`design.md` §8) explicitly call out JAMF as "Microsoft's other documented macOS
 deployment path" and defer it as a candidate follow-up "if a buyer's fleet is JAMF-managed rather

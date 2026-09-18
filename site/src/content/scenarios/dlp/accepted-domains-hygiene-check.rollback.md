@@ -4,7 +4,7 @@ parent: "dlp/accepted-domains-hygiene-check"
 ---
 ## What there is to roll back
 
-Same archetype as [`data-estate-insights/classification-coverage-report`](/scenarios/data-estate-insights/classification-coverage-report/): this scenario
+Same archetype as `scenarios/data-estate-insights/classification-coverage-report`: this scenario
 creates **no object inside Exchange Online or Microsoft Purview at all** — no accepted domain, no DLP
 policy, no rule. Every call `deploy/Export-AcceptedDomainsHygieneReport.ps1` and
 `validate/Test-AcceptedDomainsHygieneReport.ps1` make is read-only (`Get-AcceptedDomain`,

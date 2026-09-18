@@ -84,7 +84,7 @@ full re-create, and it preserves `createdAt`/`createdBy` history on the alert ob
   never created; remove it separately if the intent is a full teardown.
 - **The governance domain, data product, or data asset.** None of these were created by this
   scenario — see `design.md` §6/§7 — so none are removed by rollback.
-- **The Data Quality rules or scan schedule** from [`data-quality/rules-and-scorecards`](/scenarios/data-quality/rules-and-scorecards/) —
+- **The Data Quality rules or scan schedule** from `scenarios/data-quality/rules-and-scorecards/` —
   a separate scenario with its own rollback procedure. Removing this scenario's connection without
   also addressing that schedule leaves it pointing at a now-deleted connection (it will fail, not
   silently no-op).

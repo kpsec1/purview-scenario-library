@@ -6,7 +6,6 @@ categorySlug: "data-lifecycle-management"
 slug: "publish-labels-for-manual-application"
 repoPath: "scenarios/data-lifecycle-management/publish-labels-for-manual-application"
 parts: ["design","deploy","validate","rollback"]
-related: []
 deployCount: 3
 validateCount: 1
 ---

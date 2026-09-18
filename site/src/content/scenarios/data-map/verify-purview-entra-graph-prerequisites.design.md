@@ -4,7 +4,7 @@ parent: "data-map/verify-purview-entra-graph-prerequisites"
 ---
 ## 1. Problem statement
 
-[`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/) documents a Microsoft Entra
+`scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` documents a Microsoft Entra
 prerequisite unique to that data source `kind`: before Microsoft Entra authentication works **at
 all** for an Azure SQL Managed Instance — including the Purview scan that scenario configures — the
 instance's own system-assigned managed identity must be a current member of the Microsoft Entra ID
@@ -71,7 +71,7 @@ operator check an arbitrary number of instances in one run, at the same Graph-ca
 one, and is what makes the drift computation (§2 goal 3) meaningful: drift is defined relative to
 "every instance this operator expects," which only a multi-row inventory can express. This also
 matches this repo's existing precedent for multi-entity checker scripts taking a CSV/config-file
-input rather than a flat parameter list (e.g. [`ediscovery/roster-to-hold-locations`](/scenarios/ediscovery/roster-to-hold-locations/)).
+input rather than a flat parameter list (e.g. `scenarios/ediscovery/roster-to-hold-locations/`).
 
 ## 5. Why the script does not call `Get-AzSqlInstance` itself
 
@@ -190,7 +190,7 @@ obvious from the object model above:
   known limitation in `README.md` §11 rather than silently conflated with "never granted."
 - **This scenario does not monitor other tenant-wide-flavored roles** (e.g. Privileged Role
   Administrator itself, or Global Reader). It is scoped to the one role the sibling Data Map scenario
-  documents as its own prerequisite. [`compliance-manager/entra-privileged-role-monitoring`](/scenarios/compliance-manager/entra-privileged-role-monitoring/)
+  documents as its own prerequisite. `scenarios/compliance-manager/entra-privileged-role-monitoring/`
   already covers a *different* set of four Entra roles for a different purpose (implicit Compliance
   Manager access) — this scenario is not a duplicate of that one and does not attempt to generalize
   into it.

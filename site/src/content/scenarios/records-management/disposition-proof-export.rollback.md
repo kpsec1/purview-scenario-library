@@ -4,7 +4,7 @@ parent: "records-management/disposition-proof-export"
 ---
 ## What there is to roll back
 
-Identical in kind to [`data-estate-insights/sensitivity-label-coverage-report`](/scenarios/data-estate-insights/sensitivity-label-coverage-report/)'s own
+Identical in kind to `scenarios/data-estate-insights/sensitivity-label-coverage-report/`'s own
 rollback: this scenario creates **no object inside Microsoft Purview at all** — no retention label,
 no policy, no rule, no event type. Every call `deploy/Export-DispositionProofEvidence.ps1` makes is
 a read-only `Search-UnifiedAuditLog` query. "Rollback" here means two things, neither of which
@@ -47,8 +47,8 @@ Export-AdaptiveProtectionPreservationEvidence.ps1`) still depends on it before r
 ## What rollback does **not** undo
 
 - **Any retention label, event type, policy, or disposition-review configuration.** Entirely out of
-  this scenario's scope — owned by [`records-management/regulatory-records-disposition`](/scenarios/records-management/regulatory-records-disposition/),
-  [`records-management/multi-stage-disposition-review`](/scenarios/records-management/multi-stage-disposition-review/), or whichever records-management
+  this scenario's scope — owned by `scenarios/records-management/regulatory-records-disposition/`,
+  `scenarios/records-management/multi-stage-disposition-review/`, or whichever records-management
   scenario configured them. Removing this scenario's export automation has zero effect on any of
   them.
 - **The disposition activity itself.** Items already reviewed, approved, relabeled, or deleted stay

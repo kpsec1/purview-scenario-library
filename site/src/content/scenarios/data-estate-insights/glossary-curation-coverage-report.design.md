@@ -20,7 +20,7 @@ history beyond the report's own refresh cadence — plus a **fourth, specific to
    glossary report's status vocabulary (**Draft → Approved → Alert → Expired**,
    `README.md` reference 1) belongs to the **classic, Atlas-based Data Catalog glossary** — the
    legacy object model behind the classic Purview Data Catalog (`README.md` reference 9). This
-   repo's own [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) deliberately builds terms
+   repo's own `scenarios/unified-catalog/curate-business-glossary/` deliberately builds terms
    through the **current Unified Catalog Terms REST API** instead (`design.md` §3 of that scenario),
    whose `Term.status` enum is **`DRAFT` → `PUBLISHED` → `EXPIRED`** — three values, no `Alert`
    equivalent (`README.md` reference 4). Microsoft's own Unified Catalog API overview states the API
@@ -167,7 +167,7 @@ Full grounding: `deploy/Export-GlossaryCurationCoverageReport.ps1`'s inline comm
 
 - A Microsoft Purview account with Unified Catalog enabled and at least one governance domain
   containing glossary terms — the worked example reuses the `Customer Experience` domain and its
-  four terms from [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/).
+  four terms from `scenarios/unified-catalog/curate-business-glossary/`.
 - An app registration holding **Data Steward** (default mode) or **Global/Local Catalog Reader**
   (`-PublishedOnly` mode) on the domain(s) in scope.
 - Wherever the trend-log CSV is written persists between runs — this scenario does not provision

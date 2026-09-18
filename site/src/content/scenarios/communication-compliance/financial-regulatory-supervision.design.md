@@ -15,7 +15,7 @@ enforcement sweep (§2) shows what happens when firms cannot produce that eviden
 stands up a Communication Compliance policy scoped to the firm's actual FINRA-registered population
 (not "all users" — §3), wires FINRA-registration-aware reviewers into the workflow, and layers a
 scriptable audit-trail/evidence-of-review export on top, mirroring the shape
-[`communication-compliance/harassment-and-code-of-conduct`](/scenarios/communication-compliance/harassment-and-code-of-conduct/) already established for this
+`scenarios/communication-compliance/harassment-and-code-of-conduct/` already established for this
 module's no-write-API constraint (§2 there, restated at §7 here).
 
 ## 2. Why this scenario looks different from the DLP/Information Protection scenarios in this repo
@@ -99,7 +99,7 @@ Same reasoning as `harassment-and-code-of-conduct/design.md` §3, restated for t
 Communication Compliance remains **detective, not preventive** here too — it reviews messages *after*
 they're sent. For the preventive half of this problem (blocking messages that reference specific
 restricted-list tickers before they leave the firm), see the cross-link to
-[`information-barriers/segregate-trading-and-research`](/scenarios/information-barriers/segregate-trading-and-research/) in §7.
+`scenarios/information-barriers/segregate-trading-and-research/` in §7.
 
 ## 5. Classifier and custom-dictionary selection
 
@@ -170,7 +170,7 @@ own written supervisory procedures) Rule 3110(b)(4) requires, separately from co
   Entra ID group or adaptive-scope query `deploy/policy/financial-regulatory-supervision-manifest.json`
   targets. Reconciling that group against FINRA's own registration data (e.g., via BrokerCheck/CRD)
   is outside this scenario's scope — a natural candidate for an HR-connector-style reconciliation
-  script, the same class of gap [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/)'s HR-connector
+  script, the same class of gap `scenarios/insider-risk/departing-employee-data-theft/`'s HR-connector
   follow-up already tracks for a different population.
 - **Third-party financial messaging connectors** (Bloomberg Message/Mail, ICE Chat, Reuters Eikon
   Messenger, Symphony, and the ~30 others Microsoft documents a native data-connector path for). Real
@@ -187,7 +187,7 @@ own written supervisory procedures) Rule 3110(b)(4) requires, separately from co
   posture; this scenario's own README §8 cross-links the two explicitly so a reader doesn't mistake
   one for the other.
 - **Preventive, real-time blocking of messages referencing restricted-list securities.**
-  [`information-barriers/segregate-trading-and-research`](/scenarios/information-barriers/segregate-trading-and-research/) is the preventive control for
+  `scenarios/information-barriers/segregate-trading-and-research/` is the preventive control for
   segregating trading/research communication entirely; a DLP policy matching specific restricted-list
   tickers in real time is a plausible companion fragment this scenario does not build (`PROGRESS.md`).
 - **The "Detect conflict of interest" built-in policy template**, as its own standalone scenario — a

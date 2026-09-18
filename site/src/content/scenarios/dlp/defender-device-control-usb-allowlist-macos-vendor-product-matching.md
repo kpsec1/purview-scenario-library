@@ -6,13 +6,12 @@ categorySlug: "dlp"
 slug: "defender-device-control-usb-allowlist-macos-vendor-product-matching"
 repoPath: "scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching"
 parts: ["design","deploy","validate","rollback"]
-related: ["dlp/defender-device-control-usb-allowlist-macos","dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist"]
 deployCount: 3
 validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends [`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/)'s `serialNumber`-only approved
+Extends `scenarios/dlp/defender-device-control-usb-allowlist-macos/`'s `serialNumber`-only approved
 backup-drive allowlist with a second, independent matching mechanism — **vendorId+productId compound
 matching** — for approved removable-storage devices that have no readable serial number. Any number
 of vendorId/productId-matched devices can be added, on top of (never instead of) the parent
@@ -253,11 +252,11 @@ once, run `./deploy/Remove-MacVendorProductDeviceAllowlist.ps1`.
    exception group scoped to `removable_media_devices`, confirmed by direct fetch of the raw file
    during this fragment's build) — <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_removable_media_except_kingston.json>
 4. RFC 4122, Section 4.3 — Algorithm for Creating a Name-Based UUID (version 5, SHA-1) — <https://www.rfc-editor.org/rfc/rfc4122#section-4.3>
-5. [`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/) — the parent scenario this fragment
+5. `scenarios/dlp/defender-device-control-usb-allowlist-macos/` — the parent scenario this fragment
    extends; see that scenario's own references for the shared macOS device-control citations
    (`macOSCustomConfiguration` Graph resource, Full Disk Access/`DC_in_dlp` prerequisites, Advanced
    Hunting query, licensing).
-6. [`dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/) — the sibling
+6. `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/` — the sibling
    fragment whose single-device vendorId+productId exception this fragment's own AND-clause shape
    directly follows, and whose "model, not unit" disclosure this fragment's §11 mirrors.
 

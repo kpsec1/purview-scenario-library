@@ -6,7 +6,6 @@ categorySlug: "data-map"
 slug: "scan-on-premises-sql-server-and-classify"
 repoPath: "scenarios/data-map/scan-on-premises-sql-server-and-classify"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-azure-sql-and-classify","data-map/scan-credential-key-vault-backed"]
 deployCount: 2
 validateCount: 1
 ---
@@ -18,7 +17,7 @@ credential-authenticated scan against it using Microsoft's system default scan r
 includes the SSN and Credit Card Number sensitive information types (SITs) this repo already uses
 elsewhere — so sensitive columns are automatically classified and surfaced in the catalog. This is the
 fourth Data Map scan scenario in this repo and the first covering a **non-Azure** source: it follows
-the same proven data-source-plus-scan pattern as [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/),
+the same proven data-source-plus-scan pattern as `scenarios/data-map/scan-azure-sql-and-classify/`,
 `scan-azure-sql-managed-instance-and-classify/`, and `scan-azure-synapse-and-classify/`, adapted for
 the genuine registration, network, and authentication differences on-premises SQL Server has — see
 `design.md` §4 for the full diff.
@@ -52,7 +51,7 @@ from the Azure sibling scenarios' tables are called out explicitly):
 | Call the Data Map REST API at all (any role) | **Collection Admin** role at root collection assigns data-plane roles to the automation service principal | Only a Collection Admin can grant Purview roles to a service principal — see `docs/rbac-model.md` §5 |
 | Read scan results / browse classified assets (validation) | **Data Reader** role on the target collection | Least-privilege for the read-only `validate/` script |
 | **A self-hosted integration runtime (SHIR)** | A Windows host (or Kubernetes cluster, SQL-auth-only) with network reachability to both the target SQL Server and the Purview service | **Mandatory, not optional** — Microsoft's own documentation states on-premises source types are "currently supported only via self-hosted IR-based scans." This scenario's deploy script provisions the Purview-side *resource* and its auth key; installing the SHIR software and registering the node is a manual step — see §5 [[3]](#references). **The host itself is almost always owned by an infrastructure/on-prem-ops team, not the data governance/security team standing up this scenario** — budget for that as a coordination dependency, not just a technical prerequisite, the same way `scan-azure-sql-managed-instance-and-classify`'s Directory Readers grant needed IAM sign-off from a different team |
-| **A stored credential (SQL or Windows Authentication)** | A SQL/Windows login with `db_datareader` on the target database(s), its password in an Azure Key Vault secret, and a Purview credential object created from it | **No managed-identity path exists for this source type at all** — every Azure sibling defaults to credential-free SAMI; this scenario cannot. Build the credential object with [`data-map/scan-credential-key-vault-backed`](/scenarios/data-map/scan-credential-key-vault-backed/) (scripted; the "portal-only, no REST endpoint" note this row originally carried was incorrect — see §11) [[4]](#references) |
+| **A stored credential (SQL or Windows Authentication)** | A SQL/Windows login with `db_datareader` on the target database(s), its password in an Azure Key Vault secret, and a Purview credential object created from it | **No managed-identity path exists for this source type at all** — every Azure sibling defaults to credential-free SAMI; this scenario cannot. Build the credential object with `scenarios/data-map/scan-credential-key-vault-backed/` (scripted; the "portal-only, no REST endpoint" note this row originally carried was incorrect — see §11) [[4]](#references) |
 | SQL Server version | SQL Server 2005 and above | **SQL Server Express LocalDB isn't supported** — confirmed directly from Microsoft's on-premises SQL Server reference page [[3]](#references) |
 | Network path (SHIR host → SQL Server) | The account used to scan must have access to the `master` database (`sys.databases` lives there) | Confirmed directly from Microsoft's own documentation — see §5 step 3 [[3]](#references) |
 | Automation identity for the REST calls themselves | App registration with **Data Source Administrator** and **Data Reader** (and, for the validate script, at minimum **Data Reader**) Purview role on the collection | Client-secret app-only OAuth2 — see `docs/automation-surface.md` §3 and §5 below |
@@ -322,7 +321,7 @@ same consumption-based billing applies regardless of where the SHIR runs.
   documented REST endpoint existed for creating a Purview credential object. It does: **Credential**
   (`PUT /scan/credentials/{credentialName}`) and **Key Vault Connections**
   (`PUT /scan/azureKeyVaults/{azureKeyVaultName}`) are first-class documented operation groups at
-  `api-version=2023-09-01`, now scripted by [`data-map/scan-credential-key-vault-backed`](/scenarios/data-map/scan-credential-key-vault-backed/).
+  `api-version=2023-09-01`, now scripted by `scenarios/data-map/scan-credential-key-vault-backed/`.
   Build this scenario's `-CredentialReferenceName` there instead of clicking it in the portal. The
   Microsoft disaster-recovery statement that "there's no API to extract credentials" was
   over-read here: it is about **exporting existing secret material** (which is true, and by
@@ -369,7 +368,7 @@ same consumption-based billing applies regardless of where the SHIR runs.
 13. Disaster recovery and migration best practices for Microsoft Purview data governance (classic) — confirms no REST API exists to extract/create credentials, and that SHIR physical registration "must be done manually inside the SHIRs' hosts" — <https://learn.microsoft.com/purview/data-gov-best-practices-disaster-recovery-migration>
 14. Kubernetes supported self-hosted data integration runtime for on-premises data sources (preview) — the distinct, containerized alternative this scenario does not cover — <https://learn.microsoft.com/purview/unified-catalog-data-integration-runtime-kubernetes>
 15. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary) — <https://learn.microsoft.com/purview/data-gov-classic-permissions>
-16. [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/), `scan-azure-sql-managed-instance-and-classify/`, `scan-azure-synapse-and-classify/` — the three sibling scenarios this fragment extends; see their README.md/design.md for shared reasoning not repeated here.
+16. `scenarios/data-map/scan-azure-sql-and-classify/`, `scan-azure-sql-managed-instance-and-classify/`, `scan-azure-synapse-and-classify/` — the three sibling scenarios this fragment extends; see their README.md/design.md for shared reasoning not repeated here.
 
 > Re-verify all links and the two VERIFY items in §11 against current Microsoft Learn before a
 > customer-facing deployment — the Data Map REST surface is explicitly called out by Microsoft as

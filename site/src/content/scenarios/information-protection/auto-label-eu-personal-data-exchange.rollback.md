@@ -61,8 +61,8 @@ call. There is no "undo" — re-establishing the control means re-running
   on the label's existence, definition, publication, or whether its scope includes Emails.
 - **Either sibling scenario's own policy.** These are three separate policy objects (`design.md`
   §3/§7) — rolling back this one has no effect on
-  [`information-protection/auto-label-confidential-exchange`](/scenarios/information-protection/auto-label-confidential-exchange/) or
-  [`information-protection/auto-label-eu-personal-data-sharepoint`](/scenarios/information-protection/auto-label-eu-personal-data-sharepoint/)'s policies, and vice
+  `scenarios/information-protection/auto-label-confidential-exchange/` or
+  `scenarios/information-protection/auto-label-eu-personal-data-sharepoint/`'s policies, and vice
   versa.
 - **Any `-ExternalMailRightsManagementOwner` configuration on a different policy or on the label
   itself** — this scenario's own use of that parameter (if configured) is removed with the policy,

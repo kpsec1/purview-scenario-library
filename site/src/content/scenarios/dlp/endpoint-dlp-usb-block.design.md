@@ -22,7 +22,7 @@ watched more closely than everyone else.
 2. Give a single named security group (IT Data Custodians) a narrower path: audited, not blocked,
    because backup/imaging operations are a legitimate, already-approved workflow that a hard
    block would break — same shape as the Card Operations override in
-   [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/), adapted to a device-control action instead of a
+   `scenarios/dlp/pci-teams-exfil-block/`, adapted to a device-control action instead of a
    Teams-message action.
 3. Reuse the exact SIT pair (`U.S. Social Security Number (SSN)`, `Credit Card Number`, minimum
    count 1) already deployed by `auto-label-confidential-sharepoint`, so the two scenarios form a

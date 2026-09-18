@@ -4,7 +4,7 @@ parent: "dlp/defender-device-control-usb-allowlist-macos"
 ---
 ## 1. Problem statement
 
-[`dlp/defender-device-control-usb-allowlist`](/scenarios/dlp/defender-device-control-usb-allowlist/) deploys a default-deny, named-allowlist
+`scenarios/dlp/defender-device-control-usb-allowlist/` deploys a default-deny, named-allowlist
 removable-storage control for **Windows** endpoints via Microsoft Defender for Endpoint device
 control. That scenario's own non-goals (`design.md` §8) and `PROGRESS.md`'s follow-up backlog
 both flag the same gap this fragment closes: **macOS device control uses a separate JSON/

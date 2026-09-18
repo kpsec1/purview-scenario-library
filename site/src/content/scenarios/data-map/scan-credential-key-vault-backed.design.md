@@ -150,8 +150,8 @@ pilot-tenant `GET` settle it. See `README.md` §11.
 - **Granting the Purview managed identity access to the vault.** Also deliberate — §3. It is an
   Azure IAM/access-policy action, documented step-by-step in `README.md` §5 step 2.
 - **Registering data sources or creating scan objects.** Those are
-  [`data-map/scan-on-premises-sql-server-and-classify`](/scenarios/data-map/scan-on-premises-sql-server-and-classify/) and
-  [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/). This fragment hands them a credential name.
+  `scenarios/data-map/scan-on-premises-sql-server-and-classify/` and
+  `scenarios/data-map/scan-azure-sql-and-classify/`. This fragment hands them a credential name.
 - **The other five credential kinds** (`AccountKey`, `AmazonARN`, `ConsumerKeyAuth`,
   `DelegatedAuth`, `ManagedIdentity`) — `README.md` §11 and `PROGRESS.md` follow-ups.
 - **A credential-to-scan reverse index.** The API documents no such lookup, so

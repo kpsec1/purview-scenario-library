@@ -5,7 +5,7 @@ parent: "dlp/defender-device-control-usb-allowlist-wpd-coverage"
 ## Recommended sequence
 
 This fragment shares one Intune device configuration object with its parent scenario
-([`dlp/defender-device-control-usb-allowlist`](/scenarios/dlp/defender-device-control-usb-allowlist/)). Rolling back means removing **only** the
+(`scenarios/dlp/defender-device-control-usb-allowlist/`). Rolling back means removing **only** the
 WPD-specific delta, not the parent's own `RemovableMediaDevices` coverage.
 
 ### Stage 1 — Remove WPD coverage only (reversible, minutes)

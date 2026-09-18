@@ -4,7 +4,7 @@ parent: "records-management/multi-stage-disposition-review"
 ---
 ## 1. Problem statement
 
-The regulatory-records-disposition scenario ([`records-management/regulatory-records-disposition`](/scenarios/records-management/regulatory-records-disposition/))
+The regulatory-records-disposition scenario (`scenarios/records-management/regulatory-records-disposition/`)
 gives every event-based record a **single** reviewer set: whoever is in `-ReviewerEmail` decides disposal.
 That's right for most record classes, but wrong for the ones where **one approver isn't enough** — where
 the organization needs a genuine **sign-off chain** before an irreversible, evidenced delete. Employee

@@ -6,7 +6,6 @@ categorySlug: "dspm-for-ai"
 slug: "copilot-external-email-block"
 repoPath: "scenarios/dspm-for-ai/copilot-external-email-block"
 parts: ["design","deploy","validate","rollback"]
-related: ["dlp/accepted-domains-hygiene-check","dspm-for-ai/copilot-sensitive-data-exposure","dspm-for-ai/copilot-prompt-full-block"]
 deployCount: 2
 validateCount: 1
 ---
@@ -69,7 +68,7 @@ scenario specifically:
 | **`copilot-sensitive-data-exposure` already deployed** | The named policy from that scenario must already exist | This scenario adds a fourth rule to that policy by name (default `Copilot DLP - Sensitive Data Exposure Protection`); it does not create a new policy. |
 | "Block external email from being processed" feature | **Preview** as of this writing | No fixed tenant-rollout date documented by Microsoft for this specific action — confirm it's selectable in the portal before relying on the script (see §5 step 1). |
 | DLP to author the Copilot-location policy | Same Copilot-location-specific role list as the parent scenario (Purview Data Security AI Admin(s), Compliance Administrator, Microsoft Entra AI Admin, etc.) | See parent scenario's `README.md` §3 and `docs/rbac-model.md` §3 — unchanged by this addition. |
-| Tenant accepted domains configured correctly | Every legitimate internal/partner sending domain must already be a correctly-configured accepted domain in Exchange Online | This rule's "external" determination is driven entirely by the tenant's Exchange accepted-domains list (`design.md` §4) — a misconfigured accepted domain (e.g. a legitimate subsidiary domain not yet added) would cause this rule to over-exclude that subsidiary's mail from Copilot grounding. Not a new prerequisite this scenario introduces, but one this scenario's correctness now directly depends on. Ongoing monitoring for this dependency: [`dlp/accepted-domains-hygiene-check`](/scenarios/dlp/accepted-domains-hygiene-check/). |
+| Tenant accepted domains configured correctly | Every legitimate internal/partner sending domain must already be a correctly-configured accepted domain in Exchange Online | This rule's "external" determination is driven entirely by the tenant's Exchange accepted-domains list (`design.md` §4) — a misconfigured accepted domain (e.g. a legitimate subsidiary domain not yet added) would cause this rule to over-exclude that subsidiary's mail from Copilot grounding. Not a new prerequisite this scenario introduces, but one this scenario's correctness now directly depends on. Ongoing monitoring for this dependency: `scenarios/dlp/accepted-domains-hygiene-check/`. |
 
 **Licensing note specific to this action.** Microsoft's Purview service description draws a tier
 split between the two file/email-facing Copilot DLP capabilities and the prompt-facing one:
@@ -315,9 +314,9 @@ policy intact.
    table (the "files and emails" vs. "prompts" tier split referenced in §3/§10) — <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-data-loss-prevention-dlp-for-microsoft-copilot>
 7. Set-DlpComplianceRule reference (`-Disabled` parameter, used by this scenario's rollback path) — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancerule>
 8. Remove-DlpComplianceRule reference (rule-level deletion, used by this scenario's `-Purge` path) — <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancerule>
-9. [`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/) — the parent scenario this fragment
+9. `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` — the parent scenario this fragment
    extends; shared prerequisites, architecture, and policy object.
-10. [`dspm-for-ai/copilot-prompt-full-block`](/scenarios/dspm-for-ai/copilot-prompt-full-block/) — the sibling scenario establishing the
+10. `scenarios/dspm-for-ai/copilot-prompt-full-block/` — the sibling scenario establishing the
     "extends the shared policy" pattern this fragment follows.
 
 > Re-verify the preview/GA status of this specific action and the `-FromScope`-on-Copilot-location

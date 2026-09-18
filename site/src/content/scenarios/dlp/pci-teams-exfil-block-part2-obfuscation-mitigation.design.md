@@ -26,8 +26,8 @@ gap for a single, one-time, perfectly-executed split is documented as still open
 ## 2. Why this shape (Insider Risk Management + Adaptive Protection, not a DLP-only fix)
 
 `scenarios/dlp/pci-teams-exfil-block/README.md` §11 already named the intended direction: pair
-the static PCI Teams policy with [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) or
-[`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) "for cumulative, behavior-based
+the static PCI Teams policy with `scenarios/insider-risk/departing-employee-data-theft/` or
+`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` "for cumulative, behavior-based
 detection that correlates multiple near-in-time messages from the same sender." Both of those
 scenarios are now built (see `PROGRESS.md` DONE). This fragment is the integration point that
 was deferred until they existed: a **dedicated** Insider Risk Management (IRM) policy tuned to
@@ -144,7 +144,7 @@ run end-to-end against a live tenant during this build. Flagged as an explicit `
   capability does this; this fragment closes the channel *after* a behavioral signal, not by
   detecting the split content itself. Documented as an explicit residual risk in `README.md` §11,
   not fixed.
-- **Does not modify or duplicate [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/)'s
+- **Does not modify or duplicate `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`'s
   own DLP policy.** That policy's Exchange+Teams, external-share-only rules keep operating
   independently and unchanged; this fragment adds a *separate* rule to Part 1's *own* named
   policy so the PCI-specific control's behavior (rule names, alert routing, Card Ops interaction)

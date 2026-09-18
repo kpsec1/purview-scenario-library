@@ -28,7 +28,7 @@ starts the clock only on explicit, signed-off action.
 
 ## 3. Why event-based retention + disposition review (not the DLM regulatory scenario)
 
-- **Creation-age retention** (the DLM [`data-lifecycle-management/retention-labels-financial-records`](/scenarios/data-lifecycle-management/retention-labels-financial-records/)
+- **Creation-age retention** (the DLM `scenarios/data-lifecycle-management/retention-labels-financial-records/`
   scenario) starts the clock when content is created — right for "keep books and records 7 years", wrong
   for "keep 7 years **after** an event" whose date is unknown at creation.
 - **Auto-apply** stamps a label on matching content; **publishing** offers the label for deliberate

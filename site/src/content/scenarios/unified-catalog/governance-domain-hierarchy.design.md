@@ -4,7 +4,7 @@ parent: "unified-catalog/governance-domain-hierarchy"
 ---
 ## 1. Problem statement
 
-[`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) deliberately scoped itself to **one**
+`scenarios/unified-catalog/curate-business-glossary/` deliberately scoped itself to **one**
 standalone governance domain (`design.md` Section 6 there), leaving "multi-domain governance
 hierarchies, custom attribute groups, and data estate mappings to Data Map collections" as an
 explicit follow-up (`PROGRESS.md`). A single flat domain does not survive contact with a real

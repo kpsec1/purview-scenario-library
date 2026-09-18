@@ -57,7 +57,7 @@ first place before choosing to switch to it).
   disabling or removing the policy afterward only affects future prompts.
 - **Sensitivity labels.** This scenario does not create or manage the `Confidential`/`Highly
   Confidential` labels it references — they are a dependency (see
-  [`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/)), not a deployed artifact.
+  `scenarios/information-protection/auto-label-confidential-sharepoint/`), not a deployed artifact.
   Removing this policy has no effect on the labels or their own auto-labeling policies.
 - **DSPM for AI oversharing assessment.** It is not created or scoped by this scenario at all; it
   keeps running automatically regardless of this policy's state.

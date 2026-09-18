@@ -44,7 +44,7 @@ the HR resignation-date data feed, and a Graph-based alert export path for SOC i
 
 ## 3. Why Insider Risk Management (not DLP alone) for this scenario
 
-- **DLP** (see [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/)) inspects and can block a single
+- **DLP** (see `scenarios/dlp/pci-teams-exfil-block/`) inspects and can block a single
   message or upload against a fixed rule, in real time, at the moment of transmission. It has
   no concept of "this user resigned nine days ago" and cannot correlate a SharePoint download
   today with a printed folder yesterday and a personal-Dropbox upload the day before —
@@ -59,7 +59,7 @@ the HR resignation-date data feed, and a Graph-based alert export path for SOC i
   couldn't close alone, and pointed here. This scenario is that follow-on: IRM's **cumulative
   exfiltration** and **sequence detection** risk factors are exactly the cross-event
   correlation a single-message DLP rule structurally cannot provide.
-- **Adaptive Protection** ([`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/),
+- **Adaptive Protection** (`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`,
   planned next in `PROGRESS.md`) is the natural next step after this scenario: it consumes the
   risk *level* this policy produces and uses it to dynamically tighten DLP/label enforcement
   for that specific user, without a human in the loop for the first response. Out of scope
@@ -127,7 +127,7 @@ run cycle — see Operations §8 in the README for the recommended cadence.
 | App registration creation | `deploy/Register-HrConnectorApp.ps1` (generic `Microsoft.Graph.Applications` cmdlets), interactive delegated auth (`Application.ReadWrite.All`) | Not this repo's usual app-only certificate pattern, deliberately: this is a one-time (or rarely-run, for rotation) bootstrap task performed by a human admin, not a scheduled unattended job. A standing app-only credential empowered to create other app registrations and mint their secrets would be a materially higher-value target than the interactive session this task actually needs. Idempotent by display-name lookup; `-RotateSecret` adds a secret without duplicating the app. |
 | Superseded-secret cleanup | `deploy/Remove-HrConnectorAppSecret.ps1 -RemoveExpired` (`Remove-MgApplicationPassword`), same interactive delegated auth | `-RotateSecret` above only ever adds a secret — Microsoft Entra applications support multiple concurrent client secrets by design, so nothing deletes the superseded one automatically. This script closes that gap as a separate, explicit step (not folded into `-RotateSecret` itself) so an operator can confirm the new secret works in production before retiring the old one, rather than the rotation script assuming that's already true. `-RemoveExpired` only ever targets already-dead credentials, so it can never reduce the app's working secret count; the separate `-KeyId`/`-Force` path exists for the rarer case of force-retiring a still-valid secret (e.g. suspected exposure). |
 | Alert export mechanism | Microsoft Graph Security API `/security/alerts_v2`, filtered client-side on `detectionSource eq 'microsoftInsiderRiskManagement'` | This is Microsoft's own documented integration path for getting IRM alert data into a SIEM (`irm-investigate-alerts-defender`). Client-side filtering (not server-side `$filter`) is used deliberately — see README §11 for why. |
-| Case/investigation actions (assign, escalate to eDiscovery, resolve) | Out of scope — left to the Purview/Defender portal | No Graph write surface for IRM case management was found and grounded during this build; scripting alert *triage* would risk fabricating an unverified API. Read-only export is the safe, grounded automation boundary. Once a case *is* manually escalated, [`insider-risk/irm-case-escalation-to-ediscovery`](/scenarios/insider-risk/irm-case-escalation-to-ediscovery/) picks up from there (provenance linkage + custodian/hold reconciliation on the resulting eDiscovery case) — still no API for the escalation click itself. |
+| Case/investigation actions (assign, escalate to eDiscovery, resolve) | Out of scope — left to the Purview/Defender portal | No Graph write surface for IRM case management was found and grounded during this build; scripting alert *triage* would risk fabricating an unverified API. Read-only export is the safe, grounded automation boundary. Once a case *is* manually escalated, `scenarios/insider-risk/irm-case-escalation-to-ediscovery/` picks up from there (provenance linkage + custodian/hold reconciliation on the resulting eDiscovery case) — still no API for the escalation click itself. |
 
 ## 7. Non-goals
 

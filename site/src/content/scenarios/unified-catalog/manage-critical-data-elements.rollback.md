@@ -81,9 +81,9 @@ requirements; it does not need to remove term links because this scenario never 
 
 ## What rollback does **not** undo
 
-- **The underlying Data Map asset or its columns.** [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/)
+- **The underlying Data Map asset or its columns.** `scenarios/data-map/scan-azure-sql-and-classify/`
   owns that asset's lifecycle; this scenario's rollback never touches it.
-- **The governance domain.** [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) owns its
+- **The governance domain.** `scenarios/unified-catalog/curate-business-glossary/` owns its
   lifecycle; this scenario only looks it up by name.
 - **The Unified Catalog data column wrapper object(s)** — see Stage 2 above; there is currently no
   REST operation to delete one.

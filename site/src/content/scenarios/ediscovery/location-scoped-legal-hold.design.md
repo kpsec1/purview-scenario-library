@@ -4,7 +4,7 @@ parent: "ediscovery/location-scoped-legal-hold"
 ---
 ## 1. Why this is a genuinely separate object model, not a custodian-hold variant
 
-[`ediscovery/premium-legal-hold-and-export`](/scenarios/ediscovery/premium-legal-hold-and-export/) covers `ediscoveryCustodian.applyHold` —
+`scenarios/ediscovery/premium-legal-hold-and-export/` covers `ediscoveryCustodian.applyHold` —
 a named person's mailbox/OneDrive, added to a case as a custodian with rich case-management
 semantics (hold status, release, re-activate, review-set participation). This scenario covers the
 v1.0 API's other hold object, `microsoft.graph.security.ediscoveryHoldPolicy`
@@ -168,7 +168,7 @@ than conclusive.
 
 ## 8. Non-goals (explicitly out of scope for this fragment)
 
-- **Custodian-scoped holds** — covered by [`ediscovery/premium-legal-hold-and-export`](/scenarios/ediscovery/premium-legal-hold-and-export/).
+- **Custodian-scoped holds** — covered by `scenarios/ediscovery/premium-legal-hold-and-export/`.
   A matter needing both a named-custodian hold and a location-scoped sweep in the same case can
   run both scenarios' deploy scripts against the same `-CaseId`; nothing in either script assumes
   it owns the case exclusively.

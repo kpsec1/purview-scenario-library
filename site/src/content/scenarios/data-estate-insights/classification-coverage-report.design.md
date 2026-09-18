@@ -72,7 +72,7 @@ needs this data outside the portal:
    with double-counted rows. See Section 5.
 6. **Compose with, don't duplicate, this repo's existing Data Governance narrative.** The scenario's
    worked example scopes to the same `customerdb` collection and re-surfaces the SSN / Credit Card
-   Number classifications [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) already establishes —
+   Number classifications `scenarios/data-map/scan-azure-sql-and-classify/` already establishes —
    this report is presented as the natural "what did all that scanning actually produce, in
    board-deck-ready numbers, over time" companion to that scenario, not a replacement for it.
 
@@ -141,7 +141,7 @@ Full grounding: `deploy/Export-ClassificationCoverageReport.ps1`'s inline commen
 ## 6. What this scenario assumes already exists
 
 - A Microsoft Purview account with Data Map enabled and at least one completed scan — the worked
-  example reuses `customerdb.dbo.Customers` from [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/).
+  example reuses `customerdb.dbo.Customers` from `scenarios/data-map/scan-azure-sql-and-classify/`.
 - An app registration holding the **Data Reader** role on the collection(s) in scope.
 - Wherever the trend-log CSV is written persists between runs (a repo path, a mounted file share, or
   blob storage) — this scenario does not provision that storage; see `README.md` §6/§9.

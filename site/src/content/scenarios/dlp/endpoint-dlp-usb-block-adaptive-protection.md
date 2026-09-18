@@ -6,7 +6,6 @@ categorySlug: "dlp"
 slug: "endpoint-dlp-usb-block-adaptive-protection"
 repoPath: "scenarios/dlp/endpoint-dlp-usb-block-adaptive-protection"
 parts: ["design","deploy","validate","rollback"]
-related: ["adaptive-protection/dynamic-risk-dlp-enforcement","dlp/endpoint-dlp-usb-block","adaptive-protection/conditional-access-insider-risk-block","data-lifecycle-management/adaptive-protection-deleted-content-preservation"]
 deployCount: 2
 validateCount: 1
 ---
@@ -27,7 +26,7 @@ restriction), whose rule-level action syntax is undocumented — see §5 Step 6 
 representing this scenario as full Quick Setup parity to a buyer.
 
 **Who it's for:** any tenant that has already deployed (or is deploying via this library)
-[`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) — the Exchange/Teams half of the
+`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement` — the Exchange/Teams half of the
 same control — and wants to close the device-channel bypass that scenario's own README explicitly
 names as an open gap: an Elevated-risk user blocked from emailing a file externally could, with
 only the Exchange/Teams policy deployed, still walk out with the identical file via a USB copy, a
@@ -174,7 +173,7 @@ this script's four-setting subset is the complete picture.
 2. **Manual checklist** — the same script prints a checklist for device onboarding, Advanced
    classification scanning and protection, Adaptive Protection enablement, insider risk levels,
    the feeder IRM policy, the two unscripted Quick Setup actions (§5 Step 6), and the interaction
-   with [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/) if also deployed (§11) — none of which has an API
+   with `scenarios/dlp/endpoint-dlp-usb-block` if also deployed (§11) — none of which has an API
    this script can query.
 3. **End-to-end functional test (non-production accounts/devices only)** — assign a test account
    a confirmed insider risk level, then attempt to copy a file to a USB drive, copy to a network
@@ -196,7 +195,7 @@ Devices-specific additions:
   together, not in isolation — a user blocked on one channel and immediately active on the other
   is a signal the combined control is working as intended (contained on the attempted channel),
   not that one policy "missed" something the other caught.
-- **Watch for interaction with [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/), if also deployed.**
+- **Watch for interaction with `scenarios/dlp/endpoint-dlp-usb-block`, if also deployed.**
   Microsoft's documented "most restrictive policy wins" rule (§11) means a user matched by both
   this policy and that one gets the stricter of the two outcomes automatically — but confirm this
   composes as expected for your specific rule configurations in a pilot tenant rather than
@@ -271,7 +270,7 @@ classification scanning and protection — each is independently owned.
 - **Up to 36 hours before Adaptive Protection actions apply after first enabling** — identical,
   shared backend delay to the Exchange/Teams sibling scenario; not a property of this scenario's
   policy.
-- **Interaction with [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/), if deployed in the same tenant.**
+- **Interaction with `scenarios/dlp/endpoint-dlp-usb-block`, if deployed in the same tenant.**
   Microsoft documents: "If a user is targeted by a default Adaptive Protection Device DLP policy
   and is targeted by an independent Device DLP policy, only the actions of the *most restrictive*
   policy will be applied" [[1]](#references). This is safe-by-default behavior (the stricter
@@ -307,9 +306,9 @@ classification scanning and protection — each is independently owned.
 9. Set-PolicyConfig reference (`-EndpointDlpGlobalSettings` — documented tenant-wide list
    mechanism, distinct from this scenario's per-rule action gap; see `design.md` §7) — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-policyconfig>
 10. `docs/licensing-matrix.md` §2 — Adaptive Protection and Endpoint DLP rows.
-11. [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) — the Exchange/Teams sibling
+11. `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` — the Exchange/Teams sibling
     scenario this one complements.
-12. [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/) — the always-on Devices DLP policy this scenario's
+12. `scenarios/dlp/endpoint-dlp-usb-block/` — the always-on Devices DLP policy this scenario's
     §11 documents an interaction with.
 
 > Re-verify all links, cmdlet/API behavior, and licensing terms against current Microsoft Learn

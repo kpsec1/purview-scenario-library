@@ -4,7 +4,7 @@ parent: "adaptive-protection/conditional-access-insider-risk-block"
 ---
 ## 1. Problem statement
 
-[`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) closes the DLP half of Adaptive
+`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` closes the DLP half of Adaptive
 Protection's enforcement surface: an Elevated-risk user is blocked from sharing content
 externally over Exchange/Teams. That scenario's own `design.md` §7 (Non-goals) and `README.md`
 §11 name the gap directly: an Elevated-risk user blocked from *emailing* or *Teams-sharing* a

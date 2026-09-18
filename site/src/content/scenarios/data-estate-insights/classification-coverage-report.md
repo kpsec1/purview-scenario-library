@@ -6,7 +6,6 @@ categorySlug: "data-estate-insights"
 slug: "classification-coverage-report"
 repoPath: "scenarios/data-estate-insights/classification-coverage-report"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-azure-sql-and-classify","data-lineage/end-to-end-lineage-validation"]
 deployCount: 1
 validateCount: 1
 ---
@@ -46,7 +45,7 @@ lower privilege level than the native path requires.
 
 This scenario also ties directly into this repo's existing Data Governance narrative: the worked
 example scopes to `customerdb.dbo.Customers`, the same asset
-[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) scans and classifies (SSN, Credit Card Number).
+`scenarios/data-map/scan-azure-sql-and-classify/` scans and classifies (SSN, Credit Card Number).
 This report is the natural "what did all that scanning actually produce, in board-deck-ready
 numbers, over time" companion to that scenario.
 
@@ -57,7 +56,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Microsoft Purview account + Data Map | Active Azure subscription, Purview account with Data Map enabled | Discovery - Query rides the same Data Map/Unified Catalog PAYG metering as this repo's other surface-4 scenarios — see `docs/licensing-matrix.md` §1–2 |
-| At least one completed scan in scope | Assets already registered and scanned via Data Map (e.g. [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/)) | This scenario does not register or scan any source — see §6/`design.md` §6 |
+| At least one completed scan in scope | Assets already registered and scanned via Data Map (e.g. `scenarios/data-map/scan-azure-sql-and-classify/`) | This scenario does not register or scan any source — see §6/`design.md` §6 |
 | Run this scenario's report script | **Data Reader** role on the collection(s) in scope | Discovery - Query is a Catalog Data-plane **read** operation [[6]](#references)[[9]](#references) — deliberately narrower than what viewing the native report through "Export to CSV" requires (next row). A credential with this role can already read every classified value in scope one asset at a time via the portal; this scenario changes *how conveniently* that data can be aggregated, not the underlying read boundary — see §11's report-sensitivity note before deciding where the output may be stored |
 | View **and export** the *native* Data Estate Insights classification report (for comparison, not required by this scenario) | **Insights Reader** role (assignable only by the root collection's Data Curator) *plus* Data Reader — and even then, **only a Data Curator can select "Export to CSV"**; a Data Reader + Insights Reader can view but not export [[7]](#references) | This scenario's own script needs none of this — see design.md §2 goal 2 |
 | Grant the automation identity a Purview role at all | **Collection Admin** role at root (or the relevant sub-collection) to perform the role assignment | Only a Collection Admin can assign Data Reader to a service principal [[6]](#references) |
@@ -114,7 +113,7 @@ native report's own export path requires. Full design rationale: `design.md`.
    [[7]](#references) — this is the specific gap this scenario's script closes at a lower privilege
    level.
 3. Confirm the target collection(s) already have at least one completed scan (e.g.
-   [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/)'s own output for `customerdb.dbo.Customers`).
+   `scenarios/data-map/scan-azure-sql-and-classify/`'s own output for `customerdb.dbo.Customers`).
 4. Assign the automation identity's service principal the **Data Reader** role on the collection(s)
    in scope: **Data Map** → **Collections** → select the collection → **Role assignments** → add
    under **Data readers** [[6]](#references).
@@ -169,7 +168,7 @@ higher-frequency SIEM feed should pass an explicit `-RunId` per invocation inste
 | Fast-path alternative | `-Mode Facets` — one faceted query per object type, top-N classification counts only | Matches the native "Top classifications" chart's own double-counting behavior for multi-classified assets; cannot compute an unclassified count — see §11 |
 | Report role | **Data Reader** | Catalog Data-plane read access [[6]](#references)[[9]](#references) — narrower than the native report's own Data-Curator-only export gate [[7]](#references) |
 | API version pinned by both scripts | `2023-09-01` | Confirmed current via direct fetch of the Discovery - Query REST reference page [[5]](#references) |
-| `-PurviewAccountEndpoint` accepted values | `https://api.purview-service.microsoft.com` (new portal) or `https://<account>.purview.azure.com` (classic portal) | Both explicitly confirmed valid for this `/datamap/api/...` path family [[11]](#references) — same dual-endpoint precedent as [`data-lineage/end-to-end-lineage-validation`](/scenarios/data-lineage/end-to-end-lineage-validation/) |
+| `-PurviewAccountEndpoint` accepted values | `https://api.purview-service.microsoft.com` (new portal) or `https://<account>.purview.azure.com` (classic portal) | Both explicitly confirmed valid for this `/datamap/api/...` path family [[11]](#references) — same dual-endpoint precedent as `scenarios/data-lineage/end-to-end-lineage-validation/` |
 | Idempotency key | `-RunId` (default: current UTC date, `yyyy-MM-dd`) | Re-running for the same `RunId` **replaces** that RunId's trend-log row(s) rather than duplicating — see `design.md` §5 |
 
 Full REST-body grounding: `deploy/Export-ClassificationCoverageReport.ps1` and
@@ -256,7 +255,7 @@ already-produced trend-log/breakdown files per the buyer's own data-retention po
 
 - **PAYG, not per-user, and lightweight at this scenario's scale.** Discovery - Query calls bill
   through the same Data Map / Unified Catalog PAYG metering as `scenarios/data-map/
-  scan-azure-sql-and-classify/` and [`data-lineage/end-to-end-lineage-validation`](/scenarios/data-lineage/end-to-end-lineage-validation/) — see
+  scan-azure-sql-and-classify/` and `scenarios/data-lineage/end-to-end-lineage-validation/` — see
   `docs/licensing-matrix.md` §1–2. This scenario's calls are read-only search queries, not a scan —
   cost impact is negligible relative to the scanning this scenario depends on as a prerequisite, with
   the caveat that `-Mode Full` at very large estate scale makes materially more calls than a single

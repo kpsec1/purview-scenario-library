@@ -4,7 +4,7 @@ parent: "data-quality/connection-and-scorecard-alerts"
 ---
 ## 1. Problem statement
 
-The sibling scenario [`data-quality/rules-and-scorecards`](/scenarios/data-quality/rules-and-scorecards/) scripts the rules and the
+The sibling scenario `scenarios/data-quality/rules-and-scorecards/` scripts the rules and the
 one-time scan schedule that turn a governed data asset into a scored one, but explicitly declines
 to script two prerequisites it found insufficiently grounded at the time: the data-source
 **connection** the scan authenticates through (blocked on an unconfirmed `computeId` provisioning
@@ -134,7 +134,7 @@ scenario in this repo.
 - A Microsoft Purview account with Unified Catalog and Data Quality enabled (PAYG/DGPU metering
   active) — same prerequisite as `rules-and-scorecards`.
 - A governance domain (this scenario's example reuses "Customer Experience", created by
-  [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/)).
+  `scenarios/unified-catalog/curate-business-glossary/`).
 - For the alert scopes: a data product and data asset already added to that domain, matching
   `rules-and-scorecards`' own "Customer 360" / "Customer" example (this scenario does not create
   either).

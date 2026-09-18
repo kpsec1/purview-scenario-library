@@ -6,7 +6,6 @@ categorySlug: "records-management"
 slug: "regulatory-records-disposition"
 repoPath: "scenarios/records-management/regulatory-records-disposition"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-lifecycle-management/retention-labels-financial-records","records-management/disposition-proof-export"]
 deployCount: 3
 validateCount: 1
 ---
@@ -24,7 +23,7 @@ records for a fixed period **after a business event** (a contract expiring, an e
 product reaching end-of-life) and then dispose of them through a **reviewed, evidenced** process — with
 the whole lifecycle defined as reproducible, auditable code.
 
-**How it differs from the DLM regulatory-retention scenario** ([`data-lifecycle-management/retention-labels-financial-records`](/scenarios/data-lifecycle-management/retention-labels-financial-records/)):
+**How it differs from the DLM regulatory-retention scenario** (`scenarios/data-lifecycle-management/retention-labels-financial-records/`):
 that one uses a **regulatory record** label with a **creation-age** clock and **auto-applies** it; this
 one uses an **event-based** clock (`EventAgeInDays`), a **`KeepAndDelete`** action with a **disposition
 review**, and **publishes** the label for controlled application. Different obligation, different
@@ -170,7 +169,7 @@ Exact cmdlet syntax and Learn sources are cited in each script's `.NOTES`.
 5. **Idempotency proof** — re-run the deploy; every object reports `exists` (not `created`); nothing is
    duplicated or silently mutated; no event is created without `-TriggerEvent` + `event.create`.
 6. **Evidence export for an auditor/examiner** —
-   [`records-management/disposition-proof-export`](/scenarios/records-management/disposition-proof-export/) documents the portal's own Filter+Export
+   `scenarios/records-management/disposition-proof-export/` documents the portal's own Filter+Export
    `.csv` workflow for this evidence and adds a scriptable, schedulable rolling audit trail
    (`Search-UnifiedAuditLog` against the disposition-review and record-deletion Operations) as a
    companion to the manual per-label export above.

@@ -38,7 +38,7 @@ a hard block, or the control will get disabled within a month of go-live.
 
 - **Insider Risk Management** detects and scores risky behavior after the fact (exfiltration
   indicators, cumulative risk) — it does not block the message in real time. Good complementary
-  signal (see [`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/), not yet built), wrong tool
+  signal (see `scenarios/insider-risk/departing-employee-data-theft/`, not yet built), wrong tool
   for a hard, deterministic block on a specific regulated data type.
 - **Communication Compliance** reviews messages for policy violations (harassment, regulatory
   language) after they're sent, for human reviewers — again, not a real-time block.
@@ -119,5 +119,5 @@ care about, not just the individual users.
   and future `dlp` file-sharing scenarios). It is scoped to **message text**, matching the
   `TeamsLocation` DLP surface only.
 - This scenario does not configure Adaptive Protection risk-based enforcement
-  ([`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/), planned) — the block/audit
+  (`scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`, planned) — the block/audit
   split here is static (group membership + share target), not risk-score-driven.

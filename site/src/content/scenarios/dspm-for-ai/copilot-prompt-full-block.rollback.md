@@ -5,7 +5,7 @@ parent: "dspm-for-ai/copilot-prompt-full-block"
 ## Recommended sequence
 
 This scenario adds exactly **one rule** to a policy owned by
-[`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/). Every rollback stage below is scoped to
+`scenarios/dspm-for-ai/copilot-sensitive-data-exposure/`. Every rollback stage below is scoped to
 that one rule only — the parent policy and its Rule 0 (label exclusion) / Rule 1 (web-grounding
 restriction) are never modified by this scenario's scripts, in either direction.
 

@@ -9,7 +9,7 @@ record or regulatory record label. Per Microsoft's own documented behavior for
 `Remove-RetentionComplianceRule`: removing the rule "causes the release of all Exchange mailbox and
 SharePoint site retentions that are associated with the rule" [[1]](#references) — i.e. there is
 **no permanently locked content to force-release** the way there is for
-[`data-lifecycle-management/retention-labels-financial-records`](/scenarios/data-lifecycle-management/retention-labels-financial-records/). Rollback here is
+`scenarios/data-lifecycle-management/retention-labels-financial-records/`. Rollback here is
 materially lower-risk. The residual risk is different: an **over-broad adaptive scope query**
 retains (or under a mis-scoped rollback, stops retaining) more or fewer mailboxes than intended —
 see `reviews.md` Red Team finding 1.

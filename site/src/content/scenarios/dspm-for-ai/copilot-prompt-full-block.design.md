@@ -4,7 +4,7 @@ parent: "dspm-for-ai/copilot-prompt-full-block"
 ---
 ## 1. Problem statement
 
-[`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/) deploys two of the three documented
+`scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` deploys two of the three documented
 Copilot-location DLP actions (label-based content exclusion, SIT-based web-grounding restriction).
 Its own `design.md` §6 recorded the third — full prompt-response blocking on a SIT match — as
 explicitly out of scope, because at that build time it was a preview feature with no published
@@ -123,7 +123,7 @@ exists.
 - This scenario does not attempt the "Block external email from being processed" preview action
   (a fourth, distinct Copilot-location action with its own condition type, `Email is received from
   > External users`) — out of scope for this fragment. **Built** as
-  [`dspm-for-ai/copilot-external-email-block`](/scenarios/dspm-for-ai/copilot-external-email-block/), which adds it as Rule 3 on this same shared
+  `scenarios/dspm-for-ai/copilot-external-email-block/`, which adds it as Rule 3 on this same shared
   policy.
 - This scenario does not resolve the open `-RestrictAccess` VERIFY definitively — that requires
   either a pilot tenant (permanently out of reach for this repo's build process) or a future

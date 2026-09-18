@@ -4,7 +4,7 @@ parent: "information-protection/auto-label-eu-personal-data-sharepoint"
 ---
 ## 1. Problem statement
 
-[`information-protection/auto-label-confidential-sharepoint`](/scenarios/information-protection/auto-label-confidential-sharepoint/) ships a working
+`scenarios/information-protection/auto-label-confidential-sharepoint/` ships a working
 auto-labeling pattern, but its default condition set — U.S. Social Security Number (SSN) and
 Credit Card Number — is a U.S.-centric starter kit. Its own `reviews.md` (Red Team finding 4) and
 `README.md` §2 already flag this explicitly: a tenant whose regulated population is EU/UK-only
@@ -49,7 +49,7 @@ as the clean, niche format `AGENTS.md` §4 requires. A second, sibling scenario 
 policy family, same architecture, different (and parameterized) SIT list and policy/rule names —
 keeps both scenarios independently deployable, independently rollback-able, and independently
 readable, matching the precedent already set by
-[`information-protection/auto-label-confidential-exchange`](/scenarios/information-protection/auto-label-confidential-exchange/) (a sibling by *location*,
+`scenarios/information-protection/auto-label-confidential-exchange/` (a sibling by *location*,
 not by *SIT set*, but the same "don't overload one scenario with two purposes" principle).
 
 ## 4. Sensitive information type selection — grounding
@@ -320,7 +320,7 @@ parameter; it does not re-derive any of the already-reviewed rollout/override de
 - This scenario does not cover Exchange (email) — scoped to SharePoint/OneDrive at-rest content,
   matching the sibling scenario's own scope split with
   `auto-label-confidential-exchange/`. The EU-personal-data Exchange variant is now built as
-  [`information-protection/auto-label-eu-personal-data-exchange`](/scenarios/information-protection/auto-label-eu-personal-data-exchange/) — see that scenario's
+  `scenarios/information-protection/auto-label-eu-personal-data-exchange/` — see that scenario's
   `design.md` for why it is a third, sibling scenario rather than a parameter on this one.
 - This scenario does not attempt EU personal-data-category completeness (names, physical
   addresses, health data, biometric data are all "personal data" under GDPR Article 4(1) but are

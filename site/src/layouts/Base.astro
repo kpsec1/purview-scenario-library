@@ -42,9 +42,6 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
         <nav class="links" aria-label="Primary">
           <a href="/" class={isHome ? 'active' : ''}>Home</a>
           <a href="/scenarios/" class={path.startsWith('/scenarios') ? 'active' : ''}>Library</a>
-          <a href="https://github.com/kpsec1/purview-scenario-library" rel="noopener" target="_blank"
-            >GitHub ↗</a
-          >
         </nav>
       </div>
     </header>
@@ -59,8 +56,7 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
           <strong>Krunal</strong> · Cyber Security Consultant · Regina, Saskatchewan
         </div>
         <div class="foot-meta">
-          A growing library of Microsoft Purview &amp; security scenarios ·
-          <a href="https://github.com/kpsec1/purview-scenario-library">Source on GitHub</a>
+          A growing library of Microsoft Purview &amp; security scenarios
           <br />
           <span class="foot-updated">Last updated {buildDate}</span>
         </div>

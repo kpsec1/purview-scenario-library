@@ -13,7 +13,7 @@ reproduce. Microsoft ships a purpose-built policy template for exactly this —
 AI Content Safety classifiers (Prompt Shields, Protected material) that don't exist anywhere else
 in Communication Compliance's classifier catalog. This scenario stands that template up correctly,
 scoped and reviewed the same way this repo's other Communication Compliance scenario
-([`communication-compliance/harassment-and-code-of-conduct`](/scenarios/communication-compliance/harassment-and-code-of-conduct/)) already established, and
+(`scenarios/communication-compliance/harassment-and-code-of-conduct/`) already established, and
 layers the same scriptable audit-trail export on top.
 
 ## 2. Why this is a template deployment, not a custom policy (unlike the harassment scenario)
@@ -56,8 +56,8 @@ fourth, different one:
 
 | Scenario | Control type | What it does | What it misses |
 |---|---|---|---|
-| [`dspm-for-ai/copilot-sensitive-data-exposure`](/scenarios/dspm-for-ai/copilot-sensitive-data-exposure/) | Preventive (DLP) | Excludes labeled/sensitive content from Copilot grounding and web search | Says nothing about a user's own prompt intent, or what Copilot's response itself contains |
-| [`dspm-for-ai/copilot-prompt-full-block`](/scenarios/dspm-for-ai/copilot-prompt-full-block/) | Preventive (DLP) | Fully blocks a prompt containing a sensitive-information-type match before Copilot processes it | Blocks on *sensitive data* in the prompt, not on jailbreak *intent* or on copyrighted material in a *response* |
+| `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` | Preventive (DLP) | Excludes labeled/sensitive content from Copilot grounding and web search | Says nothing about a user's own prompt intent, or what Copilot's response itself contains |
+| `scenarios/dspm-for-ai/copilot-prompt-full-block/` | Preventive (DLP) | Fully blocks a prompt containing a sensitive-information-type match before Copilot processes it | Blocks on *sensitive data* in the prompt, not on jailbreak *intent* or on copyrighted material in a *response* |
 | `scenarios/insider-risk/` (Risky AI usage template, not yet built in this repo) | Risk-scoring | Aggregates AI-related signals (including these same two classifiers, via the IRM integration in §8) into a per-user risk score | Doesn't itself review or remediate a specific interaction — a scoring/triage layer, not an investigation workflow |
 | **This scenario** | **Detective (Communication Compliance)** | Reviews the actual prompt/response text for jailbreak attempts and protected-material exposure, with a human investigator workflow | Cannot block anything — the response has already reached the user by the time an Investigator sees it (§9, Non-goals) |
 

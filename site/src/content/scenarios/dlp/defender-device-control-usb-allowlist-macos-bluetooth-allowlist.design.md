@@ -4,7 +4,7 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist"
 ---
 ## 1. Problem statement
 
-[`dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/) closes the
+`scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/` closes the
 Apple/Portable/Bluetooth invisibility gap left by the parent removable-media-only policy, but ships
 Bluetooth as default-deny-only, no exceptions — a deliberate, disclosed scope decision (that
 fragment's `design.md` §5) made because Microsoft's own worked exception sample for the
@@ -187,7 +187,7 @@ this fragment's PROGRESS.md follow-up was written. Two options were considered:
   `deviceControl.policy` JSON schema is identical across the Intune and JAMF deployment paths (the
   same reasoning the portable-device-coverage fragment's own `design.md` §8 already establishes for
   its own scope), the group/rule shape this fragment grounds applies equally to
-  [`dlp/defender-device-control-usb-allowlist-macos-jamf`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/)'s JAMF-managed sibling — a JAMF
+  `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`'s JAMF-managed sibling — a JAMF
   admin can apply the identical JSON delta through that scenario's own manual-console workflow.
 - This scenario does not address `serialNumber`, `mediaSerialNumber`/`mediaProductName`/
   `mediaApplicationId`, or `encryption: apfs` clauses for Bluetooth — out of scope, matching every

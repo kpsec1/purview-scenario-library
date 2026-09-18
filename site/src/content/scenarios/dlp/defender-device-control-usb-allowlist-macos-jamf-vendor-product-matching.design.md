@@ -4,7 +4,7 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-jamf-vendor-product-mat
 ---
 ## 1. Problem statement
 
-[`dlp/defender-device-control-usb-allowlist-macos-jamf`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/) (the base JAMF scenario) matches
+`scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/` (the base JAMF scenario) matches
 approved removable-storage devices by `serialNumber` only — the same deliberate scope boundary its
 Intune-managed counterpart, `defender-device-control-usb-allowlist-macos/`, originally drew, and the
 same gap `defender-device-control-usb-allowlist-macos-vendor-product-matching/` (the Intune sibling)

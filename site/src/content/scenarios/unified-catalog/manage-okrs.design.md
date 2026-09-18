@@ -4,8 +4,8 @@ parent: "unified-catalog/manage-okrs"
 ---
 ## 1. Problem statement
 
-[`unified-catalog/manage-data-products`](/scenarios/unified-catalog/manage-data-products/) groups a scanned asset into a discoverable
-"Customer Master Data" data product. [`unified-catalog/manage-critical-data-elements`](/scenarios/unified-catalog/manage-critical-data-elements/)
+`scenarios/unified-catalog/manage-data-products/` groups a scanned asset into a discoverable
+"Customer Master Data" data product. `scenarios/unified-catalog/manage-critical-data-elements/`
 names the columns that make it trustworthy. Neither answers the question a business sponsor
 actually asks a data governance team: *why does any of this matter to the business?* Objectives
 and key results (OKRs) are Microsoft's answer — a governance-domain-scoped business objective

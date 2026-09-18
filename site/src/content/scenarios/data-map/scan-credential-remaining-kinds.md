@@ -6,13 +6,12 @@ categorySlug: "data-map"
 slug: "scan-credential-remaining-kinds"
 repoPath: "scenarios/data-map/scan-credential-remaining-kinds"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-credential-key-vault-backed","data-map/scan-credential-inventory-report","data-map/scan-azure-sql-and-classify"]
 deployCount: 2
 validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends [`data-map/scan-credential-key-vault-backed`](/scenarios/data-map/scan-credential-key-vault-backed/) to the **five** Microsoft Purview
+Extends `scenarios/data-map/scan-credential-key-vault-backed/` to the **five** Microsoft Purview
 Scanning-data-plane `CredentialType` kinds that scenario deliberately left out —
 `AccountKey`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, and `ManagedIdentity`
 (user-assigned) — completing coverage of all **eight** documented kinds
@@ -192,7 +191,7 @@ scenario already created rather than making a new one per credential kind.
 
 All five confirmed directly against the Scanning-data-plane **Credential - Create Or Replace**
 reference [[1]](#references), the same source the parent scenario used for its three kinds, and
-cross-checked against [`data-map/scan-credential-inventory-report`](/scenarios/data-map/scan-credential-inventory-report/)'s independently-built
+cross-checked against `scenarios/data-map/scan-credential-inventory-report/`'s independently-built
 per-kind fingerprint table (§6 there), which reached the identical shapes from the read side.
 
 | `kind` | `properties` type | `typeProperties` type | Fields |
@@ -276,7 +275,7 @@ scan run reaching `Succeeded`.
 
 All of the parent scenario's §8 guidance applies unchanged — rotation tradeoffs for the
 secret-bearing kinds, the credential re-point risk, and the estate-wide drift report in
-[`data-map/scan-credential-inventory-report`](/scenarios/data-map/scan-credential-inventory-report/), which **already** fingerprints all eight
+`scenarios/data-map/scan-credential-inventory-report/`, which **already** fingerprints all eight
 kinds including these five — this fragment's credentials are covered by that report with no changes
 needed there.
 
@@ -412,12 +411,12 @@ licensing. Two additions:
 11. [Get-AzKeyVaultSecret](https://learn.microsoft.com/powershell/module/az.keyvault/get-azkeyvaultsecret) — metadata-only read used by `-CheckKeyVaultSecret`, same as the parent scenario.
 
 Related scenarios in this library:
-- [`data-map/scan-credential-key-vault-backed`](/scenarios/data-map/scan-credential-key-vault-backed/) — the parent scenario (`SqlAuth`,
+- `scenarios/data-map/scan-credential-key-vault-backed/` — the parent scenario (`SqlAuth`,
   `BasicAuth`, `ServicePrincipal`); this fragment shares its deletion script, Key Vault connection
   model, and open VERIFYs.
-- [`data-map/scan-credential-inventory-report`](/scenarios/data-map/scan-credential-inventory-report/) — already fingerprints all eight
+- `scenarios/data-map/scan-credential-inventory-report/` — already fingerprints all eight
   `CredentialType` kinds, including the five this fragment creates; no change needed there.
-- [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/), `scan-azure-sql-managed-instance-and-classify/`,
+- `scenarios/data-map/scan-azure-sql-and-classify/`, `scan-azure-sql-managed-instance-and-classify/`,
   `scan-azure-synapse-and-classify/` — the three existing scan scenarios whose source types also
   support a `ManagedIdentity` (UAMI) credential as an alternative to SAMI (§6); not wired together
   here — see `design.md` §7.

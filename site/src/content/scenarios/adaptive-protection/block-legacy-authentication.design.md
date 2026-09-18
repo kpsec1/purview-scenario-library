@@ -139,7 +139,7 @@ flowchart TD
   documented Q&A guidance notes is actually **more effective against brute-force/credential-
   stuffing lockout attempts specifically**, since Conditional Access is evaluated only *after*
   first-factor authentication succeeds (§8, `reviews.md` Red Team). **Built** as
-  [`adaptive-protection/exchange-legacy-auth-block`](/scenarios/adaptive-protection/exchange-legacy-auth-block/) — deploy that companion scenario
+  `scenarios/adaptive-protection/exchange-legacy-auth-block/` — deploy that companion scenario
   alongside this one for layered coverage.
 - **This scenario does not script Conditional Access for workload identities / service
   principals.** Service principal sign-ins are never subject to a user-scoped Conditional Access

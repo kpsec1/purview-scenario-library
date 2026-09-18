@@ -6,7 +6,6 @@ categorySlug: "data-map"
 slug: "scan-credential-key-vault-backed"
 repoPath: "scenarios/data-map/scan-credential-key-vault-backed"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-on-premises-sql-server-and-classify","data-map/scan-azure-sql-and-classify","data-map/scan-credential-inventory-report","data-map/scan-credential-remaining-kinds"]
 deployCount: 3
 validateCount: 1
 ---
@@ -20,9 +19,9 @@ credential stores only a *reference* to a Key Vault secret — vault connection,
 optional secret version — never the secret itself.
 
 This is the missing upstream prerequisite for every credential-authenticated scan in this library.
-[`data-map/scan-on-premises-sql-server-and-classify`](/scenarios/data-map/scan-on-premises-sql-server-and-classify/) requires a
+`scenarios/data-map/scan-on-premises-sql-server-and-classify/` requires a
 `-CredentialReferenceName` that must "already exist," and
-[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) documents the credential path as portal-only.
+`scenarios/data-map/scan-azure-sql-and-classify/` documents the credential path as portal-only.
 Both were built when no REST endpoint for credential creation had been located. One is documented,
 at `api-version=2023-09-01` [[1]](#references)[[5]](#references) — this scenario closes that gap
 and corrects those two scenarios' notes in place.
@@ -38,7 +37,7 @@ only accepts a SQL login.
 The driver here is **completing an automated control, not adding a new one**. The regulatory case
 for Data Map scanning itself (GDPR Art. 30 records of processing, PCI DSS cardholder-data
 discovery, HIPAA §164.308 risk analysis) is made in
-[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) §2. This fragment removes the one manual,
+`scenarios/data-map/scan-azure-sql-and-classify/` §2. This fragment removes the one manual,
 un-auditable step that kept that control from being fully reproducible:
 
 - **Reproducibility / infrastructure-as-code.** A portal-clicked credential is undocumented state.
@@ -204,7 +203,7 @@ reference dangles.
 > that once, in a pilot, converts this scenario's only open risk into a known value.
 
 Then hand the credential name to a scan, e.g. in
-[`data-map/scan-on-premises-sql-server-and-classify`](/scenarios/data-map/scan-on-premises-sql-server-and-classify/):
+`scenarios/data-map/scan-on-premises-sql-server-and-classify/`:
 
 ```powershell
 ./deploy/New-OnPremisesSqlServerDataMapScan.ps1 ... `
@@ -274,7 +273,7 @@ Worked request bodies for all three kinds: `deploy/policy/scan-credential-defini
 | Scan kind | Used by | Typical credential |
 |---|---|---|
 | `AzureSqlDatabaseCredential` | Azure SQL where SAMI is unavailable (e.g. self-hosted IR) | `SqlAuth` or `ServicePrincipal` |
-| `SqlServerDatabaseCredential` | [`data-map/scan-on-premises-sql-server-and-classify`](/scenarios/data-map/scan-on-premises-sql-server-and-classify/) | `SqlAuth` (or `BasicAuth` for Windows auth — VERIFY, §11) |
+| `SqlServerDatabaseCredential` | `scenarios/data-map/scan-on-premises-sql-server-and-classify/` | `SqlAuth` (or `BasicAuth` for Windows auth — VERIFY, §11) |
 
 The scan references the credential as
 `properties.credential = { credentialType = '<kind>'; referenceName = '<CredentialName>' }`.
@@ -337,7 +336,7 @@ to "latest" is itself a VERIFY — §11.)
 |---|---|---|---|
 | Scan runs using this credential | Purview portal → **Data Map → Monitoring** | `Succeeded` | Any authentication-class failure — go to the runbook below |
 | Secret expiry | `validate/... -CheckKeyVaultSecret` | No expiry, or > 30 days out | Warned at ≤ 30 days; rotate before it lapses |
-| Credential inventory drift, estate-wide | [`data-map/scan-credential-inventory-report`](/scenarios/data-map/scan-credential-inventory-report/) — scripted, scheduled, diffed against a checked-in expected-state file, all eight documented credential kinds | `Match` (or `NotTracked` for legitimate new onboarding) for every credential | Any `Drift`/`Missing` status — the estate-wide version of the single-credential check below, built specifically to close this section's compensating-control gap |
+| Credential inventory drift, estate-wide | `scenarios/data-map/scan-credential-inventory-report/` — scripted, scheduled, diffed against a checked-in expected-state file, all eight documented credential kinds | `Match` (or `NotTracked` for legitimate new onboarding) for every credential | Any `Drift`/`Missing` status — the estate-wide version of the single-credential check below, built specifically to close this section's compensating-control gap |
 | Credential **re-point** (same name, different target) | `validate/...` run with **all** `-Expected*` parameters supplied, from a checked-in parameter file — or the estate-wide report above | All `[PASS]` | Any `[FAIL]` on secret name, connection, or kind — the object was re-pointed without being renamed; see §11 |
 | Key Vault secret reads by Purview | Key Vault **diagnostic logs** (`AuditEvent`) | Reads correlate with scan schedule | Reads outside scan windows, or from an unexpected identity |
 
@@ -426,7 +425,7 @@ credential *first*, or that scan silently starts failing at its next run — `ro
   documents Windows authentication as a supported method for on-premises SQL Server and lists
   `BasicAuth` in the `CredentialType` enum, but never states that they are the same thing.
   `BasicAuth` remains this repo's best-effort mapping, inherited from
-  [`data-map/scan-on-premises-sql-server-and-classify`](/scenarios/data-map/scan-on-premises-sql-server-and-classify/), not a confirmed equivalence.
+  `scenarios/data-map/scan-on-premises-sql-server-and-classify/`, not a confirmed equivalence.
 - **No "test credential" API.** Purview offers no endpoint equivalent to the portal's **Test
   connection**. A structurally perfect credential can still fail at scan time — see §7.
 - **No reverse lookup from credential to scans.** The Scanning API documents no way to ask "which
@@ -456,7 +455,7 @@ credential *first*, or that scan silently starts failing at its next run — `ro
   `validate/` on a schedule with **all** `-Expected*` parameters supplied from a checked-in
   parameter file — a re-point then surfaces as a `[FAIL]` (§8), now built as a scheduled,
   estate-wide control rather than a single-credential manual invocation:
-  [`data-map/scan-credential-inventory-report`](/scenarios/data-map/scan-credential-inventory-report/); (b) enable Key Vault **`AuditEvent`**
+  `scenarios/data-map/scan-credential-inventory-report/`; (b) enable Key Vault **`AuditEvent`**
   diagnostic logging, which does record which identity read which secret, so a re-point at a
   secret *outside* the expected set is visible from the vault side; and (c) treat Data Source
   Administrator as a privileged role in your access reviews.
@@ -472,7 +471,7 @@ credential *first*, or that scan silently starts failing at its next run — `ro
 - **RESOLVED — the other five credential kinds are now scripted.** This fragment was originally
   scoped to the three kinds the SQL-family scans in this repo consume, leaving `AccountKey`,
   `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, and `ManagedIdentity` (user-assigned) out of
-  scope [[1]](#references). [`data-map/scan-credential-remaining-kinds`](/scenarios/data-map/scan-credential-remaining-kinds/) now creates all
+  scope [[1]](#references). `scenarios/data-map/scan-credential-remaining-kinds/` now creates all
   five, closing this gap — see that scenario for the (structurally different, not a parameter
   tweak) request bodies each one uses.
 - **Purview's own definition name is misspelled.** `KeyVaultSecretServicePrinipalCredentialTypeProperties`
@@ -486,7 +485,7 @@ credential *first*, or that scan silently starts failing at its next run — `ro
   principal → (4) account key / SQL authentication** [[16]](#references). This scenario serves
   tiers 3 and 4, which are the *last* two choices by Microsoft's own ranking — it exists for the
   cases where the higher tiers are genuinely unavailable, and is not a recommendation to move off
-  SAMI. [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) remains the default path for Azure SQL.
+  SAMI. `scenarios/data-map/scan-azure-sql-and-classify/` remains the default path for Azure SQL.
   Where you must use a stored credential, note that the same guidance ranks **service principal
   above SQL authentication**, so prefer `-CredentialType ServicePrincipal` over `SqlAuth` when the
   source supports Entra authentication at all.
@@ -511,14 +510,14 @@ credential *first*, or that scan silently starts failing at its next run — `ro
 16. [Data governance best practices for security — Credential management](https://learn.microsoft.com/purview/data-gov-classic-security-best-practices) — Microsoft's explicit credential priority order (Purview managed identity → user-assigned managed identity → service principal → account key/SQL auth) and the requirement that Purview have get/list access to secrets on the Key Vault resource.
 
 Related scenarios in this library:
-- [`data-map/scan-on-premises-sql-server-and-classify`](/scenarios/data-map/scan-on-premises-sql-server-and-classify/) — the primary consumer
+- `scenarios/data-map/scan-on-premises-sql-server-and-classify/` — the primary consumer
   (`SqlServerDatabaseCredential`); its `-CredentialReferenceName` prerequisite is what this
   scenario creates.
-- [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) — the SAMI-based default path; use that unless
+- `scenarios/data-map/scan-azure-sql-and-classify/` — the SAMI-based default path; use that unless
   you specifically cannot.
-- [`data-map/scan-credential-inventory-report`](/scenarios/data-map/scan-credential-inventory-report/) — the estate-wide, scheduled drift-detection
+- `scenarios/data-map/scan-credential-inventory-report/` — the estate-wide, scheduled drift-detection
   companion that closes this section's "no documented detective control" gap.
-- [`data-map/scan-credential-remaining-kinds`](/scenarios/data-map/scan-credential-remaining-kinds/) — scripts the five credential kinds this
+- `scenarios/data-map/scan-credential-remaining-kinds/` — scripts the five credential kinds this
   scenario leaves out (`AccountKey`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`,
   `ManagedIdentity`), reusing this scenario's `Remove-PurviewScanCredential.ps1` for deletion.
 - `docs/rbac-model.md` §5 — Data Map collection roles.

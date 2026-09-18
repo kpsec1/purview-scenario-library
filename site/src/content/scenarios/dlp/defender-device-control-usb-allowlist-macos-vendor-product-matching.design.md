@@ -4,7 +4,7 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching
 ---
 ## 1. Problem statement
 
-[`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/) matches approved removable-storage
+`scenarios/dlp/defender-device-control-usb-allowlist-macos/` matches approved removable-storage
 devices by `serialNumber` only. That scenario's own design (`design.md` §5 there) and this repo's
 `PROGRESS.md` backlog both flag the deliberately deferred gap this fragment closes: **a buyer whose
 approved drives have no readable serial number** — a real, common case for bulk-imaged imaging

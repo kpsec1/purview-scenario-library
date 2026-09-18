@@ -4,7 +4,7 @@ parent: "dlp/defender-device-control-usb-allowlist"
 ---
 ## 1. Problem statement
 
-[`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/) stops **regulated content** (SSN/Credit Card Number
+`scenarios/dlp/endpoint-dlp-usb-block/` stops **regulated content** (SSN/Credit Card Number
 matches) from being copied to a USB drive, but it is deliberately **content-aware, not
 device-identity-aware**: a non-sensitive file — malware staged on a personal thumb drive, an
 unapproved consumer external disk used for a large unauthorized bulk copy, a compromised
@@ -155,7 +155,7 @@ rollout produces real Advanced Hunting telemetry to validate against before wide
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Deploy surface | Microsoft Graph (`Connect-MgGraph`, app-only certificate), `Invoke-MgGraphRequest` against `v1.0` | Automation surface 3 per `docs/automation-surface.md` §1; matches the raw-REST-via-Graph-SDK pattern already established by [`records-management/graph-event-automation`](/scenarios/records-management/graph-event-automation/) for Graph endpoints with no simple single-purpose typed cmdlet wrapper convenient for this object shape. |
+| Deploy surface | Microsoft Graph (`Connect-MgGraph`, app-only certificate), `Invoke-MgGraphRequest` against `v1.0` | Automation surface 3 per `docs/automation-surface.md` §1; matches the raw-REST-via-Graph-SDK pattern already established by `scenarios/records-management/graph-event-automation/` for Graph endpoints with no simple single-purpose typed cmdlet wrapper convenient for this object shape. |
 | Authoring mechanism | Custom OMA-URI (`windows10CustomConfiguration`), not the native Device Control profile template | §4 above — the only mechanism with a confirmed, current Graph schema. |
 | Group/rule identifiers | Four **fixed, source-controlled GUIDs** (one per group, one per rule), not freshly generated per run | Microsoft's own guidance is only that GUIDs "must be generated" for non-Intune-portal deployment paths (`device-control-policies#policies`) — it does not require a fresh GUID per invocation. Fixed constants checked into `deploy/New-DeviceControlUsbAllowlistPolicy.ps1` guarantee every re-run targets the same four OMA-URI nodes (idempotent reconcile via PATCH), rather than a fresh `New-Guid` per run silently accumulating orphaned groups/rules inside the same `omaSettings` collection. |
 | Update strategy | Whole-object `omaSettings` array replacement on every reconcile (PATCH with the full, freshly-built array) | Simpler and less error-prone than patching individual OMA-URI nodes independently, and matches this scenario's declarative, config-file-driven model (the sibling `graph-event-automation` script uses the equivalent "GET, compare, POST/PATCH the full desired state" shape). |
@@ -181,7 +181,7 @@ rollout produces real Advanced Hunting telemetry to validate against before wide
 - This scenario does not configure macOS device control (a separate JSON/`mobileconfig` authoring
   path — `mac-device-control-overview`) — Windows only, consistent with this scenario's XML-based
   OMA-URI settings. Built as its own sibling scenario:
-  [`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/).
+  `scenarios/dlp/defender-device-control-usb-allowlist-macos/`.
 - This scenario does not use Network, VPN Connection, File, or Print Job **advanced conditions**
   (e.g. "deny removable storage unless on the corporate VPN") — the two-rule allow/deny-by-identity
   model is the full scope; advanced conditions are a documented extension point

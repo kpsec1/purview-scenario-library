@@ -6,7 +6,6 @@ categorySlug: "data-lifecycle-management"
 slug: "priority-cleanup-sharepoint-onedrive"
 repoPath: "scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-lifecycle-management/priority-cleanup-permanent-deletion"]
 deployCount: 3
 validateCount: 1
 ---
@@ -41,7 +40,7 @@ the same continual-policy mechanism [[1]](#references).
 > is delete-only — not unconditionally, as with Exchange [[3]](#references). A separate, still
 > **public-preview** sub-feature (**permanent deletion**, bypassing the Recycle Bin entirely,
 > rollout beginning 2026-08-24) is explicitly **out of scope** for this fragment — see §11 and the
-> dedicated sibling scenario, [`data-lifecycle-management/priority-cleanup-permanent-deletion`](/scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/).
+> dedicated sibling scenario, `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/`.
 
 ## 3. Prerequisites
 
@@ -226,7 +225,7 @@ irreversible permanent deletion. The label is not force-removed by default.
   materially different (softer) mechanism than the Exchange sibling. The separate **permanent
   deletion** sub-feature (bypasses the Recycle Bin; public preview from 2026-08-24) is explicitly
   out of scope for this fragment — built as its own sibling scenario,
-  [`data-lifecycle-management/priority-cleanup-permanent-deletion`](/scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/).
+  `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/`.
 - **Preservation Lock override is conditional, not unconditional.** Only overridden if the
   underlying retention setting is delete-only [[3]](#references) — do not assume this scenario
   overrides every locked policy the way the Exchange sibling does.

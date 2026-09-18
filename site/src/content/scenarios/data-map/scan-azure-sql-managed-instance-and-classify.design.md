@@ -5,7 +5,7 @@ parent: "data-map/scan-azure-sql-managed-instance-and-classify"
 ## 1. Problem statement
 
 A tenant that has already stood up Microsoft Purview Data Map against Azure SQL Database (this
-repo's [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/)) frequently also runs Azure SQL Managed
+repo's `scenarios/data-map/scan-azure-sql-and-classify/`) frequently also runs Azure SQL Managed
 Instance — a lift-and-shift-friendly PaaS SQL engine with its own instance-level network,
 identity, and connectivity model distinct from a logical server. That instance needs the same
 discovery-and-classification treatment, but **cannot** simply reuse the logical-server scenario's
@@ -50,7 +50,7 @@ either silently hide that last prerequisite behind a flag the operator might not
 script to detect and warn about it dynamically — more complexity than a second, explicit scenario
 that documents the one real workflow difference up front. This matches the branching precedent this
 repo has already set for other "adjacent but distinct" pairs (e.g. `scenarios/ediscovery/
-premium-legal-hold-and-export/` vs. [`ediscovery/location-scoped-legal-hold`](/scenarios/ediscovery/location-scoped-legal-hold/), which the
+premium-legal-hold-and-export/` vs. `scenarios/ediscovery/location-scoped-legal-hold/`, which the
 sibling scenario's own `PROGRESS.md` follow-up flagged this fragment as continuing).
 
 ## 4. What's actually different from `scan-azure-sql-and-classify`

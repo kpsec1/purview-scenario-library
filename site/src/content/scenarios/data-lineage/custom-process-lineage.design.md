@@ -4,7 +4,7 @@ parent: "data-lineage/custom-process-lineage"
 ---
 ## 1. Problem statement
 
-[`data-lineage/end-to-end-lineage-validation`](/scenarios/data-lineage/end-to-end-lineage-validation/) closes a lineage gap for a custom nightly
+`scenarios/data-lineage/end-to-end-lineage-validation/` closes a lineage gap for a custom nightly
 job by asserting a single `direct_lineage_dataset_dataset` edge - "table A feeds table B, although
 we wouldn't know exactly which Process is between them" (that scenario's own README.md reference
 5). That was a deliberate scope decision, not an oversight: its own grounding pass confirmed the

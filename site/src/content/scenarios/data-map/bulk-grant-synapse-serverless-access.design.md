@@ -4,7 +4,7 @@ parent: "data-map/bulk-grant-synapse-serverless-access"
 ---
 ## 1. Problem statement
 
-[`data-map/scan-azure-synapse-and-classify`](/scenarios/data-map/scan-azure-synapse-and-classify/) documents a real, CISO-flagged cost-scaling
+`scenarios/data-map/scan-azure-synapse-and-classify/` documents a real, CISO-flagged cost-scaling
 problem (`reviews.md`, CISO finding 1; `README.md` §3's cost/effort note): the serverless half of that
 scenario's enumeration-authentication story needs a `CREATE LOGIN ... FROM EXTERNAL PROVIDER` and a
 `CREATE USER ...` + `db_datareader` grant applied before the Purview scan can classify anything, and

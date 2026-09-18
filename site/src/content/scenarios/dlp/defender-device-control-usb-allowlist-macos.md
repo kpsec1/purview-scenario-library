@@ -6,7 +6,6 @@ categorySlug: "dlp"
 slug: "defender-device-control-usb-allowlist-macos"
 repoPath: "scenarios/dlp/defender-device-control-usb-allowlist-macos"
 parts: ["design","deploy","validate","rollback"]
-related: ["dlp/defender-device-control-usb-allowlist","compliance-manager/pci-dss-assessment"]
 deployCount: 3
 validateCount: 1
 ---
@@ -15,7 +14,7 @@ validateCount: 1
 Denies **all** removable USB storage devices on onboarded macOS endpoints by default, allowing
 only a short, named allowlist of IT-issued, identity-verified backup/imaging drives (matched by
 serial number) to read and write. This is the **macOS sibling** of
-[`dlp/defender-device-control-usb-allowlist`](/scenarios/dlp/defender-device-control-usb-allowlist/) (Windows) — same device-identity control,
+`scenarios/dlp/defender-device-control-usb-allowlist/` (Windows) — same device-identity control,
 same content-blind scope boundary, translated to macOS's own device control policy model
 (JSON `groups`/`rules`/`settings` deployed as a `.mobileconfig` payload) instead of Windows'
 OMA-URI/XML mechanism.
@@ -34,7 +33,7 @@ coverage regardless of endpoint operating system. A tenant that deploys the Wind
 and tells an auditor "no unapproved USB storage device, period" is materially overclaiming if any
 Mac in scope has no equivalent control — this scenario closes that specific, platform-shaped gap.
 
-A companion assessment-side scenario, [`compliance-manager/pci-dss-assessment`](/scenarios/compliance-manager/pci-dss-assessment/), tracks
+A companion assessment-side scenario, `scenarios/compliance-manager/pci-dss-assessment/`, tracks
 the same PCI DSS v4.0 improvement actions this technical control and its Windows sibling support.
 
 ## 3. Prerequisites
@@ -304,7 +303,7 @@ the policy definition remains); add `-Purge` to permanently delete the device co
 8. Microsoft Defender for Endpoint on macOS (system requirements, Device Control capability summary) — <https://learn.microsoft.com/defender-endpoint/microsoft-defender-endpoint-mac>
 9. Create a device configuration profile in Microsoft Intune (Policy and Profile manager role prerequisite; not OS-specific) — <https://learn.microsoft.com/intune/device-configuration/create-device-profile>
 10. Device control policy JSON schema for macOS — <https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/device_control_policy_schema.json>
-11. [`dlp/defender-device-control-usb-allowlist`](/scenarios/dlp/defender-device-control-usb-allowlist/) — the Windows sibling scenario this control complements; see that scenario's own references for the Windows-side citations (Graph `windows10CustomConfiguration`, `EndpointDlpRestrictions`, Intune RBAC).
+11. `scenarios/dlp/defender-device-control-usb-allowlist/` — the Windows sibling scenario this control complements; see that scenario's own references for the Windows-side citations (Graph `windows10CustomConfiguration`, `EndpointDlpRestrictions`, Intune RBAC).
 12. Deploy and manage Device Control manually (macOS) — preproduction-only `mdatp config device-control policy set`/`reset` path, referenced for context only; not used by this scenario's Intune-based deployment — <https://learn.microsoft.com/defender-endpoint/mac-device-control-manual>
 
 > Re-verify all links, and especially the `payload` PATCH replace-vs-merge semantics and the

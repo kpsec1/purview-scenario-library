@@ -6,7 +6,6 @@ categorySlug: "unified-catalog"
 slug: "manage-critical-data-elements-related-terms"
 repoPath: "scenarios/unified-catalog/manage-critical-data-elements-related-terms"
 parts: ["design","deploy","validate","rollback"]
-related: ["unified-catalog/curate-business-glossary","unified-catalog/manage-critical-data-elements"]
 deployCount: 3
 validateCount: 1
 ---
@@ -23,8 +22,8 @@ Create Relationship operation that scenario already calls for `entityType=DATACO
 `scenarios/unified-catalog/manage-data-products/deploy/New-DataProduct.ps1`.
 
 **Who it's for:** a data governance team that has already run
-[`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) (to create the terms) and
-[`unified-catalog/manage-critical-data-elements`](/scenarios/unified-catalog/manage-critical-data-elements/) (to create the CDE), and now wants the
+`scenarios/unified-catalog/curate-business-glossary/` (to create the terms) and
+`scenarios/unified-catalog/manage-critical-data-elements/` (to create the CDE), and now wants the
 CDE's details page to show its business definition inline — and, per §2 below, wants any access
 policy configured on that term to automatically extend to the CDE's associated data products —
 rather than clicking **+ Add term** by hand in the portal every time a new source is mapped.
@@ -64,8 +63,8 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Unified Catalog data governance | **Pay-as-you-go (PAYG)**, billed on unique **governed assets/day** | This scenario creates a **relationship** object, not a governed asset — it adds **no incremental governed-asset cost** on its own (§10) |
-| An existing critical data element | [`unified-catalog/manage-critical-data-elements`](/scenarios/unified-catalog/manage-critical-data-elements/) run at least once | This scenario resolves the CDE by name; it never creates one (§11, design.md §2) |
-| Existing glossary term(s) | [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) run at least once | Same reuse-by-name pattern for each entry in `relatedTerms` |
+| An existing critical data element | `scenarios/unified-catalog/manage-critical-data-elements/` run at least once | This scenario resolves the CDE by name; it never creates one (§11, design.md §2) |
+| Existing glossary term(s) | `scenarios/unified-catalog/curate-business-glossary/` run at least once | Same reuse-by-name pattern for each entry in `relatedTerms` |
 | Role to link a critical data element to a term | **Data Steward** on the governance domain (unconfirmed minimum — see below) | Microsoft's own critical-data-elements page scopes CDE creation/column-adding to "data steward and data product owner permissions" but does not separately restate a role requirement for the **Manage related terms** action specifically — this scenario's automation identity requests Data Steward only, the minimum role every other Unified Catalog write action in this domain already requires. `docs/rbac-model.md` §5 |
 | Automation identity (Unified Catalog only) | Data Steward on the domain | Unlike `manage-critical-data-elements`, this scenario never resolves an owner via Microsoft Graph and never calls the Data Map/Atlas Entity API — it only reads and links objects that already exist in Unified Catalog, so no Graph token and no Data Map role are needed |
 

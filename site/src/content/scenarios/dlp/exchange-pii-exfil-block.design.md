@@ -4,7 +4,7 @@ parent: "dlp/exchange-pii-exfil-block"
 ---
 ## 1. Problem statement
 
-[`information-protection/auto-label-confidential-exchange`](/scenarios/information-protection/auto-label-confidential-exchange/) automatically labels
+`scenarios/information-protection/auto-label-confidential-exchange/` automatically labels
 Exchange email containing SSNs or credit card numbers as **Confidential**, and — for internal
 senders only — that label happens to carry encryption as a side effect. Its own `README.md` §11
 documents the resulting gap in plain terms:
@@ -18,7 +18,7 @@ definition, not something the auto-labeling policy itself decides per-message. T
 closes that specific gap with what Purview actually ships for movement-based enforcement — a
 **content-based DLP policy**, not a label-conditioned one — that evaluates the SSN/Credit Card
 Number sensitive information types directly against the message and its recipients, the same
-pattern [`dlp/pci-teams-exfil-block`](/scenarios/dlp/pci-teams-exfil-block/) already established for Teams.
+pattern `scenarios/dlp/pci-teams-exfil-block/` already established for Teams.
 
 This scenario is additive to, not a replacement for, the auto-labeling scenario: labeling still
 gives classification coverage and (for internal mail) encryption; this policy adds the movement

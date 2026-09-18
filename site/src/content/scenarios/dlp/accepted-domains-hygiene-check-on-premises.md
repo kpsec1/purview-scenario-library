@@ -6,13 +6,12 @@ categorySlug: "dlp"
 slug: "accepted-domains-hygiene-check-on-premises"
 repoPath: "scenarios/dlp/accepted-domains-hygiene-check-on-premises"
 parts: ["design","deploy","validate","rollback"]
-related: ["dlp/accepted-domains-hygiene-check"]
 deployCount: 1
 validateCount: 1
 ---
 ## 1. Scenario summary
 
-A read-only, scheduled control that runs [`dlp/accepted-domains-hygiene-check`](/scenarios/dlp/accepted-domains-hygiene-check/)'s same
+A read-only, scheduled control that runs `scenarios/dlp/accepted-domains-hygiene-check`'s same
 detection model against an **on-premises Exchange Management Shell** session instead of Exchange
 Online PowerShell — closing that scenario's disclosed blind spot for a **hybrid** Exchange Online/
 on-premises tenant. Reuses the same buyer-curated `KnownDomains.json` config and optionally
@@ -424,7 +423,7 @@ the parent scenario.
 9. Import-PSSession reference — the documented command-name-collision behavior and `-Prefix`
    mitigation this scenario's §3/§11 and `design.md` §3 are built around —
    <https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/import-pssession>
-10. [`dlp/accepted-domains-hygiene-check`](/scenarios/dlp/accepted-domains-hygiene-check/) — the parent scenario this fragment is a
+10. `scenarios/dlp/accepted-domains-hygiene-check/` — the parent scenario this fragment is a
     companion to; shares its `KnownDomains.json` config and baseline/drift-log/idempotency model.
 11. `docs/automation-surface.md` §1 — the five all-cloud automation surfaces this scenario's
     on-premises connection method deliberately sits outside of (§3, `design.md` §8).

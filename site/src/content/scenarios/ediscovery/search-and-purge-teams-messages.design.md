@@ -6,7 +6,7 @@ parent: "ediscovery/search-and-purge-teams-messages"
 
 A Microsoft Teams 1:1 chat, group chat, or channel post contains content that must be removed
 immediately — the Teams analog of the mailbox data-spillage case this repo's
-[`ediscovery/search-and-purge-data-spillage`](/scenarios/ediscovery/search-and-purge-data-spillage/) sibling already automates. That sibling
+`scenarios/ediscovery/search-and-purge-data-spillage/` sibling already automates. That sibling
 scenario deliberately scoped Teams content out (`design.md` §8 of that scenario) because Microsoft
 Graph's `purgeData` action supports a second `purgeAreas` value, `teamsMessages`, that its own
 author flagged as "a materially different, easily-misunderstood guarantee" without building it. This
@@ -63,7 +63,7 @@ materially wrong safety claim standing next to a scenario that contradicts it.
    reversible.
 4. **Reuse, don't reimplement, this repo's existing Teams/group mailbox resolution.** For standard
    and shared channels, the target mailbox is the parent team's own group mailbox — the same
-   `PrimarySmtpAddress` value [`ediscovery/teams-group-hold-resolution`](/scenarios/ediscovery/teams-group-hold-resolution/) already resolves
+   `PrimarySmtpAddress` value `scenarios/ediscovery/teams-group-hold-resolution/` already resolves
    via `Get-UnifiedGroup`. This scenario's definition file accepts that value directly rather than
    re-deriving it, and its README points operators at that sibling for the resolution step.
 5. **Disclose the hold-removal requirement as a real operational step, not a silent skip.** Unlike

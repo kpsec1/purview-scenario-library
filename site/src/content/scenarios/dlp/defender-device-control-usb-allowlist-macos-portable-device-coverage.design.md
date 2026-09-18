@@ -4,7 +4,7 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-portable-device-coverag
 ---
 ## 1. Problem statement
 
-[`dlp/defender-device-control-usb-allowlist-macos`](/scenarios/dlp/defender-device-control-usb-allowlist-macos/) deploys a default-deny, named-
+`scenarios/dlp/defender-device-control-usb-allowlist-macos/` deploys a default-deny, named-
 allowlist removable-storage control for macOS, scoped to `primaryId: removable_media_devices`
 only. Microsoft's own device control documentation is explicit that macOS device control also
 manages three further, independent device families — `apple_devices`, `portable_devices`, and
@@ -64,9 +64,9 @@ additions, and PATCHing the whole payload back is the only conflict-free way to 
 devices already assigned the parent policy.
 
 This mirrors this repository's own precedent for "add to, don't duplicate, an existing policy
-object" companions — [`dlp/defender-device-control-usb-allowlist-wpd-coverage`](/scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/) (the
+object" companions — `scenarios/dlp/defender-device-control-usb-allowlist-wpd-coverage/` (the
 direct Windows analog of this fragment), `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-
-audit-companion/`, and [`dlp/pci-teams-exfil-block-part2-obfuscation-mitigation`](/scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/) all add
+audit-companion/`, and `scenarios/dlp/pci-teams-exfil-block-part2-obfuscation-mitigation/` all add
 to a parent scenario's existing object rather than standing up a second, overlapping one.
 
 ## 4. Policy architecture (delta from the parent)
@@ -159,7 +159,7 @@ confirmed.
 - This scenario does not deploy via JAMF — Intune only, matching the parent's own scope boundary.
   Because the underlying `deviceControl.policy` JSON schema is identical across both deployment
   paths, the same groups/rules/settings shape this fragment grounds applies equally to
-  [`dlp/defender-device-control-usb-allowlist-macos-jamf`](/scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/)'s JAMF-managed sibling — closing
+  `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf/`'s JAMF-managed sibling — closing
   this fragment for the Intune path closes the equivalent PROGRESS.md follow-up tracked for JAMF
   too, without a second build.
 - This scenario does not address the `encryption: apfs` clause or the `mediaSerialNumber`/

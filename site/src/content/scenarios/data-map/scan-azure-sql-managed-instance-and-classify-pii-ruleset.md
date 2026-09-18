@@ -6,13 +6,12 @@ categorySlug: "data-map"
 slug: "scan-azure-sql-managed-instance-and-classify-pii-ruleset"
 repoPath: "scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-azure-sql-managed-instance-and-classify","data-map/scan-azure-sql-and-classify-pii-ruleset","data-map/scan-azure-synapse-and-classify-pii-ruleset"]
 deployCount: 2
 validateCount: 1
 ---
 ## 1. Scenario summary
 
-Extends [`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/): creates a **custom,
+Extends `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/`: creates a **custom,
 PII-only** Data Map scan rule set for Azure SQL Managed Instance — every system classification
 excluded except the ones you name to keep (U.S. Social Security Number and Credit Card Number by
 default) — and reconciles the base scenario's already-registered scan onto it. The exclusion list
@@ -53,7 +52,7 @@ scenario — this scenario adds no new licensing surface, only a different scan 
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| **[`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/) already deployed** | The target data source and scan must already exist, and already run successfully | This scenario reconciles an EXISTING scan onto a new ruleset — `deploy/New-PiiOnlyScanRuleset.ps1` fails fast with a clear error if the scan is not found. It assumes the base scenario's own extra prerequisites (public endpoint, Microsoft Entra admin, Directory Readers role, NSG rule, `db_datareader` grant) are already in place — see that scenario's `README.md` §3 |
+| **`scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` already deployed** | The target data source and scan must already exist, and already run successfully | This scenario reconciles an EXISTING scan onto a new ruleset — `deploy/New-PiiOnlyScanRuleset.ps1` fails fast with a clear error if the scan is not found. It assumes the base scenario's own extra prerequisites (public endpoint, Microsoft Entra admin, Directory Readers role, NSG rule, `db_datareader` grant) are already in place — see that scenario's `README.md` §3 |
 | Create/update the custom scan rule set and reconcile the scan | **Data Source Administrator** role on the target collection | Same role the base scenario's deploy script requires — Microsoft Learn does not document a role specific to scan rule sets; ruleset management falls under the same "configure and run a scan" boundary as the scan itself (`docs/rbac-model.md` §5) [[7]](#references) |
 | Read the ruleset/scan for validation | **Data Reader** role on the target collection | Least-privilege for the read-only `validate/` script |
 | Automation identity for the REST calls | App registration with the roles above, app-only OAuth2 | Same client-credentials flow as the base scenario — `docs/automation-surface.md` §3 |
@@ -282,7 +281,7 @@ breakdown to quantify the exact savings.
    delete operation and its 204 response) — <https://learn.microsoft.com/powershell/module/az.purview/remove-azpurviewscanruleset>
 10. Scans - Create Or Replace REST API reference (reused here to reconcile the existing scan's
     ruleset reference) — <https://learn.microsoft.com/rest/api/purview/scanningdataplane/scans/create-or-replace>
-11. [`data-map/scan-azure-sql-managed-instance-and-classify`](/scenarios/data-map/scan-azure-sql-managed-instance-and-classify/) (base scenario this fragment
+11. `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` (base scenario this fragment
     extends; confirms `AzureSqlDatabaseManagedInstanceMsi`/`AzureSqlDatabaseManagedInstanceCredential`
     as the two compatible scan kinds) — this repository.
 12. Audit logs, diagnostics, and activity history in Microsoft Purview governance portal (confirms
@@ -292,8 +291,8 @@ breakdown to quantify the exact savings.
     record type (Microsoft Graph security API — the SIEM-consumable record type for Data Map
     Management-category events, including scan rule set changes) —
     <https://learn.microsoft.com/graph/api/resources/security-microsoftpurviewdatamapoperationrecord>
-14. [`data-map/scan-azure-sql-and-classify-pii-ruleset`](/scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/) and
-    [`data-map/scan-azure-synapse-and-classify-pii-ruleset`](/scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/) (sibling scenarios this
+14. `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/` and
+    `scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/` (sibling scenarios this
     fragment mirrors — pattern precedent for the live-Types-API exclusion-list design, the
     reconcile-not-reconstruct scan update, and the name-vs-kind independent-verification
     discipline) — this repository.

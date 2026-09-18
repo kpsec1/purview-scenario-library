@@ -4,7 +4,7 @@ parent: "audit/compromised-account-incident-response"
 ---
 ## 1. Problem statement
 
-[`audit/premium-audit-investigation`](/scenarios/audit/premium-audit-investigation/) deliberately investigates and never remediates
+`scenarios/audit/premium-audit-investigation/` deliberately investigates and never remediates
 (`design.md` §7: "Responding/remediating ... is a separate, mutating workflow"). Once that
 investigation — or any other detection (user report, Defender alert, sign-in risk) — confirms a
 mailbox is compromised, someone has to actually **contain** it: block further access, invalidate

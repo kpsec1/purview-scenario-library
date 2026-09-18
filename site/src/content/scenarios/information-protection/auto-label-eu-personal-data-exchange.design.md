@@ -7,10 +7,10 @@ parent: "information-protection/auto-label-eu-personal-data-exchange"
 This library ships two closely related, already-reviewed auto-labeling scenarios, each closing
 half of the gap this scenario finishes:
 
-- [`information-protection/auto-label-eu-personal-data-sharepoint`](/scenarios/information-protection/auto-label-eu-personal-data-sharepoint/) applies
+- `scenarios/information-protection/auto-label-eu-personal-data-sharepoint/` applies
   jurisdiction-appropriate EU/UK sensitive information types (SITs) to SharePoint/OneDrive content
   **at rest**, but explicitly leaves Exchange out of scope (`design.md` §8 there).
-- [`information-protection/auto-label-confidential-exchange`](/scenarios/information-protection/auto-label-confidential-exchange/) applies the same
+- `scenarios/information-protection/auto-label-confidential-exchange/` applies the same
   auto-labeling mechanism to Exchange email **in transit**, but defaults to U.S. Social Security
   Number and Credit Card Number — the same U.S.-centric starter set the EU/UK SharePoint sibling
   was built to move away from for a non-U.S. buyer.

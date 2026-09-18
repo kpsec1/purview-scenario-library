@@ -4,7 +4,7 @@ parent: "adaptive-protection/conditional-access-insider-risk-step-up-auth"
 ---
 ## 1. Problem statement
 
-[`adaptive-protection/conditional-access-insider-risk-block`](/scenarios/adaptive-protection/conditional-access-insider-risk-block/) closes the Elevated-risk
+`scenarios/adaptive-protection/conditional-access-insider-risk-block/` closes the Elevated-risk
 half of the Conditional Access side of Adaptive Protection: an Elevated-risk user is blocked from
 signing in to Microsoft 365 applications entirely. That scenario's own `design.md` §6 documents,
 by design, a **single-policy, single-grant-control** limitation: Conditional Access grant controls

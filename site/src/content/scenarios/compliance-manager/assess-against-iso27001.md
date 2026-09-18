@@ -6,7 +6,6 @@ categorySlug: "compliance-manager"
 slug: "assess-against-iso27001"
 repoPath: "scenarios/compliance-manager/assess-against-iso27001"
 parts: ["design","deploy","validate","rollback"]
-related: ["compliance-manager/entra-privileged-role-monitoring","insider-risk/departing-employee-data-theft","dlp/pci-teams-exfil-block","dlp/endpoint-dlp-usb-block","data-estate-insights/classification-coverage-report"]
 deployCount: 2
 validateCount: 1
 ---
@@ -285,7 +284,7 @@ independently.
   is an Entra directory role assignment, not a `ComplianceManagerRolesChange` event, so this
   scenario's audit-trail script has no visibility into who holds it or when it changed. This gap
   is now closed by a companion scenario:
-  [`compliance-manager/entra-privileged-role-monitoring`](/scenarios/compliance-manager/entra-privileged-role-monitoring/) scripts exactly this
+  `scenarios/compliance-manager/entra-privileged-role-monitoring/` scripts exactly this
   cross-check via Entra's own directory audit log (Microsoft Graph, `Get-MgAuditLogDirectoryAudit`)
   — deploy it alongside this scenario rather than relying on the quarterly manual check this
   limitation used to describe as the only mitigation. See `docs/rbac-model.md` §3 for the

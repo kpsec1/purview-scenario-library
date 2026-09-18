@@ -4,7 +4,7 @@ parent: "data-map/scan-on-premises-sql-server-and-classify-pii-ruleset"
 ---
 ## 1. Problem statement
 
-[`data-map/scan-on-premises-sql-server-and-classify`](/scenarios/data-map/scan-on-premises-sql-server-and-classify/) scans an on-premises SQL Server
+`scenarios/data-map/scan-on-premises-sql-server-and-classify/` scans an on-premises SQL Server
 instance (via a self-hosted integration runtime) against Microsoft's **system default** scan rule
 set — inferred by that scenario's own build as `SqlServerDatabase`, roughly 200 built-in sensitive
 information types (SITs), but left as an explicit, not-fully-confirmed `VERIFY` in that scenario's

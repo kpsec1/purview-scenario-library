@@ -6,9 +6,9 @@ parent: "data-lifecycle-management/adaptive-scope-auto-apply-label"
 
 Two patterns already exist separately in this repo: an **adaptive scope** targets a population that
 changes over time by querying an Entra attribute instead of maintaining a static list
-([`data-lifecycle-management/adaptive-scope-retention`](/scenarios/data-lifecycle-management/adaptive-scope-retention/)), and an **auto-apply retention
+(`scenarios/data-lifecycle-management/adaptive-scope-retention/`), and an **auto-apply retention
 label** locks matching content as a formal **record** instead of merely retaining it
-([`data-lifecycle-management/retention-labels-financial-records`](/scenarios/data-lifecycle-management/retention-labels-financial-records/), which explicitly flags
+(`scenarios/data-lifecycle-management/retention-labels-financial-records/`, which explicitly flags
 adaptive scopes as an out-of-scope follow-up for large/dynamic estates in its own README §11). This
 scenario is the documented combination of the two: a query-driven population gets a **record** label
 auto-applied to its content, not a Keep-only retention action. `PROGRESS.md` records this as the
@@ -124,7 +124,7 @@ out of scope for this or any automated rollback here.
 ## 7. Non-goals
 
 - **Regulatory records via this scenario's own policy/rule** — not supported by auto-apply at all;
-  use [`data-lifecycle-management/publish-labels-for-manual-application`](/scenarios/data-lifecycle-management/publish-labels-for-manual-application/) for that
+  use `scenarios/data-lifecycle-management/publish-labels-for-manual-application/` for that
   distribution path, same as the financial-records sibling.
 - **Fixing the `-Name`/`-ApplyComplianceTag` defect in the financial-records sibling's own script** —
   recorded as a follow-up in `PROGRESS.md`, not fixed here (a different, already-`DONE` fragment).

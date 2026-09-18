@@ -141,8 +141,8 @@ Protection applies here identically [[2]](#references).
   Microsoft documents the missing rule-action shape later.
 - **This scenario does not configure Conditional Access or the Data Lifecycle Management
   preservation policy.** Both are Adaptive-Protection-integrated but out of scope here — already
-  built as siblings ([`adaptive-protection/conditional-access-insider-risk-block`](/scenarios/adaptive-protection/conditional-access-insider-risk-block/),
-  [`data-lifecycle-management/adaptive-protection-deleted-content-preservation`](/scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/)).
+  built as siblings (`scenarios/adaptive-protection/conditional-access-insider-risk-block/`,
+  `scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/`).
 - **This scenario does not modify or manage the feeder IRM policy's alert/case workflow**, or the
   Exchange/Teams sibling policy. Each of this library's Adaptive-Protection-consuming scenarios
   rolls back and operates independently.
@@ -168,9 +168,9 @@ Protection applies here identically [[2]](#references).
    `UnallowedApp`/`UnallowedBrowser`/`CloudAppRestrictions`/`CloudAppRestrictionList`/
    `PathExclusion`; distinguish from the per-rule, undocumented action shape in §2/§6) — <https://learn.microsoft.com/powershell/module/exchangepowershell/set-policyconfig>
 9. New-DlpCompliancePolicy reference (`-EndpointDlpLocation` parameter) — <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy>
-10. [`adaptive-protection/dynamic-risk-dlp-enforcement`](/scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/) — the Exchange/Teams sibling
+10. `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` — the Exchange/Teams sibling
     this scenario complements; shares the same feeder-policy and Adaptive-Protection-enablement
     prerequisites, not repeated here.
-11. [`dlp/endpoint-dlp-usb-block`](/scenarios/dlp/endpoint-dlp-usb-block/) — the always-on (non-Adaptive-Protection) Devices DLP
+11. `scenarios/dlp/endpoint-dlp-usb-block/` — the always-on (non-Adaptive-Protection) Devices DLP
     policy this scenario's README.md §11 documents an interaction with ("most restrictive policy
     wins").

@@ -6,7 +6,6 @@ categorySlug: "unified-catalog"
 slug: "manage-data-products"
 repoPath: "scenarios/unified-catalog/manage-data-products"
 parts: ["design","deploy","validate","rollback"]
-related: ["data-map/scan-azure-sql-and-classify","unified-catalog/curate-business-glossary","data-quality/rules-and-scorecards"]
 deployCount: 3
 validateCount: 1
 ---
@@ -22,8 +21,8 @@ just a scanned table with a label — a data product is what makes it discoverab
 ownable as "Customer Master Data" instead of `customerdb.dbo.Customers`.
 
 **Who it's for:** a data governance or platform team that has already run
-[`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) (to scan and classify a source) and
-[`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) (to define the `Customer` / `Customer ID`
+`scenarios/data-map/scan-azure-sql-and-classify/` (to scan and classify a source) and
+`scenarios/unified-catalog/curate-business-glossary/` (to define the `Customer` / `Customer ID`
 terms), and now wants to package that governed table as a self-service-discoverable product —
 defined, reviewed, and versioned via a pull request, not assembled one portal click at a time.
 
@@ -45,7 +44,7 @@ Beyond that operational driver, this scenario supports:
   trail than ad hoc table-level permission grants.
 - **Data quality accountability** — a data product carries an aggregate data-quality score computed
   from its linked assets [[1]](#12-references), directly consuming the output of
-  [`data-quality/rules-and-scorecards`](/scenarios/data-quality/rules-and-scorecards/) once that scenario's rules are applied to this
+  `scenarios/data-quality/rules-and-scorecards/` once that scenario's rules are applied to this
   same "Customer" asset.
 
 ## 3. Prerequisites
@@ -55,8 +54,8 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Unified Catalog data governance | **Pay-as-you-go (PAYG)**, billed on unique **governed assets/day** | Unlike `curate-business-glossary`, **this scenario does incur a charge** — see §10. Linking a real data asset to a data product is exactly the billing trigger Microsoft's FAQ describes [[8]](#12-references) |
-| A completed scan | [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) run at least once | This scenario consumes that scenario's output (a Data Map asset GUID for `customerdb.dbo.Customers`) — it does not scan anything itself |
-| The governing terms | [`unified-catalog/curate-business-glossary`](/scenarios/unified-catalog/curate-business-glossary/) run at least once (with `-Publish` if the terms should be linkable in a published state) | This scenario looks up `Customer` and `Customer ID` by name in the same domain rather than creating them |
+| A completed scan | `scenarios/data-map/scan-azure-sql-and-classify/` run at least once | This scenario consumes that scenario's output (a Data Map asset GUID for `customerdb.dbo.Customers`) — it does not scan anything itself |
+| The governing terms | `scenarios/unified-catalog/curate-business-glossary/` run at least once (with `-Publish` if the terms should be linkable in a published state) | This scenario looks up `Customer` and `Customer ID` by name in the same domain rather than creating them |
 | Role to author the data product | **Data Product Owner** (governance-domain-level role, assigned on the domain's **Roles** tab — same role model as `Data Steward`) | `docs/rbac-model.md` §5 |
 | Role to link the underlying Data Map asset | **Data Reader** on the asset's Data Map collection, in addition to Data Product Owner in Unified Catalog | Two separate role systems — `docs/rbac-model.md` §5's "Rule of thumb" |
 | Automation identity (Unified Catalog + Graph) | Same service-principal pattern as `curate-business-glossary`: Data Product Owner in Unified Catalog, `User.Read.All` application permission in Graph | §3's compensating-controls note in `curate-business-glossary/README.md` applies identically here — this scenario resolves the data product's owner the same way |
@@ -154,7 +153,7 @@ Graph** (surface 3) is owner-identity resolution, same as `curate-business-gloss
 
 Before step 1, replace `dataAsset.dataMapAssetId` in the definition file with the real Data Map
 asset GUID for `customerdb.dbo.Customers` — copy it from the asset's **Overview** page in the
-portal after [`data-map/scan-azure-sql-and-classify`](/scenarios/data-map/scan-azure-sql-and-classify/) has scanned it at least once
+portal after `scenarios/data-map/scan-azure-sql-and-classify/` has scanned it at least once
 (§11). The script refuses to run against the placeholder nil GUID.
 
 ## 6. Configuration reference
@@ -209,7 +208,7 @@ narrower `-Publish`-only status transition does not have this problem (`design.m
 **Asset-count and quality-score drift:** the data product's `additionalProperties.assetCount` (this
 scenario's `validate` script reports it as an informational KPI) and its aggregate
 `dataQualityScore` [[1]](#12-references) both change independently of this scenario's own runs — a
-portal user adding another asset, or [`data-quality/rules-and-scorecards`](/scenarios/data-quality/rules-and-scorecards/)'s scan
+portal user adding another asset, or `scenarios/data-quality/rules-and-scorecards/`'s scan
 schedule producing a new score. Track both as operational metrics once the product portfolio grows
 past what a human can eyeball weekly.
 

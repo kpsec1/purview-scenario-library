@@ -4,7 +4,7 @@ parent: "insider-risk/security-policy-violations-by-departing-users"
 ---
 ## 1. Problem statement
 
-[`insider-risk/departing-employee-data-theft`](/scenarios/insider-risk/departing-employee-data-theft/) scores a departing user's *data-handling*
+`scenarios/insider-risk/departing-employee-data-theft/` scores a departing user's *data-handling*
 activity (downloads, printing, cloud uploads) against exfiltration indicators. It has a blind
 spot by design: a departing user who tampers with their own device's security controls —
 disabling antivirus, installing an unapproved remote-access tool, side-loading unsigned software
