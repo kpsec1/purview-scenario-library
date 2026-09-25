@@ -3365,7 +3365,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/data-map/scan-azure-sql-managed-instance-and-classify-managed-identity-
-  credential/`** — commit `PENDING` — 2026-09-25. Full scenario (README.md, design.md,
+  credential/`** — commit `6f38b57` — 2026-09-25. Full scenario (README.md, design.md,
   deploy/New-AzureSqlManagedInstanceManagedIdentityCredentialScan.ps1,
   deploy/Remove-AzureSqlManagedInstanceManagedIdentityCredentialScan.ps1,
   validate/Test-AzureSqlManagedInstanceManagedIdentityCredentialScan.ps1, rollback.md, reviews.md) —
