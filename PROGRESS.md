@@ -3402,7 +3402,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/communication-compliance/teams-viva-engage-content-safety/` (follow-up)** —
-  commit `PENDING` — 2026-09-25. Closed the Red Team finding 1 follow-up from this scenario's own
+  commit `f750c21` — 2026-09-25. Closed the Red Team finding 1 follow-up from this scenario's own
   four-lens review: added `deploy/policy/short-form-crisis-threat-phrases.txt`, a ready-to-import
   compensating custom keyword dictionary targeting short-form self-harm-ideation and terse-threat
   phrasing that the classifier family's disclosed 3-or-5-word minimum can let through undetected —
