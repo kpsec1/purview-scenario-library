@@ -2844,10 +2844,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   sibling Data Map scenarios already carry).
 
 ### Follow-ups discovered while building the bulk-grant Synapse serverless access scenario
-- [ ] Backport the server-scoped-vs-per-database `CREATE LOGIN` correction (see
-  `bulk-grant-synapse-serverless-access/design.md` §4) into `scan-azure-synapse-and-classify/README.md`
-  §5 step 3c and `design.md` §4, which still describe it as a per-database step — deliberately not
-  edited in the bulk-grant scenario's own fragment (`AGENTS.md` §6, one fragment per turn).
+- [x] RESOLVED (2026-09-25, commit `PENDING`): Backported the server-scoped-vs-per-database
+  `CREATE LOGIN` correction (see `bulk-grant-synapse-serverless-access/design.md` §4) into
+  `scan-azure-synapse-and-classify/README.md` and `design.md`, which described it as a
+  per-database step. Fixed in `README.md`: §3 prerequisites table row, §5 step 3c (now explains
+  the server-scoped grounding and that the portal's "per database" framing is a Synapse Studio
+  navigation artifact, not a real per-database repetition), §8's incident-response cause (e) and
+  review-cadence paragraph (both previously implied a database restore/recreate could drop the
+  server-scoped login — corrected to attribute that risk only to the genuinely per-database
+  `CREATE USER`/`db_datareader` grant). Fixed in `design.md` §4's comparison table row (relabeled
+  "database-level" → "server-scoped," corrected the "each serverless SQL database" claim to
+  "once, against `master`"). Mermaid diagram and §5 step 4's serverless T-SQL block needed no
+  change — neither claimed per-database `CREATE LOGIN` repetition.
 - [ ] Add a **sixth automation surface** to `docs/automation-surface.md` — direct T-SQL/Azure SQL
   connections via `Invoke-Sqlcmd -AccessToken` (resource `https://database.windows.net/`), the surface
   `bulk-grant-synapse-serverless-access/deploy/Grant-SynapseServerlessDatabaseAccess.ps1` introduces
@@ -3420,6 +3428,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Backported the server-scoped-vs-per-database `CREATE LOGIN` correction into
+  `scan-azure-synapse-and-classify`** — commit `PENDING` — 2026-09-25. Sub-task fragment: the
+  sibling `bulk-grant-synapse-serverless-access` scenario's own grounding pass had found, via two
+  directly-fetched Microsoft Learn pages, that the serverless enumeration login
+  (`CREATE LOGIN ... FROM EXTERNAL PROVIDER`) is a server-scoped statement run once against
+  `master` — not a per-database step, despite Microsoft's portal walkthrough appearing to repeat
+  it because Synapse Studio's script entry point is reached from inside a database's own context.
+  That correction was deliberately left unbackported at the time (one fragment per turn). This
+  fragment ported it into the base scenario's `README.md` (prerequisites table, §5 step 3c,
+  §8 incident-response cause and review cadence — the latter two previously implied a database
+  restore/recreate could drop the login itself, corrected to attribute that risk only to the
+  genuinely per-database `CREATE USER`/`db_datareader` grant) and `design.md` (§4 comparison
+  table). Pure documentation correction — no scan behavior or script logic changed (the scenario's
+  scripts never scripted this manual portal step in the first place).
 - [x] **Fixed drifted "surface N" citations across the repo (automation-surface.md renumbering
   cleanup)** — commit `443aa7c` — 2026-09-25. Sub-task fragment: `docs/automation-surface.md` was
   renumbered at some point (Exchange Online PowerShell=1, Security & Compliance PowerShell=2,

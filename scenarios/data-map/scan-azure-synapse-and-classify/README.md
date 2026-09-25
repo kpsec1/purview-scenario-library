@@ -57,7 +57,7 @@ from the sibling scenarios' tables are called out explicitly):
 | Read scan results / browse classified assets (validation) | **Data Reader** role on the target collection | Least-privilege for the read-only `validate/` script |
 | **Azure IAM Reader** on the Synapse workspace | Grants the Purview account's SAMI enough visibility to enumerate workspace resources | Required for **both** dedicated and serverless scanning — an *owner* or *user access administrator* must assign it [[2]](#references) |
 | **Azure IAM Storage Blob Data Reader** on the workspace's associated storage account | For the Purview SAMI | **Serverless-only, new prerequisite neither sibling scenario has.** Microsoft's own documented steps assign this at the **resource group or subscription** scope containing the storage account — prefer assigning it directly on the **storage account resource itself** where your Azure RBAC delegation model allows it, so the Purview SAMI doesn't gain blob-read access to every other storage account in the same resource group/subscription (flagged as a Red Team finding in `reviews.md`) [[2]](#references) |
-| Per-database enumeration login (**serverless only**) | `CREATE LOGIN [<PurviewAccountName>] FROM EXTERNAL PROVIDER;` run once per serverless SQL database in Synapse Studio | **New prerequisite neither sibling scenario has** — see §5 step 3 [[2]](#references) |
+| Enumeration login, server-scoped (**serverless only**) | `CREATE LOGIN [<PurviewAccountName>] FROM EXTERNAL PROVIDER;` run **once** against `master` (from any one serverless database's Synapse Studio script context — not repeated per database, a server-level statement) | **New prerequisite neither sibling scenario has** — see §5 step 3 [[2]](#references) |
 | Per-database `db_datareader` grant | Two distinct T-SQL forms — one for dedicated pools, one for serverless pools (§5 step 4) | Same underlying idea as both sibling scenarios, but Synapse needs the operator to pick the right form per pool type [[2]](#references) |
 | Workspace **firewall**: "Allow Azure services and resources to access this workspace" = **On** | Azure portal → the workspace → **Firewalls** | If this cannot be enabled, the **portal cannot configure a Synapse scan at all** — Microsoft directs operators to the REST API with **SQL Auth** instead of MSI in that case [[2]](#references) |
 | Automation identity for the REST calls themselves | App registration with **Data Source Administrator** (and, for the validate script, **Data Reader**) Purview role on the collection | Client-secret app-only OAuth2 — see `docs/automation-surface.md` §3 and §5 below |
@@ -134,12 +134,18 @@ scenario needs. Full design rationale and the complete diff table: `design.md` �
    b. **Storage account:** in the resource group/subscription containing the workspace's associated
       ADLS Gen2 storage account, **Access control (IAM)** → **Add** → role **Storage Blob Data
       Reader** → assign to the Purview account's name.
-   c. **Per serverless database:** in Synapse Studio → **Data** → the database's **...** menu → new
-      SQL script:
+   c. **Enumeration login — server-scoped, run once, not per database.** `CREATE LOGIN` has always
+      been a server-level statement in SQL Server/Azure SQL regardless of which database context
+      executes it, and Synapse serverless is not documented as an exception — two directly-fetched
+      Microsoft Learn pages confirm this login is created against `master` exactly once (see
+      `scenarios/data-map/bulk-grant-synapse-serverless-access/design.md` §4 for the full grounding
+      and citations). Microsoft's portal walkthrough below reads as repeating the step "per database"
+      only because Synapse Studio's **New SQL script** entry point happens to be reached from inside a
+      specific database's context — run it from any one serverless database once, not from every one:
       ```sql
       CREATE LOGIN [<PurviewAccountName>] FROM EXTERNAL PROVIDER;
       ```
-      Repeat for every serverless database to be scanned [[2]](#references).
+      [[2]](#references)
 4. **Grant database read access.** Different T-SQL per pool type — run against **each** database:
    - **Dedicated SQL pool:**
      ```sql
@@ -279,10 +285,12 @@ README.md` §8 for the full text, not repeated here. Two Synapse-specific additi
 alongside the sibling scenarios' own causes:
 
 **Incident-response addition — Synapse-specific failure causes:** (e) the **serverless enumeration
-login** (`CREATE LOGIN [<PurviewAccountName>] FROM EXTERNAL PROVIDER`) was never created, or was
-dropped during a database restore/recreate — the scan authenticates successfully against the workspace
-but silently returns zero serverless assets, since the workspace-level Reader grant alone is not
-sufficient for serverless enumeration; (f) the workspace's **Storage Blob Data Reader** grant on the
+login** (`CREATE LOGIN [<PurviewAccountName>] FROM EXTERNAL PROVIDER`) was never created, or the
+**per-database `CREATE USER`/`db_datareader` grant** that depends on it was dropped during a database
+restore/recreate — a database-level rebuild only affects that per-database grant, not the server-scoped
+login itself (§4/§5 step 3c) — the scan authenticates successfully against the workspace but silently
+returns zero serverless assets, since the workspace-level Reader grant alone is not sufficient for
+serverless enumeration; (f) the workspace's **Storage Blob Data Reader** grant on the
 associated storage account was revoked (e.g. during a storage-account access review that didn't know
 this scenario's serverless scan depended on it) — serverless enumeration fails even though the
 dedicated pool (if also scanned) continues to work, since only serverless enumeration depends on this
@@ -290,9 +298,10 @@ grant.
 
 **Review cadence:** same as both sibling scenarios, plus one Synapse-specific check: after any
 database restore, recreate, or migration within the workspace, re-run
-`validate/Test-AzureSynapseDataMapScan.ps1` and re-confirm the per-database `CREATE LOGIN`/`CREATE
-USER`/`db_datareader` grants (§7 checks 4–5) — a database-level rebuild silently drops these grants
-even though the workspace-level IAM roles (Reader, Storage Blob Data Reader) are unaffected.
+`validate/Test-AzureSynapseDataMapScan.ps1` and re-confirm the per-database `CREATE USER`/
+`db_datareader` grant (§7 check 5) — a database-level rebuild silently drops this grant even though
+the server-scoped `CREATE LOGIN` (§4/§5 step 3c) and the workspace-level IAM roles (Reader, Storage
+Blob Data Reader) are unaffected.
 
 **Downstream use:** same as both sibling scenarios — this scenario stops at "classify and make
 visible," feeding `scenarios/information-protection/`, `scenarios/dlp/`, and any future Data Estate
