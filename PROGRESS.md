@@ -1345,7 +1345,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   secrets**, which is why `scan-credential-key-vault-backed` README §3/§5/§11 recommends a
   *dedicated* scan-credential Key Vault (Red Team finding 2). If per-secret scoping appears, that
   recommendation can be softened to a narrower grant instead.
-- [x] RESOLVED (2026-09-25, commit `PENDING`): Cross-cutting: `docs/automation-surface.md`
+- [x] RESOLVED (2026-09-25, commit `4f041bb`): Cross-cutting: `docs/automation-surface.md`
   surface 4 (Purview data-plane REST) did not mention the Scanning plane's **Credential**, **Key
   Vault Connections**, **Scan Rulesets**, or **Triggers** operation groups, and
   `docs/rbac-model.md` §5 did not state which Data Map collection role is required to create a
@@ -3163,7 +3163,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (`scan-on-premises-sql-server-and-classify/README.md` §11) already carried — this build could not
   close it, only narrow what remains unconfirmed. Flagged inline in this scenario's
   `deploy/Remove-PiiOnlyScanRuleset.ps1` `.NOTES`, `README.md` §11, and `rollback.md` Stage 1.
-- [x] RESOLVED (2026-09-25, commit `PENDING`): a later build reached `learn.microsoft.com` directly
+- [x] RESOLVED (2026-09-25, commit `3abedf3`): a later build reached `learn.microsoft.com` directly
   (Microsoft Learn MCP tool, no `EGRESS_BLOCKED`) and fetched the Scan Rulesets - Create Or Replace
   REST reference page in full
   (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/create-or-replace`,
@@ -3415,7 +3415,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## DONE
 - [x] **Backported Scanning data-plane operation groups (Credential, Key Vault Connections, Scan
   Rulesets, Triggers) into `docs/automation-surface.md` and `docs/rbac-model.md`** — commit
-  `PENDING` — 2026-09-25. Sub-task fragment closing a cross-cutting follow-up left open since the
+  `4f041bb` — 2026-09-25. Sub-task fragment closing a cross-cutting follow-up left open since the
   `scan-credential-key-vault-backed` scenario shipped: the shared docs never caught up with what
   that scenario (and the later `scan-credential-remaining-kinds`/`*-pii-ruleset` scenarios) had
   already grounded. `automation-surface.md` §4's single Data Map REST row is now split: the
