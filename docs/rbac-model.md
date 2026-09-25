@@ -119,6 +119,26 @@ collection admin on the **root collection** also gets Purview governance-portal 
 > Data Product Owner/Steward (Unified Catalog). "Need to register sources and run scans" → Data
 > Source Administrator (both models use this same role group name).
 
+**Scanning data-plane objects (Credential, Key Vault Connection, Scan Ruleset, Trigger)** — the
+classic collection-role table above documents "register sources and run scans," but Microsoft's
+role-group reference does not separately enumerate the specific collection role required to
+create a **Credential** or **Key Vault Connection** object (`PUT /scan/credentials/{name}`,
+`PUT /scan/azureKeyVaults/{name}` — the Scanning REST API's data-plane, distinct from the
+Data Map/Atlas metadata-plane). This library's own scan-credential and PII-ruleset scenarios
+(`scenarios/data-map/scan-credential-key-vault-backed/`,
+`scenarios/data-map/scan-credential-remaining-kinds/`) assume **Data Source Administrator** on
+the target collection by analogy with the already-documented data-source/scan grant, since both
+object families live under the same `/scan/` REST namespace and the classic portal exposes
+credential management from the same **Manage → Credentials** page as data sources — **VERIFY**
+(pilot tenant) this analogy before relying on it for least-privilege role design; a narrower or
+separate role requirement has not been ruled out. **Scan Ruleset** objects
+(`PUT /scan/scanrulesets/{name}`) are account-wide, not collection-scoped — no collection role
+applies to them at all; the classic portal's **Manage → Scan rule sets** page is reachable by any
+Data Source Administrator on any collection, consistent with the object having no
+`collection` property in its own REST schema (confirmed directly — see
+`scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/README.md` §11 and
+its Synapse sibling).
+
 ---
 
 ## 6. Exchange Online dependency (the most common permissions gap)

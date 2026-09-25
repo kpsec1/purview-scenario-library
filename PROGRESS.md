@@ -1345,11 +1345,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   secrets**, which is why `scan-credential-key-vault-backed` README §3/§5/§11 recommends a
   *dedicated* scan-credential Key Vault (Red Team finding 2). If per-secret scoping appears, that
   recommendation can be softened to a narrower grant instead.
-- [ ] Cross-cutting: `docs/automation-surface.md` surface 4 (Purview data-plane REST) does not
-  mention the Scanning plane's **Credential** or **Key Vault Connections** operation groups, and
-  `docs/rbac-model.md` §5 does not state which Data Map collection role is required to create a
-  credential (this build assumed Data Source Administrator by analogy with data sources/scans —
-  itself worth confirming). Backport both once another Data Map fragment touches those docs.
+- [x] RESOLVED (2026-09-25, commit `PENDING`): Cross-cutting: `docs/automation-surface.md`
+  surface 4 (Purview data-plane REST) did not mention the Scanning plane's **Credential**, **Key
+  Vault Connections**, **Scan Rulesets**, or **Triggers** operation groups, and
+  `docs/rbac-model.md` §5 did not state which Data Map collection role is required to create a
+  credential. Backported: `automation-surface.md` §4's Data Map row now cites all four operation
+  groups with their confirmed REST paths (also fixed a latent inaccuracy — the original row was
+  missing the `/scan/` path segment on `/datasources/{name}`). `rbac-model.md` §5 now has a new
+  paragraph stating the Data Source Administrator-by-analogy assumption explicitly, flagged
+  **VERIFY (pilot tenant)** rather than resolved (the analogy was never independently confirmed),
+  plus the confirmed account-wide/no-collection-role fact for Scan Ruleset objects.
 
 ### Follow-ups discovered while building the DSPM for AI Copilot sensitive-data-exposure scenario
 - [ ] VERIFY (pilot tenant): whether a `{"Type":"Group","Identity":"..."}` `Inclusions` entry in
@@ -3408,6 +3413,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Backported Scanning data-plane operation groups (Credential, Key Vault Connections, Scan
+  Rulesets, Triggers) into `docs/automation-surface.md` and `docs/rbac-model.md`** — commit
+  `PENDING` — 2026-09-25. Sub-task fragment closing a cross-cutting follow-up left open since the
+  `scan-credential-key-vault-backed` scenario shipped: the shared docs never caught up with what
+  that scenario (and the later `scan-credential-remaining-kinds`/`*-pii-ruleset` scenarios) had
+  already grounded. `automation-surface.md` §4's single Data Map REST row is now split: the
+  original row keeps data source/scan/collection registration (path corrected to include the
+  missing `/scan/` segment, confirmed against `scan-azure-sql-and-classify`'s own script), and a
+  new row documents the Credential, Key Vault Connections, Scan Rulesets, and Triggers operation
+  groups with their exact REST paths, citing this build's own direct-fetched Scan Rulesets
+  reference page and the worked scenarios. `rbac-model.md` §5 gained a new paragraph making the
+  Data Source Administrator-by-analogy assumption for Credential/Key Vault Connection creation
+  explicit and flagged **VERIFY (pilot tenant)** — the analogy itself is not newly confirmed, only
+  now stated instead of left undocumented — plus a confirmed, non-VERIFY fact that Scan Ruleset
+  objects are account-wide with no collection role applying at all (grounded via this build's own
+  direct REST schema fetch showing no `collection` property). No scenario code changed; pure
+  cross-cutting documentation backport, per AGENTS.md §6 ("one clearly-scoped sub-task from the
+  backlog").
 - [x] **Re-verified Synapse/Managed Instance PII-ruleset REST body shapes against direct
   `learn.microsoft.com` access** — commit `3abedf3` — 2026-09-25. Sub-task fragment (not a new
   scenario) closing a low-priority follow-up: with `learn.microsoft.com` directly reachable via the
