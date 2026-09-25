@@ -24,8 +24,13 @@ template: the **Detect inappropriate content** template's fixed configuration �
 
 — is already exactly this scenario's target. Using the template directly means Microsoft owns
 keeping the classifier pairing current; a hand-built custom-policy equivalent would silently drift
-from any future template update. `README.md` §8 documents the one supported deviation a buyer may
-legitimately want (adding Copilot as a location).
+from any future template update. `README.md` §8 documents the two supported deviations a buyer may
+legitimately want (adding Copilot as a location; applying the optional
+`deploy/policy/short-form-crisis-threat-phrases.txt` custom keyword dictionary via **Customize
+policy** for a confirmed short-message risk profile — see `README.md` §6/§8) — both opt-in,
+tenant-decided
+extensions layered on top of the template, not a reason to abandon the template as this scenario's
+deployment method.
 
 ## 3. The no-write-API constraint still applies
 

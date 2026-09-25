@@ -1278,18 +1278,42 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/README.md` §3/§5/§11 and
   `scan-azure-synapse-and-classify-managed-identity-credential/README.md` §3/§11 rather than assumed
   identical.
-- [ ] Add an explicit `-ResourceNames`-style scoping parameter to
-  `scan-azure-synapse-and-classify/deploy/New-AzureSynapseDataMapScan.ps1`, using the `resourceTypes.
-  AzureSynapseServerlessSql.resourceNameFilter.resources[]` shape a worked example on the base
-  scenario's own canonical page was found to confirm during the `-managed-identity-credential`
-  sibling's build (`scan-azure-synapse-and-classify/README.md` §11). Not built as part of that
-  fragment because it's a scan-scoping behavior change independent of authentication — deferred
-  until there's a concrete requirement to scope a scan to named databases rather than auto-enumerate.
+- [ ] **CORRECTION (re-grounded, not built):** A follow-up-to-the-follow-up grounding pass found the
+  `-ResourceNames`-style scoping parameter item below was less settled than originally framed. The
+  worked JSON example's `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` key
+  name does not appear anywhere in the formal `AzureSynapseWorkspaceCredentialScanProperties`
+  REST reference's own `resourceTypes` type (`ExpandingResourceScanPropertiesResourceTypes`), whose
+  documented keys are a different, generic camelCase per-source-kind set
+  (`azureSqlDatabase`/`azureSynapseWorkspace`/etc., used by "expanding" multi-resource scan kinds like
+  `AzureResourceGroup`/`AzureSubscription`) with no Synapse-serverless-specific entry. The nested
+  *sub-object* shape independently matches the formal `ResourceTypeFilter` type, which is reassuring
+  but doesn't resolve the key-name conflict. Likely a shared/reused schema type whose full valid key
+  set isn't fully enumerated for every scan kind that references it (a common auto-generated-API-doc
+  pattern), but that is an inference, not a confirmation — flagged inline in
+  `scan-azure-synapse-and-classify/README.md` §11 as a VERIFY rather than built on an unresolved
+  conflict, per `AGENTS.md` §4. Re-open only once confirmed against a pilot tenant or a more specific
+  Synapse-only REST reference page.
 - [ ] Amazon S3 (`AmazonARN`), Salesforce (`ConsumerKeyAuth`), and Microsoft Fabric/Power BI
   (`DelegatedAuth`) still have no scan scenario of any kind in this library — each would need its own
   new base scan scenario (data source + scan, not just a credential variant of an existing one), a
   bigger fragment than the UAMI wiring above. `AccountKey`'s four source types (Azure Blob Storage,
   ADLS Gen1, ADLS Gen2, Azure Files) are in the same position.
+- [ ] **Amazon S3 scan scenario attempted, deliberately not built — genuine REST-schema conflict
+  found, not resolved by guessing.** A grounding pass direct-fetched the Scans/Data Sources - Create
+  Or Replace REST references for the two candidate scan kinds and found real ambiguity: `AmazonS3` and
+  `AmazonAccount` data source `properties` both carry a `roleARN` string field directly, in addition
+  to (and separately from) the `credential: CredentialReference` field both `AmazonS3RoleARNScan` and
+  `AmazonS3CredentialScan` scan kinds also carry — two different scan kinds, each with both a direct
+  `roleARN` property AND a credential reference, and no worked example (portal or REST) found
+  anywhere distinguishing when to use which or whether both should be set. The portal-documented flow
+  (`register-scan-amazon-s3`) only ever describes creating a Purview credential object with a Role
+  ARN and selecting it during scan setup — consistent with `AmazonS3CredentialScan`'s `credential`
+  field and this repo's already-built `AmazonARN` credential kind (`scan-credential-remaining-kinds`)
+  — but does not explain the data-source-level `roleARN` field or the sibling `AmazonS3RoleARNScan`
+  kind at all. Building a deploy script would mean guessing which of four plausible combinations
+  (data-source `roleARN` set or not, crossed with which scan kind) is actually correct — against
+  `AGENTS.md` §4. Re-open once a worked REST example, Az.Purview module worked example, or pilot
+  tenant read-back resolves which fields/kind combination Microsoft's own tooling actually uses.
 
 - [x] Consider a small **credential inventory/drift report** companion (`GET /scan/credentials`,
   paged via `{ count, nextLink, value[] }`) that reconciles a tenant's live credential set against a
@@ -2149,13 +2173,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   script. One open VERIFY carried into the scenario's own docs rather than guessed: whether the
   optional cloud-indicator category is actually offered for this specific template in the live
   policy-creation workflow (`data-leaks-by-risky-users/README.md` §5 Step 6/§6/§11).
-- [ ] Consider a companion follow-up scripting/documenting a compensating custom keyword dictionary
-  for `teams-viva-engage-content-safety` targeting known short-form crisis/threat phrasing (parallel
-  to `harassment-and-code-of-conduct/deploy/policy/code-of-conduct-evasion-phrases.txt`), for tenants
-  with a confirmed short-message evasion risk given the classifier family's disclosed 3-or-5-word
-  minimum (`teams-viva-engage-content-safety/README.md` §8/§11) — flagged as a recommended
-  **Customize policy** option in that scenario's docs but not built as a ready-to-use dictionary
-  file in this pass.
+- [x] Companion follow-up scripting/documenting a compensating custom keyword dictionary for
+  `teams-viva-engage-content-safety` targeting known short-form crisis/threat phrasing — **built**
+  (see DONE below): `deploy/policy/short-form-crisis-threat-phrases.txt`, wired in as an optional
+  (`applied: false` by default) `customKeywordDictionaryOption` in the scenario's policy manifest,
+  matching `harassment-and-code-of-conduct`'s established evasion-dictionary pattern and content
+  discipline.
 - [ ] VERIFY (pilot tenant): the exact `AuditData` JSON shape for a `SupervisionRuleMatch` event
   specific to the Hate/Sexual/Violence/Self-harm classifier pairing (needed to confirm or replace
   `teams-viva-engage-content-safety/deploy/Export-ContentSafetyAuditTrail.ps1`'s best-effort
@@ -3378,6 +3401,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/communication-compliance/teams-viva-engage-content-safety/` (follow-up)** —
+  commit `PENDING` — 2026-09-25. Closed the Red Team finding 1 follow-up from this scenario's own
+  four-lens review: added `deploy/policy/short-form-crisis-threat-phrases.txt`, a ready-to-import
+  compensating custom keyword dictionary targeting short-form self-harm-ideation and terse-threat
+  phrasing that the classifier family's disclosed 3-or-5-word minimum can let through undetected —
+  the same evasion-dictionary pattern `harassment-and-code-of-conduct/deploy/policy/
+  code-of-conduct-evasion-phrases.txt` already established, content-disciplined the same way
+  (clinical, non-graphic, illustrative rather than exhaustive, not a slur/profanity duplicate). Wired
+  in as an explicitly **optional**, not-applied-by-default `customKeywordDictionaryOption` block in
+  `content-safety-policy-manifest.json` (JSON validated), requiring both an explicit **Customize
+  policy** action and HR/Legal reviewer review/extension before use — never silently applied to the
+  scenario's default template-based deployment. `README.md` §5 step 7, §6 (new configuration-table
+  row), and §8 updated to point at the concrete file instead of only describing the pattern
+  conceptually; `design.md` §2 and `reviews.md` finding 1 updated to record the resolution. No new
+  Microsoft Learn grounding needed — pure content/wiring work reusing an already-grounded pattern.
+  Along the way, attempted to also ground and build the `-ResourceNames` scoping parameter follow-up
+  recorded during the Synapse UAMI fragment, and a new Amazon S3 base scan scenario — both found to
+  have genuine REST-schema ambiguities during grounding (conflicting `resourceTypes` key
+  enumerations; `AmazonS3`'s two competing scan kinds each carrying both a direct `roleARN` field and
+  a separate credential reference, with no worked example resolving which combination is correct) —
+  neither built on the unresolved conflict; both corrected/recorded as accurate VERIFY items in
+  `scan-azure-synapse-and-classify/README.md` §11 and `PROGRESS.md` respectively, per `AGENTS.md` §4.
 - [x] **`scenarios/data-map/scan-azure-synapse-and-classify-managed-identity-credential/`** —
   commit `ecb2f26` — 2026-09-25. Full scenario (README.md, design.md,
   deploy/New-AzureSynapseManagedIdentityCredentialScan.ps1,

@@ -149,7 +149,8 @@ product itself has no classifier-specific routing capability (`design.md` §6).
    the tenant has a specific, documented reason (§8) — they are exactly this scenario's target
    configuration (`design.md` §2).
 7. Select **Create policy** to accept the template as-is, or **Customize policy** only if a
-   documented deviation is needed [[3]](#references).
+   documented deviation is needed [[3]](#references) — e.g. adding the optional compensating custom
+   keyword dictionary, `deploy/policy/short-form-crisis-threat-phrases.txt`, described in §8.
 8. **Review and finish** → **Create policy**. Allow up to ~1 hour for Teams/Viva Engage body content
    before the policy begins detecting [[11]](#references).
 9. **Enable username anonymization** (if not already on tenant-wide from another Communication
@@ -196,6 +197,7 @@ its own for anything, including its own audit footprint (`design.md` §3).
 | Direction | Inbound, Outbound, Internal | Full coverage — template default |
 | Users in scope | All users | See §5 — a self-harm/violence risk control is not one to leave scoped out for any subset of the workforce |
 | Conditions | Hate, Violence, Sexual, Self-harm (Azure AI Content Safety LLM classifiers, preview) | `design.md` §5 for exactly what each does and does not cover |
+| Custom keyword dictionary (**optional, not applied by default**) | `deploy/policy/short-form-crisis-threat-phrases.txt` | Compensating control for the word-count gap below — see §8. Applied only via **Customize policy**, only after HR/Legal reviewer review — `deploy/policy/content-safety-policy-manifest.json`'s `customKeywordDictionaryOption` |
 | Minimum message length to evaluate | **Documented inconsistently by Microsoft: "three or more words" in one section of the same source page, "five or more words" in another** | See §11 — a genuine, disclosed source inconsistency, not resolved by guessing which figure is current |
 | Message length ceiling | Up to 10,000 characters per message | [[4]](#references) |
 | Severity threshold for alert + Severity column | 4 or higher (on Azure AI Content Safety's 0–7, trimmed-to-0/2/4/6 scale) | [[4]](#references)[[12]](#references) — a materially different triage mechanism from `harassment-and-code-of-conduct`'s trainable classifiers, which carry no severity score at all |
@@ -307,19 +309,23 @@ scenario's runbook therefore requires the reviewer team to:
   silently-deactivated Self-harm detection control is materially worse than for a general
   conduct-monitoring policy.
 
-**Short messages bypass this classifier family entirely — consider a compensating custom keyword
-dictionary if that risk is material for this tenant.** Whether the true minimum is three or five
-words (§11's disclosed source inconsistency), a short, unambiguous message — "going to hurt him",
-"want to end it" — can fall under either threshold and never reach the classifier at all. This is a
-genuine, exploitable detection gap, not just a documentation nit: an evasive or simply terse sender
-is not detected by word-count alone. `harassment-and-code-of-conduct/deploy/policy/
-code-of-conduct-evasion-phrases.txt` already establishes the pattern for this repo — a custom
+**Short messages bypass this classifier family entirely — an OPTIONAL compensating custom keyword
+dictionary now ships for tenants where that risk is material.** Whether the true minimum is three or
+five words (§11's disclosed source inconsistency), a short, unambiguous message — "going to hurt
+him", "want to end it" — can fall under either threshold and never reach the classifier at all. This
+is a genuine, exploitable detection gap, not just a documentation nit: an evasive or simply terse
+sender is not detected by word-count alone. `harassment-and-code-of-conduct/deploy/policy/
+code-of-conduct-evasion-phrases.txt` already established the pattern for this repo — a custom
 keyword dictionary targeting known short-form crisis/threat phrasing — as a compensating control
-layered onto a classifier-only policy. This scenario does not ship one by default (the template's
-fixed classifier set is deliberately used unmodified, `design.md` §2), but a tenant with a confirmed
-short-message risk profile should use **Customize policy** (§5, step 7) to add one, following the
-same non-slur, evasion-focused content discipline `harassment-and-code-of-conduct/design.md` §4
-already establishes, adapted for short crisis/threat phrasing rather than concealment phrasing.
+layered onto a classifier-only policy; `deploy/policy/short-form-crisis-threat-phrases.txt` is that
+same pattern applied here, illustrative rather than exhaustive (self-harm-ideation and terse-threat
+phrasing, not a slur/profanity duplicate — the classifiers already cover that ground). This
+scenario's **default** deployment still does not apply it (the template's fixed classifier set is
+used unmodified out of the box, `design.md` §2) — a tenant with a confirmed short-message risk
+profile applies it explicitly via **Customize policy** (§5, step 7;
+`deploy/policy/content-safety-policy-manifest.json`'s `customKeywordDictionaryOption` block), after
+the dutyOfCareEscalationContact and HR/Legal reviewer pool have reviewed and extended the phrase list
+for this tenant's own case patterns — never applied as a static, unreviewed file.
 
 **No feedback loop to Microsoft for misclassified items (yet).** Unlike the trainable classifiers
 (`harassment-and-code-of-conduct`'s **Report as Misclassified** action improves future accuracy),

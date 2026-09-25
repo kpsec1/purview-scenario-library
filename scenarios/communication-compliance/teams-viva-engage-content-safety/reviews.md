@@ -20,6 +20,12 @@ of findings below; all **Fix** items were applied to the scenario before this fi
      dictionary (via **Customize policy**) for tenants with a confirmed short-message risk profile,
      explicitly cross-referencing the evasion-phrase pattern `harassment-and-code-of-conduct`
      already established, rather than leaving the word-count gap as a passive disclosure only.
+     **Follow-up (2026-09-25):** the recommendation now ships as a concrete, ready-to-import
+     artifact — `deploy/policy/short-form-crisis-threat-phrases.txt` — wired into
+     `content-safety-policy-manifest.json`'s new `customKeywordDictionaryOption` block (`applied:
+     false` by default, requiring explicit **Customize policy** action and HR/Legal reviewer review
+     before use, never silently applied). `README.md` §5 step 7, §6, and §8 all updated to point at
+     the concrete file instead of only describing the pattern conceptually.
 2. **The duty-of-care runbook implied continuous coverage without ever stating whether the named
    escalation contact is reachable outside business hours — a real gap given this scenario's own
    ~1 hour detection latency.** A message sent Friday evening to a business-hours-only contact could
