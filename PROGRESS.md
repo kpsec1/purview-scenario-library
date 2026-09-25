@@ -1247,17 +1247,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (`AccountKey`/`ConsumerKeyAuth`/`DelegatedAuth`) — `AmazonARN`/`ManagedIdentity` still never call
   it, since neither carries a Key Vault secret. `reviews.md` Blue Team finding 2 and the round-summary
   table updated in place to reflect the resolution.
-- [ ] Once any of the four natural consumer scan scenarios this fragment identified are prioritized —
-  Amazon S3 (`AmazonARN`), Salesforce (`ConsumerKeyAuth`), Microsoft Fabric/Power BI
-  (`DelegatedAuth`), or a `ManagedIdentity`(UAMI) variant of `scan-azure-sql-and-classify`/
-  `scan-azure-sql-managed-instance-and-classify`/`scan-azure-synapse-and-classify` — wire it to
-  `scenarios/data-map/scan-credential-remaining-kinds/`. The UAMI variant is the most directly
-  actionable: the three target scan scenarios already exist in this repo, and Microsoft's own
-  credential priority order ranks user-assigned managed identity above the service-principal/
-  SQL-authentication paths those scenarios currently document as their non-SAMI fallback.
-  `AccountKey`'s four source types (Azure Blob Storage, ADLS Gen1, ADLS Gen2, Azure Files) have no
-  scan scenario of any kind in this library yet — a bigger fragment, since it would need its own new
-  base scan scenario, not just a credential variant of an existing one.
+- [x] `ManagedIdentity` (UAMI) variant of `scan-azure-sql-and-classify` — **built** (see DONE below)
+  as `scenarios/data-map/scan-azure-sql-and-classify-managed-identity-credential/`: reconciles the
+  base scenario's existing scan from SAMI onto a UAMI credential built via
+  `scan-credential-remaining-kinds`. Confirmed the most directly actionable of the four candidate
+  follow-ups this item originally listed, per its own reasoning (target scan scenario already
+  existed; Microsoft's credential priority order ranks UAMI above the service-principal/SQL-auth
+  paths those scenarios document as their non-SAMI fallback).
+- [ ] The same `ManagedIdentity` (UAMI) wiring for the two remaining sibling scan scenarios —
+  `scan-azure-sql-managed-instance-and-classify` and `scan-azure-synapse-and-classify` — each needs
+  its own reconciliation script (different scan `kind`/data-source shape), not a copy-paste of
+  `scan-azure-sql-and-classify-managed-identity-credential`'s script. Not blocked on any VERIFY.
+- [ ] Amazon S3 (`AmazonARN`), Salesforce (`ConsumerKeyAuth`), and Microsoft Fabric/Power BI
+  (`DelegatedAuth`) still have no scan scenario of any kind in this library — each would need its own
+  new base scan scenario (data source + scan, not just a credential variant of an existing one), a
+  bigger fragment than the UAMI wiring above. `AccountKey`'s four source types (Azure Blob Storage,
+  ADLS Gen1, ADLS Gen2, Azure Files) are in the same position.
 
 - [x] Consider a small **credential inventory/drift report** companion (`GET /scan/credentials`,
   paged via `{ count, nextLink, value[] }`) that reconciles a tenant's live credential set against a
@@ -3346,6 +3351,33 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-map/scan-azure-sql-and-classify-managed-identity-credential/`** — commit
+  `PENDING` — 2026-09-25. Full scenario (README.md, design.md,
+  deploy/New-AzureSqlManagedIdentityCredentialScan.ps1,
+  deploy/Remove-AzureSqlManagedIdentityCredentialScan.ps1,
+  validate/Test-AzureSqlManagedIdentityCredentialScan.ps1, rollback.md, reviews.md) wiring
+  `scan-credential-remaining-kinds`'s `ManagedIdentity` (UAMI) credential kind into
+  `scan-azure-sql-and-classify`'s existing scan as a per-source-scoped alternative to Purview's
+  shared SAMI — the "most directly actionable" follow-up that scenario's own backlog entry
+  identified. Reconciles (GET-then-PUT) the base scenario's already-registered scan from
+  `AzureSqlDatabaseMsi` onto `AzureSqlDatabaseCredential` with `credential: { ManagedIdentity,
+  <name> }`, preserving every other scan property unchanged — the same reconciliation idiom
+  `scan-azure-sql-and-classify-pii-ruleset` established, applied to authentication instead of the
+  scan rule set. Grounded live via the Microsoft Learn MCP tool (available this run): direct-fetched
+  the Scans - Create Or Replace REST reference to confirm `CredentialType`'s enum includes
+  `ManagedIdentity` alongside `SqlAuth`/`ServicePrincipal`, and the "Configure authentication for a
+  scan" page's Managed identity tab for the UAMI-specific T-SQL grant/Azure IAM Reader steps (a
+  different principal than the base scenario's SAMI grant, same grant pattern). Four-lens review
+  resolved two real findings: (Red Team) a confirmed credential-kind mismatch on
+  `-CredentialReferenceName` was originally only a `[WARN]`, the same severity as an ambiguous 404 —
+  fixed by hard-stopping (unless `-Force`) on the deterministic case while leaving the genuinely
+  ambiguous 404 case as a warning; (Product Owner, Fail) `scan-credential-remaining-kinds/README.md`
+  §6 and `scan-azure-sql-and-classify/README.md` §6 both still asserted this wiring was "not built
+  here" — corrected in place with bidirectional cross-links, the same stale-claim pattern this
+  repo's reviews keep catching across sibling scenarios. Two new follow-ups recorded above rather
+  than resolved by guessing: the same UAMI wiring for the Azure SQL Managed Instance and Azure
+  Synapse siblings (not blocked on anything, just not yet built), and the three source types
+  (`AmazonARN`/`ConsumerKeyAuth`/`DelegatedAuth`) that still have no base scan scenario at all.
 - [x] **`scenarios/data-map/scan-credential-remaining-kinds/` (follow-up fix)** — commit `232dc37` —
   2026-09-16. Closed the Blue Team finding 2 follow-up from this scenario's own four-lens review:
   made `validate/Test-PurviewScanCredentialExtended.ps1`'s `-CheckKeyVaultSecret` Azure Key Vault

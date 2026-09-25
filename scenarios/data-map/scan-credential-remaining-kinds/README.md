@@ -213,7 +213,11 @@ are natural future fragments this one hands a working credential to (§11, `desi
 `ManagedIdentity` row **does** overlap this repo's existing scan scenarios
 (`scan-azure-sql-and-classify`, `scan-azure-sql-managed-instance-and-classify`,
 `scan-azure-synapse-and-classify`) — wiring a UAMI credential into one of those as an alternative to
-SAMI is the most immediately actionable follow-up from this fragment; not built here (`design.md` §7).
+SAMI was this fragment's most immediately actionable follow-up. **RESOLVED for Azure SQL Database**
+(`scan-azure-sql-and-classify`): `scenarios/data-map/scan-azure-sql-and-classify-managed-identity-
+credential/` reconciles that scenario's scan onto a `ManagedIdentity` credential built here. The
+Azure SQL Managed Instance and Azure Synapse dedicated-pool siblings remain open, not-yet-built
+follow-ups (`design.md` §7, `PROGRESS.md`).
 
 ### Deploy script parameters (selected)
 
@@ -407,9 +411,12 @@ Related scenarios in this library:
   model, and open VERIFYs.
 - `scenarios/data-map/scan-credential-inventory-report/` — already fingerprints all eight
   `CredentialType` kinds, including the five this fragment creates; no change needed there.
-- `scenarios/data-map/scan-azure-sql-and-classify/`, `scan-azure-sql-managed-instance-and-classify/`,
-  `scan-azure-synapse-and-classify/` — the three existing scan scenarios whose source types also
-  support a `ManagedIdentity` (UAMI) credential as an alternative to SAMI (§6); not wired together
-  here — see `design.md` §7.
+- `scenarios/data-map/scan-azure-sql-and-classify-managed-identity-credential/` — wires this
+  fragment's `ManagedIdentity` credential kind into `scan-azure-sql-and-classify`'s scan as an
+  alternative to SAMI. **Built** — see §6.
+- `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/`,
+  `scan-azure-synapse-and-classify/` — their source types also support a `ManagedIdentity` (UAMI)
+  credential as an alternative to SAMI (§6); not yet wired together — see `design.md` §7 and
+  `PROGRESS.md`.
 - `docs/rbac-model.md` §5 — Data Map collection roles.
 - `docs/automation-surface.md` — surface 4 (Purview data-plane REST).
