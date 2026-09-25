@@ -1254,10 +1254,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   follow-ups this item originally listed, per its own reasoning (target scan scenario already
   existed; Microsoft's credential priority order ranks UAMI above the service-principal/SQL-auth
   paths those scenarios document as their non-SAMI fallback).
-- [ ] The same `ManagedIdentity` (UAMI) wiring for the two remaining sibling scan scenarios —
-  `scan-azure-sql-managed-instance-and-classify` and `scan-azure-synapse-and-classify` — each needs
-  its own reconciliation script (different scan `kind`/data-source shape), not a copy-paste of
-  `scan-azure-sql-and-classify-managed-identity-credential`'s script. Not blocked on any VERIFY.
+- [x] `ManagedIdentity` (UAMI) variant of `scan-azure-sql-managed-instance-and-classify` — **built**
+  (see DONE below) as `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-managed-
+  identity-credential/`: same reconciliation pattern as the Azure SQL Database sibling, ported (not
+  copy-pasted) to Managed Instance's own distinct scan `kind`
+  (`AzureSqlDatabaseManagedInstanceCredential`) and REST properties shape, both independently
+  confirmed via direct fetch. Also corrected two more stale "portal-only credential" claims found in
+  `scan-azure-sql-managed-instance-and-classify/README.md` §6/§11 while there (the same correction
+  already applied to the Database sibling on 2026-09-16, missed on this sibling until now).
+- [ ] The same `ManagedIdentity` (UAMI) wiring for the last remaining sibling scan scenario,
+  `scan-azure-synapse-and-classify` — needs its own reconciliation script (different scan
+  `kind`/data-source shape again). Not blocked on any VERIFY.
+- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the Azure IAM Reader
+  role-assignment portal walkthrough ("Select box accepts your Microsoft Purview account name or
+  UAMI") — directly confirmed only on the Azure SQL Database page — also appears verbatim on the
+  Azure SQL Managed Instance page, or is a documentation-page omission on an otherwise-identical Azure
+  RBAC mechanism. Flagged inline in `scan-azure-sql-managed-instance-and-classify-managed-identity-
+  credential/README.md` §3/§5/§11 rather than assumed identical.
 - [ ] Amazon S3 (`AmazonARN`), Salesforce (`ConsumerKeyAuth`), and Microsoft Fabric/Power BI
   (`DelegatedAuth`) still have no scan scenario of any kind in this library — each would need its own
   new base scan scenario (data source + scan, not just a credential variant of an existing one), a
@@ -3351,6 +3364,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-map/scan-azure-sql-managed-instance-and-classify-managed-identity-
+  credential/`** — commit `PENDING` — 2026-09-25. Full scenario (README.md, design.md,
+  deploy/New-AzureSqlManagedInstanceManagedIdentityCredentialScan.ps1,
+  deploy/Remove-AzureSqlManagedInstanceManagedIdentityCredentialScan.ps1,
+  validate/Test-AzureSqlManagedInstanceManagedIdentityCredentialScan.ps1, rollback.md, reviews.md) —
+  the Managed Instance sibling of `scan-azure-sql-and-classify-managed-identity-credential/`, wiring
+  `scan-credential-remaining-kinds`'s `ManagedIdentity` (UAMI) credential kind into
+  `scan-azure-sql-managed-instance-and-classify`'s existing scan. Ported the Database sibling's
+  reconciliation pattern and its own Red-Team-fixed credential-precheck severity split (hard stop on
+  a confirmed kind mismatch, warn only on an ambiguous 404) from the first draft rather than
+  reintroducing the pre-fix behavior. Grounded live via the Microsoft Learn MCP tool: direct-fetched
+  `AzureSqlDatabaseManagedInstanceCredentialScanProperties` to confirm it is its own distinct schema
+  (not assumed identical to the Database sibling's by naming convention) sharing the same field names
+  and the same `CredentialType` enum. Four-lens review's one finding (Microsoft Product Owner, Fix):
+  the draft had cited the Azure IAM Reader role-assignment portal walkthrough ("Select box accepts
+  SAMI or UAMI") as equally page-confirmed for Managed Instance as for the Database sibling, when a
+  targeted grounding pass found that exact wording only on the Database page — corrected to state
+  plainly what's directly confirmed (UAMI is a supported identity; the permission requirement) versus
+  mechanism-inferred (the click-path), flagged as a new VERIFY rather than silently assumed identical.
+  Also fixed two more stale "portal-only credential" claims found in passing in
+  `scan-azure-sql-managed-instance-and-classify/README.md` §6/§11 (the same correction already
+  applied to the Database sibling on 2026-09-16, missed on this sibling until now) and updated
+  `scan-credential-remaining-kinds/README.md` §6/"Related scenarios" to mark both Database and
+  Managed Instance siblings resolved, Synapse still open.
 - [x] **`scenarios/data-map/scan-azure-sql-and-classify-managed-identity-credential/`** — commit
   `5db4ab2` — 2026-09-25. Full scenario (README.md, design.md,
   deploy/New-AzureSqlManagedIdentityCredentialScan.ps1,

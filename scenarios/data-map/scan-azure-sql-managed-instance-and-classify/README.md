@@ -183,7 +183,7 @@ perform — see `design.md` §8.
 |---|---|---|
 | Data source `kind` | `AzureSqlDatabaseManagedInstance` | Distinct from the sibling scenario's `AzureSqlDatabase` [[6]](#references) |
 | Scan `kind` (default) | `AzureSqlDatabaseManagedInstanceMsi` | SAMI-authenticated — no credential object to create or rotate [[7]](#references) |
-| Scan `kind` (alternative) | `AzureSqlDatabaseManagedInstanceCredential` | SQL authentication or service principal, requiring a Key Vault-backed credential object created **via the Purview portal** — same open gap as the sibling scenario; see §11 |
+| Scan `kind` (alternative) | `AzureSqlDatabaseManagedInstanceCredential` | SQL authentication or service principal (Key Vault-backed, via `scenarios/data-map/scan-credential-key-vault-backed/` — the "portal-only" claim this row originally carried was incorrect, corrected 2026-09-25), **or** a user-assigned managed identity (UAMI) for per-source identity separation, scripted end-to-end by `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-managed-identity-credential/`; see §11 |
 | `serverEndpoint` format | `tcp:<PublicEndpointFqdn>,<Port>` (e.g. `tcp:mi-contoso-prod.public.ac1b2c3d4e5f.database.windows.net,3342`) | Distinct from the sibling scenario's bare hostname — confirmed via Microsoft's own worked PowerShell example [[8]](#references) |
 | Default public-endpoint port | `3342` | Microsoft's own worked *registration* example uses this port. **Distinct from the NSG *network-path* ports** in §3's table: since October 2025, Redirect is Microsoft's default connection type for connections originating inside Azure (Proxy remains default for connections originating outside Azure), which determines whether the NSG needs `1433`+`11000`-`11999` (Redirect) or just `3342` (Proxy) — confirm both the registration port and the connection type independently against the instance's actual configuration before relying on either default [[5]](#references) |
 | Collection reference | `{ "referenceName": "<5-char collection ID>", "type": "CollectionReference" }` | Same shape as the sibling scenario — read the ID from the collection's URL in the portal, not its friendly name |
@@ -291,9 +291,17 @@ same way regardless of the underlying Azure SQL source type.
   endpoint listens on depends on its connection-policy configuration. Confirm the real port (Azure
   portal → the instance → **Networking** → **Public endpoint**) before relying on the default in a
   script running unattended.
-- **VERIFY — credential-object REST creation.** Same open gap as the sibling scenario: no documented
-  REST endpoint for creating the Key Vault-backed credential object needed for
-  `AzureSqlDatabaseManagedInstanceCredential` scanning.
+- **RESOLVED (2026-09-25) — credential-object REST creation.** This row originally claimed no
+  documented REST endpoint existed for creating the Key Vault-backed credential object needed for
+  `AzureSqlDatabaseManagedInstanceCredential` scanning, describing it as portal-only. **It is not.**
+  The Purview Scanning data-plane API exposes **Credential** (`PUT /scan/credentials/{credentialName}`)
+  and **Key Vault Connections** (`PUT /scan/azureKeyVaults/{azureKeyVaultName}`) as first-class
+  documented operation groups — the same correction the sibling `scan-azure-sql-and-classify`
+  scenario applied to its own equivalent claim on 2026-09-16. Build the credential with
+  `scenarios/data-map/scan-credential-key-vault-backed/` (SQL auth/service principal) or
+  `scenarios/data-map/scan-credential-remaining-kinds/` (`ManagedIdentity`, consumed by
+  `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/`) and reference it by
+  name — no portal step required.
 - **Follow-up recorded in `PROGRESS.md`:** the two REST-shape corrections this build made relative to
   the sibling scenario's assumptions (Run Scan's action-style POST; List Scan History's nested asset
   counts — `design.md` §5) should be backported into `scan-azure-sql-and-classify`'s own scripts, since
