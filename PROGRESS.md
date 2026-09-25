@@ -2844,7 +2844,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   sibling Data Map scenarios already carry).
 
 ### Follow-ups discovered while building the bulk-grant Synapse serverless access scenario
-- [x] RESOLVED (2026-09-25, commit `PENDING`): Backported the server-scoped-vs-per-database
+- [x] RESOLVED (2026-09-25, commit `165d740`): Backported the server-scoped-vs-per-database
   `CREATE LOGIN` correction (see `bulk-grant-synapse-serverless-access/design.md` §4) into
   `scan-azure-synapse-and-classify/README.md` and `design.md`, which described it as a
   per-database step. Fixed in `README.md`: §3 prerequisites table row, §5 step 3c (now explains
@@ -3429,7 +3429,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Backported the server-scoped-vs-per-database `CREATE LOGIN` correction into
-  `scan-azure-synapse-and-classify`** — commit `PENDING` — 2026-09-25. Sub-task fragment: the
+  `scan-azure-synapse-and-classify`** — commit `165d740` — 2026-09-25. Sub-task fragment: the
   sibling `bulk-grant-synapse-serverless-access` scenario's own grounding pass had found, via two
   directly-fetched Microsoft Learn pages, that the serverless enumeration login
   (`CREATE LOGIN ... FROM EXTERNAL PROVIDER`) is a server-scoped statement run once against
