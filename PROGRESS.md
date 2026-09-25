@@ -2523,7 +2523,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   different `-Name` for an employee who already has a fired event causes any adverse effect beyond
   redundancy (e.g., duplicate disposition-review notifications) — `New-RetentionTriggerEvent.ps1` can
   only detect a duplicate by exact `-Name` match (no documented query-by-Asset-ID cmdlet was found).
-- [x] RESOLVED (2026-09-25, commit `PENDING`): **Cross-cutting doc-drift, fixed.** Ran the
+- [x] RESOLVED (2026-09-25, commit `443aa7c`): **Cross-cutting doc-drift, fixed.** Ran the
   dedicated grep pass this item asked for (`grep -rniE "surface [0-9]" scenarios/*/*/README.md`
   and the same against every `design.md`) against every scenario's `README.md`/`design.md`/
   `deploy/*.ps1` in the repo, cross-checked against the current `docs/automation-surface.md`
@@ -3421,7 +3421,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Fixed drifted "surface N" citations across the repo (automation-surface.md renumbering
-  cleanup)** — commit `PENDING` — 2026-09-25. Sub-task fragment: `docs/automation-surface.md` was
+  cleanup)** — commit `443aa7c` — 2026-09-25. Sub-task fragment: `docs/automation-surface.md` was
   renumbered at some point (Exchange Online PowerShell=1, Security & Compliance PowerShell=2,
   unified Microsoft Graph=3, Purview Data Map/Data Governance REST=4, SharePoint Online Management
   Shell=5) but two scenarios' docs/scripts still cited the old numbering. Ran a repo-wide grep for
