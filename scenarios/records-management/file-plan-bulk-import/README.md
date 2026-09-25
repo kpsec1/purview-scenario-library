@@ -21,6 +21,12 @@ representative event-based record class in depth. This scenario is the **breadth
 classes, mostly age-based (not event-based), created in bulk from a schedule — the multi-class
 follow-up that scenario's own `design.md` §7 flagged as a non-goal.
 
+**How it differs from `scenarios/data-lifecycle-management/retention-labels-financial-records/`:**
+that scenario auto-applies **one** age-based retention label via policy, deliberately without file
+plan descriptors or bulk creation (`design.md` §7 flags both as out of scope for that starter). This
+scenario is the natural next step for a team outgrowing that single-label starter into a formal,
+versioned, multi-class file plan.
+
 ## 2. Business/regulatory driver
 
 A real organizational file plan is rarely one record class — it's the **entire retention schedule**:

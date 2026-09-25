@@ -128,8 +128,13 @@ the irreversibility of the control.
 - **Event-based retention / disposition review workflows** (`-EventType`, `KeepAndDelete`,
   `-ReviewerEmail`) — powerful RM features layered on the same cmdlets; candidate follow-ups.
 - **Adaptive scopes** — used for large/dynamic estates; this scenario uses static locations.
-- **File plan descriptors** (`-FilePlanProperty`: categories, citations, authorities) — valuable for
-  formal file plans; out of scope for the starter.
+- **File plan descriptors** (`-FilePlanProperty`: categories, citations, authorities) and bulk
+  multi-class label creation — valuable for a formal file plan spanning many record classes at once;
+  out of scope for this single-class starter. **Built** as
+  `scenarios/records-management/file-plan-bulk-import/`, which reads a versioned CSV schedule and
+  scripts `New-ComplianceTag -FilePlanProperty` plus the six `New-FilePlanProperty*` descriptor
+  cmdlets directly — the natural next step for a team outgrowing this scenario's single
+  age-based label.
 - **Editing/strengthening an existing label** — the deploy reports and does not mutate; changes are a
   deliberate, reviewed action.
 - **Releasing existing records** — impossible for a regulatory record by design, and requires

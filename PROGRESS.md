@@ -2416,9 +2416,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   actually applies to isn't exposed as a documented parameter on that cmdlet (no `-ExchangeLocation`/
   `-OneDriveLocation` equivalent in that parameter set) — flagged `VERIFY (pilot tenant)` in
   `README.md` §11 and `design.md` §4 rather than assumed. New follow-ups recorded below.
-- [ ] Consider **file plan descriptors** (`-FilePlanProperty`: categories, citations, authorities,
+- [x] Consider **file plan descriptors** (`-FilePlanProperty`: categories, citations, authorities,
   provisions) for a formal records file plan, and bulk label/policy creation via the documented CSV
-  script (`bulk-create-publish-labels-using-powershell`).
+  script (`bulk-create-publish-labels-using-powershell`) — **already resolved, cross-links added**:
+  found that `scenarios/records-management/file-plan-bulk-import/` (built 2026-09-15, commit
+  `b17faf9`) already fully covers this exact need — `New-ComplianceTag -FilePlanProperty` plus the
+  six `New-FilePlanProperty*` descriptor cmdlets, driven by a versioned CSV schedule for bulk
+  multi-class creation — but had never been cross-linked back to this scenario, the same "a new
+  folder does not retract an old assertion" gap this repo's reviews keep catching. Corrected in
+  place: `retention-labels-financial-records/design.md` §7's stale "out of scope for the starter"
+  non-goal bullet now points at the resolving scenario, and `file-plan-bulk-import/README.md` §1
+  gained a reciprocal "how it differs from" paragraph. No new scenario needed.
 
 ### Follow-ups discovered while building the DLM adaptive-scope-retention scenario
 - [ ] VERIFY (pilot tenant): whether a `New-RetentionCompliancePolicy -AdaptiveScopeLocation` policy
@@ -3401,6 +3409,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-lifecycle-management/retention-labels-financial-records/` /
+  `scenarios/records-management/file-plan-bulk-import/` (cross-link correction)** — commit `PENDING`
+  — 2026-09-25. A backlog item asking for file plan descriptors and bulk label creation as a
+  follow-up to `retention-labels-financial-records` turned out to already be fully built —
+  `scenarios/records-management/file-plan-bulk-import/` (commit `b17faf9`, 2026-09-15) — just never
+  cross-linked back. Corrected `retention-labels-financial-records/design.md` §7's stale "out of
+  scope for the starter" non-goal bullet to point at the resolving scenario, and added a reciprocal
+  "how it differs from" paragraph to `file-plan-bulk-import/README.md` §1. No new scenario or code
+  needed — a pure repo-consistency fix, the same "a new folder does not retract an old assertion"
+  pattern this repo's four-lens reviews keep catching across sibling scenarios.
 - [x] **`scenarios/communication-compliance/teams-viva-engage-content-safety/` (follow-up)** —
   commit `f750c21` — 2026-09-25. Closed the Red Team finding 1 follow-up from this scenario's own
   four-lens review: added `deploy/policy/short-form-crisis-threat-phrases.txt`, a ready-to-import
