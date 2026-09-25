@@ -1262,15 +1262,29 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   confirmed via direct fetch. Also corrected two more stale "portal-only credential" claims found in
   `scan-azure-sql-managed-instance-and-classify/README.md` §6/§11 while there (the same correction
   already applied to the Database sibling on 2026-09-16, missed on this sibling until now).
-- [ ] The same `ManagedIdentity` (UAMI) wiring for the last remaining sibling scan scenario,
-  `scan-azure-synapse-and-classify` — needs its own reconciliation script (different scan
-  `kind`/data-source shape again). Not blocked on any VERIFY.
+- [x] `ManagedIdentity` (UAMI) variant of `scan-azure-synapse-and-classify` — **built** (see DONE
+  below) as `scenarios/data-map/scan-azure-synapse-and-classify-managed-identity-credential/`: the
+  third and last sibling named in `scan-credential-remaining-kinds/README.md` §6, closing that
+  backlog item completely. Found the strongest direct grounding of the three siblings — a worked
+  JSON example on the base scenario's own canonical page explicitly confirms `ManagedIdentity` as a
+  valid `credentialType` for the `AzureSynapseWorkspaceCredential` scan `kind`. Also updated the base
+  scenario's own stale `resourceTypes` VERIFY and two more stale "portal-only credential" claims
+  found in passing.
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the Azure IAM Reader
   role-assignment portal walkthrough ("Select box accepts your Microsoft Purview account name or
   UAMI") — directly confirmed only on the Azure SQL Database page — also appears verbatim on the
-  Azure SQL Managed Instance page, or is a documentation-page omission on an otherwise-identical Azure
-  RBAC mechanism. Flagged inline in `scan-azure-sql-managed-instance-and-classify-managed-identity-
-  credential/README.md` §3/§5/§11 rather than assumed identical.
+  Azure SQL Managed Instance or Azure Synapse workspace pages, or is a documentation-page omission on
+  an otherwise-identical Azure RBAC mechanism. Flagged inline in both
+  `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/README.md` §3/§5/§11 and
+  `scan-azure-synapse-and-classify-managed-identity-credential/README.md` §3/§11 rather than assumed
+  identical.
+- [ ] Add an explicit `-ResourceNames`-style scoping parameter to
+  `scan-azure-synapse-and-classify/deploy/New-AzureSynapseDataMapScan.ps1`, using the `resourceTypes.
+  AzureSynapseServerlessSql.resourceNameFilter.resources[]` shape a worked example on the base
+  scenario's own canonical page was found to confirm during the `-managed-identity-credential`
+  sibling's build (`scan-azure-synapse-and-classify/README.md` §11). Not built as part of that
+  fragment because it's a scan-scoping behavior change independent of authentication — deferred
+  until there's a concrete requirement to scope a scan to named databases rather than auto-enumerate.
 - [ ] Amazon S3 (`AmazonARN`), Salesforce (`ConsumerKeyAuth`), and Microsoft Fabric/Power BI
   (`DelegatedAuth`) still have no scan scenario of any kind in this library — each would need its own
   new base scan scenario (data source + scan, not just a credential variant of an existing one), a
@@ -3364,6 +3378,35 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/data-map/scan-azure-synapse-and-classify-managed-identity-credential/`** —
+  commit `PENDING` — 2026-09-25. Full scenario (README.md, design.md,
+  deploy/New-AzureSynapseManagedIdentityCredentialScan.ps1,
+  deploy/Remove-AzureSynapseManagedIdentityCredentialScan.ps1,
+  validate/Test-AzureSynapseManagedIdentityCredentialScan.ps1, rollback.md, reviews.md) — the third
+  and last sibling of the two Azure SQL `-managed-identity-credential` scenarios, wiring
+  `scan-credential-remaining-kinds`'s `ManagedIdentity` (UAMI) credential kind into
+  `scan-azure-synapse-and-classify`'s existing scan and closing that backlog item completely. Found
+  the strongest direct grounding of the three siblings: a worked JSON example on the base scenario's
+  own canonical `register-scan-synapse-workspace` page explicitly shows
+  `"credentialType":"SqlAuth | ServicePrincipal | ManagedIdentity (if UAMI authentication)"` against
+  `"kind":"AzureSynapseWorkspaceCredential"` — confirmed via the Microsoft Learn MCP tool, direct
+  fetch of the exact page the base scenario is itself grounded against, not inferred from a separate
+  generic "supported sources" list as both prior siblings had to be. Also direct-fetched
+  `AzureSynapseWorkspaceCredentialScanProperties` and confirmed it carries no `databaseName`/
+  `serverEndpoint` fields at all (both pool endpoints live on the data source object instead) — a
+  genuine structural difference from both siblings, reflected correctly in the reconciliation script
+  rather than copy-pasted. Four-lens review's two findings: (Red Team, Fix) the three-part serverless
+  grant model's partial-grant failure mode was understated for this specific SAMI-to-UAMI transition,
+  where an operator is most likely to grant Reader but forget the two serverless-specific grants —
+  resolved by disclosure (no code fix possible, no Purview API exposes grant state); (Product Owner,
+  Fix) the base scenario's own IAM/T-SQL grant-assignment step wording was initially cited as equally
+  UAMI-confirmed as the core REST claim, when only the REST claim is page-confirmed — resolved by
+  distinguishing the two explicitly and adding a new VERIFY. Also updated the base scenario's own
+  README: closed its `resourceTypes` VERIFY with the newly-found worked example (without adopting the
+  scoping behavior itself — tracked as a separate follow-up below) and corrected two more stale
+  "portal-only credential" claims and a mislabeled scan-kind string, the same corrections both prior
+  siblings' base scenarios already received. `scan-credential-remaining-kinds/README.md` §6/"Related
+  scenarios" updated to mark all three siblings resolved.
 - [x] **`scenarios/data-map/scan-azure-sql-managed-instance-and-classify-managed-identity-
   credential/`** — commit `6f38b57` — 2026-09-25. Full scenario (README.md, design.md,
   deploy/New-AzureSqlManagedInstanceManagedIdentityCredentialScan.ps1,

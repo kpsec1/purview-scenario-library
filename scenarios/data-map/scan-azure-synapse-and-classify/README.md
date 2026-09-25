@@ -230,12 +230,12 @@ perform — see `design.md` §8.
 |---|---|---|
 | Data source `kind` | `AzureSynapseWorkspace` | Distinct from both sibling scenarios — one object per **workspace**, not per database [[3]](#references) |
 | Scan `kind` (default) | `AzureSynapseWorkspaceMsi` | SAMI-authenticated — no credential object to create or rotate [[4]](#references) |
-| Scan `kind` (alternative) | `AzureSynapseWorkspaceCredentialScan` | SQL authentication or service principal, requiring a Key Vault-backed credential object created **via the Purview portal** — same open gap as both sibling scenarios; see §11 |
+| Scan `kind` (alternative) | `AzureSynapseWorkspaceCredential` | SQL authentication or service principal (Key Vault-backed, via `scenarios/data-map/scan-credential-key-vault-backed/` — the "portal-only" claim this row originally carried was incorrect, corrected 2026-09-25, matching both sibling scenarios' own corrections), **or** a user-assigned managed identity (UAMI) for per-source identity separation, scripted end-to-end by `scenarios/data-map/scan-azure-synapse-and-classify-managed-identity-credential/`; see §11 |
 | `dedicatedSqlEndpoint` format | bare hostname, e.g. `ws-contoso-prod.sql.azuresynapse.net` | Optional — confirmed via Microsoft's own worked PowerShell example [[3]](#references) |
 | `serverlessSqlEndpoint` format | bare hostname, e.g. `ws-contoso-prod-ondemand.sql.azuresynapse.net` | Optional — at least one of the two endpoints is required; confirmed via the same worked example [[3]](#references) |
 | Collection reference | `{ "referenceName": "<5-char collection ID>", "type": "CollectionReference" }` | Same shape as both sibling scenarios — read the ID from the collection's URL in the portal, not its friendly name |
 | Scan rule set (this scenario's default) | `scanRulesetName: "AzureSynapseSQL"`, `scanRulesetType: "System"` | A **different system rule set name** from both sibling scenarios — confirmed via Microsoft's own worked PowerShell example and the portal's own scan-setup documentation; includes the same SSN + Credit Card Number pair [[4]](#references)[[2]](#references) |
-| Scan object `resourceTypes` property | **Omitted** by this scenario's deploy script | Not independently confirmed to an exact JSON shape during this build; the portal's own scan wizard exposes only a single "SQL Database" Type for this source — see §11 (VERIFY) |
+| Scan object `resourceTypes` property | **Omitted** by this scenario's deploy script | A worked example for its shape now exists (found while building the `-managed-identity-credential` sibling), but this scenario deliberately still omits it — auto-enumeration is a different, still-valid design choice from the worked example's named-database scoping — see §11 |
 | Scan level | `Full` (first run) → `Incremental` (subsequent scheduled runs) | Same pattern as both sibling scenarios |
 | Recurring trigger | Optional; `RecurrenceFrequency`/`RecurrenceInterval` parameters | Trigger resource name is always `default` — same generic shape both sibling scenarios confirmed |
 | Run-scan call shape | `POST .../scans/{name}:run?runId={guid}&scanLevel={level}` | Action-style POST — the same generic shape confirmed by direct fetch during the Managed Instance sibling scenario's build; reused unchanged here since it does not vary by data source `kind` |
@@ -318,29 +318,39 @@ out of scope for this scenario's cost notes, same as the compute layer of both s
 
 ## 11. Known limitations & gotchas
 
-- **VERIFY — scan object `resourceTypes` property.** This scenario's deploy script omits the optional
-  `resourceTypes` property from the scan request body entirely rather than guess its exact JSON shape
-  (dictionary keys/enum values that might distinguish dedicated from serverless resources within the
-  scan). No authoritative worked example of this shape was found during this build; the Purview portal
-  scan wizard exposes only a single "SQL Database" Type for this source with no visible
-  dedicated/serverless split, which is weak evidence the property may not be required for the common
-  case, but this has not been confirmed against a pilot tenant. If a scan silently covers only one pool
-  type when both endpoints are registered, this property is the first place to check.
+- **UPDATE (2026-09-25) — a worked example for `resourceTypes` has since been found, but this
+  scenario's deploy script still deliberately omits it.** `scan-azure-synapse-and-classify-managed-
+  identity-credential/`'s build direct-fetched the canonical `register-scan-synapse-workspace` page's
+  own "Set up a scan by using an API" section and found a worked JSON body scoping a scan to named
+  serverless databases via `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]`.
+  This scenario's own deploy script still omits `resourceTypes` intentionally, not because the shape
+  is unknown any more: this scenario's design (auto-enumerate every database via the data source's
+  registered endpoints, per §4) is a different, still-valid approach from the worked example's
+  named-database scoping, and adopting the scoped shape would be a scan-behavior change independent
+  of the sibling scenario's own authentication-only scope. Tracked as a `PROGRESS.md` follow-up
+  (add an explicit `-ResourceNames` scoping parameter using the now-confirmed shape) rather than
+  changed here without a concrete requirement to scope against.
 - **SAMI cannot be used if the workspace firewall's "Allow Azure services and resources to access this
   workspace" control cannot be enabled.** Microsoft's own documentation states the Purview portal
   cannot configure a Synapse scan at all in that case, and directs operators to the Scans REST API with
   **SQL Auth** instead of MSI — a materially different authentication and credential-management story
-  (a Key Vault-backed SQL credential object, same open portal-only credential-object gap both sibling
-  scenarios already carry) not scripted by this scenario.
+  (a Key Vault-backed SQL credential object) not scripted by this scenario itself, though it is no
+  longer portal-only — build it with `scenarios/data-map/scan-credential-key-vault-backed/`.
 - **Existing classifications are not retroactively removed** when a scan rule set is narrowed — same
   behavior as both sibling scenarios.
 - **Azure Synapse lake databases are explicitly not supported** by this data source, per Microsoft's
   own current documentation — out of scope for this scenario regardless of authentication method.
 - **U.S.-centric SIT starter set** — same caveat as every other scenario in this repo using the SSN +
   Credit Card Number pair; not GDPR-complete for a non-U.S. tenant.
-- **VERIFY — credential-object REST creation.** Same open gap as both sibling scenarios: no documented
-  REST endpoint for creating the Key Vault-backed credential object needed for
-  `AzureSynapseWorkspaceCredentialScan` scanning.
+- **RESOLVED (2026-09-25) — credential-object REST creation.** This row originally claimed no
+  documented REST endpoint existed for creating the Key Vault-backed credential object needed for
+  `AzureSynapseWorkspaceCredential` scanning, describing it as portal-only. **It is not.** The
+  Purview Scanning data-plane API exposes **Credential** (`PUT /scan/credentials/{credentialName}`)
+  and **Key Vault Connections** as first-class documented operation groups — the same correction
+  both sibling scenarios already applied to their own equivalent claim. Build the credential with
+  `scenarios/data-map/scan-credential-key-vault-backed/` (SQL auth/service principal) or
+  `scenarios/data-map/scan-credential-remaining-kinds/` (`ManagedIdentity`, consumed by
+  `scan-azure-synapse-and-classify-managed-identity-credential/`) and reference it by name.
 - **Grounding method note.** `learn.microsoft.com` returned `EGRESS_BLOCKED` for every direct fetch
   attempted during this build. The portal registration/scan/permissions workflow in §3 and §5 is
   grounded via a verified byte-for-byte mirror of Microsoft's own `register-scan-synapse-workspace`

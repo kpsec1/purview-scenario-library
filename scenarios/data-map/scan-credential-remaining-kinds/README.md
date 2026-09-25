@@ -210,16 +210,18 @@ The `KeyVaultSecret`/`Store` sub-object and its two open-VERIFY discriminator li
 
 No scenario in this library scans Amazon S3, Salesforce, Microsoft Fabric, or Power BI yet — those
 are natural future fragments this one hands a working credential to (§11, `design.md` §7). The
-`ManagedIdentity` row **does** overlap this repo's existing scan scenarios
+`ManagedIdentity` row **did** overlap this repo's existing scan scenarios
 (`scan-azure-sql-and-classify`, `scan-azure-sql-managed-instance-and-classify`,
-`scan-azure-synapse-and-classify`) — wiring a UAMI credential into one of those as an alternative to
-SAMI was this fragment's most immediately actionable follow-up. **RESOLVED for Azure SQL Database**
-(`scan-azure-sql-and-classify`) and **Azure SQL Managed Instance**
-(`scan-azure-sql-managed-instance-and-classify`): `scenarios/data-map/scan-azure-sql-and-classify-
-managed-identity-credential/` and `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-
-managed-identity-credential/` each reconcile their base scenario's scan onto a `ManagedIdentity`
-credential built here. The Azure Synapse dedicated-pool sibling remains open, not-yet-built
-follow-ups (`design.md` §7, `PROGRESS.md`).
+`scan-azure-synapse-and-classify`) — wiring a UAMI credential into each as an alternative to SAMI was
+this fragment's most immediately actionable follow-up. **RESOLVED for all three:**
+`scenarios/data-map/scan-azure-sql-and-classify-managed-identity-credential/`,
+`scenarios/data-map/scan-azure-sql-managed-instance-and-classify-managed-identity-credential/`, and
+`scenarios/data-map/scan-azure-synapse-and-classify-managed-identity-credential/` each reconcile
+their base scenario's scan onto a `ManagedIdentity` credential built here. The Synapse sibling found
+the strongest direct grounding of the three — a worked JSON example on its own base scenario's
+canonical page explicitly confirms `ManagedIdentity` as a valid `credentialType` for that exact scan
+`kind`, rather than inferring it from a separate generic "supported sources" list as the other two
+had to.
 
 ### Deploy script parameters (selected)
 
@@ -414,11 +416,9 @@ Related scenarios in this library:
 - `scenarios/data-map/scan-credential-inventory-report/` — already fingerprints all eight
   `CredentialType` kinds, including the five this fragment creates; no change needed there.
 - `scenarios/data-map/scan-azure-sql-and-classify-managed-identity-credential/`,
-  `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/` — wire this fragment's
-  `ManagedIdentity` credential kind into the Azure SQL Database and Managed Instance scans as an
-  alternative to SAMI. **Both built** — see §6.
-- `scenarios/data-map/scan-azure-synapse-and-classify/` — its source type also supports a
-  `ManagedIdentity` (UAMI) credential as an alternative to SAMI (§6); not yet wired together — see
-  `design.md` §7 and `PROGRESS.md`.
+  `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/`,
+  `scan-azure-synapse-and-classify-managed-identity-credential/` — wire this fragment's
+  `ManagedIdentity` credential kind into the Azure SQL Database, Managed Instance, and Synapse
+  workspace scans as an alternative to SAMI. **All three built** — see §6.
 - `docs/rbac-model.md` §5 — Data Map collection roles.
 - `docs/automation-surface.md` — surface 4 (Purview data-plane REST).
