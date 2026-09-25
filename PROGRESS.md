@@ -3379,7 +3379,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/data-map/scan-azure-synapse-and-classify-managed-identity-credential/`** —
-  commit `PENDING` — 2026-09-25. Full scenario (README.md, design.md,
+  commit `ecb2f26` — 2026-09-25. Full scenario (README.md, design.md,
   deploy/New-AzureSynapseManagedIdentityCredentialScan.ps1,
   deploy/Remove-AzureSynapseManagedIdentityCredentialScan.ps1,
   validate/Test-AzureSynapseManagedIdentityCredentialScan.ps1, rollback.md, reviews.md) — the third
