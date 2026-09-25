@@ -3410,7 +3410,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/` (v2:
-  multi-device)** — commit `PENDING` — 2026-09-25. Generalized the scenario's approved-Bluetooth-
+  multi-device)** — commit `1cc566e` — 2026-09-25. Generalized the scenario's approved-Bluetooth-
   device support from exactly 0-or-1 device (v1) to any number of devices (v2), in place rather than
   as a separate sibling scenario. Ported the per-device sub-group + `groupId`-clause-nesting
   technique (parent group `$type: "or"`, clauses referencing per-device `$type: "and"` sub-groups,
