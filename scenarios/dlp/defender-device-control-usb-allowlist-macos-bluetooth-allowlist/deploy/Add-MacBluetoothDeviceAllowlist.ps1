@@ -1,9 +1,10 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-    Adds a single vendorId+productId-matched approved-device exception to the "Deny-AllBluetoothDevices"
-    rule created by scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage,
-    inside the shared macOSCustomConfiguration object created by
+    Adds one or more vendorId+productId-matched approved-device exceptions to the
+    "Deny-AllBluetoothDevices" rule created by
+    scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage, inside the
+    shared macOSCustomConfiguration object created by
     scenarios/dlp/defender-device-control-usb-allowlist-macos.
 
 .DESCRIPTION
@@ -12,8 +13,25 @@
     (deny_all_bluetooth_devices_except_samsung.json) uses a structurally different, single-device
     vendorId+productId AND-match, not the OR'd multi-device serialNumber pattern used for the
     Apple/Portable families (portable-device-coverage/design.md Section 5). This script closes that
-    gap by adding exactly ONE approved-device exception in the same shape as Microsoft's own sample,
-    without introducing a second, differently-shaped multi-device schema.
+    gap for any number (0 or more) of approved devices, without introducing a second,
+    differently-shaped multi-device schema for a single device.
+
+    MULTI-DEVICE DESIGN (v2 - see design.md Section 5 for the full history): a rule's includeGroups
+    combines multiple groups with AND semantics ("If multiple groups are in the includeGroups, it's
+    AND" - Microsoft's own Access policy rule reference table), so N devices cannot be expressed as N
+    groups referenced by one rule's includeGroups directly. This script instead reuses the same
+    per-device sub-group + parent-group groupId-clause-nesting technique
+    scenarios/dlp/defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/
+    already built and validated for the identical AND-then-OR problem (vendorId+productId is itself
+    an AND pair per device; multiple devices must be OR'd together): each approved device gets its own
+    small sub-group (`$type: "and"`, clauses: [primaryId, vendorId, productId], deterministic id -
+    RFC 4122 v5 UUID derived from the vendorId:productId pair, so re-running this script never
+    duplicates a sub-group for the same device). The single parent "ApprovedBluetoothDevices" group
+    (fixed GUID, unchanged across versions of this script) becomes `$type: "or"`, clauses: one
+    `groupId` clause per desired sub-group. Neither the Allow-ApprovedBluetoothDevice rule's
+    includeGroups nor the Deny-AllBluetoothDevices rule's excludeGroups need to change shape at all -
+    both already reference only the single parent group's id, which now transparently represents "any
+    of N devices" instead of "exactly one device."
 
     This script does NOT create a new Intune profile and does NOT create a new top-level
     Bluetooth catch-all group or Bluetooth feature flag - both already exist once
@@ -22,27 +40,26 @@
     prerequisite fragment's AllBluetoothDevices group and Deny-AllBluetoothDevices rule (identified
     by their fixed GUIDs) are not both present - see README.md Section 3.
 
-    What this script adds/reconciles, by fixed GUID:
-      1. One group, "ApprovedBluetoothDevice" - $type: "and", clauses:
-         [primaryId=bluetooth_devices, vendorId=<config>, productId=<config>] - the exact shape
-         Microsoft's own deny_all_bluetooth_devices_except_samsung.json sample uses for its
-         "Samsung Galaxy S21" exception group (see .NOTES).
-      2. Rewrites the EXISTING "Deny-AllBluetoothDevices" rule (same fixed GUID the
-         portable-device-coverage fragment created) to add excludeGroups = [ApprovedBluetoothDevice
-         group id] - its two deny/auditDeny entries are reproduced byte-for-byte unchanged from that
-         fragment's own New-DenyRule call (same entry ids, same access list) so this is additive,
-         not destructive, to that rule.
-      3. One new rule, "Allow-ApprovedBluetoothDevice" - entries: allow + auditAllow, access =
-         the two documented bluetoothDevice access strings. This script adds an explicit "allow"
-         enforcement entry (not just auditAllow, unlike Microsoft's own sample) because this
-         fragment's shared policy inherits settings.global.defaultEnforcement = "deny" (fail-closed)
-         from the parent scenario - Microsoft's own sample instead relies on defaultEnforcement =
-         "allow" (its own document's default), where excluding a device from the deny rule is
-         sufficient by itself. Under a fail-closed default, an excluded-but-otherwise-unmatched
-         device falls through to deny, not allow - so an explicit allow entry is required to actually
-         grant access, the same reasoning already applied to the Apple/Portable approved-device
-         allow rules in the portable-device-coverage fragment. See design.md Section 4 and README.md
-         Section 6.
+    What this script adds/reconciles, by fixed/deterministic GUID:
+      1. One sub-group per desired device, "BluetoothVendorProductMatch-<label>" - $type: "and",
+         clauses: [primaryId=bluetooth_devices, vendorId=<config>, productId=<config>] - the exact
+         per-device shape Microsoft's own deny_all_bluetooth_devices_except_samsung.json sample uses
+         for its "Samsung Galaxy S21" exception group (see .NOTES), now nested under a parent OR group
+         instead of used as the top-level group directly.
+      2. The parent "ApprovedBluetoothDevices" group (fixed GUID, unchanged) - $type: "or", clauses:
+         one groupId clause per desired sub-group.
+      3. Rewrites the EXISTING "Deny-AllBluetoothDevices" rule (same fixed GUID the
+         portable-device-coverage fragment created) to add excludeGroups = [ApprovedBluetoothDevices
+         parent group id] - its two deny/auditDeny entries are reproduced byte-for-byte unchanged from
+         that fragment's own New-DenyRule call, so this is additive, not destructive, to that rule.
+      4. One "Allow-ApprovedBluetoothDevice" rule (fixed GUID, unchanged) - entries: allow +
+         auditAllow, access = the two documented bluetoothDevice access strings, includeGroups = the
+         parent group's id. This script adds an explicit "allow" enforcement entry (not just
+         auditAllow, unlike Microsoft's own sample) because this fragment's shared policy inherits
+         settings.global.defaultEnforcement = "deny" (fail-closed) from the parent scenario -
+         Microsoft's own sample instead relies on defaultEnforcement = "allow" (its own document's
+         default), where excluding a device from the deny rule is sufficient by itself. See design.md
+         Section 4 and README.md Section 6.
 
     Every group/rule/setting this script does not own (the parent's removableMedia coverage, the
     portable-device-coverage fragment's Apple/Portable groups and rules, the Bluetooth deny rule's
@@ -56,20 +73,22 @@
     THIS script again to restore it - validate/Test-MacBluetoothDeviceAllowlist.ps1 detects and
     flags this specific drift condition.
 
-    Idempotent: reads the live policy JSON, detects whether this fragment's group/rule are already
-    present (by fixed GUID), and with -Force reconciles the approved device to -ConfigPath's current
-    definition. Without -Force, an already-covered policy is reported and left untouched.
+    Idempotent: reads the live policy JSON, computes each configured device's deterministic sub-group
+    id, and diffs the live sub-group/parent-group/rule state against -ConfigPath's current definition.
+    A device removed from -ConfigPath has its sub-group dropped on the next run; a device added gets a
+    freshly-computed sub-group. Without -Force, an already-reconciled policy is reported and left
+    untouched.
 
 .PARAMETER ConfigPath
-    Path to the JSON config (parentPolicyDisplayName, approvedBluetoothDevices[] - exactly 0 or 1
-    entries in this v1 fragment, see .NOTES). Defaults to the sibling
+    Path to the JSON config (parentPolicyDisplayName, approvedBluetoothDevices[] - zero or more
+    entries, each { label, vendorId, productId }). Defaults to the sibling
     'config/mac-bluetooth-device-allowlist.sample.json' - copy and edit it.
 
 .PARAMETER GraphBaseUri
     Graph base URI. Defaults to 'https://graph.microsoft.com/v1.0'.
 
 .PARAMETER Force
-    If this fragment's group/rule already exist, reconcile the approved device to -ConfigPath's
+    If this fragment's group/rule already exist, reconcile the approved device set to -ConfigPath's
     current definition instead of skipping.
 
 .PARAMETER WhatIf
@@ -84,37 +103,41 @@
     ./Add-MacBluetoothDeviceAllowlist.ps1 -ConfigPath ./config/my-tenant.json
 
 .NOTES
-    SCOPE: exactly one approved Bluetooth device in v1 - this script throws if -ConfigPath's
-    approvedBluetoothDevices array has more than one entry. Supporting more than one AND'd
-    vendorId+productId device would need either a separate allow rule per device (includeGroups
-    combine with AND semantics, so multiple device groups cannot be combined in one rule's
-    includeGroups - confirmed directly from Microsoft's own Access policy rule reference table,
-    "If multiple groups are in the includeGroups, it's AND") or the per-device sub-group +
-    groupId-clause-nesting technique this repository's sibling scenarios already defer as unverified
-    complexity (defender-device-control-usb-allowlist-macos-vendor-product-matching/,
-    defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md Section 5).
-    Tracked as a follow-up in PROGRESS.md rather than guessed at here.
-
     vendorId/productId identify a DEVICE MODEL, not a unique physical unit - unlike this repository's
     serialNumber-based allowlists (parent scenario, Apple/Portable families), any Bluetooth device
-    sharing the configured vendorId+productId pair (e.g. a colleague's identical phone/scanner model)
-    matches this exception, not just one specific approved unit. See README.md Section 11.
+    sharing a configured vendorId+productId pair (e.g. a colleague's identical phone/scanner model)
+    matches that device's exception, not just one specific approved unit. See README.md Section 11.
 
-    excludeGroups OR semantics confirmed directly from Microsoft's "Access policy rule" reference
-    table: "The groups that the policy doesn't apply to... If multiple groups are in the
-    excludeGroups, it's OR." (only one group is ever placed there by this v1 script, but the
-    semantics matter for the design decision above).
+    excludeGroups OR semantics and includeGroups AND semantics both confirmed directly from
+    Microsoft's "Access policy rule" reference table: "The groups that the policy doesn't apply
+    to... If multiple groups are in the excludeGroups, it's OR" / "If multiple groups are in the
+    includeGroups, it's AND." The parent-group-of-sub-groups technique below exists specifically to
+    express "OR across N devices" through a group's own query (which independently supports an 'or'
+    `$type`), not through a rule's includeGroups/excludeGroups arrays.
+
+    Get-DeterministicSubGroupId is an RFC 4122 Section 4.3 version-5 (name-based, SHA-1) UUID
+    derivation, worked entirely in raw hex-string/byte-array form (never round-tripped through
+    [guid]'s byte-array constructor, which reorders bytes for .NET's mixed-endian internal
+    representation) - avoids the classic UUID-v5-in-.NET endianness bug. Identical implementation to
+    defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/deploy/
+    Add-MacApplePortableVendorProductDeviceAllowlist.ps1's own function of the same name (itself
+    reusing defender-device-control-usb-allowlist-macos-vendor-product-matching/deploy/
+    Add-MacVendorProductDeviceAllowlist.ps1's verified implementation) - this script uses its own
+    distinct namespace constant so its derived ids never collide with either sibling's.
 
     Sources (Microsoft Learn, verify before production use):
     - Device Control for macOS (Query/Clause/Access policy rule/Enforcement/Access Types reference
       tables - vendorId "Four digit hexadecimal string", productId "Four digit hexadecimal string",
-      query $type "and" clause AND semantics, includeGroups AND / excludeGroups OR semantics,
+      query $type "and"/"or" clause semantics, includeGroups AND / excludeGroups OR semantics,
       settings.global.defaultEnforcement "allow" (default) or "deny"):
       https://learn.microsoft.com/defender-endpoint/mac-device-control-overview
     - Sample macOS device control policies (deny_all_bluetooth_devices_except_samsung.json - the
-      exact vendorId+productId AND-match exception-group shape this script reproduces, confirmed by
-      direct fetch of the raw file content during this fragment's build):
+      exact vendorId+productId AND-match exception-group shape this script reproduces per device,
+      confirmed by direct fetch of the raw file content during this fragment's original build):
       https://github.com/microsoft/mdatp-devicecontrol/blob/main/macOS/policy/samples/deny_all_bluetooth_devices_except_samsung.json
+    - scenarios/dlp/defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/
+      deploy/Add-MacApplePortableVendorProductDeviceAllowlist.ps1 - the proven sub-group +
+      groupId-clause-nesting technique this v2 script ports for the identical AND-then-OR problem.
     - scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/deploy/
       Add-MacPortableDeviceCoverage.ps1 - the prerequisite fragment that creates the
       AllBluetoothDevices group and Deny-AllBluetoothDevices rule this script extends; same fixed
@@ -143,8 +166,14 @@ $script:AllBluetoothGroupId = 'd1d2d3d4-3333-4c3c-8c3c-333333333301'
 $script:DenyBluetoothRuleId = 'd1d2d3d4-3333-4c3c-8c3c-333333333310'
 
 # This fragment's own fixed GUIDs - distinct from every group/rule id used by any sibling fragment.
+# ApprovedBluetoothGroupId is now the PARENT (OR) group; per-device sub-groups get deterministic ids.
 $script:ApprovedBluetoothGroupId = 'd1d2d3d4-3333-4c3c-8c3c-333333333302'
 $script:AllowBluetoothRuleId     = 'd1d2d3d4-3333-4c3c-8c3c-333333333311'
+$script:SubGroupNamePrefix       = 'BluetoothVendorProductMatch-'
+
+# This fragment's own fixed namespace constant for RFC 4122 Section 4.3 version-5 UUID derivation -
+# distinct from every other GUID/namespace literal used by any sibling fragment in this repo.
+$script:SubGroupNamespaceHex = 'e4f5a6b7c8d940e1a2b3c4d5e6f70819'
 
 # Access-string list per Microsoft's official Access Types table - identical to the pair already
 # used by the prerequisite fragment's own Deny-AllBluetoothDevices rule.
@@ -183,19 +212,65 @@ function Test-FourDigitHex {
     }
 }
 
+function Get-DeterministicSubGroupId {
+    <#
+        RFC 4122 Section 4.3 version-5 (name-based, SHA-1) UUID derivation - see .NOTES for the
+        endianness rationale and the sibling fragment this implementation is ported from unchanged.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$NamespaceHex,
+        [Parameter(Mandatory)][string]$Name
+    )
+    $nsBytes = [byte[]](0..15 | ForEach-Object { [Convert]::ToByte($NamespaceHex.Substring($_ * 2, 2), 16) })
+    $nameBytes = [System.Text.Encoding]::UTF8.GetBytes($Name)
+    $toHash = [byte[]]($nsBytes + $nameBytes)
+
+    $sha1 = [System.Security.Cryptography.SHA1]::Create()
+    try {
+        $hash = $sha1.ComputeHash($toHash)
+    }
+    finally {
+        $sha1.Dispose()
+    }
+
+    $b = [byte[]]$hash[0..15]
+    $b[6] = [byte](($b[6] -band 0x0F) -bor 0x50)   # version 5
+    $b[8] = [byte](($b[8] -band 0x3F) -bor 0x80)   # variant RFC 4122
+
+    $hex = -join ($b | ForEach-Object { $_.ToString('x2') })
+    return '{0}-{1}-{2}-{3}-{4}' -f $hex.Substring(0, 8), $hex.Substring(8, 4), $hex.Substring(12, 4), $hex.Substring(16, 4), $hex.Substring(20, 12)
+}
+
 # --- Load and validate config ---
 if (-not (Test-Path -LiteralPath $ConfigPath)) { throw "Config file not found: $ConfigPath" }
 $cfg = Get-Content -LiteralPath $ConfigPath -Raw | ConvertFrom-Json
 $parentDisplayName = if ($cfg.parentPolicyDisplayName) { $cfg.parentPolicyDisplayName } else { 'Device Control (macOS) - USB Removable Media Default-Deny Allowlist' }
-$approvedDevices = @($cfg.approvedBluetoothDevices)
+# Where-Object filters out $null - guards against a 1-element-null-array when the config key is
+# omitted entirely (same rationale as the Apple/Portable vendor-product-matching sibling).
+$approvedDevices = @($cfg.approvedBluetoothDevices | Where-Object { $_ })
 
-if ($approvedDevices.Count -gt 1) {
-    throw "This v1 fragment supports exactly 0 or 1 approvedBluetoothDevices entries (got $($approvedDevices.Count)) - see .NOTES for why multi-device support is deferred, and PROGRESS.md for the tracked follow-up."
-}
-foreach ($d in $approvedDevices) {
+$seenLabels = @{}
+$seenPairs = @{}
+$desiredDevices = foreach ($d in $approvedDevices) {
     if (-not $d.label) { throw "Every approvedBluetoothDevices entry requires a 'label'." }
+    if ($seenLabels.ContainsKey($d.label)) { throw "Duplicate approvedBluetoothDevices label '$($d.label)' - labels must be unique." }
+    $seenLabels[$d.label] = $true
     Test-FourDigitHex -Value $d.vendorId -FieldName 'vendorId' -Label $d.label
     Test-FourDigitHex -Value $d.productId -FieldName 'productId' -Label $d.label
+    $vendorNorm = $d.vendorId.ToLowerInvariant()
+    $productNorm = $d.productId.ToLowerInvariant()
+    $pairKey = "$vendorNorm`:$productNorm"
+    if ($seenPairs.ContainsKey($pairKey)) {
+        throw "Duplicate vendorId+productId pair '$pairKey' on approvedBluetoothDevices entries '$($seenPairs[$pairKey])' and '$($d.label)' - each device's vendorId+productId pair determines its sub-group id and must be unique, even if labels differ."
+    }
+    $seenPairs[$pairKey] = $d.label
+    [pscustomobject]@{
+        Label     = $d.label
+        VendorId  = $vendorNorm
+        ProductId = $productNorm
+        GroupId   = Get-DeterministicSubGroupId -NamespaceHex $script:SubGroupNamespaceHex -Name "mac-bluetooth-device-allowlist/v2/$vendorNorm`:$productNorm"
+        GroupName = "$($script:SubGroupNamePrefix)$($d.label)"
+    }
 }
 
 Assert-MgConnected
@@ -231,56 +306,82 @@ if (-not $parsedPolicy.groups -or -not $parsedPolicy.rules -or -not $parsedPolic
 #        both present - this script only extends that fragment's Bluetooth coverage, it never
 #        creates it from scratch ---
 $existingGroupIds = @($parsedPolicy.groups | ForEach-Object { $_.id })
-$existingRuleIds  = @($parsedPolicy.rules  | ForEach-Object { $_.id })
 $denyBluetoothRule = $parsedPolicy.rules | Where-Object { $_.id -eq $script:DenyBluetoothRuleId } | Select-Object -First 1
 
 if ($script:AllBluetoothGroupId -notin $existingGroupIds -or -not $denyBluetoothRule) {
-    throw "Prerequisite not met: the AllBluetoothDevices group and/or Deny-AllBluetoothDevices rule (from scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage) were not found on '$parentDisplayName'. Deploy that fragment's deploy/Add-MacPortableDeviceCoverage.ps1 first - this script only adds an approved-device exception to its Bluetooth coverage, it does not create Bluetooth coverage itself."
+    throw "Prerequisite not met: the AllBluetoothDevices group and/or Deny-AllBluetoothDevices rule (from scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage) were not found on '$parentDisplayName'. Deploy that fragment's deploy/Add-MacPortableDeviceCoverage.ps1 first - this script only adds approved-device exceptions to its Bluetooth coverage, it does not create Bluetooth coverage itself."
 }
 
-# --- 4. Coverage detection (by this fragment's own fixed GUIDs, not by value) ---
-$hasApprovedGroup = $script:ApprovedBluetoothGroupId -in $existingGroupIds
-$hasAllowRule     = $script:AllowBluetoothRuleId -in $existingRuleIds
-$hasExclude       = $denyBluetoothRule.excludeGroups -contains $script:ApprovedBluetoothGroupId
-$isFullyReconciled = ($approvedDevices.Count -eq 1 -and $hasApprovedGroup -and $hasAllowRule -and $hasExclude) `
-    -or ($approvedDevices.Count -eq 0 -and -not $hasApprovedGroup -and -not $hasAllowRule -and -not $hasExclude)
+# --- 4. Coverage/reconciliation detection (by fixed/deterministic ids, not by value) ---
+$approvedGroup = $parsedPolicy.groups | Where-Object { $_.id -eq $script:ApprovedBluetoothGroupId } | Select-Object -First 1
+$allowRule = $parsedPolicy.rules | Where-Object { $_.id -eq $script:AllowBluetoothRuleId } | Select-Object -First 1
+$hasExclude = $denyBluetoothRule.excludeGroups -contains $script:ApprovedBluetoothGroupId
+
+if ($approvedGroup -and $approvedGroup.query.'$type' -notin @('or', 'any', 'and')) {
+    throw "'ApprovedBluetoothDevices' group's query.`$type is '$($approvedGroup.query.'$type')', expected 'or'/'any' (v2, multi-device) or 'and' (v1, single-device, pre-upgrade) - it does not look like a shape this script recognizes. Refusing to modify it."
+}
+
+$existingGroupIdClauses = @()
+if ($approvedGroup -and $approvedGroup.query.'$type' -in @('or', 'any')) {
+    $existingGroupIdClauses = @($approvedGroup.query.clauses | Where-Object { $_.'$type' -eq 'groupId' } | ForEach-Object { $_.value })
+}
+$existingSubGroupIds = @($parsedPolicy.groups | Where-Object { $_.name -like "$($script:SubGroupNamePrefix)*" } | ForEach-Object { $_.id })
+$desiredGroupIds = @($desiredDevices | ForEach-Object { $_.GroupId })
+
+$groupsMatch = -not (Compare-Object -ReferenceObject ($existingSubGroupIds | Sort-Object) -DifferenceObject ($desiredGroupIds | Sort-Object))
+$clausesMatch = -not (Compare-Object -ReferenceObject ($existingGroupIdClauses | Sort-Object) -DifferenceObject ($desiredGroupIds | Sort-Object))
+$isFullyReconciled = ($desiredDevices.Count -eq 0 -and -not $approvedGroup -and -not $allowRule -and -not $hasExclude) `
+    -or ($desiredDevices.Count -gt 0 -and $groupsMatch -and $clausesMatch -and $existingSubGroupIds.Count -eq $desiredGroupIds.Count -and $allowRule -and $hasExclude)
 
 if ($isFullyReconciled -and -not $Force) {
     Write-Host "  [coverage] Bluetooth device allowlist already matches -ConfigPath's current definition on '$parentDisplayName' - not modified. Pass -Force to reconcile anyway." -ForegroundColor Yellow
     Write-Host "`nDone. No change made." -ForegroundColor Cyan
     return
 }
-if (-not $isFullyReconciled -and ($hasApprovedGroup -or $hasAllowRule -or $hasExclude) -and -not $Force) {
-    Write-Host "  [coverage] Partial or drifted Bluetooth allowlist state detected on '$parentDisplayName' (group present: $hasApprovedGroup, allow rule present: $hasAllowRule, exclude present: $hasExclude) - reconciling to a complete, consistent state matching -ConfigPath." -ForegroundColor Yellow
+if (-not $isFullyReconciled -and ($approvedGroup -or $allowRule -or $hasExclude -or $existingSubGroupIds.Count -gt 0) -and -not $Force) {
+    Write-Host "  [coverage] Partial or drifted Bluetooth allowlist state detected on '$parentDisplayName' (parent group present: $([bool]$approvedGroup), sub-groups: $($existingSubGroupIds.Count), allow rule present: $([bool]$allowRule), exclude present: $hasExclude) - reconciling to a complete, consistent state matching -ConfigPath ($($desiredDevices.Count) device(s))." -ForegroundColor Yellow
 }
 
 # --- 5. Build the reconciled groups/rules: keep every group/rule not owned by this fragment
-#        untouched (including the prerequisite fragment's other groups/rules), rebuild the shared
-#        Deny-AllBluetoothDevices rule with its original two entries reproduced byte-for-byte plus
-#        this fragment's excludeGroups, and (re)add this fragment's own group/allow-rule fresh from
+#        untouched (including the prerequisite fragment's other groups/rules and any other
+#        pre-existing excludeGroups entry on the shared deny rule), drop this fragment's own stale
+#        sub-groups and parent group, then re-add fresh sub-groups + parent group + allow rule from
 #        -ConfigPath ---
-$keptGroups = @($parsedPolicy.groups | Where-Object { $_.id -ne $script:ApprovedBluetoothGroupId })
+$keptGroups = @($parsedPolicy.groups | Where-Object { $_.id -ne $script:ApprovedBluetoothGroupId -and $_.id -notin $existingSubGroupIds })
 $keptRules  = @($parsedPolicy.rules  | Where-Object { $_.id -notin @($script:DenyBluetoothRuleId, $script:AllowBluetoothRuleId) })
 
 $newGroups = @()
 $newRules  = @()
 
-if ($approvedDevices.Count -eq 1) {
-    $d = $approvedDevices[0]
-    # Exact shape of Microsoft's own deny_all_bluetooth_devices_except_samsung.json exception group.
+if ($desiredDevices.Count -gt 0) {
+    foreach ($d in $desiredDevices) {
+        # Exact per-device shape of Microsoft's own deny_all_bluetooth_devices_except_samsung.json
+        # exception group, now nested as a sub-group under the OR'd parent group.
+        $newGroups += [ordered]@{
+            '$type' = 'device'
+            id      = $d.GroupId
+            name    = $d.GroupName
+            query   = [ordered]@{
+                '$type'  = 'and'
+                clauses  = @(
+                    [ordered]@{ '$type' = 'primaryId'; value = 'bluetooth_devices' }
+                    [ordered]@{ '$type' = 'vendorId'; value = $d.VendorId }
+                    [ordered]@{ '$type' = 'productId'; value = $d.ProductId }
+                )
+            }
+        }
+        Write-Host "  [plan] Approving Bluetooth device '$($d.Label)' (vendorId=$($d.VendorId), productId=$($d.ProductId), groupId=$($d.GroupId))." -ForegroundColor DarkCyan
+    }
     $newGroups += [ordered]@{
         '$type' = 'device'
         id      = $script:ApprovedBluetoothGroupId
-        name    = 'ApprovedBluetoothDevice'
+        name    = 'ApprovedBluetoothDevices'
         query   = [ordered]@{
-            '$type'  = 'and'
-            clauses  = @(
-                [ordered]@{ '$type' = 'primaryId'; value = 'bluetooth_devices' }
-                [ordered]@{ '$type' = 'vendorId'; value = $d.vendorId }
-                [ordered]@{ '$type' = 'productId'; value = $d.productId }
-            )
+            '$type'  = 'or'
+            clauses  = @($desiredDevices | ForEach-Object { [ordered]@{ '$type' = 'groupId'; value = $_.GroupId } })
         }
     }
+
     # Preserve any pre-existing excludeGroups entries this fragment doesn't own (e.g. a manually
     # added exclusion) - never wholesale-replace the array, only ensure this fragment's own entry
     # is present exactly once.
@@ -304,7 +405,10 @@ if ($approvedDevices.Count -eq 1) {
             [ordered]@{ '$type' = 'bluetoothDevice'; id = 'aaaaaaaa-0004-4004-8004-000000000004'; enforcement = [ordered]@{ '$type' = 'auditAllow'; options = @('send_event') }; access = $script:BluetoothAccess }
         )
     }
-    Write-Host "  [plan] Approving Bluetooth device '$($d.label)' (vendorId=$($d.vendorId), productId=$($d.productId))." -ForegroundColor DarkCyan
+    $removedLabels = @($parsedPolicy.groups | Where-Object { $_.name -like "$($script:SubGroupNamePrefix)*" -and $_.id -notin $desiredGroupIds } | ForEach-Object { $_.name.Substring($script:SubGroupNamePrefix.Length) })
+    foreach ($label in $removedLabels) {
+        Write-Host "  [plan] Removing Bluetooth device no longer in -ConfigPath: '$label'." -ForegroundColor DarkCyan
+    }
 }
 else {
     # Empty config: remove only this fragment's own excludeGroups entry, preserving any other
@@ -318,7 +422,7 @@ else {
     }
     if ($otherExcludeGroups.Count -gt 0) { $revertedRule.excludeGroups = @($otherExcludeGroups) }
     $newRules += $revertedRule
-    Write-Host '  [plan] No approvedBluetoothDevices configured - removing this fragment''s exception (any other pre-existing excludeGroups entry is preserved).' -ForegroundColor DarkCyan
+    Write-Host '  [plan] No approvedBluetoothDevices configured - removing this fragment''s exception(s) (any other pre-existing excludeGroups entry is preserved).' -ForegroundColor DarkCyan
 }
 
 $desiredGroups = @($keptGroups) + @($newGroups)
@@ -328,7 +432,7 @@ $desiredPolicy = [ordered]@{ groups = $desiredGroups; rules = $desiredRules; set
 $newPolicyJson = $desiredPolicy | ConvertTo-Json -Depth 12 -Compress
 $newEscapedJson = ConvertTo-XmlEscaped $newPolicyJson
 
-Write-Host "  [plan] $($parsedPolicy.groups.Count) existing groups / $($parsedPolicy.rules.Count) existing rules -> $($desiredGroups.Count) groups / $($desiredRules.Count) rules." -ForegroundColor DarkCyan
+Write-Host "  [plan] $($parsedPolicy.groups.Count) existing groups / $($parsedPolicy.rules.Count) existing rules -> $($desiredGroups.Count) groups / $($desiredRules.Count) rules ($($desiredDevices.Count) approved device(s))." -ForegroundColor DarkCyan
 
 # --- 6. Substitute only the policy <string> node's content; every other plist key is untouched ---
 $newMobileConfigXml = $mobileConfigXml.Replace($originalEscapedJson, $newEscapedJson)

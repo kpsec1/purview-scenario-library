@@ -3074,15 +3074,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   option.
 
 ### Follow-ups discovered while building the Defender for Endpoint device control macOS Bluetooth approved-device allowlist scenario
-- [ ] `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist-multi-device/`
-  (or fold into a future macOS device-control hardening pass) — support more than one approved
-  Bluetooth device. Needs either a separate allow/exception rule pair per device (config-driven,
-  deterministic-GUID-per-index loop) or the per-device sub-group + `groupId`-clause-nesting
-  technique this repo's sibling scenarios already defer as unverified complexity
-  (`defender-device-control-usb-allowlist-macos-vendor-product-matching/`,
-  `defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md` §5) — deferred in
-  this build (`design.md` §5) because there was no concrete second-device requirement to design
-  against, not because either approach is blocked on an open VERIFY.
+- [x] Support more than one approved Bluetooth device — **built in place** (see DONE below), folded
+  into `defender-device-control-usb-allowlist-macos-bluetooth-allowlist/` as v2 rather than a
+  separate `-multi-device` sibling folder (a cardinality generalization of the same object, not a
+  different data source/scan kind — the pattern the three-sibling Data Map UAMI wiring used, which
+  doesn't apply here). Resolved by reusing the per-device sub-group + `groupId`-clause-nesting
+  technique `defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/`
+  independently built and validated for the identical AND-then-OR problem after this scenario's v1
+  shipped — the "unverified complexity" deferral this item originally cited no longer applied by the
+  time this fragment was picked up.
 - [ ] VERIFY (pilot tenant): the exact `AdditionalFields` property names for a Bluetooth device's
   `vendorId`/`productId` on a `RemovableStoragePolicyTriggered` deny event (used in this scenario's
   `README.md` §7 step 6 worked query to help an operator find an unapproved device's identifiers) —
@@ -3409,6 +3409,31 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/` (v2:
+  multi-device)** — commit `PENDING` — 2026-09-25. Generalized the scenario's approved-Bluetooth-
+  device support from exactly 0-or-1 device (v1) to any number of devices (v2), in place rather than
+  as a separate sibling scenario. Ported the per-device sub-group + `groupId`-clause-nesting
+  technique (parent group `$type: "or"`, clauses referencing per-device `$type: "and"` sub-groups,
+  each with a deterministic RFC 4122 v5 UUID derived from its `vendorId:productId` pair) from
+  `defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/`, which had
+  independently built and four-lens-reviewed the identical technique for the same AND-then-OR
+  problem after this scenario's v1 shipped — confirmed by direct code read
+  (`Get-DeterministicSubGroupId`, byte-for-byte identical algorithm, new namespace constant) rather
+  than re-derived from scratch. The rule-level mechanics (`Allow-ApprovedBluetoothDevice`'s
+  `includeGroups`, `Deny-AllBluetoothDevices`'s `excludeGroups`) needed no change at all, since both
+  already referenced only the parent group's id — only the parent group's own internal shape moved
+  from a flat single-device AND-group to an OR-group of sub-groups. Updated
+  `deploy/Add-MacBluetoothDeviceAllowlist.ps1`, `deploy/Remove-MacBluetoothDeviceAllowlist.ps1`,
+  `validate/Test-MacBluetoothDeviceAllowlist.ps1`, the config sample (now shows 2 devices),
+  `README.md`, `design.md` (new §5 "v1's deferral and v2's resolution" history), and `reviews.md`
+  (new targeted four-lens follow-up round confirming: the OR-group-from-scratch pattern is already
+  proven elsewhere in this repo's own `portable-device-coverage` script, not a new risk; the
+  validate script's per-device matching can't false-PASS via label-prefix collision; no new residual
+  risk category; the ported UUID-derivation function is a verified byte-for-byte port). Old v1
+  single-device state upgrades automatically on the next reconcile run (the fixed parent-group GUID
+  is unchanged across v1/v2, and the deploy script recognizes and rebuilds a legacy `and`-shaped
+  parent group). No new Microsoft Learn grounding needed — pure reuse of an already-grounded,
+  already-reviewed sibling technique.
 - [x] **`scenarios/data-lifecycle-management/retention-labels-financial-records/` /
   `scenarios/records-management/file-plan-bulk-import/` (cross-link correction)** — commit `4756040`
   — 2026-09-25. A backlog item asking for file plan descriptors and bulk label creation as a

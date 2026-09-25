@@ -173,3 +173,40 @@ it is fixed in the current state of `deploy/Add-MacBluetoothDeviceAllowlist.ps1`
 `excludeGroups` entry this fragment doesn't own. All other Fix items are resolved in the current
 state of `README.md`, `design.md`, and the deploy script. No Fail items were raised. This fragment
 meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Follow-up round (v2, 2026-09-25): multi-device support
+
+This fragment's original v1 review round (above) confirmed the `includeGroups`-AND/`excludeGroups`-
+OR semantics that justified capping v1 at exactly one approved device (finding 3). v2 closes that
+deferred `PROGRESS.md` follow-up by porting the per-device sub-group + `groupId`-clause-nesting
+technique `defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/`
+independently built and reviewed after v1 shipped (`design.md` §5). A short, targeted re-check round
+rather than a full re-derivation, since the ported technique's own correctness was already
+established by that sibling's own four-lens review:
+
+- 🔴 **Red Team** — checked whether creating a brand-new `$type: "or"` group from scratch (not just
+  extending a pre-existing one) is actually a validated pattern in this object type, or an
+  unverified assumption specific to this fragment. **Confirmed, not assumed:** the prerequisite
+  `portable-device-coverage` fragment's own `Get-SerialNumberGroup` function
+  (`deploy/Add-MacPortableDeviceCoverage.ps1`) creates its `ApprovedAppleDevices`/
+  `ApprovedPortableDevices` groups with `'$type' = 'or'` from scratch using the identical mechanism
+  — this repo's own working, previously-reviewed code, not a new risk introduced here.
+- 🔵 **Blue Team** — checked that `validate/Test-MacBluetoothDeviceAllowlist.ps1`'s per-device checks
+  can't produce a false PASS via name-collision between two devices' sub-group names (e.g. one
+  label being a string-prefix of another). **Confirmed safe:** the validate script matches each
+  device's sub-group by exact `-eq` equality against `"$SubGroupNamePrefix$($d.label)"`, not a
+  `-like` wildcard, so partial-label collisions cannot cause a false match.
+- 🎩 **CISO** — no new residual risk introduced beyond what v1's own review already accepted
+  (`vendorId`/`productId`-is-a-model-not-a-unit, §6) — multi-device support widens the *number* of
+  approved models, not the *kind* of risk each one carries.
+- 🟦 **Microsoft Product Owner** — confirmed the deterministic sub-group id derivation
+  (`Get-DeterministicSubGroupId`) is a byte-for-byte port of the sibling's own implementation
+  (verified by diff), not a re-implementation that could silently diverge in its endianness handling
+  — the same function, same RFC 4122 v5 algorithm, only the namespace constant and hashed name
+  differ (Bluetooth-specific, to avoid id collisions with the sibling's own sub-groups).
+
+No Fix/Fail from this follow-up round. `README.md` §11's "Exactly one approved device" limitation is
+now marked RESOLVED rather than removed silently, and `PROGRESS.md`'s corresponding TODO item is
+closed with a pointer to this round.

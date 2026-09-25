@@ -4,41 +4,48 @@
 
 This fragment shares one `macOSCustomConfiguration` object with the parent scenario and the
 portable-device-coverage fragment. Rolling back means removing **only** this fragment's delta (one
-group, one rule, and the `excludeGroups` edit to one existing rule) — not the shared Bluetooth
-catch-all group or `Deny-AllBluetoothDevices`'s own two deny/auditDeny entries.
+sub-group per approved device, one parent group, one rule, and the `excludeGroups` edit to one
+existing rule) — not the shared Bluetooth catch-all group or `Deny-AllBluetoothDevices`'s own two
+deny/auditDeny entries.
 
-### Stage 1 — Remove the Bluetooth device exception only (reversible, minutes)
+### Stage 1 — Remove ALL Bluetooth device exceptions (reversible, minutes)
 
 ```powershell
 Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 ./deploy/Remove-MacBluetoothDeviceAllowlist.ps1
 ```
 
-This removes the `ApprovedBluetoothDevice` group and `Allow-ApprovedBluetoothDevice` rule, and
+This removes the `ApprovedBluetoothDevices` parent group, every per-device sub-group (identified by
+the `BluetoothVendorProductMatch-` name prefix, since sub-group ids are deterministically derived
+from config the removal script doesn't read), and the `Allow-ApprovedBluetoothDevice` rule, and
 strips `excludeGroups` from `Deny-AllBluetoothDevices`, then PATCHes the whole `.mobileconfig`
-payload. The prerequisite fragment's Bluetooth coverage (its catch-all group, the deny rule's own
-entries), the parent's `removableMedia` coverage, the Apple/Portable coverage, and the object's
-identity/assignment are all untouched.
+payload. This is an all-or-nothing removal of every configured device at once, not per-device — see
+Stage 2 to revoke a single device while keeping others approved. The prerequisite fragment's
+Bluetooth coverage (its catch-all group, the deny rule's own entries), the parent's
+`removableMedia` coverage, the Apple/Portable coverage, and the object's identity/assignment are all
+untouched.
 
-**Important:** removing this exception makes the previously-approved Bluetooth device **denied
+**Important:** removing these exceptions makes every previously-approved Bluetooth device **denied
 again**, not left unrestricted — Bluetooth reverts to the portable-device-coverage fragment's
 original unconditional-deny state. This is the *opposite* direction from most of this control's
 other rollbacks (which typically remove restriction, not add it back) — confirm this is the
-intended outcome (e.g. the approved device is being formally revoked) before running this stage as
-routine cleanup rather than a deliberate access-revocation action.
+intended outcome (e.g. all approved devices are being formally revoked at once) before running this
+stage as routine cleanup rather than a deliberate access-revocation action.
 
-Re-add the exception instantly:
+Re-add the exceptions instantly:
 
 ```powershell
 ./deploy/Add-MacBluetoothDeviceAllowlist.ps1 -ConfigPath ./deploy/config/my-tenant.json
 ```
 
-### Stage 2 — Swap the approved device (partial rollback)
+### Stage 2 — Revoke or swap one approved device, keeping the rest (partial rollback)
 
-To replace the approved device (revoke one, approve another), edit
-`approvedBluetoothDevices[0]`'s `vendorId`/`productId` in the config file and re-run
-`deploy/Add-MacBluetoothDeviceAllowlist.ps1 -Force` — this reconciles the group/rule in place
-without a separate remove-then-add step.
+To revoke a single device while leaving others approved, or to replace one device with another,
+edit `approvedBluetoothDevices[]` in the config file (remove that device's entry, or edit its
+`vendorId`/`productId`) and re-run `deploy/Add-MacBluetoothDeviceAllowlist.ps1 -Force` — this
+reconciles the parent group/sub-groups/rule in place, dropping only the removed device's sub-group
+and leaving every other configured device's sub-group and the shared parent group/rule untouched,
+without a separate remove-then-add step or affecting any other device.
 
 ### Stage 3 — Remove the entire device control policy (not this fragment's rollback)
 
@@ -73,8 +80,9 @@ $match = [regex]::Match($xml, '<key>policy</key>\s*<string>(.*?)</string>', [Sys
 $decoded = $match.Groups[1].Value -replace '&lt;', '<' -replace '&gt;', '>' -replace '&amp;', '&'
 $json = $decoded | ConvertFrom-Json
 
-# Stage 1: confirm no ApprovedBluetoothDevice group/Allow-ApprovedBluetoothDevice rule remain, and
-# the Deny-AllBluetoothDevices rule has no excludeGroups
+# Stage 1: confirm no ApprovedBluetoothDevices parent group, no BluetoothVendorProductMatch- sub-
+# groups, and no Allow-ApprovedBluetoothDevice rule remain, and the Deny-AllBluetoothDevices rule
+# has no excludeGroups
 $json.groups.name
 $json.rules | Where-Object { $_.name -like '*Bluetooth*' } | Select-Object name, excludeGroups
 ```

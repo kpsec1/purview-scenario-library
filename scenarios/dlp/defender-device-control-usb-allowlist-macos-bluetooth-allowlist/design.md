@@ -95,30 +95,47 @@ rules (Apple `Allow-ApprovedAppleDevices`, Portable `Allow-ApprovedPortableDevic
 consistency with this repository's own established pattern, not merely a literal reading of the one
 external sample, which was authored against a different default.
 
-## 5. Why exactly one approved device in v1
+## 5. Multi-device support: v1's deferral and v2's resolution
 
-Two devices cannot both be referenced in one allow rule's `includeGroups` (AND semantics — §3)
-without requiring a single connecting device to match both vendor+product pairs simultaneously,
-which is impossible. Two independent workarounds exist, both deliberately deferred:
+**v1 (original build): exactly one approved device.** Two devices cannot both be referenced in one
+allow rule's `includeGroups` (AND semantics — §3) without requiring a single connecting device to
+match both vendor+product pairs simultaneously, which is impossible. Two independent workarounds
+existed, both deliberately deferred at the time:
 
 - **A separate allow rule + exception group per device.** Mechanically straightforward, but scales
   the shared policy's rule/group count linearly with approved-device count and needs a config-driven
-  loop generating deterministic fixed GUIDs per array index — a heavier idempotency surface than
-  this fragment's current fixed-four-GUID design, better scoped as its own follow-up once there's a
-  concrete multi-device requirement to design against.
+  loop generating deterministic fixed GUIDs per array index.
 - **A combining group using `groupId` clauses** (Microsoft's Clause reference documents `groupId`:
   "Match if a device is a member of another group") to OR together multiple per-device sub-groups
-  under one combining group, referenced once in `includeGroups`/`excludeGroups`. This is the same
-  per-device sub-group + dynamic-`groupId`-clause-nesting technique this repository's sibling
-  scenarios (`defender-device-control-usb-allowlist-macos-vendor-product-matching/`,
-  `defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md` §5) already defer
-  as unverified complexity requiring a stable, deterministic GUID-per-device scheme not yet
-  independently confirmed against a pilot tenant.
+  under one combining group, referenced once in `includeGroups`/`excludeGroups`. At v1 build time,
+  this repository's sibling scenarios that needed the identical AND-then-OR problem
+  (`defender-device-control-usb-allowlist-macos-vendor-product-matching/`,
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage/design.md` §5) had deferred
+  this technique themselves, as unverified complexity requiring a stable, deterministic
+  GUID-per-device scheme not yet independently confirmed against a pilot tenant.
 
 Rather than build either without a concrete second-device requirement to validate the design
-against, this fragment ships exactly Microsoft's own demonstrated shape — one approved device — and
-throws a clear, actionable error if `-ConfigPath` supplies more than one, rather than silently
-picking one or mishandling the rest. Tracked as a follow-up in `PROGRESS.md`.
+against, v1 shipped exactly Microsoft's own demonstrated shape — one approved device — and threw a
+clear, actionable error if `-ConfigPath` supplied more than one, rather than silently picking one or
+mishandling the rest. Tracked as a follow-up in `PROGRESS.md`.
+
+**v2 (this build): resolved by reuse, not re-derivation.** Between v1's build and this one,
+`defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/` independently
+built, four-lens-reviewed, and shipped exactly the `groupId`-clause-nesting technique v1's own
+`design.md` had deferred as "unverified" — for the identical AND-then-OR problem (Apple/Portable
+devices also need a vendorId+productId AND pair, OR'd across multiple approved units). That
+scenario's own build grounded and validated the technique against Microsoft's Clause reference and
+the `Az`-equivalent Graph shape it PATCHes; nothing about *this* fragment's Bluetooth-specific
+mechanics differs in a way that would invalidate reusing it. v2 therefore ports that proven
+implementation (`Get-DeterministicSubGroupId`, the parent-`or`-group-of-sub-groups shape) with a
+distinct namespace constant and Bluetooth-specific naming, rather than re-deriving or re-verifying
+the technique from scratch — the same "a later sibling's validated work resolves an earlier
+sibling's deferred uncertainty" pattern this repo's `PROGRESS.md` has recorded before. The
+rule-level mechanics (`Allow-ApprovedBluetoothDevice`'s `includeGroups`, `Deny-AllBluetoothDevices`'s
+`excludeGroups`) needed **no** change at all — both already referenced only the single parent
+group's id, which now transparently represents "any of N devices" instead of "exactly one device."
+Only the parent group's own internal shape changed, from a flat single-device `and`-group to an
+`or`-group of per-device sub-groups.
 
 ## 6. Why `vendorId`+`productId`, not `serialNumber`, and what that costs
 
@@ -144,10 +161,10 @@ this fragment.
 | Extraction/write mechanism | Regex over the known, fixed `<key>policy</key><string>...</string>` shape | Same accepted trade-off both fragments beneath this one already document and use. |
 | Prerequisite check | Refuse to run unless `AllBluetoothDevices` group and `Deny-AllBluetoothDevices` rule (fixed GUIDs) are both present | This fragment only adds an exception to existing Bluetooth coverage — it must never create Bluetooth coverage on its own, which would bypass the portable-device-coverage fragment's own deliberate design. |
 | Deny-rule modification strategy | Rebuild the rule with `entries` reproduced verbatim from the live object, add `excludeGroups` | Preserves goal 3 (§2) exactly — no risk of silently drifting the entries this fragment doesn't own. |
-| Approved-device matching | `vendorId`+`productId`, AND'd, exactly one device | §5, §6 above. |
+| Approved-device matching | `vendorId`+`productId`, AND'd per device, OR'd across any number of devices (v2) | §5, §6 above. |
 | Allow-rule shape | Explicit `allow` + `auditAllow` entries (not sample-literal `auditAllow`-only) | §4 above — required by this shared policy's own fail-closed default. |
-| GUIDs | Two new fixed, source-controlled GUIDs (one group, one rule) in the same `3333-...` (Bluetooth-family) namespace the portable-device-coverage fragment established, distinct from its two existing Bluetooth GUIDs | Same idempotent-reconcile rationale as every sibling fragment; namespace continuity documents the family relationship directly in the GUID values themselves. |
-| Multi-device support | Deferred (§5) | Needs a concrete second-device requirement and, likely, a pilot-tenant-verified `groupId`-nesting design — not guessed here. |
+| GUIDs | Two fixed, source-controlled GUIDs (parent group, rule) in the same `3333-...` (Bluetooth-family) namespace the portable-device-coverage fragment established, unchanged since v1; per-device sub-group ids are deterministic (RFC 4122 v5), not fixed literals | Same idempotent-reconcile rationale as every sibling fragment; namespace continuity documents the family relationship directly in the GUID values themselves; deterministic sub-group ids let the sub-group set grow/shrink with config without a GUID-allocation scheme to maintain. |
+| Multi-device support | **Built (v2)** — per-device sub-group + OR'd parent group, ported from `apple-portable-vendor-product-matching` | §5 above — resolved by reusing a since-validated sibling technique, not by re-deriving it. |
 | Ordering hazard | Disclosed, not engineered around by modifying the prerequisite fragment's own script | See §8 below. |
 
 ## 8. Why the ordering hazard is disclosed, not silently fixed by editing the prior fragment
@@ -175,7 +192,6 @@ this fragment's PROGRESS.md follow-up was written. Two options were considered:
 
 ## 9. Non-goals
 
-- This scenario does not support more than one approved Bluetooth device (§5).
 - This scenario does not resolve the `vendorId`/`productId`-identifies-a-model-not-a-unit limitation
   — no stronger mechanism is Microsoft-documented for this device family (§6).
 - This scenario does not modify `defender-device-control-usb-allowlist-macos-portable-device-
