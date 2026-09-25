@@ -3410,7 +3410,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **`scenarios/data-lifecycle-management/retention-labels-financial-records/` /
-  `scenarios/records-management/file-plan-bulk-import/` (cross-link correction)** — commit `PENDING`
+  `scenarios/records-management/file-plan-bulk-import/` (cross-link correction)** — commit `4756040`
   — 2026-09-25. A backlog item asking for file plan descriptors and bulk label creation as a
   follow-up to `retention-labels-financial-records` turned out to already be fully built —
   `scenarios/records-management/file-plan-bulk-import/` (commit `b17faf9`, 2026-09-15) — just never
