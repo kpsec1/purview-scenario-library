@@ -3158,19 +3158,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   (`scan-on-premises-sql-server-and-classify/README.md` §11) already carried — this build could not
   close it, only narrow what remains unconfirmed. Flagged inline in this scenario's
   `deploy/Remove-PiiOnlyScanRuleset.ps1` `.NOTES`, `README.md` §11, and `rollback.md` Stage 1.
-- [ ] Now that this build found `learn.microsoft.com` directly reachable (no `EGRESS_BLOCKED`) via
-  the Microsoft Learn MCP tool — unlike the Azure Synapse Analytics and Azure SQL Managed Instance
-  PII-ruleset builds, both of which fell back to `raw.githubusercontent.com` fetches of the
-  Az.Purview PowerShell module's GitHub source — consider a low-priority pass re-verifying those two
-  siblings' GitHub-raw-source-only citations against the full `learn.microsoft.com` REST reference
-  pages now that access appears to have been restored, and closing their own carried-forward "REST
-  reference page not independently confirmed for this specific source type" VERIFYs
-  (`scan-azure-sql-managed-instance-and-classify-pii-ruleset/README.md` §11 second bullet;
-  `scan-azure-synapse-and-classify-pii-ruleset/README.md` §11 has an analogous item) if a future
-  run also has this access. Not attempted in this build — out of scope for a fragment about a
-  different source type, and network-access availability is environment-dependent, not guaranteed
-  to persist across runs.
-- [ ] This closes the last item in this repo's "apply the PII-only custom scan rule set pattern to
+- [x] RESOLVED (2026-09-25, commit `PENDING`): a later build reached `learn.microsoft.com` directly
+  (Microsoft Learn MCP tool, no `EGRESS_BLOCKED`) and fetched the Scan Rulesets - Create Or Replace
+  REST reference page in full
+  (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/create-or-replace`,
+  api-version `2023-09-01`). It documents `AzureSqlDatabaseManagedInstanceScanRulesetProperties` and
+  `AzureSynapseWorkspaceScanRulesetProperties` directly, both containing exactly `createdAt`
+  (read-only), `description`, `excludedSystemClassifications` (`string[]`),
+  `includedCustomClassificationRuleNames` (`string[]`), `lastModifiedAt` (read-only) — matching what
+  both scenarios' `deploy/New-PiiOnlyScanRuleset.ps1` scripts already send, no discrepancy found, no
+  code change required. Closed both siblings' carried-forward VERIFYs: `README.md` §11 (both
+  scenarios), the `.NOTES` block in both `deploy/New-PiiOnlyScanRuleset.ps1` scripts, and each
+  README's closing "VERIFYs remain open" summary paragraph.
+- [x] This closes the last item in this repo's "apply the PII-only custom scan rule set pattern to
   Data Map source type X" follow-up chain — all four Data Map source types with a base scan
   scenario in this repo (Azure SQL Database, Azure Synapse Analytics, Azure SQL Managed Instance,
   on-premises SQL Server) now have a PII-only companion scenario. No further fragment of this exact
@@ -3197,13 +3197,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   foundational script for an optional extension's benefit" reasoning the Bluetooth allowlist
   fragment's own `design.md` §8 already applied to its own analogous, less severe hazard. Re-open if
   a future, unrelated reason to revise that script's own reconcile logic ever comes up.
-- [ ] Extend the Bluetooth family's own single-device `vendorId`/`productId` allowlist
+- [x] Extend the Bluetooth family's own single-device `vendorId`/`productId` allowlist
   (`defender-device-control-usb-allowlist-macos-bluetooth-allowlist/`) to multi-device using this
   fragment's now twice-proven per-device sub-group + deterministic-UUIDv5 + `groupId`-clause
-  technique — tracked separately as
-  `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist-multi-device/`
-  already in this backlog; this build's own family-scoped hash-input pattern (folding a family tag
-  into the UUIDv5 name string) is directly reusable there without modification once picked up.
+  technique — **built** (see DONE below, 2026-09-25): shipped as v2 of that scenario in place,
+  reusing this exact technique (the family-scoped hash-input pattern this item anticipated was
+  indeed directly reusable without modification).
 
 ### Follow-ups discovered while building the Priority Cleanup SharePoint/OneDrive scenario
 - [ ] VERIFY (pilot tenant): whether the label's `-MultiStageReviewProperty` for this workload
@@ -3409,6 +3408,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Re-verified Synapse/Managed Instance PII-ruleset REST body shapes against direct
+  `learn.microsoft.com` access** — commit `PENDING` — 2026-09-25. Sub-task fragment (not a new
+  scenario) closing a low-priority follow-up: with `learn.microsoft.com` directly reachable via the
+  Microsoft Learn MCP tool in this build, fetched
+  `https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/create-or-replace`
+  (api-version `2023-09-01`) in full and confirmed it documents both
+  `AzureSqlDatabaseManagedInstanceScanRulesetProperties` and `AzureSynapseWorkspaceScanRulesetProperties`
+  directly — each with exactly `createdAt` (read-only), `description`,
+  `excludedSystemClassifications` (`string[]`), `includedCustomClassificationRuleNames` (`string[]`),
+  `lastModifiedAt` (read-only) — matching, with no discrepancy, what
+  `scan-azure-sql-managed-instance-and-classify-pii-ruleset/deploy/New-PiiOnlyScanRuleset.ps1` and
+  `scan-azure-synapse-and-classify-pii-ruleset/deploy/New-PiiOnlyScanRuleset.ps1` already send
+  (`kind`/`scanRulesetType`/`properties.description`/`.excludedSystemClassifications`/
+  `.includedCustomClassificationRuleNames`). No code change required in either script — this was a
+  citation-strength upgrade, not a bug fix. Updated both scenarios' `README.md` §11 (VERIFY →
+  RESOLVED, with the direct REST reference link replacing the `raw.githubusercontent.com`-only
+  citation) and closing summary paragraph, and both `deploy/New-PiiOnlyScanRuleset.ps1` `.NOTES`
+  blocks. Continues this repo's established pattern (see the Synapse `resourceTypes` self-correction
+  in an earlier DONE entry) of treating Microsoft Learn access as environment-dependent and
+  re-verifying citations opportunistically when access is confirmed, rather than assuming an earlier
+  build's access restriction still holds.
 - [x] **`scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/` (v2:
   multi-device)** — commit `1cc566e` — 2026-09-25. Generalized the scenario's approved-Bluetooth-
   device support from exactly 0-or-1 device (v1) to any number of devices (v2), in place rather than

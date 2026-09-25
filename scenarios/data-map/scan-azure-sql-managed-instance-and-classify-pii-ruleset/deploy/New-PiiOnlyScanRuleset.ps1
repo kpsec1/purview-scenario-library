@@ -131,12 +131,14 @@
     holds for the still-unbuilt on-premises SQL Server sibling without its own independent check
     (PROGRESS.md tracks that as a separate, not-yet-built fragment).
 
-    VERIFY (pilot tenant or a future pass once learn.microsoft.com is reachable): an independent
-    direct fetch of the Scan Rulesets - Create Or Replace REST reference page specifically for the
-    AzureSqlDatabaseManagedInstanceScanRuleset body shape (the generic call shape and the Azure SQL
-    Database variant's body were confirmed this way in an earlier build; this build's Managed
-    Instance-specific confirmation came from the PowerShell module source instead, a materially
-    different but still official Microsoft-maintained reference). See README.md Section 11.
+    RESOLVED (2026-09-25): a later build reached learn.microsoft.com directly and confirmed the
+    AzureSqlDatabaseManagedInstanceScanRuleset body shape against the Scan Rulesets - Create Or
+    Replace REST reference page (api-version 2023-09-01):
+    https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/create-or-replace
+    - AzureSqlDatabaseManagedInstanceScanRulesetProperties contains exactly createdAt (read-only),
+    description, excludedSystemClassifications (string[]), includedCustomClassificationRuleNames
+    (string[]), lastModifiedAt (read-only) - matching this script's $rulesetBody exactly. See
+    README.md Section 11.
 
     VERIFY (pilot tenant, before production use): whether `GET .../types/typedefs?type=CLASSIFICATION`
     paginates once a tenant has a very large number of custom classification rules on top of the

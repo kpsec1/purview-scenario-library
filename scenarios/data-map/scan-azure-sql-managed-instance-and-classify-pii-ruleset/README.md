@@ -182,22 +182,19 @@ breakdown to quantify the exact savings.
   `-RevertToRulesetName` default is therefore the same string used elsewhere in this scenario as
   the ruleset `kind` constant — correct for this source type, but confirmed rather than assumed
   (design.md §2 goal 6).
-- **VERIFY (pilot tenant or a future Microsoft Learn pass): the exact REST JSON body for a Custom
-  `AzureSqlDatabaseManagedInstanceScanRuleset`.** This build confirmed the object shape and the
-  `Kind: AzureSqlDatabaseManagedInstance` value directly against the `Az.Purview` PowerShell
-  module's own GitHub source (`New-AzPurviewAzureSqlDatabaseManagedInstanceScanRulesetObject.md`,
-  fetched verbatim via `raw.githubusercontent.com` after `learn.microsoft.com`'s REST API
-  reference pages returned `EGRESS_BLOCKED` in this build environment — the same access restriction
-  and workaround the Synapse sibling's own build documented). The PowerShell object's property
-  names (`ExcludedSystemClassification`, `IncludedCustomClassificationRuleName`, `Description`,
-  `Type`) are carried into this scenario's REST body as `excludedSystemClassifications`/
-  `includedCustomClassificationRuleNames`/`description`/`scanRulesetType`, matching the exact
-  casing convention the Azure SQL Database sibling's REST body already uses and that its own build
-  confirmed directly against the REST reference page (not blocked during that earlier build). This
-  build did not get an independent direct fetch of the REST reference page itself for the Managed
-  Instance variant specifically — flagged here rather than assumed identical without qualification.
-  Re-open once `learn.microsoft.com` is reachable from this build environment, or against a pilot
-  tenant.
+- **RESOLVED (2026-09-25): the exact REST JSON body for a Custom `AzureSqlDatabaseManagedInstanceScanRuleset`
+  is now independently confirmed against the direct REST reference page**, not just the `Az.Purview`
+  PowerShell module's GitHub source this scenario originally relied on (`learn.microsoft.com` was
+  reachable in this later build, unlike the earlier one that hit `EGRESS_BLOCKED`). The
+  [Scan Rulesets - Create Or Replace](https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/create-or-replace)
+  reference page (api-version `2023-09-01`) documents `AzureSqlDatabaseManagedInstanceScanRuleset`
+  (top-level `kind: "AzureSqlDatabaseManagedInstance"`, `scanRulesetType`, `properties`) with
+  `AzureSqlDatabaseManagedInstanceScanRulesetProperties` containing exactly `createdAt` (read-only),
+  `description`, `excludedSystemClassifications` (`string[]`), `includedCustomClassificationRuleNames`
+  (`string[]`), `lastModifiedAt` (read-only) — matching what `deploy/New-PiiOnlyScanRuleset.ps1`
+  already sends (`$rulesetBody.kind`/`.scanRulesetType`/`.properties.description`/
+  `.properties.excludedSystemClassifications`/`.properties.includedCustomClassificationRuleNames`)
+  with no discrepancy found. No code change required.
 - **No `collection` property on the ruleset (account-wide, same as every sibling).** The
   `New-AzPurviewAzureSqlDatabaseManagedInstanceScanRulesetObject` constructor cmdlet exposes no
   collection or scan-scoping parameter (only `-Description`/`-ExcludedSystemClassification`/
@@ -289,7 +286,6 @@ breakdown to quantify the exact savings.
     discipline) — this repository.
 
 > Re-verify all links, API versions, and REST body shapes against current Microsoft Learn before a
-> customer-facing deployment. Two VERIFYs remain open in §11 (the Managed Instance-specific REST
-> body shape pending direct access to `learn.microsoft.com`, and Types API pagination behavior at
-> scale) and should be closed against a pilot tenant or once the network restriction lifts, before
-> production use.
+> customer-facing deployment. The Managed Instance-specific REST body shape VERIFY is now resolved
+> (§11, 2026-09-25, confirmed directly against the REST reference page). One VERIFY remains open in
+> §11 (Types API pagination behavior at scale) and should be closed against a pilot tenant.

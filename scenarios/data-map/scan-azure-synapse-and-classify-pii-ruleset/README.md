@@ -181,21 +181,19 @@ per-classification cost breakdown to quantify the exact savings.
   `-RevertToRulesetName` default is hard-coded to `'AzureSynapseSQL'` precisely because of this
   split; do not "simplify" it to match the ruleset `kind` string, which would point the revert at a
   ruleset object that does not exist.
-- **VERIFY (pilot tenant or a future Microsoft Learn pass): the exact REST JSON body for a Custom
-  `AzureSynapseWorkspaceScanRuleset`.** This build confirmed the object shape and the `Kind:
-  AzureSynapseWorkspace` value directly against the `Az.Purview` PowerShell module's own GitHub
-  source (`New-AzPurviewAzureSynapseWorkspaceScanRulesetObject.md`, fetched verbatim via
-  `raw.githubusercontent.com` after `learn.microsoft.com`'s REST API reference pages returned
-  `EGRESS_BLOCKED` in this build environment — the same access restriction and same workaround the
-  base Synapse scenario's own build documented). The PowerShell object's property names
-  (`ExcludedSystemClassification`, `IncludedCustomClassificationRuleName`, `Description`, `Type`)
-  are carried into this scenario's REST body as `excludedSystemClassifications`/
-  `includedCustomClassificationRuleNames`/`description`/`scanRulesetType`, matching the exact
-  casing convention the Azure SQL Database sibling's REST body already uses and that its own build
-  confirmed directly against the REST reference page (not blocked during that earlier build). This
-  build did not get an independent direct fetch of the REST reference page itself for the Synapse
-  variant specifically — flagged here rather than assumed identical without qualification. Re-open
-  once `learn.microsoft.com` is reachable from this build environment, or against a pilot tenant.
+- **RESOLVED (2026-09-25): the exact REST JSON body for a Custom `AzureSynapseWorkspaceScanRuleset`
+  is now independently confirmed against the direct REST reference page**, not just the `Az.Purview`
+  PowerShell module's GitHub source this scenario originally relied on (`learn.microsoft.com` was
+  reachable in this later build, unlike the earlier one that hit `EGRESS_BLOCKED`). The
+  [Scan Rulesets - Create Or Replace](https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/create-or-replace)
+  reference page (api-version `2023-09-01`) documents `AzureSynapseWorkspaceScanRuleset` (top-level
+  `kind: "AzureSynapseWorkspace"`, `scanRulesetType`, `properties`) with
+  `AzureSynapseWorkspaceScanRulesetProperties` containing exactly `createdAt` (read-only),
+  `description`, `excludedSystemClassifications` (`string[]`), `includedCustomClassificationRuleNames`
+  (`string[]`), `lastModifiedAt` (read-only) — matching what `deploy/New-PiiOnlyScanRuleset.ps1`
+  already sends (`$rulesetBody.kind`/`.scanRulesetType`/`.properties.description`/
+  `.properties.excludedSystemClassifications`/`.properties.includedCustomClassificationRuleNames`)
+  with no discrepancy found. No code change required.
 - **No `collection` property on the ruleset (account-wide, same as every sibling).** The
   `New-AzPurviewAzureSynapseWorkspaceScanRulesetObject` constructor cmdlet exposes no collection or
   scan-scoping parameter (only `-Description`/`-ExcludedSystemClassification`/
@@ -282,7 +280,6 @@ per-classification cost breakdown to quantify the exact savings.
     this repository.
 
 > Re-verify all links, API versions, and REST body shapes against current Microsoft Learn before a
-> customer-facing deployment. Two VERIFYs remain open in §11 (the Synapse-specific REST body shape
-> pending direct access to `learn.microsoft.com`, and Types API pagination behavior at scale) and
-> should be closed against a pilot tenant or once the network restriction lifts, before production
-> use.
+> customer-facing deployment. The Synapse-specific REST body shape VERIFY is now resolved (§11,
+> 2026-09-25, confirmed directly against the REST reference page). One VERIFY remains open in §11
+> (Types API pagination behavior at scale) and should be closed against a pilot tenant.
