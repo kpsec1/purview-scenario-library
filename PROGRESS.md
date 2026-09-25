@@ -3409,7 +3409,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Re-verified Synapse/Managed Instance PII-ruleset REST body shapes against direct
-  `learn.microsoft.com` access** — commit `PENDING` — 2026-09-25. Sub-task fragment (not a new
+  `learn.microsoft.com` access** — commit `3abedf3` — 2026-09-25. Sub-task fragment (not a new
   scenario) closing a low-priority follow-up: with `learn.microsoft.com` directly reachable via the
   Microsoft Learn MCP tool in this build, fetched
   `https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-rulesets/create-or-replace`
