@@ -21,7 +21,7 @@ Never batch multiple scenarios into one commit. Breadth comes from many small co
 ## Non-negotiables
 
 - **Ground facts in Microsoft Learn.** No invented cmdlets, blade paths, or licensing claims.
-- **Code is author-only.** It is written to run in the *buyer's* tenant. Never execute it against
+- **Code is author-only.** It is written to run in *your own* tenant. Never execute it against
   a live tenant from this repo. Every script has a `-WhatIf` / dry-run path and a validation script.
 - **No secrets.** Parameterize everything; read tenant IDs and creds from parameters/config.
 - **Uniform format.** Every scenario README follows the identical skeleton in `AGENTS.md` §4.

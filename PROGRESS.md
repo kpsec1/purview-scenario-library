@@ -7695,6 +7695,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   string-format VERIFY above is the only new open item this fragment adds.
 
 ## Blocked / needs user
+- **Positioning note (2026-09-25, not a blocker — informational for future runs):** the repo's
+  mission changed from a vendor-sellable product to a free, open community resource (part of
+  Krunal Patel's Microsoft MVP-in-Security case). `AGENTS.md` §1 and §10 now reflect this as
+  settled, not an open question: **license is MIT** (was proprietary/all-rights-reserved), the
+  repo is meant to be **public** (owner needs to flip GitHub visibility manually — no tool in
+  this session's toolset changes repo visibility), Priva stays out of scope, code stays
+  author-only/no-live-tenant, and there is no vendor packaging. `README.md`, `docs/homepage.html`,
+  `CONTRIBUTING.md`, and `LICENSE` were updated to match (MIT text, "your own tenant" instead of
+  "the buyer's tenant", free/open framing instead of sales framing). This does **not** change any
+  build mechanics — one fragment per turn, four-lens review, grounding discipline, `PROGRESS.md`
+  as the resume brain — only the sales-facing wording and the license file. No scenario content
+  was touched by this fragment.
 - **Git note (2026-09-16, not a blocker — a distinct variant of the 2026-09-09 incident below,
   recorded so the next run recognizes it in seconds instead of misdiagnosing it):** this session
   started on a **detached HEAD** ("HEAD detached from refs/heads/main") while the **local `main`

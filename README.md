@@ -7,7 +7,8 @@ PowerShell, reviewed from four angles before anything counts as done.
 
 **[View the styled homepage →](docs/homepage.html)**
 
-> Built scenario by scenario by Krunal Patel — [krunalpatel.ca@outlook.com](mailto:krunalpatel.ca@outlook.com)
+> Built scenario by scenario by Krunal Patel — free and MIT-licensed —
+> [krunalpatel.ca@outlook.com](mailto:krunalpatel.ca@outlook.com)
 
 ---
 
@@ -16,15 +17,17 @@ PowerShell, reviewed from four angles before anything counts as done.
 Most Purview content stops at the reference architecture. This doesn't. Every scenario here
 ships as documentation *and* runnable automation — parameterized, idempotent, with a dry-run
 path — because that's the gap I kept running into: a clean architecture diagram and no script I
-could actually hand to a customer.
+could actually hand to a team.
 
 I build it one scenario at a time: ground the facts in Microsoft's own documentation, write the
 code, then argue with it from four different angles — how it gets bypassed, how it gets
-operated, whether I'd fund it, whether Microsoft would call it correct — before it ships.
+operated, whether I'd fund it, whether Microsoft would call it correct — before it ships. It's
+free for any business, MSSP, or practitioner to use — no license fee, no gated content — because
+the point is to be genuinely useful to the Purview community, not to sell it.
 
 > **Status:** in active build. See [`PROGRESS.md`](PROGRESS.md) for live coverage. This is a
-> knowledge-and-code product; code is authored to run in the buyer's own tenant (never auto-run
-> here) and always ships with a dry-run path.
+> knowledge-and-code resource; code is authored to run in *your own* tenant (never auto-run here)
+> and always ships with a dry-run path.
 
 ---
 
@@ -81,4 +84,5 @@ Before a scenario counts as finished, I argue with it from four seats at the tab
 
 ## License
 
-Proprietary — see [`LICENSE`](LICENSE). All rights reserved.
+MIT — see [`LICENSE`](LICENSE). Free to use, modify, and redistribute, including commercially,
+in your own tenant.

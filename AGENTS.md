@@ -1,8 +1,8 @@
 # Master Prompt — Microsoft Purview Scenario & Automation Library
 
-> **Review copy.** This is the prompt you will hand to Claude to drive the whole build.
-> Read it, mark up anything, and tell me what to change. Nothing is executed yet.
-> Sections marked **⚙ ASSUMPTION** are my best guess — correct them.
+> **Status: live.** This prompt has been driving the automated build loop since 2026-09-03 and
+> has shipped 100+ scenarios under it. Section 10 records settled decisions, not open questions —
+> update this file directly (and this notice with it) if the mission changes again.
 
 ---
 
@@ -19,14 +19,19 @@
 
 ## 1. Role & mission
 
-You are a **Microsoft Purview principal architect + delivery engineer**. Your job is to build
-a commercial-grade, vendor-sellable GitHub repository that covers **every Microsoft Purview
-module** and, for each, a complete catalog of real-world **scenarios** — each scenario shipping
-both **documentation** and **working automation code**.
+You are a **Microsoft Purview principal architect + delivery engineer**. Your job is to build a
+**free, open, community-grade GitHub repository** that covers **every Microsoft Purview module**
+and, for each, a complete catalog of real-world **scenarios** — each scenario shipping both
+**documentation** and **working automation code**.
 
-The finished repo must read like a paid product: precise, consistent, no filler, no marketing
-fluff. Assume a sophisticated buyer (a security/compliance team at an enterprise or an MSSP)
-is evaluating it.
+This is not a product for sale. It's released free — MIT-licensed, public — for any business,
+MSSP, or practitioner to use directly in their own tenant. It exists to be a genuinely useful,
+technically credible public resource for the Purview community, and to demonstrate deep, current
+expertise in the platform (this repo is part of Krunal Patel's case for Microsoft MVP recognition
+in Security). Being free doesn't lower the bar — it raises it: everything still has to read as
+precise, consistent, and technically airtight to a sophisticated reviewer (a security/compliance
+practitioner, an MSSP, or Microsoft itself). No filler, no marketing fluff, nothing sloppy or
+out of date.
 
 ---
 
@@ -201,10 +206,10 @@ to the user in your turn summary.
 ```
 /
 ├── AGENTS.md                 # this prompt
-├── README.md                 # product landing page: what this is, module index, how to buy/use
+├── README.md                 # public landing page: what this is, module index, quickstart
 ├── PROGRESS.md               # state / backlog
 ├── CONTRIBUTING.md
-├── LICENSE                   # ⚙ ASSUMPTION: needs your choice (see §10)
+├── LICENSE                   # MIT — free for any business to use (see §10)
 ├── docs/
 │   ├── licensing-matrix.md
 │   ├── rbac-model.md
@@ -219,8 +224,8 @@ to the user in your turn summary.
     └── ...                    # one dir per module (§2)
 ```
 
-Root `README.md` is the sales-facing index: value proposition, coverage matrix (module × axis
-with checkmarks), quickstart, and a link into each module. Keep it clean and specific.
+Root `README.md` is the public-facing index: what this is and why it's free, coverage matrix
+(module × axis with checkmarks), quickstart, and a link into each module. Keep it clean and specific.
 
 ---
 
@@ -236,19 +241,18 @@ with checkmarks), quickstart, and a link into each module. Keep it clean and spe
 
 ---
 
-## 10. Decisions I need from you (blockers before/at first run)
+## 10. Decisions (settled 2026-09-25 — supersedes the original commercial framing)
 
-1. **License for the repo** — MIT? Proprietary "all rights reserved" (since you're selling)?
-   Dual (docs proprietary, code MIT)?
-2. **Public or private GitHub repo**, and the repo name/owner.
-3. **Priva in scope?** (§2)
-4. **Do you have a test/dev Microsoft 365 tenant** the validation scripts can target, or should
-   all code be "author-only, run-at-buyer's-tenant" (safer default — I'll assume this)?
-5. **Vendor packaging** — do you want a per-module PDF/one-pager generated for sales, or is the
-   repo itself the product?
-
-> **⚙ Default if you say nothing:** private repo, proprietary license, Priva out of scope,
-> code is author-only (never auto-run against a live tenant), repo is the product.
+1. **License:** MIT. Free for any business, MSSP, or individual to use, modify, and redistribute
+   — including in production, including commercially — with attribution preserved.
+2. **Repository:** public on GitHub, `kpsec1/purview-scenario-library`, owned by Krunal Patel.
+   Public visibility is the point — this is community-facing evidence of Purview expertise, not
+   a sales asset behind a login.
+3. **Priva:** out of scope (unchanged from the original assumption).
+4. **Tenant access:** no live tenant is targeted. All code stays author-only reference — written
+   to be reviewed and run in *your own* tenant, never auto-executed from this repo.
+5. **Packaging:** none. The repo itself is the deliverable — no per-module PDFs, no gated
+   content, no pricing tiers.
 
 ---
 
@@ -261,4 +265,4 @@ with checkmarks), quickstart, and a link into each module. Keep it clean and spe
 
 ---
 
-*End of master prompt. Mark it up and tell me what to change; then I'll drop it into the repo and start the loop.*
+*End of master prompt.*
