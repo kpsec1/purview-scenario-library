@@ -18,7 +18,7 @@ integration point for a line-of-business system to fire retention events through
 
 **How it differs from the PowerShell records scenario:** that one uses **Security & Compliance
 PowerShell** (`New-ComplianceRetentionEvent`) and is the human/admin path; this one uses **Microsoft
-Graph** (surface 2/3) — the **modern, supported automation path** (Microsoft has **deprecated** the
+Graph** (surface 3) — the **modern, supported automation path** (Microsoft has **deprecated** the
 older REST event API) — designed for **app-only** service integration and exposing Graph's
 **event-propagation status** that the PowerShell cmdlets don't surface.
 
@@ -46,8 +46,8 @@ reproducible, and machine-driven.
 ## 3. Prerequisites
 
 Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. Automation surface:
-`docs/automation-surface.md` (surface 2 — Microsoft Graph PowerShell SDK; surface 3 — Graph REST).
-Summary:
+`docs/automation-surface.md` (surface 3 — Microsoft Graph, both the PowerShell SDK and raw REST are
+the same unified surface). Summary:
 
 | Requirement | Minimum | Notes |
 |---|---|---|

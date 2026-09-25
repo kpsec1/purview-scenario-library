@@ -46,7 +46,7 @@ disposition defensible.
 ## 3. Prerequisites
 
 Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. Automation surface:
-`docs/automation-surface.md` (surface 1 — Security & Compliance PowerShell). Summary:
+`docs/automation-surface.md` (surface 2 — Security & Compliance PowerShell). Summary:
 
 | Requirement | Minimum | Notes |
 |---|---|---|

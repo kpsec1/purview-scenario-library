@@ -6,7 +6,7 @@
     label, and (optionally, gated) a trigger EVENT - using Security & Compliance PowerShell.
 
 .DESCRIPTION
-    Uses the Records Management cmdlets in Security & Compliance PowerShell (automation surface 1 per
+    Uses the Records Management cmdlets in Security & Compliance PowerShell (automation surface 2 per
     docs/automation-surface.md):
       1. New-ComplianceRetentionEventType -> the event type (e.g. "Contract Expiration")
       2. New-ComplianceTag                -> the record label: -RetentionType EventAgeInDays bound to the

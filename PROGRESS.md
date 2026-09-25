@@ -2523,17 +2523,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   different `-Name` for an employee who already has a fired event causes any adverse effect beyond
   redundancy (e.g., duplicate disposition-review notifications) — `New-RetentionTriggerEvent.ps1` can
   only detect a duplicate by exact `-Name` match (no documented query-by-Asset-ID cmdlet was found).
-- [ ] **Cross-cutting doc-drift found, not fixed in this fragment:** `docs/automation-surface.md`'s
-  surface numbering has apparently been renumbered since several existing scenarios were written.
-  Two Records Management/DLM `README.md`s (`retention-labels-financial-records`,
-  `regulatory-records-disposition`) cite "surface 1 — Security & Compliance PowerShell," and
-  `records-management/graph-event-automation/README.md` cites "surface 2 — Microsoft Graph PowerShell
-  SDK; surface 3 — Graph REST" — but the current `docs/automation-surface.md` (dated 2026-09-08)
-  numbers Exchange Online PowerShell as surface 1, Security & Compliance PowerShell as surface 2, and
-  a single unified Microsoft Graph surface as surface 3. `event-based-retention-and-disposition`'s own
-  `README.md`/deploy scripts cite the current, correct "surface 2" throughout to avoid propagating the
-  error. A dedicated pass should grep every scenario `README.md` for "surface N" citations and correct
-  any that drifted from the current numbering.
+- [x] RESOLVED (2026-09-25, commit `PENDING`): **Cross-cutting doc-drift, fixed.** Ran the
+  dedicated grep pass this item asked for (`grep -rniE "surface [0-9]" scenarios/*/*/README.md`
+  and the same against every `design.md`) against every scenario's `README.md`/`design.md`/
+  `deploy/*.ps1` in the repo, cross-checked against the current `docs/automation-surface.md`
+  numbering (1 = Exchange Online PowerShell, 2 = Security & Compliance PowerShell, 3 = Microsoft
+  Graph — unified SDK/REST, 4 = Purview Data Map/Data Governance REST, 5 = SharePoint Online
+  Management Shell). Found and fixed four drifted citations, all in the two files this item named:
+  `regulatory-records-disposition/README.md` §3 ("surface 1" → "surface 2" — Security & Compliance
+  PowerShell) and its `deploy/New-RecordsDisposition.ps1` `.NOTES` (same fix);
+  `graph-event-automation/README.md` §1 ("surface 2/3" → "surface 3") and §3 ("surface 2 —
+  Microsoft Graph PowerShell SDK; surface 3 — Graph REST" → "surface 3 — Microsoft Graph, both the
+  PowerShell SDK and raw REST are the same unified surface"). Note:
+  `retention-labels-financial-records/README.md`, the other file this item originally named, was
+  found already correct (already cites "surface 2") — apparently fixed in an earlier, unlogged
+  edit; left unchanged. No other drift found anywhere else in the repo — every other "surface N"
+  citation checked (audit, communication-compliance, compliance-manager, data-estate-insights,
+  data-lineage, data-map, data-quality, ediscovery, information-barriers, information-protection,
+  insider-risk, unified-catalog) already matches the current numbering.
 
 ### Follow-ups discovered while building the Information Barriers segregate-trading-and-research scenario
 - [x] `scenarios/information-barriers/sharepoint-onedrive-enablement-and-site-association/` — **built**
@@ -3413,6 +3420,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Fixed drifted "surface N" citations across the repo (automation-surface.md renumbering
+  cleanup)** — commit `PENDING` — 2026-09-25. Sub-task fragment: `docs/automation-surface.md` was
+  renumbered at some point (Exchange Online PowerShell=1, Security & Compliance PowerShell=2,
+  unified Microsoft Graph=3, Purview Data Map/Data Governance REST=4, SharePoint Online Management
+  Shell=5) but two scenarios' docs/scripts still cited the old numbering. Ran a repo-wide grep for
+  every "surface N" citation in `README.md`/`design.md`/`deploy/*.ps1` and cross-checked each
+  against the current table. Fixed: `regulatory-records-disposition/README.md` §3 and
+  `deploy/New-RecordsDisposition.ps1` `.NOTES` (both "surface 1" → "surface 2");
+  `graph-event-automation/README.md` §1 and §3 (both an incorrect "surface 2/surface 2-and-3" split
+  that pre-dated the unified single-Graph-surface numbering → "surface 3"). Confirmed
+  `retention-labels-financial-records/README.md` (the item's third named file) was already correct.
+  No other drift found in the remaining ~40 "surface N" citations across the rest of the repo — all
+  already match. Pure documentation correction, no scenario behavior changed.
 - [x] **Backported Scanning data-plane operation groups (Credential, Key Vault Connections, Scan
   Rulesets, Triggers) into `docs/automation-surface.md` and `docs/rbac-model.md`** — commit
   `4f041bb` — 2026-09-25. Sub-task fragment closing a cross-cutting follow-up left open since the
