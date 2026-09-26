@@ -2902,9 +2902,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   to cover this auto-created policy too, once a buyer actually deploys this fragment.
 
 ### Follow-ups discovered while building the Compliance Manager PCI DSS v4.0 assessment scenario
-- [ ] Update `scenarios/compliance-manager/assess-against-iso27001/` for the now-confirmed
-  ISO/IEC 27001:2022 premium template (tracked above, under the ISO 27001 assessment follow-ups) —
-  deliberately not done in this turn to keep this fragment scoped to `pci-dss-assessment` alone.
+- [x] Already resolved by a separate, already-committed fragment: `scenarios/compliance-manager/
+  assess-against-iso27001/` was switched to the ISO/IEC 27001:2022 premium template in commit
+  `984fa9e` (2026-09-10, see DONE below) — this duplicate reference marked closed on inspection
+  (2026-09-25), no new work needed.
 - [ ] VERIFY (pilot tenant): the PCI DSS Requirement 12.4 formal-compliance-program review-cadence
   obligation was deliberately left unspecified/parameterized rather than hard-coded in this
   scenario's tooling (no specific interval is asserted) — see `pci-dss-assessment/README.md` §8/§11.
