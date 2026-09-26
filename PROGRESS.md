@@ -3439,6 +3439,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Repo-wide "buyer" -> "organization" terminology rewrite** — commit `9010a44` (merged at
+  `a5fbec8`) — 2026-09-26. User-directed pass ahead of publishing the repo publicly (see this
+  session's decision log): the MIT/public pivot (§10, 2026-09-25) updated the README, homepage,
+  LICENSE, and CONTRIBUTING to free/open framing but explicitly left scenario content alone,
+  leaving "buyer" language (518 occurrences, 202 markdown files, plus comment-based help in 35
+  `.ps1`/`.json` files) scattered across every scenario. Replaced with grammar-aware substitutions
+  (not a blind find-replace): "a buyer" -> "an organization", "the buyer" -> "the deploying
+  organization", "buyer's"/"buyers" -> "organization's"/"organizations", "buyer-X" hyphenated
+  adjectives -> "organization-X", "buyer(s) who" -> "organization(s) that" (organizations aren't
+  people). Also applied to this file's own still-open TODO section for consistency; deliberately
+  left the DONE section and one Blocked/needs-user historical note untouched, since those describe
+  what was actually decided/reviewed at past dates and rewriting them would misrepresent the
+  record. Verified zero remaining "buyer" occurrences outside that history, all touched JSON files
+  still parse, and no code identifiers (only prose/comments) were affected. Pure terminology
+  cleanup — no scenario behavior, facts, or grounding changed.
 - [x] **Closed the `scan-on-premises-sql-server-and-classify` system scan rule set name VERIFY** —
   commit `76976c0` — 2026-09-26. Maintenance fragment: grounded the previously-unconfirmed
   `-ScanRulesetName` default (`'SqlServerDatabase'`, `scanRulesetType: 'System'`) against the
