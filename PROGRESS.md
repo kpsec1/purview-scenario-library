@@ -3439,6 +3439,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Repo-wide em/en dash to plain hyphen rewrite** - commit `0654d66` - 2026-09-26. User-directed
+  pass ahead of publishing: no long dashes anywhere, cleaner plain-text presentation. Replaced every
+  em dash (18,727 occurrences) and en dash (278 occurrences, mostly numeric/section ranges like
+  "Steps 1-4") with a plain hyphen across all 452 files that contained either character (every
+  scenario's README/design/reviews/rollback.md, docs/*.md, docs/homepage.html, AGENTS.md, README.md,
+  and PROGRESS.md itself). Pure glyph substitution, not a rewording - verified the diff is exactly
+  balanced (17,720 insertions / 17,720 deletions, meaning every changed line is a like-for-like
+  character swap, nothing added/removed/restructured) and zero em/en dashes remain anywhere in the
+  repo. No code files were touched since none contained either character.
 - [x] **Repo-wide "buyer" -> "organization" terminology rewrite** - commit `9010a44` (merged at
   `a5fbec8`) - 2026-09-26. User-directed pass ahead of publishing the repo publicly (see this
   session's decision log): the MIT/public pivot (§10, 2026-09-25) updated the README, homepage,
