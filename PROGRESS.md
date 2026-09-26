@@ -3439,7 +3439,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Partially closed the `gdpr-dsr-fulfillment` Article 20 export-format VERIFY** - commit
-  PENDING - 2026-09-26. Maintenance pass: grounded whether eDiscovery review-set export can produce
+  `bd49417` - 2026-09-26. Maintenance pass: grounded whether eDiscovery review-set export can produce
   a CSV/JSON metadata companion alongside PST/native files, via a direct Microsoft Learn fetch of
   "Export documents in a review set to an Azure Storage account" §More information and cross-checked
   against "Document metadata fields in eDiscovery." Confirmed every review-set export automatically
