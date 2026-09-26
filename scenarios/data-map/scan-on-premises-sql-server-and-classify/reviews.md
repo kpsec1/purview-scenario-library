@@ -165,3 +165,9 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/New-OnPremisesSqlServerDataMapScan.ps1`, `deploy/Remove-OnPremisesSqlServerDataMapScan.ps1`, and
 `validate/Test-OnPremisesSqlServerDataMapScan.ps1`. No Fail items were raised. This fragment meets the
 definition of done in `AGENTS.md` §9.
+
+**Maintenance addendum (2026-09-26):** of the Microsoft Product Owner finding's two flagged VERIFY
+items, the system scan rule set name (`scanRulesetName: "SqlServerDatabase"`, `scanRulesetType:
+"System"`) is now confirmed via the System Scan Rulesets - Get REST reference's own worked example
+(`README.md` §11, `#14` reference). The Windows Authentication `CredentialType` mapping remains an
+open VERIFY, unaffected by this pass.

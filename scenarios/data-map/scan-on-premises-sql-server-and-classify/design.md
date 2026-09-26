@@ -75,7 +75,7 @@ parameter on the first).
 | `serverEndpoint` format | Bare hostname (SQL DB) or `tcp:<fqdn>,<port>` (MI) or workspace-specific (Synapse) | Bare hostname, IP address, or `<host>\<namedInstance>` — confirmed by Microsoft's own worked PowerShell example (`'10.1.2.1'`); this scenario does not construct or validate the string, it passes through whatever `-ServerEndpoint` the operator supplies |
 | SHIR provisioning | Not needed by default | **This scenario scripts what it can**: the SHIR *resource* object and its auth key retrieval, both via directly-confirmed REST operations (§5) — a first for this repo's Data Map scenarios. Installing the SHIR *software* on a host and pasting in the key stays manual (§8) |
 | Credential object | Portal-only (same open gap all three siblings carry) | Same open gap — no documented REST endpoint for creating the Key Vault-backed credential object was found in this build either (§8) |
-| System scan rule set name | Confirmed via worked PowerShell examples in each sibling (`AzureSqlDatabase` / `AzureSqlDatabaseManagedInstance` / `AzureSynapseSQL`) | **Not confirmed via a worked example in this build** — inferred from the existence of a distinct `SqlServerDatabaseSystemScanRuleset` SDK type (matching the "system ruleset name == data source kind" pattern every sibling confirmed), but no worked PowerShell/REST example showing `scanRulesetName: "SqlServerDatabase"` paired with `scanRulesetType: "System"` was found — flagged as an explicit VERIFY, not silently assumed (`README.md` §11) |
+| System scan rule set name | Confirmed via worked PowerShell examples in each sibling (`AzureSqlDatabase` / `AzureSqlDatabaseManagedInstance` / `AzureSynapseSQL`) | **Confirmed 2026-09-26** — the System Scan Rulesets - Get REST reference's own worked example returns `name: "AzureStorage"` for `kind: "AzureStorage"`, establishing that a system scan ruleset's `name` is always identical to its `kind`; `SqlServerDatabase` is a documented `kind`/`DataSourceType` value in that same schema, so `scanRulesetName: "SqlServerDatabase"` paired with `scanRulesetType: "System"` is correct (`README.md` §11) |
 | Supported SQL Server versions | N/A (PaaS, always current) | SQL Server 2005 and above; **SQL Server Express LocalDB isn't supported** — confirmed directly from Microsoft's on-premises SQL Server reference page |
 
 Everything **not** in this table (create-or-replace idempotency, dry-run design, the "register + scan,
@@ -118,10 +118,11 @@ during this build (not reconstructed from SDK types alone, except where noted):
    operations serve every data source `kind`), and re-confirming an already-directly-confirmed shape
    would add no grounding value.
 
-One item this build could **not** confirm despite trying: the literal system scan rule set name for
-`SqlServerDatabase` (§4's last row) — no worked PowerShell/REST example pairs `scanRulesetName` with
-`scanRulesetType: 'System'` for this source type the way each Azure sibling's own build confirmed for
-its own source type. Recorded as an explicit VERIFY rather than guessed silently, per `AGENTS.md` §4.
+One item this build originally could not confirm: the literal system scan rule set name for
+`SqlServerDatabase` (§4's last row). Closed 2026-09-26 via the System Scan Rulesets - Get REST
+reference's own worked example, which returns `name: "AzureStorage"` for `kind: "AzureStorage"` —
+confirming the `name`-equals-`kind` pattern directly rather than by analogy to sibling scenarios
+alone. See `README.md` §11.
 
 ## 6. Object model and REST call sequence
 
@@ -179,7 +180,7 @@ credentials, and by the physical nature of installing Windows service software f
 | Scan authentication | Stored credential only (`SqlServerDatabaseCredential`) | The only authentication path Microsoft documents for this source type — no managed-identity option exists |
 | SHIR provisioning scope | Script the Purview-side resource + auth key retrieval; leave the physical software install manual | Matches exactly what a REST API can and cannot do — installing a Windows service on a host and pasting in a key is not scriptable from a Purview data-plane token, but retrieving that key is, and no prior scenario in this repo had scripted even that much |
 | Default `-CredentialType` | `SqlAuth` | Matches Microsoft's own confirmed worked PowerShell example exactly; Windows Authentication is documented as a supported alternative but the REST `CredentialType` enum has no distinct value confirmed for it (§4/`README.md` §11 VERIFY) |
-| SIT set | Microsoft's system default scan rule set (inferred name `SqlServerDatabase`, `scanRulesetType: System`) — same rationale as every sibling, but this specific name is an explicit VERIFY (§5) | Consistency with this repo's established Data Map pattern; a wrong ruleset name fails loudly (404/400) rather than silently under-classifying, so the risk of shipping an unconfirmed name is bounded |
+| SIT set | Microsoft's system default scan rule set (`SqlServerDatabase`, `scanRulesetType: System`) — confirmed 2026-09-26 via the System Scan Rulesets - Get REST reference's own worked example (§5) | Consistency with this repo's established Data Map pattern |
 | Idempotency mechanism | Rely on the API's native create-or-replace semantics for every object (integration runtime, data source, scan, trigger) | Consistency with this repo's established Data Map pattern; no reason to diverge |
 | Default policy mode | Register (integration runtime + data source + scan) only; **no** trigger and **no** run unless `-RecurrenceFrequency`/`-RunNow` are explicitly passed | Matches `AGENTS.md` §4's dry-run-by-default code standard, same as every sibling scenario |
 

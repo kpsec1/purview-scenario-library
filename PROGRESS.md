@@ -2748,13 +2748,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   conversation specifically asks for it, since it's a deliberate scope boundary, not an oversight.
 
 ### Follow-ups discovered while building the Data Map on-premises SQL Server scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the literal system scan rule set name
-  for the `SqlServerDatabase` data source `kind` — this build inferred `'SqlServerDatabase'` from the
-  "system ruleset name == data source kind" pattern every prior Data Map sibling scenario confirmed
-  via its own worked example, but found only a distinct `SqlServerDatabaseSystemScanRuleset` SDK type
-  (confirming a system ruleset exists) rather than a worked example pairing the name with
-  `scanRulesetType: "System"`. Flagged inline in `scan-on-premises-sql-server-and-classify/README.md`
-  §11 and the deploy script's `.NOTES` rather than resolved by guessing.
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): the literal system scan rule set name
+  for the `SqlServerDatabase` data source `kind` — **closed 2026-09-26**. The Microsoft Learn
+  "System Scan Rulesets - Get" REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/system-scan-rulesets/get`)
+  publishes its own worked example for `kind: "AzureStorage"`, returning `{"kind": "AzureStorage",
+  "scanRulesetType": "System", "id": "systemscanrulesets/AzureStorage", "name": "AzureStorage"}` —
+  directly confirming that a system scan ruleset's `name` is always identical to its `kind`, and that
+  `SqlServerDatabase` is a documented `kind`/`DataSourceType` value in that same schema. Corrected
+  from VERIFY to confirmed in `scan-on-premises-sql-server-and-classify/README.md` (§6 table, §11,
+  §12 ref [14]), `design.md` (§4, §5, §7), and the deploy script's `.PARAMETER`/`.NOTES` blocks;
+  `reviews.md` carries a maintenance addendum. The sibling `CredentialType`/Windows Authentication
+  VERIFY (next item below) remains open and untouched by this pass.
 - [ ] VERIFY (pilot tenant): which `CredentialType` REST enum value corresponds to "Windows
   Authentication" in the portal for the `SqlServerDatabaseCredential` scan kind — Microsoft's portal
   documents Windows Authentication as a supported method for this source type, but the confirmed
@@ -3435,6 +3439,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `scan-on-premises-sql-server-and-classify` system scan rule set name VERIFY** —
+  commit `PENDING` — 2026-09-26. Maintenance fragment: grounded the previously-unconfirmed
+  `-ScanRulesetName` default (`'SqlServerDatabase'`, `scanRulesetType: 'System'`) against the
+  Microsoft Learn "System Scan Rulesets - Get" REST reference, whose own worked example
+  (`kind: "AzureStorage"` → `name: "AzureStorage"`) directly confirms a system scan ruleset's `name`
+  always equals its `kind`. Updated `README.md` (§6, §11, §12), `design.md` (§4, §5, §7), the deploy
+  script's `.PARAMETER ScanRulesetName`/`.NOTES` blocks, and `reviews.md` (addendum) from VERIFY to
+  confirmed. The scenario's separate Windows Authentication `CredentialType` VERIFY is untouched.
 - [x] **Re-scoped (not built) the Apple/Portable zero-`serialNumber` Approved-group follow-up with a
   concrete schema-validity finding** — commit `dd02495` — 2026-09-26. Sub-task fragment:
   investigated the open backlog item asking to remove the "at least one `serialNumber` device
