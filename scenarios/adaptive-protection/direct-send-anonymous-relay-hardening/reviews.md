@@ -105,10 +105,13 @@ No Fix/Fail raised.
 **Verdict: Pass**
 
 1. **`RejectDirectSend` is a genuinely current, documented `Set-OrganizationConfig` parameter** -
-   confirmed directly against its own reference page during this build, not assumed from a blog post
-   or forum thread. The parameter's description text was not returned in full by this build's
-   grounding pass (no default value or edge-case behavior documented beyond type), which is honestly
-   disclosed as a VERIFY in `README.md` §11 rather than papered over with an invented description.
+   confirmed directly against its own reference page, not assumed from a blog post or forum thread.
+   A 2026-09-26 re-grounding pass pulled the parameter's full descriptive paragraph (§11): `$true`
+   blocks Direct Send only when the sender matches no inbound connector *and* the `MAIL FROM` domain
+   is an accepted domain, `$false` doesn't block it - resolving the edge-case question this review
+   originally flagged. The **default value** and any rollout date for Microsoft's stated plan to
+   disable Direct Send by default remain unpublished, honestly disclosed in `README.md` §11 rather
+   than papered over with an invented value.
 2. **Direct Send and IP-based relay are correctly distinguished as two different mechanisms**, not
    conflated into one control. `design.md` §2's comparison table is grounded directly against
    Microsoft's own "How to set up a multifunction device or application" reference - the single

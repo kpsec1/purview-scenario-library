@@ -139,9 +139,13 @@ flowchart TD
 
 ## 9. Residual risk
 
-- **The `RejectDirectSend` parameter's exact default/rollout-wave behavior is not independently
-  confirmed** (`README.md` §11) - this scenario's Step 6 functional test is the mitigation until a
-  pilot-tenant or fuller Microsoft Learn pass resolves it.
+- **`RejectDirectSend`'s own behavioral edge case is now grounded** (`README.md` §11): it only
+  rejects a Direct Send message when the sender matches no inbound connector *and* the `MAIL FROM`
+  domain is an accepted domain, so a sender already migrated to a certificate- or IP-based relay
+  connector is unaffected either way. What remains unconfirmed is the **default value** (the
+  reference page still lists it as `None`, not `$true`/`$false`) and any **rollout wave/date** for
+  Microsoft's stated plan to disable Direct Send by default - this scenario's Step 6 functional
+  test is the mitigation until that future change ships and is documented.
 - **A device/app migrated to certificate-based relay is not automatically narrower in scope than
   Direct Send was** - Microsoft's own comparison table shows SMTP relay can reach external
   recipients [[1]](#references), a materially larger capability than Direct Send's internal-only

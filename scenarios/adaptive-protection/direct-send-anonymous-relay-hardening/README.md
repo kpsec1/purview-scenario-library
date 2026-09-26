@@ -171,7 +171,7 @@ Step 3's review found none before proceeding.
 | Audit rule condition | `-HeaderContainsMessageHeader 'X-MS-Exchange-Organization-AuthAs' -HeaderContainsWords 'Anonymous' -SentToScope InOrganization` | `AuthAs: Anonymous` is Microsoft's own documented header value for a message the service could not authenticate [[7]](#references); `SentToScope InOrganization` scopes detection to internal recipients, matching Direct Send's own internal-only delivery scope [[1]](#references). |
 | Connector risk heuristic | `-RestrictDomainsToIPAddresses $true` AND CIDR prefix shorter than `-MaxIpRangeCidrBits` (default `/24`, i.e. 256+ addresses) | This scenario's own disclosed heuristic (`design.md` §5) - not a Microsoft-published threshold. A `/24` allows 256 source addresses to relay as the connector's `SenderDomains`; a shared cloud-provider range at that width or wider is a real, documented risk category Microsoft's own guidance warns against generally [[2]](#references). |
 | Certificate-based relay connector | `New-InboundConnector -RestrictDomainsToCertificate $true -TlsSenderCertificateName <domain>` | [[2]](#references)[[5]](#references) - the governed exception path for Step 4. |
-| Tenant-wide enforcement | `Set-OrganizationConfig -RejectDirectSend $true` | [[3]](#references) - confirmed, documented parameter; exact default/rollout-wave behavior not independently confirmed, see §11. |
+| Tenant-wide enforcement | `Set-OrganizationConfig -RejectDirectSend $true` | [[3]](#references) - confirmed, documented parameter with a full behavioral description; default value and any future default-disable rollout date remain unpublished, see §11. |
 
 ## 7. Validation / how to prove it works
 
@@ -250,18 +250,20 @@ complementary controls covering different abuse surfaces (`design.md` §2).
 
 ## 11. Known limitations & gotchas
 
-- **VERIFY (Microsoft Learn or a pilot tenant, before a customer-facing commitment):** the exact
-  default value, rollout wave, and full behavioral description of `Set-OrganizationConfig
-  -RejectDirectSend` - confirmed as a documented, current Boolean parameter on the
-  `Set-OrganizationConfig` reference page [[3]](#references), but that page's own parameter entry
-  carries no descriptive paragraph explaining default value or edge-case behavior (for example,
-  whether it also affects messages that would otherwise match a certificate-based or IP-based relay
-  connector, or only messages with no connector match at all). The Direct Send overview page's own
-  statement - "We're working on an option to disable Direct Send by default to protect customers"
-  [[1]](#references) - is consistent with this parameter being that option, but no Microsoft page
-  found during this build's grounding pass names `RejectDirectSend` directly by name outside the
-  cmdlet reference itself. Deploy Step 2's audit window and Step 6's functional test exist
-  specifically to validate actual behavior in your tenant before relying on this description.
+- **Grounded 2026-09-26 (Microsoft Learn):** the `Set-OrganizationConfig` reference page's
+  `-RejectDirectSend` entry now carries a full descriptive paragraph [[3]](#references):
+  `$true` blocks Direct Send - Exchange Online rejects an anonymous message from your own accepted
+  domain to your organization's mailboxes only when *both* (a) the message doesn't match any
+  inbound connector configured to match the sender's IP or certificate, *and* (b) the `MAIL FROM`
+  (`5321.MailFrom`/P1 envelope sender) domain is one of your accepted domains; `$false` doesn't
+  block it. This directly answers this item's edge-case question: a sender that already matches a
+  certificate-based or IP-based relay connector is unaffected by `-RejectDirectSend` either way.
+  The parameter's own **Default value** field still reads `None` (no explicit default is
+  published), consistent with the Direct Send overview page's statement that Microsoft is still
+  "working on an option to disable Direct Send by default" [[1]](#references) - i.e. Direct Send is
+  not yet blocked by default as of this grounding pass, and no rollout wave or date for that future
+  default-disable has been published. Deploy Step 2's audit window and Step 6's functional test
+  remain the way to confirm the setting's effect in your own tenant before relying on it operationally.
 - **The connector risk heuristic (`-MaxIpRangeCidrBits`, default `/24`) is this scenario's own
   judgment call, not a Microsoft-published threshold.** A narrower range can still be shared or
   spoofable; a wider range flagged WARN may be entirely appropriate for an organization's specific network

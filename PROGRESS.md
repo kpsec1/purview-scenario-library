@@ -3349,11 +3349,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `design.md` §2/§7 discloses rather than works around.
 
 ### Follow-ups discovered while building the Direct Send and Anonymous Relay Hardening scenario
-- [ ] VERIFY (Microsoft Learn or a pilot tenant, before a customer-facing commitment): the exact
+- [x] VERIFY (Microsoft Learn or a pilot tenant, before a customer-facing commitment): the exact
   default value, rollout wave, and full behavioral description of `Set-OrganizationConfig
-  -RejectDirectSend` - confirmed as a current, documented Boolean parameter, but its own reference
-  page carries no descriptive paragraph. `direct-send-anonymous-relay-hardening/README.md` §11 and
-  `design.md` §9.
+  -RejectDirectSend` - **grounded 2026-09-26, partially resolved** (see DONE below): Microsoft Learn's
+  `Set-OrganizationConfig` reference page now publishes a full descriptive paragraph for this
+  parameter (it apparently didn't at original build time) - `$true` blocks Direct Send only when the
+  sender matches no inbound connector *and* the `MAIL FROM` domain is an accepted domain, `$false`
+  doesn't block it. The **default value** (still listed as `None`, not `$true`/`$false`) and any
+  rollout wave/date for Microsoft's stated plan to disable Direct Send by default remain
+  unpublished - re-open only if Microsoft documents either. `direct-send-anonymous-relay-hardening/
+  README.md` §11, `design.md` §9, and `reviews.md`'s Microsoft Product Owner lens corrected in place.
 - [ ] Once the exact `Search-UnifiedAuditLog` `RecordType`/`Operations` values for a rejected Direct
   Send attempt are grounded, add a dedicated `Export-*` companion script to
   `scenarios/adaptive-protection/direct-send-anonymous-relay-hardening/deploy/` - same class of
