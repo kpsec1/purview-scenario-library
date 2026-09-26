@@ -1,4 +1,4 @@
-# Four-Lens Review — Bulk-Grant Azure Synapse Serverless SQL Database Access
+# Four-Lens Review - Bulk-Grant Azure Synapse Serverless SQL Database Access
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round of
 findings below; all **Fix** items were applied to the scenario before this file was finalized (see

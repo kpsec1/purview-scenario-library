@@ -9,7 +9,7 @@
     Extends scenarios/data-map/scan-azure-sql-and-classify/ - this script assumes that base
     scenario's deploy/New-AzureSqlDataMapScan.ps1 has already registered the data source and scan
     (System default scan rule set: ~200 built-in sensitive information types). This scenario
-    narrows that to a named allowlist, for buyers who want the faster, quieter scan a PII-scoped
+    narrows that to a named allowlist, for organizations that want the faster, quieter scan a PII-scoped
     rule set gives them (fewer classification types compared per column = shorter scan time and a
     catalog that only ever shows the handful of classifications a PCI/PII-focused program cares
     about) instead of Microsoft's full ~200-classification system set.

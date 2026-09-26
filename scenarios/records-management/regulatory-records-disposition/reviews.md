@@ -1,4 +1,4 @@
-# Four-Lens Review — Event-Based Records Disposition with Disposition Review
+# Four-Lens Review - Event-Based Records Disposition with Disposition Review
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round of
 findings below; all **Fix** items were applied before this file was finalized. No **Fail** items were
@@ -12,7 +12,7 @@ raised.
 
 1. **An event fired against everything.** The classic event-based-retention foot-gun: a
    `New-ComplianceRetentionEvent` with no asset-ID query starts the retention clock for **all** content
-   carrying that event-type label — a broad, un-cancellable action.
+   carrying that event-type label - a broad, un-cancellable action.
    - **Resolution:** The sample config ships a `sharePointAssetIdQuery`, and the deploy prints a **red
      CAUTION** if no asset-ID query is set before firing an event; `README.md` §8/§11 and `design.md` §6
      call this out as the dominant risk.
@@ -21,7 +21,7 @@ raised.
      `event.create` is true; the default deploy builds the type/label/policy and starts **no** clock.
      Both scripts warn loudly before any event is fired.
 3. **Silent auto-delete masquerading as "disposition".** A `KeepAndDelete` label with no reviewer just
-   deletes records at end of retention — no review, no proof — while everyone assumes there was a review.
+   deletes records at end of retention - no review, no proof - while everyone assumes there was a review.
    - **Resolution:** Deploy and validate both **warn** when `reviewerEmail` is empty; `README.md` §6/§11
      and `design.md` §6 make the disposition reviewer the best-practice default.
 4. **Casual teardown of a records control.** Deleting labels/event types that are actually holding
@@ -44,7 +44,7 @@ No remaining Fix/Fail after resolution.
      and warns that each is an irreversible start; `README.md` §7/§8 document the 7-day sync and make
      disposition backlog the key operational signal.
 2. **Reviewers can't see disposition items.** The Disposition Management role isn't granted to admins by
-   default — a silent RBAC trap that strands the whole review step.
+   default - a silent RBAC trap that strands the whole review step.
    - **Resolution:** `README.md` §3/§11 call out the separate Disposition Management role and that
      reviewers are users or mail-enabled security groups (not M365 Groups).
 3. **Working dry-run.** `-WhatIf` doesn't function in S&C PowerShell.
@@ -64,15 +64,15 @@ No remaining Fail.
    - **Resolution:** The config file is the versioned, diffable records schedule; `README.md` §2 maps to
      DoD 5015.02 / SEC 17a-4 / FINRA 4511 / GDPR storage-limitation, and §7 ties disposal to a reviewed,
      proof-bearing disposition.
-2. **Risk vs. cost:** honestly stated in §10 — E5 entitlement (no meter); the real costs are storage for
+2. **Risk vs. cost:** honestly stated in §10 - E5 entitlement (no meter); the real costs are storage for
    event-anchored (possibly indefinite) retention and **human review labor**, with auto-approval offered
    where defensible.
 3. **Board/compliance narrative:** "records are retained from the business event that starts their life,
-   and disposed only after a reviewed, evidenced decision — defined as reproducible code" — a defensible
+   and disposed only after a reviewed, evidenced decision - defined as reproducible code" - a defensible
    position.
 4. **Change management:** the event type is immutable once a label uses it, and triggering is
    irreversible, so both are treated as controlled, signed-off actions.
-5. **Would I fund this?** Yes — it operationalizes a records schedule with defensible disposition, the
+5. **Would I fund this?** Yes - it operationalizes a records schedule with defensible disposition, the
    part regulators actually test.
 
 No remaining Fix/Fail after resolution.
@@ -90,7 +90,7 @@ No remaining Fix/Fail after resolution.
    `-SharePointAssetIdQuery`) are reproduced from Microsoft's own event-based-retention guidance; the
    Get/Remove `-Identity` parameters were verified.
 2. **Right pattern for the obligation.** Event-based retention + disposition review is Microsoft's
-   documented model for event-anchored records — not reinvented with age-based labels or custom code.
+   documented model for event-anchored records - not reinvented with age-based labels or custom code.
 3. **Publish vs. auto-apply distinction respected.** Uses `-PublishComplianceTag` (deliberate/record
    declaration) rather than `-ApplyComplianceTag`, which is the idiomatic fit and cleanly distinguishes
    this from the sibling DLM auto-apply scenario.
@@ -116,6 +116,6 @@ All Fix items are resolved in the current state of `README.md`, `design.md`,
 `deploy/New-RecordsDisposition.ps1`, `deploy/Remove-RecordsDisposition.ps1`,
 `deploy/config/records-disposition.sample.json`, and `validate/Test-RecordsDisposition.ps1`. No Fail
 items were raised. This fragment meets the definition of done in `AGENTS.md` §9; product facts are
-grounded in Microsoft Learn (no invented cmdlets — Get/Remove/New event-type and event parameters were
+grounded in Microsoft Learn (no invented cmdlets - Get/Remove/New event-type and event parameters were
 verified) and the irreversibility of triggered events and applied record labels is treated as a
 first-class safety constraint.

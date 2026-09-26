@@ -1,6 +1,7 @@
 {
   "parentPolicyDisplayName": "Device Control (macOS) - USB Removable Media Default-Deny Allowlist",
   "approvedBluetoothDevices": [
-    { "label": "REPLACE - e.g. IT-issued barcode scanner", "vendorId": "0075", "productId": "0100" }
+    { "label": "REPLACE - e.g. IT-issued barcode scanner", "vendorId": "0075", "productId": "0100" },
+    { "label": "REPLACE - e.g. IT-issued presentation clicker", "vendorId": "046d", "productId": "c53f" }
   ]
 }

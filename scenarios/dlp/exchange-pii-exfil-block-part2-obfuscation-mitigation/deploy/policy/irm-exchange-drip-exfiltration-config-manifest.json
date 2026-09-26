@@ -12,9 +12,9 @@
     "sourceCaveat": "PII-Exchange-Audit-Internal (internal-recipient traffic) is deliberately Low severity in the parent scenario and will NOT trigger this indicator - by design, since internal PII sharing is not the exfiltration signal this fragment cares about."
   },
   "feederInsiderRiskPolicy": {
-    "name": "IRM-PII-Exchange-Drip-Exfiltration (buyer names as appropriate)",
+    "name": "IRM-PII-Exchange-Drip-Exfiltration (organization names as appropriate)",
     "template": "Data leaks",
-    "scope": "Same user population as scenarios/dlp/exchange-pii-exfil-block (all mailboxes in ExchangeLocation scope, or a narrower population if the buyer scoped the parent policy down) - not limited to departing users, unlike scenarios/insider-risk/departing-employee-data-theft",
+    "scope": "Same user population as scenarios/dlp/exchange-pii-exfil-block (all mailboxes in ExchangeLocation scope, or a narrower population if the deploying organization scoped the parent policy down) - not limited to departing users, unlike scenarios/insider-risk/departing-employee-data-theft",
     "triggeringEvent": "User matches a data loss prevention (DLP) policy - select 'PII DLP - Exchange External Send Control' from the DLP policy dropdown on the policy workflow's Triggers page. Do NOT select 'User performs an exfiltration activity' instead - that built-in-indicators trigger is the correct choice for the Teams sibling fragment (where the DLP-alert trigger cannot see Teams), but here the direct DLP-policy trigger is both simpler and more precisely scoped to this exact control.",
     "policyIndicators": [
       "Built-in Office exfiltration indicators (defaults) - e.g. sending email with attachments to recipients outside the organization, downloading content from SharePoint/OneDrive",

@@ -1,5 +1,5 @@
 {
-  "_comment": "Reference definition for the eDiscovery Teams-purge hold lifecycle scenario. Consumed by Get-TeamsPurgeMailboxHoldState.ps1 / Remove-TeamsPurgeMailboxHolds.ps1 via -DefinitionPath. Schema-identical to search-and-purge-teams-messages/deploy/policy/teams-message-purge-search-definition.sample.json's search.targetMailboxes array -- in practice, point -DefinitionPath at that same incident config file so one file drives both scenarios (design.md Section 3 goal 1). Author-only reference for the buyer's own tenant -- replace every value below before use.",
+  "_comment": "Reference definition for the eDiscovery Teams-purge hold lifecycle scenario. Consumed by Get-TeamsPurgeMailboxHoldState.ps1 / Remove-TeamsPurgeMailboxHolds.ps1 via -DefinitionPath. Schema-identical to search-and-purge-teams-messages/deploy/policy/teams-message-purge-search-definition.sample.json's search.targetMailboxes array -- in practice, point -DefinitionPath at that same incident config file so one file drives both scenarios (design.md Section 3 goal 1). Author-only reference for the deploying organization's own tenant -- replace every value below before use.",
   "case": {
     "displayName": "CONTOSO-TEAMS-2026-014",
     "externalId": "2026-014"

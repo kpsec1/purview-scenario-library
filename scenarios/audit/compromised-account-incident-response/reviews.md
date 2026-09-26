@@ -1,4 +1,4 @@
-# Four-Lens Review — Compromised Account Incident Response
+# Four-Lens Review - Compromised Account Incident Response
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, `validate/`, and
 `rollback.md`. One round of findings below; all **Fix** items were applied before this file was
@@ -13,7 +13,7 @@ finalized. No **Fail** items were raised.
 1. **The printed reset password can leak through channels the script doesn't control.** The script
    never writes the password to disk or the backup JSON, but `Write-Host` output is still visible to
    a PowerShell transcript, a CI/CD job log, or a recorded terminal session if the operator has one
-   running — the same exposure Microsoft's own article warns against for emailing the password
+   running - the same exposure Microsoft's own article warns against for emailing the password
    [[1]](#references), just via a different channel.
    - **Resolution:** `README.md` §11 now names this risk explicitly and recommends disabling
      transcript/session logging (or redirecting that one line to a secured channel) before the
@@ -25,7 +25,7 @@ finalized. No **Fail** items were raised.
      reverse containment; the backup exists for human judgment, not automatic reversal.
 3. **Mailbox-level scope leaves organization-wide mail flow persistence untouched.** An attacker with
    broader access (e.g., a compromised admin) could plant a tenant-wide transport rule or connector
-   instead of (or in addition to) per-mailbox persistence — this scenario wouldn't detect or remove
+   instead of (or in addition to) per-mailbox persistence - this scenario wouldn't detect or remove
    that.
    - **Resolution:** `README.md` §11 and `design.md` §8 state this as an explicit scope boundary,
      pointing at this library's own connector-hardening scenarios for that surface rather than
@@ -53,11 +53,11 @@ No remaining Fix/Fail after resolution.
      success text alone. `validate/Test-CompromisedAccountResponse.ps1` is also explicitly documented
      as safe to re-run *after* containment as a second, independent state check.
 2. **Ordering matters and is already correct.** Identity actions (disable, revoke sessions, reset
-   password) run before mailbox cleanup (forwarding, rules, delegate grants) — so a still-live
+   password) run before mailbox cleanup (forwarding, rules, delegate grants) - so a still-live
    attacker session can't recreate a rule in the gap between cleanup steps. This was already the
    script's design; no change needed, but it's worth stating as a positive finding, not an accident.
 3. **Idempotency is genuinely testable, not just claimed.** `README.md` §7 item 4 has the investigator
-   re-run the same config twice and confirm the second run reports everything as already-applied —
+   re-run the same config twice and confirm the second run reports everything as already-applied -
    a concrete pass/fail check, not just a design assertion.
 
 No remaining Fail.
@@ -69,21 +69,21 @@ No remaining Fail.
 **Verdict: Fix (resolved)**
 
 1. **Governance gap: who is allowed to run this, and is every run itself monitored?** A tool this
-   powerful needs the same access discipline as any other privileged emergency action — without it,
+   powerful needs the same access discipline as any other privileged emergency action - without it,
    the tool becomes a new insider-threat vector rather than a pure risk reduction.
    - **Resolution:** `design.md` §9 and `README.md` §8 add explicit governance guidance: restrict the
      Entra ID roles, audit every run.
-2. **Cost/risk: strong and cheap.** No license or consumption cost — every action uses baseline
+2. **Cost/risk: strong and cheap.** No license or consumption cost - every action uses baseline
    Exchange Online/Entra ID capability. The cost is the (necessary, intentional) disruption to the
    user while the account is disabled, and the operational discipline in finding #1.
-3. **Board/IR narrative:** "confirmed account compromises are contained — access blocked, credential
-   rotated, attacker persistence removed — in one auditable, evidence-producing run, with the
+3. **Board/IR narrative:** "confirmed account compromises are contained - access blocked, credential
+   rotated, attacker persistence removed - in one auditable, evidence-producing run, with the
    emergency capability itself access-controlled and monitored." Concrete and defensible.
 4. **Relationship to existing controls, not a gap it creates:** for tenants with Entra ID Protection
    P2, this scenario is a deliberate complement (mailbox cleanup ID Protection doesn't reach), not a
-   sign the license is being under-used — `design.md` §7 states this so a CISO evaluating the license
+   sign the license is being under-used - `design.md` §7 states this so a CISO evaluating the license
    mix understands the overlap correctly.
-5. **Would I fund this?** Yes — low cost, high-value emergency capability, with the access-governance
+5. **Would I fund this?** Yes - low cost, high-value emergency capability, with the access-governance
    condition in #1 attached as a deployment requirement, not an afterthought.
 
 No remaining Fix/Fail after resolution.
@@ -99,8 +99,8 @@ No remaining Fix/Fail after resolution.
    onto a specific, numbered step of "Respond to a compromised cloud email account"
    [[1]](#references), with cmdlets and parameters matched to that article's own worked examples, not
    paraphrased.
-   - No change needed — confirmed correct.
-2. **Not reinventing a native capability — initially unclear, now stated honestly.** Microsoft Entra
+   - No change needed - confirmed correct.
+2. **Not reinventing a native capability - initially unclear, now stated honestly.** Microsoft Entra
    ID Protection's risk-based Conditional Access already automates password-change/block/session-
    revocation for P2 tenants.
    - **Resolution:** `design.md` §7 and `README.md` §11 name this directly and scope this scenario's
@@ -109,11 +109,11 @@ No remaining Fix/Fail after resolution.
 3. **Correct RBAC nuance, honestly flagged where unconfirmed.** `accountEnabled`/`passwordProfile` are
    correctly identified as Entra ID "sensitive properties" with role requirements confirmed directly
    against the privileged-roles reference; the Exchange Online RBAC role for the mailbox cmdlets is
-   the one item this build could not pin to a specific role from each cmdlet's own reference page —
+   the one item this build could not pin to a specific role from each cmdlet's own reference page -
    `README.md` §11 flags it as VERIFY with a concrete tenant-side confirmation command
    (`Get-ManagementRoleEntry`) rather than asserting a role unconfirmed by Microsoft's own docs.
 4. **Delegate-permission cleanup is honestly scoped as this scenario's own extension**, not
-   misattributed to Microsoft's numbered Step 6, which only covers forwarding/rules — `design.md` §5.
+   misattributed to Microsoft's numbered Step 6, which only covers forwarding/rules - `design.md` §5.
 
 No remaining Fail after resolution.
 

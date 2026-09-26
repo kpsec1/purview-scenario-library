@@ -1,4 +1,4 @@
-# Four-Lens Review — Exchange-Side Legacy Authentication Block
+# Four-Lens Review - Exchange-Side Legacy Authentication Block
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round
 of findings below; all **Fix** items were applied before this file was finalized. No **Fail**
@@ -16,21 +16,21 @@ items were raised.
    `Get-User -Filter "AuthenticationPolicy -eq '$name'"`. Whether `AuthenticationPolicy` is a
    supported OPATH filter property for `Get-User` was never confirmed against a Microsoft Learn
    reference during this build. If it isn't supported, the likely failure mode isn't a clean error
-   — it's either an exception this script doesn't specifically handle, or (worse) a filter that
+   - it's either an exception this script doesn't specifically handle, or (worse) a filter that
    silently matches nothing, making the "still assigned" safety check pass when it shouldn't and
    allowing `-Purge` to remove a policy still in active use.
    - **Resolution:** Replaced with an unfiltered `Get-User -ResultSize Unlimited` fetch piped to a
-     client-side `Where-Object { $_.AuthenticationPolicy -eq $name }` comparison — slower on a
+     client-side `Where-Object { $_.AuthenticationPolicy -eq $name }` comparison - slower on a
      large tenant, but the property comparison itself only depends on `Get-User` returning the
      `AuthenticationPolicy` property at all (independently confirmed, §PO below), not on an
      unconfirmed filter-query capability. See the script's inline comment at the fix site.
 2. **The tenant default does not cover a user with a pre-existing explicit policy assignment.**
    `Set-OrganizationConfig -DefaultAuthenticationPolicy` only applies to users with no explicit
-   `Set-User -AuthenticationPolicy` assignment already in place [[6]](#references) — a user
+   `Set-User -AuthenticationPolicy` assignment already in place [[6]](#references) - a user
    assigned an older, more permissive policy by different automation (or by an admin working around
    a since-fixed issue) keeps that policy indefinitely, invisibly, unless someone specifically looks
    for it.
-   - **Resolution:** Not a code fix — a documented, disclosed limitation this scenario cannot close
+   - **Resolution:** Not a code fix - a documented, disclosed limitation this scenario cannot close
      unilaterally without risking breaking an intentional, still-needed per-user exception.
      `validate/Test-ExchangeLegacyAuthBlock.ps1 -CheckUserOverrides` surfaces every such user as a
      `WARN` rather than silently passing; `README.md` §11 and `design.md` §9 name it plainly.
@@ -39,16 +39,16 @@ items were raised.
    scenario does not touch. Closing an authenticated legacy protocol doesn't reduce the value of a
    misconfigured mail flow connector that accepts anonymous relay from an allowed IP range.
    - **Resolution:** Confirmed as a genuine, separate gap this scenario was never scoped to close
-     (`design.md` §7/§8, Non-goals and Residual risk) — not silently left unstated. No dedicated
+     (`design.md` §7/§8, Non-goals and Residual risk) - not silently left unstated. No dedicated
      Direct Send scenario exists yet in this repo; tracked as a `PROGRESS.md` follow-up rather than
      folded into this fragment per `AGENTS.md` §6.
 4. **Exception mailboxes are a real, named, narrower attack surface, not a fully closed gap.** A
-   mailbox on `Allow-Smtp-Auth-Exception` is still reachable via SMTP AUTH by design — its
+   mailbox on `Allow-Smtp-Auth-Exception` is still reachable via SMTP AUTH by design - its
    credential hygiene now matters proportionally more, since it's one of the few remaining
    Basic-Auth-reachable accounts in the tenant.
    - **Resolution:** Already disclosed in the initial draft (`design.md` §9, `README.md` §8's
      tuning guidance recommending credential hygiene and OAuth migration for exception mailboxes)
-     — confirmed accurate and left as-is, no further fix needed.
+     - confirmed accurate and left as-is, no further fix needed.
 
 No remaining Fix/Fail after resolution.
 
@@ -60,10 +60,10 @@ No remaining Fix/Fail after resolution.
 
 1. **No dedicated event-level detection for a rejected SMTP AUTH attempt.** This scenario's
    validate script and `Get-*` read-backs confirm *configuration* (is the gate closed) but not
-   *events* (who actually got rejected, and how often) — a real signal-to-noise gap for an on-call
+   *events* (who actually got rejected, and how often) - a real signal-to-noise gap for an on-call
    analyst trying to distinguish "expected, config just landed" from "a credential-stuffing
    campaign just lost its easiest path in and is now hammering the door."
-   - **Resolution (follow-up grounding pass, 2026-09-11): grounded and closed — no such event-level
+   - **Resolution (follow-up grounding pass, 2026-09-11): grounded and closed - no such event-level
      audit trail exists to build against, so no `Export-*.ps1` companion script was built.** The
      original resolution left this as a `PROGRESS.md` follow-up pending confirmation of a
      `Search-UnifiedAuditLog` `RecordType`/`Operations` pair for a rejected SMTP AUTH attempt. This
@@ -71,7 +71,7 @@ No remaining Fix/Fail after resolution.
      documents one:
      - **`Search-UnifiedAuditLog` (unified audit log):** Microsoft's own "Audit log activities"
        Exchange mailbox/admin activity tables list only *successful, completed* mailbox actions
-       (`MailItemsAccessed`, `Send`, `MailboxLogin`, etc.) — no RecordType or Operation for a
+       (`MailItemsAccessed`, `Send`, `MailboxLogin`, etc.) - no RecordType or Operation for a
        rejected or blocked authentication/connection attempt of any protocol. The unified audit log
        records application/mailbox activity that happens *after* authentication succeeds; a
        connection Exchange rejects before authentication completes never reaches it.
@@ -81,26 +81,26 @@ No remaining Fix/Fail after resolution.
        Microsoft Graph `signIn.clientAppUsed` schema lists the same protocol as `SMTP`). But
        Microsoft's "Disable Basic authentication in Exchange Online" reference states plainly that
        once blocked, "Basic authentication ... is blocked at the first pre-authentication step ...
-       before the request reaches Microsoft Entra ID" — which is exactly what this scenario's own
+       before the request reaches Microsoft Entra ID" - which is exactly what this scenario's own
        `AuthenticationPolicy`/`SmtpClientAuthenticationDisabled` gates do (§5 in `README.md`). A
        **rejected** attempt therefore never reaches Entra ID and never creates a sign-in log entry;
        the sign-in-log/legacy-authentication workbook Microsoft documents is a *pre-deployment
        discovery* tool (find who still uses SMTP AUTH before blocking it), not a post-deployment
        rejection audit trail.
-     - The closest real telemetry — the Exchange admin center's **SMTP AUTH Clients report**
-       (`Reports > Mail Flow`) — is built from actual message volume and TLS usage per sender, i.e.
+     - The closest real telemetry - the Exchange admin center's **SMTP AUTH Clients report**
+       (`Reports > Mail Flow`) - is built from actual message volume and TLS usage per sender, i.e.
        **successful submissions only**; it cannot show a rejected attempt either.
 
      `README.md` §8 (KPIs) and §11 (Known limitations & gotchas), and `design.md` §9 (Residual
      risk), corrected in place to state this as a confirmed, grounded gap rather than an open
-     follow-up — see the citations added to `README.md` §12 (refs [[17]](#references)–
+     follow-up - see the citations added to `README.md` §12 (refs [[17]](#references)-
      [[20]](#references)). Re-open this item in `PROGRESS.md` only if Microsoft ever documents a
      RecordType/Operations pair or a rejection-specific report; until then there is nothing left to
      ground or build here.
 2. **The original `-Purge` safety check (Red Team finding 1, above) was also a Blue Team
-   operability gap** — an operator relying on it to prevent an accidental removal of a live policy
+   operability gap** - an operator relying on it to prevent an accidental removal of a live policy
    had no way to know the check itself might silently under-match. Same fix as Red Team finding 1
-   closes this too — an unfiltered fetch with a client-side comparison is directly inspectable and
+   closes this too - an unfiltered fetch with a client-side comparison is directly inspectable and
    has no filter-support assumption to silently fail on.
 3. **The manual checklist didn't originally distinguish "config validated" from "actually tested
    with a real send."** A config-only check (`AllowBasicAuthSmtp` is `$false`, transport gate is
@@ -118,15 +118,15 @@ No Fail items remain.
 
 **Verdict: Pass (with one Fix)**
 
-1. **The original cost section didn't lead with the time-boxed urgency angle strongly enough** —
+1. **The original cost section didn't lead with the time-boxed urgency angle strongly enough** -
    framing this purely as "a good practice" undersells why a board should approve it *now* rather
    than deferring to Microsoft's own December 2026 default-disable date.
    - **Resolution:** Rewrote `README.md` §10 to lead with the "control the transition on your
      terms, before Microsoft controls it on theirs" framing, directly tied to the cited deprecation
      timeline.
 - **Risk reduction vs. cost:** genuinely no incremental license cost (Exchange Online-native
-  capability), and the risk being closed — an unauthenticated-MFA-bypassable credential-stuffing
-  surface with an active deprecation clock already ticking — is concrete and dated, not a vague
+  capability), and the risk being closed - an unauthenticated-MFA-bypassable credential-stuffing
+  surface with an active deprecation clock already ticking - is concrete and dated, not a vague
   "best practice" argument.
 - **Board-level narrative:** "we've closed the one legacy-authentication protocol Microsoft hasn't
   already force-disabled for us, months ahead of Microsoft's own timeline, with a named, tracked
@@ -136,7 +136,7 @@ No Fail items remain.
   realistic friction point (multifunction devices, relay apps, monitoring tools using SMTP AUTH),
   and §5 Step 2's inventory-before-enforcement discipline is the right sequencing for a
   change-management conversation.
-- **Would I fund this?** Yes — low cost, a real and dated risk, and it complements (doesn't
+- **Would I fund this?** Yes - low cost, a real and dated risk, and it complements (doesn't
   duplicate) the Conditional Access sibling scenario, which this library's own Microsoft Product
   Owner lens already confirmed is correctly scoped as a *different* control layer.
 
@@ -146,33 +146,33 @@ No Fail items remain.
 
 **Verdict: Pass**
 
-1. **The core design decision — center this scenario on SMTP AUTH rather than presenting it as a
-   general "block legacy auth in Exchange" tool — is correctly grounded, not assumed.** Verified
+1. **The core design decision - center this scenario on SMTP AUTH rather than presenting it as a
+   general "block legacy auth in Exchange" tool - is correctly grounded, not assumed.** Verified
    directly against Microsoft's "Disable Basic authentication in Exchange Online" reference: eight
    named protocols are already permanently disabled tenant-wide with no re-enable option, which
    this build confirmed before designing around it rather than after. Avoids exactly the kind of
    "oversell a control Microsoft already gives away" mistake `AGENTS.md` §5 asks this lens to
-   catch — the same standard the Conditional Access sibling's Microsoft-managed-policy finding set.
+   catch - the same standard the Conditional Access sibling's Microsoft-managed-policy finding set.
 2. **`AllowBasicAuth*` (cloud) vs. `BlockLegacyAuth*`/`BlockModernAuth*` (on-premises-only) are
    correctly distinguished.** An earlier framing of this follow-up in `PROGRESS.md` referenced
    `-BlockLegacyAuth*` for Exchange Online, which this build's grounding pass found is actually an
-   **on-premises-only** parameter family (Exchange 2019 CU2+/CU13+) — not usable against Exchange
+   **on-premises-only** parameter family (Exchange 2019 CU2+/CU13+) - not usable against Exchange
    Online at all. This scenario correctly uses the cloud-only `-AllowBasicAuth*` switches instead;
    the corrected framing is documented in `design.md` §7 rather than silently carried forward.
 3. **The two independent SMTP AUTH gates (AuthenticationPolicy vs. transport config) are treated
    honestly as independently-documented, not assumed to have a single well-known precedence.**
    Checked both the `Set-AuthenticationPolicy` reference and Microsoft's dedicated SMTP AUTH guide
-   directly — neither states how the two interact if only one is opened. Closing both together
+   directly - neither states how the two interact if only one is opened. Closing both together
    rather than picking one and hoping is the correct, non-speculative choice.
 4. **RBAC recommendation is honestly scoped as broad-but-confirmed, not narrowed by guessing.**
    Microsoft's own `New-/Set-/Remove-AuthenticationPolicy` reference pages don't name a specific
-   least-privilege role — this scenario recommends the confirmed-sufficient **Organization
+   least-privilege role - this scenario recommends the confirmed-sufficient **Organization
    Management** role group and flags the narrower-role question as an open VERIFY rather than
    inventing a plausible-sounding custom role name.
 5. **No deprecated or superseded cmdlet paths used.** `New-/Set-/Get-/Remove-AuthenticationPolicy`,
    `Set-User -AuthenticationPolicy`, `Set-OrganizationConfig -DefaultAuthenticationPolicy`, and
    `Set-TransportConfig`/`Set-CASMailbox -SmtpClientAuthenticationDisabled` are all current,
-   non-legacy cmdlets in the `ExchangePowerShell`/`ExchangeOnlineManagement` module family — none
+   non-legacy cmdlets in the `ExchangePowerShell`/`ExchangeOnlineManagement` module family - none
    flagged as deprecated in any source checked during this build.
 
 No Fix/Fail raised.
@@ -184,7 +184,7 @@ No Fix/Fail raised.
 | Lens | Initial verdict | Findings | Resolution |
 |---|---|---|---|
 | 🔴 Red Team | Fix | 4 (1 closed with a real script-safety fix, 1 closed by disclosure/validate-script surfacing, 2 confirmed already correctly disclosed) | Closed |
-| 🔵 Blue Team | Fix | 3 (1 closed in a follow-up grounding pass — see below, 1 closed with the same script-safety fix as Red Team finding 1, 1 closed with a checklist addition) | Closed |
+| 🔵 Blue Team | Fix | 3 (1 closed in a follow-up grounding pass - see below, 1 closed with the same script-safety fix as Red Team finding 1, 1 closed with a checklist addition) | Closed |
 | 🎩 CISO | Pass (1 Fix) | 1 closed with a `README.md` §10 rewrite; overall verdict Pass | Closed |
 | 🟦 Microsoft Product Owner | Pass | 5 confirmed correct/well-grounded, no fixes needed | Closed |
 
@@ -195,27 +195,27 @@ definition of done in `AGENTS.md` §9.
 
 ---
 
-## Follow-up round — 2026-09-11 (grounding-only, no new Fix/Fail)
+## Follow-up round - 2026-09-11 (grounding-only, no new Fix/Fail)
 
 A `PROGRESS.md` follow-up asked to ground the exact `Search-UnifiedAuditLog` `RecordType`/
 `Operations` values for a rejected SMTP AUTH attempt and, once grounded, build a dedicated
 `Export-*.ps1` companion script closing Blue Team finding 1 above. The grounding pass (Microsoft
 Learn: "Audit log activities", "Disable Basic authentication in Exchange Online", Entra ID sign-in
 log filtering reference, Microsoft Graph `signIn` resource, and the Exchange "SMTP AUTH Clients
-report" reference — full citation list in `README.md` §12) found **no such event-level audit trail
-exists to build a script against** — see the corrected Blue Team finding 1 resolution above for the
+report" reference - full citation list in `README.md` §12) found **no such event-level audit trail
+exists to build a script against** - see the corrected Blue Team finding 1 resolution above for the
 detail. All four lenses were re-checked against this finding and none reopen:
 
-- **🔴 Red Team:** unaffected — this closes a *detection-completeness* gap already disclosed, not a
+- **🔴 Red Team:** unaffected - this closes a *detection-completeness* gap already disclosed, not a
   bypass path; no new attack surface.
 - **🔵 Blue Team:** Pass on re-check. The finding is now closed with a grounded, disclosed "no"
-  instead of an open follow-up — an analyst reading `README.md` §8/§11 now gets an accurate,
+  instead of an open follow-up - an analyst reading `README.md` §8/§11 now gets an accurate,
   actionable answer (use the SMTP gateway's own connection logs; the unified audit log and Entra
   sign-in logs will not help) instead of a pointer to a script that was never buildable.
-- **🎩 CISO:** Pass, unaffected — no cost or licensing change.
-- **🟦 Microsoft Product Owner:** Pass, unaffected — confirms (rather than overturns) the original
+- **🎩 CISO:** Pass, unaffected - no cost or licensing change.
+- **🟦 Microsoft Product Owner:** Pass, unaffected - confirms (rather than overturns) the original
   build's product-surface choices; no cmdlet or capability was invented to close this.
 
-Verdict: **all four lenses Pass, no Fix/Fail** — a precision improvement to already-disclosed
+Verdict: **all four lenses Pass, no Fix/Fail** - a precision improvement to already-disclosed
 content, not a new capability or risk surface. `README.md` §8/§11/§12 and `design.md` §9 updated in
 place.

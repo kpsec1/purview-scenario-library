@@ -1,4 +1,4 @@
-# Four-Lens Review — End-to-End Customer Data Lineage
+# Four-Lens Review - End-to-End Customer Data Lineage
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One
 round of findings below; all **Fix** items were applied to the scenario before this file was
@@ -17,7 +17,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    **any** asset in that entire collection, not just the two this scenario targets. No narrower,
    asset-scoped or relationship-scoped role is documented for this action.
    - **Resolution:** `README.md` §3 now states this explicitly against the Data Curator row, with
-     guidance to review collection role membership periodically — the same "document the trust
+     guidance to review collection role membership periodically - the same "document the trust
      boundary rather than pretend it's fixable" treatment this repo already gave the Data Quality
      Steward role in `scenarios/data-quality/rules-and-scorecards/reviews.md`.
 2. **Custom lineage is a trust claim, not a verified fact, and the original draft didn't say so
@@ -34,7 +34,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
      verified" bullet, instructing that any audit/compliance narrative built on this graph must
      distinguish natively-captured edges from custom-asserted ones rather than presenting both with
      equal evidentiary weight.
-3. **The columnMapping attribute is unvalidated free text** — Purview does not check that the
+3. **The columnMapping attribute is unvalidated free text** - Purview does not check that the
    column names referenced actually exist on either table, so a typo or stale mapping would be
    silently accepted. Correctly scoped as a non-goal already (`design.md` §7's schema-drift note)
    rather than a gap this scenario claims to close; confirmed adequate on review, no change needed.
@@ -152,7 +152,7 @@ No remaining Fail after resolution.
 |---|---|---|---|
 | 🔴 Red Team | Fix | 3 (2 closed via README additions, 1 confirmed already correctly scoped) | Closed |
 | 🔵 Blue Team | Fix | 4 (2 closed via validate-script/README/design.md guidance, 2 confirmed already adequate/correctly scoped) | Closed |
-| 🎩 CISO | Pass | — | — |
+| 🎩 CISO | Pass | - | - |
 | 🟦 Microsoft Product Owner | Fix | 1 closed (citation clarity); 4 confirmed correct | Closed |
 
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`,
@@ -173,6 +173,6 @@ relation edge against its own declared `upstreamQualifiedName` (via the same `gu
 qualifiedName-matching pattern Check 1 already used, falling back to the already-known
 `baseEntityGuid` only when the link's upstream genuinely is the origin asset), so a longer,
 multi-hop definition file validates correctly without further script changes. No new REST
-assumption was introduced — the fallback path keeps the shipped example's behavior identical to
+assumption was introduced - the fallback path keeps the shipped example's behavior identical to
 before. `design.md` §7's non-goal bullet updated to record the generalization instead of the
 now-resolved limitation.

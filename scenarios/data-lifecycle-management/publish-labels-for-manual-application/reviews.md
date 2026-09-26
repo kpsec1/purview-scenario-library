@@ -1,4 +1,4 @@
-# Four-Lens Review — Publish Retention Labels for Manual Application
+# Four-Lens Review - Publish Retention Labels for Manual Application
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round
 of findings below; all **Fix** items were applied before this file was finalized. No **Fail** items
@@ -12,7 +12,7 @@ were raised.
 
 1. **Human-dependent coverage is a hard limit, and for a regulatory record it's the *only*
    mechanism.** A user who forgets, or deliberately declines, to apply the label leaves sensitive
-   financial content completely unretained — and unlike the auto-apply sibling, there is no
+   financial content completely unretained - and unlike the auto-apply sibling, there is no
    fallback query that eventually catches it, because Microsoft doesn't offer one for regulatory
    records.
    - **Resolution:** `README.md` §8/§10/§11 state this plainly ("the cost is human, not technical")
@@ -22,14 +22,14 @@ were raised.
      any label that *isn't* a regulatory record, `README.md` §11 and `design.md` §7 explicitly
      recommend pairing this scenario with the sibling's auto-apply policy rather than relying on
      publishing alone.
-2. **Coverage gap by location, not just by user behavior.** Retention labels — published or
-   auto-applied — aren't supported at all for Exchange public folders, Skype for Business, Teams
+2. **Coverage gap by location, not just by user behavior.** Retention labels - published or
+   auto-applied - aren't supported at all for Exchange public folders, Skype for Business, Teams
    chat/channel messages, or Viva Engage messages [[7]](#references). A financial record discussed
    only in Teams chat text (not as a file) can never be reached by this scenario.
    - **Resolution:** `README.md` §11 now states this location boundary explicitly rather than
-     leaving it implicit in the locations table; buyers with that exposure need a retention
-     *policy* (not a label) for those workloads — a separate, already-out-of-scope control.
-3. **A disabled/removed publish policy is silent — no alert tells anyone the label stopped being
+     leaving it implicit in the locations table; organizations with that exposure need a retention
+     *policy* (not a label) for those workloads - a separate, already-out-of-scope control.
+3. **A disabled/removed publish policy is silent - no alert tells anyone the label stopped being
    offered.**
    - **Resolution:** `README.md` §8 names **DistributionStatus** as the signal to monitor and
      `validate/Test-PublishRetentionLabelPolicy.ps1` surfaces it and the policy's `Enabled` state on
@@ -53,7 +53,7 @@ No remaining Fix/Fail after resolution.
 2. **Operability of validation given this scenario touches no label data.** Need a fast, safe
    pre-flight that doesn't overreach into checking the label itself (out of scope by design).
    - **Resolution:** `validate/Test-PublishRetentionLabelPolicy.ps1` checks label *existence* only
-     (never its settings — that's the sibling's validate script's job), then policy/rule health;
+     (never its settings - that's the sibling's validate script's job), then policy/rule health;
      read-only, exits non-zero for CI.
 3. **Silent deployment mistakes.** Without a working dry-run, a typo in the label name could create
    a policy/rule that silently never publishes anything usable (a rule with a `-PublishComplianceTag`
@@ -71,17 +71,17 @@ No remaining Fail.
 **Verdict: Pass**
 
 1. **This closes a real compliance gap, not a nice-to-have.** For the regulatory-record case, this
-   scenario is the *only* Microsoft-supported way to make the label usable at all — funding it isn't
+   scenario is the *only* Microsoft-supported way to make the label usable at all - funding it isn't
    optional if the underlying regulatory obligation (SEC 17a-4-class WORM) is real.
 2. **Risk vs. cost:** zero incremental licensing; the residual risk is operational (human coverage,
-   §11) — honestly disclosed rather than glossed over, and it's the same residual risk the
+   §11) - honestly disclosed rather than glossed over, and it's the same residual risk the
    regulatory obligation always carried, not one this scenario introduces.
 3. **Board/records-committee narrative:** "the regulatory label can be immediately, manually applied
-   by the people who create the record — and that's not a compromise, it's how Microsoft designed
+   by the people who create the record - and that's not a compromise, it's how Microsoft designed
    regulatory records to work. Auto-apply was never a supported option for this class of label."
-4. **Change management:** low-risk relative to the sibling — publishing/unpublishing never touches
+4. **Change management:** low-risk relative to the sibling - publishing/unpublishing never touches
    already-labeled content, unlike the sibling's irreversible auto-apply action.
-5. **Would I fund this?** Yes, and it should have shipped alongside the sibling scenario originally —
+5. **Would I fund this?** Yes, and it should have shipped alongside the sibling scenario originally -
    without it, the sibling's regulatory-record claim had no supported way to actually reach content.
 
 No Fix/Fail raised.
@@ -118,8 +118,8 @@ No Fail raised.
 |---|---|---|---|
 | 🔴 Red Team | Fix | 3 (human-coverage limit + compensating controls; unsupported-location boundary disclosed; DistributionStatus monitoring) | Closed |
 | 🔵 Blue Team | Fix | 3 (RetryDistribution + DistributionStatus signal; label-existence-only validation scope; fail-fast on a missing label) | Closed |
-| 🎩 CISO | Pass | Confirms this scenario is required, not optional, for the regulatory-record case; residual risk honestly disclosed | — |
-| 🟦 Microsoft Product Owner | Pass | Confirms correct, current cmdlets; confirms the review process itself caught the sibling's product-alignment gap | — |
+| 🎩 CISO | Pass | Confirms this scenario is required, not optional, for the regulatory-record case; residual risk honestly disclosed | - |
+| 🟦 Microsoft Product Owner | Pass | Confirms correct, current cmdlets; confirms the review process itself caught the sibling's product-alignment gap | - |
 
 All Fix items are resolved in the current state of `README.md`, `design.md`,
 `deploy/New-PublishRetentionLabelPolicy.ps1`, `deploy/Remove-PublishRetentionLabelPolicy.ps1`,

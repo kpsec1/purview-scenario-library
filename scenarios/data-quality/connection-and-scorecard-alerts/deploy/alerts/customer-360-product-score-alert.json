@@ -5,7 +5,7 @@
     {
       "id": "customer-360-product-score-below-95",
       "name": "Customer 360 data product score below 95% (any asset)",
-      "description": "Fires when ANY asset in the 'Customer 360' data product drops below a 95% data quality score on a completed scan - a single alert covering the whole product instead of one alert per asset, for a buyer whose data product has more assets than they want individual per-asset alerts for. Complements, does not replace, customer-master-score-alerts.json's asset-level pair: a product-level alert tells you SOMETHING in the product regressed, not WHICH asset - see README.md Section 8 for the operational trade-off.",
+      "description": "Fires when ANY asset in the 'Customer 360' data product drops below a 95% data quality score on a completed scan - a single alert covering the whole product instead of one alert per asset, for an organization whose data product has more assets than they want individual per-asset alerts for. Complements, does not replace, customer-master-score-alerts.json's asset-level pair: a product-level alert tells you SOMETHING in the product regressed, not WHICH asset - see README.md Section 8 for the operational trade-off.",
       "condition": "score_threshold(GLOBAL_SCORE) < 95",
       "receivers": [
         "00000000-0000-0000-0000-000000000001"

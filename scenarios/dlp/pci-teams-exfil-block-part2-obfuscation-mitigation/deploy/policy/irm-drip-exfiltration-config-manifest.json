@@ -8,7 +8,7 @@
     "sourceCaveat": "This indicator is still per-message SIT pattern matching under the hood - it has the SAME split-content blind spot as Part 1's own DLP rule for a truly, perfectly split PAN. Its value here is as one more input to Cumulative Exfiltration Detection (below), not as a content-correlation fix."
   },
   "feederInsiderRiskPolicy": {
-    "name": "IRM-PCI-Card-Data-Drip-Exfiltration (buyer names as appropriate)",
+    "name": "IRM-PCI-Card-Data-Drip-Exfiltration (organization names as appropriate)",
     "template": "Data leaks",
     "scope": "Same user population as scenarios/dlp/pci-teams-exfil-block (Card Operations, Finance, and/or all users depending on tenant sizing) - not limited to departing users, unlike scenarios/insider-risk/departing-employee-data-theft",
     "triggeringEvent": "User performs an exfiltration activity (built-in Office exfiltration indicators) - NOT a DLP-policy-match trigger, because the DLP-alert trigger only supports Exchange Online/SharePoint Online/OneDrive for Business workloads and would silently exclude Teams (design.md Section 6)",

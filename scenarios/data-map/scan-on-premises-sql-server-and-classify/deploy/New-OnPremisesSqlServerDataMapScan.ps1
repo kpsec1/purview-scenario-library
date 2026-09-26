@@ -120,12 +120,10 @@
     Name for the scan object. Defaults to "<DataSourceName>-scan".
 
 .PARAMETER ScanRulesetName
-    Scan rule set to use. Defaults to 'SqlServerDatabase' - this repo's best-effort inference of
-    the system default rule set's name for this source type (matching the "system ruleset name ==
-    data source kind" pattern every sibling scenario confirmed via its own worked example), but NOT
-    independently confirmed via a worked example for this specific source type. VERIFY before
-    production use - see README.md Section 11. Pass a known-good custom rule set's name instead if
-    you have one.
+    Scan rule set to use. Defaults to 'SqlServerDatabase' - the system default rule set's name for
+    this source type, confirmed via the System Scan Rulesets - Get REST reference's own worked
+    example (a system scan ruleset's `name` is always identical to its `kind`; see README.md
+    Section 11). Pass a known-good custom rule set's name instead if you have one.
 
 .PARAMETER ScanRulesetType
     'System' (default) or 'Custom'.
@@ -220,13 +218,18 @@
       physical registration step "must be done manually inside the SHIRs' hosts," and that "there's
       no API to extract credentials":
       https://learn.microsoft.com/purview/data-gov-best-practices-disaster-recovery-migration
+    - System Scan Rulesets - Get (confirms, via its own worked example, that a system scan
+      ruleset's `name` is always identical to its `kind` - e.g. kind "AzureStorage" returns
+      name "AzureStorage" - and that SqlServerDatabase is a documented kind/DataSourceType value
+      in the same schema; this grounds the -ScanRulesetName default below):
+      https://learn.microsoft.com/rest/api/purview/scanningdataplane/system-scan-rulesets/get
+
+    CONFIRMED 2026-09-26 - the -ScanRulesetName default ('SqlServerDatabase') was previously
+    flagged VERIFY here; it is now grounded by the System Scan Rulesets - Get worked example
+    above (see README.md Section 11 for the full writeup).
 
     VERIFY before production use (not resolved by guessing, per AGENTS.md Section 4 - see README.md
     Section 11 for the full writeup):
-    - The literal system scan rule set name for SqlServerDatabase (-ScanRulesetName default) is
-      inferred from the "system ruleset name == data source kind" pattern every sibling scenario
-      confirmed for its own source type, not independently confirmed via a worked example for this
-      one.
     - Which CredentialType enum value corresponds to "Windows Authentication" in the portal - this
       script's -CredentialType 'BasicAuth' default-alternative is a best-effort mapping, not a
       confirmed one.

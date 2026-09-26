@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName = 'ExchangeOnlineManagement'; ModuleVersion = '3.2.0' }
 <#
 .SYNOPSIS
-    Cross-references the tenant's live Exchange accepted-domains configuration against a buyer-
+    Cross-references the tenant's live Exchange accepted-domains configuration against a organization-
     curated known-domains allowlist and the previous run's recorded state, flagging both directions
     of hygiene risk this scenario was built to close: a legitimate domain silently excluded from
     trust, and an unreviewed domain silently granted it.
@@ -60,7 +60,7 @@
     Online PowerShell, Surface 1, not Security & Compliance PowerShell), then call this script.
 
 .PARAMETER KnownDomainsConfigPath
-    Path to the buyer-curated known-domains JSON config (schema: deploy/KnownDomains.sample.json).
+    Path to the organization-curated known-domains JSON config (schema: deploy/KnownDomains.sample.json).
     No Microsoft-documented source can auto-derive this list (design.md Sec 6) - it must be
     maintained by hand, the same limitation any allowlist-based hygiene control has.
 
@@ -176,7 +176,7 @@ function Assert-ExchangeOnlineSession {
 
 Assert-ExchangeOnlineSession
 
-# --- Load the buyer-curated known-domains config (design.md Sec 6: no auto-derivable source) ---
+# --- Load the organization-curated known-domains config (design.md Sec 6: no auto-derivable source) ---
 $knownConfig = Get-Content -Path $KnownDomainsConfigPath -Raw | ConvertFrom-Json
 $knownByDomain = @{}
 foreach ($entry in $knownConfig.knownDomains) {

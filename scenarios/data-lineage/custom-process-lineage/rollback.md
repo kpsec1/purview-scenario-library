@@ -1,4 +1,4 @@
-# Rollback — DataSet -> Process -> DataSet Custom Lineage
+# Rollback - DataSet -> Process -> DataSet Custom Lineage
 
 ## Recommended sequence
 
@@ -33,7 +33,7 @@ Add `-WhatIf` first to see what would be deleted without deleting it.
 - **The custom Process type definition (`PurviewScenarioLibraryEtlProcess`) itself.** Deliberately
   left in place by `Remove-CustomProcessLineage.ps1`, for three reasons:
   1. **Type definitions are account-level objects, not scoped to this scenario's two assets.** If a
-     buyer models more than one custom job using the same type (a realistic next step this
+     organization models more than one custom job using the same type (a realistic next step this
      scenario's own `design.md` §8 anticipates), deleting the type on every single-job rollback
      would break every other entity of that type.
   2. **Microsoft's own reference for `Type - Delete` does not document its behavior when the type
@@ -42,13 +42,13 @@ Add `-WhatIf` first to see what would be deleted without deleting it.
      but did not independently confirm its exact REST path or whether it succeeds, no-ops, or
      errors against a type with existing (or previously-deleted-but-once-existing) instances.
      Scripting a delete-type action on an unconfirmed behavior risks either a confusing failure or,
-     worse, silently succeeding in a way that surprises a buyer who still has other entities of
+     worse, silently succeeding in a way that surprises an organization that still has other entities of
      that type.
   3. **This mirrors the sibling scenario's own "never touch what you didn't create for this one
      purpose" discipline** - just applied to a type definition, a shared account-level object,
      rather than an asset.
 
-  If a buyer genuinely wants the type definition gone (e.g. decommissioning this scenario
+  If an organization genuinely wants the type definition gone (e.g. decommissioning this scenario
   entirely, with no other entities of this type anywhere in the tenant), that's a manual,
   reviewed action: confirm zero remaining entities of the type first (there's no confirmed
   "count entities by type" REST call in this repo's grounding - the safest manual check is

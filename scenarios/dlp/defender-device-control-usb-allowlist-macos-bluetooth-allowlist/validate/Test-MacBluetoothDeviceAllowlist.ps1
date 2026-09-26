@@ -10,12 +10,15 @@
       2. The embedded deviceControl.policy JSON extracts and parses.
       3. The prerequisite AllBluetoothDevices group and Deny-AllBluetoothDevices rule (from
          defender-device-control-usb-allowlist-macos-portable-device-coverage) are present.
-      4. If -ConfigPath supplies approvedBluetoothDevices, the ApprovedBluetoothDevice group exists
-         with the expected primaryId/vendorId/productId AND-clauses, the Deny-AllBluetoothDevices
-         rule's excludeGroups references it, and the Allow-ApprovedBluetoothDevice rule exists with
-         allow + auditAllow entries and the correct access list.
-      5. If empty, confirms no ApprovedBluetoothDevice group/allow rule exist and the deny rule has
-         no excludeGroups (pure default-deny).
+      4. If -ConfigPath supplies one or more approvedBluetoothDevices: the ApprovedBluetoothDevices
+         parent group exists with `$type: "or"` and one `groupId` clause per configured device; each
+         referenced sub-group exists with the expected primaryId/vendorId/productId AND-clauses
+         matching that device's config; the Deny-AllBluetoothDevices rule's excludeGroups references
+         the parent group; and the Allow-ApprovedBluetoothDevice rule exists with allow + auditAllow
+         entries and the correct access list.
+      5. If empty, confirms no ApprovedBluetoothDevices group, no
+         "BluetoothVendorProductMatch-"-prefixed sub-group, and no allow rule exist, and the deny
+         rule has no excludeGroups (pure default-deny).
       6. DRIFT CHECK (the known ordering hazard - README.md Section 11): if
          approvedBluetoothDevices is configured but the deny rule's excludeGroups is missing while
          the ApprovedBluetoothDevice group and Allow rule both still exist, this indicates
@@ -100,6 +103,7 @@ $AllBluetoothGroupId      = 'd1d2d3d4-3333-4c3c-8c3c-333333333301'
 $DenyBluetoothRuleId      = 'd1d2d3d4-3333-4c3c-8c3c-333333333310'
 $ApprovedBluetoothGroupId = 'd1d2d3d4-3333-4c3c-8c3c-333333333302'
 $AllowBluetoothRuleId     = 'd1d2d3d4-3333-4c3c-8c3c-333333333311'
+$SubGroupNamePrefix       = 'BluetoothVendorProductMatch-'
 
 if (-not (Test-Path -LiteralPath $ConfigPath)) { throw "Config file not found: $ConfigPath" }
 $cfg = Get-Content -LiteralPath $ConfigPath -Raw | ConvertFrom-Json
@@ -157,38 +161,53 @@ if (-not $allBluetooth -or -not $denyBluetooth) {
 $approvedGroup = Find-GroupById -Groups $policy.groups -Id $ApprovedBluetoothGroupId
 $allowRule = Find-RuleById -Rules $policy.rules -Id $AllowBluetoothRuleId
 $hasExclude = $denyBluetooth.excludeGroups -contains $ApprovedBluetoothGroupId
+$subGroups = @($policy.groups | Where-Object { $_.name -like "$SubGroupNamePrefix*" })
 
-if ($approvedDevices.Count -eq 1) {
-    $d = $approvedDevices[0]
-    Test-Check -Description 'ApprovedBluetoothDevice group present' -Condition ($null -ne $approvedGroup)
+if ($approvedDevices.Count -gt 0) {
+    Test-Check -Description "ApprovedBluetoothDevices parent group present ($($approvedDevices.Count) device(s) configured)" -Condition ($null -ne $approvedGroup)
     if ($approvedGroup) {
-        $clauseTypes = @($approvedGroup.query.clauses | ForEach-Object { $_.'$type' })
-        Test-Check -Description "ApprovedBluetoothDevice group query is an AND of primaryId+vendorId+productId ('`$type': 'and')" -Condition ($approvedGroup.query.'$type' -eq 'and' -and $clauseTypes -contains 'primaryId' -and $clauseTypes -contains 'vendorId' -and $clauseTypes -contains 'productId')
-        $vendorClause = $approvedGroup.query.clauses | Where-Object { $_.'$type' -eq 'vendorId' } | Select-Object -First 1
-        $productClause = $approvedGroup.query.clauses | Where-Object { $_.'$type' -eq 'productId' } | Select-Object -First 1
-        Test-Check -Description "ApprovedBluetoothDevice group vendorId matches config ('$($d.vendorId)')" -Condition ($vendorClause.value -eq $d.vendorId)
-        Test-Check -Description "ApprovedBluetoothDevice group productId matches config ('$($d.productId)')" -Condition ($productClause.value -eq $d.productId)
+        Test-Check -Description "ApprovedBluetoothDevices parent group query is an OR ('`$type': 'or'/'any')" -Condition ($approvedGroup.query.'$type' -in @('or', 'any'))
+        $groupIdClauseValues = @($approvedGroup.query.clauses | Where-Object { $_.'$type' -eq 'groupId' } | ForEach-Object { $_.value })
+        Test-Check -Description "ApprovedBluetoothDevices parent group has exactly $($approvedDevices.Count) groupId clause(s), one per configured device" -Condition ($groupIdClauseValues.Count -eq $approvedDevices.Count)
+
+        foreach ($d in $approvedDevices) {
+            $subGroup = $subGroups | Where-Object { $_.name -eq "$SubGroupNamePrefix$($d.label)" } | Select-Object -First 1
+            Test-Check -Description "Sub-group for device '$($d.label)' present" -Condition ($null -ne $subGroup)
+            if ($subGroup) {
+                Test-Check -Description "Sub-group for device '$($d.label)' is referenced by the parent group's groupId clauses" -Condition ($groupIdClauseValues -contains $subGroup.id)
+                $clauseTypes = @($subGroup.query.clauses | ForEach-Object { $_.'$type' })
+                Test-Check -Description "Sub-group for device '$($d.label)' query is an AND of primaryId+vendorId+productId ('`$type': 'and')" -Condition ($subGroup.query.'$type' -eq 'and' -and $clauseTypes -contains 'primaryId' -and $clauseTypes -contains 'vendorId' -and $clauseTypes -contains 'productId')
+                $vendorClause = $subGroup.query.clauses | Where-Object { $_.'$type' -eq 'vendorId' } | Select-Object -First 1
+                $productClause = $subGroup.query.clauses | Where-Object { $_.'$type' -eq 'productId' } | Select-Object -First 1
+                Test-Check -Description "Sub-group for device '$($d.label)' vendorId matches config ('$($d.vendorId)')" -Condition ($vendorClause.value -eq $d.vendorId)
+                Test-Check -Description "Sub-group for device '$($d.label)' productId matches config ('$($d.productId)')" -Condition ($productClause.value -eq $d.productId)
+            }
+        }
+        $extraSubGroups = @($subGroups | Where-Object { $_.id -notin (@($approvedGroup.query.clauses | Where-Object { $_.'$type' -eq 'groupId' } | ForEach-Object { $_.value })) })
+        Test-Check -Description 'No stale device sub-groups beyond what -ConfigPath currently defines' -Condition ($extraSubGroups.Count -eq 0) -Warn
     }
     Test-Check -Description 'Allow-ApprovedBluetoothDevice rule present (allow + auditAllow entries)' -Condition ($null -ne $allowRule -and ($allowRule.entries.enforcement.'$type' -contains 'allow') -and ($allowRule.entries.enforcement.'$type' -contains 'auditAllow'))
     if ($allowRule) {
         $allowAccess = @($allowRule.entries[0].access)
         Test-Check -Description 'Allow-ApprovedBluetoothDevice access list = [download_files_from_device, send_files_to_device]' -Condition (($allowAccess -contains 'download_files_from_device') -and ($allowAccess -contains 'send_files_to_device'))
+        Test-Check -Description 'Allow-ApprovedBluetoothDevice includeGroups references the ApprovedBluetoothDevices parent group' -Condition (@($allowRule.includeGroups) -contains $ApprovedBluetoothGroupId)
     }
 
     if ($hasExclude) {
-        Test-Check -Description 'Deny-AllBluetoothDevices excludeGroups references ApprovedBluetoothDevice' -Condition $true
+        Test-Check -Description 'Deny-AllBluetoothDevices excludeGroups references ApprovedBluetoothDevices' -Condition $true
     }
     elseif ($null -ne $approvedGroup -and $null -ne $allowRule) {
         # Drift: the allowlist artifacts exist but the shared deny rule's exclusion was stripped -
         # almost certainly the documented ordering hazard, not "never deployed."
-        Test-Check -Description "Deny-AllBluetoothDevices excludeGroups references ApprovedBluetoothDevice - MISSING. Group/allow-rule exist but the exclusion was dropped, most likely because defender-device-control-usb-allowlist-macos-portable-device-coverage's Add-MacPortableDeviceCoverage.ps1 -Force ran after this fragment (README.md Section 11 known ordering hazard). Remediation: re-run deploy/Add-MacBluetoothDeviceAllowlist.ps1." -Condition $false
+        Test-Check -Description "Deny-AllBluetoothDevices excludeGroups references ApprovedBluetoothDevices - MISSING. Group/allow-rule exist but the exclusion was dropped, most likely because defender-device-control-usb-allowlist-macos-portable-device-coverage's Add-MacPortableDeviceCoverage.ps1 -Force ran after this fragment (README.md Section 11 known ordering hazard). Remediation: re-run deploy/Add-MacBluetoothDeviceAllowlist.ps1." -Condition $false
     }
     else {
-        Test-Check -Description 'Deny-AllBluetoothDevices excludeGroups references ApprovedBluetoothDevice' -Condition $false
+        Test-Check -Description 'Deny-AllBluetoothDevices excludeGroups references ApprovedBluetoothDevices' -Condition $false
     }
 }
 else {
-    Test-Check -Description 'No ApprovedBluetoothDevice group (empty config -> pure default-deny, no exceptions)' -Condition ($null -eq $approvedGroup)
+    Test-Check -Description 'No ApprovedBluetoothDevices parent group (empty config -> pure default-deny, no exceptions)' -Condition ($null -eq $approvedGroup)
+    Test-Check -Description 'No device sub-groups (empty config -> pure default-deny, no exceptions)' -Condition ($subGroups.Count -eq 0)
     Test-Check -Description 'No Allow-ApprovedBluetoothDevice rule (empty config -> pure default-deny, no exceptions)' -Condition ($null -eq $allowRule)
     Test-Check -Description 'Deny-AllBluetoothDevices has no excludeGroups (empty config -> pure default-deny)' -Condition (-not $hasExclude)
 }

@@ -38,7 +38,7 @@
   },
   "conditions": {
     "template": {
-      "note": "The template's fixed classifier set is used unmodified - no custom keyword dictionary or additional classifier is added. See design.md Section 2.",
+      "note": "The template's fixed classifier set is used unmodified by default - no custom keyword dictionary or additional classifier is added out of the box. See design.md Section 2. For the OPTIONAL compensating-control addition, see customKeywordDictionaryOption below.",
       "classifiers": [
         { "name": "Hate", "technology": "Azure AI Content Safety LLM classifier (preview)", "overlapsWith": "Discrimination/Harassment trainable classifiers in harassment-and-code-of-conduct - complementary, not redundant (design.md Section 4)" },
         { "name": "Sexual", "technology": "Azure AI Content Safety LLM classifier (preview)", "overlapsWith": "No trainable-classifier equivalent for text - new coverage (design.md Section 4)" },
@@ -46,6 +46,14 @@
         { "name": "Self-harm", "technology": "Azure AI Content Safety LLM classifier (preview)", "overlapsWith": "No trainable-classifier equivalent - new coverage; the primary reason this scenario exists (design.md Section 1)" }
       ]
     }
+  },
+  "customKeywordDictionaryOption": {
+    "_comment": "OPTIONAL - not applied by default (see conditions.template.note above). Apply only if this tenant has a confirmed short-message risk profile (README.md Section 8/11 - the classifier family's disclosed 3-or-5-word minimum means a short, unambiguous message can bypass detection entirely).",
+    "applied": false,
+    "file": "short-form-crisis-threat-phrases.txt",
+    "howToApply": "Select Customize policy (README.md Section 5, step 7) instead of accepting the template as-is, then add a condition: Message/Attachment contains any of these words, importing this file as a custom keyword dictionary. Combine with the template's four classifiers using OR, the same conditionCombination pattern harassment-and-code-of-conduct's manifest uses.",
+    "purpose": "Catches short-form crisis/threat phrasing (self-harm ideation, terse threats) that the classifier family's own word-count minimum can let through undetected - NOT a duplicate of the classifiers' own coverage. Content discipline follows harassment-and-code-of-conduct/design.md Section 4: clinical, non-graphic, illustrative phrasing only - not exhaustive, not a substitute for the classifiers, and expected to be extended by the tenant's own HR/EAP/Legal team based on real (anonymized) case patterns.",
+    "reviewRequirement": "Have this tenant's dutyOfCareEscalationContact (above) and HR/Legal reviewer pool review and extend the phrase list before applying - the same named stakeholders already required to complete the Section 7 tabletop drill, not a separate approval chain."
   },
   "reviewPercentage": 100,
   "reviewPercentageNote": "Template default. Do not lower this silently - see README.md Section 8; a self-harm/violence risk control is a poor candidate for sampling below 100%.",

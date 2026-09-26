@@ -1,4 +1,4 @@
-# Four-Lens Review — DataSet -> Process -> DataSet Custom Lineage
+# Four-Lens Review - DataSet -> Process -> DataSet Custom Lineage
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round
 of findings below; all **Fix** items were applied to the scenario before this file was finalized
@@ -148,7 +148,7 @@ listed here because it's also a product-correctness issue, not only an operabili
 |---|---|---|---|
 | 🔴 Red Team | Fix | 3 (1 closed via README §3 addition, 2 confirmed already correctly scoped) | Closed |
 | 🔵 Blue Team | Fix | 3 (1 closed via a new validate-script schema-drift check + deploy-script cross-reference comment, 2 confirmed already adequate) | Closed |
-| 🎩 CISO | Pass | — | — |
+| 🎩 CISO | Pass | - | - |
 | 🟦 Microsoft Product Owner | Fix | 1 closed (shared with Blue Team finding 1); 5 confirmed correct | Closed |
 
 All Fix items from this round are resolved in the current state of `README.md`,

@@ -2,7 +2,7 @@
   "_comment": "REFERENCE MANIFEST, NOT AN API PAYLOAD. Adaptive Protection's enable toggle and insider risk level (Elevated/Moderate/Minor) threshold definitions have no documented PowerShell or Graph write API as of this writing - only the DOWNSTREAM DLP rule condition (-SharedByIRMUserRisk) is scriptable, and that is what deploy/New-AdaptiveProtectionDlpPolicy.ps1 automates. No script in this scenario's deploy/ folder reads or applies this file - it is a structured, versioned source of truth for the person completing the portal steps in README.md §5, so the deployed configuration can be diffed against intent during review.",
   "adaptiveProtection": {
     "setupPath": "Custom setup (not Quick Setup) - see README.md §2 and design.md §6 for why",
-    "feederInsiderRiskPolicy": "scenarios/insider-risk/departing-employee-data-theft (this library), OR Microsoft's built-in 'Data leaks' policy template, OR a buyer-authored equivalent - not created by this scenario",
+    "feederInsiderRiskPolicy": "scenarios/insider-risk/departing-employee-data-theft (this library), OR Microsoft's built-in 'Data leaks' policy template, OR a organization-authored equivalent - not created by this scenario",
     "enabled": "Set to On only after Steps 1-4 in README.md §5 are complete - see design.md §5 for the up-to-36-hour propagation delay after enabling"
   },
   "insiderRiskLevels": {

@@ -7,9 +7,12 @@
 
 .DESCRIPTION
     Surgical rollback for scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-
-    allowlist: removes the ApprovedBluetoothDevice group and Allow-ApprovedBluetoothDevice rule this
-    fragment's deploy/Add-MacBluetoothDeviceAllowlist.ps1 added, and strips excludeGroups from the
-    Deny-AllBluetoothDevices rule - by fixed GUID, the same identification the deploy and validate
+    allowlist: removes the ApprovedBluetoothDevices parent group, every per-device sub-group this
+    fragment's deploy/Add-MacBluetoothDeviceAllowlist.ps1 added (identified by the
+    "BluetoothVendorProductMatch-" name prefix, since sub-group ids are deterministically derived
+    from config at deploy time and this script has no config to re-derive them from), and the
+    Allow-ApprovedBluetoothDevice rule, and strips excludeGroups from the Deny-AllBluetoothDevices
+    rule - the parent group/rule by fixed GUID, the same identification the deploy and validate
     scripts use.
 
     This does NOT touch the parent policy's removableMedia coverage, the portable-device-coverage
@@ -59,6 +62,7 @@ $ErrorActionPreference = 'Stop'
 $script:DenyBluetoothRuleId      = 'd1d2d3d4-3333-4c3c-8c3c-333333333310'
 $script:ApprovedBluetoothGroupId = 'd1d2d3d4-3333-4c3c-8c3c-333333333302'
 $script:AllowBluetoothRuleId     = 'd1d2d3d4-3333-4c3c-8c3c-333333333311'
+$script:SubGroupNamePrefix       = 'BluetoothVendorProductMatch-'
 
 function Assert-MgConnected {
     if (-not (Get-Command Invoke-MgGraphRequest -ErrorAction SilentlyContinue)) {
@@ -118,12 +122,14 @@ if (-not $denyBluetoothRule) {
     Write-Host "Deny-AllBluetoothDevices rule not found on '$ParentPolicyDisplayName' - nothing for this fragment to remove (the portable-device-coverage prerequisite may not be deployed)." -ForegroundColor Yellow
     return
 }
-if ($script:ApprovedBluetoothGroupId -notin $existingGroupIds -and -not $denyBluetoothRule.excludeGroups) {
+$existingSubGroupIds = @($parsedPolicy.groups | Where-Object { $_.name -like "$($script:SubGroupNamePrefix)*" } | ForEach-Object { $_.id })
+
+if ($script:ApprovedBluetoothGroupId -notin $existingGroupIds -and $existingSubGroupIds.Count -eq 0 -and -not $denyBluetoothRule.excludeGroups) {
     Write-Host "No Bluetooth device allowlist currently present on '$ParentPolicyDisplayName' - nothing to remove." -ForegroundColor Yellow
     return
 }
 
-$keptGroups = @($parsedPolicy.groups | Where-Object { $_.id -ne $script:ApprovedBluetoothGroupId })
+$keptGroups = @($parsedPolicy.groups | Where-Object { $_.id -ne $script:ApprovedBluetoothGroupId -and $_.id -notin $existingSubGroupIds })
 $keptRules  = @($parsedPolicy.rules  | Where-Object { $_.id -ne $script:AllowBluetoothRuleId })
 
 # Revert the shared deny rule - entries reproduced unchanged, remove only this fragment's own
@@ -142,7 +148,7 @@ $desiredPolicy = [ordered]@{ groups = $keptGroups; rules = $desiredRules; settin
 $newPolicyJson = $desiredPolicy | ConvertTo-Json -Depth 12 -Compress
 $newEscapedJson = ConvertTo-XmlEscaped $newPolicyJson
 
-Write-Host "  [plan] $($parsedPolicy.groups.Count) existing groups / $($parsedPolicy.rules.Count) existing rules -> $($keptGroups.Count) groups / $($desiredRules.Count) rules after removing the Bluetooth device allowlist." -ForegroundColor DarkCyan
+Write-Host "  [plan] $($parsedPolicy.groups.Count) existing groups / $($parsedPolicy.rules.Count) existing rules -> $($keptGroups.Count) groups / $($desiredRules.Count) rules after removing the Bluetooth device allowlist ($($existingSubGroupIds.Count) device sub-group(s) removed)." -ForegroundColor DarkCyan
 
 $newMobileConfigXml = $mobileConfigXml.Replace($originalEscapedJson, $newEscapedJson)
 if ($newMobileConfigXml -eq $mobileConfigXml -and $originalEscapedJson -ne $newEscapedJson) {

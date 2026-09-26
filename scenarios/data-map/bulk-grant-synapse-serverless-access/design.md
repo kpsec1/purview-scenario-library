@@ -1,4 +1,4 @@
-# Design — Bulk-Grant Azure Synapse Serverless SQL Database Access
+# Design - Bulk-Grant Azure Synapse Serverless SQL Database Access
 
 ## 1. Problem statement
 

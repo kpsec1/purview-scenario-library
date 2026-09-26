@@ -1,4 +1,4 @@
-# Four-Lens Review — SharePoint/OneDrive Information Barriers Enablement and Site Association
+# Four-Lens Review - SharePoint/OneDrive Information Barriers Enablement and Site Association
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round
 of findings below; all **Fix** items were applied before this file was finalized. No **Fail**
@@ -13,19 +13,19 @@ items were raised.
 1. **Rollback-by-suspend is a much bigger hole than intended.** An operator rolling back this
    scenario's own site associations could reach for `-Suspend` out of habit (it's the obvious
    "undo enablement" lever) and unknowingly drop IB enforcement on every Teams-connected site and
-   every OneDrive account tenant-wide — including the parent scenario's own protected surfaces.
+   every OneDrive account tenant-wide - including the parent scenario's own protected surfaces.
    - **Resolution:** `rollback.md` opens with an explicit blast-radius warning and a two-stage
      structure that defaults to `-RemoveConfigured` (narrow); the deploy script itself prints a
      red warning when `-Suspend` is invoked, naming exactly what else it affects.
 2. **Coverage gap for newly provisioned sites.** The site list is a human-curated config; a new
    standalone SharePoint site created after this fragment ships starts in Open mode and stays
-   uncovered until someone adds it to the config and re-runs — a real, findable bypass path (create
+   uncovered until someone adds it to the config and re-runs - a real, findable bypass path (create
    a new site, work there instead).
    - **Resolution:** `design.md` §6 states this as a non-goal rather than implying full coverage;
      `README.md` §8 gives the operational trigger ("re-run whenever a new standalone site is
      provisioned") and points at Microsoft's own Information Barriers policy compliance report as
-     a detective control for drift. Not eliminated — Microsoft doesn't offer an enforcement-side
-     answer here — but no longer silently assumed away.
+     a detective control for drift. Not eliminated - Microsoft doesn't offer an enforcement-side
+     answer here - but no longer silently assumed away.
 3. **Bypass via app-only/people-picker exceptions.** `-AppBypassInformationBarriers` and
    `-AppOnlyBypassPeoplePickerPolicies` are real, documented settings that widen the wall's
    exceptions if another team enables them for an unrelated app.
@@ -33,7 +33,7 @@ items were raised.
      as widening exceptions; `design.md` §6 keeps them an explicit non-goal rather than a silent
      default-on.
 4. **Site owners can loosen scope less than it first appears.** Site owners can *add* compatible
-   segments to a site they own but Microsoft doesn't let them *remove* one — checked, this cuts the
+   segments to a site they own but Microsoft doesn't let them *remove* one - checked, this cuts the
    wrong way for an attacker (it can only narrow a site further, not open it back up), so it's
    noted as a design strength rather than a finding requiring a fix.
 
@@ -46,7 +46,7 @@ No remaining Fix/Fail after resolution.
 **Verdict: Fix (resolved)**
 
 1. **A silently-skipped tenant-state check could look like a pass.** `Get-SPOTenant`'s own
-   reference doesn't confirm `InformationBarriersSuspension` is a returned property — a naive
+   reference doesn't confirm `InformationBarriersSuspension` is a returned property - a naive
    validate script could either throw or silently report nothing useful.
    - **Resolution:** both the deploy and validate scripts check for the property explicitly and
      emit a `[WARN]` (never a silent skip or a false `[PASS]`) when it's absent, and the deploy
@@ -66,7 +66,7 @@ No remaining Fix/Fail after resolution.
      parent scenario's own audit-trail follow-up) rather than inventing plausible-looking values;
      the Purview portal audit log is named as the interim, manually-searchable detection path.
 4. **Propagation delay could be mistaken for failure.** ~1 hour tenant-wide, up to 24h per site/
-   OneDrive — a validate run immediately after deploy could look "wrong" when it's just not
+   OneDrive - a validate run immediately after deploy could look "wrong" when it's just not
    propagated yet.
    - **Resolution:** both the deploy script's own output and the validate script's closing note
      state the exact windows, matching `README.md` §7/§8.
@@ -80,19 +80,19 @@ No remaining Fail.
 **Verdict: Fix (resolved)**
 
 1. **Closes a gap the org's own prior scenario flagged.** `segregate-trading-and-research`'s
-   `README.md` §11 explicitly named SharePoint/OneDrive as required, unbuilt follow-up work — this
+   `README.md` §11 explicitly named SharePoint/OneDrive as required, unbuilt follow-up work - this
    fragment closes that gap rather than leaving it as a permanent disclosed limitation, which
    matters directly for an examiner or auditor reviewing the wall's completeness.
    - **Resolution:** `README.md` §1/§2 states the completion explicitly; `design.md` §1 frames the
      problem as exactly this gap.
 2. **Zero incremental licensing cost, real incremental coverage.** Confirmed against the same E5/
-   E5 Compliance/IRM/IB add-on entitlement as the parent — no new SKU, no new meter (§10).
+   E5 Compliance/IRM/IB add-on entitlement as the parent - no new SKU, no new meter (§10).
 3. **Residual risk is a process control, not a technical one.** New-site coverage (Red Team finding
    2) can't be fully automated away with what Microsoft documents; the CISO narrative has to be
    "the technical control is complete for what it's pointed at; keeping it pointed at everything
    requires a provisioning-time checklist," not "fully automatic."
    - **Resolution:** stated plainly in `README.md` §8 and `design.md` §6 rather than oversold.
-4. **Would I fund this?** Yes — it's the second half of a control the org already committed to
+4. **Would I fund this?** Yes - it's the second half of a control the org already committed to
    funding, at no additional license cost, closing a specific documented gap.
 
 No remaining Fix/Fail after resolution.
@@ -109,15 +109,15 @@ No remaining Fix/Fail after resolution.
    examples, not invented.
 2. **Correctly models Microsoft's own automatic/manual split.** Teams-connected sites (Implicit)
    and segmented users' OneDrive (Explicit) are documented as self-associating; this scenario
-   scripts only the genuinely manual standalone-site path — not reinventing what the platform
+   scripts only the genuinely manual standalone-site path - not reinventing what the platform
    already automates.
 3. **Honest about genuine documentation gaps rather than inventing specifics.** The `EXOSegmentId`
    vs. `.Guid` property-name discrepancy, the unconfirmed `Get-SPOTenant` readback surface, and the
    undocumented `-DefaultOneDriveInformationBarrierMode` value set are all flagged inline as VERIFY
-   items instead of guessed — meeting `AGENTS.md` §4's grounding bar.
+   items instead of guessed - meeting `AGENTS.md` §4's grounding bar.
    - **Fix applied:** the initial draft's automation-surface citation didn't reflect that this
      scenario introduces a genuinely new surface-5 usage pattern (a per-site loop, not a single
-     tenant toggle) — `docs/automation-surface.md` §1's surface-5 row and blockquote were updated
+     tenant toggle) - `docs/automation-surface.md` §1's surface-5 row and blockquote were updated
      in this same fragment to describe both the existing toggle-only use and this scenario's
      per-site association use, so the cross-cutting doc doesn't go stale the moment this fragment
      ships.

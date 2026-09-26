@@ -1,4 +1,4 @@
-# Four-Lens Review — Direct Send and Anonymous Relay Hardening
+# Four-Lens Review - Direct Send and Anonymous Relay Hardening
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round
 of findings below; all **Fix** items were applied before this file was finalized. No **Fail** items
@@ -12,10 +12,10 @@ were raised.
 
 1. **Could an external attacker forge the `X-MS-Exchange-Organization-AuthAs` header to evade the
    audit rule (and, by extension, hide Direct Send-style traffic from detection)?** This is the
-   single most important integrity question for a detection rule built on a message header — if a
+   single most important integrity question for a detection rule built on a message header - if a
    client-supplied header value could survive to the point the transport rule evaluates it, the
    whole detection mechanism would be trivially bypassable.
-   - **Resolution:** Confirmed **not exploitable** — Microsoft's own header-firewall reference states
+   - **Resolution:** Confirmed **not exploitable** - Microsoft's own header-firewall reference states
      organization X-headers on a message arriving from outside the organization are stripped before
      the Transport service evaluates authentication and inserts its own `AuthAs` value. An external
      sender cannot pre-set this header; the value the rule sees is always the Transport service's
@@ -23,21 +23,21 @@ were raised.
      assumption.
 2. **A determined sender could still evade tenant-wide `RejectDirectSend` by migrating to the
    certificate-based relay connector this scenario itself creates, then abusing its broader reach**
-   (external recipients, not just internal — `design.md` §9). If an attacker compromises a device
+   (external recipients, not just internal - `design.md` §9). If an attacker compromises a device
    whose certificate is provisioned for relay, they inherit a materially larger blast radius than
    Direct Send ever offered.
-   - **Resolution:** Not a code fix — a disclosed, inherent trade-off of the documented Microsoft
+   - **Resolution:** Not a code fix - a disclosed, inherent trade-off of the documented Microsoft
      alternative. `README.md` §11 and `design.md` §9 both state this plainly: migrating a sender
      grants it more reach than Direct Send had, and `-RelaySenderDomains` should be scoped as
      narrowly as the actual sending application needs. Certificate compromise/rotation hygiene is
      named as the operator's residual responsibility, the same standard `exchange-legacy-auth-block`
      applies to its own exception mailboxes.
-3. **The connector CIDR-width heuristic could give a false sense of security** — a narrow, unshared
+3. **The connector CIDR-width heuristic could give a false sense of security** - a narrow, unshared
    range can still be exploited if the single source device is compromised, and the heuristic says
    nothing about the strength of the device's own security posture.
    - **Resolution:** Already disclosed in the initial draft (`design.md` §5/§9 explicitly call the
      heuristic "disclosed, not authoritative" and warn it can under-flag a narrow-but-compromised
-     source) — confirmed accurate and left as-is.
+     source) - confirmed accurate and left as-is.
 
 No remaining Fix/Fail after resolution.
 
@@ -49,8 +49,8 @@ No remaining Fix/Fail after resolution.
 
 1. **The audit rule goes silent exactly when it would be most useful to keep watching.** The initial
    draft's Operations & tuning section listed "count of rejected Direct Send attempts after
-   enforcement" as a KPI without flagging that the audit rule — the scenario's own primary detection
-   mechanism — cannot supply that count. Transport rules evaluate only messages already accepted
+   enforcement" as a KPI without flagging that the audit rule - the scenario's own primary detection
+   mechanism - cannot supply that count. Transport rules evaluate only messages already accepted
    into the pipeline; a Direct Send attempt rejected by `RejectDirectSend` at the SMTP session never
    reaches the pipeline, so the rule's match count reads near-zero post-enforcement regardless of
    actual attack volume. An on-call analyst trusting the rule's dashboard after Step 5 would see a
@@ -58,11 +58,11 @@ No remaining Fix/Fail after resolution.
    - **Resolution:** `README.md` §8 rewritten with an explicit "Important monitoring blind spot after
      Step 5" callout naming the mechanism and redirecting post-enforcement monitoring to
      `Search-UnifiedAuditLog`/SMTP gateway logs. Same class of event-level gap this library's
-     `exchange-legacy-auth-block` sibling already discloses for its own KPIs — named explicitly
+     `exchange-legacy-auth-block` sibling already discloses for its own KPIs - named explicitly
      rather than left implicit.
 2. **No dedicated event-level export script for rejected Direct Send attempts**, matching the
    sibling scenario's own disclosed gap for SMTP AUTH rejections.
-   - **Resolution:** Consistent with this library's established pattern (`AGENTS.md` §6) — named as
+   - **Resolution:** Consistent with this library's established pattern (`AGENTS.md` §6) - named as
      the actual, currently-unscripted event source in `README.md` §8 rather than built as a
      speculative `Export-*` script against an unconfirmed `Search-UnifiedAuditLog` `RecordType`.
      Tracked as a `PROGRESS.md` follow-up for a future dedicated export script once the exact
@@ -82,17 +82,17 @@ No Fail items remain.
 
 **Verdict: Pass**
 
-- **Risk reduction vs. cost:** no incremental license cost, and the risk closed — an unauthenticated,
-  internet-reachable path into internal inboxes that requires no credential at all — is concrete,
+- **Risk reduction vs. cost:** no incremental license cost, and the risk closed - an unauthenticated,
+  internet-reachable path into internal inboxes that requires no credential at all - is concrete,
   not a vague "best practice" argument. The internal-sender-spoofing angle (§2) gives this a direct
   BEC/phishing narrative a board understands without an Exchange-administration explanation.
 - **Board-level narrative:** "we closed the SMTP AUTH door, and we've now closed the door right next
   to it that never needed a key" is a clean, specific two-sentence summary that pairs naturally with
   the `exchange-legacy-auth-block` sibling scenario in the same board conversation.
-- **Business-continuity coordination:** the audit-before-enforce sequencing (§5 Steps 2–3) and the
+- **Business-continuity coordination:** the audit-before-enforce sequencing (§5 Steps 2-3) and the
   explicit migration path (Step 4) before enforcement (Step 5) is the right change-management
-  sequencing — no buyer is asked to flip a tenant-wide switch on faith.
-- **Would I fund this?** Yes — low cost, a real and concretely-explainable risk, complements rather
+  sequencing - no organization is asked to flip a tenant-wide switch on faith.
+- **Would I fund this?** Yes - low cost, a real and concretely-explainable risk, complements rather
   than duplicates the existing legacy-authentication scenarios, and the exception path (certificate-
   based relay) gives operations a real "yes, and" answer instead of a blanket "no."
 
@@ -104,27 +104,30 @@ No Fix/Fail raised.
 
 **Verdict: Pass**
 
-1. **`RejectDirectSend` is a genuinely current, documented `Set-OrganizationConfig` parameter** —
-   confirmed directly against its own reference page during this build, not assumed from a blog post
-   or forum thread. The parameter's description text was not returned in full by this build's
-   grounding pass (no default value or edge-case behavior documented beyond type), which is honestly
-   disclosed as a VERIFY in `README.md` §11 rather than papered over with an invented description.
+1. **`RejectDirectSend` is a genuinely current, documented `Set-OrganizationConfig` parameter** -
+   confirmed directly against its own reference page, not assumed from a blog post or forum thread.
+   A 2026-09-26 re-grounding pass pulled the parameter's full descriptive paragraph (§11): `$true`
+   blocks Direct Send only when the sender matches no inbound connector *and* the `MAIL FROM` domain
+   is an accepted domain, `$false` doesn't block it - resolving the edge-case question this review
+   originally flagged. The **default value** and any rollout date for Microsoft's stated plan to
+   disable Direct Send by default remain unpublished, honestly disclosed in `README.md` §11 rather
+   than papered over with an invented value.
 2. **Direct Send and IP-based relay are correctly distinguished as two different mechanisms**, not
    conflated into one control. `design.md` §2's comparison table is grounded directly against
-   Microsoft's own "How to set up a multifunction device or application" reference — the single
+   Microsoft's own "How to set up a multifunction device or application" reference - the single
    canonical source for both mechanisms' documented behavior.
 3. **The certificate-based relay connector recommendation is Microsoft's own documented, stronger
-   alternative**, not an invented workaround — `-RestrictDomainsToCertificate` and
+   alternative**, not an invented workaround - `-RestrictDomainsToCertificate` and
    `-TlsSenderCertificateName` are both confirmed parameters on `New-InboundConnector`, and
    Microsoft's own SMTP relay guidance explicitly prefers a certificate over a static IP where
    possible.
 4. **No deprecated or superseded cmdlet paths used.** `New-/Get-/Set-/Remove-TransportRule`,
    `New-/Get-/Set-/Remove-InboundConnector`, and `Get-/Set-OrganizationConfig` are all current,
-   non-legacy cmdlets in the `ExchangePowerShell` module family — none flagged as deprecated in any
+   non-legacy cmdlets in the `ExchangePowerShell` module family - none flagged as deprecated in any
    source checked during this build.
 5. **The scenario correctly declines to duplicate Defender for Office 365's anti-phishing/anti-
    spoofing capability** (`design.md` §8, Non-goals) rather than reinventing composite-authentication
-   spoof detection with a hand-rolled transport rule — exactly the boundary the Microsoft Product
+   spoof detection with a hand-rolled transport rule - exactly the boundary the Microsoft Product
    Owner lens is meant to catch.
 
 No Fix/Fail raised.

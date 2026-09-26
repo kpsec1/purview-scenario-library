@@ -13,7 +13,7 @@
     only be AND-combined via a per-device sub-group referenced by a "groupId" clause - a materially
     more complex, per-device dynamic-GUID model the parent fragment's four-fixed-GUID design never
     needed (parent design.md Section 5; this fragment's own design.md Section 3). This script closes
-    that gap for a buyer whose approved drives lack a readable serial number - e.g. bulk-imaged
+    that gap for an organization whose approved drives lack a readable serial number - e.g. bulk-imaged
     imaging docks, or third-party hardware whose serialNumber clause macOS reports empty.
 
     This script does NOT create a new Intune profile and does NOT create the "AllRemovableStorage"
