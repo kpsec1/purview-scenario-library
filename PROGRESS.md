@@ -3200,15 +3200,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   pattern, but none is currently tracked.
 
 ### Follow-ups discovered while building the Defender for Endpoint device control macOS Apple/Portable vendorId/productId compound-matching scenario
-- [ ] Build the Apple/Portable `ApprovedAppleDevices`/`ApprovedPortableDevices` group + its
-  `Allow-Approved*Devices` rule from a zero-`serialNumber` starting state, removing this fragment's
-  own disclosed prerequisite ("at least one `serialNumber` device must already be configured for a
-  family before a `vendorId`/`productId` device can be added to it" — `design.md` §3,
-  `defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/README.md`
-  §3/§11). Deliberately deferred in this build to avoid this fragment also owning
-  `Allow-Approved*Devices` rule creation/teardown and `Deny-AllOther*Devices`'s `excludeGroups`
-  reconciliation — object ownership that belongs to
-  `defender-device-control-usb-allowlist-macos-portable-device-coverage`'s own script today.
+- [x] RE-SCOPED, NOT BUILT (2026-09-26, commit `PENDING`): investigated building the Apple/Portable
+  `ApprovedAppleDevices`/`ApprovedPortableDevices` group + its `Allow-Approved*Devices` rule from a
+  zero-`serialNumber` starting state. Grounding found this is not a one-line guard relaxation:
+  Microsoft's own `device_control_policy_schema.json` (same `microsoft/mdatp-devicecontrol` GitHub
+  repo this fragment's other citations use) declares a group's `query.clauses` array
+  `"minItems": 1` — an empty Approved group is schema-invalid, not merely unbuilt, and none of
+  Microsoft's own sample policies use a zero-clause group either. A correct implementation needs
+  the group to always carry at least one clause from *either* matching mechanism (serialNumber
+  or vendorId/productId), which means a real fix is a cross-fragment ownership/sequencing redesign
+  (whichever script runs first creates the group, conditioned on the combined device count across
+  both fragments) — not the simple "relax `-gt 0`" fix originally imagined. Documented this finding
+  in `defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching/design.md`
+  §3 and `README.md` §11 rather than attempting an implementation against a design that would
+  produce an invalid policy. **Still not built — a future fragment doing the real ownership
+  redesign remains open, now correctly scoped instead of vaguely described.**
 - [ ] Consider backporting an ordering-hazard-awareness change into
   `defender-device-control-usb-allowlist-macos-portable-device-coverage/deploy/
   Add-MacPortableDeviceCoverage.ps1` itself (e.g. preserving any `groupId` clause it doesn't own
@@ -3429,6 +3435,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Re-scoped (not built) the Apple/Portable zero-`serialNumber` Approved-group follow-up with a
+  concrete schema-validity finding** — commit `PENDING` — 2026-09-26. Sub-task fragment:
+  investigated the open backlog item asking to remove the "at least one `serialNumber` device
+  first" prerequisite on
+  `defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching`. Grounding
+  (Microsoft's own `device_control_policy_schema.json` in the `microsoft/mdatp-devicecontrol`
+  GitHub repo) found a device-control group's `query.clauses` array is schema-constrained to
+  `minItems: 1` — so an empty `ApprovedAppleDevices`/`ApprovedPortableDevices` group is invalid,
+  not just unbuilt, and the fix originally imagined (relaxing a `-gt 0` guard in the prerequisite
+  fragment's script) would produce a policy that fails Microsoft's own validation tooling. Recorded
+  this finding and the real fix's actual shape (a cross-fragment group-ownership/sequencing
+  redesign) in the vendor-product-matching fragment's `design.md` §3 and `README.md` §11. Not
+  built — re-scoped correctly for whoever picks it up next, per this repo's "ground the fact, then
+  build correctly or document the honest gap" discipline (`AGENTS.md` §4).
 - [x] **Backported the server-scoped-vs-per-database `CREATE LOGIN` correction into
   `scan-azure-synapse-and-classify`** — commit `165d740` — 2026-09-25. Sub-task fragment: the
   sibling `bulk-grant-synapse-serverless-access` scenario's own grounding pass had found, via two

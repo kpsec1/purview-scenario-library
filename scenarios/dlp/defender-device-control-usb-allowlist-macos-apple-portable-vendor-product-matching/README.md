@@ -232,8 +232,12 @@ entry from the relevant family's array in the config file and re-run
 - **This fragment requires at least one `serialNumber` device already configured for a family before
   it can add a vendorId/productId device to that same family** (`design.md` §3) — it never creates
   `ApprovedAppleDevices`/`ApprovedPortableDevices` or their Allow rules from a zero-`serialNumber`
-  starting state. Tracked as a follow-up in `PROGRESS.md` for a future fragment that would remove
-  this restriction.
+  starting state. Not a mere convenience gap: Microsoft's own `device_control_policy_schema.json`
+  declares a group's `query.clauses` array `"minItems": 1`, so an empty Approved group is
+  schema-invalid, not just unbuilt — a real fix needs a cross-fragment ownership/sequencing change
+  (whichever script runs first creates the group, conditioned on the *combined* serialNumber +
+  vendorId/productId count), not a one-line guard relaxation (`design.md` §3, 2026-09-26 update).
+  Tracked as a re-scoped follow-up in `PROGRESS.md`.
 - **KNOWN CROSS-FRAGMENT ORDERING HAZARD, more severe than the Bluetooth sibling's own disclosed
   equivalent (`design.md` §7):** if `defender-device-control-usb-allowlist-macos-portable-device-
   coverage`'s own `Add-MacPortableDeviceCoverage.ps1 -Force` is re-run after this fragment, it

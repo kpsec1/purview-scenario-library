@@ -83,6 +83,26 @@ here without a concrete requirement to validate the design against (the same "do
 concrete need" discipline the Bluetooth sibling fragment's own `design.md` §5 already applies to its
 own deferred multi-device support).
 
+**Grounding update (2026-09-26): this is not just an unbuilt convenience — Microsoft's own JSON
+Schema makes a naive implementation actively unsafe to attempt.** A later grounding pass fetched
+`macOS/policy/device_control_policy_schema.json` from the same
+`microsoft/mdatp-devicecontrol` GitHub repository this fragment's other citations already use, and
+confirmed a group's `query.clauses` array is declared `"minItems": 1` — a group can never legally
+have zero clauses. This means the follow-up as originally imagined ("relax
+`Add-MacPortableDeviceCoverage.ps1`'s `-gt 0` guard so it always creates
+`ApprovedAppleDevices`/`ApprovedPortableDevices`, even with zero configured devices") would produce
+a schema-invalid policy document — an empty `or`-type group — that Microsoft's own
+`mdatp device-control policy validate` tooling should reject before deployment. No sample policy in
+that repository's `samples/` directory uses a zero-clause group either, consistent with this being
+disallowed rather than merely unrecommended. A correct "build from a zero-`serialNumber` starting
+state" implementation would therefore need the **group to always carry at least one clause from
+one of the two matching mechanisms** — meaning whichever script runs first (this fragment or
+`portable-device-coverage`) would need to be the one that actually creates the group, conditioned
+on the combined serialNumber + vendorId/productId device count being ≥ 1, not on either count
+alone. That is a real ownership/sequencing redesign across both fragments, not a one-line guard
+relaxation — re-scoped as such in `PROGRESS.md` rather than left as a vaguer "consider building
+this" item.
+
 ## 4. Deterministic per-device sub-group id — a second application of an already-proven scheme, with family-scoped hash input
 
 Same RFC 4122 §4.3 version-5 (name-based, SHA-1) UUID technique as the vendor-product-matching
