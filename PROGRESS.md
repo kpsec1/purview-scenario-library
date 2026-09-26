@@ -3440,7 +3440,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `scan-on-premises-sql-server-and-classify` system scan rule set name VERIFY** —
-  commit `PENDING` — 2026-09-26. Maintenance fragment: grounded the previously-unconfirmed
+  commit `76976c0` — 2026-09-26. Maintenance fragment: grounded the previously-unconfirmed
   `-ScanRulesetName` default (`'SqlServerDatabase'`, `scanRulesetType: 'System'`) against the
   Microsoft Learn "System Scan Rulesets - Get" REST reference, whose own worked example
   (`kind: "AzureStorage"` → `name: "AzureStorage"`) directly confirms a system scan ruleset's `name`
