@@ -112,7 +112,7 @@
     PREREQUISITE DESIGN CHOICE (design.md Section 3): unlike this being buildable from a
     zero-serialNumber-device starting state, this script REFUSES to run for a family if that
     family's "ApprovedAppleDevices"/"ApprovedPortableDevices" group is not already present - it never
-    creates that group or its "Allow-Approved*Devices" rule from scratch. A buyer with zero
+    creates that group or its "Allow-Approved*Devices" rule from scratch. An organization with zero
     serialNumber-matched devices for a family who wants ONLY a vendorId/productId exception must
     first configure at least one serialNumber device for that family via
     defender-device-control-usb-allowlist-macos-portable-device-coverage's own deploy script.

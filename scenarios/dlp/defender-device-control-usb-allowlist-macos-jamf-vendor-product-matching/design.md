@@ -6,7 +6,7 @@
 approved removable-storage devices by `serialNumber` only — the same deliberate scope boundary its
 Intune-managed counterpart, `defender-device-control-usb-allowlist-macos/`, originally drew, and the
 same gap `defender-device-control-usb-allowlist-macos-vendor-product-matching/` (the Intune sibling)
-already closes for Intune-managed fleets. A buyer whose approved drives have no readable serial
+already closes for Intune-managed fleets. An organization whose approved drives have no readable serial
 number — bulk-imaged imaging docks, or third-party enclosures/OEM hardware that report an empty
 `serialNumber` field — cannot use the base JAMF scenario's allowlist for those devices at all. This
 fragment is the direct JAMF-managed counterpart of the Intune vendor-product-matching sibling,
@@ -57,7 +57,7 @@ and `vendorProductDevices` (vendorId/productId), and produces the **complete** p
 final shape the Intune sibling's PATCH produces, generated as a single artifact instead of an
 incremental diff. Practically, this means:
 
-- **This script supersedes, not supplements, the base JAMF scenario's own deploy script.** A buyer
+- **This script supersedes, not supplements, the base JAMF scenario's own deploy script.** An organization
   who needs vendor/product matching runs *this* script instead of (not in addition to)
   `defender-device-control-usb-allowlist-macos-jamf/deploy/New-JamfDeviceControlPolicyJson.ps1`, and
   re-pastes the resulting artifact into the same JAMF Pro "Device Control Policy" property, replacing
@@ -148,7 +148,7 @@ purely for convenience.
 | Relationship to the base JAMF scenario's own script | Supersedes it (run instead of, not alongside) once vendor/product matching is needed | §3 — both scripts write to the same default output path; running this one after the base one is the expected "add vendor/product matching" upgrade path, not a parallel artifact. |
 | Per-device sub-group id | Deterministic RFC 4122 §4.3 UUIDv5, byte-identical namespace + hash-input format to the Intune sibling | §4 — a hybrid Intune+JAMF fleet approving the same device on both paths gets the identical sub-group id on both. |
 | Fixed group/rule GUIDs (`AllRemovableStorage`, `ApprovedBackupDrives`, both rules) | Byte-identical to the base JAMF scenario's and the Intune sibling's constants | Preserves this control family's single-policy-identity discipline across all four deployment/matching combinations (Intune×serialNumber, Intune×vendor/product, JAMF×serialNumber, JAMF×vendor/product). |
-| Backward-compatible output | An empty `vendorProductDevices` list produces output byte-identical to the base scenario's own script | Lets a buyer already running the base scenario adopt this script as a drop-in without a forced content change until they actually add a vendor/product device. |
+| Backward-compatible output | An empty `vendorProductDevices` list produces output byte-identical to the base scenario's own script | Lets an organization already running the base scenario adopt this script as a drop-in without a forced content change until they actually add a vendor/product device. |
 | Orphan handling | Not applicable in the same sense as the Intune sibling (§3) — a removed config entry simply does not appear in the next regenerated artifact | §3 — JAMF's whole-artifact-regeneration model has no live state to leave an orphan behind in; the validate script's orphan check exists only to catch a hand-edited or stale-config artifact. |
 
 ## 8. Non-goals
@@ -161,9 +161,9 @@ purely for convenience.
   non-goals (its `design.md` §8).
 - This scenario does not attempt cryptographic per-unit verification of a vendorId/productId match —
   no such capability exists in this schema (§6).
-- This scenario does not migrate a buyer's existing `serialNumber` clauses to this fragment's
+- This scenario does not migrate an organization's existing `serialNumber` clauses to this fragment's
   mechanism, or recommend one over the other beyond the strength disclosure in §6 — both remain
-  available, buyer's choice per device.
+  available, organization's choice per device.
 - This scenario does not automate JAMF Pro Steps 2–4 (schema update, `DC_in_dlp` toggle, pasting the
   Device Control Policy property) — identical, already-disclosed manual boundary as the base JAMF
   scenario (`README.md` §5 there, referenced unchanged from this scenario's own `README.md` §5).

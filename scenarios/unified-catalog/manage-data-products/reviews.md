@@ -89,8 +89,8 @@ scenario's REST surface can actually observe, not by adding unconfirmed code.
 - **Cost visibility:** unlike `curate-business-glossary` (zero PAYG cost by design), this scenario
   **does** activate billing — one governed asset linked, per Microsoft's own documented trigger.
   `README.md` §10 states this difference up front by name rather than assuming a reader has
-  memorized the sibling scenario's cost model; a buyer evaluating this scenario in isolation (the
-  realistic case — most buyers won't read every prior scenario first) needs that contrast stated
+  memorized the sibling scenario's cost model; an organization evaluating this scenario in isolation (the
+  realistic case — most organizations won't read every prior scenario first) needs that contrast stated
   locally.
   - **Resolution:** §10 rewritten to lead with "unlike `curate-business-glossary`, this scenario
     incurs a PAYG charge" and to clarify the charge is per unique governed asset, deduplicated

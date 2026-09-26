@@ -12,7 +12,7 @@ OMA-URI/XML mechanism.
 
 **Who it's for:** any organization already deploying the Windows sibling scenario across a mixed
 Windows/Mac fleet that would otherwise have **zero** device-identity USB control on every Mac in
-it — a real, common gap once a buyer has macOS-using engineering, design, or executive staff
+it — a real, common gap once an organization has macOS-using engineering, design, or executive staff
 alongside a Windows-majority estate.
 
 ## 2. Business/regulatory driver
@@ -252,7 +252,7 @@ the policy definition remains); add `-Purge` to permanently delete the device co
   Unlike the Windows sibling (which can mix `SerialNumberId` and `VID_PID` freely in one group),
   macOS's schema requires a separate per-device sub-group to AND a vendor+product pair together —
   a materially more complex, dynamic-GUID idempotency model this fragment deliberately defers
-  rather than build unverified (`design.md` §5). A buyer whose approved drives lack a readable
+  rather than build unverified (`design.md` §5). An organization whose approved drives lack a readable
   serial number cannot use this scenario as-is; that gap is tracked as a follow-up, not silently
   dropped.
 - **Full Disk Access for `com.microsoft.dlp.daemon` is a hard, silent prerequisite.** A Mac

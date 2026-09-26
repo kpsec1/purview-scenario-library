@@ -31,7 +31,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    download, USB copy, printing, or a personal cloud-storage upload — none inspected by this
    scenario's Exchange/Teams-only policy.
    - **Resolution:** Rewrote the relevant `README.md` §11 bullet to state this plainly as a real,
-     exploitable gap ("communicate this plainly to a buyer: this scenario closes one exfiltration
+     exploitable gap ("communicate this plainly to an organization: this scenario closes one exfiltration
      channel for risky users, not all of them") rather than a scoping technicality, and named the
      specific bypass techniques.
 3. **Risk-level reset timing could be gamed by a patient attacker.** A red-teamer who suspects
@@ -113,7 +113,7 @@ operable control, with the one documentation clarification above applied.
   risk program has flagged, without waiting for an analyst to act, and we ease off automatically
   once the risk is resolved" is a strong, defensible narrative — and, post-fix, an honestly
   scoped one about what channel it closes and what it doesn't (§11).
-- **Would I fund this?** Yes, for a buyer who already has (or is deploying via this library) a
+- **Would I fund this?** Yes, for an organization that already has (or is deploying via this library) a
   tuned feeder IRM policy and has read and accepted the HR/Legal coordination note above — not
   as a first Purview investment on its own.
 

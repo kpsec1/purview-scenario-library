@@ -7,7 +7,7 @@ dedicated and/or serverless SQL pools against Microsoft's **system default** sca
 (`AzureSynapseSQL`): every built-in classification Purview ships for this source type, roughly 200
 sensitive information types (SITs). That is the right default for a first, exploratory scan — you
 don't yet know what's in the workspace, so cast the widest net. It is the wrong steady-state
-configuration for a buyer who already knows their compliance driver is narrow (PCI cardholder data,
+configuration for an organization that already knows their compliance driver is narrow (PCI cardholder data,
 or a PII-only privacy program) and does not want a catalog cluttered with ~198 classification types
 they will never act on, nor a scan that spends time comparing every column against patterns for
 currencies, credentials, and national ID formats that will never apply to their program — a real
@@ -48,7 +48,7 @@ sibling's system-name-equals-kind-name shortcut does not hold here.
    Analytics scan in the account that wants this same narrower scope.
 4. **Fail loudly on an implausible result, rather than silently deploying a near-no-op ruleset.**
    Same guard as the sibling: hard-fail if the discovered system-classification count is smaller
-   than the number of classifications the buyer asked to retain.
+   than the number of classifications the deploying organization asked to retain.
 5. **Detach before delete.** Same as the sibling — no Microsoft documentation found confirms
    whether deleting an in-use scan rule set succeeds, is rejected, or orphans the scan's reference.
    `deploy/Remove-PiiOnlyScanRuleset.ps1` always reverts the scan first.
@@ -65,7 +65,7 @@ sibling's system-name-equals-kind-name shortcut does not hold here.
    AzureSynapseWorkspace`). `deploy/Remove-PiiOnlyScanRuleset.ps1`'s `-RevertToRulesetName` default
    is hard-coded to the correct, independently-confirmed string (`'AzureSynapseSQL'`) rather than
    derived from the ruleset `kind` constant used elsewhere in the same script — see `README.md`
-   §11 for the buyer-facing callout of this trap.
+   §11 for the organization-facing callout of this trap.
 
 ## 3. Architecture
 

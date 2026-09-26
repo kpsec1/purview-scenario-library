@@ -18,7 +18,7 @@ this file was finalized (see "Resolution" under each). No **Fail** items were ra
    `auto-label-eu-personal-data-sharepoint` and this scenario both accept the same-shaped
    localization parameter and default to the same three-SIT bundle, which invites an operator to
    assume the tenant's "EU personal-data program" is configured consistently across both channels.
-   Nothing enforces that: a buyer who narrows one script's SIT list (e.g., to Germany + France
+   Nothing enforces that: an organization that narrows one script's SIT list (e.g., to Germany + France
    only) and not the other's ends up with a data class that's caught in one channel and silently
    missed in the other, with neither script erroring or warning. This is a new finding specific to
    this scenario's existence as a combination of two independently-parameterized siblings — neither
@@ -82,7 +82,7 @@ No remaining Fix/Fail after resolution.
 3. **Activity Explorer's policy/rule attribution gap is now materially more consequential with a
    third Exchange-targeting policy in play, and this needed to be stated plainly rather than
    inherited by reference alone.** With three sibling-family policies now potentially targeting
-   Exchange in the same tenant (this scenario, `auto-label-confidential-exchange`, and — if a buyer
+   Exchange in the same tenant (this scenario, `auto-label-confidential-exchange`, and — if an organization
    ever adds — others), Activity Explorer's inability to name which specific policy applied a label
    becomes a real "which of our three policies did this" question, not a hypothetical one.
    - **Resolution:** `README.md` §7 step 4 updated to name the three-policy scenario explicitly
@@ -200,7 +200,7 @@ updates.
   matching the new opt-in SITs.
 - The cross-scenario `-SensitiveInfoTypeName` drift finding from round 1 (this scenario vs. the
   SharePoint/OneDrive sibling) now also applies to `-IncludeTravelDocumentSits` specifically: a
-  buyer could enable the bundle on one channel and not the other. This is the same finding, not a
+  organization could enable the bundle on one channel and not the other. This is the same finding, not a
   new one — the existing `README.md` §8 standing review-cadence check ("confirm both scripts'
   `-SensitiveInfoTypeName` lists match") already covers it without a bulletin change, since the
   bundle switch only changes what's *in* that list, not the drift risk itself.
@@ -237,7 +237,7 @@ No Fix/Fail items from this lens.
   `README.md` §11 — a CISO evaluating this switch for email specifically sees both risks together,
   not just the file-scoped one.
 - Would I fund this? Yes — it removes an inconsistency (a switch available on one channel but not
-  its sibling) that would otherwise be a natural buyer question, at no additional cost.
+  its sibling) that would otherwise be a natural organization question, at no additional cost.
 
 No Fix/Fail items from this lens.
 

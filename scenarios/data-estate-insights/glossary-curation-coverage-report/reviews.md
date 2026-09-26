@@ -71,7 +71,7 @@ No remaining Fix/Fail after resolution.
    confirming as a deliberate non-goal rather than an oversight.
    - **Resolution:** No change needed; confirmed as correctly scoped — the trend log and per-run
      breakdown JSON (which carries `systemData.createdAt`, per `README.md` §8) are what make such a
-     rule buildable by the buyer's own SIEM, consistent with `design.md` §8's stated non-goal.
+     rule buildable by the deploying organization's own SIEM, consistent with `design.md` §8's stated non-goal.
 
 No remaining Fail. The two Fixes bring this scenario's operational guidance to the standard this
 repo's `classification-coverage-report` sibling already sets.
@@ -92,7 +92,7 @@ repo's `classification-coverage-report` sibling already sets.
    "may not scale" caveat.
 3. **The scope-boundary disclosure (classic glossary model vs. Unified Catalog Terms model,
    `README.md` §11) is the single most important thing this scenario had to get right before being
-   handed to a board or GRC tool** — a buyer who hasn't migrated to Unified Catalog terms would
+   handed to a board or GRC tool** — an organization that hasn't migrated to Unified Catalog terms would
    otherwise be shown a false "your glossary is empty" signal instead of "you're on a different
    glossary model this report doesn't cover." Stating this plainly, rather than letting a reader
    discover it by getting zero results, is exactly the kind of transparency a CISO needs before

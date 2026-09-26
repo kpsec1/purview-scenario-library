@@ -32,7 +32,7 @@ Regulatory/business drivers this scenario supports:
   the trusted-grounding set entirely, closing that vector at the data-source level rather than relying
   on prompt-level defenses.
 - **A "trusted sources only" narrative for AI governance reviews** — pairs with this repo's other
-  three Copilot-location rules to let a buyer state, with specifics, exactly which categories of
+  three Copilot-location rules to let an organization state, with specifics, exactly which categories of
   content Copilot is barred from grounding on (sensitive-labeled content, SIT-laden prompts, and now
   untrusted external email) — see `design.md` §2 for why this driver is framed differently from the
   other three rules.
@@ -279,7 +279,7 @@ policy intact.
   see §8's KPI guidance; a naive "alert count went up" read of this rule's dashboard will
   systematically over-alarm relative to its three siblings.
 - **Does not, by itself, defend against prompt injection delivered through any channel other than
-  email** — see `design.md` §7's explicit non-goal. A buyer asking "are we now protected from
+  email** — see `design.md` §7's explicit non-goal. An organization asking "are we now protected from
   prompt injection in Copilot" should be told this closes exactly one documented vector, not the
   general problem.
 

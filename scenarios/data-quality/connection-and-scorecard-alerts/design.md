@@ -34,7 +34,7 @@ gaps directly, following the same `PROGRESS.md` follow-up that scoped it.
    existence-check machinery where it isn't needed.
 4. **Compose with, don't duplicate, this repo's existing Data Quality scenario.** Same governance
    domain ("Customer Experience"), same data product ("Customer 360"), same data asset ("Customer"
-   / Azure SQL `customerdb.dbo.Customers`) as `rules-and-scorecards` — a buyer evaluating this repo
+   / Azure SQL `customerdb.dbo.Customers`) as `rules-and-scorecards` — an organization evaluating this repo
    end to end sees one asset connected, ruled, scheduled, scored, *and* alerted, not four
    disconnected demos.
 5. **Stay inside confirmed API surface.** Every request-body field this scenario's scripts send

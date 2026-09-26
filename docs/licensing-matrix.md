@@ -86,7 +86,7 @@ equivalents unless noted — always confirm against Product Terms for GCC/GCC-Hi
 
 ## 3. Add-on SKUs that unlock E5-tier Purview without full E5
 
-Buyers on E3 frequently license Purview via targeted add-ons rather than upgrading to full E5:
+Organizations on E3 frequently license Purview via targeted add-ons rather than upgrading to full E5:
 
 - **Microsoft Purview Suite** (formerly Microsoft 365 E5 Compliance) — the broad compliance bundle.
 - **Microsoft 365 E5 Information Protection & Governance (IP&G)** — labeling, DLP-advanced, DLM, Records.
@@ -182,15 +182,15 @@ Purview modules.
 > The second scenario's Moderate-risk policy additionally uses Conditional Access's **Terms of
 > Use** grant control, whose own feature floor is a lower **Microsoft Entra ID P1**
 > [[9]](#sources-microsoft-learn--re-verify-before-quoting) — already satisfied by the P2
-> requirement below, since P2 is a superset of P1 entitlement. Called out only so a buyer
+> requirement below, since P2 is a superset of P1 entitlement. Called out only so an organization
 > evaluating the Terms of Use policy in isolation (without the Insider Risk condition, or without
 > the Elevated sibling) knows the *feature's own* floor, not just this table's overall floor.
 
 | Requirement | Minimum entitlement | Notes |
 |---|---|---|
-| Conditional Access Insider Risk condition | **Microsoft Entra ID P2** — standalone, or bundled in **Microsoft 365 E5** / **Microsoft 365 E5 Security** | Confirmed on Microsoft's own Conditional Access Insider Risk recommendation page [[8]](#sources-microsoft-learn--re-verify-before-quoting). **Entra ID P1 alone is not sufficient** for this specific condition, even though P1 covers Conditional Access generally and administrative units (§4) — a buyer who licensed P1 only for administrative-unit scoping is **not** automatically covered for this scenario. |
+| Conditional Access Insider Risk condition | **Microsoft Entra ID P2** — standalone, or bundled in **Microsoft 365 E5** / **Microsoft 365 E5 Security** | Confirmed on Microsoft's own Conditional Access Insider Risk recommendation page [[8]](#sources-microsoft-learn--re-verify-before-quoting). **Entra ID P1 alone is not sufficient** for this specific condition, even though P1 covers Conditional Access generally and administrative units (§4) — an organization that licensed P1 only for administrative-unit scoping is **not** automatically covered for this scenario. |
 | Feeder Adaptive Protection signal | Same as the Adaptive Protection row in §2 (E5/Suite, built on IRM + DLP) | Not a new requirement — this scenario consumes the same insider risk level Adaptive Protection already computes for the DLP-based `dynamic-risk-dlp-enforcement` sibling scenario. |
-| Population sizing | Every user in the Conditional Access policy's **Users** scope needs Entra ID P2 | Not just admins/security staff — if the policy's `includeUsers` is `All` (this scenario's default, matching Microsoft's own documented procedure), P2 coverage must extend tenant-wide before enabling enforcement. Confirm actual P2 seat count against the policy's real scope before a sales commitment — this is a common licensing-compliance trap when a buyer already has *some* P2 seats (e.g. for Entra ID Protection risk policies) but not full coverage. |
+| Population sizing | Every user in the Conditional Access policy's **Users** scope needs Entra ID P2 | Not just admins/security staff — if the policy's `includeUsers` is `All` (this scenario's default, matching Microsoft's own documented procedure), P2 coverage must extend tenant-wide before enabling enforcement. Confirm actual P2 seat count against the policy's real scope before a sales commitment — this is a common licensing-compliance trap when an organization already has *some* P2 seats (e.g. for Entra ID Protection risk policies) but not full coverage. |
 
 > **VERIFY (pilot tenant or a future Microsoft Learn licensing-enforcement pass):** exactly what
 > happens at sign-in for a user in scope of this policy who does **not** hold Entra ID P2 —
@@ -215,7 +215,7 @@ library built on **Microsoft Entra Conditional Access** rather than a Purview po
 the **first that needs only Microsoft Entra ID P1**, not the P2 both §8 scenarios require. Its
 `clientAppTypes` condition and `block` grant control use no risk-based or premium-only condition,
 so Microsoft's own Conditional Access licensing reference confirms the P1 floor applies
-[[10]](#sources-microsoft-learn--re-verify-before-quoting) — a buyer already at Microsoft 365 E3
+[[10]](#sources-microsoft-learn--re-verify-before-quoting) — an organization already at Microsoft 365 E3
 (which bundles Entra ID P1) needs **no incremental identity license** for this specific scenario,
 unlike either §8 scenario.
 
@@ -226,7 +226,7 @@ unlike either §8 scenario.
 | No Conditional Access license at all (Entra ID Free) | **Security defaults**, at no cost | A separate, zero-customization mechanism that also blocks legacy authentication — not this scenario's scripted path [[13]](#sources-microsoft-learn--re-verify-before-quoting). |
 
 **Cost note for a CISO conversation:** this is the cheapest Conditional-Access-based adjacency in
-this library — for a buyer already licensed at Microsoft 365 E3 or higher (which the large
+this library — for an organization already licensed at Microsoft 365 E3 or higher (which the large
 majority of this library's other Purview scenarios already assume for E5/Suite features, or which
 bundles P1 even below E5), this scenario typically adds **zero incremental license cost**, and if
 the tenant already holds Entra ID P2 or Microsoft 365 Business Premium, the underlying control may

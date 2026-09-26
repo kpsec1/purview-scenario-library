@@ -119,7 +119,7 @@ No remaining Fix/Fail after resolution.
 2. **No new licensing spend.** Confirmed — this scenario reuses the base scenario's PAYG Data Map
    billing with no new consumption meter, and does not add a second SHIR host or change the base
    scenario's own infrastructure cost (`README.md` §10).
-3. **Compliance narrative is directly demonstrable**, and speaks to exactly the question a buyer's
+3. **Compliance narrative is directly demonstrable**, and speaks to exactly the question an organization's
    auditor is most likely to ask about an on-premises estate: "the SQL Server instance nobody's
    touched since before the cloud migration — how do you know what's in it now, and why is your
    classification scope what it is?" A scoped `excludedSystemClassifications` array on that

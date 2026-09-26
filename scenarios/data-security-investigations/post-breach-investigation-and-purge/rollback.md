@@ -51,7 +51,7 @@ explicitly out of this scenario's scope (README.md §3).
 
 - **A completed hard purge.** Hard purge is permanent and irreversible by Microsoft's own design
   (README.md §6) — there is no rollback for it, from this scenario's scripts, the Purview portal, or
-  Microsoft support. This is the single most important fact to communicate to a buyer before they
+  Microsoft support. This is the single most important fact to communicate to an organization before they
   grant Investigator/Admin access: revoking role-group membership after the fact does not undo
   anything already purged.
 - **A completed soft purge**, past its retention window. Soft-purged items sit in Recoverable Items

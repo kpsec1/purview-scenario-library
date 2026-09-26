@@ -269,7 +269,7 @@ to permanently delete the policy and its rules.
   §2/§6). This scenario's deploy script still does **not** automate that one-time tenant
   toggle — it remains a manual/portal prerequisite step (§3) run once per tenant, not a
   repeatable per-scenario action, and app-only certificate/managed-identity automation of it (per
-  the now-documented surface 5 pattern) is a candidate follow-up if a buyer wants it scripted
+  the now-documented surface 5 pattern) is a candidate follow-up if an organization wants it scripted
   rather than run by hand.
 - **Auto-labeling is not instantaneous.** Content is evaluated on an ongoing scan cadence, not the
   instant a file is saved; budget for a delay between upload and label appearing, and don't test

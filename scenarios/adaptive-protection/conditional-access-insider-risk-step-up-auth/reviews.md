@@ -30,7 +30,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    Moderate/Minor treatment without stating plainly that the Moderate policy only evaluates
    sign-ins to **Microsoft Admin Portals** — matching Microsoft's own documented scope exactly, but
    meaning a non-admin Moderate-risk user who never touches an admin portal may never be prompted
-   at all. A buyer could reasonably assume broader coverage than this control actually provides.
+   at all. An organization could reasonably assume broader coverage than this control actually provides.
    - **Resolution:** Added an explicit `README.md` §11 bullet naming this scope limitation plainly
      and positioning the control as a complement to (not a substitute for) the DLP sibling's own
      Moderate/Minor audit rule, which does inspect regular content-sharing activity.
@@ -96,7 +96,7 @@ once the additions above are in place.
   Microsoft-recommended, graduated response across all three risk tiers, not just the highest one"
   is a defensible, complete-looking story — provided the CISO framing above (notice, not a
   barrier) is used honestly rather than oversold.
-- **Would I fund this?** Yes, for a buyer who has already funded (or is funding) the Elevated
+- **Would I fund this?** Yes, for an organization that has already funded (or is funding) the Elevated
   sibling — this is a small, cheap addition that completes the documented three-tier picture. Not
   worth funding in isolation without the Elevated sibling already in place, since the real
   technical risk reduction in this control family sits there.

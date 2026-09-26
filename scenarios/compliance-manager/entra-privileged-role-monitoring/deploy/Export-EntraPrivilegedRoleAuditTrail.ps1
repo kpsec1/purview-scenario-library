@@ -62,7 +62,7 @@
     The Entra built-in role display names to monitor. Defaults to the four roles rbac-model.md
     Section 3 documents as carrying implicit Compliance Manager Administration-equivalent access:
     Global Administrator, Compliance Administrator, Compliance Data Administrator, Security
-    Administrator. Parameterized (not hard-coded) so a buyer can extend this to any other role this
+    Administrator. Parameterized (not hard-coded) so an organization can extend this to any other role this
     library's rbac-model.md maps to implicit Purview access for a different module - see README.md
     Section 6.
 

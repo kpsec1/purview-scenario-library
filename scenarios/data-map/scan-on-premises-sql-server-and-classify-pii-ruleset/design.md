@@ -9,7 +9,7 @@ information types (SITs), but left as an explicit, not-fully-confirmed `VERIFY` 
 own `README.md` §11 because no worked example was found pairing `scanRulesetName: "SqlServerDatabase"`
 with `scanRulesetType: "System"` the way every Azure sibling's own build confirmed for its own source
 type. A broad system default is the right choice for a first, exploratory scan of an instance whose
-contents aren't yet known. It is the wrong steady-state configuration for a buyer who already knows
+contents aren't yet known. It is the wrong steady-state configuration for an organization that already knows
 their compliance driver is narrow (PCI cardholder data, or a PII-only privacy program) — and the base
 scenario's own `design.md` §1 makes the stakes of that choice unusually high for this specific source
 type: on-premises SQL Server is "disproportionately likely to be where an organization's oldest,
@@ -52,7 +52,7 @@ assume.
    wants this same narrower scope.
 4. **Fail loudly on an implausible result, rather than silently deploying a near-no-op ruleset.**
    Same guard as every sibling: hard-fail if the discovered system-classification count is smaller
-   than the number of classifications the buyer asked to retain.
+   than the number of classifications the deploying organization asked to retain.
 5. **Detach before delete.** Same as every sibling — no Microsoft documentation found confirms
    whether deleting an in-use scan rule set succeeds, is rejected, or orphans the scan's reference.
    `deploy/Remove-PiiOnlyScanRuleset.ps1` always reverts the scan first.

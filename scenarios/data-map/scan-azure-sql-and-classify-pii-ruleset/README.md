@@ -6,7 +6,7 @@ Extends `scenarios/data-map/scan-azure-sql-and-classify/`: creates a **custom, P
 scan rule set for Azure SQL Database — every system classification excluded except the ones you
 name to keep (U.S. Social Security Number and Credit Card Number by default) — and reconciles the
 base scenario's already-registered scan onto it. The exclusion list is derived at deploy time from
-the tenant's own live classification type definitions (never a hard-coded snapshot), so a buyer
+the tenant's own live classification type definitions (never a hard-coded snapshot), so an organization
 with a narrow compliance driver gets a catalog and a scan that only ever surface the handful of
 classifications their program actually cares about, instead of Microsoft's full ~200-classification
 system set.

@@ -30,7 +30,7 @@ of findings below; all **Fix** items were applied to the scenario before this fi
 2. **This control closes exactly one grounding vector, not the general prompt-injection problem.** A
    determined actor can still attempt prompt injection through any Copilot grounding source this
    rule doesn't touch — an external SharePoint guest share, a Teams message from a guest account, or
-   content surfaced through Rule 1's still-permitted internal web search path. A buyer could read the
+   content surfaced through Rule 1's still-permitted internal web search path. An organization could read the
    use-case narrative in §2 as "Copilot is now protected from prompt injection" if this isn't stated
    plainly.
    - **Resolution:** `design.md` §7 (non-goals) and `README.md` §11 both state explicitly that this
@@ -91,12 +91,12 @@ independently confirmed end-to-end against a live tenant.
    Microsoft's higher "files and emails" Copilot-DLP licensing tier (E5-class), unlike its two
    prompt-facing siblings which Microsoft's own service description marks available to any tenant
    with Copilot access. The first draft cited the source but didn't foreground the practical
-   implication for a buyer who already has the parent policy deployed and might assume this fourth
+   implication for an organization that already has the parent policy deployed and might assume this fourth
    rule is licensing-neutral.
    - **Resolution:** Added a dedicated licensing callout to `README.md` §3 (Prerequisites) in
-     addition to §10 (Cost & licensing notes), so the tier distinction is visible before a buyer gets
+     addition to §10 (Cost & licensing notes), so the tier distinction is visible before an organization gets
      to the cost section, not only after.
-- **Risk reduction vs. cost:** proportionate for a buyer already licensed at the E5-class tier this
+- **Risk reduction vs. cost:** proportionate for an organization already licensed at the E5-class tier this
   rule requires — the control targets a specific, named threat class (untrusted external data
   influencing an AI agent's reasoning) rather than a vague "AI safety" gesture, and costs nothing
   incremental beyond the tier the parent policy's other file/email-facing capabilities may already
@@ -111,7 +111,7 @@ independently confirmed end-to-end against a live tenant.
 - **Would I fund this?** Yes, for an organization already at the E5-class tier and already running
   the parent policy — the incremental engineering cost of one more rule is low and the threat class
   (AI agent manipulated by untrusted external content) is a legitimate, rising concern for any
-  Copilot deployment. Not a reason on its own to upgrade licensing tiers if a buyer is not already
+  Copilot deployment. Not a reason on its own to upgrade licensing tiers if an organization is not already
   there for other reasons.
 
 No remaining Fail after resolution.

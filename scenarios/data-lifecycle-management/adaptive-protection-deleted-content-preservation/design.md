@@ -131,7 +131,7 @@ downstream control.
   Microsoft Support path instead of fabricating one.
 - **This scenario does not cover Priority Cleanup.** A separate Data Lifecycle Management feature
   that also applies retention labels internally and can override holds [[1]](#references) — out
-  of scope, tracked as a possible future fragment in `PROGRESS.md` if a buyer need surfaces.
+  of scope, tracked as a possible future fragment in `PROGRESS.md` if an organization need surfaces.
 - **Preview status.** Directly re-confirmed via `microsoft_docs_fetch` against the live page
   during this build (not carried over from a stale citation): Microsoft's own retention
   documentation still states *"In preview, you can use this solution with Insider Risk

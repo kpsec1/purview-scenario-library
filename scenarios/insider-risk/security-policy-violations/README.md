@@ -27,7 +27,7 @@ tenant-wide (§3, §6) — smaller than either the departing-users (15,000) or r
 siblings, and identical to the priority-users sibling's own cap despite this template requiring no
 priority-group object. `design.md` §3 explains why "scores every onboarded user continuously" is
 not an accurate description of what this template can do at any but a very small tenant's scale,
-correcting that framing before it reaches a buyer.
+correcting that framing before it reaches an organization.
 
 ## 2. Business/regulatory driver
 
@@ -282,7 +282,7 @@ not.
   the tenant — this scenario adds no new licensing tier requirement, only a different policy
   configuration.
 - **Sizing note specific to this template:** because the 1,000-user cap applies **across all
-  policies built from this exact template** in the tenant (§6), a buyer already running a "Security
+  policies built from this exact template** in the tenant (§6), an organization already running a "Security
   policy violations" (base) policy elsewhere — e.g., from a prior, undocumented deployment — has
   less headroom than this scenario's own §5 Step 3 sizing check alone would suggest. Confirm no
   other base-template policy already exists before sizing a new population (manual portal check —

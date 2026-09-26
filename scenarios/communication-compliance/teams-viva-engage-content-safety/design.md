@@ -24,7 +24,7 @@ template: the **Detect inappropriate content** template's fixed configuration �
 
 — is already exactly this scenario's target. Using the template directly means Microsoft owns
 keeping the classifier pairing current; a hand-built custom-policy equivalent would silently drift
-from any future template update. `README.md` §8 documents the two supported deviations a buyer may
+from any future template update. `README.md` §8 documents the two supported deviations an organization may
 legitimately want (adding Copilot as a location; applying the optional
 `deploy/policy/short-form-crisis-threat-phrases.txt` custom keyword dictionary via **Customize
 policy** for a confirmed short-message risk profile — see `README.md` §6/§8) — both opt-in,
@@ -130,7 +130,7 @@ de-duplicate by `(CreationDate, Operations, UserIds, hash(AuditData))`.
 - **Adding this policy's classifiers to Exchange or Copilot as locations.** Exchange is not a
   supported location for this classifier family at all [[4]](README.md#references); Copilot is
   supported by the classifiers in general but not by this specific template's fixed location list
-  [[3]](README.md#references) — `README.md` §8 documents the supported edit for a buyer who wants
+  [[3]](README.md#references) — `README.md` §8 documents the supported edit for an organization that wants
   Copilot coverage as a forward reference, not deployed by this scenario's default.
 - **Building a technical (in-product) routing mechanism for Self-harm matches.** No such capability
   exists to build against (§6) — this scenario's contribution is the documented runbook, not a

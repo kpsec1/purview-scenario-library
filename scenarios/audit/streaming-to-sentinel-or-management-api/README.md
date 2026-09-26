@@ -21,7 +21,7 @@ forensic report and a working detection program. Regulators and frameworks that 
 monitoring and timely detection** (SOC 2 CC7.2, ISO 27001 A.8.16, PCI-DSS Requirement 10) are
 satisfied by log data landing in a SIEM with alerting, not by an admin's ability to run a query after
 being told something is wrong. Two mechanisms exist because they solve different parts of that
-requirement — see §3 for which one (or both) a given buyer needs.
+requirement — see §3 for which one (or both) a given organization needs.
 
 ## 3. Prerequisites
 
@@ -220,7 +220,7 @@ See `rollback.md`.
 ## 11. Known limitations & gotchas
 
 - **Path A does not cover Entra ID audit or DLP events.** Its three data types are Exchange,
-  SharePoint, and Teams only [[9]](#references) — a buyer who also needs those needs Path B (or the
+  SharePoint, and Teams only [[9]](#references) — an organization that also needs those needs Path B (or the
   separate, dedicated Microsoft Entra ID Sentinel connector for `AuditLogs`/`SigninLogs`, not built
   here).
 - **This is not the Microsoft Purview Information Protection (Preview) connector.** That connector
@@ -245,7 +245,7 @@ See `rollback.md`.
   go looking once they do.
 - **Sentinel's Azure-portal experience is being retired in favor of the Defender portal** (after
   March 31, 2027) [[15]](#references) — the data connector itself is unaffected, but screenshots/menu
-  paths in buyer-facing walkthroughs should be re-checked against whichever portal the buyer's
+  paths in organization-facing walkthroughs should be re-checked against whichever portal the deploying organization's
   Sentinel instance actually uses.
 
 ## 12. References

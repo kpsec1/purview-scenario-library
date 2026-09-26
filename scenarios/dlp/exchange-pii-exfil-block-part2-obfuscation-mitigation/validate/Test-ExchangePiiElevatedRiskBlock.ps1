@@ -131,6 +131,6 @@ Write-Host '  [ ] The feeder policy is included in Adaptive Protection scope (Pu
 Write-Host '  [ ] Adaptive Protection itself is turned ON (prerequisite already established in scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/README.md Section 5).'
 Write-Host '  [ ] Purview portal > Insider Risk Management > Adaptive protection > Data Loss Prevention tab lists policy "PII DLP - Exchange External Send Control" - confirms the portal recognizes this rule''s SharedByIRMUserRisk condition as an Adaptive Protection binding.'
 Write-Host '  [ ] At least 36 hours have passed since Adaptive Protection was enabled before concluding a pilot did not work (see README.md Section 11).'
-Write-Host '  [ ] Understood and communicated to the buyer: this control does not detect or block a single, perfectly-executed split-SSN/PAN message - it only shortens the exposure window after a qualifying behavioral signal (README.md Section 11, design.md Section 1).'
+Write-Host '  [ ] Understood and communicated to the deploying organization: this control does not detect or block a single, perfectly-executed split-SSN/PAN message - it only shortens the exposure window after a qualifying behavioral signal (README.md Section 11, design.md Section 1).'
 
 if ($script:failures -gt 0) { exit 1 }

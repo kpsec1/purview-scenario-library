@@ -78,7 +78,7 @@ No remaining Fail. Detection, logging, and the runbook meet the bar for an opera
   high-impact exfiltration channel with no other control in this repo covering it (Teams DLP and
   auto-labeling both stop at the cloud/collaboration boundary); licensing cost is bounded to
   endpoint users who already need E5-tier Purview for other controls in a typical enterprise
-  buyer, and §10 is explicit this is not an incremental Azure/PAYG cost.
+  organization, and §10 is explicit this is not an incremental Azure/PAYG cost.
 - **Change-management impact:** the audit-first IT Data Custodians exception and the staged
   simulation-mode-first rollout are the right call — the same lesson `pci-teams-exfil-block`
   already established in this repo (a control that blocks a legitimate operational workflow on
@@ -90,7 +90,7 @@ No remaining Fail. Detection, logging, and the runbook meet the bar for an opera
 - **Compliance mapping:** correctly scoped as a general-purpose data-loss control referenced
   across GDPR/HIPAA/PCI/SOC2 rather than over-claiming a single named requirement it satisfies —
   §2 is explicit that no single framework mandates this exact control by name, which is honest and
-  avoids a buyer over-representing this scenario to an assessor.
+  avoids an organization over-representing this scenario to an assessor.
 - **Would I fund this?** Yes — the device-onboarding operational cost called out in §10 (separate
   from licensing) is the one line item that needs its own budget line beyond the SKU cost, and
   the scenario is upfront about that rather than burying it.
@@ -110,7 +110,7 @@ No Fix/Fail items from this lens.
    could not be fetched directly during this build to quote verbatim (network egress to
    techcommunity.microsoft.com was blocked in this environment) — only corroborated via two
    independent search-tool summaries of that page. Shipping this without flagging the gap risks a
-   buyer discovering a parameter-validation error at deploy time.
+   organization discovering a parameter-validation error at deploy time.
    - **Resolution:** Added an explicit `VERIFY` note to `README.md` §11 and to the deploy script's
      `.NOTES` block, directing the operator to confirm both strings in a pilot tenant (added as
      §7 step 1, ahead of every other validation step) before relying on `-Mode Enable` in

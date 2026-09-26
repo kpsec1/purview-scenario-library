@@ -55,7 +55,7 @@ No remaining Fix/Fail after resolution.
    the resource definition, not live node connectivity/health — a scan can pass every automated check in
    this repo and still fail at run time because no SHIR node has actually registered and connected yet.
    The original draft mentioned this only in the script's own doc comment, not prominently enough in the
-   README a buyer actually reads first.
+   README an organization actually reads first.
    - **Resolution:** `README.md` §7 now states this explicitly as check 2 (not buried in a script
      comment), naming the exact portal path to confirm node health manually, and the validate script's
      own Check 1 output prints the same caveat inline at run time so it's visible in every invocation,
@@ -102,7 +102,7 @@ No remaining Fail.
    one-time per SHIR (which can then serve multiple sources) — the staged rollback in `rollback.md`
    gives a proportionate off-ramp, including the option to leave the SHIR running for other sources
    while removing just this scenario's data source and scan.
-5. **Would I fund this?** Yes — for any buyer with a partial cloud migration, this closes a real,
+5. **Would I fund this?** Yes — for any organization with a partial cloud migration, this closes a real,
    commonly-overlooked discovery gap, and the incremental engineering cost here is genuinely lower than
    the Azure siblings expected: this build scripted the SHIR resource + auth key via REST, something
    none of the three Azure siblings managed to automate for their own portal-only steps.

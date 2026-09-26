@@ -31,7 +31,7 @@
        silently drop the "addressable is not optional" distinction - README.md Section 11) and
        confirms every scenario path referenced anywhere in the manifest (recommendedDeploymentOrder
        and controlCrosswalk.coverage) that looks like a scenarios/... path actually exists in this
-       repository - catching a stale cross-link before a buyer follows it into a 404.
+       repository - catching a stale cross-link before an organization follows it into a 404.
 
     3. MANUAL (printed as a checklist, never fails the script) - the assessment's existence, scope,
        group, and role assignments, none of which have a documented read API (design.md Section 2).
@@ -203,7 +203,7 @@ else {
 
         # Collect every scenarios/... path mentioned anywhere in the manifest (recommendedDeploymentOrder
         # entries and controlCrosswalk.coverage strings) and confirm each one resolves to a real
-        # directory under the repo's scenarios/ tree - catches a stale cross-link before a buyer
+        # directory under the repo's scenarios/ tree - catches a stale cross-link before an organization
         # follows it into a 404, per this script's own .DESCRIPTION.
         $scenarioPathPattern = 'scenarios/[a-z0-9\-]+/[a-z0-9\-]+/'
         $textToScan = @($manifest.recommendedDeploymentOrder) + @($categories | ForEach-Object { $_.coverage })

@@ -14,7 +14,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    `-Locations` JSON in Microsoft's own reference scopes to the whole tenant
    (`{"Type":"Tenant","Identity":"All"}`). A group-scoped `Inclusions` entry is shown for the
    *collection*-policy cmdlets (`New-/Set-FeatureConfiguration`) but never confirmed for
-   `New-DlpCompliancePolicy` on this location. As drafted, the scenario implied a buyer could
+   `New-DlpCompliancePolicy` on this location. As drafted, the scenario implied an organization could
    simply narrow `Inclusions` to a pilot group the same way this repo's Teams/Endpoint DLP
    scenarios scope to a specific group — that would have been fabricating an unconfirmed capability.
    - **Resolution:** Added an explicit callout to `README.md` §11 stating this is unconfirmed,
@@ -213,7 +213,7 @@ extending scenario — so this is a narrow, targeted check.
 - **🔴 Red Team — Pass.** No control in this scenario changed; the new scenario's own `reviews.md`
   carries its own Red Team findings for the newly-added rule.
 - **🔵 Blue Team — Pass.** No detection/alerting surface in this scenario changed.
-- **🎩 CISO — Pass.** Accurately signals to a buyer that the previously-noted gap has a documented
+- **🎩 CISO — Pass.** Accurately signals to an organization that the previously-noted gap has a documented
   (if still partially unconfirmed) path forward, without overstating that the underlying
   PowerShell-grounding question is fully closed.
 - **🟦 Microsoft Product Owner — Pass.** Confirmed the updated callouts do not overclaim GA status or

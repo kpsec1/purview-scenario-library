@@ -91,7 +91,7 @@ No Fail items remain.
   the `exchange-legacy-auth-block` sibling scenario in the same board conversation.
 - **Business-continuity coordination:** the audit-before-enforce sequencing (§5 Steps 2–3) and the
   explicit migration path (Step 4) before enforcement (Step 5) is the right change-management
-  sequencing — no buyer is asked to flip a tenant-wide switch on faith.
+  sequencing — no organization is asked to flip a tenant-wide switch on faith.
 - **Would I fund this?** Yes — low cost, a real and concretely-explainable risk, complements rather
   than duplicates the existing legacy-authentication scenarios, and the exception path (certificate-
   based relay) gives operations a real "yes, and" answer instead of a blanket "no."

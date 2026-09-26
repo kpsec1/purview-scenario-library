@@ -6,14 +6,14 @@
 **system default** scan rule set: every built-in classification Purview ships for this source
 type, roughly 200 sensitive information types (SITs). That is the right default for a first,
 exploratory scan — you don't yet know what's in the database, so cast the widest net. It is the
-wrong steady-state configuration for a buyer who already knows their compliance driver is narrow
+wrong steady-state configuration for an organization that already knows their compliance driver is narrow
 (PCI cardholder data, or a PII-only privacy program) and does not want a catalog cluttered with
 ~198 classification types they will never act on, nor a scan that spends time comparing every
 column against patterns for currencies, credentials, and national ID formats that will never
 apply to their program.
 
 This scenario builds that narrower rule set — a named allowlist that keeps only the
-classifications the buyer names (SSN and Credit Card Number by default) and excludes every other
+classifications the deploying organization names (SSN and Credit Card Number by default) and excludes every other
 system classification — and reconciles the base scenario's already-registered scan onto it. It was
 explicitly deferred from the base scenario's build (see that scenario's `README.md` §11) because
 the exact REST body for creating a custom scan rule set was not independently confirmed at the
@@ -24,7 +24,7 @@ page (see `README.md` §11 for the full resolution).
 
 1. **Never hand-type the ~200-entry exclusion list.** A PII-only ruleset for Azure SQL Database
    needs `excludedSystemClassifications` to contain essentially every system classification except
-   the ones the buyer wants to keep. Typing that list out by hand from a documentation page risks
+   the ones the deploying organization wants to keep. Typing that list out by hand from a documentation page risks
    silently fabricating or mis-spelling `MICROSOFT.*` identifiers — a violation of `AGENTS.md` §4's
    grounding standard, and a page (`data-map-classification-supported-list`) that in this build's
    own grounding pass turned out to list classifications by **human-readable name only**, with no
@@ -54,7 +54,7 @@ page (see `README.md` §11 for the full resolution).
    `excludedSystemClassifications` from it would produce a ruleset that excludes almost nothing —
    functionally identical to the System default, but silently reported as "PII-only." The deploy
    script hard-fails if the discovered system-classification count is smaller than the number of
-   classifications the buyer asked to retain, since that can never be a valid tenant state.
+   classifications the deploying organization asked to retain, since that can never be a valid tenant state.
 5. **Detach before delete.** No Microsoft documentation this build could find confirms whether
    deleting a scan rule set that is still referenced by a live scan succeeds, is rejected, or
    silently orphans the scan's reference. `deploy/Remove-PiiOnlyScanRuleset.ps1` always reverts the

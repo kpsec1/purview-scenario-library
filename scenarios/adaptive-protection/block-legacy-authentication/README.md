@@ -12,7 +12,7 @@ attacker who obtains valid credentials can use it to bypass every MFA requiremen
 configured elsewhere.
 
 **Who it's for:** any Microsoft 365 tenant with **Microsoft Entra ID P1 or higher** that has not
-already confirmed legacy authentication is blocked — including a buyer deploying this library's
+already confirmed legacy authentication is blocked — including an organization deploying this library's
 own `scenarios/adaptive-protection/conditional-access-insider-risk-block/`, whose own four-lens
 review flagged this exact gap as a Red Team finding (`reviews.md` there, Finding 2: legacy-auth
 clients may not fully honor that scenario's Insider Risk condition). This scenario is a general
@@ -34,7 +34,7 @@ housed alongside this library's other Conditional-Access-based scenarios for dis
   baseline.
 - **SOC 2 / ISO 27001 / PCI DSS control-automation expectations.** "Legacy/basic authentication is
   disabled" is a commonly-assessed identity control across these frameworks' access-control
-  domains; this scenario gives a buyer a scripted, evidenced way to close it.
+  domains; this scenario gives an organization a scripted, evidenced way to close it.
 - **Zero Trust identity guidance.** Microsoft's own Zero Trust identity-protection guidance lists
   blocking legacy authentication as a named recommendation alongside MFA enforcement
   [[1]](#references).
@@ -213,7 +213,7 @@ exclusions) is a Microsoft Entra admin center action outside this scenario's scr
 - **Entra ID P1 floor, not P2.** Unlike this library's other two Conditional-Access-based
   scenarios, this one needs no risk-based condition — Microsoft's own Conditional Access licensing
   reference confirms P1 (or bundled Microsoft 365 Business Premium) is sufficient
-  [[7]](#references). A buyer already licensed at Microsoft 365 E3 (which bundles Entra ID P1)
+  [[7]](#references). An organization already licensed at Microsoft 365 E3 (which bundles Entra ID P1)
   needs **no incremental identity license** for this specific scenario.
 - **Likely already free for a P2/Business Premium tenant.** If the Microsoft-managed policy is
   found (§5 Step 3), this scenario adds **no incremental cost or new object** — it only confirms
@@ -263,7 +263,7 @@ exclusions) is a Microsoft Entra admin center action outside this scenario's scr
   match) rather than an exact-string comparison, to avoid a false "not found" from a minor wording
   difference.
 - **The Microsoft-managed policy's 30-day auto-enable clock is Microsoft's timeline, not this
-  scenario's.** A buyer relying on the Microsoft-managed policy alone should not assume it stays in
+  scenario's.** An organization relying on the Microsoft-managed policy alone should not assume it stays in
   Report-only indefinitely — review and act (exclude break-glass, or explicitly disable if not
   ready) before the auto-enable date rather than being surprised by it.
 

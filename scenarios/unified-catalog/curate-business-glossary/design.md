@@ -9,7 +9,7 @@ names. Microsoft's own Cloud Adoption Framework guidance for Purview names "popu
 as the second step of the data-visibility baseline, right after standing up governance domains
 [[9]](README.md#12-references). Doing this by hand in the portal, one term at a time, does not
 scale past a handful of terms and leaves no reviewable, re-runnable record of who defined what —
-exactly the kind of artifact this repo's buyers expect to manage as code, in a pull request, not
+exactly the kind of artifact this repo's organizations expect to manage as code, in a pull request, not
 as tribal portal-click knowledge.
 
 ## 2. Design goals
@@ -118,4 +118,4 @@ setup walkthrough [[10]](README.md#12-references).
   see `README.md` §11 for the operational implication of bypassing that gate via direct API calls.
 - **Multi-domain governance hierarchies and custom attributes** — this scenario models one
   standalone domain; domain parent/child nesting and org-defined custom attribute groups are a
-  natural larger-scale follow-up once more domains exist in a buyer's catalog.
+  natural larger-scale follow-up once more domains exist in an organization's catalog.

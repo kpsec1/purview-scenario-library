@@ -43,7 +43,7 @@ once this build checked Microsoft's own limits reference — see §3 below.
    `AGENTS.md`'s no-unneeded-abstraction guidance applies directly, the same precedent the sibling
    scenario itself established for the HR-feed script it reused from its own sibling
    (`departing-employee-data-theft`).
-4. **Correct the "scores every onboarded user continuously" framing before it reaches a buyer.**
+4. **Correct the "scores every onboarded user continuously" framing before it reaches an organization.**
    §3 below documents why: the fixed 1,000-user, tenant-wide, per-template-type cap makes an
    "all users" scope infeasible for any organization above roughly that headcount. This scenario's
    README and this design doc state the correction explicitly rather than quietly building around

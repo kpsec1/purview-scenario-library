@@ -102,7 +102,7 @@ session revocation, the moment ID Protection flags a user as risky — no script
 (forwarding, Inbox rules, delegate grants) ID Protection's identity-layer remediation never reaches,
 and for tenants/incidents where automatic risk detection isn't in play (no P2 license, or a
 human-confirmed compromise ID Protection's own signals didn't flag). `README.md` §11 states this
-comparison for buyers evaluating whether they need this scenario alongside ID Protection or instead
+comparison for organizations evaluating whether they need this scenario alongside ID Protection or instead
 of it.
 
 ## 8. Non-goals

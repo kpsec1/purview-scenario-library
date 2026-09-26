@@ -276,11 +276,11 @@ permanently delete the policy and its rules.
   guest-initiated support channels.
 - **Individual-account scoping gap.** A policy location scoped to individual user accounts (not
   groups) does **not** cover standard/private/shared channel messages — only 1:1/n chats. This
-  scenario avoids the gap by using `TeamsLocation = "All"`, but a buyer who narrows scope later
+  scenario avoids the gap by using `TeamsLocation = "All"`, but an organization that narrows scope later
   must re-verify group coverage [[1]](#references).
 - **No user notification email for Teams matches.** Unlike Exchange/SharePoint/OneDrive DLP,
   Teams DLP does not send a notification email to the sender — only an in-Teams message flag
-  [[5]](#references). If a buyer's process assumes an email trail for every block, this scenario's
+  [[5]](#references). If an organization's process assumes an email trail for every block, this scenario's
   admin/SOC alert (not a user-facing email) is the artifact instead.
 - **~1 hour propagation delay** after any policy change before it's fully synced to the Teams
   service — do not test immediately after deploying/updating [[2]](#references).

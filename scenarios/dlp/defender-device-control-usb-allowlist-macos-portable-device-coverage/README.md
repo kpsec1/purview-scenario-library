@@ -10,7 +10,7 @@ This is a companion fragment, not a standalone policy: it widens the parent's ex
 `macOSCustomConfiguration` object's `.mobileconfig` payload in place, adding three new feature
 enables, three new catch-all groups, two optional named allowlists, and five new rules.
 
-**Who it's for:** any buyer who has already deployed (or is deploying) the macOS USB allowlist
+**Who it's for:** any organization that has already deployed (or is deploying) the macOS USB allowlist
 scenario and wants the same "no unapproved device, period" posture to also close the
 iPhone-in-sync-mode, camera-in-PTP-mode, and Bluetooth-file-transfer gaps — typically after a Red
 Team finding, a DLP audit, or an incident where data left over a device that never enumerated as
@@ -303,7 +303,7 @@ is operational: reviewing and maintaining up to two additional approved-device l
   `download_files_from_device` and `send_files_to_device` [[1]](#references) — this fragment's
   `Deny-AllBluetoothDevices` rule blocks those two operations for every Bluetooth device, but has no
   effect on Bluetooth audio, HID (keyboard/mouse), tethering, or pairing itself. Do not describe
-  this control to a buyer as "Bluetooth is disabled" — it is scoped to data exfiltration via file
+  this control to an organization as "Bluetooth is disabled" — it is scoped to data exfiltration via file
   transfer specifically, the same operation-scoped framing Microsoft's own product design uses
   (compare `portableDevice`'s equally narrow, enumerated access-type list rather than a blanket
   "block the device class" switch).

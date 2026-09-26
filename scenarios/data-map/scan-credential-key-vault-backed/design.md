@@ -10,7 +10,7 @@ builds, and both are now wrong: the Purview **Scanning data plane** exposes **Cr
 **Key Vault Connections** as first-class, fully documented operation groups at
 `api-version=2023-09-01` (`README.md` references 1, 4, 5).
 
-The consequence of that wall was concrete, not cosmetic. A buyer automating Data Map onboarding for
+The consequence of that wall was concrete, not cosmetic. An organization automating Data Map onboarding for
 an estate that cannot use the Purview system-assigned managed identity — on-premises SQL Server, or
 anything reached over a **self-hosted integration runtime**, which does not support managed-identity
 authentication — had a pipeline with a mandatory human portal step in the middle of it. This

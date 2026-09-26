@@ -94,7 +94,7 @@ the idempotency defect found in review is fixed, not just documented.
   honest framing in §11 (a compensating layer, not a strong standalone identity boundary, pending
   the VERIFY) is the right level of confidence to sell at — overclaiming "no unapproved device,
   period" for WPD today, given the spoofability finding above, would be a credibility risk in front
-  of a sophisticated buyer's own security team.
+  of a sophisticated organization's own security team.
 - **Change-management impact:** widening the parent's existing object (not a second, competing
   policy) means zero additional assignment/rollout process for an org that has already piloted and
   widened the parent — the KPI note in §8 (expect a deny-event spike immediately after shipping,

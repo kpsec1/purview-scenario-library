@@ -65,11 +65,11 @@ No remaining Fix/Fail after resolution.
      consistent with this repo's per-scenario self-containment convention.
 3. **Running both sibling scripts (`classification-coverage-report` and this scenario) against the
    same scheduler/storage location without an explicit collision check could, in principle, produce
-   confusing output if a buyer's own automation reused one variable name for both `-TrendLogPath`
+   confusing output if an organization's own automation reused one variable name for both `-TrendLogPath`
    values.**
    - **Resolution:** `README.md` §5's scheduling guidance and `design.md` §5's naming-decision row now
      state explicitly that this scenario's file names (`sensitivity-label-coverage-trend.csv`,
-     `<RunId>-<ObjectType>-labels.json`) are distinct from the sibling scenario's own, so a buyer
+     `<RunId>-<ObjectType>-labels.json`) are distinct from the sibling scenario's own, so an organization
      wiring up both scripts in the same pipeline doesn't need to invent disambiguating names
      themselves.
 
@@ -98,7 +98,7 @@ sensitivity-label-specific considerations above.
      `design.md` §1 records the same distinction as a fifth design consideration.
 2. **The licensing story is a genuine, easy-to-miss gate this scenario's §10 correctly surfaces**: the
    upstream "extend sensitivity labels to Data Map" capability requires its own Microsoft 365 E5-tier
-   (or equivalent) license, separate from whatever license justifies Data Map scanning itself — a buyer
+   (or equivalent) license, separate from whatever license justifies Data Map scanning itself — an organization
    evaluating this as a "just add it to the classification report" upsell needs to know this isn't
    free to add.
 3. **Privilege story remains a genuine improvement over the native path**, identical reasoning to the

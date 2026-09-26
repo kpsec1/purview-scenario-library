@@ -30,7 +30,7 @@ Export-AdaptiveProtectionPreservationEvidence.ps1`) still depends on it before r
 ## 2. Decide the fate of already-produced evidence files
 
 - **The rolling CSV** (wherever `-OutputCsvPath` pointed) is an ordinary file this scenario wrote
-  outside of Purview — delete it, archive it, or leave it in place per the buyer's own
+  outside of Purview — delete it, archive it, or leave it in place per the deploying organization's own
   data-retention/evidence-retention policy. As README.md §11 notes, this file is itself a
   compliance evidentiary record (proof that disposition activity did or did not occur in a given
   window) — apply the same handling discipline that governed it while active; do not move it to

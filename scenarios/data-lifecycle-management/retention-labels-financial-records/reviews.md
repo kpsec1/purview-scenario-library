@@ -92,7 +92,7 @@ No remaining Fix/Fail after resolution.
    reproduced from their references; the scenario correctly states that **regulatory records are
    PowerShell-only** (portal hides the option) — an accurate, product-aligned reason to automate.
 2. **Right feature for the obligation.** Regulatory records (Records Management) for WORM, not a plain
-   retention policy — and the ladder to lesser controls is documented so buyers don't over-reach.
+   retention policy — and the ladder to lesser controls is documented so organizations don't over-reach.
 3. **Accurate behavior notes.** 7-day auto-apply latency, classifier age/size limits (noted as not
    applying to the KQL match path used here), one-rule-per-policy, RetryDistribution, and the
    immutability semantics are stated per the docs.

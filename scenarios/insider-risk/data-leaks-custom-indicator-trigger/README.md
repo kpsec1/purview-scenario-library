@@ -34,7 +34,7 @@ mechanism's own specific value:
   indicators cover exactly Box, Dropbox, Google Drive, Amazon S3, and Azure
   (`data-leaks/README.md` §6) — any other SaaS app (Salesforce, a niche vertical SaaS tool, an internal
   system with its own audit log) has no native Insider Risk Management connector at all. This is the
-  only mechanism in this library that closes that gap, provided the buyer already has (or builds) an
+  only mechanism in this library that closes that gap, provided the deploying organization already has (or builds) an
   upstream aggregation pipeline for it.
 - **Consolidated investigation surface.** Once ingested, a custom-indicator-driven alert appears
   alongside every other Insider Risk Management alert in the same **Alerts dashboard**, **Activity
@@ -345,7 +345,7 @@ revoking the app registration's certificate is not.
   cloud-storage/cloud-service built-in indicators either sibling scenario can optionally add.
 - **The third-party CASB/DLP/SIEM tool supplying the source detections is a separate license and cost,
   entirely outside this scenario's scope** — do not present this scenario as license-neutral if the
-  buyer doesn't already own that tooling; it is the prerequisite this scenario assumes, not something it
+  organization doesn't already own that tooling; it is the prerequisite this scenario assumes, not something it
   provisions (`design.md` §7).
 - **Sizing note:** this template's actively-scored-user cap is 15,000, **shared cumulatively** across
   every policy built from this exact template — now a three-way pool if both sibling scenarios in this
@@ -371,7 +371,7 @@ revoking the app registration's certificate is not.
   deletes tenant state, but whether an unchanged row is re-scored, ignored, or duplicated server-side is
   unconfirmed. **VERIFY (pilot tenant)**.
 - **This scenario does not perform the third-party detection or its aggregation.** It starts from an
-  already-aggregated CSV; the buyer's own CASB/DLP/SIEM tooling and its own licensing, tuning, and
+  already-aggregated CSV; the deploying organization's own CASB/DLP/SIEM tooling and its own licensing, tuning, and
   false-positive/negative rate are all prerequisites this scenario assumes, not something it builds or
   can validate (`design.md` §7).
 - **This pipeline validates the uploaded CSV's *shape*, not its *provenance* — it introduces a new
@@ -408,7 +408,7 @@ revoking the app registration's certificate is not.
 - **Cannot disambiguate which Insider Risk Management policy produced a given exported alert if more
   than one policy is deployed in the same tenant** — same disclosed gap as every IRM scenario in this
   library, sharper here with up to three Data-leaks-template siblings potentially coexisting.
-- **This scenario does not configure Adaptive Protection** — a buyer who wants this policy's alerts to
+- **This scenario does not configure Adaptive Protection** — an organization that wants this policy's alerts to
   drive DLP enforcement wires it into `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/`
   separately.
 

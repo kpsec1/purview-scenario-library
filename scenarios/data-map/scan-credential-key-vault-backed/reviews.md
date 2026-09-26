@@ -160,7 +160,7 @@ No remaining Fix/Fail after resolution.
 
 4. **Residual risk, accepted and bounded: the two unconfirmed field literals.** A production-first
    deployment could fail on a field shape no Microsoft source pins (§11). This is the one place
-   this fragment could waste a buyer's time.
+   this fragment could waste an organization's time.
    - **Resolution:** mitigated rather than hidden. The two values are parameters with researched
      defaults, `validate/` prints the observed values and treats a mismatch as `[WARN]` (not
      `[FAIL]`, so operators don't learn to ignore the one check that can close the question), and

@@ -69,7 +69,7 @@
     in this run - same alerting contract as the parent scenario's deploy script.
 
 .PARAMETER KnownDomainsConfigPath
-    Path to the SAME buyer-curated known-domains JSON config the parent scenario uses (schema:
+    Path to the SAME organization-curated known-domains JSON config the parent scenario uses (schema:
     ../accepted-domains-hygiene-check/deploy/KnownDomains.sample.json). Reused, not duplicated -
     design.md Sec 7: a domain's reviewed status is a business decision independent of which Exchange
     environment currently hosts its mail.
@@ -239,7 +239,7 @@ function Assert-OnPremisesExchangeSession {
 
 Assert-OnPremisesExchangeSession
 
-# --- Load the buyer-curated known-domains config - SAME file the parent scenario uses (design.md Sec 7) ---
+# --- Load the organization-curated known-domains config - SAME file the parent scenario uses (design.md Sec 7) ---
 $knownConfig = Get-Content -Path $KnownDomainsConfigPath -Raw | ConvertFrom-Json
 $knownByDomain = @{}
 foreach ($entry in $knownConfig.knownDomains) {
@@ -386,7 +386,7 @@ if ($CloudBaselinePath) {
         }
 
         # design.md Sec 4/Sec 9: adds two sibling categories to CrossEnvironmentMismatch, once a
-        # concrete buyer need surfaced (PROGRESS.md follow-up) - separate categories, not additional
+        # concrete organization need surfaced (PROGRESS.md follow-up) - separate categories, not additional
         # findings under the same 'CrossEnvironmentMismatch' name, so a domain that diverges on more
         # than one field never collides on the drift log's (RunId, Category, DomainName) row key. Same
         # ExternalRelay exclusion above applies to both new checks.

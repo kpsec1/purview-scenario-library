@@ -12,7 +12,7 @@ exfiltration-adjacent activity such an attempt produces, and automatically block
 from any further external Teams sharing once their insider risk level reaches **Elevated** —
 closing the channel for continued attempts, not the first one.
 
-**Who it's for:** a buyer who has already deployed `scenarios/dlp/pci-teams-exfil-block/` and
+**Who it's for:** an organization that has already deployed `scenarios/dlp/pci-teams-exfil-block/` and
 wants the documented residual risk in its `reviews.md` addressed with a real, working control
 rather than left as a permanent gap — while understanding plainly what this control can and
 cannot do (§11).
@@ -231,7 +231,7 @@ Protection, DLP, and the one Communication Compliance indicator it enables. No P
   Microsoft Purview capability performs cross-message content reconstruction or correlation as of
   this writing (grounded during this build — see `design.md` §1). This fragment is a behavioral
   compensating control that shortens the *exposure window after* a qualifying signal, not a fix
-  for the underlying per-message pattern-matching limitation. State this plainly to a buyer —
+  for the underlying per-message pattern-matching limitation. State this plainly to an organization —
   overclaiming here is the single easiest way to lose credibility with a technical reviewer.
 - **Microsoft Teams DLP alerts are explicitly not a supported Insider Risk Management trigger
   workload.** Microsoft's own documentation states this "is by design" — only Exchange Online,

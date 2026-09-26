@@ -22,10 +22,10 @@ activity that constitutes theft (downloading a client list, a source-code reposi
 pipeline) is often indistinguishable from ordinary work *unless* it's correlated against
 employment status and volume/pattern. No regulation names "insider risk management" as a
 required control the way PCI DSS names messaging-technology PAN protection, but this control
-supports several drivers a buyer's compliance program will already be tracking:
+supports several drivers an organization's compliance program will already be tracking:
 
 - **Trade secret / IP protection** and **contractual confidentiality obligations** — the
-  business rationale most buyers lead with; this is the technical control that lets a company
+  business rationale most organizations lead with; this is the technical control that lets a company
   demonstrate it had a monitoring program in place, which matters materially in trade-secret
   litigation (misappropriation claims commonly turn on whether "reasonable measures" to protect
   the secret existed).
@@ -340,12 +340,12 @@ deleting the policy, connector, or the HR-connector app registration's client se
   [[1]](#references). Office/device indicators on M365 signals are covered by the base
   entitlement with no PAYG component.
 - **No additional cost for the HR connector or Graph alert export** — both are included
-  capabilities of the base entitlement; the only infrastructure cost is wherever the buyer
+  capabilities of the base entitlement; the only infrastructure cost is wherever the deploying organization
   schedules the two PowerShell scripts (a lightweight, low-frequency scheduled task — no
   meaningful compute cost).
 - **Sizing note:** license scope should match who is *scored*, not just who administers the
   policy — every user in the policy's scope (§6, default "All users") needs the qualifying
-  entitlement, which for most enterprise buyers targeting this control means org-wide E5, not
+  entitlement, which for most enterprise organizations targeting this control means org-wide E5, not
   a narrow subset (contrast with `scenarios/dlp/pci-teams-exfil-block/`, which scopes licensing
   to a narrow user population).
 

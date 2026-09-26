@@ -150,7 +150,7 @@ cmdlet module for Unified Catalog term reads today.
 
 **Scheduling:** this scenario ships no scheduler-specific code — wire
 `deploy/Export-GlossaryCurationCoverageReport.ps1` into whatever recurring-execution mechanism the
-buyer already runs other PowerShell automation on, pointing `-TrendLogPath`/
+organization already runs other PowerShell automation on, pointing `-TrendLogPath`/
 `-BreakdownOutputDirectory` at persistent storage. Daily (the default `-RunId` grain) is the right
 cadence for a board/GRC reporting use case.
 
@@ -203,14 +203,14 @@ exact Microsoft Learn reference pages.
   a term nobody is accountable for — this repo's `curate-business-glossary/README.md` §8 already
   recommends folding glossary-owner review into offboarding/access-review; this KPI is the
   measurable version of that recommendation.
-- **`DRAFT` terms aging past a buyer-defined threshold** (this report doesn't compute an age itself
+- **`DRAFT` terms aging past a organization-defined threshold** (this report doesn't compute an age itself
   — `systemData.createdAt` is available in the per-run breakdown JSON for a consuming report/BI tool
   to compute it) — a `DRAFT` term sitting unreviewed for months signals a stalled curation workflow.
 
 **Alert routing:** this scenario produces flat files (CSV/JSON), not a Purview-native alert — there
 is nothing to wire into a native Purview alert channel. Route
 `validate/Test-GlossaryCurationCoverageReport.ps1`'s non-zero exit code into whatever CI/ops
-alerting the buyer already uses for scheduled scripts, the same pattern
+alerting the deploying organization already uses for scheduled scripts, the same pattern
 `classification-coverage-report/README.md` §8 recommends for its own validate script. This scenario
 deliberately does not build a bespoke Sentinel/Log Analytics sink — ingest the trend-log CSV or
 per-run breakdown JSON directly.
@@ -263,7 +263,7 @@ to do with the already-produced trend-log/breakdown files.
 - **This report targets the Unified Catalog Terms model, not the classic glossary model the native
   report reads — they are not interchangeable, and this scenario's numbers will not match the
   classic glossary report's numbers for a tenant still on the classic Data Catalog glossary.**
-  A buyer who hasn't migrated to Unified Catalog terms will see this scenario report zero terms
+  An organization that hasn't migrated to Unified Catalog terms will see this scenario report zero terms
   against a non-zero classic-glossary count. This is a disclosed scope boundary
   (`design.md` §1 point 4, §8), not a bug — confirm which glossary model a given tenant actually
   uses before pointing this scenario at it.

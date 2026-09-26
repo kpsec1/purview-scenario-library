@@ -87,7 +87,7 @@ side by side, treat **100 members** as the conservative planning/KPI threshold (
 number and the one Microsoft ties to "every supported group type," which covers the
 Teams/Microsoft 365 Group population `teams-group-hold-resolution` also produces), and keep the
 >1,000-member error string as the specific, documented condition the validate script's `errors`
-check should recognize by name. A buyer who already knows a distribution list is near either
+check should recognize by name. An organization that already knows a distribution list is near either
 threshold should resolve and list individual member mailboxes instead of relying on server-side
 expansion, both to stay clear of whichever cap actually applies and because this script doesn't
 detect or report a partial-expansion failure beyond surfacing the policy's own `errors`
@@ -142,7 +142,7 @@ reversible pause exists. This finding was already correctly disclosed before thi
 
 The `siteSource` resource's `id` is an opaque identifier and its `displayName` is the SharePoint
 site's **title**, not its URL [[R3]](#references-design) — but the only value this scenario's
-definition file (and the only value a buyer naturally has on hand) is the site's `webUrl`. Neither
+definition file (and the only value an organization naturally has on hand) is the site's `webUrl`. Neither
 the `List siteSources` nor the `Create siteSource` v1.0 reference documents a `webUrl` field on the
 *response* object, so there's no direct URL-to-URL comparison available for find-or-create
 matching. `deploy/New-EdiscoveryLocationHold.ps1` and `validate/Test-EdiscoveryLocationHold.ps1`
@@ -183,7 +183,7 @@ than conclusive.
   definition file models [[R11]](#references-design); this scenario covers the API-documented
   property, not the full portal filter surface.
 - **Splitting a distribution list that already exceeds the 1,000-member expansion cap** — see §3.
-  A buyer who hits the "Distribution group has too many members" error needs to resolve and list
+  An organization that hits the "Distribution group has too many members" error needs to resolve and list
   individual member mailboxes; this scenario doesn't implement that resolution/splitting logic.
 - **Search, review set, and export against this hold's preserved content** — the sibling
   scenario's `deploy/New-EdiscoverySearchReviewSetExport.ps1` already covers that pipeline and

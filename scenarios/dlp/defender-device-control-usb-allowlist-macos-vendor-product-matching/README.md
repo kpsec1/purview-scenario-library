@@ -8,7 +8,7 @@ matching** — for approved removable-storage devices that have no readable seri
 of vendorId/productId-matched devices can be added, on top of (never instead of) the parent
 scenario's existing serialNumber-matched devices, with no new Intune profile and no new policy rule.
 
-**Who it's for:** a buyer already running the parent macOS device-control scenario whose approved
+**Who it's for:** an organization already running the parent macOS device-control scenario whose approved
 backup/imaging drives include hardware that reports an empty or non-unique `serialNumber` field — a
 real, common gap for bulk-imaged imaging docks and some third-party USB enclosures — and who would
 otherwise have to leave that hardware permanently denied or disable device control for it entirely.

@@ -74,7 +74,7 @@ equivalent. For the pure Exchange Online tenant this scenario targets (`docs/aut
 §1), only the `Authoritative` and `InternalRelay` accepted-domain types are reachable — both of which
 count as in-organization — so in practice this tenant class's `NotInOrganization` match is driven by
 the "isn't in an accepted domain" clause alone; the external-relay clause is a real mechanism in
-Exchange generally, but not one a pure-cloud buyer's accepted-domains list can actually exercise. A
+Exchange generally, but not one a pure-cloud organization's accepted-domains list can actually exercise. A
 hybrid Exchange Online/on-premises tenant is the one case where an on-premises-configured
 `ExternalRelay` domain is real, but it is a separate on-premises Active Directory object this
 scenario's Exchange-Online-only tooling cannot see. See

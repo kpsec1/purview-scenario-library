@@ -20,7 +20,7 @@ where Microsoft's own documentation says Synapse genuinely differs.
 1. **Reuse the proven shape a third time, don't fork it.** Same object model (data source + scan,
    both create-or-replace), same credential-free-by-default posture (SAMI/MSI), same idempotency
    mechanism, same four-lens review structure, same generic Data Sources/Scans/Triggers/Scan Result
-   REST call shapes both siblings already confirmed by direct fetch. A buyer who has deployed either
+   REST call shapes both siblings already confirmed by direct fetch. An organization that has deployed either
    sibling scenario should find this one immediately familiar.
 2. **Model the workspace, not a pool.** Unlike the two sibling scenarios (one data source = one
    database), a single `AzureSynapseWorkspace` data source object can carry **both** a
@@ -191,5 +191,5 @@ payloads are Synapse-specific, confirmed per §5.
   workspace-based source, it is the only one of the two that also covers serverless SQL pools, and a
   dedicated pool without workspace features enabled is decreasingly common in a current Synapse
   deployment. Flagged as a Product Owner finding in `reviews.md` and called out explicitly in
-  `README.md` §1 so a buyer with existing standalone-source registrations doesn't assume this scenario
+  `README.md` §1 so an organization with existing standalone-source registrations doesn't assume this scenario
   is a drop-in replacement for them.

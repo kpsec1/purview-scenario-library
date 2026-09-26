@@ -53,7 +53,7 @@ No remaining Fix/Fail after resolution.
      treat as a signal to re-run before trusting that run's split — not something to leave silently
      unread.
 2. **No guidance on how to actually route the trend-log CSV into a SIEM or alerting system** — the
-   original draft said "route it into whatever the buyer already uses" without naming the mechanism
+   original draft said "route it into whatever the deploying organization already uses" without naming the mechanism
    (flat-file ingestion vs. an API push), which is thinner than this repo's DLP/Data Quality
    scenarios' own alert-routing sections.
    - **Resolution:** `README.md` §8 now states plainly that this scenario deliberately ships no
@@ -72,7 +72,7 @@ No remaining Fix/Fail after resolution.
    rule, not this script's job), but worth noting as a natural next integration once the trend log
    exists.
    - **Resolution:** No change needed; confirmed as correctly scoped rather than a gap — the trend
-     log's existence is what makes such a rule possible for the buyer to build, and building it for
+     log's existence is what makes such a rule possible for the deploying organization to build, and building it for
      them would exceed this scenario's stated non-goals (`design.md` §7).
 
 No remaining Fail. The three Fixes bring this scenario's operational guidance to the standard this

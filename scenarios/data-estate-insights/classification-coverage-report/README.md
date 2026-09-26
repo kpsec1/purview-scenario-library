@@ -142,7 +142,7 @@ established by this repo's other surface-4 scripts.
 
 **Scheduling:** this scenario ships no scheduler-specific code — wire
 `deploy/Export-ClassificationCoverageReport.ps1` into whatever recurring-execution mechanism the
-buyer already runs other PowerShell automation on (Azure Automation runbook, a scheduled Azure
+organization already runs other PowerShell automation on (Azure Automation runbook, a scheduled Azure
 Function, cron, or Windows Task Scheduler), pointing `-TrendLogPath`/`-BreakdownOutputDirectory` at
 persistent storage (a repo path that gets committed, a mounted share, or blob storage). One run per
 day (the default `-RunId` grain) is the right cadence for a board/GRC reporting use case; a
@@ -206,7 +206,7 @@ exact Microsoft Learn reference pages.
 **Alert routing:** this scenario produces flat files (CSV/JSON), not a Purview-native alert or a
 `GenerateAlert`-style action — there is nothing to wire into a native Purview alert channel. Route
 `validate/Test-ClassificationCoverageReport.ps1`'s non-zero exit code into whatever CI/ops alerting
-the buyer already uses for scheduled scripts, the same pattern this repo's Data Quality and Data
+the deploying organization already uses for scheduled scripts, the same pattern this repo's Data Quality and Data
 Lineage scenarios recommend for their own validate scripts. For a SIEM feed, ingest the trend-log
 CSV or per-run breakdown JSON directly — this scenario deliberately does not build a bespoke
 Sentinel/Log Analytics sink (see `design.md` §7).
@@ -240,7 +240,7 @@ See `rollback.md` for the full procedure. Quick reference: this scenario creates
 object** — there is nothing in the Purview account itself to roll back. Decommissioning means
 stopping the scheduled execution of `deploy/Export-ClassificationCoverageReport.ps1`, removing the
 Data Reader role assignment for the reporting service principal, and deciding what to do with the
-already-produced trend-log/breakdown files per the buyer's own data-retention policy.
+already-produced trend-log/breakdown files per the deploying organization's own data-retention policy.
 
 ## 10. Cost & licensing notes
 
@@ -314,7 +314,7 @@ already-produced trend-log/breakdown files per the buyer's own data-retention po
   the script's `.NOTES`.
 - **This scenario does not push results anywhere** — no built-in Log Analytics/Sentinel/Power BI
   sink. The trend-log CSV and per-run breakdown JSON are the deliverable; routing them into a SIEM or
-  BI tool is the buyer's own integration, consistent with this repo's DLP/Data Quality scenarios'
+  BI tool is the deploying organization's own integration, consistent with this repo's DLP/Data Quality scenarios'
   treatment of "bring your own SIEM."
 - **This is not a replacement for the native Data Estate Insights application** for a human who
   simply wants to browse coverage interactively, drill into specific assets, or use the portal's own

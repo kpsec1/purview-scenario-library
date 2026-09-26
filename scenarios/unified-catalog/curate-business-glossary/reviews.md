@@ -85,7 +85,7 @@ git-reviewed glossary process.
   start until an asset is actually attached), this is close to a free foundational step, which
   makes the funding decision easy.
 - **Change-management impact:** the git-PR-review model (§1, §8) is the right fit for this
-  library's target buyer (a team already running infrastructure-as-code discipline elsewhere) and
+  library's target organization (a team already running infrastructure-as-code discipline elsewhere) and
   avoids the "who edited this term and why" ambiguity that pure portal-driven curation invites at
   scale. The DRAFT-by-default / explicit `-Publish` pattern gives a deliberate review gate that
   matches this repo's established "off by default" code standard.
@@ -116,7 +116,7 @@ No Fix/Fail items from this lens.
      calls out the two concrete preview-surface risks (`nameKeyword` semantics, Business Domain
      "required" field discrepancy) rather than leaving the preview caveat as one generic footnote,
      which is the right level of specificity for a vendor-sellable deliverable.
-2. **Why not just use the portal's CSV bulk-import instead of custom REST code?** A buyer
+2. **Why not just use the portal's CSV bulk-import instead of custom REST code?** An organization
    evaluating this scenario will reasonably ask why it doesn't reuse Microsoft's own native bulk
    path.
    - **Resolution:** `design.md` §3 already answers this with the single fact that settles it:
@@ -132,7 +132,7 @@ No Fix/Fail items from this lens.
 4. **Sensible term set** — the four-term "Customer / Customer ID / Customer Lifetime Value / Net
    Promoter Score" example directly mirrors the term set Microsoft's own Cloud Adoption Framework
    guidance names as the canonical harmonization example (`README.md` reference 2), which is the
-   right choice for a reference implementation a buyer will recognize as idiomatic rather than
+   right choice for a reference implementation an organization will recognize as idiomatic rather than
    contrived.
 
 No remaining Fail after resolution.

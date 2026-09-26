@@ -5,7 +5,7 @@
 Every DLP scenario elsewhere in this library (`scenarios/dlp/pci-teams-exfil-block/`,
 `scenarios/dlp/endpoint-dlp-usb-block/`) applies the **same** rule to **every** user in scope,
 all the time. That's correct for a static regulatory control (PCI card-number handling
-shouldn't depend on who's typing), but it's the wrong shape for a different, very common buyer
+shouldn't depend on who's typing), but it's the wrong shape for a different, very common organization
 need: *tighten controls automatically and immediately for the specific users Insider Risk
 Management has just identified as risky, without waiting for a human analyst to triage the
 alert and hand-build an exception, and without permanently over-restricting the other 99% of
@@ -24,7 +24,7 @@ the case is still open and before an analyst has necessarily looked at it.
    Insider Risk Management policy — it wires a DLP policy to the *insider risk level* output
    that any already-deployed IRM policy in the tenant produces (this library's own
    `departing-employee-data-theft` scenario, or Microsoft's built-in **Data leaks** template,
-   or a buyer's own custom policy). Insider risk *levels* (Elevated/Moderate/Minor) are a
+   or an organization's own custom policy). Insider risk *levels* (Elevated/Moderate/Minor) are a
    tenant-wide construct computed by Adaptive Protection from whichever IRM policies are put in
    its scope — not a property of one specific policy — so this scenario's DLP rules work
    against any qualifying feeder policy.
@@ -44,7 +44,7 @@ the case is still open and before an analyst has necessarily looked at it.
    (Elevated → block; Moderate + Minor → audit) via the **custom setup** path instead of Quick
    Setup, because Quick Setup is a one-click portal wizard that also creates an IRM policy, a
    Conditional Access policy, and a Data Lifecycle Management policy in the same action —  a
-   buyer who already has (or is deploying via this library) their own IRM policy needs the
+   organization that already has (or is deploying via this library) their own IRM policy needs the
    *custom setup* path (`dlp-adaptive-protection-learn` → "Manual configuration"), which is what
    `deploy/New-AdaptiveProtectionDlpPolicy.ps1` automates.
 4. **Start in simulation, exactly like Microsoft's own default.** Every rule in Microsoft's
@@ -130,12 +130,12 @@ policy this scenario creates.
 | Decision | Choice | Rationale |
 |---|---|---|
 | Locations covered | **Exchange + Teams only** (one combined DLP policy) | Matches Microsoft's own "Adaptive Protection policy for Teams and Exchange DLP" Quick Setup output exactly [[3]](#references); Endpoint DLP (Devices) requires an additional, separately-gated prerequisite (Advanced classification scanning and protection, or an explicit File Type condition) [[3]](#references) that this fragment defers rather than bundles in — see §7. |
-| Rule shape | Two rules: **Elevated → block external share**; **Moderate + Minor → audit external share** | This is Microsoft's own documented, tested default configuration for the Teams/Exchange policy [[3]](#references) — reproduced exactly rather than inventing a different threshold scheme, so a buyer evaluating this scenario can cross-check it directly against Microsoft's own docs. |
+| Rule shape | Two rules: **Elevated → block external share**; **Moderate + Minor → audit external share** | This is Microsoft's own documented, tested default configuration for the Teams/Exchange policy [[3]](#references) — reproduced exactly rather than inventing a different threshold scheme, so an organization evaluating this scenario can cross-check it directly against Microsoft's own docs. |
 | Condition parameter | `New-DlpComplianceRule -SharedByIRMUserRisk <GUID[]>` | The only Security & Compliance PowerShell parameter found and independently confirmed to implement the portal's "Insider risk level for Adaptive Protection is" condition, with three fixed, documented GUID values for Elevated/Moderate/Minor [[6]](#references)[[7]](#references) — not fabricated or inferred by analogy. |
-| Deployment path | **Custom setup**, not Quick Setup | Quick Setup bundles a new auto-created IRM policy, Conditional Access policy, and Data Lifecycle Management policy into one irreversible-feeling wizard action [[1]](#references) — wrong fit for a buyer using this library's own IRM scenario as the feeder policy, or who wants to review/approve each control independently. This scenario's script is the scriptable equivalent of the portal's documented "Manual configuration" / Custom setup Step 3 [[2]](#references)[[3]](#references). |
+| Deployment path | **Custom setup**, not Quick Setup | Quick Setup bundles a new auto-created IRM policy, Conditional Access policy, and Data Lifecycle Management policy into one irreversible-feeling wizard action [[1]](#references) — wrong fit for an organization using this library's own IRM scenario as the feeder policy, or who wants to review/approve each control independently. This scenario's script is the scriptable equivalent of the portal's documented "Manual configuration" / Custom setup Step 3 [[2]](#references)[[3]](#references). |
 | Initial policy mode | `TestWithNotifications` (simulation), matching Microsoft's own Quick Setup default | Every rule Microsoft's own Quick Setup creates starts in simulation mode [[3]](#references) — this scenario doesn't go further/faster than Microsoft's own recommended default, especially since a wrongly-tuned Elevated-risk block rule has direct, immediate business impact on a real (if risky) employee's ability to work. |
 | Policy naming | `Adaptive Protection - Teams and Exchange DLP (Custom)` | Deliberately distinct from Microsoft's auto-generated Quick Setup name (`Adaptive Protection policy for Teams and Exchange DLP`) to avoid a naming collision or confusion if a tenant later also runs Quick Setup — see `README.md` §11. |
-| Priority-content scoping | Not added by default; documented as a tuning option | The Elevated/Moderate rules in §6 of `README.md` match on **any** content shared externally, not just sensitivity-labeled content — matching Microsoft's own default. A buyer who wants to scope this more narrowly (e.g. only when a confidential label is also present, per the Australian Government worked example [[8]](#references)) can add a `ContentContainsSensitiveInformation` or label condition on top — documented as a tuning option in `README.md` §8, not built in, since narrowing it by default would silently diverge from Microsoft's own tested reference configuration. |
+| Priority-content scoping | Not added by default; documented as a tuning option | The Elevated/Moderate rules in §6 of `README.md` match on **any** content shared externally, not just sensitivity-labeled content — matching Microsoft's own default. An organization that wants to scope this more narrowly (e.g. only when a confidential label is also present, per the Australian Government worked example [[8]](#references)) can add a `ContentContainsSensitiveInformation` or label condition on top — documented as a tuning option in `README.md` §8, not built in, since narrowing it by default would silently diverge from Microsoft's own tested reference configuration. |
 
 ## 7. Non-goals
 

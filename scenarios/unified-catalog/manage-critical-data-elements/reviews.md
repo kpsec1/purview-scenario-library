@@ -99,7 +99,7 @@ and stating its operational implications explicitly, not by adding unconfirmed m
   quietly add governed-asset cost, this scenario's default configuration adds **zero** incremental
   cost (§10) because it maps a column belonging to an asset `manage-data-products` already
   governs — a genuinely good-news line for a CISO justifying incremental governance investment
-  without a corresponding incremental Azure bill, as long as the buyer understands this only holds
+  without a corresponding incremental Azure bill, as long as the deploying organization understands this only holds
   when the column belongs to an already-governed asset.
   - **Resolution:** Confirmed `README.md` §10 already states this contrast explicitly (deduplication
     quoted verbatim from Microsoft's own billing FAQ) and separately calls out the case where a

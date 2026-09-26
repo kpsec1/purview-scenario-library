@@ -14,7 +14,7 @@ vendor-product-matching/` already proved out for the identical AND-then-OR probl
 fragments already extend, adding one parent group, one sub-group per approved device, and one rule,
 and modifying one existing rule in place.
 
-**Who it's for:** any buyer who has deployed the macOS USB allowlist scenario and its
+**Who it's for:** any organization that has deployed the macOS USB allowlist scenario and its
 Apple/Portable/Bluetooth coverage extension, and has one or more specific, IT-approved Bluetooth
 peripherals (a barcode scanner, an approved audio/file-transfer accessory) that need a documented,
 audited exception instead of an informal "just disable the policy for that team" workaround.
@@ -24,7 +24,7 @@ audited exception instead of an informal "just disable the policy for that team"
 The portable-device-coverage fragment's own `README.md` §11 states the trade-off plainly:
 Bluetooth ships default-deny-only because Microsoft's own worked exception sample for this family
 uses a structurally different, single-device `vendorId`+`productId` match, not the OR'd
-multi-device `serialNumber` pattern used for Apple/Portable devices. In practice this means a buyer
+multi-device `serialNumber` pattern used for Apple/Portable devices. In practice this means an organization
 with even one legitimate Bluetooth file-transfer use case has exactly two options without this
 fragment: block it entirely (a genuine business-disruption cost) or turn off Bluetooth enforcement
 for the whole fleet (reopening the exact invisibility gap the parent fragments exist to close).

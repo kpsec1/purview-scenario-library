@@ -107,7 +107,7 @@ sequenceDiagram
 Identical token-acquisition and `Invoke-PurviewPut`/`Get-PurviewObjectOrNull` helper functions to the
 parent script, copied rather than shared via a module — this repo has no shared-module convention
 across scenario folders, and each scenario's `deploy/` is meant to be a self-contained, copy-paste
-unit for a buyer who takes only one folder.
+unit for an organization that takes only one folder.
 
 ## 6. Key decisions
 
@@ -117,7 +117,7 @@ unit for a buyer who takes only one folder.
 | Key Vault parameters | Kind-conditional, rejected (not ignored) when inapplicable | §3 |
 | `ConsumerKeyAuth`'s two secrets | Two independent parameter pairs (`-SecretName`/`-SecretVersion` for password, `-ConsumerSecretName`/`-ConsumerSecretVersion` for consumer secret) | Mirrors the schema; a single shared parameter would force both secrets into the same name, which Salesforce's own model doesn't require |
 | `AmazonARN`'s missing account ID/external ID | Documented as a disclosed gap, not derived | §4 |
-| `ManagedIdentity` preview status | Surfaced in README §3/§10/§11 and the script's own `.NOTES`/`Write-Warning` at run time | A buyer should see this before deploying, not only in a document they may not open |
+| `ManagedIdentity` preview status | Surfaced in README §3/§10/§11 and the script's own `.NOTES`/`Write-Warning` at run time | An organization should see this before deploying, not only in a document they may not open |
 | Deletion | Reuse the parent's `Remove-PurviewScanCredential.ps1` unmodified | It is already kind-agnostic (deletes by name, never inspects `typeProperties`) — writing a second delete script would duplicate working code for no reason |
 | Validation severity | Same `[WARN]`-not-`[FAIL]` pattern for the two discriminator literals; new `[INFO]`-only preview reminder for `ManagedIdentity` | Consistency with the parent scenario's established severity model |
 

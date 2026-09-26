@@ -33,7 +33,7 @@ this scenario.
 
 - **Trend-log CSV and per-run breakdown JSON files** (wherever `-TrendLogPath` /
   `-BreakdownOutputDirectory` pointed) are ordinary files this scenario wrote outside of Purview —
-  delete them, archive them, or leave them in place per the buyer's own data-retention policy. There
+  delete them, archive them, or leave them in place per the deploying organization's own data-retention policy. There
   is no Purview-side artifact tied to them that would become orphaned or inconsistent if they're kept
   after the automation identity's role is removed.
 - If the trend log was committed to a source-control repository (the recommended pattern for

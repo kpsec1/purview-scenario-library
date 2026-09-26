@@ -110,12 +110,12 @@ policy) was caught and fixed in this round, not merely documented.
   `serialNumber`-only limitation) for the Apple and Portable families, the same value proposition the
   removable-media vendor-product-matching sibling already delivered for USB mass storage. Zero
   incremental licensing cost (`README.md` §10).
-- **Change-management impact:** low for a buyer who already has at least one `serialNumber` device
+- **Change-management impact:** low for an organization that already has at least one `serialNumber` device
   configured per family (the common case, since the prerequisite fragment's own default posture
-  encourages at least a small serialNumber allowlist); **not zero** for a buyer starting from a
+  encourages at least a small serialNumber allowlist); **not zero** for an organization starting from a
   pure-default-deny Apple/Portable posture with zero `serialNumber` devices, who must first configure
   one via the prerequisite fragment before this fragment can help them — a real, disclosed
-  onboarding friction point (`design.md` §3, `README.md` §3/§11), not hidden from the buyer
+  onboarding friction point (`design.md` §3, `README.md` §3/§11), not hidden from the deploying organization
   conversation.
 - **Board-level narrative:** "we extended our existing macOS device-control allowlist to also cover
   approved iPads, iPhones, and industrial scanners that have no serial number, using the same
@@ -125,7 +125,7 @@ policy) was caught and fixed in this round, not merely documented.
 - **Would I fund this?** Yes — this closes a real, common hardware limitation (bulk-provisioned
   Apple/Portable devices with no readable serial number) at effectively zero marginal engineering
   risk to the already-piloted rules, reusing a technique this repository has already proven once. The
-  one factor that should shape rollout sequencing, not funding: confirm the buyer's actual fleet needs
+  one factor that should shape rollout sequencing, not funding: confirm the deploying organization's actual fleet needs
   before assuming the prerequisite `serialNumber` allowlist is already non-empty for both families.
 
 No Fix/Fail items from this lens.

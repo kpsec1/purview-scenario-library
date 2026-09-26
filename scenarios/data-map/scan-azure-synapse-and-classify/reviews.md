@@ -98,9 +98,9 @@ No remaining Fail.
    still bounded, one-time per database, and the staged rollback in `rollback.md` gives the same
    proportionate off-ramp both sibling scenarios provide.
 5. **Would I fund this?** Yes — the incremental cost is grant/coordination effort that scales with a
-   metric (database count) the buyer already knows and controls, not licensing, and it closes real
+   metric (database count) the deploying organization already knows and controls, not licensing, and it closes real
    coverage gaps (the aggregation-point risk in point 2, and the silent external-table gap the Red Team
-   lens raised) a buyer running Synapse alongside either sibling scenario would otherwise carry
+   lens raised) an organization running Synapse alongside either sibling scenario would otherwise carry
    unknowingly.
 
 No remaining Fix/Fail after resolution.
@@ -118,7 +118,7 @@ No remaining Fix/Fail after resolution.
    `AzureSynapseWorkspace` workspace-based source this scenario uses. The original draft correctly used
    the workspace-based `kind` throughout but never explicitly told a reader that a *different* Purview
    data source with a similar name exists and isn't what this scenario automates — a real risk for a
-   buyer who already has the legacy source registered and might assume this scenario is a drop-in
+   organization that already has the legacy source registered and might assume this scenario is a drop-in
    replacement or duplicate registration for the same pool.
    - **Resolution:** `README.md` §1 now opens with an explicit callout distinguishing the two sources
      and stating which one this scenario targets and why (current documented path; the only one of the

@@ -10,7 +10,7 @@ policy: it widens the parent's existing Intune device configuration object in pl
 new approved-device group, one new catch-all group, and one new allow/deny rule pair for the WPD
 device family.
 
-**Who it's for:** any buyer who has already deployed (or is deploying) the parent USB allowlist
+**Who it's for:** any organization that has already deployed (or is deploying) the parent USB allowlist
 scenario and wants the same "no unapproved removable device, period" posture to also close the
 phone-in-MTP-mode gap — typically after a Red Team finding, a DLP audit, or an incident where data
 left over a device that never created a drive letter and so was never subject to the parent

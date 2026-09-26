@@ -18,7 +18,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    parameter shape) but didn't foreground it as an active bypass path a red-teamer would find in
    minutes.
    - **Resolution:** `README.md` §5 Step 6 and §11 rewritten to name this as a live bypass path,
-     not a documentation footnote, with an explicit manual-portal completion step for a buyer who
+     not a documentation footnote, with an explicit manual-portal completion step for an organization that
      wants parity with Quick Setup's full six-action rule.
 2. **This scenario's rule has no file-type restriction, unlike Microsoft's own Quick Setup rule**
    — a byproduct of choosing the Advanced-classification-scanning prerequisite path over a File
@@ -74,14 +74,14 @@ one Operations-section clarification applied.
 
 **Verdict: Pass (one Fix)**
 
-1. **A buyer evaluating this scenario against Microsoft's own marketing/documentation for
+1. **An organization evaluating this scenario against Microsoft's own marketing/documentation for
    "Adaptive Protection on Devices" could reasonably expect full Quick Setup parity** and be
    surprised, post-purchase, to learn two of six actions are missing. The original draft disclosed
    this accurately in `README.md` §11 but the framing ("VERIFY" language, deep in a limitations
    section) undersold how material the gap is for a security narrative built on "we replicate
    Microsoft's own reference architecture."
    - **Resolution:** `README.md` §1 (Scenario summary) and §5 Step 6 now state the 4-of-6-action
-     scope plainly near the top of the document, not only in §11, so a buyer's expectations are
+     scope plainly near the top of the document, not only in §11, so an organization's expectations are
      set correctly before they reach the fine print.
 2. **Risk reduction vs. cost:** proportionate — for a tenant already running the Exchange/Teams
    sibling scenario, the incremental cost of this scenario is device-onboarding effort (already
@@ -95,7 +95,7 @@ one Operations-section clarification applied.
    automated action driven by an ML risk score, not a human decision). No new consideration beyond
    what that scenario's `reviews.md` CISO lens already covers; cross-referenced in `README.md` §8
    rather than re-litigated here.
-- **Would I fund this?** Yes, as a direct, low-incremental-cost follow-on for any buyer who has
+- **Would I fund this?** Yes, as a direct, low-incremental-cost follow-on for any organization that has
   already funded (or is funding via this library) the Exchange/Teams sibling scenario — not as a
   standalone first Purview investment.
 

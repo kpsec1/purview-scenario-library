@@ -78,7 +78,7 @@ rather than letting a reader infer a stronger guarantee than the data supports.
    collection this repo's other Data Governance scenarios already use, and its deploy/validate scripts
    are structured identically to `classification-coverage-report`'s — a reviewer or operator who
    already understands one understands the other, field-name substitution aside. It is presented as a
-   sibling report, not a superset or a replacement: a buyer who wants both classification and
+   sibling report, not a superset or a replacement: an organization that wants both classification and
    sensitivity-label coverage runs both scripts against the same estate.
 
 ## 3. Why a custom REST report (not the native export, not a third-party BI tool)

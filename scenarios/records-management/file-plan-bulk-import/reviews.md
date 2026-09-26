@@ -78,7 +78,7 @@ No remaining Fail.
 
 1. **Schedule-as-code for the whole file plan, not one label.** The deliverable a records-management
    engagement is actually judged on is the schedule, not a single class — `README.md` §1/§2 frame
-   this scenario as the breadth complement to the sibling deep-dive, matching how buyers evaluate
+   this scenario as the breadth complement to the sibling deep-dive, matching how organizations evaluate
    the product.
 2. **Risk vs. cost:** stated honestly in §10 — E5 entitlement (no meter); the real cost is the
    one-time schedule-design labor, and the real risk is a rushed, immutable bulk import at scale

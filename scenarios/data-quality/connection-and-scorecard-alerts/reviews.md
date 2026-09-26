@@ -96,7 +96,7 @@ sibling scenario's review established, extended to this scenario's own specific 
 
 1. **This scenario is the sibling's stated go-live gate, made concrete, not a separate ask.**
    `rules-and-scorecards/README.md` §8 already states that scenario "should not be considered
-   monitored" until an alert exists — this scenario is exactly and only that missing piece. A buyer
+   monitored" until an alert exists — this scenario is exactly and only that missing piece. An organization
    funding `rules-and-scorecards` is, in practice, already committed to funding this scenario too;
    the original draft's §1 scenario summary states this relationship directly rather than
    presenting two independent asks.
@@ -105,7 +105,7 @@ sibling scenario's review established, extended to this scenario's own specific 
    fired the last time this dropped below threshold" (§2). Auditable, specific, not aspirational.
 3. **Cost narrative is honest about a second cost dimension.** §10 correctly separates Data
    Quality's DGPU metering from the managed-VNet path's own Azure networking cost (compute location,
-   private endpoints) — a buyer evaluating the VNet option isn't surprised by a cost outside the
+   private endpoints) — an organization evaluating the VNet option isn't surprised by a cost outside the
    DGPU line item they budgeted for.
 4. **Change-management impact:** low — same assessment as the sibling scenario; deploying a
    connection and alerts doesn't touch live M365 controls or user-facing behavior. The staged
@@ -210,7 +210,7 @@ repoint or delete an asset-level alert exactly as easily. No Fix/Fail.
 
 Zero net-new licensing or cost dimension — same PAYG/DGPU framing as Round 1 finding 3; a
 product-level alert is not separately metered any more than an asset-level one is (§10 unchanged).
-Gives a buyer with a multi-asset data product a lower-alert-count option than "one alert per asset,"
+Gives an organization with a multi-asset data product a lower-alert-count option than "one alert per asset,"
 which is itself a minor operational-cost (alert-fatigue) reduction the CISO lens welcomes, with the
 Blue Team's triage-speed trade-off disclosed rather than oversold. Would fund this addition; it's
 in scope of what was already funded for the parent scenario.

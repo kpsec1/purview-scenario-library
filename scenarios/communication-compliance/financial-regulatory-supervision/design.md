@@ -155,7 +155,7 @@ action taken as a result. Microsoft Purview's Communication Compliance Investiga
 **no native concept of FINRA registration status** — assigning an unregistered employee to
 Investigators satisfies Purview's own RBAC model perfectly while **not** satisfying Rule 3110(b)(4)'s
 registered-principal requirement. This is an organizational/compliance dependency this scenario's
-technical grounding cannot resolve on the buyer's behalf (`README.md` §3, gating prerequisite, same
+technical grounding cannot resolve on the deploying organization's behalf (`README.md` §3, gating prerequisite, same
 pattern as the harassment sibling's employment-counsel dependency) — confirm every named Investigator
 assigned to this policy holds the registration (or documented principal-delegation under the firm's
 own written supervisory procedures) Rule 3110(b)(4) requires, separately from configuring Purview.

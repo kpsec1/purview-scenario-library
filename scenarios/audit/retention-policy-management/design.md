@@ -5,20 +5,20 @@
 Microsoft Purview Audit (Premium) gives every appropriately-licensed organization a **default**
 audit log retention policy: Microsoft Entra ID, Exchange, OneDrive, and SharePoint audit records
 are retained for one year automatically, and everything else defaults to 180 days. That default is
-tenant-wide, un-editable, and often wrong for a specific buyer's needs in two directions at once:
+tenant-wide, un-editable, and often wrong for a specific organization's needs in two directions at once:
 
 - **Too short** for a workload or a specific set of users the default doesn't cover at all (Teams,
   Power BI, Dynamics 365, third-party connectors, or any other non-Entra/Exchange/OneDrive/
   SharePoint workload) or where a regulatory/legal-hold driver needs longer retention than the
   180-day fallback.
 - **Too long/expensive to search** for high-volume, low-investigative-value activity (a noisy
-  service-account operation, a chatty automated process) that a buyer would rather retain for a
+  service-account operation, a chatty automated process) that an organization would rather retain for a
   shorter, cheaper, faster-to-search window.
 
 `scenarios/audit/premium-audit-investigation/` already assumes the data it searches is still
 retained when an investigator needs it. This scenario is the **configuration counterpart**: it
 authors the custom audit log retention policies that make that assumption true for the workloads,
-users, and activities a buyer actually cares about, using the same automation-first,
+users, and activities an organization actually cares about, using the same automation-first,
 version-controlled-config pattern as every other scenario in this library.
 
 ## 2. Design goals
@@ -47,7 +47,7 @@ version-controlled-config pattern as every other scenario in this library.
    `Set-UnifiedAuditLogRetentionPolicy` cmdlet references against the official
    `audit-log-retention-policies` conceptual page, both fetched during this build (not a VERIFY —
    both sources are Microsoft Learn, and they disagree on cmdlet surface vs. portal surface, not on
-   a fact either page states inconsistently with itself). A buyer who needs one of those five
+   a fact either page states inconsistently with itself). An organization that needs one of those five
    durations must use the portal for that specific policy; this script cannot create or edit it.
 
 ## 3. Why Security & Compliance PowerShell (not Graph, not the portal only)
@@ -62,14 +62,14 @@ version-controlled-config pattern as every other scenario in this library.
 - The portal ("Create audit retention policy" flyout, **Audit** solution → **Audit retention
   policies** dashboard) is the only surface that exposes the five durations PowerShell's enum
   doesn't (§2 point 5) — but it authors one policy at a time, by hand, with no config-as-code
-  audit trail. A buyer managing more than a handful of policies, or wanting the same reviewable,
+  audit trail. An organization managing more than a handful of policies, or wanting the same reviewable,
   re-runnable deployment discipline as every other control in this library, needs the scripted
   path for the four durations it *does* cover.
 - Microsoft's own documentation states the inverse constraint too: a policy created via
   `New-UnifiedAuditLogRetentionPolicy` for a record type/activity combination **not available in
   the portal's own policy-creation tool becomes portal-view-and-delete-only** — it can no longer be
   *edited* from the dashboard, only from `Set-UnifiedAuditLogRetentionPolicy`. This is a real
-  operational trap for a buyer who scripts a policy today and expects a portal admin to be able to
+  operational trap for an organization that scripts a policy today and expects a portal admin to be able to
   tune it tomorrow — called out explicitly in `README.md` §8 and §11.
 
 ## 4. Reconciliation logic

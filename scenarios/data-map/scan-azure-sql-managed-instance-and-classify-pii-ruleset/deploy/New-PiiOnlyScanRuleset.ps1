@@ -10,7 +10,7 @@
     that base scenario's deploy/New-AzureSqlManagedInstanceDataMapScan.ps1 has already registered
     the data source and scan (System default scan rule set: name 'AzureSqlDatabaseManagedInstance',
     ~200 built-in sensitive information types). This scenario narrows that to a named allowlist, for
-    buyers who want the faster, quieter scan a PII-scoped rule set gives them instead of Microsoft's
+    organizations that want the faster, quieter scan a PII-scoped rule set gives them instead of Microsoft's
     full ~200-classification system set.
 
     Same pattern as the sibling scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/ and

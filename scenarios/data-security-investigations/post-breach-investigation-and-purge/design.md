@@ -60,7 +60,7 @@ Graph references this library already indexes for other scenarios) found:
   footprint but no write API — and this scenario follows the same resolution rather than guessing an
   endpoint that doesn't exist (`AGENTS.md` §4).
 
-Building a fake "automation" layer around a portal-only workflow would misrepresent what a buyer is
+Building a fake "automation" layer around a portal-only workflow would misrepresent what an organization is
 actually getting. Instead, this scenario ships what's real: RBAC as code, and an audited, exportable
 trail of every DSI action — which is also what a SOC actually needs operationally (§8 in README.md).
 
@@ -156,6 +156,6 @@ sequenceDiagram
 | **This scenario** | An XDR incident or IRM case surfacing a *user/blast-radius*, not a known query | AI-assisted triage (vector search, categorization, examination) across a broad scope | Exchange mailboxes + Teams messages (same two sources; SharePoint/OneDrive are excluded from purge even though they can be added to an investigation's *scope* — README.md §11) |
 
 DSI is not a replacement for the eDiscovery-native scenarios — it's the tool for the case where the
-investigator doesn't yet know what to search for. A buyer with both needs both; this scenario's
+investigator doesn't yet know what to search for. An organization with both needs both; this scenario's
 README §1 states that explicitly rather than implying DSI supersedes plain eDiscovery search-and-
 purge.

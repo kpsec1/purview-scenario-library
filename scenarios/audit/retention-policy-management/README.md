@@ -26,10 +26,10 @@ SOC 2 CC7 (monitoring). Two concrete drivers this scenario addresses directly:
 
 - **Closing the Teams gap.** Audit (Premium)'s default one-year retention policy covers only
   Entra ID, Exchange, OneDrive, and SharePoint. Microsoft Teams — a primary channel for regulated
-  communication in many of this library's buyer profiles (see
+  communication in many of this library's organization profiles (see
   `scenarios/dlp/pci-teams-exfil-block/`, `scenarios/communication-compliance/
   harassment-and-code-of-conduct/`) — silently falls back to the 180-day default unless a custom
-  policy extends it. A buyer who has deployed Teams-focused DLP/Communication Compliance controls
+  policy extends it. An organization that has deployed Teams-focused DLP/Communication Compliance controls
   but never extended Teams' own audit retention has a real gap between "we can detect this" and
   "we can still prove it happened three months from now."
 - **Cost/noise control.** Audit storage and search performance both benefit from *not* retaining
@@ -37,7 +37,7 @@ SOC 2 CC7 (monitoring). Two concrete drivers this scenario addresses directly:
   at the full default duration. A shorter, deliberate retention window for specifically-identified
   noisy activity is a legitimate, documented use of this same mechanism — not a compliance
   shortcut, since it only ever shortens retention *below* what a workload already gets by default,
-  never below any applicable legal-hold or regulatory floor the buyer must separately track.
+  never below any applicable legal-hold or regulatory floor the deploying organization must separately track.
 
 ## 3. Prerequisites
 
@@ -209,13 +209,13 @@ retained audit records or the tenant's default policy.
   offers `7 Days`/`30 Days`/`3 Years`/`5 Years`/`7 Years`. Confirmed by directly comparing the
   official `New-`/`Set-UnifiedAuditLogRetentionPolicy` cmdlet references against the official
   `audit-log-retention-policies` conceptual page (both fetched this build) — this is a real,
-  sourced gap, not a guess. A buyer needing one of those five durations must use the portal for
+  sourced gap, not a guess. An organization needing one of those five durations must use the portal for
   that specific policy; `deploy/New-AuditRetentionPolicy.ps1` will reject any config entry that
   requests one.
 - **A PowerShell-authored policy can become portal-edit-locked.** If a policy's `RecordTypes`/
   `Operations` combination isn't offered by the portal's own **Create audit retention policy**
   tool, the dashboard permits view-and-delete only — future edits must go back through
-  `Set-UnifiedAuditLogRetentionPolicy`, not the portal UI. A buyer whose compliance team expects
+  `Set-UnifiedAuditLogRetentionPolicy`, not the portal UI. An organization whose compliance team expects
   to hand-tune policies in the portal should know this before scripting one outside the portal's
   own vocabulary [[3]](#references).
 - **VERIFY — retroactive vs. forward-only retention-duration changes.** Microsoft's own
@@ -234,7 +234,7 @@ retained audit records or the tenant's default policy.
 - **The Organization Configuration role is distinct from the Audit Manager role group already
   documented in `docs/rbac-model.md`.** Creating/editing retention policies needs **Organization
   Configuration** (confirmed included in the **Compliance Data Administrator** role group);
-  configuring/running audit **search** needs the separate **Audit Manager** role group. A buyer's
+  configuring/running audit **search** needs the separate **Audit Manager** role group. An organization's
   existing Audit Manager assignees cannot manage retention policies without an additional role —
   this distinction has been backported into `docs/rbac-model.md`'s Audit row (§4).
 - **`$null`-clearing extrapolated from one documented example.** This scenario's scripts pass

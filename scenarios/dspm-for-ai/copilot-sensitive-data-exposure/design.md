@@ -24,7 +24,7 @@ technical control in (1) cannot see it.
 3. Be explicit, everywhere in this scenario's deliverables, that neither rule fixes **unlabeled**
    oversharing — the actual permissions problem. Point instead at the DSPM for AI oversharing data
    risk assessment as the tool that finds that exposure, and at permissions remediation /
-   auto-labeling expansion as the fix. A scenario that lets a buyer believe this DLP policy alone
+   auto-labeling expansion as the fix. A scenario that lets an organization believe this DLP policy alone
    solves "Copilot oversharing" would be selling a control that doesn't match its own limitations —
    flagged explicitly as a Product Owner review item (see `reviews.md`).
 4. Only script what Microsoft's own PowerShell reference documents with a worked, citable example.
@@ -39,7 +39,7 @@ technical control in (1) cannot see it.
 
 - **DSPM for AI (classic) itself has no DLP authoring surface.** It is a dashboard, reporting, and
   recommendation layer that *creates* one-click DLP/IRM/Communication Compliance policies on the
-  buyer's behalf through the portal — there is no PowerShell/Graph cmdlet in Microsoft's published
+  organization's behalf through the portal — there is no PowerShell/Graph cmdlet in Microsoft's published
   reference that creates a *custom* data risk assessment or a Copilot DLP policy through DSPM for AI
   directly. The only real deploy surface for the technical control this scenario needs is DLP
   itself, targeting the Copilot location — DSPM for AI (classic) is documented here as the
@@ -64,7 +64,7 @@ same reason `scenarios/dlp/pci-teams-exfil-block/design.md` §3a gives for not e
 workload's default policy in place: a one-click policy is portal-managed state outside this
 repository's version control, can be silently reset or reconfigured by any admin with DSPM for AI
 access, and (unlike this scenario's script) does not ship with the second, SIT-based web-grounding
-rule this scenario also deploys in the same policy object. A buyer who already activated the
+rule this scenario also deploys in the same policy object. An organization that already activated the
 one-click policy should treat this scenario's script as the versioned, auditable replacement for
 it, not an addition — the validation script's config check (§7) will surface a naming collision if
 both exist.

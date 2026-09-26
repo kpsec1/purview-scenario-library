@@ -31,7 +31,7 @@ its own standalone fragment, per `AGENTS.md` §6.
    deprecation timeline that has not yet resolved itself (§3) — this is a control worth deploying
    proactively now, not a box to check after Microsoft flips the default.
 4. **Provide a real, governed exception path**, not a binary "SMTP AUTH on or off" toggle — a
-   buyer with even one multifunction device or line-of-business relay app cannot adopt this
+   organization with even one multifunction device or line-of-business relay app cannot adopt this
    scenario at all without one, and an ungoverned exception (leaving SMTP AUTH on tenant-wide "just
    in case") defeats the control for everyone.
 5. **Never claim a Report-only staging mode that doesn't exist.** Unlike Conditional Access,

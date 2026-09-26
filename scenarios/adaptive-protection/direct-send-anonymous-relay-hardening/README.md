@@ -240,11 +240,11 @@ complementary controls covering different abuse surfaces (`design.md` §2).
   `New-/Get-InboundConnector` are core Exchange Online administration surfaces, included in every
   plan that includes Exchange Online. `docs/licensing-matrix.md` §4.
 - **No PAYG component.** These are tenant configuration objects, not consumption-billed.
-- **Real, if modest, migration cost for a buyer with legitimate Direct Send senders.** Migrating a
+- **Real, if modest, migration cost for an organization with legitimate Direct Send senders.** Migrating a
   scanner/LOB app to certificate-based relay requires provisioning and installing a TLS certificate
   on that device — call this out explicitly in a CISO conversation (§8) rather than presenting Step
   5 as zero-friction.
-- **Closes a gap a buyer's existing legacy-authentication controls do not cover**, at effectively no
+- **Closes a gap an organization's existing legacy-authentication controls do not cover**, at effectively no
   incremental cost — the CISO pitch is "the SMTP AUTH block closed one door; this closes the one
   right next to it that never needed a key in the first place."
 
@@ -264,7 +264,7 @@ complementary controls covering different abuse surfaces (`design.md` §2).
   specifically to validate actual behavior in your tenant before relying on this description.
 - **The connector risk heuristic (`-MaxIpRangeCidrBits`, default `/24`) is this scenario's own
   judgment call, not a Microsoft-published threshold.** A narrower range can still be shared or
-  spoofable; a wider range flagged WARN may be entirely appropriate for a buyer's specific network
+  spoofable; a wider range flagged WARN may be entirely appropriate for an organization's specific network
   topology. Treat every WARN as "review," not "automatically wrong."
 - **This scenario does not detect or block internal-sender spoofing that arrives via an already-
   authenticated path** (a compromised mailbox sending as itself, or a message that passes SPF/DKIM

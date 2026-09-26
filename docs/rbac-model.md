@@ -433,7 +433,7 @@ five connection surfaces are all-cloud) — a genuinely separate, ninth RBAC mod
   Exchange organization/forest** — a role group that shares a name with its Exchange Online
   counterpart (**Organization Management**, **Compliance Management**, **Recipient Management**,
   **View-Only Organization Management**) is a **distinct security principal on each side**.
-  Membership granted on one side grants nothing on the other — a hybrid buyer running both this
+  Membership granted on one side grants nothing on the other — a hybrid organization running both this
   scenario and its Exchange Online-only parent, `scenarios/dlp/accepted-domains-hygiene-check/`,
   must grant both role groups independently, exactly as
   `accepted-domains-hygiene-check-on-premises/README.md` §3 already states for the scenario itself.
@@ -460,7 +460,7 @@ five connection surfaces are all-cloud) — a genuinely separate, ninth RBAC mod
     WebSearch summary, not a direct WebFetch).
   - **Recipient Management** — carries the **Mail Recipients** role (manage/view mailboxes, mail
     users, mail contacts, per sources 34–35). One secondary source (not a direct Microsoft Learn fetch)
-    claims its members can read `Get-AcceptedDomain` but not write it — **VERIFY**; a buyer can
+    claims its members can read `Get-AcceptedDomain` but not write it — **VERIFY**; an organization can
     confirm directly against their own tenant with `Get-ManagementRoleEntry "*\Get-AcceptedDomain"`
     (compare the role names returned to a candidate role group's own `Get-RoleGroup | Select
     -ExpandProperty Roles`) rather than trusting this unconfirmed claim.
@@ -473,7 +473,7 @@ five connection surfaces are all-cloud) — a genuinely separate, ninth RBAC mod
     Management").
 - **This role/role-group system grants no Exchange Online or Purview access whatsoever** — the same
   separation-of-concerns point §9–§12 make for Intune, Conditional Access, Entra app-registration,
-  and Defender for Endpoint portal RBAC. A hybrid buyer running both the Exchange Online-only parent
+  and Defender for Endpoint portal RBAC. A hybrid organization running both the Exchange Online-only parent
   scenario (§1 #4) and this on-premises companion needs role assignments on **both** sides
   independently; neither system's role groups are visible to, or usable from, the other.
 

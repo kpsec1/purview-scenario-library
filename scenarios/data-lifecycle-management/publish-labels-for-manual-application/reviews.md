@@ -27,7 +27,7 @@ were raised.
    chat/channel messages, or Viva Engage messages [[7]](#references). A financial record discussed
    only in Teams chat text (not as a file) can never be reached by this scenario.
    - **Resolution:** `README.md` §11 now states this location boundary explicitly rather than
-     leaving it implicit in the locations table; buyers with that exposure need a retention
+     leaving it implicit in the locations table; organizations with that exposure need a retention
      *policy* (not a label) for those workloads — a separate, already-out-of-scope control.
 3. **A disabled/removed publish policy is silent — no alert tells anyone the label stopped being
    offered.**

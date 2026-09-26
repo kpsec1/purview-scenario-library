@@ -238,7 +238,7 @@ user's current insider risk level.
   consumption-billed.
 - **Sizing note:** every user this policy could plausibly block needs Entra ID P2 *and* the
   qualifying DLP/IRM entitlement the feeder policy needs — a materially broader P2 footprint than
-  a buyer might already hold if their only prior Entra P1/P2 use was administrative units for a
+  an organization might already hold if their only prior Entra P1/P2 use was administrative units for a
   narrow admin population. Confirm P2 coverage for the *entire* population this policy's `Users`
   condition includes before enabling enforcement, not just the IT/security team.
 - **No additional infrastructure cost.** The deploy/validate scripts are one-time or infrequent.

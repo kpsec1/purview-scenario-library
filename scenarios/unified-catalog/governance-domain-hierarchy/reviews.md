@@ -29,7 +29,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    documented the mapping's mechanics (`design.md` Section 5) but never stated the one fact that
    matters most to a security reviewer: Microsoft documents this mapping as "recommended guidance,"
    not enforcement — a Data Steward on a mapped domain is not thereby restricted from any other,
-   unmapped Data Map collection. Presenting this to a buyer without that caveat risks it being
+   unmapped Data Map collection. Presenting this to an organization without that caveat risks it being
    sold or configured as a segregation control it does not provide.
    - **Resolution:** `README.md` Section 11 now states this explicitly, with the direct Microsoft
      Learn quote, and instructs that the real access boundary (if one is needed) is the separate
@@ -93,7 +93,7 @@ No remaining Fail. Drift-detection guidance now matches this repo's established 
   library). Easy funding decision.
 - **Change-management impact:** the git-PR-review model plus DRAFT-by-default publish gating scales
   the same governance discipline `curate-business-glossary` established from one domain to an
-  entire federated tree — directly relevant to a buyer past the single-domain pilot stage, which is
+  entire federated tree — directly relevant to an organization past the single-domain pilot stage, which is
   this scenario's stated audience.
 - **Residual risk after this round:** the data estate mapping ambiguity (Red Team finding 2) and
   the depth/count-ceiling enforcement uncertainty (README Section 11) are both named, not hidden,
@@ -131,7 +131,7 @@ No remaining Fix/Fail after resolution.
 4. **Worked example fidelity** — the `Corporate → Sales (→ Sales - EMEA) / Marketing` shape
    directly mirrors Microsoft's own "Sample setup for data governance" walkthrough's
    `Corporate → Sales` federation example (README.md reference 8), which is the right choice for a
-   reference implementation a buyer will recognize as idiomatic.
+   reference implementation an organization will recognize as idiomatic.
 
 No remaining Fail after resolution.
 

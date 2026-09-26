@@ -163,7 +163,7 @@ trigger" premise didn't hold up).
 **Verdict: Pass**
 
 - The corrected wording removes a real operational risk the original draft would have created: a
-  buyer reading "Power Automate flow triggered on escalation" as a genuine automatic-trigger option
+  organization reading "Power Automate flow triggered on escalation" as a genuine automatic-trigger option
   could have skipped implementing the scheduled poll entirely, leaving cases un-reconciled
   indefinitely whenever the investigator forgot the manual "Automate → Run flow" click too. The
   correction makes explicit that the scheduled poll is the only unattended option today.
@@ -204,7 +204,7 @@ trigger" premise didn't hold up).
 - Confirmed the five documented Purview-connector actions for a custom IRM flow (Get alert/case/
   user/alerts-for-case, Add case note) contain no action capable of invoking an external script or
   webhook directly — the "add a generic HTTP/Azure Automation action" framing in design.md §5 is the
-  correct characterization of what a buyer would actually need to build, not an oversimplification.
+  correct characterization of what an organization would actually need to build, not an oversimplification.
 - Confirmed the Insider Risk Management audit log's "independent of the Microsoft 365 audit log"
   statement is current (not a legacy/retired-feature caveat like some other findings this library has
   corrected) — it's an active, if API-less, feature.

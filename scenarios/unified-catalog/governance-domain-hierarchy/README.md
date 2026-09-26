@@ -230,7 +230,7 @@ parents — Microsoft's own guidance requires subdomains be removed before their
   to that domain from browsing or curating assets in an entirely different, unmapped collection —
   that boundary is enforced (if at all) by the separate Data Map collection-role assignments
   (`docs/rbac-model.md` §5), not by this scenario's mapping. Do not present a data estate mapping to
-  a buyer as a data-access restriction; it is a discovery/wayfinding aid for stewards and product
+  an organization as a data-access restriction; it is a discovery/wayfinding aid for stewards and product
   owners only.
 - **VERIFY — data estate mapping field semantics are this build's own inference, not a documented
   mapping.** The `domains[].relatedCollections[].parentCollection.refName` construction this
@@ -270,7 +270,7 @@ parents — Microsoft's own guidance requires subdomains be removed before their
   [[7]](#12-references) — it does not state whether publishing a child domain before its parent is
   rejected, silently allowed, or produces a confusing intermediate state. This script always
   publishes top-down as the conservative default; confirm actual behavior in a pilot tenant if a
-  buyer's process requires publishing out of that order.
+  organization's process requires publishing out of that order.
 
 ## 12. References
 

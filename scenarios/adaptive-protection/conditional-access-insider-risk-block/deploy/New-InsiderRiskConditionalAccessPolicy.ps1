@@ -93,7 +93,7 @@
     This script does not script the sibling conditions.users.excludeGuestsOrExternalUsers.
     externalTenants property (tenant-scoping this exclusion to specific external tenants rather
     than all of them) - Microsoft's own guide does not scope by tenant either, and adding it
-    unrequested would risk narrowing a buyer's exclusion without being asked - see README.md
+    unrequested would risk narrowing an organization's exclusion without being asked - see README.md
     Section 11.
 
 .PARAMETER Mode
@@ -132,7 +132,7 @@
     control scripts (which own a fixed object GUID they mint themselves inside a JSON payload
     they control), a conditionalAccessPolicy's own 'id' is assigned by Graph on creation and
     cannot be pre-chosen - so this script, like Microsoft's own documented examples, identifies
-    "the policy this scenario manages" by an exact -DisplayName match. A buyer who renames the
+    "the policy this scenario manages" by an exact -DisplayName match. An organization that renames the
     policy in the portal breaks this script's idempotency detection - documented as a known
     limitation in README.md Section 11, not silently worked around.
 

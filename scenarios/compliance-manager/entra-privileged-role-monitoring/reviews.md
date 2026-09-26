@@ -42,7 +42,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    - **Resolution:** Accepted, disclosed scope limitation — inherent to any name-based allow-list
      approach, not something a code change to this fragment can close without a much larger
      permission-diffing capability. `design.md` §6's role-list parameterization already documents
-     this as an extension point (a buyer can add a known custom role's name to
+     this as an extension point (an organization can add a known custom role's name to
      `-PrivilegedRoleDisplayNames`); no further code change needed.
 
 No remaining Fix/Fail after resolution — findings 1 and 2 are genuine, bounded gaps now explicitly
@@ -122,7 +122,7 @@ No Fix/Fail items from this lens.
      Microsoft's own PIM alert configuration guidance documents a separate, dedicated alert that
      fires specifically because the tenant **lacks** Entra ID P2/Governance, confirming the primary
      alert doesn't function without it. This scenario is the equivalent detective control for
-     tenants below that floor (a real segment of this library's target buyers per `AGENTS.md` §3's
+     tenants below that floor (a real segment of this library's target organizations per `AGENTS.md` §3's
      Scale axis), and a complementary, durably-exportable signal even for tenants above it (the
      native alert is portal/email-only, with no documented queryable export this script's CSV
      provides).
@@ -213,7 +213,7 @@ before this file was finalized. No **Fail** items were raised.
      §11: the companion's window of exposure is bounded by its own run interval (daily by default,
      `design.md` §10) — the same "run daily, not weekly" guidance the sibling script's §8 already
      gives applies identically here, and a tighter interval (e.g. hourly) directly narrows this
-     window for a buyer with a lower risk tolerance. Not a code change — a disclosed operational
+     window for an organization with a lower risk tolerance. Not a code change — a disclosed operational
      parameter, consistent with how this scenario already treats cadence.
 3. **Could an attacker evade detection by adding themselves to the role-assignable group's
    membership through a path other than the standard `Add member to group` activity — e.g. a bulk

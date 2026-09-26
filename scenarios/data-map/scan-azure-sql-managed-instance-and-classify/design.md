@@ -20,7 +20,7 @@ differ.
 
 1. **Reuse the sibling scenario's proven shape, don't fork it.** Same object model (data source +
    scan, both create-or-replace), same credential-free-by-default posture (SAMI), same
-   idempotency mechanism, same four-lens review structure. A buyer who has already deployed
+   idempotency mechanism, same four-lens review structure. An organization that has already deployed
    `scan-azure-sql-and-classify` should find this scenario immediately familiar, with the diffs
    confined to what Microsoft's own docs say is actually different about Managed Instance.
 2. **Name every genuine difference explicitly, in one place.** §4 below is the single source of
@@ -148,7 +148,7 @@ its four calls.
 
 - This scenario does not script the **private endpoint + self-hosted integration runtime** path.
   Microsoft's own documentation states managed identity authentication is not supported when
-  connecting to Microsoft Purview over private endpoints, so a buyer needing that topology must
+  connecting to Microsoft Purview over private endpoints, so an organization needing that topology must
   switch to a service-principal or SQL-authentication credential object created via the portal (the
   same portal-only credential-object gap the sibling scenario already carries as an open VERIFY) —
   see `README.md` §11.

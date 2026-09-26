@@ -5,7 +5,7 @@
 A read-only, scheduled control that runs `scenarios/dlp/accepted-domains-hygiene-check`'s same
 detection model against an **on-premises Exchange Management Shell** session instead of Exchange
 Online PowerShell — closing that scenario's disclosed blind spot for a **hybrid** Exchange Online/
-on-premises tenant. Reuses the same buyer-curated `KnownDomains.json` config and optionally
+on-premises tenant. Reuses the same organization-curated `KnownDomains.json` config and optionally
 cross-references the cloud scenario's own last-recorded baseline to detect the hybrid-specific risk
 neither environment's independent check can see: the two sides silently disagreeing about a domain's
 trust status. Creates, modifies, or deletes nothing in Exchange or Purview.
@@ -26,7 +26,7 @@ configuration has **drifted apart from each other**.
 
 Regulatory/business drivers this scenario supports (in addition to the parent's own, `accepted-
 domains-hygiene-check/README.md` §2, which apply equally here):
-- **Complete hybrid coverage for a DLP-integrity control narrative.** A buyer telling an auditor "we
+- **Complete hybrid coverage for a DLP-integrity control narrative.** An organization telling an auditor "we
   monitor our accepted-domains configuration for drift" needs that claim to be true for the whole
   hybrid estate, not just the cloud half.
 - **A concrete answer to "what if the on-premises and cloud sides disagree."** Before this scenario,
@@ -41,7 +41,7 @@ domains-hygiene-check/README.md` §2, which apply equally here):
 
 Full licensing detail and citations: `docs/licensing-matrix.md`. **This scenario requires no
 incremental Purview or Copilot licensing** and no incremental Exchange Online licensing — it targets
-an **on-premises Exchange Server** the buyer already operates as part of their hybrid deployment.
+an **on-premises Exchange Server** the deploying organization already operates as part of their hybrid deployment.
 
 | Requirement | Minimum | Notes |
 |---|---|---|
@@ -61,7 +61,7 @@ flowchart TD
         AD["Get-AcceptedDomain<br/>(remote PowerShell session)"]
         AAL["Search-AdminAuditLog<br/>(-IncludeAuditAttribution, optional)"]
     end
-    subgraph Config["Buyer-maintained input (shared with parent)"]
+    subgraph Config["Organization-maintained input (shared with parent)"]
         KD["KnownDomains.json<br/>(same file, design.md Sec 7)"]
     end
     subgraph Prior["Previous on-premises run"]
@@ -142,7 +142,7 @@ Import-PSSession $OnPremSession -DisableNameChecking
     -BaselinePath './deploy/out/onprem-accepted-domains-baseline.json' `
     -DriftLogPath './deploy/out/onprem-accepted-domains-drift-log.csv'
 
-# 5. (Optional, recommended for a hybrid buyer) Re-run with cross-environment reconciliation, once
+# 5. (Optional, recommended for a hybrid organization) Re-run with cross-environment reconciliation, once
 #    the parent scenario has produced at least one baseline of its own:
 ./deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1 `
     -KnownDomainsConfigPath '../accepted-domains-hygiene-check/deploy/KnownDomains.json' `
@@ -261,7 +261,7 @@ independently to the on-premises side):
   other does not — treat this with the same urgency as `UnexpectedTrustedDomain`, since it is an
   asymmetric attack surface, not merely stylistic drift.
 - **`CrossEnvironmentDefaultMismatch` count** — lower urgency than the other two (always `WARN`), but
-  worth a periodic review to confirm each side's default accepted domain is still the one the buyer
+  worth a periodic review to confirm each side's default accepted domain is still the one the deploying organization
   intends new recipients' primary SMTP address to be generated against.
 - **`UnexpectedTrustedDomain` count on the on-premises side, trending to zero** — same interpretation
   as the parent scenario, now covering the environment the parent cannot see.
@@ -299,13 +299,13 @@ the parent scenario.
 ## 10. Cost & licensing notes
 
 - **No incremental Purview, Copilot, or Exchange Online licensing required.** This scenario targets
-  an on-premises Exchange Server the buyer already operates as part of an existing hybrid deployment
+  an on-premises Exchange Server the deploying organization already operates as part of an existing hybrid deployment
   — see §3.
 - **On-premises compute cost is whatever already runs the Exchange server and the scheduling
   mechanism** (a Windows Task Scheduler task, or an Azure Automation hybrid runbook worker with
   network access to the on-premises environment) — negligible at this scenario's call volume (one
   `Get-AcceptedDomain` call and, optionally, one `Search-AdminAuditLog` call per scheduled run).
-- Running this scenario alongside the parent doubles the buyer's total accepted-domains hygiene
+- Running this scenario alongside the parent doubles the deploying organization's total accepted-domains hygiene
   automation footprint but adds no licensing tier beyond what each half already requires
   independently.
 
@@ -336,7 +336,7 @@ the parent scenario.
 - **90-day audit-log ceiling.** Even with `-AdminAuditLogCmdlets` correctly configured, the
   organization's `-AdminAuditLogAgeLimit` (90 days by default) caps how far back `Search-AdminAuditLog`
   can ever see — `-AuditLookbackDays` values beyond that ceiling silently find nothing, regardless of
-  what actually happened, unless the buyer has widened the limit.
+  what actually happened, unless the deploying organization has widened the limit.
 - **`CrossEnvironmentMismatch` findings are not automatically misconfigurations.** Which `DomainType`
   is "correct" for a shared-namespace hybrid domain depends on that domain's actual migration/
   coexistence state. Triage against the known-domains config's `owner` field, not against a blanket
@@ -344,7 +344,7 @@ the parent scenario.
   on one side and not the other.
 - **Resolved (later build): cross-environment reconciliation now also covers `MatchSubDomains` and
   `Default`, not just `DomainType`.** `design.md` §9 originally deferred this as a non-goal pending a
-  concrete buyer need; closed via two new sibling finding categories,
+  concrete organization need; closed via two new sibling finding categories,
   `CrossEnvironmentMatchSubDomainsMismatch` and `CrossEnvironmentDefaultMismatch` (§6), each its own
   category rather than folded into `CrossEnvironmentMismatch` so a domain diverging on more than one
   field never collides on the drift log's `(RunId, Category, DomainName)` row key — a real bug this

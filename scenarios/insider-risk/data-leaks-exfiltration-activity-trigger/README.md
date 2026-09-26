@@ -34,7 +34,7 @@ what determines when a user enters scope:
 - **Threshold-level control over the trigger itself**, not just the eventual scoring. Choosing
   which specific activities (SharePoint downloads, external sharing, printing, personal-cloud
   copying) and at what daily volume bring a user into scope is a materially different tuning lever
-  than "any High-severity DLP rule match," useful where a buyer wants the trigger threshold itself
+  than "any High-severity DLP rule match," useful where an organization wants the trigger threshold itself
   to reflect organization-specific exfiltration-volume norms rather than a DLP policy's own
   independently-tuned severity model.
 - **SOC 2 / ISO 27001 exfiltration-monitoring evidence with no DLP-policy prerequisite** — the same
@@ -357,7 +357,7 @@ app registration's certificate is not.
   evasion properties already documented for this template family** — a recently hired user has no
   established personal baseline yet, and a paced/slow-drip exfiltrator staying under peer-group
   norms is not detected by this indicator by design (`data-leaks-by-risky-users/README.md` §11).
-- **This scenario does not configure Adaptive Protection** — a buyer who wants this policy's
+- **This scenario does not configure Adaptive Protection** — an organization that wants this policy's
   alerts to drive DLP enforcement wires it into
   `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` separately.
 - **Cannot disambiguate which Insider Risk Management policy produced a given exported alert if

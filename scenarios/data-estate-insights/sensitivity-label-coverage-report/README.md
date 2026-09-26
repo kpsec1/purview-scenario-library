@@ -47,7 +47,7 @@ This scenario ties directly into this repo's existing Data Governance narrative 
 report: the worked example scopes to the same `customerdb` collection
 `scenarios/data-map/scan-azure-sql-and-classify/` scans and
 `scenarios/data-estate-insights/classification-coverage-report/` already reports classification
-coverage for. A buyer who wants the full "what's classified, and separately, what's actually
+coverage for. An organization that wants the full "what's classified, and separately, what's actually
 protected-by-label" picture runs both sibling scripts against the same estate.
 
 > **A high `PercentLabeled` number is not, by itself, evidence that the underlying data is
@@ -174,7 +174,7 @@ the same client-credentials pattern already established by this repo's other sur
 
 **Scheduling:** this scenario ships no scheduler-specific code — wire
 `deploy/Export-SensitivityLabelCoverageReport.ps1` into whatever recurring-execution mechanism the
-buyer already runs other PowerShell automation on (Azure Automation runbook, a scheduled Azure
+organization already runs other PowerShell automation on (Azure Automation runbook, a scheduled Azure
 Function, cron, or Windows Task Scheduler), pointing `-TrendLogPath`/`-BreakdownOutputDirectory` at
 persistent storage. Run it alongside (never in place of) the sibling
 `classification-coverage-report/deploy/Export-ClassificationCoverageReport.ps1` — the two scripts
@@ -252,7 +252,7 @@ exact Microsoft Learn reference pages.
 
 **Alert routing:** identical to the sibling scenario — this scenario produces flat files (CSV/JSON),
 not a Purview-native alert. Route `validate/Test-SensitivityLabelCoverageReport.ps1`'s non-zero exit
-code into whatever CI/ops alerting the buyer already uses for scheduled scripts. For a SIEM feed,
+code into whatever CI/ops alerting the deploying organization already uses for scheduled scripts. For a SIEM feed,
 ingest the trend-log CSV or per-run breakdown JSON directly — this scenario deliberately does not
 build a bespoke Sentinel/Log Analytics sink (see `design.md` §7).
 
@@ -284,7 +284,7 @@ See `rollback.md` for the full procedure. Quick reference: this scenario creates
 object** — there is nothing in the Purview account itself to roll back. Decommissioning means
 stopping the scheduled execution of `deploy/Export-SensitivityLabelCoverageReport.ps1`, removing the
 Data Reader role assignment for the reporting service principal, and deciding what to do with the
-already-produced trend-log/breakdown files per the buyer's own data-retention policy.
+already-produced trend-log/breakdown files per the deploying organization's own data-retention policy.
 
 ## 10. Cost & licensing notes
 
@@ -298,7 +298,7 @@ already-produced trend-log/breakdown files per the buyer's own data-retention po
   (or equivalent Compliance/Information Protection and Governance) license in the tenant, or PAYG
   billing for non-Microsoft-365 sources [[7]](#references) — this is a licensing gate the sibling
   `classification-coverage-report` scenario does not have (classifications require only Data Map
-  scanning, not a Microsoft 365 label license). Confirm this license already exists in the buyer's
+  scanning, not a Microsoft 365 label license). Confirm this license already exists in the deploying organization's
   tenant before quoting this scenario as a drop-in addition to the classification-coverage report.
 - **No additional M365 per-user license required for this scenario's own script** beyond whatever
   license already satisfies the upstream label-extension prerequisite above — the report script itself

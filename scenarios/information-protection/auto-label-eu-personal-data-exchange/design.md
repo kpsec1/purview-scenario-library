@@ -11,7 +11,7 @@ half of the gap this scenario finishes:
 - `scenarios/information-protection/auto-label-confidential-exchange/` applies the same
   auto-labeling mechanism to Exchange email **in transit**, but defaults to U.S. Social Security
   Number and Credit Card Number — the same U.S.-centric starter set the EU/UK SharePoint sibling
-  was built to move away from for a non-U.S. buyer.
+  was built to move away from for a non-U.S. organization.
 
 An enterprise whose regulated population is EU/UK-only and has deployed both existing siblings
 still has no email-channel coverage for EU/UK personal data specifically: the SharePoint/OneDrive
@@ -65,7 +65,7 @@ Retrofitting either existing sibling to cover this scenario's combination would 
   is specifically the U.S.-SIT Exchange scenario; parameterizing its SIT set open-endedly would
   either require the same `Get-DlpSensitiveInformationType`-resolution machinery this scenario
   needs anyway (duplicating it inside an already-shipped, already-reviewed fragment) or silently
-  changing what a buyer who deployed it for its documented U.S. SSN/Credit-Card-Number behavior
+  changing what an organization that deployed it for its documented U.S. SSN/Credit-Card-Number behavior
   gets going forward.
 
 A third, sibling scenario folder — same overall architecture as both, borrowing the Exchange
@@ -119,7 +119,7 @@ flowchart TD
 
 Identical mechanism and rationale to the SharePoint/OneDrive EU sibling's `design.md` §5, applied
 to the Exchange rule's `ContentContainsSensitiveInformation` condition list instead of the
-SharePoint/OneDrive rules'. Not re-derived here beyond stating it is unchanged: a buyer whose
+SharePoint/OneDrive rules'. Not re-derived here beyond stating it is unchanged: an organization whose
 regulated population is limited to specific member states passes just those countries' own SITs
 (e.g. `-SensitiveInfoTypeName 'Germany Identity Card Number','France Social Security Number','EU
 debit card number'`) for tighter false-positive control than the full 26-country default bundle.
@@ -143,7 +143,7 @@ grounding, not assumed to still match:
   entity — the more complete of the two bundles [[10]](#references).
 
 **The same U.S./U.K.-merge consequence the SharePoint/OneDrive sibling's `design.md` §4 already
-disclosed applies unchanged to email**: a buyer who enables this switch specifically for U.K.
+disclosed applies unchanged to email**: an organization that enables this switch specifically for U.K.
 travel-document coverage in email also enables U.S. passport-number detection as an inseparable
 side effect — there is no way to select one without the other via this bundle SIT. Flagged in
 `README.md` §6/§11 and the deploy script's `.PARAMETER IncludeTravelDocumentSits` block, not
@@ -154,7 +154,7 @@ OneDrive sibling's `design.md` §4 now tables all 26 "EU passport number" and al
 license number" members (only 8% and 11% checksum-validated, respectively, versus 73% for the
 default national-ID bundle) — this scenario references that single table rather than duplicating it,
 avoiding drift across two scenario folders that both reference the same two SITs. The headline
-finding applies unchanged to email: a buyer enabling `-IncludeTravelDocumentSits` here should expect
+finding applies unchanged to email: an organization enabling `-IncludeTravelDocumentSits` here should expect
 the same materially higher false-positive rate as the SharePoint/OneDrive sibling.
 
 ## 6. Where the two siblings' designs combine without friction, and the one place they don't
@@ -189,7 +189,7 @@ place, described here rather than glossed over:
 | Exclusion mechanism | `-ExchangeSenderException` (sender-based) | Inherited from `auto-label-confidential-exchange/design.md` §3 — no `-ExchangeLocationException` parameter exists; confirmed against the cmdlet's full parameter syntax. |
 | Default SITs | EU national identification number, EU Social Security Number (SSN) or Equivalent ID, EU debit card number | Inherited from `auto-label-eu-personal-data-sharepoint/design.md` §4 — the same EU-wide bundle grounding, unchanged by the location switch. |
 | Localization mechanism | `-SensitiveInfoTypeName string[]`, resolved via `Get-DlpSensitiveInformationType` at deploy time | Inherited from `auto-label-eu-personal-data-sharepoint/design.md` §5. |
-| `ExternalMailRightsManagementOwner` | Not configured by default | Inherited from `auto-label-confidential-exchange/design.md` §6 — a deliberate, buyer-specific decision this scenario should not default silently, now sharper given §6's GDPR framing. |
+| `ExternalMailRightsManagementOwner` | Not configured by default | Inherited from `auto-label-confidential-exchange/design.md` §6 — a deliberate, organization-specific decision this scenario should not default silently, now sharper given §6's GDPR framing. |
 | Label scope prerequisite | Confidential label's scope must include **Emails** | Inherited from `auto-label-confidential-exchange/design.md` §6 — distinct from the SharePoint/OneDrive siblings' "Files & other data assets" requirement. |
 | Regulatory framing | GDPR Article 32 as the primary driver, with an explicit sharper note on the external-encryption gap | §6 — the one place this scenario's combination surfaces a decision neither sibling alone made. |
 | Opt-in travel-document bundle | `-IncludeTravelDocumentSits` switch, ported unchanged from the SharePoint/OneDrive EU sibling | §5 — parity follow-up so the Exchange channel isn't one switch behind its file-scoped sibling; both bundle memberships re-confirmed directly, not assumed. |
@@ -205,7 +205,7 @@ place, described here rather than glossed over:
   covered by entirely separate SIT/named-entity families) — inherited unchanged from
   `auto-label-eu-personal-data-sharepoint/design.md` §8.
 - This scenario does not configure `-ExternalMailRightsManagementOwner` — left as an explicit,
-  buyer-specific extension point (§7), not a default.
+  organization-specific extension point (§7), not a default.
 - This scenario does not re-validate or change either sibling scenario's own prerequisites,
   scripts, or `reviews.md` findings — it is an additive, independent policy against the same
   label, reusing (not re-opening) both siblings' already-reviewed designs.

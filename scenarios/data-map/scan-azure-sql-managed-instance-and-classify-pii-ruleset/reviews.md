@@ -92,7 +92,7 @@ No remaining Fix/Fail after resolution.
    so on a lift-and-shift instance rather than reusing generic wording from either sibling.
 2. **No new licensing spend.** Confirmed — this scenario reuses the base scenario's PAYG Data Map
    billing with no new consumption meter (`README.md` §10).
-3. **Compliance narrative is directly demonstrable**, and speaks to a scenario a buyer's auditor is
+3. **Compliance narrative is directly demonstrable**, and speaks to a scenario an organization's auditor is
    likely to ask about directly: "the lift-and-shift instance that used to be on-premises SQL
    Server — how do you know what's in it now?" A scoped `excludedSystemClassifications` array on
    that instance's own scan is legible evidence the discovery scope was deliberately narrowed to

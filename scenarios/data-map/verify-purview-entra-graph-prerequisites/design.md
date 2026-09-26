@@ -149,7 +149,7 @@ identity — a different identity, checked for a different, narrower purpose (wh
 The two are complementary, run at different cadences (Microsoft's script: one-time, pre-registration
 readiness; this scenario: ongoing, scheduled drift/regression detection), and this scenario does not
 duplicate any check Microsoft's own script already performs. `README.md` §3 and §12 cross-reference
-both explicitly so a buyer runs both rather than assuming either alone is sufficient.
+both explicitly so an organization runs both rather than assuming either alone is sufficient.
 
 ## 9. Report and inventory-file integrity (Red Team findings, resolved)
 

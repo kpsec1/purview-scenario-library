@@ -399,7 +399,7 @@ different risk calculus than a general conduct-monitoring policy's.
   to the content-safety classifier family on these locations during this build's grounding pass;
   confirm against the Product Terms before a sales commitment (§3).
 - **No additional Azure subscription required.** These classifiers run as part of the Communication
-  Compliance service, not a separately-billed Azure AI Content Safety resource the buyer provisions
+  Compliance service, not a separately-billed Azure AI Content Safety resource the deploying organization provisions
   directly.
 - **Sizing note:** given this scenario's "all users" default (§5/§8), cost is primarily the
   Communication Compliance E5-tier entitlement itself — typically already satisfied by a tenant

@@ -84,7 +84,7 @@ No remaining Fail. Detection, scoping, and the runbook meet the bar for an opera
   highest-access users for security tampering even outside a departure event" — not oversold as
   broad tenant-wide coverage. `README.md` §1's opening callout ("this is not a monitor-everyone
   control") and §11's correction of the originating backlog item's framing both work directly
-  against overselling this to a buyer, which is exactly what a CISO reading this for a funding
+  against overselling this to an organization, which is exactly what a CISO reading this for a funding
   decision needs to see stated up front, not discovered later.
 - **Compliance mapping:** correctly scoped as endpoint-integrity monitoring evidence for a defined
   population, not tied to a named regulatory requirement — same honest framing precedent as every

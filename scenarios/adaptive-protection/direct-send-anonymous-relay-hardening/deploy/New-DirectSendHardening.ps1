@@ -48,7 +48,7 @@
     Connector risk heuristic threshold (design.md Section 5). An IP-based InboundConnector's
     SenderIPAddresses entry with a CIDR prefix SHORTER than this value (i.e. a wider range) is
     flagged WARN. Defaults to 24 (a /24, 256 addresses). Not a Microsoft-published threshold - a
-    disclosed judgment call, parameterized so a buyer can tune it to their own network topology.
+    disclosed judgment call, parameterized so an organization can tune it to their own network topology.
 
 .PARAMETER RejectDirectSendTenantWide
     Live-impact stage. Sets Set-OrganizationConfig -RejectDirectSend $true tenant-wide. Off by

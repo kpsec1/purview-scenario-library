@@ -181,7 +181,7 @@ block cite the exact Microsoft Learn REST reference pages for every operation us
 mirrors Unified Catalog's own two-step create-then-publish model — a term in `DRAFT` is visible
 only to Data Stewards and Governance Domain Owners [[7]](#12-references), giving a human review
 point (a PR review of the JSON diff, then a deliberate `-Publish` run) before a term becomes
-visible catalog-wide. A buyer with a mature governance practice can additionally configure
+visible catalog-wide. An organization with a mature governance practice can additionally configure
 Unified Catalog's native **Term publish workflow** (Process automation → Workflows → Catalog
 curation → Term publish), which adds an in-portal maker-checker approval gate on top of the
 `DRAFT`→`PUBLISHED` transition [[12]](#12-references) — this is portal-only (§11) and complements,
@@ -253,7 +253,7 @@ See `rollback.md` for the full staged procedure (unpublish → purge). Quick ref
 - **Portal-only "Term publish" approval workflow.** Microsoft ships an in-portal maker-checker
   workflow for term/data-product publishing (§8) but publishes no REST/PowerShell surface for
   *authoring* workflow definitions as of this build. This script's `-Publish` flag performs the
-  same `DRAFT`→`PUBLISHED` transition a workflow would eventually gate — if a buyer configures the
+  same `DRAFT`→`PUBLISHED` transition a workflow would eventually gate — if an organization configures the
   native publish workflow, running this script's `-Publish` against a domain in scope for that
   workflow submits the transition for approval rather than completing it immediately; confirm the
   resulting behavior in a pilot tenant before assuming synchronous publish.

@@ -10,7 +10,7 @@ label anything themselves. Deployed as a single Microsoft Purview auto-labeling 
 rule, staged simulation-first, with an optional sender-based exclusion for a nominated
 legal/eDiscovery mailbox.
 
-**Who it's for:** the exact buyer of
+**Who it's for:** the exact organization of
 `scenarios/information-protection/auto-label-confidential-sharepoint/` — any enterprise that needs
 systematic, evidenced classification coverage for regulated personal data — extended to close the
 email channel that scenario explicitly leaves open. Deploy this **alongside**, not instead of, the
@@ -269,7 +269,7 @@ reference: `./deploy/Remove-ConfidentialAutoLabelExchangePolicy.ps1` disables (r
 - **In-transit only — no backlog coverage.** This is the load-bearing limitation of the whole
   scenario (`design.md` §5). Mail delivered before this policy existed, or before it was turned
   on, is never retroactively labeled. There is no on-demand-classification equivalent for Exchange.
-  If a buyer needs historical-mail classification, that is a separate eDiscovery/Content
+  If an organization needs historical-mail classification, that is a separate eDiscovery/Content
   Search-based project, not an extension of this scenario.
 - **No "Labeled items" dashboard or policy-level Insights enforcement metrics for Exchange** — both
   report only SharePoint/OneDrive files [[7]](#references). Use Activity Explorer instead (§7),
@@ -304,7 +304,7 @@ reference: `./deploy/Remove-ConfidentialAutoLabelExchangePolicy.ps1` disables (r
   recipient is labeled Confidential but leaves the tenant in cleartext** — the exact direction of
   travel (data leaving the org) that matters most for breach-notification exposure under the
   GDPR/CCPA drivers in §2. This is a genuine Red Team/CISO finding from this scenario's four-lens
-  review (`reviews.md`), not a minor configuration nuance: a buyer whose primary concern is
+  review (`reviews.md`), not a minor configuration nuance: an organization whose primary concern is
   external data loss (not just internal classification hygiene) should configure
   `-ExternalMailRightsManagementOwner` deliberately, or pair this scenario with
   `scenarios/dlp/exchange-pii-exfil-block/` — a content-based Exchange DLP policy, built

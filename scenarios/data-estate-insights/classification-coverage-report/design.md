@@ -10,7 +10,7 @@ classification categories, and a 30-day classification-activity trend. It is aut
 generated, requires no scripting, and is the right first stop for anyone exploring their estate's
 classification posture interactively.
 
-It has three structural limits that make it insufficient as the *only* mechanism for a buyer that
+It has three structural limits that make it insufficient as the *only* mechanism for an organization that
 needs this data outside the portal:
 
 1. **No REST API of its own.** The report is a managed Power BI-style dashboard; there is no
@@ -60,7 +60,7 @@ needs this data outside the portal:
    very large scale.
 4. **A trend log, not just a snapshot — the specific gap the native report's 30-day window leaves.**
    Each run appends (or replaces, for the same `-RunId`) one row per object type to a
-   source-controllable CSV, so a buyer gets exactly the longitudinal history the native report
+   source-controllable CSV, so an organization gets exactly the longitudinal history the native report
    discards after 30 days.
 5. **Idempotent in the sense that matters for a report, not the sense that matters for a policy
    object.** This scenario creates no Purview object, so there is nothing to "already exist" and
@@ -157,7 +157,7 @@ Full grounding: `deploy/Export-ClassificationCoverageReport.ps1`'s inline commen
   active-user counts) this scenario's Discovery - Query-based approach doesn't reach.
 - This scenario does not push the report anywhere (no built-in Log Analytics/Sentinel/Power BI
   sink) — it writes local/blob CSV and JSON files and leaves routing them into a SIEM or BI tool as
-  an integration the buyer's own pipeline performs, consistent with `README.md` §8.
+  an integration the deploying organization's own pipeline performs, consistent with `README.md` §8.
 - At extreme estate scale (an object type with several hundred thousand+ assets), `-Mode Full`'s
   full page-through has a real, non-trivial API-call and runtime cost; this scenario does not
   implement incremental/delta tallying (e.g. only re-tallying assets modified since the last run) —

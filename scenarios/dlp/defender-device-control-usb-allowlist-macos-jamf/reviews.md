@@ -74,8 +74,8 @@ a concrete compensating process (manual console re-check on a fixed cadence) is 
 
 **Verdict: Fix (resolved)**
 
-- **Risk reduction vs. cost:** closes a real gap for any buyer whose macOS fleet is JAMF-managed —
-  without this scenario, such a buyer has **zero** device-identity USB control on every JAMF-managed
+- **Risk reduction vs. cost:** closes a real gap for any organization whose macOS fleet is JAMF-managed —
+  without this scenario, such an organization has **zero** device-identity USB control on every JAMF-managed
   Mac, since neither the Windows nor the Intune-managed-macOS sibling applies. Zero incremental
   Microsoft licensing cost for a tenant already at Defender for Endpoint Plan 1 / Microsoft 365 E3;
   JAMF Pro itself is a pre-existing cost this scenario assumes, not adds.
@@ -92,11 +92,11 @@ a concrete compensating process (manual console re-check on a fixed cadence) is 
     fully API-driven, scriptable deployment.
 - **Change-management impact:** materially higher manual-step count than either sibling (§5, four
   JAMF-console steps vs. one script invocation) — correctly disclosed as a real adoption-cost
-  difference a buyer comparing the two deployment paths should know upfront, not glossed over to
+  difference an organization comparing the two deployment paths should know upfront, not glossed over to
   make the scenarios look interchangeable.
 - **Compliance mapping:** same general media-controls reinforcement as both siblings — no
   JAMF-specific named requirement claimed.
-- **Would I fund this?** Yes, for the intended buyer (JAMF-managed fleet with no Intune
+- **Would I fund this?** Yes, for the intended organization (JAMF-managed fleet with no Intune
   alternative) — but I would fund it with eyes open about the disclosed change-management/audit
   gap versus the Intune sibling, not as a drop-in equivalent.
 

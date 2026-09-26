@@ -40,7 +40,7 @@ findings below; all **Fix** items were applied to the scenario before this file 
    after a scheduled run holds unreviewed in-organization trust for up to a full day before this
    scenario's next run surfaces it. Not a flaw in the design (a real-time push-based alternative isn't
    available — Microsoft publishes no event-driven trigger for accepted-domains changes, `design.md`
-   §5), but stating the honest latency window matters for a buyer deciding whether daily is
+   §5), but stating the honest latency window matters for an organization deciding whether daily is
    sufficient for their risk tolerance.
    - **Resolution:** `README.md` §8 now states the detection-latency trade-off explicitly and
      documents how to run this scenario on a sub-daily cadence (an explicit, more granular `-RunId`)
@@ -74,7 +74,7 @@ No remaining Fix/Fail after resolution.
      up; added no further change here since this is inherently a platform-configuration step outside
      this scenario's own code (the same boundary `classification-coverage-report/rollback.md` draws
      for its own scheduling mechanism) — confirmed this is disclosed, not silently assumed, via the
-     existing §5 step 6 instruction to wire the deploy script into the buyer's own scheduler.
+     existing §5 step 6 instruction to wire the deploy script into the deploying organization's own scheduler.
 3. **Severity model for `DomainTypeMismatch`/`MatchSubDomainsChanged` correctly distinguishes a
    trust-boundary change from cosmetic drift, not a blanket severity.** Checked against the risk of a
    SOC team either over-alarming on every `DomainTypeMismatch` (most of which don't change the trust
@@ -96,7 +96,7 @@ achievable from this script alone (design.md §5) — a genuine tooling gap, not
 
 1. **The "no incremental licensing" framing needed a direct comparison, not just a citation.** The
    first draft's §10 stated no incremental Purview/Copilot licensing is required but didn't foreground
-   how that compares to the cost of the control this scenario protects — a buyer evaluating whether to
+   how that compares to the cost of the control this scenario protects — an organization evaluating whether to
    fund this alongside `copilot-external-email-block`'s E5-class requirement benefits from seeing the
    asymmetry stated plainly.
    - **Resolution:** `README.md` §10 already drew this comparison in the first draft ("meaningfully
@@ -104,7 +104,7 @@ achievable from this script alone (design.md §5) — a genuine tooling gap, not
      sufficient; no further change needed.
 - **Risk reduction vs. cost:** high — this is a low-cost (no incremental licensing, one cmdlet call
   per scheduled run), high-leverage control: it protects the correctness of every `FromScope`-based
-  DLP rule the buyer has deployed or will deploy in this repo, not just one scenario. The
+  DLP rule the deploying organization has deployed or will deploy in this repo, not just one scenario. The
   cost-to-protection ratio is unusually favorable compared to most scenarios in this repo.
 - **Board-level narrative:** "We continuously verify that the accepted-domains configuration our DLP
   controls depend on hasn't silently drifted, and we can show same-day detection of any unreviewed

@@ -66,7 +66,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Automation identity (audit-trail script only) | App registration or account holding **Exchange.ManageAsApp** plus the **View-Only Audit Logs** (or **Audit Logs**) Exchange Online role | `Search-UnifiedAuditLog` requires an **Exchange Online** RBAC role — a Purview-only role is explicitly documented as insufficient. See `docs/rbac-model.md` §6 and `docs/automation-surface.md` §3 |
 | Viva Engage native mode (only if Viva Engage is in scope) | Tenant's Viva Engage network in **Native Mode** | Required for Communication Compliance to check Viva Engage private messages/community conversations [[4]](#references) |
 | Dependency (not deployed by this scenario) | Named HR/Legal stakeholders to populate as reviewers | This scenario does not create or manage user accounts — see `deploy/policy/communication-compliance-policy-manifest.json`'s `reviewers.placeholderMembers` |
-| Dependency (not deployed by this scenario) | Employment-counsel review of monitoring-notice/consent obligations, and an updated acceptable-use/monitoring policy communicated to staff | Reading employee message content (§5, Investigators role) can trigger jurisdiction-specific employee-monitoring notice or consent requirements this scenario's technical grounding cannot determine on the buyer's behalf — see §11 VERIFY |
+| Dependency (not deployed by this scenario) | Employment-counsel review of monitoring-notice/consent obligations, and an updated acceptable-use/monitoring policy communicated to staff | Reading employee message content (§5, Investigators role) can trigger jurisdiction-specific employee-monitoring notice or consent requirements this scenario's technical grounding cannot determine on the deploying organization's behalf — see §11 VERIFY |
 
 > Verify current entitlement names against `docs/licensing-matrix.md` (dated 2026-09-02) and the
 > Product Terms before a sales commitment — SKU names change.
@@ -375,7 +375,7 @@ in the portal for a reversible stop; **Delete** only when permanently retiring t
   employee-monitoring notice or consent requirements that may apply to reviewing message content
   under this scenario's Investigator-role design. Confirm applicable notice/consent obligations
   with employment counsel for every jurisdiction the in-scope user population spans before go-live
-  — this is a legal determination this scenario's technical grounding cannot make on the buyer's
+  — this is a legal determination this scenario's technical grounding cannot make on the deploying organization's
   behalf.
 - **EEOC guidance currency (§2):** confirm the current status of federal and any applicable state
   harassment sub-regulatory guidance before finalizing a customer-facing regulatory-driver

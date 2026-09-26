@@ -25,7 +25,7 @@ items were raised.
    principal that can assign the Compliance Data Administrator role group (or edit role-group
    membership generally) can indirectly gain the power described in finding 1.
    - **Resolution:** `README.md` §3 names the specific role and role group rather than a vague
-     "admin access," making it a concrete, auditable thing a buyer's access review can check for.
+     "admin access," making it a concrete, auditable thing an organization's access review can check for.
      Broader role-group-assignment governance is out of this scenario's scope — it's covered by
      `docs/rbac-model.md`'s role-management guidance, which this scenario now cross-references.
 3. **Priority-collision handling as a denial-of-service vector.** A malicious or careless actor
@@ -82,7 +82,7 @@ No remaining Fail.
      Teams-retention gap to specific already-shipped Teams controls in this library rather than a
      generic "more retention is good" pitch.
 2. **The 50-policy cap and Organization Configuration role gap are real governance-process risks,
-   not just technical trivia.** A buyer who doesn't plan a priority-numbering convention, or
+   not just technical trivia.** An organization that doesn't plan a priority-numbering convention, or
    doesn't realize Audit Manager alone can't manage retention, will hit friction mid-rollout.
    - **Resolution:** Both are foregrounded in §3 (prerequisites, with an explicit "not sufficient
      alone" row) and §8 (operational planning), not buried in §11 as afterthoughts.

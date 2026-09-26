@@ -15,7 +15,7 @@ findings below; all **Fix** items were applied to the scenario before this file 
    Import-PSSession/Connect-ExchangeOnline name-collision risk as a documented operational hazard, but
    the deploy and validate scripts' own `Assert`-style checks only called
    `Get-Command Get-AcceptedDomain -ErrorAction SilentlyContinue` — true whether the resolved command
-   came from the on-premises session or a co-loaded Exchange Online session. A buyer who (against the
+   came from the on-premises session or a co-loaded Exchange Online session. An organization that (against the
    documented guidance) ran both sessions in one process would get a **clean-looking report with zero
    indication anything was wrong** — a silent false negative on the exact control this scenario exists
    to provide, and a worse failure mode than an outright error would have been.
@@ -90,7 +90,7 @@ No remaining Fix/Fail after resolution.
    the cloud side's state from up to one full cloud-schedule interval before the on-premises run that
    reads it — a `CrossEnvironmentMismatch` finding could reflect a disagreement that's already been
    corrected on the cloud side, or miss one that hasn't been recorded there yet.
-   - **Resolution:** `README.md` §8 states this staleness window explicitly and recommends the buyer
+   - **Resolution:** `README.md` §8 states this staleness window explicitly and recommends the deploying organization
      document which scheduling convention they use (on-premises-then-cloud, or accept a one-cycle lag)
      rather than presenting the cross-environment check as reflecting real-time state — matches the
      parent scenario's own honesty precedent for its daily-cadence detection-latency disclosure
@@ -110,26 +110,26 @@ disclosed, unresolved gap in that capability.
 **Verdict: Pass**
 
 - **Applicability is narrow and correctly scoped, not oversold.** `README.md` §1 states plainly this
-  scenario is only relevant to a hybrid Exchange deployment — a pure-cloud buyer should run the parent
-  alone. No attempt to inflate this into a general-purpose control every buyer needs; a CISO evaluating
+  scenario is only relevant to a hybrid Exchange deployment — a pure-cloud organization should run the parent
+  alone. No attempt to inflate this into a general-purpose control every organization needs; a CISO evaluating
   it can immediately tell whether it applies to their environment.
 - **Risk reduction vs. cost:** proportionate. No incremental licensing (§10) — the only cost is
-  wiring a scheduled job with network reachability to an on-premises server the buyer already
+  wiring a scheduled job with network reachability to an on-premises server the deploying organization already
   operates, and the engineering/operational overhead of running a second, independent scheduled check.
-  For a hybrid buyer specifically, this closes a real, previously-undisclosed blind spot (the parent's
+  For a hybrid organization specifically, this closes a real, previously-undisclosed blind spot (the parent's
   own `design.md` §7 non-goal) at a cost well below the parent scenario's own already-favorable
   cost-to-protection ratio.
 - **Board-level narrative:** "We monitor accepted-domains hygiene across both halves of our hybrid
   Exchange deployment, and we can show when the two sides disagree" extends the parent's own concrete,
-  auditable claim to the buyer's actual full estate rather than leaving a silent gap an auditor could
+  auditable claim to the deploying organization's actual full estate rather than leaving a silent gap an auditor could
   reasonably ask about.
 - **Compliance mapping:** correctly framed as a compensating/detective control, same class as the
   parent — no overclaiming of real-time or preventive protection. The `CrossEnvironmentMismatch`
   severity model's deliberate refusal to treat every disagreement as `FAIL` (`design.md` §4) is the
   right call for a board narrative too: a control that cried wolf on every legitimate hybrid-migration
   domain would erode trust in its own alerts faster than it built risk reduction.
-- **Would I fund this?** Yes, conditionally on the buyer actually being hybrid — this is not a
-  blanket recommendation for every buyer of the parent scenario, and the documentation makes that
+- **Would I fund this?** Yes, conditionally on the deploying organization actually being hybrid — this is not a
+  blanket recommendation for every organization of the parent scenario, and the documentation makes that
   distinction clearly enough that a CISO evaluating the two scenarios together won't over-purchase
   scope they don't need.
 
@@ -174,7 +174,7 @@ No Fix/Fail raised.
    - **Resolution:** No change needed — `design.md` §2, `README.md` §11, and the deploy script's
      `.NOTES` all already carry this as an explicit VERIFY rather than an assumed default; confirmed
      this is the correct level of caution on review, not excessive hedging (the practical
-     consequence — a buyer should check their own `Get-AdminAuditLogConfig` output before trusting
+     consequence — an organization should check their own `Get-AdminAuditLogConfig` output before trusting
      `-IncludeAuditAttribution` for an investigation — is concrete and actionable, not vague).
 4. **Correctly scoped as a companion, not a fork or a duplicate implementation.** Reuses the parent's
    `KnownDomains.json` schema verbatim, reuses its baseline/drift-log/idempotency shape, and creates no
@@ -261,7 +261,7 @@ of the sample's own "coexistence domain" label.
 
 **Scope:** a real code change, not a doc-only correction addendum. Closes the `design.md` §9 non-goal
 ("Does not attempt to reconcile `MatchSubDomains`/`Default` flags across environments... once a concrete
-buyer need surfaces one") once that follow-up was picked up from `PROGRESS.md`. Adds two new finding
+organization need surfaces one") once that follow-up was picked up from `PROGRESS.md`. Adds two new finding
 categories to `deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s cross-environment check
 (§4): `CrossEnvironmentMatchSubDomainsMismatch` and `CrossEnvironmentDefaultMismatch`, alongside the
 existing `CrossEnvironmentMismatch` (`DomainType`). A full four-lens round, not a correction addendum,
@@ -330,19 +330,19 @@ No remaining Fix/Fail after resolution.
 
 No remaining Fail. The new categories inherit the same drift-log CSV / findings-JSON evidentiary shape
 and the same scheduler exit-code contract as every other category in this scenario — no new alerting
-plumbing required at the buyer's SIEM/ticketing layer.
+plumbing required at the deploying organization's SIEM/ticketing layer.
 
 ### 🎩 CISO
 
 **Verdict: Pass**
 
 - **Incremental, not scope-creeping.** This closes a non-goal `design.md` §9 explicitly deferred
-  "pending a concrete buyer need" — the discipline that non-goal called for was followed: it stayed
+  "pending a concrete organization need" — the discipline that non-goal called for was followed: it stayed
   deferred until picked up as a scoped `PROGRESS.md` follow-up, not built speculatively ahead of need.
 - **Cost:** zero incremental licensing or infrastructure — same deploy/validate scripts, same schedule,
   same output files, three more field comparisons per already-read domain object. No new decision for
   a CISO to fund separately; it rides the existing scenario's already-approved cost basis.
-- **Narrows a real, previously-silent gap without overclaiming.** Before this round, a hybrid buyer
+- **Narrows a real, previously-silent gap without overclaiming.** Before this round, a hybrid organization
   could have `DomainType` parity across environments while silently diverging on subdomain-mail
   acceptance — a gap the original scenario's own `README.md` never claimed to cover. The board
   narrative ("we monitor accepted-domains configuration for drift across our hybrid estate") is now

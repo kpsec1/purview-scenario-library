@@ -83,11 +83,11 @@ No remaining Fail.
 
 **Verdict: Fix (resolved)**
 
-1. **Which path for which buyer, stated plainly.** A buyer choosing the wrong path (e.g. deploying
+1. **Which path for which organization, stated plainly.** An organization choosing the wrong path (e.g. deploying
    only the free Sentinel connector, then discovering DLP events never show up) wastes a security
    review cycle discovering the gap themselves.
    - **Resolution:** `design.md` §3's comparison table and `README.md` §11's first bullet state the
-     Path A coverage gap (no Entra/DLP) up front, before the buyer commits to one path.
+     Path A coverage gap (no Entra/DLP) up front, before the deploying organization commits to one path.
 2. **Cost is honestly framed, not oversold.** Path A is genuinely free at the ingestion layer
    (§10); Path B has no API cost but isn't "free" once a real SIEM ingestion cost is attached — the
    scenario doesn't claim otherwise.
@@ -95,8 +95,8 @@ No remaining Fail.
    to SOC 2 CC7.2 / ISO 27001 A.8.16 / PCI-DSS 10 — concrete, not generic (§2).
 4. **Standing risk of a broad read grant** (Red Team finding 4) is priced into the rollback
    discipline rather than left implicit.
-5. **Would I fund this?** Yes for a buyer already running Sentinel (Path A is free); Path B's
-   funding case depends entirely on whether the buyer actually needs `DLP.All`/Entra-audit events a
+5. **Would I fund this?** Yes for an organization already running Sentinel (Path A is free); Path B's
+   funding case depends entirely on whether the deploying organization actually needs `DLP.All`/Entra-audit events a
    non-Sentinel SIEM or Path A's gap requires — the scenario is honest that Path B isn't needed by
    everyone, which is itself the right sales conversation to have before building it.
 
@@ -128,7 +128,7 @@ No remaining Fix/Fail after resolution.
    flagged inline (the `.bicep` header and `Enable-ManagementActivitySubscriptions.ps1`'s `.NOTES`)
    rather than asserted.
 6. **Forward-looking accuracy.** README §11 notes the Azure-portal-to-Defender-portal Sentinel
-   retirement timeline (after March 31, 2027) so buyer-facing walkthroughs know to re-check which
+   retirement timeline (after March 31, 2027) so organization-facing walkthroughs know to re-check which
    portal a given Sentinel instance actually presents.
 
 No remaining Fail after resolution.

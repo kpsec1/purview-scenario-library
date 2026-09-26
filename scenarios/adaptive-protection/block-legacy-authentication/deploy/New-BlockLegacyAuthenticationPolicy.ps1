@@ -17,11 +17,11 @@
     IMPORTANT GROUNDING FINDING (design.md Section 3): as of this build, Microsoft auto-deploys a
     Microsoft-managed "Block legacy authentication" Conditional Access policy to eligible tenants
     (Microsoft Entra ID P2 or Microsoft 365 Business Premium) in Report-only state, and auto-enables
-    it no less than 30 days later unless an admin acts first. This script does NOT assume a buyer
+    it no less than 30 days later unless an admin acts first. This script does NOT assume an organization
     needs a brand-new control - it checks for that Microsoft-managed policy first (best-effort, by
     the "Microsoft-managed:" displayName prefix Microsoft's own audit-log guidance documents - see
     .NOTES) and reports its state rather than silently deploying a duplicate. A custom policy
-    remains a legitimate, Microsoft-endorsed choice when a buyer needs more control than a
+    remains a legitimate, Microsoft-endorsed choice when an organization needs more control than a
     Microsoft-managed policy allows (narrower Users scope than "all eligible users", a tenant not
     yet eligible for the Microsoft-managed rollout, or wanting the control in place immediately
     rather than on Microsoft's own 30-day timeline) - Microsoft's own guidance explicitly suggests

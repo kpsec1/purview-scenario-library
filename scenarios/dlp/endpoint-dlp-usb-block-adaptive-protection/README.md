@@ -14,7 +14,7 @@ restricts **six** activities; this scenario scripts the **four** with an indepen
 `-EndpointDlpRestrictions` action shape (clipboard, USB, network share, print) and deliberately
 does not fabricate the remaining two ("Access by restricted apps," cloud/browser upload
 restriction), whose rule-level action syntax is undocumented — see §5 Step 6 and §11 before
-representing this scenario as full Quick Setup parity to a buyer.
+representing this scenario as full Quick Setup parity to an organization.
 
 **Who it's for:** any tenant that has already deployed (or is deploying via this library)
 `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement` — the Exchange/Teams half of the
@@ -135,7 +135,7 @@ Microsoft's own Quick Setup Devices rule also includes **Access by restricted ap
 **Upload to a restricted cloud service domain or access from unallowed browsers**
 [[1]](#references). This scenario's script does not create either action because no documented
 `-EndpointDlpRestrictions` Setting/Value shape exists for them at the rule level (§11, `design.md`
-§2/§6). If a buyer wants full parity with Microsoft's Quick Setup output, add both actions to
+§2/§6). If an organization wants full parity with Microsoft's Quick Setup output, add both actions to
 **both** rules manually via the portal (Purview portal → **Data loss prevention** → open this
 policy → edit each rule's **Audit or restrict activities on devices** action) rather than assuming
 this script's four-setting subset is the complete picture.
@@ -229,7 +229,7 @@ classification scanning and protection — each is independently owned.
   scenario's policy is therefore a **4-of-6-action subset** of Microsoft's full Quick Setup
   reference configuration — real, useful, and independently grounded for what it does cover, but
   not a complete substitute for Quick Setup's own output. §5 Step 6 documents the manual portal
-  completion step for a buyer who wants full parity.
+  completion step for an organization that wants full parity.
 - **`NotifyUser`/Block tension, disclosed not resolved.** Microsoft's cmdlet reference states
   Block or Warn values require the `NotifyUser` parameter to be supplied, yet the same documented
   Quick Setup rule table shows "User Notification: Off" for this exact Devices Block rule. This
@@ -243,7 +243,7 @@ classification scanning and protection — each is independently owned.
   this scenario satisfies the same underlying prerequisite via Advanced classification scanning
   and protection instead (§3, §5 Step 2), so its rule has **no file-type restriction at all** — it
   evaluates every file type on the four scripted activities, not just the five Quick Setup names.
-  A buyer who specifically wants Quick Setup's narrower, file-type-scoped behavior should add a
+  An organization that specifically wants Quick Setup's narrower, file-type-scoped behavior should add a
   File Type condition manually via the portal rather than assume this script already matches it.
 - **Advanced classification scanning and protection has its own file-size and file-type limits**
   that indirectly bound how well this policy's underlying content classification works: a 64-MB
@@ -251,7 +251,7 @@ classification scanning and protection — each is independently owned.
   to Office (Word, Excel, PowerPoint) and PDF file types [[8]](#references). A sensitive file
   outside these bounds may not benefit from cloud-based advanced classification even though this
   scenario's four scripted restrictions (which key off the risk-level condition, not content
-  classification) still apply to it regardless — but any *content-based* condition a buyer later
+  classification) still apply to it regardless — but any *content-based* condition an organization later
   layers on top of this rule (e.g. a sensitive-information-type condition) would inherit this
   limit.
 - **`ContentFileTypeMatches`'s value syntax is undocumented** — both `New-DlpComplianceRule` and

@@ -361,7 +361,7 @@ data source registration.
   Connections** (`PUT /scan/azureKeyVaults/{azureKeyVaultName}`) as first-class documented
   operation groups at `api-version=2023-09-01`. Both are now scripted end-to-end by
   `scenarios/data-map/scan-credential-key-vault-backed/`, which also documents the one field shape
-  that genuinely remains unconfirmed (the two `KeyVaultSecret` discriminator literals). A buyer
+  that genuinely remains unconfirmed (the two `KeyVaultSecret` discriminator literals). An organization
   needing SQL-auth or service-principal scanning should build the credential with that scenario and
   reference it by name here — no portal step required. This scenario's own script still defaults to
   the SAMI (`AzureSqlDatabaseMsi`) path, which remains Microsoft's recommended option where it is

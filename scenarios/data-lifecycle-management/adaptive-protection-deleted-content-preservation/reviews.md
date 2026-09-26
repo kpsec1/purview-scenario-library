@@ -13,7 +13,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
 1. **This control preserves deletions, not exfiltration — and the original draft didn't say so
    plainly enough.** An Elevated-risk user who copies content out *before* deleting the local
    copy has already exfiltrated it; this control only stops them from also destroying the
-   evidence. A buyer skimming the summary could reasonably assume this closes exfiltration risk
+   evidence. An organization skimming the summary could reasonably assume this closes exfiltration risk
    generally, which it doesn't — that's the paired DLP scenario's job.
    - **Resolution:** Added an explicit `README.md` §11 bullet stating the scope boundary plainly
      and cross-linking `dynamic-risk-dlp-enforcement` as the complementary control, not a
@@ -92,7 +92,7 @@ No Fail items.
   data, we automatically keep a copy for 120 days, with no analyst having to react in time" is a
   clear, defensible narrative — now paired with an honest caveat about what it doesn't cover
   (post-fix §11) and the preview-status caveat (§3).
-- **Would I fund this?** Yes, as an incremental, zero-cost addition for a buyer already running
+- **Would I fund this?** Yes, as an incremental, zero-cost addition for an organization already running
   `dynamic-risk-dlp-enforcement` — not as a standalone investment, and not presented as a
   litigation-hold replacement.
 

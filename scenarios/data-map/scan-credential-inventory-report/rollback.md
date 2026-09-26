@@ -33,7 +33,7 @@ this scenario.
 
 - **Trend-log CSV and per-run drift-report JSON files** (wherever `-TrendLogPath` /
   `-DriftReportDirectory` pointed) are ordinary files this scenario wrote outside of Purview —
-  delete them, archive them, or leave them in place per the buyer's own data-retention policy. There
+  delete them, archive them, or leave them in place per the deploying organization's own data-retention policy. There
   is no Purview-side artifact tied to them that would become orphaned or inconsistent if they're
   kept after the automation identity's role is removed.
 - **Treat these files with the same handling discipline `README.md` §11 describes** — they name Key
@@ -67,7 +67,7 @@ later, unrelated investigation needs to reconstruct what was approved.
 Because this scenario exists specifically to compensate for the "Purview records no audit event for
 a credential create/replace/delete" gap (`README.md` §2, `scan-credential-key-vault-backed/README.md`
 §11), decommissioning it without a replacement detective control means that gap is open again with
-nothing watching it. If rollback is happening because the buyer is replacing this scenario with a
+nothing watching it. If rollback is happening because the deploying organization is replacing this scenario with a
 different detection mechanism (e.g. a confirmed `PurviewSecurityLogs` event once that VERIFY closes —
 `scan-credential-key-vault-backed/README.md` §11), confirm the replacement is actually in place and
 running *before* stopping this scenario's schedule, not after.

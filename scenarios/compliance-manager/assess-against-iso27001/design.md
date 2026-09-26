@@ -37,7 +37,7 @@ and improvement-action status/evidence updates are **exclusively portal- and Exc
 product**, and pretending otherwise (inventing a `New-ComplianceManagerAssessment` cmdlet, or
 guessing the Action Update Excel's exact column schema so a script could "generate" it) would
 violate `AGENTS.md` §4's no-invented-cmdlets rule for zero real benefit: a fabricated script that
-doesn't match the portal wizard's actual validation would fail on first use and cost the buyer
+doesn't match the portal wizard's actual validation would fail on first use and cost the deploying organization
 more time than a correctly-labeled manual runbook. See the Microsoft Product Owner lens in
 `reviews.md` for why building a portal runbook instead of a fake script is the right call, not a
 shortcut.
@@ -63,7 +63,7 @@ shortcut.
    itself sufficient evidence for an ISO 27001 audit — see §5 below) with a deliberate grouping
    strategy and a minimal, correct services scope.
 2. Make the connection between this assessment and this library's **already-built technical
-   controls** explicit, so a buyer who has already deployed
+   controls** explicit, so an organization that has already deployed
    `scenarios/dlp/pci-teams-exfil-block/`, `scenarios/information-protection/
    auto-label-confidential-sharepoint/`, `scenarios/dlp/endpoint-dlp-usb-block/`, or
    `scenarios/insider-risk/departing-employee-data-theft/` understands that those controls feed
@@ -102,7 +102,7 @@ this list**. This scenario's audit-trail script therefore cannot (and does not c
 to 6-month) history report already covers natively inside Compliance Manager, with no script
 needed. What this script covers is the two things the Reports page does **not** track: who has
 edit access, and whether the automated-testing trust boundary itself was loosened. See
-`README.md` §11 for this distinction spelled out for a buyer evaluating what this script does and
+`README.md` §11 for this distinction spelled out for an organization evaluating what this script does and
 doesn't replace.
 
 **A narrower but important gap within that "who has edit access" claim** (raised in the Red Team
@@ -157,7 +157,7 @@ Learn MCP, re-fetched 2026-09-10) resolves this:
 (`README.md` §5 step 4, manifest `regulation`/`assessmentName`). The :2013 template is left in
 place in Microsoft's catalog (likely for tenants with assessments already built against it, or as
 a historical reference) but is not the correct choice for a new assessment as of this build — a
-buyer who already has a live :2013 assessment from an earlier deployment of this scenario should
+organization that already has a live :2013 assessment from an earlier deployment of this scenario should
 plan a controlled migration (create the new :2022 assessment per the runbook, carry over
 evidence/notes manually per improvement action — Compliance Manager does not document an
 assessment-to-assessment copy/upgrade path — then retire the :2013 assessment per `rollback.md`),
@@ -206,7 +206,7 @@ scenarios first, then creating this assessment, is the recommended order (`READM
   from named Purview solutions) without asserting a specific control-by-control table.
 - **Multicloud (AWS/GCP/Azure via Defender for Cloud) service scoping.** This scenario scopes the
   assessment to **Microsoft 365** only, matching the rest of this library's tenant-only scope
-  (`AGENTS.md` §5, "author-only reference for the buyer's tenant"). A buyer with a multicloud
+  (`AGENTS.md` §5, "author-only reference for the deploying organization's tenant"). An organization with a multicloud
   estate can add services later by editing the assessment (`README.md` §5) — deferred as a
   follow-up in `PROGRESS.md`.
 - **The Compliance Manager premium-assessments trial vs. a paid license decision.** Documented as

@@ -138,7 +138,7 @@ incidental (`AGENTS.md` §6 — keep fragments small by reusing what the repo al
   observed, without re-litigating that open question.
 - **A Purview-native alert or Sentinel/Log Analytics sink.** Same posture as
   `classification-coverage-report/design.md` §7 — flat trend-log/drift-report files are the
-  deliverable; SIEM ingestion is the buyer's own integration.
+  deliverable; SIEM ingestion is the deploying organization's own integration.
 - **Reconciling which scan(s) consume a drifted credential.** `scan-credential-key-vault-backed`'s
   own `design.md` §7 already names "no credential-to-scan reverse index" as a Purview API gap this
   repo cannot script around; this scenario inherits that same limitation rather than re-solving it.

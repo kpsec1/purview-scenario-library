@@ -64,7 +64,7 @@ against Microsoft Learn (MCP fetch, not WebSearch-only — see §7), this templa
    likelihood/severity increase as though it were an automatic consequence of population membership
    alone. This scenario's `README.md` §5 Step 6 and `deploy/policy/
    data-leaks-priority-users-policy-manifest.json` treat selecting this booster as a first-class,
-   independently-checkable configuration item — a buyer who assigns a priority user group but never
+   independently-checkable configuration item — an organization that assigns a priority user group but never
    selects this booster gets the population-restriction and reviewer-scoping benefits (§1) without
    the scoring boost that is this template family's other headline differentiator.
 5. **Ground the DLP-alerts indicator's current supported/unsupported workload list precisely,

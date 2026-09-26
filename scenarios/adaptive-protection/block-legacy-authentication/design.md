@@ -61,7 +61,7 @@ policies" documentation [[2]](#references) found:
   organization-authored policy at the Graph layer (the "Created by: Microsoft" distinction itself
   is portal-only rendering, not a documented `conditionalAccessPolicy` property — see §6).
 
-**Consequence for this scenario's design:** for any buyer already on Entra ID P2 or Microsoft 365
+**Consequence for this scenario's design:** for any organization already on Entra ID P2 or Microsoft 365
 Business Premium, a policy that blocks legacy authentication is either already present in their
 tenant today, or will auto-enable within 30 days regardless of whether they run this scenario at
 all. Presenting this scenario as "the way to get this control" without disclosing that would be
@@ -78,7 +78,7 @@ levels are P2-gated features. This scenario's `clientAppTypes` + `block` grant c
 uses **no risk-based or premium-only condition at all** — Microsoft's own Conditional Access
 licensing reference confirms the feature-wide floor is **Microsoft Entra ID P1** (or bundled
 Microsoft 365 Business Premium) [[7]](#references), materially cheaper than the P2 floor its two
-CA siblings require. `docs/licensing-matrix.md` §9 documents this distinction so a buyer doesn't
+CA siblings require. `docs/licensing-matrix.md` §9 documents this distinction so an organization doesn't
 assume every Conditional-Access-based scenario in this library needs P2.
 
 A tenant with **neither P1 nor P2** (Microsoft Entra ID Free) cannot deploy this scenario's custom
@@ -86,7 +86,7 @@ policy at all — Conditional Access itself requires at least P1. **Security def
 [[8]](#references) is Microsoft's documented zero-cost alternative for that tier: a single
 tenant-wide on/off toggle that also blocks legacy authentication protocols, with no customization
 (no exclusions, no Report-only mode, no per-population scoping). This scenario does not configure
-or check security defaults — out of scope, see §7 — but README.md §3/§11 tells a Free-tier buyer
+or check security defaults — out of scope, see §7 — but README.md §3/§11 tells a Free-tier organization
 where to look instead of leaving them with a scenario that can't apply to them.
 
 ## 5. Architecture
@@ -107,7 +107,7 @@ flowchart TD
 |---|---|---|
 | Check for a Microsoft-managed equivalent first | Best-effort `Microsoft-managed:` displayName prefix + `legacy` substring match, non-blocking (informational stop, not an error) | The only confirmed, citable Graph-visible signal for a Microsoft-managed policy is its naming convention [[2]](#references) — no documented boolean flag exists on the v1.0 `conditionalAccessPolicy` resource (checked directly against the resource reference [[5]](#references)). Disclosed as best-effort, not asserted as exhaustive — see §7 Non-goals and README.md §11. |
 | `clientAppTypes` values | `['exchangeActiveSync', 'other']` — NOT `'all'`, `'browser'`, or `'mobileAppsAndDesktopClients'` | Matches Microsoft's own documented portal procedure exactly: "Check only the boxes Exchange ActiveSync clients and Other clients" [[1]](#references), confirmed against the `conditionalAccessConditionSet` resource's `clientAppTypes` enum [[4]](#references). Scoping to only these two client types (rather than blocking all client apps) is what makes this a *legacy-authentication*-specific control instead of a blanket sign-in block — the latter is a materially different, much broader control this scenario deliberately does not build. |
-| Deployment path | Custom Conditional Access policy via Microsoft Graph, not the Quick Setup wizard or duplicating the Microsoft-managed policy by default | Consistent with every other Conditional-Access-based scenario in this library — a buyer who already has (or is deploying) their own controls wants each reviewed and deployed independently, not bundled into a wizard action. |
+| Deployment path | Custom Conditional Access policy via Microsoft Graph, not the Quick Setup wizard or duplicating the Microsoft-managed policy by default | Consistent with every other Conditional-Access-based scenario in this library — an organization that already has (or is deploying) their own controls wants each reviewed and deployed independently, not bundled into a wizard action. |
 | Target resources | `includeApplications = ['All']` | Matches Microsoft's own documented procedure step exactly [[1]](#references). |
 | Users scope | `includeUsers = ['All']` minus `-ExcludeUserIds`/`-ExcludeGroupIds` | Matches Microsoft's documented procedure (include all users, exclude break-glass/emergency-access and service accounts still dependent on legacy protocols) [[1]](#references). |
 | Grant control | `builtInControls = ['block']`, `operator = 'OR'` | Matches Microsoft's documented "Block access" grant control choice exactly [[1]](#references). |

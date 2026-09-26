@@ -326,7 +326,7 @@ candidate-resolution app registration's certificate, is not.
   template" and lists each template as its own row in the Limits table [[6]](#references)
   [[13]](#references). **This cap is its own, independently-tracked pool — confirmed, by a direct
   fetch of that reference, that it is *not* shared with the base "Security policy violations"
-  template**, even though both templates happen to document the identical number (1,000). A buyer
+  template**, even though both templates happen to document the identical number (1,000). An organization
   already running a base-template policy has full, unreduced headroom for this priority-users
   template, and vice versa — an earlier draft of this note overstated the two caps as shared; that
   has been corrected here (see `PROGRESS.md` "DONE" for this fragment). Confirm no *other* policy

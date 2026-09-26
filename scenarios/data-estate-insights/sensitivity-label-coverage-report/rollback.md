@@ -40,7 +40,7 @@ scenario.
 
 - **Trend-log CSV and per-run breakdown JSON files** (wherever `-TrendLogPath` /
   `-BreakdownOutputDirectory` pointed) are ordinary files this scenario wrote outside of Purview —
-  delete them, archive them, or leave them in place per the buyer's own data-retention policy. As
+  delete them, archive them, or leave them in place per the deploying organization's own data-retention policy. As
   README.md §11 states, these files are themselves a sensitive-data-location index (which labels are
   applied where) — apply the same handling discipline at decommission time that governed them while
   the scenario was active; do not move them to less-protected storage as part of "cleaning up."

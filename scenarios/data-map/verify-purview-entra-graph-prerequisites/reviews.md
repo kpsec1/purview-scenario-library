@@ -118,7 +118,7 @@ No remaining Fix/Fail after resolution.
      authentication-enabled), not Directory Readers membership for the **managed instance's own**
      identity — a different identity, checked for a different purpose, at a different cadence
      (one-time readiness vs. this scenario's ongoing monitoring). `design.md` §8 records the
-     comparison; `README.md` §3 and §12 cross-reference Microsoft's script explicitly so a buyer
+     comparison; `README.md` §3 and §12 cross-reference Microsoft's script explicitly so an organization
      runs both rather than assuming either alone is sufficient.
 2. **`RoleManagement.Read.Directory` confirmed as the least-privileged, current, non-deprecated
    option** for both `Get-MgDirectoryRole` and `Get-MgDirectoryRoleMember`, corroborated across

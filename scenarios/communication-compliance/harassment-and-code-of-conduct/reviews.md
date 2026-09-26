@@ -14,14 +14,14 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    works while its exact contents stay unknown to the people it's meant to catch. The original
    draft shipped `code-of-conduct-evasion-phrases.txt` with no caveat about treating a real
    deployment's dictionary as sensitive.
-   - **Resolution:** Added an explicit `README.md` §11 limitation instructing the buyer to treat a
+   - **Resolution:** Added an explicit `README.md` §11 limitation instructing the deploying organization to treat a
      real tenant's deployed dictionary (especially once extended) as sensitive, not for broad
      internal/external publication — distinct from this repo's own reference copy, which is
      published deliberately for transparency.
 2. **Non-transcribed Teams meetings (audio/video) are a distinct, narrower gap than "off-platform"
    harassment**, and the original draft's Known Limitations conflated the two. A harasser using
    Teams meeting audio rather than chat is invisible to this control unless transcription is
-   enabled and Teams is an in-scope location — worth calling out on its own, since a buyer reading
+   enabled and Teams is an in-scope location — worth calling out on its own, since an organization reading
    only the general "off-platform" bullet could reasonably (and wrongly) assume Teams meetings are
    covered because "Teams" is a selected location.
    - **Resolution:** Added a separate `README.md` §11 bullet distinguishing this gap from the
@@ -119,7 +119,7 @@ No remaining Fail after resolution.
    `trainable-classifiers-definitions` and the primary classifier table use "Harassment," while the
    policy-template summary table and the Alerts-page Filters documentation use "Targeted
    harassment" for what reads as the same underlying classifier. Shipping this without flagging it
-   risks a buyer thinking this scenario picked the wrong classifier name when the portal UI shows
+   risks an organization thinking this scenario picked the wrong classifier name when the portal UI shows
    the other label.
    - **Resolution:** Already caught and documented inline during drafting — `README.md` §6/§11 and
      `design.md` §4 both explicitly flag the inconsistency and instruct verifying the current

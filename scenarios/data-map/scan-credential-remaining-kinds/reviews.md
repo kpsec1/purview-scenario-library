@@ -133,7 +133,7 @@ No remaining Fix/Fail after resolution.
    rollout built on a preview capability could be disrupted by a behavior change with no
    corresponding documentation update.
    - **Resolution:** Already disclosed at draft time in §3/§10/§11 and in the deploy script's own
-     runtime `Write-Warning`, not just in a document a buyer might not open — reviewed and confirmed
+     runtime `Write-Warning`, not just in a document an organization might not open — reviewed and confirmed
      sufficient without further change.
 
 4. **Governance point: this fragment doesn't create new incentive to move off managed identity —

@@ -94,17 +94,17 @@ items above are applied.
   workflow as our Microsoft-native insider-risk signals, instead of sitting in a second, disconnected
   alert queue" is a clear, differentiated value statement from either sibling scenario.
 - **Cost transparency:** §10 correctly refuses to present this as license-neutral — the third-party
-  tool supplying the source data is explicitly called out as the buyer's own separate cost and
+  tool supplying the source data is explicitly called out as the deploying organization's own separate cost and
   prerequisite, not something this scenario provisions or discounts.
 - **New operational surface, honestly scoped:** an Entra app registration, a scheduled script, and a new
-  trust boundary (Red Team finding 1) are real, if modest, additions to what a buyer has to operate and
+  trust boundary (Red Team finding 1) are real, if modest, additions to what an organization has to operate and
   govern versus either sibling scenario — §8's operational guidance and §11's disclosures present this
   plainly rather than understating it.
 - **Preview-status risk correctly flagged**: `README.md` §3's caveat to re-check preview/GA status
   against the live portal before a customer-facing commitment is present, consistent with how this
   library treats every preview-labeled capability it documents.
-- **Would I fund this?** Yes, specifically for a buyer who already operates the upstream third-party
-  tooling this scenario assumes — it would not be worth recommending to a buyer starting from zero, and
+- **Would I fund this?** Yes, specifically for an organization that already operates the upstream third-party
+  tooling this scenario assumes — it would not be worth recommending to an organization starting from zero, and
   the scenario correctly frames itself that way (§1 "who it's for").
 
 No Fix/Fail raised from this lens.

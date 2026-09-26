@@ -41,7 +41,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    - **Resolution:** Added an explicit scope note to `README.md` §2 clarifying the two SITs are a
      representative starter set, not jurisdiction-complete personal-data coverage, and pointed to
      where to swap in EU-specific SITs. This is a Product Owner-adjacent finding but the Red Team
-     raised it first as "this control is weaker than it sounds for a non-U.S. buyer."
+     raised it first as "this control is weaker than it sounds for a non-U.S. organization."
 
 No remaining Fix/Fail after resolution.
 

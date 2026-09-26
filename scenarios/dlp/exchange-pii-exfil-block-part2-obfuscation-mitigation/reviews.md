@@ -23,7 +23,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    this fragment relies on — the exact population the parent scenario's own `reviews.md` already
    flagged as a "silent exception" gets a compensating control that structurally cannot reach it.
    - **Resolution:** Added an explicit, detailed bullet to `README.md` §11 tracing the exact
-     mechanism (not just asserting the gap) and naming the concrete mitigation a buyer can take
+     mechanism (not just asserting the gap) and naming the concrete mitigation an organization can take
      (raise the companion rule's `-ReportSeverityLevel` to `High`, with the resulting trade-off
      stated plainly). This is a genuine limitation of the current design, not fixable by this
      fragment alone without changing a different scenario's severity default — documented rather
@@ -116,9 +116,9 @@ fragment's own scope.
 - **Compliance mapping:** unchanged from Part 1 (GDPR Article 32 / CCPA/CPRA / ISO/IEC 27001:2022
   Annex A.5.12/A.8.2) — this fragment strengthens the existing control's defensibility rather than
   claiming a new compliance citation of its own.
-- **Would I fund this?** Yes, conditional on the buyer already needing or accepting the E5 tier for
+- **Would I fund this?** Yes, conditional on the deploying organization already needing or accepting the E5 tier for
   other reasons (this library's Adaptive Protection/IRM scenarios generally assume that tier is in
-  scope) — for a buyer who specifically wants to stay at E3, this fragment is a deliberate
+  scope) — for an organization that specifically wants to stay at E3, this fragment is a deliberate
   "not yet" rather than something to force through, and the docs make that tradeoff visible enough
   for that decision to be made deliberately rather than by accident.
 

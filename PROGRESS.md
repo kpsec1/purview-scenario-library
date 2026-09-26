@@ -158,7 +158,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   rule-level device-group parameter.
 - [x] Consider a companion `scenarios/dlp/defender-device-control-usb-allowlist/` (Microsoft
   Defender for Endpoint device control, not Purview DLP) — `endpoint-dlp-usb-block/README.md`
-  §11 notes Endpoint DLP is content-aware but not device-identity-aware, and a buyer wanting "no
+  §11 notes Endpoint DLP is content-aware but not device-identity-aware, and an organization wanting "no
   unapproved USB devices, period" needs device control in addition, not instead — **built** (see
   DONE below): default-deny for `RemovableMediaDevices`, one named `ApprovedBackupDrives`
   allowlist group (matched by `SerialNumberId`/`VID_PID`), both the allow and deny paths audited,
@@ -455,7 +455,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   from vague "several others" prose to the exact counts, cross-linking the new table instead of
   duplicating it.
 - [x] Consider adding `EU passport number` and `EU driver's license number` as an opt-in bundle
-  (not a new default) for a buyer whose SharePoint/OneDrive estate is travel-document- or
+  (not a new default) for an organization whose SharePoint/OneDrive estate is travel-document- or
   HR-record-heavy — **built** (see DONE below): `-IncludeTravelDocumentSits` switch added to
   `auto-label-eu-personal-data-sharepoint/deploy/New-EuPersonalDataAutoLabelPolicy.ps1` and its
   validate script, appending both SITs to whatever `-SensitiveInfoTypeName` set is already in
@@ -1123,7 +1123,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `AzureSqlDatabaseCredential` scan kind — SQL authentication or service principal) once a
   documented REST endpoint for it is found; deferred from `scan-azure-sql-and-classify` because no
   such endpoint was located during that build (Microsoft's own docs show credential creation only
-  via the portal UI). Needed for any buyer whose target SQL Server can't use SAMI (e.g. reachable
+  via the portal UI). Needed for any organization whose target SQL Server can't use SAMI (e.g. reachable
   only via a self-hosted integration runtime, which doesn't support managed-identity auth) —
   **built** (see DONE below) as `scenarios/data-map/scan-credential-key-vault-backed/`. **The
   precondition this item was waiting on turned out to already be satisfied, and the original
@@ -1477,7 +1477,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   that page's fetched content did not state a default for `-AdminAuditLogCmdlets` itself (only that
   `*` audits everything). `accepted-domains-hygiene-check-on-premises/deploy/
   Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s `-IncludeAuditAttribution` switch tells the
-  buyer to confirm coverage via `Get-AdminAuditLogConfig` rather than assuming the common `*`-default
+  organization to confirm coverage via `Get-AdminAuditLogConfig` rather than assuming the common `*`-default
   belief is correct — see that scenario's `design.md` §2 and `README.md` §11.
 - [x] Re-verify the parent `accepted-domains-hygiene-check/deploy/KnownDomains.sample.json`'s
   `hybrid.contoso.com` entry (`expectedDomainType: InternalRelay`) against a primary, authoritative
@@ -1497,7 +1497,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [x] Consider extending `CrossEnvironmentMismatch` (`accepted-domains-hygiene-check-on-premises/
   deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1`) to also reconcile `MatchSubDomains`/
   `Default` flags across environments, not just `DomainType` — explicitly deferred as a non-goal in
-  that scenario's `design.md` §9 pending a concrete buyer need, matching this repo's incremental-
+  that scenario's `design.md` §9 pending a concrete organization need, matching this repo's incremental-
   scoping discipline — **built** (see DONE below): two new sibling finding categories,
   `CrossEnvironmentMatchSubDomainsMismatch`/`CrossEnvironmentDefaultMismatch`, not additional rows
   under the existing category name, after direct functional testing caught a real drift-log
@@ -1792,7 +1792,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scenario's per-page client-side status tally with a single aggregate call — see `design.md` §6.
 - [ ] Consider a companion reconciliation script (or an extension to this scenario's own deploy
   script) that cross-references a tenant still on the **classic, Atlas-based Data Catalog glossary**
-  against Unified Catalog Terms, to help a buyer mid-migration understand which of their two
+  against Unified Catalog Terms, to help an organization mid-migration understand which of their two
   glossaries this report — and which the native classic glossary report — actually covers. Not built
   here because no Microsoft-documented migration-status API was located during this build; flagged
   as a real, disclosed gap in `README.md` §11 rather than assumed away.
@@ -2311,7 +2311,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the two. `retention-policy-management/README.md` §11 and `design.md` §6 flag this rather than
   asserting either reading — resolving it would let a future revision give concrete guidance on
   whether shortening a policy is safe to use for cost/noise control without risking early
-  expiry of records a buyer still needs.
+  expiry of records an organization still needs.
 - [ ] VERIFY (pilot tenant): whether passing `$null` to `-RecordTypes`/`-Operations` on
   `Set-UnifiedAuditLogRetentionPolicy` clears a previously-set value, the same way Microsoft's own
   worked example confirms for `-UserIds`. `retention-policy-management/deploy/
@@ -2360,7 +2360,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `deploy/New-EndpointDlpUsbBlockPolicy.ps1` (`.NOTES` and a new `-ITExceptionAction` parameter),
   `validate/Test-EndpointDlpUsbBlockPolicy.ps1`, and the reference policy JSON. Re-evaluation
   outcome: `Audit` stays the **default** (no behavior change for an existing deployment), but
-  `Warn` is now a documented, one-flag opt-in (`-ITExceptionAction Warn`) for a buyer who wants the
+  `Warn` is now a documented, one-flag opt-in (`-ITExceptionAction Warn`) for an organization that wants the
   IT Data Custodians path justification-gated instead of silently logged — not a forced switch,
   since the `Warn`-to-portal's-"Block with override" mapping is corroborated, not literally
   confirmed (see the new VERIFY below).
@@ -2744,7 +2744,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   script) that calls `New-MgRoleManagementDirectoryRoleAssignment` to grant Directory Readers to a
   FAILing instance's managed identity automatically — deliberately rejected as a non-goal in this
   build (`design.md` §10) to stay consistent with this repo's established convention against
-  automating rare, high-privilege, one-time directory grants; re-open only if a future buyer
+  automating rare, high-privilege, one-time directory grants; re-open only if a future organization
   conversation specifically asks for it, since it's a deliberate scope boundary, not an oversight.
 
 ### Follow-ups discovered while building the Data Map on-premises SQL Server scenario
@@ -2899,7 +2899,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   currently has no dedicated audit-trail/export script pointed at it, unlike
   `scenarios/communication-compliance/harassment-and-code-of-conduct/deploy/
   Export-CommunicationComplianceAuditTrail.ps1`. Consider whether that existing script generalizes
-  to cover this auto-created policy too, once a buyer actually deploys this fragment.
+  to cover this auto-created policy too, once an organization actually deploys this fragment.
 
 ### Follow-ups discovered while building the Compliance Manager PCI DSS v4.0 assessment scenario
 - [x] Already resolved by a separate, already-committed fragment: `scenarios/compliance-manager/
@@ -3265,7 +3265,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   rule on that same named policy) — see `design.md` §6b.
 - [ ] Consider whether `scenarios/dlp/exchange-pii-exfil-block-encrypt-mode-audit-companion` should
   offer a documented, opt-in way to raise its rule to `-ReportSeverityLevel High` specifically when
-  a buyer also deploys this Part 2 fragment, closing the exception-group-in-Encrypt-mode blind spot
+  an organization also deploys this Part 2 fragment, closing the exception-group-in-Encrypt-mode blind spot
   this build's Red Team review surfaced (`exchange-pii-exfil-block-part2-obfuscation-mitigation/
   README.md` §11) — not built this run since it would require touching a different, already-shipped
   scenario's default rather than staying scoped to this fragment.
@@ -3410,7 +3410,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Logs Ingestion API** + a Data Collection Rule/custom table — deliberately not built in this
   fragment (`streaming-to-sentinel-or-management-api/design.md` §7, a documented non-goal): it needs
   a Data Collection Endpoint/Rule and a destination-table-schema decision (custom table vs. Auxiliary
-  Logs) that belongs in a dedicated follow-up once a concrete buyer target is chosen.
+  Logs) that belongs in a dedicated follow-up once a concrete organization target is chosen.
 - [ ] Consider a dedicated **Microsoft Purview Information Protection (Preview)** Sentinel-connector
   scenario — noted only for disambiguation in `streaming-to-sentinel-or-management-api/design.md` §3
   and `README.md` §11 (a different connector, different destination table

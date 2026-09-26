@@ -43,7 +43,7 @@ Exchange- or Purview-side to undo as part of this step.
 
 - **On-premises baseline JSON, drift-log CSV, and per-run findings JSON files** are ordinary files
   this scenario wrote outside of Exchange/Purview — delete them, archive them, or leave them in place
-  per the buyer's own data-retention policy, same guidance as the parent scenario's own
+  per the deploying organization's own data-retention policy, same guidance as the parent scenario's own
   `rollback.md` §3.
 - These files are entirely separate from the parent scenario's own baseline/drift-log files
   (`design.md` §6) — removing this scenario's files has **zero effect** on the parent's own state, and
@@ -56,7 +56,7 @@ Exchange- or Purview-side to undo as part of this step.
 
 Decommissioning this on-premises companion does **not** require decommissioning the parent
 `accepted-domains-hygiene-check` scenario — the two run independently (`design.md` §3/§6) and neither
-depends on the other's continued operation. A buyer who decommissions only this companion returns to
+depends on the other's continued operation. An organization that decommissions only this companion returns to
 the parent scenario's own pre-existing limitation: the on-premises side of a hybrid tenant becomes
 invisible again (`README.md` §2), the same gap this scenario was built to close. State that trade-off
 explicitly if this companion is being removed while the hybrid deployment itself remains in place.

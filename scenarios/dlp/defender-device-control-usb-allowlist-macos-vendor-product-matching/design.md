@@ -4,7 +4,7 @@
 
 `scenarios/dlp/defender-device-control-usb-allowlist-macos/` matches approved removable-storage
 devices by `serialNumber` only. That scenario's own design (`design.md` §5 there) and this repo's
-`PROGRESS.md` backlog both flag the deliberately deferred gap this fragment closes: **a buyer whose
+`PROGRESS.md` backlog both flag the deliberately deferred gap this fragment closes: **an organization whose
 approved drives have no readable serial number** — a real, common case for bulk-imaged imaging
 docks, some third-party enclosures, and OEM hardware that reports an empty `serialNumber` field —
 cannot use the parent scenario's allowlist at all. This fragment adds a second, independent matching
@@ -65,7 +65,7 @@ config needs the script to also identify and remove — not orphan — that devi
 sub-group."* Every other fragment in this device-control family owns a **fixed, small** number of
 groups/rules and uses literal, source-controlled GUID constants (`defender-device-control-usb-
 allowlist-macos/design.md` §7). That approach does not extend to a **variable-length list** of
-buyer-supplied devices.
+organization-supplied devices.
 
 This fragment resolves it with a **deterministic** id, not a **fixed** one: each sub-group's GUID is
 derived from its `vendorId`+`productId` pair using **RFC 4122 §4.3's version-5 (name-based, SHA-1)
@@ -135,7 +135,7 @@ spoofed/reprogrammed USB descriptor fields — matches the exception, not just t
 approved unit. This is **not** a variant of the same risk level as `serialNumber` matching (which is
 at least unique per physical unit and typically requires controller-firmware-level forgery); it is a
 strictly weaker guarantee, and is presented as such in `README.md` §11, not framed as an equivalent
-alternative a buyer can choose for convenience.
+alternative an organization can choose for convenience.
 
 ## 7. Key decisions
 
@@ -162,7 +162,7 @@ alternative a buyer can choose for convenience.
 - This scenario does not attempt cryptographic per-unit verification of a vendorId/productId match —
   no such capability exists in this schema (§6).
 - This scenario does not migrate the parent's `serialNumber` clauses to this fragment's mechanism, or
-  recommend one over the other beyond the strength disclosure in §6 — both remain available, buyer's
+  recommend one over the other beyond the strength disclosure in §6 — both remain available, organization's
   choice per device.
 
 ## References

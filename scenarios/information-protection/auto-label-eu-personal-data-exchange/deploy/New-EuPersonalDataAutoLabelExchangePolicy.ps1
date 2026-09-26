@@ -26,7 +26,7 @@
     of the other two.
 
     LOCALIZATION: -SensitiveInfoTypeName accepts any built-in or custom SIT name(s), not just the
-    three EU-wide defaults. A buyer whose regulated population is limited to specific member
+    three EU-wide defaults. An organization whose regulated population is limited to specific member
     states can pass just those countries' own SITs (e.g. -SensitiveInfoTypeName 'Germany Identity
     Card Number','France Social Security Number') for tighter false-positive control than the
     full EU-wide bundles - see README.md §6 and design.md §5.
@@ -134,7 +134,7 @@
 
     Deploys in simulation mode (default) with the default EU-wide SIT set plus the opt-in
     passport/driver's-license bundle - see the IncludeTravelDocumentSits parameter description for
-    the U.S./U.K. passport-entity gotcha before enabling this for a U.K.-only buyer.
+    the U.S./U.K. passport-entity gotcha before enabling this for a U.K.-only organization.
 
 .NOTES
     Sources (Microsoft Learn, verify before production use):

@@ -55,7 +55,7 @@ of findings below; all **Fix** items were applied to the scenario before this fi
 5. **`Set-StrictMode -Version Latest` plus direct `$groupDef.resolveMembers` property access would
    throw a hard "property cannot be found" error for any group entry that omits the (documented as
    optional, default-`false`) `resolveMembers` key** — not a hypothetical: the scenario's own
-   README/`.PARAMETER` text tells a buyer this field is optional, so a config that only sets
+   README/`.PARAMETER` text tells an organization this field is optional, so a config that only sets
    `identity` for groups that don't need member resolution is exactly the expected common case, and
    the original draft would have crashed on it.
    - **Resolution:** Added an explicit property-presence check
@@ -164,7 +164,7 @@ No Fix/Fail items from this lens.
    targets `https://graph.microsoft.com/v1.0`, matching the sibling scenario's own discipline;
    no beta endpoint is called or cited as anything but corroborating evidence.
 6. **Correctly reuses, rather than reinvents, the sibling scenario's find-or-create idempotency
-   pattern for `-AddToHold`** (duplicated, not a new design) — a buyer running both scenarios against
+   pattern for `-AddToHold`** (duplicated, not a new design) — an organization running both scenarios against
    the same hold policy gets identical idempotent behavior regardless of which script performed a
    given add.
 

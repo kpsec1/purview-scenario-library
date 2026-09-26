@@ -25,7 +25,7 @@ of findings below; all **Fix** items were applied to the scenario before this fi
      matching, since it applies identically regardless of matching mechanism.
 3. **A single compromised or lost device approved only by `vendorId`/`productId` cannot be
    individually revoked without affecting every other device sharing that same model** — if two
-   physically distinct devices happen to share a vendor+product pair (a buyer bought two units of the
+   physically distinct devices happen to share a vendor+product pair (an organization bought two units of the
    same imaging dock model and only one needs revoking), the config's per-pair granularity cannot
    distinguish them.
    - **Resolution:** Added to `README.md` §8's incident-response runbook addition (treat "is this the
@@ -73,7 +73,7 @@ newly introduced by this fragment.
 
 **Verdict: Fix (resolved)**
 
-- **Risk reduction vs. cost:** closes a real, disclosed gap in the base JAMF scenario for any buyer
+- **Risk reduction vs. cost:** closes a real, disclosed gap in the base JAMF scenario for any organization
   with at least one approved drive lacking a readable serial number. Zero incremental Microsoft
   licensing cost — bundled in the same Defender for Endpoint Plan 1 entitlement as every sibling.
 - **Board-level narrative — Finding:** the original draft implied this fragment is a strict
@@ -91,7 +91,7 @@ newly introduced by this fragment.
   either better or worse than the base scenario's own already-known change-management story.
 - **Compliance mapping:** same general media-controls reinforcement as every sibling — no new
   named requirement claimed for closing this specific gap.
-- **Would I fund this?** Yes, for the intended buyer (JAMF-managed fleet with at least one approved
+- **Would I fund this?** Yes, for the intended organization (JAMF-managed fleet with at least one approved
   drive lacking a serial number) — but with the same eyes-open framing about `vendorId`/`productId`'s
   weaker per-unit guarantee that the Intune sibling already requires, not a lower bar just because the
   deployment mechanism differs.

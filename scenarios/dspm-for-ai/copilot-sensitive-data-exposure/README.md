@@ -311,7 +311,7 @@ by this scenario (portal-only, automatic) and has nothing to roll back.
   whose Copilot interactions need this Purview DLP control — in practice this typically means every
   Copilot-licensed user, since Copilot licensing itself already implies significant per-user
   spend that E5-tier Purview add-ons are a comparatively small increment against, but confirm the
-  buyer's actual current tier before assuming zero incremental cost.
+  organization's actual current tier before assuming zero incremental cost.
 - **DSPM for AI (classic) itself carries no separate SKU** beyond the underlying Compliance
   Administrator-tier permissions and (for custom, non-default assessments) potential PAYG billing
   for advanced item-level scanning — see `docs/licensing-matrix.md` §"DSPM for AI" row and
@@ -323,7 +323,7 @@ by this scenario (portal-only, automatic) and has nothing to roll back.
   important limitation, repeated because it is also this scenario's core selling point: Rule 0 only
   excludes content that already carries a sensitivity label. Unlabeled overshared content is
   invisible to this DLP policy and will be summarized by Copilot exactly as if this scenario did
-  not exist. The DSPM for AI oversharing assessment (§5, §8) is how a buyer finds that exposure;
+  not exist. The DSPM for AI oversharing assessment (§5, §8) is how an organization finds that exposure;
   fixing it means SharePoint/OneDrive permissions remediation and/or expanding auto-labeling
   coverage (`scenarios/information-protection/auto-label-confidential-sharepoint/`), not more DLP
   rules.

@@ -187,13 +187,13 @@ Full grounding: `deploy/Export-GlossaryCurationCoverageReport.ps1`'s inline comm
   one). This was the specific gap the original `PROGRESS.md` follow-up flagged as needing "a
   different REST primitive" — this build confirms none exists, rather than guessing one.
 - **This scenario does not reconcile against the classic Data Catalog's own Atlas-based glossary
-  terms** (the object model the classic report actually reads, per §1 point 4) — a buyer who has
+  terms** (the object model the classic report actually reads, per §1 point 4) — an organization that has
   *not* migrated to Unified Catalog terms would see this scenario's KPIs report zero/empty results
   against the classic report's non-zero classic-glossary numbers. That migration gap is a real,
   disclosed limitation (`README.md` §11), not a bug in this scenario's logic.
 - **No native Purview alert or SIEM sink** — same treatment as `classification-coverage-report/
   design.md` §7: this scenario writes flat CSV/JSON files and leaves routing them into a SIEM or BI
-  tool as the buyer's own integration.
+  tool as the deploying organization's own integration.
 - **At very large glossary scale**, the per-term `List Related Entities` call (§2 goal 3) has a real,
   non-trivial API-call cost (one call per term, every run, unless `-SkipAssetLinkCheck` is set) —
   this scenario does not implement incremental/delta asset-link tallying; see `README.md` §11.

@@ -26,7 +26,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
      confirm real member-mailbox coverage against a pilot tenant (for example, by independently
      adding one known member's own mailbox as a second, explicit `userSource` and confirming its
      `holdStatus` — the DL-expansion path and the explicit-member path aren't mutually exclusive,
-     and a buyer with a size- or compliance-sensitive matter should prefer resolving and listing
+     and an organization with a size- or compliance-sensitive matter should prefer resolving and listing
      members explicitly over trusting unverified server-side expansion. Not fixed by adding
      unverified membership-resolution code to the deploy script itself, which would just move the
      same unverified assumption one layer deeper — the honest fix here is sharper disclosure and a

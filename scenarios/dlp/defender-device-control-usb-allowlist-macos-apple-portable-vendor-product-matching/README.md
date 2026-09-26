@@ -12,7 +12,7 @@ This is the direct Apple/Portable analog of
 `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/`, which already
 closed the identical gap for removable-media (USB mass-storage) devices.
 
-**Who it's for:** a buyer already running the portable-device-coverage scenario with at least one
+**Who it's for:** an organization already running the portable-device-coverage scenario with at least one
 `serialNumber`-approved device configured for the Apple and/or Portable family, whose fleet also
 includes hardware of that family that reports an empty or non-unique `serialNumber` — a real gap for
 some bulk-provisioned iPads/iPhones and industrial barcode scanners/cameras — and who would otherwise
@@ -39,7 +39,7 @@ coverage/README.md` §3, which apply unchanged. The requirements this fragment a
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Portable-device-coverage scenario deployed | `defender-device-control-usb-allowlist-macos-portable-device-coverage/deploy/Add-MacPortableDeviceCoverage.ps1` has been run at least once | This fragment's deploy script refuses to run for a family unless devices are already configured (see next row). |
-| At least one `serialNumber` device already configured **for the family you want to extend** | `approvedAppleDevices`/`approvedPortableDevices` on the portable-device-coverage fragment's own `-ConfigPath` has ≥1 entry, so its `ApprovedAppleDevices`/`ApprovedPortableDevices` group and `Allow-Approved*Devices` rule already exist | A deliberate scope boundary — this fragment never creates either object from a zero-`serialNumber` starting state (`design.md` §3). A buyer with zero `serialNumber` devices for a family must first add one via the prerequisite fragment. |
+| At least one `serialNumber` device already configured **for the family you want to extend** | `approvedAppleDevices`/`approvedPortableDevices` on the portable-device-coverage fragment's own `-ConfigPath` has ≥1 entry, so its `ApprovedAppleDevices`/`ApprovedPortableDevices` group and `Allow-Approved*Devices` rule already exist | A deliberate scope boundary — this fragment never creates either object from a zero-`serialNumber` starting state (`design.md` §3). An organization with zero `serialNumber` devices for a family must first add one via the prerequisite fragment. |
 | PowerShell | 7.0 or later | Uses `System.Security.Cryptography.SHA1` for its deterministic per-device group id derivation (`design.md` §4) — no additional module beyond the Microsoft Graph PowerShell SDK already required. |
 | Automation identity | Same Entra app registration and `DeviceManagementConfiguration.ReadWrite.All` Graph application permission as the parent scenario | No new permission — this fragment PATCHes the same `macOSCustomConfiguration` object. |
 | Dependency (not deployed by this scenario) | The approved devices' **vendor ID** and **product ID** (each a four-digit hexadecimal string) | Obtain via `system_profiler SPUSBDataType` on a Mac with the device connected, or the device manufacturer's own documentation. |

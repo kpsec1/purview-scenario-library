@@ -174,7 +174,7 @@ provides no default/recommended threshold for a custom indicator (§2 goal 8).
 - **Does not perform the third-party detection or aggregation itself.** This scenario starts from an
   already-aggregated CSV — building a Salesforce/Dropbox/CASB export pipeline, a Sentinel/Splunk
   correlation rule, or any other upstream aggregation job is explicitly out of scope; those systems and
-  their own licensing are the buyer's existing tooling, not something this library provisions.
+  their own licensing are the deploying organization's existing tooling, not something this library provisions.
 - **Does not attempt to resolve which exact named policy templates beyond the base `Data leaks`
   template support custom indicators** — flagged as an open reading of Microsoft's own imprecise wording
   (§2 goal 7, `README.md` §11), not guessed in either direction.

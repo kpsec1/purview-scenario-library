@@ -20,7 +20,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    exception path, and the original draft didn't call out the asymmetry.
    - **Resolution:** Documented explicitly in `README.md` §11 and `design.md` §6 as an unmitigated
      residual risk for that specific combination, with a concrete mitigation suggestion (a
-     separate low-severity audit rule scoped to the same group) for a buyer who needs both
+     separate low-severity audit rule scoped to the same group) for an organization that needs both
      Encrypt mode and a logged exception path. Not silently fixed by inventing an unconfirmed
      "override with justification for a non-halting action" mechanism Microsoft doesn't document.
 2. **Encrypt-Only doesn't restrict what the recipient does after decrypting.** The default RMS
@@ -30,7 +30,7 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    contact). The original draft picked Encrypt-Only for a good reason (no unwanted forward/print
    restriction on legitimate use) but didn't flag the security trade-off that reasoning implies.
    - **Resolution:** Added to `design.md` §6 and `README.md` §11 as an explicit trade-off, with
-     `-EncryptTemplateName 'Do Not Forward'` named as the alternative for a buyer whose threat
+     `-EncryptTemplateName 'Do Not Forward'` named as the alternative for an organization whose threat
      model treats the recipient as the risk, not just the transport path.
 3. **Single-message evaluation boundary — no cross-message correlation.** Same class of gap as
    `pci-teams-exfil-block` (split PAN/SSN across two messages defeats every rule here too).
@@ -106,9 +106,9 @@ for an operable control.
   explicitly out of scope per `design.md` §7 and the Red Team findings above).
 - **Governance observation (not a Fix):** a policy offering two operating modes (Block/Encrypt)
   needs a single documented organizational decision about which mode is the approved default for
-  which data class — this scenario supports either but doesn't make that decision for the buyer,
+  which data class — this scenario supports either but doesn't make that decision for the deploying organization,
   correctly, since it's a business-risk-tolerance call outside a technical scenario's scope. Worth
-  a one-line note in a buyer's own security policy, not something this repo should default.
+  a one-line note in an organization's own security policy, not something this repo should default.
 - **Would I fund this?** Yes — genuinely lower licensing cost than most of this library's DLP
   scenarios, clear regulatory hook, and an honest residual-risk section.
 

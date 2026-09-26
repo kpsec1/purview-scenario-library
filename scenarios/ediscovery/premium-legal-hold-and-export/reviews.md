@@ -213,7 +213,7 @@ retired by Microsoft on August 31, 2025** and isn't available in the current eDi
 §7 were corrected in place. A short four-lens pass on the correction itself, not a full re-review:
 
 - **🔴 Red Team — Pass.** The correction closes a worse risk than the one it replaces: a companion
-  scenario built on the original assumption would have walked a buyer through Microsoft Learn pages
+  scenario built on the original assumption would have walked an organization through Microsoft Learn pages
   for a feature that no longer exists in their tenant, or shipped a script polling
   `acknowledgedDateTime` as if it were a live signal when nothing in the current experience can set
   it. Both would have been confidently wrong rather than honestly incomplete. The corrected text
@@ -222,7 +222,7 @@ retired by Microsoft on August 31, 2025** and isn't available in the current eDi
 - **🔵 Blue Team — Pass.** `validate/Test-EdiscoveryPremiumCaseSetup.ps1` already doesn't check
   `acknowledgedDateTime` — confirmed as the right call now, not a coincidence, and the updated
   README.md §11 explains why rather than leaving the omission unexplained.
-- **🎩 CISO — Pass.** The corrected text is more useful to a buyer than the original follow-up
+- **🎩 CISO — Pass.** The corrected text is more useful to an organization than the original follow-up
   would have produced: instead of a scenario documenting a dead portal feature, they get a direct
   instruction to treat notice-and-acknowledgment as an external process today, which is the
   actionable fact a legal/compliance stakeholder needs for their preservation narrative.

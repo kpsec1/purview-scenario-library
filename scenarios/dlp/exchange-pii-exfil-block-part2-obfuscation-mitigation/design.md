@@ -119,7 +119,7 @@ built-in-exfiltration-indicators trigger the Teams sibling fragment had to use, 
    for the Teams sibling but is a strictly less-targeted choice here where a better option exists.
 2. **One fewer configuration surface to drift.** The DLP-policy trigger reads the parent policy's
    existing `ReportSeverityLevel` settings directly — no separate SIT list to keep in sync with the
-   parent scenario's own SIT choices if a buyer later adds a third SIT to that policy.
+   parent scenario's own SIT choices if an organization later adds a third SIT to that policy.
 3. **Consistency with Microsoft's own stated guidance for the Data leaks template**, whose
    documented purpose is explicitly built around a DLP policy as the triggering event
    [[2]](#references) — this fragment uses the template as designed rather than falling back to the
@@ -135,7 +135,7 @@ minimal-noise configuration; this fragment requires no change to it.
 
 **Scaling note:** a Data leaks-template IRM policy can have up to 20 DLP policies assigned as a
 triggering event [[2]](#references). This fragment uses exactly one (the parent Exchange policy),
-well within that limit — noted here only so a future buyer who wants one feeder IRM policy to
+well within that limit — noted here only so a future organization that wants one feeder IRM policy to
 watch several DLP policies (e.g., this fragment's parent policy plus a future SharePoint/OneDrive
 PII policy) knows the ceiling exists, not because this fragment is anywhere near it.
 

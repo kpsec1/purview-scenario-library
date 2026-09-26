@@ -52,7 +52,7 @@ No remaining Fix/Fail after resolution.
      monitoring at scale rather than relying on a scheduled CSV pull alone.
 2. **The initial draft didn't address Microsoft's own stated preference for the Management Activity
    API over `Search-UnifiedAuditLog` for production automation** — a real operability consideration
-   for a buyer deciding how to run this at scale, not just a documentation nicety.
+   for an organization deciding how to run this at scale, not just a documentation nicety.
    - **Resolution:** `README.md` §11 now quotes Microsoft's own guidance directly, explains why this
      scenario still uses `Search-UnifiedAuditLog` (consistent with every other audit-trail script in
      this library, no separate webhook/subscription setup needed for a scheduled pull), and
@@ -125,7 +125,7 @@ No remaining Fail after resolution.
    collection that this scenario should have used instead.
 5. **One completeness gap in the initial draft, raised in this review:** the scenario didn't mention
    Microsoft's own stated production-automation recommendation (Management Activity API over
-   `Search-UnifiedAuditLog`), which a buyer evaluating this against Microsoft's own guidance would
+   `Search-UnifiedAuditLog`), which an organization evaluating this against Microsoft's own guidance would
    reasonably expect addressed.
    - **Resolution:** Same fix as Blue Team finding 2 — `README.md` §11 quotes the recommendation
      directly and cross-links the dedicated streaming scenario rather than silently diverging from

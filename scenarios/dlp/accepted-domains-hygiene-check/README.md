@@ -3,7 +3,7 @@
 ## 1. Scenario summary
 
 A read-only, scheduled control that cross-references the tenant's live Exchange **accepted domains**
-configuration (`Get-AcceptedDomain`) against a buyer-curated allowlist of known/reviewed domains and
+configuration (`Get-AcceptedDomain`) against a organization-curated allowlist of known/reviewed domains and
 the previous run's recorded state. It flags both directions of hygiene risk: a legitimate partner or
 subsidiary domain silently excluded from "in organization" trust, and an unreviewed domain silently
 granted it. Creates, modifies, or deletes nothing in Exchange or Purview — the entire control is
@@ -26,7 +26,7 @@ unmonitored dependency**, not a new DLP capability — the same class of control
 program runs against any allowlist a preventive control's correctness quietly depends on.
 
 Regulatory/business drivers this scenario supports:
-- **DLP control integrity** — a buyer relying on `copilot-external-email-block`, `pci-teams-exfil-
+- **DLP control integrity** — an organization relying on `copilot-external-email-block`, `pci-teams-exfil-
   block`, `exchange-pii-exfil-block`, or any other `FromScope`-based rule in this repo for a PCI-DSS,
   GDPR, or SOC 2 control narrative needs assurance that the trust boundary those rules evaluate
   against is itself correct and reviewed — this scenario is that assurance mechanism.
@@ -53,7 +53,7 @@ Microsoft Learn.
 | Additional role for `-IncludeAuditAttribution` | An Exchange Online role with audit-log-search rights (`docs/rbac-model.md` §6 — Compliance Administrator/Organization Management alone are explicitly **not** sufficient per Microsoft; a dedicated Exchange Online audit role/role group is required in addition) | Only needed if the deploy script's `-IncludeAuditAttribution` switch is used. |
 | PowerShell module | `ExchangeOnlineManagement` 3.2.0+ | Same module as every other Exchange Online PowerShell scenario in this repo — `docs/automation-surface.md` §1/§4. |
 | Connection surface | `Connect-ExchangeOnline` (Surface 1) | **Not** `Connect-IPPSSession` (Surface 2, Security & Compliance PowerShell) — `Get-AcceptedDomain` and `Search-UnifiedAuditLog` are Exchange Online PowerShell cmdlets, a distinction this repo's `docs/automation-surface.md` §1 draws explicitly. |
-| Known-domains config | A buyer-maintained JSON file (schema: `deploy/KnownDomains.sample.json`) | No Microsoft-documented source can auto-derive which accepted domains are "reviewed and expected" — see §6 and `design.md` §6. Must be created and kept current by the buyer's own change-management process. |
+| Known-domains config | A organization-maintained JSON file (schema: `deploy/KnownDomains.sample.json`) | No Microsoft-documented source can auto-derive which accepted domains are "reviewed and expected" — see §6 and `design.md` §6. Must be created and kept current by the deploying organization's own change-management process. |
 | Deployment posture note | **Cloud-only check.** This scenario authenticates to Exchange Online exclusively | A hybrid Exchange Online/on-premises tenant's on-premises accepted domains (where `DomainType ExternalRelay` is actually reachable — see `design.md` §2) are invisible to this script. See §11. |
 
 ## 4. Architecture
@@ -64,7 +64,7 @@ flowchart TD
         AD[Get-AcceptedDomain]
         UAL["Search-UnifiedAuditLog<br/>(-IncludeAuditAttribution, optional)"]
     end
-    subgraph Config["Buyer-maintained input"]
+    subgraph Config["Organization-maintained input"]
         KD[KnownDomains.json<br/>reviewed domains + expected DomainType]
     end
     subgraph Prior["Previous run"]

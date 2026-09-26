@@ -14,7 +14,7 @@ content directly and independently of whether any label has been applied.
 **Who it's for:** any enterprise that has deployed
 `scenarios/information-protection/auto-label-confidential-exchange/` (or plans to) and needs the
 movement control that labeling alone cannot provide — a real-time check against the recipient's
-domain, not just a classification tag. Also stands alone for a buyer that wants Exchange PII
+domain, not just a classification tag. Also stands alone for an organization that wants Exchange PII
 exfiltration control without an auto-labeling program at all.
 
 ## 2. Business/regulatory driver
@@ -271,13 +271,13 @@ permanently delete the policy and its rules.
   no override concept to log against. **This means a member of the exception group in Encrypt mode
   sends matching content to an external recipient in cleartext, with no alert, no incident report,
   and no override record** — a genuine, unmitigated gap for that specific combination, flagged as
-  a Red Team finding in `reviews.md`. A buyer who needs Encrypt mode **and** a logged exception
+  a Red Team finding in `reviews.md`. An organization that needs Encrypt mode **and** a logged exception
   path should not use `-ExceptionGroupEmail` as designed here without a compensating control (e.g.,
   a separate low-severity audit rule scoped to `FromMemberOf` the same group).
 - **Encrypt-Only protects the exfiltration path, not what the recipient does after decrypting.**
   The default `-EncryptTemplateName 'Encrypt-Only'` imposes no forward/print/reply restriction
   [[12]](#references) — a legitimate external recipient can decrypt the message and then forward
-  its plaintext content onward with no further control from this scenario. A buyer whose threat
+  its plaintext content onward with no further control from this scenario. An organization whose threat
   model treats the external recipient themselves as a risk (not just the network path) should
   deploy with `-EncryptTemplateName 'Do Not Forward'` instead, accepting that template's usage-
   rights restrictions. See `design.md` §6 for the full trade-off.

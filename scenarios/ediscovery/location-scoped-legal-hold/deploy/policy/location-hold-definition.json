@@ -1,5 +1,5 @@
 {
-  "_comment": "Reference definition for the eDiscovery location-scoped legal hold scenario. Consumed by New-EdiscoveryLocationHold.ps1 and Remove-EdiscoveryLocationHold.ps1 via -DefinitionPath. Author-only reference for the buyer's own tenant -- replace every value below before use. No secrets belong in this file.",
+  "_comment": "Reference definition for the eDiscovery location-scoped legal hold scenario. Consumed by New-EdiscoveryLocationHold.ps1 and Remove-EdiscoveryLocationHold.ps1 via -DefinitionPath. Author-only reference for the deploying organization's own tenant -- replace every value below before use. No secrets belong in this file.",
   "case": {
     "displayName": "CONTOSO-REG-2026-009",
     "description": "Regulatory sweep -- FTC civil investigative demand covering the Payments team's shared inbox and site, plus a compliance distribution list. Outside counsel: Example & Example LLP.",

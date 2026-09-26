@@ -34,7 +34,7 @@ condition for revisiting this item is now satisfied.
    vendorId/productId devices for Apple only, Portable only, both, or neither in one run — mirrors
    how portable-device-coverage itself handles Apple and Portable as two independent, optionally
    populated lists in one script.
-4. **A materially narrower prerequisite than the removable-media sibling: the buyer must already
+4. **A materially narrower prerequisite than the removable-media sibling: the deploying organization must already
    have at least one `serialNumber`-approved device configured for a family before this fragment can
    add a vendorId/productId device to it** (§3 below) — a deliberate scope boundary, not an oversight.
 5. **Idempotent and re-runnable per family**, including self-healing drift and clean removal of a
@@ -58,7 +58,7 @@ zero entries, that family gets a bare `Deny-All{Family}Devices` rule (no `exclud
 group at all).
 
 This fragment could, in principle, build the missing group + rule from scratch when a family has
-zero `serialNumber` devices but the buyer wants a vendorId/productId one — the same shape
+zero `serialNumber` devices but the deploying organization wants a vendorId/productId one — the same shape
 portable-device-coverage's own conditional branch already produces. This fragment deliberately does
 **not** attempt that:
 
@@ -68,14 +68,14 @@ portable-device-coverage's own conditional branch already produces. This fragmen
   today, not this fragment's.
 - It would double this fragment's own state space (four possible starting states per family — group
   absent/present × rule absent/present — instead of the two the current design handles) without a
-  concrete buyer requirement to design that expansion against.
+  concrete organization requirement to design that expansion against.
 - This repository already has a direct precedent for refusing rather than silently building a missing
   prerequisite object: the removable-media vendor-product-matching fragment itself refuses to run if
   `ApprovedBackupDrives` is absent (impossible in practice there, since it's mandatory, but the same
   refusal-not-fabrication principle applies), and the Bluetooth sibling fragment refuses to run if
   `AllBluetoothDevices`/`Deny-AllBluetoothDevices` are absent.
 
-A buyer with zero `serialNumber`-matched devices for a family who wants only a vendorId/productId
+An organization with zero `serialNumber`-matched devices for a family who wants only a vendorId/productId
 exception must first configure at least one `serialNumber` device for that family via
 `Add-MacPortableDeviceCoverage.ps1`. Building "create the Approved group and Allow rule from a
 zero-serialNumber starting state" is tracked as a follow-up in `PROGRESS.md` rather than attempted

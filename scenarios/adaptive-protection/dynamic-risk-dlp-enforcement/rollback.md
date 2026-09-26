@@ -48,7 +48,7 @@ defaults to on first run.
 This runs `Remove-DlpCompliancePolicy`, which deletes the policy **and its two rules** in one
 call [[1]](#references). There is no "undo" — re-establishing the control means re-running
 `deploy/New-AdaptiveProtectionDlpPolicy.ps1` from scratch. Only do this when the control is
-being permanently retired (e.g., the buyer is replacing it with a Conditional Access-based
+being permanently retired (e.g., the deploying organization is replacing it with a Conditional Access-based
 approach instead, or discontinuing Adaptive Protection entirely).
 
 ## What rollback does **not** undo

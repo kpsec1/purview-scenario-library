@@ -10,7 +10,7 @@ exception path for devices/apps that still need SMTP AUTH. Unlike Conditional Ac
 controls are evaluated **inside Exchange Online itself, before a session is ever established**.
 
 **Who it's for:** any Exchange Online tenant that wants legacy-authentication coverage that
-doesn't depend on Conditional Access licensing or evaluation order — including a buyer deploying
+doesn't depend on Conditional Access licensing or evaluation order — including an organization deploying
 this library's own `scenarios/adaptive-protection/block-legacy-authentication/`, whose own
 `design.md` §7/§8 and `reviews.md` (Red Team) flagged this exact companion control as a documented,
 more-effective mitigation for credential-stuffing/password-spray lockout attempts specifically,
@@ -266,11 +266,11 @@ scenarios are independent, complementary controls (`design.md` §6).
   Online — unlike the Conditional Access sibling scenario, this scenario needs **no** Entra ID
   P1/P2. `docs/licensing-matrix.md` §4.
 - **No PAYG component.** These are tenant configuration objects, not consumption-billed.
-- **Real, if modest, migration cost for a buyer still relying on SMTP AUTH.** A device/app that
+- **Real, if modest, migration cost for an organization still relying on SMTP AUTH.** A device/app that
   cannot move to OAuth may need a hardware/firmware update or a paid relay service — call this out
   explicitly in a CISO conversation rather than presenting this scenario as zero-friction (§8).
 - **Time-boxed urgency, not a discretionary nice-to-have.** Microsoft's own SMTP AUTH default-
-  disable date (end of December 2026 [[11]](#references)) means a buyer who does nothing gets a
+  disable date (end of December 2026 [[11]](#references)) means an organization that does nothing gets a
   version of this control anyway, on Microsoft's timeline, without the named-exception governance
   this scenario provides — the CISO pitch is "control the transition on your terms, before
   Microsoft controls it on theirs."

@@ -28,7 +28,7 @@ a hard block, or the control will get disabled within a month of go-live.
 4. Everything is idempotent and re-runnable: running `New-PciTeamsDlpPolicy.ps1` twice must not
    create duplicate policies/rules or error out.
 5. Ship "off" by default. The deploy script's default `-Mode` is `TestWithNotifications`
-   (simulation — no blocking, but policy tips/notifications fire) so a buyer can observe real
+   (simulation — no blocking, but policy tips/notifications fire) so an organization can observe real
    traffic against the policy before committing to `Enable`. This mirrors Microsoft's own
    documented rollout sequence (see `README.md` §5, "Policy deployment steps").
 
@@ -94,7 +94,7 @@ with a "message blocked" notice for recipients and shows the sender a policy tip
 for standard/private/shared **channel** messages requires the policy location to include a
 **security group, distribution group, or Microsoft 365 group** — a policy scoped only to
 individual user accounts does **not** cover channel messages (it only covers that user's 1:1/n
-chats). This scenario's policy uses `TeamsLocation = "All"`, which covers both, but a buyer who
+chats). This scenario's policy uses `TeamsLocation = "All"`, which covers both, but an organization that
 narrows the location scope to specific groups must include the groups that own the channels they
 care about, not just the individual users.
 
@@ -107,7 +107,7 @@ care about, not just the individual users.
 | External-sharing condition | `AccessScope = NotInOrganization` (rule-level) | Documented S&C PowerShell condition equivalent to the portal's "Content is shared from Microsoft 365 > with people outside my organization." |
 | Card Ops exception mechanism | `FromMemberOf` / `ExceptIfFromMemberOf` on a mail-enabled security group, not a named-user list | Security-group membership is auditable, survives staff turnover without script edits, and is the same primitive `rbac-model.md` recommends for scoping Purview controls generally. |
 | Override type for Card Ops | `WithJustification` (not `WithoutJustification`) | PCI-DSS auditors expect a documented reason per override; `WithJustification` writes the reason to the audit log `ExceptionInfo`/X-header (see `README.md` §7, Validation). |
-| Internal sharing | Audit only, not blocked, at initial rollout | Blocking 100% of internal PAN mentions on day one is the single most common cause of a DLP rollout getting killed by business pushback; audit-first is Microsoft's own documented deployment sequence (simulation → notify → enforce). A buyer with a mature program can tighten rule 2 to `BlockAccess $true` later — see `README.md` §8. |
+| Internal sharing | Audit only, not blocked, at initial rollout | Blocking 100% of internal PAN mentions on day one is the single most common cause of a DLP rollout getting killed by business pushback; audit-first is Microsoft's own documented deployment sequence (simulation → notify → enforce). An organization with a mature program can tighten rule 2 to `BlockAccess $true` later — see `README.md` §8. |
 | Default policy mode | `TestWithNotifications` | Matches the code standard in `AGENTS.md` §4 (dry-run path) and `automation-surface.md` §6: nothing in this repo enforces by default against a live tenant without an explicit, deliberate flag. |
 
 ## 7. Non-goals

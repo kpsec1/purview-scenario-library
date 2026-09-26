@@ -11,7 +11,7 @@ data leaving on *any* USB drive; this one stops *any* USB drive that isn't on th
 regardless of what is or isn't on the file being copied.
 
 **Who it's for:** any organization that has concluded "audit and block by content" isn't enough —
-a buyer that wants "no unapproved USB storage device, period," typically after a security incident
+an organization that wants "no unapproved USB storage device, period," typically after a security incident
 involving an unmanaged drive, a compliance requirement to enumerate every device with physical
 write access to regulated systems, or a Red Team finding that a non-sensitive-looking file (or a
 drive used for something other than a text-pattern-matchable file) bypassed a content-only
@@ -38,7 +38,7 @@ Two secondary drivers:
   was used" is a materially stronger answer to an auditor than "we block drives if the files on
   them look sensitive."
 - **Coherence with the sibling scenario's exception model.** Both scenarios use the same "default
-  block, one named group, audited not silently trusted" shape — a buyer running both has one
+  block, one named group, audited not silently trusted" shape — an organization running both has one
   consistent mental model for removable-media controls, not two independently designed ones.
 
 ## 3. Prerequisites

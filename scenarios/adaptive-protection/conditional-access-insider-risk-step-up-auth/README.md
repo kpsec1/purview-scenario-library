@@ -52,7 +52,7 @@ requires only Entra ID **P1**, already covered by a P2 tenant — see §10 below
 |---|---|---|
 | Adaptive Protection (feeder risk signal) | **Microsoft 365 E5**, **Purview Suite**, or the underlying IRM add-on | Same as both siblings |
 | **Microsoft Entra ID P2** | Standalone, or bundled in **Microsoft 365 E5** / **Microsoft 365 E5 Security** | Required for the Conditional Access Insider Risk *condition* itself, used by both policies this scenario deploys — same requirement as the Elevated sibling, not a new tier |
-| Microsoft Entra ID P1 (Terms of Use feature) | Bundled in Entra ID P2 | Confirmed on Microsoft's own Terms of Use prerequisites page [[3]](#references) — already satisfied by the P2 requirement above; called out separately only because a buyer evaluating just the Moderate policy in isolation should know the *feature's own* floor, not just this scenario's overall floor |
+| Microsoft Entra ID P1 (Terms of Use feature) | Bundled in Entra ID P2 | Confirmed on Microsoft's own Terms of Use prerequisites page [[3]](#references) — already satisfied by the P2 requirement above; called out separately only because an organization evaluating just the Moderate policy in isolation should know the *feature's own* floor, not just this scenario's overall floor |
 | **A Terms of Use agreement object, already created** | PDF document uploaded via portal, or a one-time delegated-auth Graph call | **Not created by this scenario's scripts** — Microsoft's own `Create agreement` Graph API is delegated-permission-only (`Agreement.ReadWrite.All`, work-or-school account); app-only certificate automation cannot call it [[9]](#references). See §5 Step 4 and §11. |
 | Role to configure Adaptive Protection settings/insider risk levels | **Insider Risk Management** or **Insider Risk Management Admins** role group (Purview) | Same as both siblings |
 | Role to create/manage these Conditional Access policies | **Conditional Access Administrator** (Microsoft Entra role) | Same role as the Elevated sibling — `docs/rbac-model.md` §10 |
@@ -205,7 +205,7 @@ same upstream risk signal. Additionally for this scenario:
 **Tuning:** as with both siblings, tune the *insider risk level conditions* in Adaptive Protection
 settings if too many/few users receive a level — not these policies, which should stay matched to
 Microsoft's own documented reference configuration unless there's a specific, documented reason to
-diverge (design.md §3 documents how to substitute a different Moderate grant control if a buyer
+diverge (design.md §3 documents how to substitute a different Moderate grant control if an organization
 prefers one).
 
 **Incident-response runbook (Moderate Terms of Use prompt event):**
@@ -246,7 +246,7 @@ level.
   Elevated sibling does not add a licensing tier.
 - **The Terms of Use feature itself requires only Entra ID P1** [[3]](#references) — a strictly
   *lower* floor than the P2 already required for the underlying Insider Risk condition, so a
-  tenant licensed for the Elevated sibling is already covered; called out for a buyer evaluating
+  tenant licensed for the Elevated sibling is already covered; called out for an organization evaluating
   the Moderate policy in isolation, without the Elevated sibling.
 - **No incremental cost beyond the existing P2 requirement** for a tenant already at E5/Suite —
   same reasoning as the Elevated sibling's own §10.
@@ -313,7 +313,7 @@ level.
   single click that does not verify comprehension and does not prevent any actual data-handling
   action — a determined insider loses nothing by clicking through it. Its value is in documented
   notice (useful for HR/Legal and audit evidence — see §8 CISO framing in `reviews.md`) and mild
-  behavioral friction, not technical risk reduction. Do not present this policy to a buyer as
+  behavioral friction, not technical risk reduction. Do not present this policy to an organization as
   equivalent in strength to the Elevated sibling's block or the DLP sibling's audit/restrict
   actions.
 - **An already-issued sign-in session to a Microsoft Admin Portal is not necessarily re-prompted

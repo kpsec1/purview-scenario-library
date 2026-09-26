@@ -231,7 +231,7 @@ between two copies of the same guidance. Two items are specific to this scenario
   piloting this scenario against a narrow user scope for at least one full activation-window
   cycle (30 days, the same default the sibling scenario uses) before recommending it as a
   permanent, tenant-wide control in a customer-facing commitment — a Microsoft-labeled preview
-  capability can change behavior with less notice than a GA one, and a buyer's compliance/board
+  capability can change behavior with less notice than a GA one, and an organization's compliance/board
   narrative (§2) should account for that risk explicitly rather than treating this as
   production-equivalent to the GA sibling scenario.
 

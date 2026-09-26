@@ -42,7 +42,7 @@ Practically, this means:
 - For a pure-cloud tenant, **every** accepted domain counts as "in organization" for `FromScope`
   purposes — the `ExternalRelay`-is-external nuance `copilot-external-email-block/design.md` §4
   describes (citing the general `UserScopeFrom` predicate model) is a real mechanism, but not one a
-  pure-cloud buyer's accepted-domains list can actually exercise.
+  pure-cloud organization's accepted-domains list can actually exercise.
 - For a **hybrid** tenant (on-premises Exchange + Exchange Online, e.g. via Exchange Hybrid
   Configuration Wizard), an on-premises-configured `ExternalRelay` domain is a separate on-premises
   Active Directory object — this script, which authenticates to Exchange Online only (`Connect-
@@ -64,9 +64,9 @@ scope for this fragment.
 
 Matching the original Red Team finding's own framing, this scenario checks in both directions:
 
-1. **False-positive-exclusion risk** — a domain the buyer expects to be treated as internal (listed
+1. **False-positive-exclusion risk** — a domain the deploying organization expects to be treated as internal (listed
    in the known-domains config with `required: true`) is missing from `Get-AcceptedDomain`, or present
-   but with a `DomainType` that doesn't match what the buyer configured as expected. A legitimate
+   but with a `DomainType` that doesn't match what the deploying organization configured as expected. A legitimate
    partner or subsidiary domain in this state is silently treated as external by every
    `FromScope`-consuming rule — `copilot-external-email-block`'s Rule 3 among them — with no error
    surfaced anywhere in Purview.
@@ -79,7 +79,7 @@ Matching the original Red Team finding's own framing, this scenario checks in bo
 
 ## 4. Baseline/drift model, not a one-shot allowlist diff
 
-A single allowlist-diff run only tells the buyer today's state, not whether something *changed*.
+A single allowlist-diff run only tells the deploying organization today's state, not whether something *changed*.
 This scenario borrows the trend-log pattern already established by `scenarios/data-estate-insights/
 classification-coverage-report` (`design.md` §5 there): each run writes a timestamped snapshot to a
 JSON baseline file, and every run after the first diffs the **current** `Get-AcceptedDomain` output
@@ -134,7 +134,7 @@ achievable from Exchange Online PowerShell:
   `-IncludeAuditAttribution` switch for that reason; documented as a known gap in `README.md` §11
   rather than guessed at.
 
-**Net effect, stated plainly for a buyer:** this script reliably **detects** that a domain was added,
+**Net effect, stated plainly for an organization:** this script reliably **detects** that a domain was added,
 removed, or had its `DomainType`/`Default` changed (§4's baseline diff, which needs no audit log at
 all — it's a direct state comparison). It can **sometimes attribute** a `DomainType`/`Default` change
 to an admin and timestamp via the Exchange admin audit trail (VERIFY above). It **cannot currently**
@@ -149,7 +149,7 @@ follow-up in `PROGRESS.md`.
 | Module placement | `scenarios/dlp/` | The control exists to protect `FromScope`-consuming DLP rules (Exchange, Teams, Copilot); cross-linked from `copilot-external-email-block/README.md`'s originating Red Team finding rather than nested under `dspm-for-ai`, since the risk applies to any `FromScope` rule in the tenant, not just the Copilot one. |
 | Deploy-script shape | A read-only reporting/checking script (`Export-AcceptedDomainsHygieneReport.ps1`), not a policy-deploying script | Same archetype as `scenarios/data-estate-insights/classification-coverage-report` — this scenario creates no Purview or Exchange object; its only side effect is the files it writes. `rollback.md` follows that scenario's "nothing to undo in the tenant" model. |
 | Trust boundary rule | `DomainType` (`Authoritative`/`InternalRelay` = in-organization; `ExternalRelay` = not, and unreachable on a pure-cloud tenant per §2) | Directly grounded in Microsoft's own accepted-domain-type definitions, not an assumption. |
-| Known-domains source of truth | A buyer-edited JSON config (`deploy/KnownDomains.sample.json`), not an attempt to auto-derive "expected" domains from any Purview/Exchange signal | No Microsoft-documented source distinguishes a "reviewed and approved" partner domain from any other accepted domain — this has to be a human-curated list, the same limitation any allowlist-based hygiene control has. |
+| Known-domains source of truth | A organization-edited JSON config (`deploy/KnownDomains.sample.json`), not an attempt to auto-derive "expected" domains from any Purview/Exchange signal | No Microsoft-documented source distinguishes a "reviewed and approved" partner domain from any other accepted domain — this has to be a human-curated list, the same limitation any allowlist-based hygiene control has. |
 | Baseline storage | A single JSON file, overwritten each run (not a history) | Only the immediately-prior state is needed to compute drift; the separate drift log (CSV, replace-by-RunId) is the historical record — see §4. |
 | Audit attribution | Best-effort, `-IncludeAuditAttribution` opt-in switch, `ExchangeAdmin` `Set-AcceptedDomain` only | The honest subset of §5's findings this script can grounded-ly implement; domain add/remove attribution is disclosed as unbuilt, not guessed at. |
 

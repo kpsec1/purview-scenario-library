@@ -32,7 +32,7 @@ kept up to date." SOX financial-reporting controls depend on the integrity of th
 And in the AI era, Microsoft's own product framing for this feature is explicit: "the reliability of
 data directly impacts the accuracy of AI-driven insights... without trustworthy data, there's a risk
 of eroding trust in AI systems and hindering their adoption" [[1]](#references) — directly relevant to
-any buyer already running `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` in this repo, since
+any organization already running `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` in this repo, since
 a Copilot answer is only as trustworthy as the governed data it's grounded in.
 
 This scenario gives that claim a number: a **Customer** data asset's data quality score, computed from

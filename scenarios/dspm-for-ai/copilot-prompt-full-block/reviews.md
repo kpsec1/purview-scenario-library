@@ -94,7 +94,7 @@ server-side behavior is fully verified end-to-end.
      `README.md` §11, recommending user communications and a clear exception-request path alongside
      technical rollout, not as an afterthought.
 - **Risk reduction vs. cost:** proportionate — no incremental licensing cost, and the control targets
-  a narrow, buyer-chosen SIT set rather than broadly restricting Copilot usage.
+  a narrow, organization-chosen SIT set rather than broadly restricting Copilot usage.
 - **Board-level narrative:** "for the specific categories of data we've decided are too sensitive for
   Copilot to touch under any circumstance, we don't just restrict web search — we stop the response
   entirely, and the user is told why" is accurate, and honestly distinguished from the parent

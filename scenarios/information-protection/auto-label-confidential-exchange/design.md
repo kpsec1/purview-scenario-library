@@ -36,7 +36,7 @@ capture precisely rather than paper over.
 5. Ship "off" by default: simulation mode first, matching `AGENTS.md` §4 and this library's
    established precedent.
 6. Document — rather than silently omit — the operational differences from the SharePoint/OneDrive
-   sibling scenario a buyer would otherwise discover the hard way: no "Labeled items" dashboard
+   sibling scenario an organization would otherwise discover the hard way: no "Labeled items" dashboard
    coverage for Exchange, a different simulation semantics, and an in-transit-only evaluation model
    with no backlog/existing-mailbox coverage.
 
@@ -144,7 +144,7 @@ this design document.
 | Sensitive info types | Same built-in **SSN** and **Credit Card Number**, OR-combined | Consistency with the sibling scenario and with `docs/licensing-matrix.md`'s existing coverage narrative — this scenario extends the same classification pattern to a new location, not a new pattern. |
 | One rule, one workload | `-Workload Exchange` only | `New-AutoSensitivityLabelRule -Workload` is single-valued, and this scenario targets exactly one workload — see §3. |
 | Exclusion mechanism | `-ExchangeSenderException` (sender-based) | The only Exchange-native equivalent to a location exclusion — see §3. Deliberately documented as asymmetric (outbound-only) rather than presented as a drop-in replacement for the sibling's site exclusion. |
-| `ExternalMailRightsManagementOwner` | Not configured by default | Encryption is applied to internal senders automatically once the label is applied, but is **not** applied to external senders unless this parameter names a Rights Management owner [[3]](#references). Left unconfigured by default because naming a specific owner mailbox is a deliberate, buyer-specific decision (who should be able to decrypt mail sent by an outside party under this label) this scenario should not default silently. |
+| `ExternalMailRightsManagementOwner` | Not configured by default | Encryption is applied to internal senders automatically once the label is applied, but is **not** applied to external senders unless this parameter names a Rights Management owner [[3]](#references). Left unconfigured by default because naming a specific owner mailbox is a deliberate, organization-specific decision (who should be able to decrypt mail sent by an outside party under this label) this scenario should not default silently. |
 | Default policy mode | `TestWithNotifications` | Matches `AGENTS.md` §4 and this library's established precedent; also the only way to see **Items to review** matches before committing to enforcement, given Exchange's live-traffic-only simulation model (§5). |
 | Label scope prerequisite | Confidential label's scope must include **Emails** | Distinct from the sibling scenario's "Files & other data assets" scope requirement — confirmed from Microsoft's own worked Exchange auto-labeling example [[6]](#references). A label scoped only to files will not be selectable/effective for an Exchange-only policy. |
 | Encryption permission model | Either **Assign permissions now** or **Let users assign permissions** (Do Not Forward / Encrypt-Only) is valid for an Exchange-only auto-labeling policy | Genuinely different from the sibling scenario, which requires **Assign permissions now** with **User access to content expires: Never** for SharePoint/OneDrive [[3]](#references). Not asserted as interchangeable — documented as its own, less restrictive rule for this location. |
@@ -161,7 +161,7 @@ this design document.
   in-transit only (§5); a historical-mail classification sweep is a different capability
   (Content Search / eDiscovery-based export and manual/administrative relabeling) not built here.
 - This scenario does not configure `-ExternalMailRightsManagementOwner` — left as an explicit,
-  buyer-specific extension point (§6), not a default.
+  organization-specific extension point (§6), not a default.
 - This scenario does not build the Exchange mail-flow-rule / DLP-based x-header marking pattern
   Microsoft documents for cross-organization classification interoperability (e.g., the PSPF
   `msip_labels`/x-protective-marking pattern surfaced during this build's grounding pass

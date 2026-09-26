@@ -5,8 +5,8 @@
 `scenarios/dlp/defender-device-control-usb-allowlist-macos/` deploys the same default-deny,
 named-allowlist removable-storage control for **Intune-managed** Macs. That scenario's own
 non-goals (`design.md` §8) explicitly call out JAMF as "Microsoft's other documented macOS
-deployment path" and defer it as a candidate follow-up "if a buyer's fleet is JAMF-managed rather
-than Intune-managed" — flagged again in `PROGRESS.md`'s follow-up backlog. A buyer whose Mac fleet
+deployment path" and defer it as a candidate follow-up "if an organization's fleet is JAMF-managed rather
+than Intune-managed" — flagged again in `PROGRESS.md`'s follow-up backlog. An organization whose Mac fleet
 is managed by JAMF Pro (a large share of the enterprise/education macOS-management market) cannot
 use the Intune sibling at all — Microsoft Graph's `macOSCustomConfiguration` resource only applies
 to Intune-enrolled devices.
@@ -27,7 +27,7 @@ design.md` §2), restated for JAMF:
    produces byte-identical output; re-running after an allowlist change overwrites the artifact
    (with `-Force`) rather than silently drifting.
 5. **A hybrid Intune+JAMF fleet runs one identical policy identity.** This scenario reuses the
-   Intune sibling's exact group/rule GUIDs and names (§4 below) so a buyer managing some Macs
+   Intune sibling's exact group/rule GUIDs and names (§4 below) so an organization managing some Macs
    through Intune and others through JAMF is enforcing the literal same control, not two
    independently-drifting near-duplicates.
 
@@ -59,7 +59,7 @@ bodies, or portal paths) and its own established precedent for exactly this situ
 JAMF Pro API call for Steps 3–4. Instead, `deploy/New-JamfDeviceControlPolicyJson.ps1` automates
 exactly the two steps Microsoft **does** document as scriptable (JSON authoring + local schema
 validation), and `README.md` §5 documents Steps 3–4 as precise, numbered manual JAMF-console
-instructions — not vague hand-waving, but the literal portal path a buyer's Mac administrator
+instructions — not vague hand-waving, but the literal portal path an organization's Mac administrator
 follows.
 
 This is a materially different automation shape from the Intune sibling (a full create-or-reconcile

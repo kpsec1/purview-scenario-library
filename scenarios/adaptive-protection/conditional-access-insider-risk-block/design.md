@@ -31,7 +31,7 @@ moment their insider risk level is Elevated — a coarser but much wider net.
 3. **Match Microsoft's own documented policy shape, not a bespoke design.** Microsoft's "Block
    access for users with elevated insider risk" guide [[1]](#references) walks the exact
    Users/Target resources/Insider Risk condition/Grant/Report-only sequence this scenario's
-   deploy script automates — reproduced deliberately, so a buyer evaluating this scenario can
+   deploy script automates — reproduced deliberately, so an organization evaluating this scenario can
    cross-check it directly against Microsoft's own guide.
 4. **Start in Report-only, exactly like Microsoft's own guide recommends.** Step 7 of Microsoft's
    documented procedure explicitly enables the policy "in Report-only mode" first
@@ -64,7 +64,7 @@ moment their insider risk level is Elevated — a coarser but much wider net.
   Purview's content/behavior-based insider risk detection. A tenant may run both simultaneously;
   they are complementary, not substitutable, and this scenario does not configure or duplicate
   Entra ID Protection's risk policies.
-- **Together with the DLP sibling**, this scenario gives a buyer two independently-scoped
+- **Together with the DLP sibling**, this scenario gives an organization two independently-scoped
   automated responses to the same Elevated risk-level signal: a narrow one (stop this specific
   external share) and a broad one (stop signing in at all), deployable independently or together
   depending on the org's risk tolerance and the maturity of its feeder IRM policy — see §7.
@@ -100,12 +100,12 @@ propagation delay after Adaptive Protection is first enabled applies here as wel
 | Decision | Choice | Rationale |
 |---|---|---|
 | Condition parameter | Graph `conditions.insiderRiskLevels` (v1.0, `conditionalAccessConditionSet` resource) | Independently confirmed on the current, non-beta Microsoft Learn resource reference [[3]](#references) — not fabricated or inferred by analogy to the DLP sibling's differently-shaped `-SharedByIRMUserRisk` GUID condition (a Security & Compliance PowerShell parameter on a different object type entirely). |
-| Deployment path | Custom Conditional Access policy via Microsoft Graph (`New-/Update-MgIdentityConditionalAccessPolicy`), not the Quick Setup portal wizard | Same reasoning as the DLP sibling (`dynamic-risk-dlp-enforcement/design.md` §6): Quick Setup bundles a new auto-created IRM policy, DLP policy, and Data Lifecycle Management policy into one wizard action — wrong fit for a buyer who already has (or is deploying via this library) their own IRM/DLP policies and wants each control reviewed and deployed independently. |
-| Target resources | `includeApplications = ['All']` | Matches Microsoft's own documented procedure step ("Target resources: All resources") [[1]](#references) — a buyer wanting a narrower resource scope can override `-DisplayName`'s underlying body before deploy, documented as a tuning option in `README.md` §8, not built in by default, since narrowing risks under-covering the exact "stop signing in anywhere" intent Microsoft's own guide targets. |
+| Deployment path | Custom Conditional Access policy via Microsoft Graph (`New-/Update-MgIdentityConditionalAccessPolicy`), not the Quick Setup portal wizard | Same reasoning as the DLP sibling (`dynamic-risk-dlp-enforcement/design.md` §6): Quick Setup bundles a new auto-created IRM policy, DLP policy, and Data Lifecycle Management policy into one wizard action — wrong fit for an organization that already has (or is deploying via this library) their own IRM/DLP policies and wants each control reviewed and deployed independently. |
+| Target resources | `includeApplications = ['All']` | Matches Microsoft's own documented procedure step ("Target resources: All resources") [[1]](#references) — an organization wanting a narrower resource scope can override `-DisplayName`'s underlying body before deploy, documented as a tuning option in `README.md` §8, not built in by default, since narrowing risks under-covering the exact "stop signing in anywhere" intent Microsoft's own guide targets. |
 | Users scope | `includeUsers = ['All']` minus `-ExcludeUserIds`/`-ExcludeGroupIds`/`-ExcludeGuestOrExternalUserTypes` | Matches Microsoft's documented procedure exactly (Include all users, exclude emergency-access/break-glass **and** the guide's own Users-step guest/external exclusion) [[1]](#references). The guest/external exclusion — Graph's `conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes` nested condition — was independently confirmed against the `conditionalAccessGuestsOrExternalUsers` resource reference [[12]](#references) and is now scripted, defaulting to the exact three categories Microsoft's guide names: `b2bDirectConnectUser`, `serviceProvider`, `otherExternalUser` [[1]](#references). One byte-level detail remains unconfirmed rather than guessed — the exact separator between multiple values on the wire (this script assumes a bare comma) — flagged in the deploy script's `.NOTES` and README.md §11. |
 | Risk level(s) in scope by default | `['elevated']` only | Matches the single risk level Microsoft's own guide documents end-to-end [[1]](#references). Unlike the DLP sibling's two-rule Elevated-block/Moderate-Minor-audit split, this scenario's single Conditional Access policy applies the *same* grant control to every risk level passed in `-RiskLevels` — Conditional Access grant controls are per-policy, not per-condition-value, so replicating the DLP sibling's graduated response needs a second policy (documented as a tuning option, `README.md` §6/§8), not a parameter on this one. |
 | Initial policy state | `enabledForReportingButNotEnforced` (Report-only), matching Microsoft's own documented Step 7 | Every step in Microsoft's own guide enables the policy in Report-only mode first [[1]](#references) before any enforcement guidance is given — this scenario does not go further/faster than Microsoft's own recommended default, especially since a wrongly-scoped block has immediate, org-wide sign-in impact, broader than the DLP sibling's single-channel block. |
-| Grant control | `builtInControls = ['block']`, `operator = 'OR'` | Matches Microsoft's documented "Block access" grant control choice [[1]](#references) exactly, rather than a softer alternative (e.g. require MFA) — Microsoft's own guide frames this specific policy as a block control; a buyer wanting a softer response for Moderate/Minor risk should deploy a second, separately-controlled policy (§8), not weaken this one's block semantics. |
+| Grant control | `builtInControls = ['block']`, `operator = 'OR'` | Matches Microsoft's documented "Block access" grant control choice [[1]](#references) exactly, rather than a softer alternative (e.g. require MFA) — Microsoft's own guide frames this specific policy as a block control; an organization wanting a softer response for Moderate/Minor risk should deploy a second, separately-controlled policy (§8), not weaken this one's block semantics. |
 | Policy identity for idempotency | Exact `displayName` match | Conditional Access policies don't expose a client-choosable GUID at creation the way this library's own JSON-payload-based Intune/macOS device-control scripts do (deploy script `.NOTES`) — displayName matching is the same identity strategy Microsoft's own Graph PowerShell examples use for Conditional Access automation. Documented as a known limitation (`README.md` §11): renaming the policy in the portal breaks this script's own idempotency detection. |
 | Policy naming | `Adaptive Protection - Block Elevated Insider Risk (Custom)` | Parallels the DLP sibling's `(Custom)` naming convention, deliberately distinct from Microsoft's own Quick Setup wizard's auto-generated Conditional Access policy name. That exact auto-generated string was **not** independently confirmed during this build — flagged as a VERIFY (`README.md` §11) rather than guessed, so this script never compares against an unconfirmed name. |
 
@@ -119,12 +119,12 @@ propagation delay after Adaptive Protection is first enabled applies here as wel
   applying it across all of them). Microsoft's own guide does not scope by tenant either — see §6
   — and the resource reference documents `externalTenants` as usable only once
   `guestOrExternalUserTypes` is already set [[12]](#references), making it a genuinely separate,
-  optional refinement rather than something this scenario's default configuration needs. A buyer
+  optional refinement rather than something this scenario's default configuration needs. An organization
   running a multi-tenant/MSSP posture who wants to scope this exclusion to specific partner
   tenants should add it manually in the portal (or extend the deploy script) rather than assume
   this scenario covers it.
 - **This scenario does not modify or manage the DLP sibling's policy.** The two are independent,
-  separately-deployed controls reading the same risk-level signal — see §3. A buyer can run
+  separately-deployed controls reading the same risk-level signal — see §3. An organization can run
   either alone or both together; neither script checks for or depends on the other's presence.
 - **This scenario does not configure Entra ID Protection's own `signInRiskLevels`/
   `userRiskLevels` Conditional Access conditions.** A different, identity-risk-based signal —

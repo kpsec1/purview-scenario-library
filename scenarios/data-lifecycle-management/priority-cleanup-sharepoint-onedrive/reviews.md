@@ -78,7 +78,7 @@ No remaining Fail.
      and §10 states the mandatory-resimulation-per-change cost as a recurring line item, not a
      one-time setup cost.
 2. **The funding narrative here is cost-avoidance (storage reclaim), not risk-avoidance** — a
-   different, and for many buyers an easier, argument than the Exchange sibling's incident-response
+   different, and for many organizations an easier, argument than the Exchange sibling's incident-response
    framing.
    - **Resolution:** `README.md` §10 states this distinction directly rather than reusing the
      Exchange sibling's risk-reduction framing verbatim.

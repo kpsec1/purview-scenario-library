@@ -59,7 +59,7 @@ No remaining Fix/Fail after resolution.
    *this repository* — a repo-hygiene check, not a tenant-state check. A reviewer skimming a
    green validate-script run could over-trust the crosswalk's real-world accuracy.
    - **Resolution:** The script's own `.DESCRIPTION` already worded this precisely ("catching a
-     stale cross-link before a buyer follows it into a 404") but the check's console output header
+     stale cross-link before an organization follows it into a 404") but the check's console output header
      didn't repeat that scoping. Left as-is after review — the `.DESCRIPTION` is the authoritative
      scope statement per this library's existing precedent (e.g. `assess-against-iso27001`'s
      manual-checklist framing), and the manual checklist item in this scenario's own validate script

@@ -305,7 +305,7 @@ See `rollback.md`.
   today.
 - **Purge is source-scope-limited.** Even though an investigation's *scope* can include SharePoint and
   OneDrive content, **purge itself does not support those sources at all** — selecting them disables
-  purge actions entirely [[7]](#references). A buyer expecting DSI to purge an overshared SharePoint
+  purge actions entirely [[7]](#references). An organization expecting DSI to purge an overshared SharePoint
   site needs a different control (sharing/permissions remediation, not DSI purge).
 - **VERIFY — RecordType for `Search-UnifiedAuditLog`.** Microsoft's audit-log-activities reference
   lists all 28 DSI Operation names but never states the RecordType enum value that carries them.

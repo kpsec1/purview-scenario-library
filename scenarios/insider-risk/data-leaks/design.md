@@ -93,9 +93,9 @@ trigger is:
 - **The more general building block.** A DLP-policy trigger works with **any** existing,
   already-tuned Purview DLP policy the tenant has deployed for Exchange/SharePoint/OneDrive — this
   library alone already has several qualifying candidates (`exchange-pii-exfil-block`,
-  and whatever SharePoint/OneDrive DLP policies a buyer already runs). The exfiltration-activity
+  and whatever SharePoint/OneDrive DLP policies an organization already runs). The exfiltration-activity
   trigger instead depends on Microsoft's own built-in indicator thresholds, with no connection to
-  content a buyer has already classified as sensitive via DLP.
+  content an organization has already classified as sensitive via DLP.
 - **The one this library has not yet given a general-purpose worked example for.** Both existing
   "part2" scenarios that already deploy this template do so narrowly, pointed at one specific
   named parent policy as an Adaptive Protection feeder — neither is written as a standalone,
@@ -158,7 +158,7 @@ by name, unlike the open question that sibling's own README carries for itself).
   are assumed to already exist and be independently owned/tuned; `deploy/
   Test-DlpPolicyIrmTriggerReadiness.ps1` only reads and reports.
 - **Does not configure Adaptive Protection.** Same non-goal as every base Insider Risk Management
-  scenario in this library that isn't itself an Adaptive Protection scenario — a buyer who wants
+  scenario in this library that isn't itself an Adaptive Protection scenario — an organization that wants
   this policy's alerts to drive DLP enforcement wires it into
   `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` separately.
 - **Does not attempt cross-policy alert disambiguation** — the same disclosed gap every Insider

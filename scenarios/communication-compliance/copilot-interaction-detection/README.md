@@ -51,7 +51,7 @@ independent visibility into, not solely Microsoft's.
 
 > **VERIFY (jurisdiction-specific, outside this build's grounding scope):** confirm which specific
 > AI-governance regulatory obligations (EU AI Act deployer duties, sector-specific AI guidance,
-> etc.) actually apply to the buyer's jurisdiction and AI system risk classification before citing
+> etc.) actually apply to the deploying organization's jurisdiction and AI system risk classification before citing
 > this scenario as satisfying a specific regulatory requirement in a customer-facing narrative — the
 > Responsible-AI and IP drivers above are well-grounded; a specific regulatory citation needs
 > counsel review the same way `harassment-and-code-of-conduct/README.md` §11 already flags for its
@@ -333,7 +333,7 @@ the portal for a reversible stop; **Delete** only when permanently retiring the 
   affect what licensing Copilot itself requires.
 - **No additional Azure subscription required** for the Communication Compliance side (Prompt
   Shields/Protected material run as part of the Communication Compliance service, not a
-  separately-billed Azure AI Content Safety resource the buyer provisions).
+  separately-billed Azure AI Content Safety resource the deploying organization provisions).
 - **Sizing note:** given this scenario's "all users" default (§5/§8), cost is primarily driven by
   how many users already hold (or will hold) a Microsoft 365 Copilot license — Communication
   Compliance's own E5-tier requirement (§3) is typically already satisfied by a tenant deploying

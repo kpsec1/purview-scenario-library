@@ -53,15 +53,15 @@ worked-example pair, **Canada physical addresses** and **EU debit card numbers**
    scenario's default configuration citable against a real Microsoft-published scenario, not an
    invented pairing.
 2. **Avoiding an accidental severity inversion.** If Rule 2 (full block) and Rule 1 (web-grounding
-   restriction only) shared the same SIT set, a buyer might reasonably ask "why does this prompt
+   restriction only) shared the same SIT set, an organization might reasonably ask "why does this prompt
    sometimes get fully blocked and sometimes just lose web grounding?" — the honest answer would be
    "it depends on which rule's `Priority` and internal evaluation order wins," which is a confusing
    operational story. Keeping the two rules' SIT sets distinct by default (documented, not enforced
-   by the script) makes each rule's severity level unambiguous. A buyer who deliberately wants the
+   by the script) makes each rule's severity level unambiguous. An organization that deliberately wants the
    same SIT to be fully blocked (superseding Rule 1) can pass the same SIT name to both rules'
    `-SensitiveInformationTypeName` parameters — DLP rules are independently evaluated and there is no
    documented conflict in doing so, since a full block simply makes a web-grounding restriction moot
-   for that specific prompt — but this is a deliberate buyer choice, not this script's default.
+   for that specific prompt — but this is a deliberate organization choice, not this script's default.
 
 ## 5. The central open question: does `ExcludeContentProcessing`/`Block` apply to a CCSI-conditioned rule?
 

@@ -103,7 +103,7 @@ coercion bug) were caught and fixed in this round, not merely documented.
   units" is a defensible, accurate, non-overclaiming claim consistent with this repository's
   established bar.
 - **Would I fund this?** Yes, and more readily than the Bluetooth sibling fragment - this closes a
-  gap in the **primary** removable-media control every buyer of the parent scenario already needs
+  gap in the **primary** removable-media control every organization of the parent scenario already needs
   (not a secondary device family), for a common real-world hardware limitation (no readable serial
   number), at effectively zero marginal engineering risk to the already-piloted rules.
 

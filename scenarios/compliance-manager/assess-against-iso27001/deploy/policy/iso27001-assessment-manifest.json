@@ -13,7 +13,7 @@
   "servicesInScope": [
     "Microsoft 365"
   ],
-  "servicesInScopeNote": "Multicloud (AWS/GCP/Azure via Defender for Cloud) scoping is explicitly out of scope for this scenario - see design.md Section 7. A buyer with a multicloud estate can add services later by editing the assessment.",
+  "servicesInScopeNote": "Multicloud (AWS/GCP/Azure via Defender for Cloud) scoping is explicitly out of scope for this scenario - see design.md Section 7. An organization with a multicloud estate can add services later by editing the assessment.",
   "roleAssignments": {
     "note": "Assign the narrowest Compliance Manager role that does the job, per README.md Section 3's role table. Do not default everyone assessing this template to Administration.",
     "recommendedStarter": [

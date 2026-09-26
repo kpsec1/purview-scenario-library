@@ -325,7 +325,7 @@ per-transaction costs apply only to the three secret-bearing kinds here, no new 
 licensing. Two additions:
 
 - **The `ManagedIdentity` kind's preview status (§11) means Microsoft's standard preview terms** (no
-  SLA, subject to change) apply to that kind specifically — a buyer building a business case around
+  SLA, subject to change) apply to that kind specifically — an organization building a business case around
   it should treat it as pre-GA, not as a bounded, stable cost line the way the parent scenario's
   three GA kinds can be treated.
 - **`AmazonARN` and `ManagedIdentity` each pull in a coordination cost the parent scenario's three

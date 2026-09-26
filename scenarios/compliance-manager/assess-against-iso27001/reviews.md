@@ -65,7 +65,7 @@ No remaining Fix/Fail after resolution.
      automate it), and that scenario's own Blue Team review already accepted the pattern. Flagging
      for visibility, not as a new unresolved Fix — consistent precedent, not a regression.
 2. **Alert routing for the automation-trust-change warning is described but not wired to
-   anything beyond the script's own console/log output.** A buyer relying on cron/Task
+   anything beyond the script's own console/log output.** An organization relying on cron/Task
    Scheduler/a pipeline to run this on a schedule needs that stdout warning to actually reach a
    human, which this scenario doesn't build.
    - **Resolution:** No code change — this is the same, already-accepted scope boundary
@@ -109,7 +109,7 @@ actually produce.
 - **Compliance mapping:** correctly scoped to being an *evidence and tracking* mechanism for
   ISO/IEC 27001:2022, not a claim of certification or of technical risk reduction — `README.md`
   §11 explicitly repeats Microsoft's own "a high score isn't proof of compliance" caveat rather
-  than letting a buyer over-read the tooling.
+  than letting an organization over-read the tooling.
 - **Change-management impact:** the recommended deployment order (deploy technical controls first,
   then create the assessment — `design.md` §6, manifest `recommendedDeploymentOrder`) is the right
   sequencing call for the same reason `scenarios/dlp/pci-teams-exfil-block/`'s audit-first internal
@@ -142,7 +142,7 @@ No Fix/Fail items from this lens.
      Configuration Manager/VMM cmdlets, not a real Compliance Manager equivalent.
 2. **Is ISO/IEC 27001:2013 (not :2022) the right template to recommend for a new certification
    effort in 2026?** The 2022 edition superseded 2013 as the standard organizations actually
-   certify against; recommending the older template without flagging this could misdirect a buyer
+   certify against; recommending the older template without flagging this could misdirect an organization
    pursuing fresh certification.
    - **Original resolution (superseded — see correction below):** Added an item to `README.md` §11
      flagging this as a VERIFY — confirm current template availability (2013 vs. 2022 edition, or
@@ -160,7 +160,7 @@ No Fix/Fail items from this lens.
      see `design.md` §5b for the full grounding and the disclosed citation gap (no dedicated
      `/compliance/regulatory/` Learn page is branded for the :2022 Compliance-Manager template
      specifically, unlike :2013's own page). The original finding's underlying concern (recommending
-     the wrong edition to a 2026 buyer) is now fully addressed rather than deferred.
+     the wrong edition to a 2026 organization) is now fully addressed rather than deferred.
 3. **Is building a dedicated assessment instead of extending the Data Protection Baseline the
    right call, or does it read as reinventing something Microsoft already ships for free?**
    - **Resolution:** `design.md` §5 addresses this directly, using the same reasoning pattern this

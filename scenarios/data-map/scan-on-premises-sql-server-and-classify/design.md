@@ -25,7 +25,7 @@ carried forward as an open non-goal.
 
 1. **Reuse the sibling scenarios' proven shape, don't fork it.** Same two-object model (data source +
    scan, both create-or-replace), same idempotency mechanism (native REST create-or-replace
-   semantics), same dry-run design, same four-lens review structure. A buyer who has already deployed
+   semantics), same dry-run design, same four-lens review structure. An organization that has already deployed
    any of the three Azure siblings should find this scenario immediately familiar, with the diffs
    confined to what Microsoft's own docs say is actually different about on-premises SQL Server.
 2. **Name every genuine difference explicitly, in one place.** §4 below is the single source of truth
@@ -198,7 +198,7 @@ credentials, and by the physical nature of installing Windows service software f
 - This scenario does not script the Kubernetes-based self-hosted data integration runtime alternative
   (SQL-authentication-only, containerized, a *different* Purview capability announced separately from
   the classic Windows-host SHIR this scenario uses) — out of scope, a materially different deployment
-  model worth its own fragment if a buyer specifically needs it.
+  model worth its own fragment if an organization specifically needs it.
 - This scenario does not create a custom, PII-only scan rule set — same non-goal every sibling carries
   forward (`scan-azure-sql-and-classify/design.md` §7).
 - This scenario does not act on the classification results it produces — same scope boundary as every

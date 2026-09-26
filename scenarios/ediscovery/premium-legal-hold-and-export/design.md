@@ -119,7 +119,7 @@ failure this script should misreport.
 - **Export to a customer-owned Azure Storage account** (`azureBlobContainer`/`azureBlobToken`) —
   documented only for the deprecated beta `ediscovery` subnamespace's `reviewSet: export` action,
   not the current v1.0 `security.ediscoveryReviewSet: export` this scenario calls, which returns
-  Microsoft-managed storage + a download URL only. A buyer who specifically needs bring-your-own-
+  Microsoft-managed storage + a download URL only. An organization that specifically needs bring-your-own-
   storage export should be told this path is not currently available on the supported v1.0
   surface, not have it silently attempted.
 - **Insider Risk Management case escalation** — eDiscovery (Premium) supports being the

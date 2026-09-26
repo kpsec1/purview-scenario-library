@@ -133,7 +133,7 @@ Both scripts use the **Microsoft Purview Scanning data-plane REST API** — auto
 use. Token acquisition follows the identical client-credentials pattern.
 
 **Scheduling:** this scenario ships no scheduler-specific code — wire
-`deploy/Export-CredentialInventoryReport.ps1` into whatever recurring-execution mechanism the buyer
+`deploy/Export-CredentialInventoryReport.ps1` into whatever recurring-execution mechanism the deploying organization
 already runs other PowerShell automation on, then gate on `validate/
 Test-CredentialInventoryReport.ps1 -FailOnDrift`'s exit code. A daily run is the right default
 cadence for a control this repo positions as a change-management/audit-evidence mechanism; a tenant
@@ -219,7 +219,7 @@ Full per-kind grounding and the REST shapes behind this table: `design.md` §3, 
 **Alert routing:** same posture as `classification-coverage-report/README.md` §8 — this scenario
 produces flat files and a non-zero exit code, not a native Purview alert. Route
 `validate/Test-CredentialInventoryReport.ps1 -FailOnDrift`'s exit code into whatever CI/ops alerting
-the buyer already uses for scheduled scripts.
+the deploying organization already uses for scheduled scripts.
 
 **Runbook — a `Drift` or `Missing` status appears**
 

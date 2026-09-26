@@ -266,7 +266,7 @@ the Device Control Policy property, or unscope the profile).
   Policy custom-schema property, and this build's own grounding pass could not independently confirm
   a JAMF Pro API shape for it either (`developer.jamf.com` was unreachable in this build's network
   environment — `design.md` §3). This is a genuine, disclosed automation gap, not an oversight: a
-  buyer evaluating this scenario against the Intune sibling should expect a materially higher manual
+  organization evaluating this scenario against the Intune sibling should expect a materially higher manual
   step count and a JAMF-console-only audit trail for every allowlist change.
 - **A device presenting as a Portable Device, Apple (iOS/iPadOS) device, or Bluetooth media is
   completely invisible to this control, not merely unrestricted.** Identical gap to the Intune

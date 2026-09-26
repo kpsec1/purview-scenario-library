@@ -269,7 +269,7 @@ Protection itself, the feeder IRM policy, or resets any user's current insider r
   detection side, not this enforcement scenario.)
 - **Sizing note:** every user this policy could plausibly block or audit needs the qualifying
   DLP + Insider Risk Management entitlement — in practice this means the same license population
-  as the feeder IRM policy (§3), typically org-wide E5 for a buyer deploying this pattern
+  as the feeder IRM policy (§3), typically org-wide E5 for an organization deploying this pattern
   seriously, not a narrow subset.
 - **No additional infrastructure cost.** The deploy/validate scripts in this scenario are
   one-time or infrequent (deploy once, validate on a review cadence) — unlike the departing-
@@ -302,7 +302,7 @@ Protection itself, the feeder IRM policy, or resets any user's current insider r
   not just sensitivity-labeled or otherwise sensitive content — this is intentional (it matches
   Microsoft's own documented reference configuration [[3]](#references)), but it means an
   Elevated-risk user is blocked from sharing *anything* externally via Exchange/Teams, not just
-  confidential material. A buyer wanting narrower scoping should add a content-sensitivity
+  confidential material. An organization wanting narrower scoping should add a content-sensitivity
   condition on top (`design.md` §6) rather than assume this scenario already does so.
 - **This scenario does not configure Endpoint DLP (Devices), Conditional Access, or
   Data Lifecycle Management (preview integration)** — all three are Adaptive
@@ -322,7 +322,7 @@ Protection itself, the feeder IRM policy, or resets any user's current insider r
   gap, not a theoretical one:** an Elevated-risk user blocked from emailing or Teams-sharing a file externally can, as
   of this scenario alone, still exfiltrate the identical file via a direct SharePoint/OneDrive
   download, a USB copy, printing, or an upload to a personal cloud-storage app — none of which
-  this policy's Exchange/Teams-only scope inspects. Communicate this plainly to a buyer: this
+  this policy's Exchange/Teams-only scope inspects. Communicate this plainly to an organization: this
   scenario closes one exfiltration channel for risky users, not all of them, until the Endpoint
   DLP follow-up fragment lands.
 - **VERIFY the `AccessScope`-only condition form against a pilot tenant.** This scenario's rules

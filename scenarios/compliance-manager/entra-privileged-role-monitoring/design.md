@@ -44,7 +44,7 @@ separate, dedicated Low-severity alert — *"The organization doesn't have Micro
 Microsoft Entra ID Governance"* — that fires specifically because the primary alert **doesn't
 function at all** without one of those two licenses. This library's own `docs/licensing-matrix.md`
 and `rbac-model.md` scope most scenarios to broadly-available tiers precisely because a
-sophisticated-buyer-but-not-necessarily-P2-licensed tenant (the SMB/mid-market segment
+sophisticated-but-not-necessarily-P2-licensed tenant (the SMB/mid-market segment
 `AGENTS.md` §3's "Scale" axis calls out) is a real target audience — for that tenant, this
 scenario's script is the *only* available detective control for this risk, not a redundant one.
 For a tenant that **does** hold P2/Governance, this script remains complementary: PIM's alert is
@@ -200,7 +200,7 @@ flowchart TD
 
 - **Privileged Identity Management (PIM) eligible/time-bound role activations.** A structurally
   different, much larger family of activity names under the same `RoleManagement` audit category
-  (§3) — a buyer running these four roles through PIM (Microsoft's own recommended practice for
+  (§3) — an organization running these four roles through PIM (Microsoft's own recommended practice for
   exactly this population) needs PIM's own alerting (**PIM alerts** — "Roles are being assigned
   outside of Privileged Identity Management" and related built-in alert types) as the primary
   control for that path; this script's scope is the direct/permanent-assignment path PIM alerting
@@ -213,7 +213,7 @@ flowchart TD
   this library already draws elsewhere (e.g. `assess-against-iso27001/reviews.md` Blue Team finding
   2) — wiring a specific SIEM/alerting product is out of a single scenario's scope.
 - **Writing/removing Entra role assignments.** This scenario is read-only by design (§1) — it
-  monitors a change, it does not gate or reverse one. A buyer wanting a preventive (not just
+  monitors a change, it does not gate or reverse one. An organization wanting a preventive (not just
   detective) control should pair this with Conditional Access-based step-up authentication for
   privileged roles and/or PIM's approval workflow, both outside this fragment's scope.
 

@@ -141,7 +141,7 @@ No remaining Fail after resolution.
    scenario's target configuration is already exactly the template's fixed defaults —
    `design.md` §2 gives the right reasoning (Microsoft owns keeping the template current; a
    hand-built custom-policy equivalent would drift from any future template update without the
-   buyer noticing) rather than defaulting to "always build custom" out of habit.
+   organization noticing) rather than defaulting to "always build custom" out of habit.
 3. **Correctly declined to add the content-safety (Hate/Sexual/Violence/Self-harm) classifiers to
    this policy** — those are a distinct, already-tracked-elsewhere concern (`design.md` §8), not
    something this scenario should bolt on to broaden scope without a corresponding review of its own.

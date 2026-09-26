@@ -104,7 +104,7 @@ one honestly-scoped gap (finding 1) rather than a fabricated fix.
   referenced across GDPR/HIPAA/PCI/SOC2 as the Windows sibling, not claiming a macOS-specific
   named requirement that doesn't exist.
 - **Would I fund this?** Yes — as the direct fleet-completeness companion to the Windows sibling,
-  not a standalone purchase; a buyer running only the Windows scenario across a mixed fleet has an
+  not a standalone purchase; an organization running only the Windows scenario across a mixed fleet has an
   honest, disclosed gap this scenario closes.
 
 No Fix/Fail items from this lens.

@@ -25,13 +25,13 @@ of findings below; all **Fix** items were applied to the scenario before this fi
 2. **The Bluetooth deny rule's actual restriction scope was not stated precisely enough to prevent
    overclaiming.** The initial draft's Configuration Reference table listed the two `bluetoothDevice`
    access strings but didn't call out, in the limitations section, that this is a file-transfer-only
-   restriction — a buyer or a less careful implementer could read "Bluetooth coverage" as "Bluetooth
+   restriction — an organization or a less careful implementer could read "Bluetooth coverage" as "Bluetooth
    is blocked" and be surprised that Bluetooth audio, HID peripherals, tethering, and pairing all
    continue working normally.
    - **Resolution:** Added an explicit bullet to `README.md` §11 stating the restriction is scoped
      to `download_files_from_device`/`send_files_to_device` only, with an instruction not to
-     describe the control as "Bluetooth is disabled" to a buyer.
-3. **No approved-device allowlist for Bluetooth at all — is a buyer with a legitimate Bluetooth
+     describe the control as "Bluetooth is disabled" to an organization.
+3. **No approved-device allowlist for Bluetooth at all — is an organization with a legitimate Bluetooth
    file-transfer use case (e.g. an approved barcode scanner) left with only "block everything or
    nothing"?** Confirmed as a real, disclosed scope limit, not an oversight: Microsoft's own worked
    sample for this family uses a structurally different (vendorId+productId, single-device)

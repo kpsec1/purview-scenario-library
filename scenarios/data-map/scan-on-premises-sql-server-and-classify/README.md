@@ -28,7 +28,7 @@ risk analysis all require an accurate, current inventory of where regulated data
 were never in scope for it, or are deliberately kept on-premises for latency, licensing, or regulatory
 reasons. An automated, recurring discovery-and-classification pass over these instances closes exactly
 the blind spot a cloud-only Data Map deployment would otherwise leave: the assumption that "we migrated
-everything that matters" is rarely fully true, and this scenario is how a buyer finds out.
+everything that matters" is rarely fully true, and this scenario is how an organization finds out.
 
 ## 3. Prerequisites
 

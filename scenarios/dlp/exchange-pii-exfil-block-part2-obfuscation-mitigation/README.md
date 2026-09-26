@@ -12,7 +12,7 @@ repeated, exfiltration-adjacent activity such an attempt produces, and automatic
 sender from any further external Exchange mail once their insider risk level reaches **Elevated**
 — closing the channel for continued attempts, not the first one.
 
-**Who it's for:** a buyer who has already deployed `scenarios/dlp/exchange-pii-exfil-block/` and
+**Who it's for:** an organization that has already deployed `scenarios/dlp/exchange-pii-exfil-block/` and
 wants the documented residual risk in its `reviews.md` addressed with a real, working control
 rather than left as a permanent gap — while understanding plainly what this control can and cannot
 do (§11). This fragment is the Exchange-workload sibling of
@@ -234,7 +234,7 @@ action touches the parent scenario's own rules' content, the Encrypt-mode audit 
   alone (`exchange-pii-exfil-block/README.md` §10) deliberately stays on base **E3** by avoiding
   advanced classification or Teams conditions. Adding this fragment requires Insider Risk
   Management and Adaptive Protection, both **Microsoft 365 E5 / Purview Suite** capabilities — a
-  buyer choosing this fragment accepts that tier uplift for the whole deployment, not just an
+  organization choosing this fragment accepts that tier uplift for the whole deployment, not just an
   incremental add-on charge. State this plainly when quoting: "Part 1 alone" and "Part 1 + Part 2"
   are materially different licensing conversations.
 - **No incremental license cost beyond that tier uplift** — this fragment reuses the same
@@ -248,7 +248,7 @@ action touches the parent scenario's own rules' content, the Encrypt-mode audit 
   Microsoft Purview capability performs cross-message content reconstruction or correlation as of
   this writing (grounded during this build — see `design.md` §1). This fragment is a behavioral
   compensating control that shortens the *exposure window after* a qualifying signal, not a fix
-  for the underlying per-message pattern-matching limitation. State this plainly to a buyer —
+  for the underlying per-message pattern-matching limitation. State this plainly to an organization —
   overclaiming here is the single easiest way to lose credibility with a technical reviewer.
 - **Zero detectable signal against a maximally disciplined attacker.** If a sender splits an
   SSN/PAN finely enough that *no single message* ever contains a recognizable fragment (e.g., one
@@ -276,7 +276,7 @@ action touches the parent scenario's own rules' content, the Encrypt-mode audit 
   on, no matter how much they send. **This is not a gap this fragment can close without changing the
   companion scenario's own severity default** (a decision that scenario's own docs already justify
   for its stated purpose — routine-exception visibility, not high-risk detection — and this
-  fragment does not relitigate). A buyer running `-Action Encrypt` with an exception group who wants
+  fragment does not relitigate). An organization running `-Action Encrypt` with an exception group who wants
   this fragment's protection to actually cover that population should raise the companion rule's
   `-ReportSeverityLevel` to `High` (a parameter that script already exposes) as a prerequisite,
   understanding the resulting trade-off (routine exception traffic now triaged at the same priority

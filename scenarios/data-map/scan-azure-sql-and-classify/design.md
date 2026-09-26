@@ -29,7 +29,7 @@ goes stale on the next schema change.
    fabricating a narrower custom rule set body this build couldn't independently verify — SSN and
    Credit Card Number, the pair already used in `scenarios/information-protection/
    auto-label-confidential-sharepoint/` and `scenarios/dlp/pci-teams-exfil-block/`, are included
-   in that system set, so a buyer evaluating this repo end-to-end still sees a consistent
+   in that system set, so an organization evaluating this repo end-to-end still sees a consistent
    classification vocabulary across Data Governance and Data Security.
 4. **Separate the two identities cleanly.** The identity that *calls the Purview REST API*
    (an app-only service principal with the Data Source Administrator Purview role) and the
@@ -62,7 +62,7 @@ goes stale on the next schema change.
 | Deploy automation's app registration | Calls the Purview Data Map REST API (`Invoke-RestMethod`) | **Data Source Administrator** Purview role on the target collection (a Collection Admin must assign it) | Registers/updates the data source and scan objects — `README.md` §3 |
 | Purview account's system-assigned managed identity (SAMI) | The scan's own runtime identity when it connects to the SQL database | **Reader** (Azure IAM, on the SQL Server/resource group/subscription) **+** `db_datareader` (SQL, as a Microsoft Entra external-provider database user) | Reader lets the scan enumerate the server/database via ARM; `db_datareader` lets it query schema and sample rows for classification — `README.md` §5–6 |
 
-These are never the same principal in this design. A buyer who tries to reuse the deploy
+These are never the same principal in this design. An organization that tries to reuse the deploy
 automation's app registration as the scan's database identity will find it doesn't work — SAMI is
 specifically the *Purview account's* managed identity, not an arbitrary service principal — and
 would have to switch the scan `kind` to `AzureSqlDatabaseCredential` with a service-principal
@@ -138,7 +138,7 @@ distinction.
   `api-version=2023-09-01`, and `scenarios/data-map/scan-credential-key-vault-backed/` now scripts
   both. Creating that object stays out of scope *here* (it is a separate, reusable object shared
   across many scans, not a per-scan concern), but it is no longer a manual step anywhere in this
-  repo. A buyer needing that path builds the credential there and passes its name in.
+  repo. An organization needing that path builds the credential there and passes its name in.
 - This scenario does not act on the classification results it produces — no auto-labeling, no DLP
   policy targeting, no access-policy authoring. Those are the concern of
   `scenarios/information-protection/`, `scenarios/dlp/`, and a future Data Owner/DevOps-policy

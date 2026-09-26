@@ -287,8 +287,8 @@ CSVs' retention fate, and revoking the app registration's Graph permission grant
   `assess-against-iso27001` (A5/E5/G5 or the Compliance Manager premium add-on) very likely already
   holds the Microsoft 365 E5/Purview Suite/E5 eDiscovery-and-Audit-add-on tier that also grants
   Purview Audit (Premium)'s 1-year `AzureActiveDirectory`-workload retention [[8]](#references) —
-  meaning most buyers of the sibling scenario get this scenario's extended-retention option "for
-  free" on licensing they already carry. A buyer without that tier still gets full value from this
+  meaning most organizations of the sibling scenario get this scenario's extended-retention option "for
+  free" on licensing they already carry. An organization without that tier still gets full value from this
   script by simply running it daily from day one and letting the CSV itself become the durable
   record, at no incremental license cost.
 - **Sizing note:** this script's own compute/storage cost is negligible — a small daily CSV append
@@ -327,7 +327,7 @@ CSVs' retention fate, and revoking the app registration's Graph permission grant
   themselves to it entirely between two scheduled runs has a window (24 hours at the default daily
   cadence) before the next Phase 1 discovery picks up the new group. This is the same inherent
   trade-off every poll-based control in this scenario carries (§8's "run daily, not weekly"
-  guidance) — a buyer with a lower risk tolerance can narrow this window with a shorter schedule
+  guidance) — an organization with a lower risk tolerance can narrow this window with a shorter schedule
   interval (e.g. hourly). See `reviews.md` round 2, Red Team finding 2.
 - **The companion script now also monitors bulk group-membership import/remove activities, with one
   disclosed residual gap.** Microsoft's `reference-audit-activities` page documents
@@ -375,7 +375,7 @@ CSVs' retention fate, and revoking the app registration's Graph permission grant
   soft (empty column) rather than guessing — but confirm against a real tenant's audit-log entry
   before treating `PrincipalDisplayName` as guaranteed-populated in an automated alerting pipeline.
 - **No alert routing beyond console `Write-Warning` output.** Same accepted scope boundary this
-  library draws elsewhere (`assess-against-iso27001/reviews.md` Blue Team finding 2) — a buyer
+  library draws elsewhere (`assess-against-iso27001/reviews.md` Blue Team finding 2) — an organization
   relying on a scheduled task/pipeline needs that warning to actually reach a human, which this
   scenario doesn't build; see `docs/automation-surface.md` §4 if building a custom pipeline.
 - **Entra directory audit log retention is short and licensing-tiered**: **7 days** on Microsoft

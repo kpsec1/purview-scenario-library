@@ -96,7 +96,7 @@ No remaining Fail.
    documented common-scenario examples rather than paraphrased marketing copy.
 3. **Honest about what's NOT delivered.** This scenario does not claim to automate incident response —
    §1/§3/design.md §3 all make clear the *governance layer* is what's built and scriptable; the
-   investigation itself remains a human-in-the-loop, portal-driven, AI-assisted process. A buyer
+   investigation itself remains a human-in-the-loop, portal-driven, AI-assisted process. An organization
    evaluating this scenario against "does this automate breach response" would be correctly told: no,
    it governs and audits the tool that assists a human doing that.
 4. **Would I fund this?** Yes, specifically for an organization already invested in Defender XDR
@@ -104,7 +104,7 @@ No remaining Fail.
    audit discipline yet — the marginal cost of this scenario's own scripts is near-zero (no dedicated
    license required, §10) against a real gap (ungoverned purge-capable access during a live incident).
    Not a strong stand-alone purchase for an org with no Defender XDR/IRM/DSPM investment, since DSI's
-   value depends heavily on those upstream signal sources — README.md §1 scopes the buyer correctly.
+   value depends heavily on those upstream signal sources — README.md §1 scopes the deploying organization correctly.
 
 No remaining Fix/Fail after resolution.
 
@@ -185,7 +185,7 @@ check on this addition only (the original round above is otherwise unchanged):
   feed via `Search-UnifiedAuditLog`, not the Management Activity API, and are not subject to that
   API's 24-hour/7-day window limits. **Verdict: Pass.**
 - 🎩 **CISO** — is this worth shipping as opt-in rather than the new default? Yes: the CSV remains
-  the primary, always-on record; `-NdjsonOutDir` is a zero-cost convenience for a buyer who already
+  the primary, always-on record; `-NdjsonOutDir` is a zero-cost convenience for an organization that already
   deployed `audit/streaming-to-sentinel-or-management-api`'s Path B collector, with no new license
   or infrastructure requirement of its own. **Verdict: Pass.**
 

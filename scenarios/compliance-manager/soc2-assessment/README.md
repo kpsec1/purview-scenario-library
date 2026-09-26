@@ -29,7 +29,7 @@ customers, especially in SaaS procurement, routinely require a current SOC 2 rep
 II) as a condition of doing business, and Microsoft's own Office 365 and Azure services carry their
 own SOC 2 Type 2 attestations for exactly this reason [[2]](#references). A **Type I** report opines
 on whether controls are suitably designed at a single point in time; a **Type II** report — the one
-most enterprise buyers actually ask for — opines on whether those controls **operated effectively
+most enterprise organizations actually ask for — opines on whether those controls **operated effectively
 over a period of performance**, typically 6–12 months [[3]](#references). That distinction drives
 this scenario's operational emphasis (§8): a Type II report needs sustained evidence, not a
 point-in-time snapshot.

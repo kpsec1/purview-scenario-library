@@ -8,7 +8,7 @@ device-identity-aware**: a non-sensitive file — malware staged on a personal t
 unapproved consumer external disk used for a large unauthorized bulk copy, a compromised
 "clean" file used to bridge an air-gapped segment — copies freely, because nothing in that
 scenario's design inspects *which physical device* is plugged in, only *what content* crosses it.
-A buyer who wants **"no unapproved USB storage device, period"** — regardless of what is or isn't
+An organization that wants **"no unapproved USB storage device, period"** — regardless of what is or isn't
 on the file being copied — needs a device-identity control underneath the content-aware one, not
 instead of it (`endpoint-dlp-usb-block/README.md` §11; `PROGRESS.md` follow-up backlog).
 
@@ -59,12 +59,12 @@ the device layer instead of the content layer.
   path — not content) and (b) **graduated** (Allow/Deny/AuditAllow/AuditDeny per access type — Read,
   Write, Execute — not just install/don't-install), which is exactly the "default-deny, named
   allowlist" shape this scenario needs. It is explicitly cross-platform (Windows and macOS) and
-  ships as part of Defender for Endpoint Plan 1, which most of this repo's E3+ enterprise buyers
+  ships as part of Defender for Endpoint Plan 1, which most of this repo's E3+ enterprise organizations
   already hold (`README.md` §3, §10).
 - This scenario **does not replace** `endpoint-dlp-usb-block` — the two are complementary layers
   (device identity here, content awareness there), exactly as that scenario's own §11 already
-  states. A buyer who deploys only this scenario still has no control over *what* an approved
-  drive carries; a buyer who deploys only the sibling still has no control over *which* unapproved
+  states. An organization that deploys only this scenario still has no control over *what* an approved
+  drive carries; an organization that deploys only the sibling still has no control over *which* unapproved
   drive a user plugs in for non-sensitive-looking content. Both together is the intended posture.
 
 ## 4. Why Intune Custom OMA-URI (`windows10CustomConfiguration`), not the Intune "Device Control" profile template

@@ -80,7 +80,7 @@ No remaining Fail. Detection, logging, and now the runbook meet the bar for an o
 
 - **Risk reduction vs. cost:** clear and proportionate. The control maps to a named, numbered PCI
   DSS requirement (4.2) an assessor will explicitly test; licensing cost is bounded to users who
-  already need E5-tier Purview for other controls in a typical enterprise buyer, and the scenario
+  already need E5-tier Purview for other controls in a typical enterprise organization, and the scenario
   is explicit in §10 that this is not an incremental Azure/PAYG cost.
 - **Change-management impact:** the audit-first internal rule and the staged
   simulation-mode-first rollout in §8 are the right call — a control that hard-blocks 100% of
@@ -122,7 +122,7 @@ No Fix/Fail items from this lens.
    from Microsoft.** The cmdlet reference confirms `BlockAccess` is a real, generic parameter and
    the DLP policy reference confirms "Restrict access or encrypt content in Microsoft 365
    locations" is the one supported action category for Teams, but no published example shows the
-   two combined for Teams specifically. Shipping this without flagging the gap risks the buyer
+   two combined for Teams specifically. Shipping this without flagging the gap risks the deploying organization
    discovering at go-live that the flag behaves differently than assumed.
    - **Resolution:** Added an explicit `VERIFY` note to `README.md` §11 and to the deploy script's
      `.NOTES` block, directing the operator to run the §7 functional tests before relying on

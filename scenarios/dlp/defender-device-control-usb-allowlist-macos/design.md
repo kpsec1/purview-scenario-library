@@ -8,7 +8,7 @@ control. That scenario's own non-goals (`design.md` §8) and `PROGRESS.md`'s fol
 both flag the same gap this fragment closes: **macOS device control uses a separate JSON/
 `mobileconfig` authoring path** — Windows' Custom OMA-URI/XML mechanism has no equivalent on
 macOS, and a mixed Windows/Mac fleet with only the Windows sibling deployed has zero
-device-identity control on every Mac in it. A buyer who wants "no unapproved USB storage device,
+device-identity control on every Mac in it. An organization that wants "no unapproved USB storage device,
 period" across a mixed fleet needs both.
 
 This scenario is the macOS sibling: same default-deny-with-one-named-allowlist shape, same
@@ -176,7 +176,7 @@ explicit `-AssignAllDevices` flag.
   here for the same reason the Windows sibling excludes its own BitLocker variant.
 - This scenario does not deploy via JAMF — Intune only, matching the rest of this repo's Intune-
   based Windows device-control scenario. JAMF is Microsoft's other documented macOS deployment path
-  [[6]](#references) and is a candidate for a separate, explicitly-scoped follow-up if a buyer's
+  [[6]](#references) and is a candidate for a separate, explicitly-scoped follow-up if an organization's
   fleet is JAMF-managed rather than Intune-managed.
 - This scenario does not manage `mediaSerialNumber`/`mediaProductName`/`mediaApplicationId`
   clauses (Secure Digital card matching inside a built-in card reader, a materially different

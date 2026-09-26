@@ -13,7 +13,7 @@ companion adds one low-severity, non-blocking audit rule scoped to exactly that 
 event is at least visible even though — by design, and by the base scenario's own accepted
 trade-off — it is not blocked or encrypted.
 
-**Who it's for:** any buyer who has deployed (or is deploying)
+**Who it's for:** any organization that has deployed (or is deploying)
 `scenarios/dlp/exchange-pii-exfil-block/` with `-Action Encrypt` and an `-ExceptionGroupEmail`, and
 wants the documented silent-exception residual risk in that scenario's `README.md` §11 turned into
 at least a detected-and-reported one. Not applicable to Block-mode deployments — that mode already
@@ -222,7 +222,7 @@ policy and its other rules are untouched.
   underlying residual risk documented in `exchange-pii-exfil-block/README.md` §11 (a member of the
   exception group can still send matching PII externally in cleartext in Encrypt mode) is
   **unchanged** by this companion. What changes is that the event is now recorded — an alert and
-  incident report exist where previously there were none. A buyer who needs the traffic actually
+  incident report exist where previously there were none. An organization that needs the traffic actually
   stopped, not just logged, needs a different design (e.g., dropping the exception group entirely in
   Encrypt mode, or switching that population to `-Action Block` where the existing logged-override
   rule already applies).
@@ -230,7 +230,7 @@ policy and its other rules are untouched.
   parent scenario deployed in Encrypt mode with a non-empty `-ExceptionGroupEmail`. Deploying it
   against a Block-mode policy, or one without an exception group, creates a rule that can never
   match anything (no traffic reaches it — the parent's own rules already cover every other case) —
-  the deploy script warns but does not block this, since a buyer may deploy this companion ahead of
+  the deploy script warns but does not block this, since an organization may deploy this companion ahead of
   switching the parent scenario to Encrypt mode.
 - **Drift risk if the parent scenario's `-ExceptionGroupEmail` or `-PolicyName` changes without
   re-running this script.** This companion's rule hard-codes the exception-group SMTP address and

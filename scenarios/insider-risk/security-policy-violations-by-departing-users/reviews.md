@@ -84,7 +84,7 @@ No remaining Fail. Detection, export, and the runbook meet the bar for an operab
 1. **Preview status needs a rollout-pacing recommendation, not just a documentation footnote.**
    The original draft flagged preview status prominently (a banner at the top of `README.md`,
    repeated in §11) but stopped short of translating that into a concrete recommendation for how
-   a buyer should actually roll this out — leaving a gap between "here's the risk disclosure" and
+   an organization should actually roll this out — leaving a gap between "here's the risk disclosure" and
    "here's what to do about it" that a CISO reading this for a funding decision would have to fill
    in themselves.
    - **Resolution:** Added an explicit recommendation to `README.md` §8: pilot against a narrow

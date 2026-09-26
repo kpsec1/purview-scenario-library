@@ -14,7 +14,7 @@
     keeps vendorId and productId as two separate clause types that can only be AND-combined via a
     per-device sub-group referenced by a "groupId" clause - a materially more complex, per-device
     dynamic-GUID model the base fragment's four-fixed-GUID design never needed (this scenario's own
-    design.md Section 3). This script closes that gap for JAMF-managed fleets, for a buyer whose
+    design.md Section 3). This script closes that gap for JAMF-managed fleets, for an organization whose
     approved drives have no readable serial number (e.g. bulk-imaged imaging docks, or third-party
     hardware whose serialNumber clause macOS reports empty).
 

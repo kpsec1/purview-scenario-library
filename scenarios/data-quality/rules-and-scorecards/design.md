@@ -42,7 +42,7 @@ schedule turns them into an actual, dated score.
 5. **Compose with, don't duplicate, this repo's existing Data Governance scenarios.** This scenario
    targets the same "Customer" asset/domain narrative already established by
    `scan-azure-sql-and-classify` (the Azure SQL source) and `curate-business-glossary` (the
-   "Customer Experience" governance domain and "Customer"/"Customer ID" terms) — a buyer evaluating
+   "Customer Experience" governance domain and "Customer"/"Customer ID" terms) — an organization evaluating
    this repo end-to-end sees one coherent data asset governed, cataloged, and scored, not three
    disconnected demos.
 
@@ -58,7 +58,7 @@ schedule turns them into an actual, dated score.
   consumer is already browsing. This is the product-idiomatic choice for a Purview-centered
   governance program, and it's the one Microsoft's own roadmap (AI-assisted rule generation, health
   reporting, observability) is investing in.
-- A buyer with an existing dbt-test/Great Expectations investment isn't forced to abandon it — Custom
+- An organization with an existing dbt-test/Great Expectations investment isn't forced to abandon it — Custom
   (SQL or ADF-expression) rules in this scenario can encode the same logical checks a dbt test would,
   so the *checks* can be ported even if the *execution engine* changes.
 
@@ -137,5 +137,5 @@ implements.
   portal) — that is an interactive, model-driven portal feature with no documented REST equivalent in
   this build's grounding pass.
 - This scenario does not create data profiling jobs (a separate, earlier lifecycle step — "Profile"
-  operation group) — the example rules are authored directly, as a buyer with existing knowledge of
+  operation group) — the example rules are authored directly, as an organization with existing knowledge of
   their schema would, rather than derived from a profiling pass this scenario doesn't run.

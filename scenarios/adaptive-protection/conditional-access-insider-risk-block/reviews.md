@@ -20,13 +20,13 @@ finalized (see "Resolution" under each). No **Fail** items were raised.
    - **Resolution:** Added an explicit bullet to `README.md` §11 naming CAE, the typical token
      lifetime, and that this is a disclosed bypass window, not a flaw unique to this policy.
 2. **Legacy authentication clients are a documented Conditional Access blind spot this scenario
-   doesn't address.** The original draft never mentioned legacy auth at all. A buyer who hasn't
+   doesn't address.** The original draft never mentioned legacy auth at all. An organization that hasn't
    already deployed a separate "block legacy authentication" policy could reasonably assume this
    scenario's Insider Risk condition covers every sign-in path, when POP/IMAP/older non-modern-auth
    clients have long-standing gaps with several Conditional Access condition types.
    - **Resolution:** Added a `README.md` §11 bullet stating this plainly and naming the standard
      mitigating pattern (a separate legacy-auth-block policy), rather than silently assuming the
-     buyer already has one.
+     organization already has one.
 3. **A patient attacker can wait out the same risk-level reset window the DLP sibling's own Red
    Team review already flagged.** Not a new finding specific to this scenario — the 7-day insider
    risk level timeframe and case-dismissal reset behavior are properties of Adaptive Protection
@@ -82,7 +82,7 @@ correctly understood) and the runbook meet the bar for an operable control.
      business-continuity distinction and add service-desk runbook readiness as an explicit
      rollout prerequisite alongside HR/Legal coordination.
 - **Risk reduction vs. cost:** the new Entra ID P2 requirement (§10) is a genuine incremental cost
-  most buyers deploying only the DLP sibling won't already carry — this is disclosed plainly
+  most organizations deploying only the DLP sibling won't already carry — this is disclosed plainly
   rather than folded into "no incremental cost," and the sizing note explicitly warns that P2
   coverage must extend to the entire population in this policy's `Users` scope, not just IT/
   security staff, to avoid a licensing-compliance gap discovered only after deployment.
@@ -91,7 +91,7 @@ correctly understood) and the runbook meet the bar for an operable control.
   rollback path" is a strong narrative for a board already briefed on the DLP sibling's narrower
   version — best pitched as the escalation lever for confirmed cases, not the first response, per
   the pilot/maturity gate in §5 Step 7 and §8.
-- **Would I fund this?** Yes, for a buyer who already has (or is deploying) both a tuned feeder
+- **Would I fund this?** Yes, for an organization that already has (or is deploying) both a tuned feeder
   IRM policy and this library's DLP sibling, has budgeted for Entra ID P2 across the relevant
   population, and has read and accepted the service-desk/HR/Legal coordination note. Not as an
   organization's first Purview investment, and not before the DLP sibling has proven out the
@@ -131,7 +131,7 @@ correctly understood) and the runbook meet the bar for an operable control.
    "required for the Conditional Access Insider Risk *condition* specifically," distinct from the
    already-documented, broader "P1/P2 for administrative units" prerequisite in
    `docs/licensing-matrix.md` §4 — checked to confirm this scenario doesn't conflate the two or
-   imply a buyer already covered for administrative-unit P1 automatically satisfies this
+   imply an organization already covered for administrative-unit P1 automatically satisfies this
    scenario's P2-specific requirement (P1 does not).
 
 No remaining Fix/Fail after resolution.
@@ -171,11 +171,11 @@ raised.
    same place a reader would look, that these three categories are *excluded from the block* —
    i.e., a B2B direct-connect user, service-provider user, or "other external" user who is
    assigned Elevated insider risk is **not** blocked by this policy by default, even though the
-   Insider Risk Management side may still flag them. A buyer skimming only the parameter name
+   Insider Risk Management side may still flag them. An organization skimming only the parameter name
    could misread "Exclude" as "these get extra scrutiny" rather than "these are exempted."
    - **Resolution:** `deploy/New-InsiderRiskConditionalAccessPolicy.ps1`'s `.PARAMETER
      ExcludeGuestOrExternalUserTypes` block and `README.md` §11 both state the exemption directly
-     and name the escape hatch (`-ExcludeGuestOrExternalUserTypes @()`) for a buyer who wants no
+     and name the escape hatch (`-ExcludeGuestOrExternalUserTypes @()`) for an organization that wants no
      guest/external carve-out at all — not just that the parameter exists.
 2. **The unconfirmed wire-format assumption (comma, no space) is a real, if narrow, correctness
    risk for the *matching* control itself.** If Microsoft's actual serialization differs (e.g.
@@ -204,7 +204,7 @@ No remaining Fix/Fail after resolution.
 2. **A WARN, not a FAIL, when the exclusion is empty** — `validate/
    Test-InsiderRiskConditionalAccessPolicy.ps1` treats `-ExpectedExcludeGuestOrExternalUserTypes
    @()` as a WARN (not a silent PASS, not a hard FAIL) precisely because an intentionally-empty
-   exclusion is a valid buyer choice (§7 in `design.md`) but one worth surfacing to an operator
+   exclusion is a valid organization choice (§7 in `design.md`) but one worth surfacing to an operator
    reviewing validation output, not burying. Checked and confirmed appropriate — matches this
    library's existing severity convention for "correctly configured but worth a second look."
 

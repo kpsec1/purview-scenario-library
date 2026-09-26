@@ -296,7 +296,7 @@ independently.
   assessment-lifecycle events proves nothing happened.
 - **Audit (Standard) default retention is 180 days** (1 year for Entra ID/Exchange/OneDrive/
   SharePoint under an E5-tier license; up to 10 years with Audit Premium retention policies)
-  [[12]](#references). A buyer needing a longer evidentiary window than the audit-trail CSV's own
+  [[12]](#references). An organization needing a longer evidentiary window than the audit-trail CSV's own
   accumulated history covers must either run the export on a schedule from day one, or purchase
   Audit (Premium) with a custom retention policy.
 - **The "Action Update" Excel bulk-import file's exact column schema is not scripted here.** See

@@ -78,7 +78,7 @@ against `PII-Exchange-Protect-External`, `PII-Exchange-Override-External`, or
 - This scenario does not build a logged-override mechanism for Encrypt mode. Microsoft's
   `EncryptRMSTemplate` action has no documented override concept (`NotifyAllowOverride` is
   specifically an override for a **blocking** action) — inventing one would violate `AGENTS.md` §4's
-  no-invented-behavior standard. A buyer who needs a true logged-override-with-justification path
+  no-invented-behavior standard. An organization that needs a true logged-override-with-justification path
   for this population should switch it to `-Action Block` instead, where
   `PII-Exchange-Override-External` already exists.
 - This scenario does not modify, own, or redeploy any of the parent scenario's three existing rules.

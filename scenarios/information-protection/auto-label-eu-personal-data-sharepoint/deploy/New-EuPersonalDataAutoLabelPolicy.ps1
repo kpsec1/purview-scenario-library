@@ -19,7 +19,7 @@
     for why this is a second scenario rather than a parameter on the original.
 
     LOCALIZATION: -SensitiveInfoTypeName accepts any built-in or custom SIT name(s), not just the
-    three EU-wide defaults. A buyer whose regulated population is limited to specific member
+    three EU-wide defaults. An organization whose regulated population is limited to specific member
     states can pass just those countries' own SITs (e.g. -SensitiveInfoTypeName 'Germany Identity
     Card Number','France Social Security Number') for tighter false-positive control than the
     full EU-wide bundles - see README.md §6 and design.md §5.
@@ -68,7 +68,7 @@
     and "EU driver's license number" to whatever -SensitiveInfoTypeName is in effect (the default
     three-SIT set, or a caller-supplied override), deduplicated, before name resolution. Both are
     real, confirmed EU-wide bundle SITs - use this switch instead of retyping the full SIT list
-    when a buyer's SharePoint/OneDrive estate is travel-document- or HR-record-heavy.
+    when an organization's SharePoint/OneDrive estate is travel-document- or HR-record-heavy.
 
     GOTCHA (design.md §4): the "EU passport number" bundle's U.K. coverage is not a standalone
     U.K. entity the way the national-ID and driver's-license bundles have one - it is a single
@@ -121,7 +121,7 @@
 
     Deploys in simulation mode (default) with the default EU-wide SIT set plus the opt-in
     passport/driver's-license bundle - see the IncludeTravelDocumentSits parameter description
-    for the U.S./U.K. passport-entity gotcha before enabling this for a U.K.-only buyer.
+    for the U.S./U.K. passport-entity gotcha before enabling this for a U.K.-only organization.
 
 .NOTES
     Sources (Microsoft Learn, verify before production use):

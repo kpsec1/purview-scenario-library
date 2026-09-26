@@ -31,7 +31,7 @@ Regulatory/business drivers this scenario supports:
 - **A stronger technical backstop for a narrow, high-severity SIT set** — where
   `copilot-sensitive-data-exposure`'s Rule 1 (`RestrictWebGrounding`) is deliberately a light-touch
   control (block external web search only, let Copilot still answer from internal sources), this
-  scenario is the deliberately blunt instrument for SIT categories a buyer has decided should never
+  scenario is the deliberately blunt instrument for SIT categories an organization has decided should never
   reach Copilot at all, regardless of grounding source.
 - **Payment-card/regulated-identifier hygiene** — Microsoft's own example uses **EU debit card
   numbers**; a PCI-scoped or EU-regulated tenant can use this rule for card or national-identifier

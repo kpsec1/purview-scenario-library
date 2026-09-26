@@ -6,7 +6,7 @@
 query after something has already happened. That leaves a gap this scenario closes — **continuous,
 unattended streaming** of Microsoft 365 audit/DLP events into a SIEM, so analytics rules can alert
 on new activity within minutes instead of waiting for someone to go looking. Two genuinely different
-mechanisms do this, and a buyer needs to pick correctly rather than default to whichever one a blog
+mechanisms do this, and an organization needs to pick correctly rather than default to whichever one a blog
 post mentioned:
 
 1. **The native Microsoft Sentinel data connector** — the fast path when Sentinel is (or will be)
@@ -46,7 +46,7 @@ post mentioned:
 | Best for | "We run Sentinel and just want Exchange/SharePoint/Teams audit events in it" | Non-Sentinel SIEMs, or any workflow that needs **`DLP.All`** (detected sensitive-info matches) or **Entra ID audit** (`Audit.AzureActiveDirectory`) events this connector doesn't carry |
 | Operating model | Fully managed by Microsoft once connected — no polling loop to run | You own the scheduled poll (Azure Automation, Function, cron) and its checkpoint/resume logic |
 
-**They are not mutually exclusive.** A Sentinel-centric buyer commonly runs **both**: Path A for the
+**They are not mutually exclusive.** A Sentinel-centric organization commonly runs **both**: Path A for the
 free, zero-maintenance `OfficeActivity` coverage, and Path B scoped to just `DLP.All` (and/or
 `Audit.AzureActiveDirectory`) for the events Path A doesn't carry, landed in Sentinel via the
 **Logs Ingestion API** (out of scope here — see §7) or forwarded to a separate DLP-events pipeline.
@@ -99,7 +99,7 @@ sequenceDiagram
 | Decision | Choice | Rationale |
 |---|---|---|
 | Two artifacts, not one | Bicep (Path A) + PowerShell pair (Path B) | The two mechanisms have nothing in common technically (ARM resource vs. REST subscribe/poll) — forcing them into one script would obscure the real choice in §3 |
-| Pull, not push/webhook | Path B polls `/content` on a schedule rather than standing up a webhook receiver | A webhook needs a hosted, internet-reachable endpoint (infrastructure this author-only library doesn't provision); polling is stateless infrastructure-wise and easier to reason about for a buyer's first deployment. `design.md` §7 notes the webhook alternative |
+| Pull, not push/webhook | Path B polls `/content` on a schedule rather than standing up a webhook receiver | A webhook needs a hosted, internet-reachable endpoint (infrastructure this author-only library doesn't provision); polling is stateless infrastructure-wise and easier to reason about for an organization's first deployment. `design.md` §7 notes the webhook alternative |
 | Checkpoint file, not "last 24h every run" | Persist `lastEndTimeUtc` per content type | Makes reruns resumable and avoids re-downloading/re-forwarding the same blobs on every scheduled tick; bounded by the 7-day content-retrieval window so a stale checkpoint is detectable, not silently wrong |
 | `PublisherIdentifier` always sent | Every `/content` and blob-retrieval call includes it | Microsoft's own troubleshooting guidance: omitting it puts the caller in the shared general-purpose throttling pool instead of a tenant-dedicated one [[3]](#references) |
 | Output format | NDJSON (one content blob's records per line-delimited batch), one file per content type per run | Forwarder-agnostic hand-off — Splunk HEC, the Log Analytics Logs Ingestion API, or a file-tail agent can all consume NDJSON without a custom parser |
@@ -128,11 +128,11 @@ sequenceDiagram
 ## 7. Forward hand-off (documented, not built)
 
 Landing Path B's NDJSON output in Sentinel itself (rather than a third-party SIEM) is the natural
-next step for a Sentinel-centric buyer who still needs `DLP.All`/Entra-audit coverage: the
+next step for a Sentinel-centric organization that still needs `DLP.All`/Entra-audit coverage: the
 **Log Analytics Logs Ingestion API** accepts custom-table writes via a Data Collection Rule, and
 Path B's `-OutDir` output is already record-per-line JSON, matching what that API expects. Not built
 here — it needs a Data Collection Endpoint/Rule and a destination table schema decision that belongs
-in a dedicated follow-up scenario once a concrete buyer target (custom table vs. Auxiliary Logs)
+in a dedicated follow-up scenario once a concrete organization target (custom table vs. Auxiliary Logs)
 is chosen.
 
 ## 8. Other scenarios feeding this same output directory

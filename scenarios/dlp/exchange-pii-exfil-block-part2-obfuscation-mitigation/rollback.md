@@ -38,7 +38,7 @@ their relative order (the reverse of `deploy/New-ExchangePiiElevatedRiskBlock.ps
 name-agnostic compaction — see `design.md` §6). There is no "undo" beyond re-running
 `deploy/New-ExchangePiiElevatedRiskBlock.ps1` from scratch. Only do this when this compensating
 control is being permanently retired (e.g., a future Microsoft capability makes it obsolete, or
-the buyer decides the residual coverage isn't worth the operational overhead documented in
+the deploying organization decides the residual coverage isn't worth the operational overhead documented in
 `README.md` §8).
 
 ## What rollback does **not** undo

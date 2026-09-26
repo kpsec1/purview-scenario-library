@@ -148,7 +148,7 @@ between the same two DataSets (Microsoft's own tutorial demonstrates exactly thi
 its "Example 2," where a `direct_lineage_dataset_dataset` edge is added between `table2` and
 `table3` *alongside* the pre-existing `table1 -> HiveQuery1 -> table2` Process-mediated path,
 without removing anything - `README.md` reference 5). This is a genuinely useful pattern for a
-buyer who deployed the sibling scenario first and later wants to enrich the graph with the process
+organization that deployed the sibling scenario first and later wants to enrich the graph with the process
 node, without a migration step - see `README.md` Section 1 and Section 11 for how a reader should
 interpret seeing both edges in the portal.
 
@@ -176,7 +176,7 @@ interpret seeing both edges in the portal.
 - This scenario does not remove or modify `end-to-end-lineage-validation`'s own direct edge -
   Section 6.
 - This scenario does not attempt `vendorId`/`productId`-style richer typing for the Process entity
-  beyond the two attributes shipped (`runbookUrl`, `scheduleExpression`) - a buyer with a larger
+  beyond the two attributes shipped (`runbookUrl`, `scheduleExpression`) - an organization with a larger
   catalog of custom jobs may want a richer attribute set (owning team, source-code repository URL,
   last-run status), all straightforward extensions of the same confirmed `AtlasAttributeDef` shape,
   deferred to keep this fragment scoped.

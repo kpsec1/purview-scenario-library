@@ -30,9 +30,9 @@ configuration —
 scenario needs to add. Using the template directly (rather than rebuilding the same thing as a
 custom policy) is the correct, lower-effort, more-maintainable choice: Microsoft owns keeping the
 template's classifier pairing current, and a future product change to the template's defaults is
-something a buyer inherits automatically rather than having to notice and manually replicate in a
+something an organization inherits automatically rather than having to notice and manually replicate in a
 hand-built custom policy. `README.md` §5 documents the **Customize policy** option for the one
-place a buyer may legitimately want to deviate (§8 below).
+place an organization may legitimately want to deviate (§8 below).
 
 ## 3. The no-write-API constraint still applies
 
@@ -145,7 +145,7 @@ Copilot-specific audit surface that doesn't exist) is the same "don't fabricate 
   PAYG-gated location into this scenario's licensing story would materially change its cost section
   (`README.md` §10) for a location this scenario doesn't target — a deliberate scope boundary, not
   an oversight. `README.md` §8 documents the **Add a generative AI app as a location for an existing
-  policy** path as a forward reference for a buyer who wants that later, with the PAYG cost called
+  policy** path as a forward reference for an organization that wants that later, with the PAYG cost called
   out explicitly at that point.
 - **Adding Copilot as a location to the existing `harassment-and-code-of-conduct` policy.** Microsoft
   documents this as a supported, simple edit (§8 above) — an organization that already has that
@@ -154,7 +154,7 @@ Copilot-specific audit surface that doesn't exist) is the same "don't fabricate 
   separate rather than folding one into the other, because they detect materially different risk
   categories (interpersonal conduct vs. AI-safety/IP) with different natural reviewer pools
   (HR/Legal vs. Security/Responsible-AI/Legal) — see `README.md` §8 for this as a documented,
-  optional alternative a buyer can choose instead.
+  optional alternative an organization can choose instead.
 - **The preview LLM-based content-safety classifiers (Hate/Sexual/Violence/Self-harm).** These do
   cover Microsoft 365 Copilot as one of their three supported workloads [[7]](#references), but they
   are a distinct, already-covered concern this repo's `harassment-and-code-of-conduct` follow-up
@@ -177,7 +177,7 @@ Copilot-specific audit surface that doesn't exist) is the same "don't fabricate 
 | Reviewer role | Communication Compliance Investigators, drawn from Security/Responsible-AI/Legal (not HR/Legal) | Full content access needed for the same reason as `harassment-and-code-of-conduct/design.md` §5; different natural reviewer pool given the AI-safety/IP nature of the matches — §6. |
 | Location scope | Microsoft 365 Copilot and Microsoft 365 Copilot Chat only (the template default) | No PAYG requirement, unlike Enterprise/Other AI apps locations — §8, Non-goals. |
 | Scriptable deliverable | Audit-trail export, same 3-query `Search-UnifiedAuditLog` shape as the harassment scenario, with a policy-name filter and a best-effort prompt/response context column added | Same grounded audit surface, correctly reused rather than reinvented — §7. |
-| Relationship to `harassment-and-code-of-conduct` | Separate, independent policy (not merged, not built by adding Copilot as a location to the existing one) | Materially different risk categories and reviewer pools — §8, Non-goals. Documented as an alternative a buyer can choose instead. |
+| Relationship to `harassment-and-code-of-conduct` | Separate, independent policy (not merged, not built by adding Copilot as a location to the existing one) | Materially different risk categories and reviewer pools — §8, Non-goals. Documented as an alternative an organization can choose instead. |
 
 ## 10. Data flow / where each piece runs
 

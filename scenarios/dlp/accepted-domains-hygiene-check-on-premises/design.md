@@ -13,7 +13,7 @@ Exchange-Online-only script."* This scenario is that companion — a second, ind
 that runs the parent's same detection model against an **on-premises Exchange Management Shell**
 session instead of Exchange Online PowerShell.
 
-This is a companion, not a replacement: a hybrid buyer runs both scenarios, one against each
+This is a companion, not a replacement: a hybrid organization runs both scenarios, one against each
 environment. See §3 for why they cannot safely run as one combined live session.
 
 ## 2. What's actually different on-premises (grounded this build)
@@ -29,7 +29,7 @@ differences from the parent scenario's Exchange Online-only model:
    reference page). The `-DomainController` parameter is on-premises-only (specifies which Active
    Directory domain controller to read from/write to — not supported on Edge Transport servers) — this
    scenario's deploy script exposes it as an optional passthrough, since a multi-DC on-premises
-   environment with AD replication lag is a realistic buyer scenario the cloud-only parent never needs
+   environment with AD replication lag is a realistic organization scenario the cloud-only parent never needs
    to consider.
 2. **`New-AcceptedDomain`/`Remove-AcceptedDomain` exist on-premises — closing part of the parent
    scenario's disclosed attribution gap.** The parent's `design.md` §5 states Exchange Online has *no*
@@ -46,16 +46,16 @@ differences from the parent scenario's Exchange Online-only model:
    Online on its own reference page, which separately confirms it is superseded there by unified audit
    logging). Key facts grounded this build via `Set-AdminAuditLogConfig`'s own reference page:
    - `-AdminAuditLogEnabled` defaults to `$true` — administrator audit logging is on by default on a
-     fresh on-premises install, not an opt-in the buyer must remember to enable.
+     fresh on-premises install, not an opt-in the deploying organization must remember to enable.
    - `-AdminAuditLogAgeLimit` defaults to **90 days** — sets this scenario's practical audit-lookback
      ceiling; a `-AuditLookbackDays` value beyond 90 will find nothing regardless of what actually
-     happened, unless the buyer has widened this on their own server.
+     happened, unless the deploying organization has widened this on their own server.
    - **VERIFY (pilot tenant or a future Microsoft Learn pass):** the exact *default* value of
      `-AdminAuditLogCmdlets` (which cmdlets are audited out of the box) was not stated with a
      confirmed default on the reference page this build fetched — only that `*` audits everything and
      that the parameter has no default explicitly documented in the fetched content. This scenario
      does **not** assume `Set-`/`New-`/`Remove-AcceptedDomain` are covered by a fresh install's default
-     configuration; `README.md` §11 and the deploy script's `.NOTES` tell the buyer to confirm
+     configuration; `README.md` §11 and the deploy script's `.NOTES` tell the deploying organization to confirm
      `Get-AdminAuditLogConfig | Select-Object AdminAuditLogCmdlets` includes them (or `*`) before
      relying on `-IncludeAuditAttribution`'s output for an incident investigation.
 
@@ -88,7 +88,7 @@ with prefixes by default.
 ## 4. Cross-environment reconciliation — the actual hybrid-specific risk
 
 Running the parent's checks twice, independently, in two environments is useful on its own (each
-environment gets its own drift/baseline detection) but doesn't answer the question a hybrid buyer
+environment gets its own drift/baseline detection) but doesn't answer the question a hybrid organization
 actually cares about: **did the two sides go out of sync with each other without anyone noticing?**
 A domain hand-configured differently on each side of a hybrid deployment is exactly the kind of
 divergence neither side's own independent check can see.
@@ -136,7 +136,7 @@ blogs/Q&A threads, and they resolve the question:
   Remote Mailbox objects on both sides.
 
 **Extended in a later build to cover `MatchSubDomains` and `Default`, not just `DomainType`** (closing
-the non-goal §9 originally deferred, once a concrete buyer need surfaced as a `PROGRESS.md`
+the non-goal §9 originally deferred, once a concrete organization need surfaced as a `PROGRESS.md`
 follow-up). Two new finding categories, `CrossEnvironmentMatchSubDomainsMismatch` and
 `CrossEnvironmentDefaultMismatch` — deliberately **separate categories**, not additional rows under the
 existing `CrossEnvironmentMismatch` name, mirroring this scenario's own baseline-diff block (§6), which
@@ -211,7 +211,7 @@ different owning teams) without file contention.
 
 This scenario reads the **same** `KnownDomains.json` file/schema the parent scenario uses (parent
 `README.md` §6) — not a second, on-premises-specific config. A domain's "reviewed and expected" status
-is a property of the buyer's actual business relationship with that domain, not of which Exchange
+is a property of the deploying organization's actual business relationship with that domain, not of which Exchange
 environment happens to host its mailboxes; maintaining two separate known-domains files for the same
 tenant would immediately drift against each other, the exact failure mode this whole control exists to
 catch. The existing `expectedDomainType` field already supports all three `DomainType` values
@@ -242,7 +242,7 @@ including `ExternalRelay` (parent `README.md` §6), so no schema change was need
 - Does not manage, create, or remove any accepted domain, DLP rule, or any other Exchange/Purview
   object — purely a read-only detection control, same as the parent (`rollback.md`).
 - **Resolved (later build), no longer a non-goal:** cross-environment reconciliation of `MatchSubDomains`/
-  `Default`, once a concrete buyer need surfaced as a `PROGRESS.md` follow-up — see §4 for the design
+  `Default`, once a concrete organization need surfaced as a `PROGRESS.md` follow-up — see §4 for the design
   and §8 for the key decision. Kept here as a record of the original scoping call, per this repo's
   incremental-scoping discipline.
 

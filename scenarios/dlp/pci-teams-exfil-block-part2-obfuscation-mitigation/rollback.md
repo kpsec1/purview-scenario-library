@@ -34,7 +34,7 @@ This runs `Remove-DlpComplianceRule` on `PCI-ElevatedRisk-Block-AllExternal`, th
 1's three original rules to their original priorities (0/1/2). There is no "undo" beyond
 re-running `deploy/New-PciElevatedRiskTeamsBlock.ps1` from scratch. Only do this when this
 compensating control is being permanently retired (e.g., a future Microsoft capability makes it
-obsolete, or the buyer decides the residual coverage isn't worth the operational overhead
+obsolete, or the deploying organization decides the residual coverage isn't worth the operational overhead
 documented in `README.md` §8).
 
 ## What rollback does **not** undo

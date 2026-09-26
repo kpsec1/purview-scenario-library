@@ -15,7 +15,7 @@ identifiers Microsoft actually ships for that region — not the U.S. Social Sec
 condition this library's sibling scenario defaults to. This is the direct EU/UK counterpart of
 `scenarios/information-protection/auto-label-confidential-sharepoint/`, built specifically because
 that sibling scenario's own Red Team review flagged its U.S.-centric default as materially weaker
-coverage for a non-U.S. buyer (see §11 and `design.md` §1).
+coverage for a non-U.S. organization (see §11 and `design.md` §1).
 
 ## 2. Business/regulatory driver
 
@@ -138,7 +138,7 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
 # 3c. Or, add the opt-in passport/driver's-license bundle on top of whichever set above is in
 #     effect (§6) — read the U.S./U.K. passport-merge gotcha in §11 before enabling for a
-#     U.K.-only buyer:
+#     U.K.-only organization:
 ./deploy/New-EuPersonalDataAutoLabelPolicy.ps1 `
     -LabelName 'Confidential' `
     -IncludeTravelDocumentSits
@@ -175,7 +175,7 @@ The deploy script uses Security & Compliance PowerShell (`New-AutoSensitivityLab
 
 **Localizing the SIT set (`-SensitiveInfoTypeName`):** the default three-SIT set (§4/design.md §4)
 matches every EU member state's own identifier format via Microsoft's built-in EU-wide bundle
-SITs. A buyer whose regulated population is limited to specific member states gets tighter
+SITs. An organization whose regulated population is limited to specific member states gets tighter
 false-positive control, and a clearer per-jurisdiction legal-basis mapping, by passing only those
 countries' own per-country SITs instead — e.g.:
 
@@ -187,9 +187,9 @@ countries' own per-country SITs instead — e.g.:
 **Opt-in travel-document bundle (`-IncludeTravelDocumentSits`):** additive switch — appends `'EU
 passport number'` and `"EU driver's license number"` (also real, confirmed EU-wide bundle SITs —
 `design.md` §4) to whichever `-SensitiveInfoTypeName` set is already in effect (default or
-localized), instead of requiring the full list to be retyped by hand. Use for a buyer whose
+localized), instead of requiring the full list to be retyped by hand. Use for an organization whose
 SharePoint/OneDrive estate is travel-document- or HR-record-heavy. **Before enabling for a U.K.-only
-buyer:** the "EU passport number" bundle has no standalone U.K. entity — U.K. passport coverage is
+organization:** the "EU passport number" bundle has no standalone U.K. entity — U.K. passport coverage is
 merged into a single combined "U.S./U.K. passport number" entity, so this switch also enables U.S.
 passport-number detection as an inseparable side effect (`design.md` §4). The two opt-in bundles'
 member-state coverage also isn't identical to each other or to the default national-ID bundle — see
@@ -327,7 +327,7 @@ to permanently delete the policy and its rules.
 - **The EU-wide bundle SITs cannot be copied or edited.** Microsoft's own documentation lists "EU
   national identification number," "EU Social Security Number or equivalent identification," "EU
   passport number," and "EU driver's license number" among SITs that cannot be used as a copy
-  source for a custom SIT [[6]](#references). If a buyer needs a *modified* version of one of
+  source for a custom SIT [[6]](#references). If an organization needs a *modified* version of one of
   these (e.g. adding a keyword, adjusting confidence), the per-country entity SITs underneath the
   bundle can be individually customized instead, or a net-new custom SIT authored from scratch —
   the bundle itself is not a starting template.
@@ -337,19 +337,19 @@ to permanently delete the policy and its rules.
   (e.g. Belgium, Germany post-2010, Spain) and **7 are pattern-only** (Austria, Croatia, Cyprus,
   France, Greece, Malta, U.K.) — expect a higher false-positive rate from the bundle overall than
   from the sibling scenario's fully-checksummed U.S. SIT pair, and treat this as one more reason a
-  precision-conscious buyer should consider the per-country localization path in §6, especially if
+  precision-conscious organization should consider the per-country localization path in §6, especially if
   the tenant's regulated population sits in one of the 7 pattern-only markets.
 - **"EU" as used by Microsoft's SIT naming does not track EU membership exactly.** The national ID
   bundle includes the U.K. (post-Brexit, no longer an EU member state) as one of its member
   entities [[7]](#references) — the bundle name is a Microsoft product-naming convention, not a
   legal EU-membership boundary. Treat "EU national identification number" as "EU + UK," not
-  strictly EU-27, when explaining coverage to a buyer.
+  strictly EU-27, when explaining coverage to an organization.
 - **The opt-in `-IncludeTravelDocumentSits` bundle's U.K. passport coverage is merged with U.S.
   passport coverage.** Microsoft's "EU passport number" bundle has no standalone U.K. passport
   entity — U.K. coverage exists only as a single combined "U.S./U.K. passport number" entity, per
   the bundle's own index page. Enabling this switch to add U.K. passport-number detection also
   enables U.S. passport-number detection with no way to select one without the other via this
-  bundle SIT. If a buyer needs U.K.-only passport detection without U.S. false positives, this
+  bundle SIT. If an organization needs U.K.-only passport detection without U.S. false positives, this
   scenario's bundle switch is the wrong tool — a custom SIT would be required instead (out of
   scope here). See `design.md` §4.
 - **The three EU-wide bundles this scenario can reference do not cover the same member states.**
@@ -366,7 +366,7 @@ to permanently delete the policy and its rules.
   driver's-license entities (11%)** are (Germany, Spain, U.K.) — versus 73% for the default
   national-ID bundle. The driver's-license bundle additionally caps at Medium (75) confidence for 25
   of its 28 members (no High-confidence tier exists for the non-checksum countries in this SIT
-  family). A buyer who enables `-IncludeTravelDocumentSits` should expect a materially higher
+  family). An organization that enables `-IncludeTravelDocumentSits` should expect a materially higher
   false-positive rate than the default condition set and should weigh the per-country
   `-SensitiveInfoTypeName` narrowing in §6 more heavily than for the default bundle.
 - **This scenario does not cover Exchange (email).** The Exchange companion is now built as

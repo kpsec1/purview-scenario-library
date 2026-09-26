@@ -207,7 +207,7 @@ Microsoft Learn reference pages.
 lineage graph developed a gap" — unlike DLP or Data Quality, lineage has no `GenerateAlert`
 equivalent. The recurring `validate/Test-EndToEndLineage.ps1` run (above) **is** the detection
 mechanism for this control; route its non-zero exit code into whatever CI/ops alerting this
-buyer already has, the same way `scenarios/data-quality/rules-and-scorecards/README.md` §8
+organization already has, the same way `scenarios/data-quality/rules-and-scorecards/README.md` §8
 recommends for its own validate script.
 
 **Incident-response runbook (validation reports a gap):**

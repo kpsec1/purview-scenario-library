@@ -32,7 +32,7 @@ Management policy authoring) has none.
 This is the current, correct state of the product, not a gap in this build's research — and
 inventing a `New-CommunicationCompliancePolicy` cmdlet, or a REST endpoint that doesn't exist,
 would violate `AGENTS.md` §4's no-invented-cmdlets rule for zero real benefit: a fabricated script
-would fail on first use and cost the buyer more time than a correctly-labeled manual runbook.
+would fail on first use and cost the deploying organization more time than a correctly-labeled manual runbook.
 
 **A documentation-adjacent nuance worth recording, not hiding:** the older `New-`/
 `Get-SupervisoryReviewPolicyV2` cmdlets (Communication Compliance's pre-rebrand name, "Supervisory
@@ -144,7 +144,7 @@ Microsoft documents an optional integration where Communication Compliance signa
 Risk Management's risky-user detection (a dedicated auto-created "Insider risk trigger" policy,
 using the Threat/Harassment/Discrimination classifiers) [[10]](#references). This scenario's own
 policy is a standalone Communication Compliance deployment and does not configure that IRM
-integration — see §7, Non-goals. A buyer who has also deployed
+integration — see §7, Non-goals. An organization that has also deployed
 `scenarios/insider-risk/departing-employee-data-theft/` should be aware the two solutions *can* be
 wired together but are independent unless that specific IRM-side option is explicitly selected.
 

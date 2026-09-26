@@ -20,11 +20,11 @@ see because the file has already left the cloud-inspectable path.
 Removable media is one of the oldest and least monitored data-exfiltration channels: a departing
 or malicious employee, or simply careless handling, can move gigabytes of regulated data off a
 managed endpoint in seconds, with no email, chat, or cloud-sharing trail at all. This is a control
-area referenced across nearly every regulatory framework this repo's buyers face — GDPR Article 32
+area referenced across nearly every regulatory framework this repo's organizations face — GDPR Article 32
 ("appropriate technical measures" against unauthorized disclosure), HIPAA Security Rule technical
 safeguards (45 CFR §164.312, media controls), PCI DSS Requirement 3 (protect stored cardholder
 data) and SOC 2 CC6 (logical access controls) — without any one of them mandating this specific
-technical control by name. Buyers typically deploy this as a baseline data-loss-prevention control
+technical control by name. Organizations typically deploy this as a baseline data-loss-prevention control
 alongside, not instead of, the classification work in `auto-label-confidential-sharepoint` and the
 external-sharing controls in `pci-teams-exfil-block`.
 
@@ -34,7 +34,7 @@ Two secondary drivers this control also supports:
   what left the organization via removable media and when.
 - **Consistency with the tenant's existing "sensitive" definition** — this scenario deliberately
   reuses the exact SIT pair `auto-label-confidential-sharepoint` uses to apply the Confidential
-  label, so a buyer running both scenarios has one coherent definition of "sensitive," not two
+  label, so an organization running both scenarios has one coherent definition of "sensitive," not two
   independently tuned ones that can drift apart.
 
 ## 3. Prerequisites
@@ -47,7 +47,7 @@ Full licensing detail and citations: `docs/licensing-matrix.md`. Summary for thi
 | Device onboarding | Devices must be onboarded to Microsoft Purview device management (shared onboarding with Microsoft Defender for Endpoint) and actively reporting into Activity explorer | Onboarding is a package deployment (local script up to 10 machines, Group Policy, Configuration Manager, or Intune) — **not** something this scenario's deploy script performs. See §5 and `design.md` §5 [[2]](#references) |
 | Supported OS | Windows 10/11 (specific builds per KB), Windows Server 2019+ (opt-in), or macOS (three latest released major versions) | Full current build matrix: `device-onboarding-overview` [[2]](#references) |
 | Role to onboard devices / manage device monitoring | **Security Administrator**, **Compliance Administrator**, or **Global Administrator** (Microsoft Entra role) | Device management currently supports **only** Entra roles — Purview role groups (including DLP Compliance Management) do **not** grant onboarding or device-monitoring rights, even though they do grant policy-authoring rights (next row) [[2]](#references) |
-| Role to author/edit DLP policies | **DLP Compliance Management** role (built into the *Compliance Administrator* / custom S&C role group) | See `docs/rbac-model.md` §3 (Purview role groups). Note this is a **separate** permission from device onboarding above — a buyer's DLP author may not be able to onboard devices, and vice versa |
+| Role to author/edit DLP policies | **DLP Compliance Management** role (built into the *Compliance Administrator* / custom S&C role group) | See `docs/rbac-model.md` §3 (Purview role groups). Note this is a **separate** permission from device onboarding above — an organization's DLP author may not be able to onboard devices, and vice versa |
 | Automation identity | App registration with **Exchange Online Protection → `Exchange.ManageAsApp`** application permission, granted the DLP-authoring role group | Certificate-based app-only auth — see `docs/automation-surface.md` §3. Does not cover device onboarding, which has no PowerShell/Graph automation surface documented as of this writing (VERIFY at deploy time) |
 | Dependency (not deployed by this scenario) | A mail-enabled security group or Microsoft 365 group for **IT Data Custodians** | Must exist before running `deploy/New-EndpointDlpUsbBlockPolicy.ps1` |
 
@@ -264,7 +264,7 @@ permanently delete the policy and its rules.
 - **Device onboarding has no separate license fee** beyond the qualifying per-user SKU, but it
   does carry an operational cost: package deployment to every in-scope endpoint via existing
   device-management tooling (Intune/Configuration Manager/Group Policy), which is real deployment
-  effort a buyer should budget for separately from the DLP policy authoring this scenario covers.
+  effort an organization should budget for separately from the DLP policy authoring this scenario covers.
 - **Sizing note:** license only the users in scope — typically all knowledge-worker endpoints
   handling regulated data, which in the enterprises this repo targets is often already covered by
   an existing E5 estate.
@@ -342,13 +342,13 @@ permanently delete the policy and its rules.
   too, not merely the device-registration step already flagged. Scripting this without a
   documented hashtable shape would mean fabricating dictionary keys this repo's grounding standard
   (`AGENTS.md` §4) does not permit, so it stays a portal-only workflow until Microsoft publishes
-  one. Combining it with this scenario would let a buyer scope the IT exception down from "any
+  one. Combining it with this scenario would let an organization scope the IT exception down from "any
   removable media, watched" to "only these specific backup drives, unrestricted" — tracked as a
   closed, investigated-not-built item in `PROGRESS.md` rather than an open build item.
 - **This scenario does not replace Microsoft Defender for Endpoint device control.** Device
   control can deny an unapproved USB device outright regardless of content (content-blind, at the
   driver level); Endpoint DLP is content-aware but requires the device to already be a recognized
-  disk. A buyer wanting "no unknown USB devices, period" needs device control in addition to this
+  disk. An organization wanting "no unknown USB devices, period" needs device control in addition to this
   scenario, not instead of it — see `design.md` §3.
 
 ## 12. References

@@ -34,7 +34,7 @@ already-addressed-by-inheritance rather than re-litigated.
      direct pointer to `design.md` §8's non-goals (names, addresses, health data, biometric data
      all out of scope).
 3. **"EU" bundle naming includes a non-EU country (UK), which is a real mislabeling risk in a
-   buyer conversation, not just a technicality.** A CISO or compliance officer reading "EU national
+   organization conversation, not just a technicality.** A CISO or compliance officer reading "EU national
    identification number" could reasonably assume EU-27 scope and be surprised, post-Brexit, that
    UK NINO detection is bundled in (or, conversely, assume UK isn't covered when it actually is).
    - **Resolution:** Added an explicit "EU as used by Microsoft's SIT naming does not track EU
@@ -185,10 +185,10 @@ updates.
 
 **Verdict: Fix (resolved)**
 
-1. **The "EU passport number" bundle's U.K. coverage is not what a buyer would assume from the
+1. **The "EU passport number" bundle's U.K. coverage is not what an organization would assume from the
    name.** This round's grounding pass (fetching the bundle's own Microsoft Learn index page
    directly) found no standalone U.K. passport entity — U.K. coverage exists only inside a single
-   combined "U.S./U.K. passport number" entity. A buyer who enables this switch specifically for
+   combined "U.S./U.K. passport number" entity. An organization that enables this switch specifically for
    U.K. travel-document coverage gets U.S. passport-number matching bundled in with no way to
    disable it independently — a real scope-creep and false-positive-surface risk that the original
    "just flip on the opt-in bundle" framing would have hidden.
@@ -283,7 +283,7 @@ the results.
 **Verdict: Pass (no new Fix — this round closes a prior gap rather than opening one)**
 
 - The headline finding this round surfaces is itself the Red Team-relevant one: both opt-in bundles
-  are dramatically weaker on checksum validation than the default bundle a buyer already trusts (8%
+  are dramatically weaker on checksum validation than the default bundle an organization already trusts (8%
   and 11% vs. 73%). That is now disclosed, not hidden — `README.md` §11 states it in the same
   concrete, numeric terms this repo's Red Team lens requires, not "some countries lack checksums."
 - Verified the driver's-license bundle's confidence ceiling claim directly against every one of the

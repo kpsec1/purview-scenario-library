@@ -385,7 +385,7 @@ the policy or revoking an app registration's certificate is not.
 - **This second full worked example for the "User performs an exfiltration activity" triggering
   event was not built in this fragment** — documented as a valid configuration in §5 Step 4/§6,
   not implemented end-to-end (`design.md` §3/§7).
-- **This scenario does not configure Adaptive Protection** — a buyer who wants this policy's
+- **This scenario does not configure Adaptive Protection** — an organization that wants this policy's
   alerts to drive DLP enforcement wires it into
   `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/` separately.
 - **Cannot disambiguate which Insider Risk Management policy produced a given exported alert if

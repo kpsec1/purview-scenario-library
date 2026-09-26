@@ -74,7 +74,7 @@
         -SensitiveInformationTypeName 'U.S. / U.K. Passport Number', 'U.S. Bank Account Number' `
         -Force
 
-    Adds (or reconciles, if already present) the rule with a custom, buyer-specific SIT set.
+    Adds (or reconciles, if already present) the rule with a custom, organization-specific SIT set.
 
 .NOTES
     VERIFY (production reliance): see the .DESCRIPTION VERIFY block above and design.md Sec 5.

@@ -1,5 +1,5 @@
 {
-  "_comment": "Reference definition for the eDiscovery (Premium) legal-hold-and-export scenario. Consumed by New-EdiscoveryPremiumLegalHold.ps1 and New-EdiscoverySearchReviewSetExport.ps1 via -DefinitionPath. Author-only reference for the buyer's own tenant -- replace every value below before use. No secrets belong in this file.",
+  "_comment": "Reference definition for the eDiscovery (Premium) legal-hold-and-export scenario. Consumed by New-EdiscoveryPremiumLegalHold.ps1 and New-EdiscoverySearchReviewSetExport.ps1 via -DefinitionPath. Author-only reference for the deploying organization's own tenant -- replace every value below before use. No secrets belong in this file.",
   "case": {
     "displayName": "CONTOSO-LIT-2026-014",
     "description": "Wrongful-termination litigation -- Regional Sales team. Outside counsel: Example & Example LLP.",

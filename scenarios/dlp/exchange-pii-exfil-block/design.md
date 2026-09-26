@@ -29,7 +29,7 @@ its own terms, independent of whether the message happens to carry a label.
    Exchange and SharePoint/OneDrive scenarios already use — **U.S. Social Security Number (SSN)**
    and **Credit Card Number** — in outbound Exchange email addressed to at least one external
    recipient.
-2. Give the buyer an explicit choice between two real, Microsoft-documented actions for the
+2. Give the deploying organization an explicit choice between two real, Microsoft-documented actions for the
    external-recipient case: a **hard block** (mail is not delivered to the external recipient) or
    **forced encryption** (mail is delivered, protected by Microsoft Purview Message Encryption) —
    not silently default to one without the operator choosing.
@@ -59,7 +59,7 @@ reasons:
   is already applied by the time this DLP rule evaluates the same message. A label-conditioned
   rule risks silently not firing on the very first message a sender ever sends this content in,
   before either policy has "seen" the sender's pattern.
-- **The auto-labeling and DLP scenarios are independent deployments.** A buyer might deploy this
+- **The auto-labeling and DLP scenarios are independent deployments.** An organization might deploy this
   DLP scenario without the auto-labeling one (or vice versa), or might use a different label name
   entirely. Content-based conditions have no dependency on the sibling scenario's label being
   deployed, named a specific way, or even existing.
@@ -93,21 +93,21 @@ the tenant's default Teams DLP policy:
   sibling scenario in this library) or rewriting both of its rules anyway — at which point the
   claimed reuse benefit is gone.
 - **No Encrypt-mode option.** The template's high-count rule only blocks; it has no
-  `EncryptRMSTemplate` action. A buyer choosing this scenario's `-Action Encrypt` mode (§6) has no
+  `EncryptRMSTemplate` action. An organization choosing this scenario's `-Action Encrypt` mode (§6) has no
   template starting point to adapt.
 - **No group-scoped exception.** The template's override is a generic "any user can request an
   override," not scoped to a nominated business-exception group the way `-ExceptionGroupEmail`
   is. Restricting the override path to a specific team is a deliberate design choice this
   scenario's rules make explicit, not a generic self-service override any sender can invoke.
 - **Regulatory-narrative conflation.** The template is named and framed around U.S. Patriot Act
-  compliance specifically; a buyer whose actual driver is GDPR/CCPA/ISO 27001 (§2) inherits a
+  compliance specifically; an organization whose actual driver is GDPR/CCPA/ISO 27001 (§2) inherits a
   misleading policy name and Insights-tab regulatory framing that doesn't match their compliance
   narrative, and a later admin "resetting to template defaults" risks silently discarding this
   scenario's customizations.
 
-None of this makes the built-in templates wrong for every buyer — a buyer whose actual driver
+None of this makes the built-in templates wrong for every organization — an organization whose actual driver
 *is* U.S. Patriot Act reporting, with the Microsoft-designed volume bands, is well served by
-using it directly instead of this scenario. This scenario is for the buyer who needs the specific
+using it directly instead of this scenario. This scenario is for the deploying organization that needs the specific
 shape described in §1–§2: consistent `mincount = 1` detection matching every sibling scenario in
 this library, a documented choice between Block and Encrypt, and a group-scoped, logged exception
 path.
@@ -167,7 +167,7 @@ copy even when the external copy is hard-blocked.
 |---|---|---|
 | Condition parameter for "external recipient" | `-AccessScope NotInOrganization` / `InOrganization` | Confirmed applicable to Exchange DLP rules directly (not just SharePoint/OneDrive/Teams) — same enum, same parameter, on the official `New-DlpComplianceRule` reference [[3]](#references); reuses the exact pattern `pci-teams-exfil-block` already established, keeping this library's DLP scenarios consistent. |
 | Default action | `-Action Block` (`BlockAccess $true`) | Matches this library's existing default posture (`pci-teams-exfil-block`'s hard-block rule) and needs no additional tenant configuration (Message Encryption/RMS templates) to work correctly on first deploy. |
-| Encrypt action mechanism | `-EncryptRMSTemplate <EncryptTemplateName>`, default `Encrypt-Only` | `EncryptRMSTemplate` is a real, documented `New-/Set-DlpComplianceRule` parameter identifying an RMS template by name [[4]](#references); **Encrypt-Only** is a real, Microsoft-documented ad-hoc template automatically available once Microsoft Purview Message Encryption is active in the tenant [[6]](#references), and (unlike **Do Not Forward**) doesn't restrict the recipient's ability to forward/print/reply, which is the closer match to "let external mail through, just protect it in transit" rather than also imposing usage-rights restrictions the buyer didn't ask for. Not asserted as the literal string `Get-RMSTemplate` returns for every tenant — see the pre-flight check below and `README.md` §11. **Trade-off, not a free lunch:** because Encrypt-Only imposes no forward/print/reply restriction [[12]](#references), it protects the message in transit and at rest, but not after a legitimate external recipient decrypts it — they can forward the plaintext content further with no additional control from this scenario. A buyer whose threat model includes "the external recipient themselves is the risk, not just the network path" should pass `-EncryptTemplateName 'Do Not Forward'` instead; this scenario defaults to Encrypt-Only because it more narrowly matches "protect the exfiltration path," not because it's the safer choice in every case. Documented as a Red Team finding in `reviews.md`. |
+| Encrypt action mechanism | `-EncryptRMSTemplate <EncryptTemplateName>`, default `Encrypt-Only` | `EncryptRMSTemplate` is a real, documented `New-/Set-DlpComplianceRule` parameter identifying an RMS template by name [[4]](#references); **Encrypt-Only** is a real, Microsoft-documented ad-hoc template automatically available once Microsoft Purview Message Encryption is active in the tenant [[6]](#references), and (unlike **Do Not Forward**) doesn't restrict the recipient's ability to forward/print/reply, which is the closer match to "let external mail through, just protect it in transit" rather than also imposing usage-rights restrictions the deploying organization didn't ask for. Not asserted as the literal string `Get-RMSTemplate` returns for every tenant — see the pre-flight check below and `README.md` §11. **Trade-off, not a free lunch:** because Encrypt-Only imposes no forward/print/reply restriction [[12]](#references), it protects the message in transit and at rest, but not after a legitimate external recipient decrypts it — they can forward the plaintext content further with no additional control from this scenario. An organization whose threat model includes "the external recipient themselves is the risk, not just the network path" should pass `-EncryptTemplateName 'Do Not Forward'` instead; this scenario defaults to Encrypt-Only because it more narrowly matches "protect the exfiltration path," not because it's the safer choice in every case. Documented as a Red Team finding in `reviews.md`. |
 | Encrypt-mode pre-flight check | Deploy script runs `Get-RMSTemplate -ResultSize Unlimited` and confirms a template matching `-EncryptTemplateName` exists before creating/updating the rule, rather than trusting the name blindly | `Get-RMSTemplate`'s own reference confirms it lists the tenant's actual active templates by name [[5]](#references), but neither that reference nor the Message Encryption documentation gives a canonical, byte-exact `Name` property value for the auto-created Encrypt-Only template across all tenants — checking at deploy time turns a possible silent misconfiguration (a rule referencing a template that doesn't exist) into a clear, actionable pre-flight failure instead. Flagged as `VERIFY` in `README.md` §11 rather than assumed. |
 | Override mechanism for the exception group | Block-with-justification (`NotifyAllowOverride WithJustification`), **Block mode only** | Directly reuses `pci-teams-exfil-block`'s proven Rule-0 pattern (same audit trail, same logged-override guarantee) rather than inventing a new mechanism. Not offered in Encrypt mode: `EncryptRMSTemplate` is a non-halting action with no user-facing block to override — the exception group is instead excluded from the encrypt rule outright via `ExceptIfFromMemberOf`, which is a real behavioral difference (silent exception, not a logged override) documented as a residual risk in `README.md` §11, the same class of finding already raised and accepted for the sibling Exchange auto-labeling scenario's own sender exception. |
 | Internal-audit rule's recipient condition | Explicit `-AccessScope InOrganization`, not omitted | `pci-teams-exfil-block`'s internal-audit rule omits any recipient condition and relies on priority + `StopPolicyProcessing` alone, which is correct for Teams (no bifurcation). For Exchange, being explicit keeps the rule's intent legible against the bifurcation behavior in §5 rather than depending on an implicit "whatever didn't match the rules above" assumption carrying over correctly to a workload where a single message can produce differently-scoped forks. |

@@ -53,7 +53,7 @@ mark items as regulatory records.
 the script detects `regulatory: true` and stops after label creation, never attempting the unsupported
 auto-apply combination. The sibling scenario `scenarios/data-lifecycle-management/
 publish-labels-for-manual-application/` is the documented, only-supported completion for that case.
-This preserves the original SEC 17a-4 driver honestly: a buyer who genuinely needs full WORM
+This preserves the original SEC 17a-4 driver honestly: an organization that genuinely needs full WORM
 immutability still gets it, just via publish + manual application rather than auto-apply — which is
 what Microsoft's product actually requires, not a workaround this repo invented.
 

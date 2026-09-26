@@ -83,7 +83,7 @@ for an operable control once finding 1's fix is in place.
 
 1. **The original draft's cost section didn't distinguish "this control is likely already free"
    from "this control needs new spend" clearly enough**, which risks an oversell: pitching this
-   scenario to a P2/Business Premium buyer as a net-new capability when Microsoft may have already
+   scenario to a P2/Business Premium organization as a net-new capability when Microsoft may have already
    deployed the equivalent for free.
    - **Resolution:** Rewrote `README.md` §10 to lead with the "likely already free for a P2/
      Business Premium tenant" case before the P1-only incremental-cost case, and added the
@@ -91,7 +91,7 @@ for an operable control once finding 1's fix is in place.
 - **Risk reduction vs. cost:** among the highest risk-reduction-per-dollar controls in this
   library — Microsoft's own attack-statistics citation (97%/99% of two major attack classes use
   legacy auth) is a strong, specific number for a board narrative, and the licensing floor (P1,
-  not P2) means most buyers already on Microsoft 365 E3 pay nothing incremental for it.
+  not P2) means most organizations already on Microsoft 365 E3 pay nothing incremental for it.
 - **Board-level narrative:** "we block the authentication protocols responsible for the vast
   majority of credential-stuffing and password-spray compromises, at effectively no incremental
   license cost, and we've verified Microsoft hasn't already silently deployed (or is about to

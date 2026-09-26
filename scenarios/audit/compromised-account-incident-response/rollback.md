@@ -74,7 +74,7 @@ move-to-folder, mark-as-read, etc.) — only the fields relevant to detecting at
 [[1]](#references). A legitimate rule with other conditions/actions needs to be recreated from the
 user's own knowledge of what they had configured, not purely from this backup. Consider a future
 follow-up that captures the full rule object (`Get-InboxRule -IncludeHidden | Select-Object *`) if a
-buyer needs complete rule-restoration fidelity rather than just evidence of what was removed.
+organization needs complete rule-restoration fidelity rather than just evidence of what was removed.
 
 ## References
 
