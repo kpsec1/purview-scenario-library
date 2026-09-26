@@ -3444,6 +3444,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Ground RejectDirectSend behavioral description (direct-send-anonymous-relay-hardening)** -
+  commit `cab808b` - 2026-09-26. Maintenance pass: closed the open VERIFY on
+  `Set-OrganizationConfig -RejectDirectSend`'s behavior by re-fetching its Microsoft Learn
+  reference page, which now carries a full descriptive paragraph the original build didn't find.
+  Confirmed `$true` blocks Direct Send only when the sender matches no inbound connector and the
+  `MAIL FROM` domain is an accepted domain; `$false` doesn't block it. Corrected `README.md` §11,
+  `design.md` §9, and `reviews.md`'s Microsoft Product Owner lens in place. The parameter's default
+  value (still `None` on the reference page) and any rollout date for Microsoft's stated
+  default-disable plan remain genuinely unpublished and are left disclosed, not guessed.
 - [x] **Repo-wide em/en dash to plain hyphen rewrite** - commit `0654d66` - 2026-09-26. User-directed
   pass ahead of publishing: no long dashes anywhere, cleaner plain-text presentation. Replaced every
   em dash (18,727 occurrences) and en dash (278 occurrences, mostly numeric/section ranges like
