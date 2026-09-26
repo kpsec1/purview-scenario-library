@@ -1,4 +1,4 @@
-# Design — End-to-End Customer Data Lineage: Close the Gap and Prove Connectivity
+# Design - End-to-End Customer Data Lineage: Close the Gap and Prove Connectivity
 
 ## 1. Problem statement
 

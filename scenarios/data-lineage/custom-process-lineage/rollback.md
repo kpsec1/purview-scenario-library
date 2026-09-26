@@ -1,4 +1,4 @@
-# Rollback — DataSet -> Process -> DataSet Custom Lineage
+# Rollback - DataSet -> Process -> DataSet Custom Lineage
 
 ## Recommended sequence
 

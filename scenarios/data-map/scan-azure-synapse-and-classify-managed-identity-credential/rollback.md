@@ -1,11 +1,11 @@
-# Rollback — UAMI Credential for the Azure Synapse Workspace Scan
+# Rollback - UAMI Credential for the Azure Synapse Workspace Scan
 
 ## Recommended sequence
 
-Identical staging to both sibling scenarios — rolling this back never touches the source workspace
+Identical staging to both sibling scenarios - rolling this back never touches the source workspace
 or live Microsoft 365 traffic, only which identity a future scan run authenticates as.
 
-### Stage 1 — Revert the scan to SAMI authentication (keep the UAMI and credential object)
+### Stage 1 - Revert the scan to SAMI authentication (keep the UAMI and credential object)
 
 ```powershell
 ./deploy/Remove-AzureSynapseManagedIdentityCredentialScan.ps1 `
@@ -14,17 +14,17 @@ or live Microsoft 365 traffic, only which identity a future scan run authenticat
 ```
 
 Reverts the scan's `kind` from `AzureSynapseWorkspaceCredential` back to `AzureSynapseWorkspaceMsi`
-(every other property — collection, scan rule set — left unchanged). The UAMI and the
+(every other property - collection, scan rule set - left unchanged). The UAMI and the
 `ManagedIdentity` credential object referencing it stay defined.
 
 **Before running Stage 1**, confirm the Purview account's own SAMI still holds the workspace Reader,
 (serverless-only) Storage Blob Data Reader, and per-database grants this scan depended on before the
 UAMI was adopted (`scan-azure-synapse-and-classify/README.md` §3/§5). If any were removed, re-establish
-them first — otherwise the reverted scan will register successfully but fail on its next run. This
-scenario's rollback does **not** need to re-verify the workspace firewall setting — orthogonal to
+them first - otherwise the reverted scan will register successfully but fail on its next run. This
+scenario's rollback does **not** need to re-verify the workspace firewall setting - orthogonal to
 which Purview identity authenticates.
 
-### Stage 2 — Also remove the credential object (and, separately, the UAMI itself)
+### Stage 2 - Also remove the credential object (and, separately, the UAMI itself)
 
 ```powershell
 # Remove-PurviewScanCredential.ps1 is kind-agnostic and lives in the original parent scenario's
@@ -35,7 +35,7 @@ which Purview identity authenticates.
 ```
 
 Deleting the UAMI resource itself is an Azure-side action via the Purview account's **Managed
-identities** blade — outside this repo's Scanning data-plane scripts entirely. **Confirm no other
+identities** blade - outside this repo's Scanning data-plane scripts entirely. **Confirm no other
 scan or credential object still references this UAMI before deleting it.**
 
 ## What rollback does **not** undo

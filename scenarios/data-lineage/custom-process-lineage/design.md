@@ -1,4 +1,4 @@
-# Design — DataSet -> Process -> DataSet Custom Lineage
+# Design - DataSet -> Process -> DataSet Custom Lineage
 
 ## 1. Problem statement
 

@@ -1,4 +1,4 @@
-# Four-Lens Review — Defender for Endpoint Device Control (macOS): vendorId/productId Compound-Matched Device Allowlist
+# Four-Lens Review - Defender for Endpoint Device Control (macOS): vendorId/productId Compound-Matched Device Allowlist
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round
 of findings below; all **Fix** items were applied to the scenario before this file was finalized
@@ -12,21 +12,21 @@ of findings below; all **Fix** items were applied to the scenario before this fi
 
 1. **Two config entries sharing the same `vendorId`+`productId` pair but different `label`s would
    silently corrupt the policy, not just get rejected as a config error.** Because a sub-group's id
-   is derived only from `vendorId:productId` (`design.md` §4 — deliberately excludes `label` so a
+   is derived only from `vendorId:productId` (`design.md` §4 - deliberately excludes `label` so a
    cosmetic rename doesn't orphan a group), the initial draft's duplicate check only tested `label`
    uniqueness. Two differently-labeled entries with an identical pair would compute the **same**
    deterministic group id but be emitted as two separate group objects with that shared id and
-   different `name`s — an ambiguous policy where it's undefined which group a `groupId` clause
+   different `name`s - an ambiguous policy where it's undefined which group a `groupId` clause
    referencing that id actually resolves against, and where this script's own orphan-diffing logic
    (which compares by id) would misbehave.
-   - **Resolution:** Genuine, real defect — not merely theoretical. Added an explicit
+   - **Resolution:** Genuine, real defect - not merely theoretical. Added an explicit
      vendorId+productId pair-uniqueness check to `deploy/Add-MacVendorProductDeviceAllowlist.ps1`'s
      config-validation loop, refusing to proceed with a clear error naming both conflicting labels,
      before any Graph call is made. Fixed before this review round closed, not merely flagged.
 2. **Same "model, not unit" weaker-guarantee risk already disclosed by the Bluetooth sibling
-   fragment for its own vendorId+productId exception** — any device sharing the configured pair
+   fragment for its own vendorId+productId exception** - any device sharing the configured pair
    matches, with no cryptographic distinction from the genuine approved unit.
-   - **Resolution:** Not a new finding to fix in code — already addressed by design, framed
+   - **Resolution:** Not a new finding to fix in code - already addressed by design, framed
      explicitly (not glossed over) in `design.md` §6 and `README.md` §11 as materially weaker than
      the parent scenario's `serialNumber` matching, mirroring the Bluetooth sibling fragment's own
      corrected framing. Confirmed present in the current draft, no further change needed.
@@ -124,7 +124,7 @@ No Fix/Fail items from this lens.
      contents, only its id. No Microsoft-documented convention requires a new rule per matching
      mechanism. `design.md` §2 states this reasoning explicitly. No further change needed.
 2. **`$type: "and"` for the per-device sub-group query (vs. `"all"`, used elsewhere in this control
-   family for single-clause catch-all groups) — consistent with the directly-grounded precedent, or an
+   family for single-clause catch-all groups) - consistent with the directly-grounded precedent, or an
    unexplained inconsistency?**
    - **Checked and confirmed correct:** identical precedent and identical reasoning already
      established and reviewed for the Bluetooth sibling fragment - `"and"` is Microsoft's own literal
@@ -132,7 +132,7 @@ No Fix/Fail items from this lens.
      (`deny_all_bluetooth_devices_except_samsung.json`, and `deny_removable_media_except_kingston.json`
      for the single-clause case), and both `"all"`/`"and"` are documented as equivalent. `design.md`
      §3 states this explicitly. No further change needed.
-3. **Ordering requirement compliance — are the per-device sub-groups actually inserted before
+3. **Ordering requirement compliance - are the per-device sub-groups actually inserted before
    `ApprovedBackupDrives` in the rebuilt `groups` array, matching the documented "group must be
    defined within the policy before the clause" constraint, or does the script rely on JSON key
    order being irrelevant (which it is, for JSON objects, but NOT for this array)?**
@@ -158,15 +158,15 @@ No remaining Fail after resolution.
 | Lens | Initial verdict | Findings | Resolution |
 |---|---|---|---|
 | 🔴 Red Team | Fix | 3 (1 real code defect fixed, 1 confirmed-by-design no-change-needed, 1 disclosed as VERIFY) | Closed |
-| 🔵 Blue Team | Fix | 3 (1 real code defect fixed — shares root cause with Red Team's finding 1, 1 confirmed correct by inspection, 1 confirmed correct by inspection) | Closed |
-| 🎩 CISO | Pass | 0 | — |
+| 🔵 Blue Team | Fix | 3 (1 real code defect fixed - shares root cause with Red Team's finding 1, 1 confirmed correct by inspection, 1 confirmed correct by inspection) | Closed |
+| 🎩 CISO | Pass | 0 | - |
 | 🟦 Microsoft Product Owner | Fix | 4 (all confirmed correct on inspection against the actual code and re-checked Microsoft Learn source material) | Closed |
 
 Two genuine, non-hypothetical defects were caught and fixed in this round before it closed: the
 vendorId+productId pair-collision gap that could have produced two group objects sharing one id
 (Red Team finding 1), and the PowerShell empty-array coercion bug that would have misfired the config
 validation loop's error message on a config file with the `vendorProductDevices` key omitted (Blue
-Team finding 1) — both now fixed in the current state of
+Team finding 1) - both now fixed in the current state of
 `deploy/Add-MacVendorProductDeviceAllowlist.ps1` (and, for the second,
 `validate/Test-MacVendorProductDeviceAllowlist.ps1`). All other Fix items are resolved in the current
 state of `README.md`, `design.md`, and the deploy/validate scripts. No Fail items were raised. This

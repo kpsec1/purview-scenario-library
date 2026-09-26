@@ -1,4 +1,4 @@
-# Four-Lens Review — Classification Coverage Report
+# Four-Lens Review - Classification Coverage Report
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round
 of findings below; all **Fix** items were applied to the scenario before this file was finalized
@@ -13,7 +13,7 @@ of findings below; all **Fix** items were applied to the scenario before this fi
 1. **The trend-log CSV and breakdown JSON files are themselves a sensitive-data-location index and
    the original draft didn't say so.** A file listing "customerdb.dbo.Customers: 2 classified assets
    (SSN, Credit Card Number)" is, by construction, a curated map of where an organization's most
-   sensitive data lives — exactly the kind of artifact an attacker doing reconnaissance would want,
+   sensitive data lives - exactly the kind of artifact an attacker doing reconnaissance would want,
    and materially more convenient to exfiltrate than the same information locked inside Purview's own
    RBAC boundary (a flat CSV/JSON file has no collection-scoped access control at all once it leaves
    the script's memory).
@@ -26,10 +26,10 @@ of findings below; all **Fix** items were applied to the scenario before this fi
    classification appearing on only 2 assets, below the top-25 cutoff, disappears from that mode's
    output entirely with no "and N more" indicator.
    - **Resolution:** `README.md` §11 now states this explicitly under the `-Mode Facets` trade-off
-     bullet — a reviewer relying on that mode for a compliance narrative needs to know it's
+     bullet - a reviewer relying on that mode for a compliance narrative needs to know it's
      top-N-truncated, not exhaustive, unlike `-Mode Full`.
 3. **A compromised or over-broadly-scoped Data Reader credential could still read every classified
-   value in every collection it has access to** — correctly a Data Reader-level exposure (the same
+   value in every collection it has access to** - correctly a Data Reader-level exposure (the same
    read boundary any Data Reader has), not something this scenario makes worse, but worth stating
    plainly given the report's aggregation makes bulk extraction of "everything classified" a single
    script run instead of manual portal browsing.
@@ -50,28 +50,28 @@ No remaining Fix/Fail after resolution.
    `Write-Host` summary a human might glance at, and the script doesn't fail non-zero on it.
    - **Resolution:** `README.md` §8's incident-response runbook now names this warning explicitly as
      something a scheduled pipeline should capture (PowerShell warning stream, not just stdout) and
-     treat as a signal to re-run before trusting that run's split — not something to leave silently
+     treat as a signal to re-run before trusting that run's split - not something to leave silently
      unread.
-2. **No guidance on how to actually route the trend-log CSV into a SIEM or alerting system** — the
+2. **No guidance on how to actually route the trend-log CSV into a SIEM or alerting system** - the
    original draft said "route it into whatever the deploying organization already uses" without naming the mechanism
    (flat-file ingestion vs. an API push), which is thinner than this repo's DLP/Data Quality
    scenarios' own alert-routing sections.
    - **Resolution:** `README.md` §8 now states plainly that this scenario deliberately ships no
      bespoke sink (Log Analytics/Sentinel/Power BI) and that the trend-log CSV/breakdown JSON are the
-     integration point — consistent with, not thinner than, this repo's established pattern for
+     integration point - consistent with, not thinner than, this repo's established pattern for
      surfaces without a native alert channel (the same treatment `scenarios/data-lineage/
      end-to-end-lineage-validation/README.md` §8 gives its own no-native-alert case).
 3. **The live-reconciliation `[WARN]` vs. file-integrity `[FAIL]` distinction wasn't obvious enough
-   on first read** — a scheduled job's alerting could reasonably treat every non-`[PASS]` line the
+   on first read** - a scheduled job's alerting could reasonably treat every non-`[PASS]` line the
    same way, defeating the point of having two severities.
    - **Resolution:** `README.md` §8's incident-response runbook now opens by naming which check
      category (file-integrity vs. live-reconciliation) each severity maps to, so a pipeline's
      alerting logic can be built to match.
 4. **No SIEM/Sentinel-specific detection rule suggested** for "coverage dropped sharply between two
-   runs" — correctly out of scope for this scenario to build (it would be the SIEM's own alerting
+   runs" - correctly out of scope for this scenario to build (it would be the SIEM's own alerting
    rule, not this script's job), but worth noting as a natural next integration once the trend log
    exists.
-   - **Resolution:** No change needed; confirmed as correctly scoped rather than a gap — the trend
+   - **Resolution:** No change needed; confirmed as correctly scoped rather than a gap - the trend
      log's existence is what makes such a rule possible for the deploying organization to build, and building it for
      them would exceed this scenario's stated non-goals (`design.md` §7).
 
@@ -89,18 +89,18 @@ repo's other reporting/validation scripts (Data Quality, Data Lineage) already s
    auditable reduction in blast radius for a reporting workload that has no legitimate need to write
    anything.
 2. **Cost is negligible and well-scoped**, with the one honest caveat (`-Mode Full` at very large
-   scale) called out rather than hidden — the right level of transparency for a funding decision.
+   scale) called out rather than hidden - the right level of transparency for a funding decision.
 3. **The Red Team's sensitivity-of-the-report-itself finding is the one thing that needed to be
    explicit before this scenario's output could be handed to a board or GRC tool without a second
-   thought** — a report that inventories where an org's SSNs and credit-card numbers live is not a
+   thought** - a report that inventories where an org's SSNs and credit-card numbers live is not a
    "low sensitivity, it's just metadata" artifact, and now the scenario says so plainly rather than
    leaving a reader to infer it.
 4. **Change-management impact: none.** No M365 control, DLP policy, or user-facing behavior is
-   touched — a pure read/report layer. Rollback (§9/`rollback.md`) is simpler than any other scenario
+   touched - a pure read/report layer. Rollback (§9/`rollback.md`) is simpler than any other scenario
    in this repo, since there is no Purview object to remove.
-5. **Would I fund this?** Yes. The narrative — "we can show classification coverage trending over
+5. **Would I fund this?** Yes. The narrative - "we can show classification coverage trending over
    time, to an auditor or a board, without granting anyone more access than they'd need to just read
-   the data" — is specific, defensible, and directly answers the accountability question GDPR/PCI/SOC
+   the data" - is specific, defensible, and directly answers the accountability question GDPR/PCI/SOC
    2 all ask in different words (§2).
 
 No Fix/Fail raised.
@@ -112,17 +112,17 @@ No Fix/Fail raised.
 **Verdict: Fix (resolved)**
 
 1. **Strong, primarily-sourced grounding for the central design claim.** The "no documented filter
-   for has-any-classification" claim — the load-bearing justification for this scenario's entire
-   per-record-pagination design — is grounded first in Microsoft's own canonical Discovery - Query
+   for has-any-classification" claim - the load-bearing justification for this scenario's entire
+   per-record-pagination design - is grounded first in Microsoft's own canonical Discovery - Query
    REST reference (which documents only an exact-value classification filter), with a Microsoft Q&A
    thread cited as corroborating, not primary, evidence. This is the right citation hierarchy and
    should be preserved as the standard.
 2. **The role-privilege comparison (Data Reader here vs. Data Curator for the native export) rests on
    a directly-fetched, on-topic Microsoft Learn page written specifically about Data Estate Insights
-   access control** — not inferred from a general RBAC article — which makes it a stronger, more
+   access control** - not inferred from a general RBAC article - which makes it a stronger, more
    citable claim than a paraphrase would be.
 3. **This scenario correctly does not attempt to automate, scrape, or reverse-engineer the native
-   Insights application's own internal implementation** — it goes to the public, documented Discovery
+   Insights application's own internal implementation** - it goes to the public, documented Discovery
    - Query API instead, which is the right and only supportable approach; no risk of building on an
    undocumented internal surface that could change without notice.
 4. **One citation-precision gap in the initial draft:** the "Unclassified assets" KPI definition
@@ -136,7 +136,7 @@ No Fix/Fail raised.
    already-established, explicitly-confirmed precedent from `scenarios/data-lineage/
    end-to-end-lineage-validation/` rather than re-deriving it independently.
 6. **Reinventing-a-native-capability check:** this scenario does not attempt to rebuild the native
-   Insights application's UI, drill-down browsing, or portal experience — it fills a specific,
+   Insights application's UI, drill-down browsing, or portal experience - it fills a specific,
    named gap (export/schedule/history/least-privilege) the native application itself doesn't cover,
    which is the correct scope for a companion automation rather than a competing one.
 
@@ -150,7 +150,7 @@ No remaining Fail after resolution.
 |---|---|---|---|
 | 🔴 Red Team | Fix | 3 (2 closed via README/rollback additions, 1 closed via cross-reference) | Closed |
 | 🔵 Blue Team | Fix | 4 (3 closed via README additions, 1 confirmed correctly scoped) | Closed |
-| 🎩 CISO | Pass | — | — |
+| 🎩 CISO | Pass | - | - |
 | 🟦 Microsoft Product Owner | Fix | 1 closed (citation precision); 5 confirmed correct | Closed |
 
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`, and

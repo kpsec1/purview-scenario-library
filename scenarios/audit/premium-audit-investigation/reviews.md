@@ -1,4 +1,4 @@
-# Four-Lens Review — Audit (Premium) Forensic Investigation
+# Four-Lens Review - Audit (Premium) Forensic Investigation
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round of
 findings below; all **Fix** items were applied before this file was finalized. No **Fail** items were
@@ -12,7 +12,7 @@ raised.
 
 1. **The export is a data-exfiltration target.** The investigation is read-only, but its output
    concentrates highly sensitive content and PII (mailbox subjects, file paths, IPs, full
-   `auditData`) into files — a tempting target and an easy accidental-leak.
+   `auditData`) into files - a tempting target and an easy accidental-leak.
    - **Resolution:** `README.md` §9/§11 and `rollback.md` treat the export as **evidence**: restrict
      access, store per IR policy, dispose when the matter closes; the deploy script prints a handling
      warning after export. The scenario never widens access to produce the export.
@@ -28,7 +28,7 @@ raised.
      job.
 4. **False "no activity" conclusion.** An attacker-aware investigator running immediately after an
    incident could wrongly conclude "nothing happened" due to ingestion lag.
-   - **Resolution:** `README.md` §8/§11 state the ~60–90 minute ingestion latency explicitly and warn
+   - **Resolution:** `README.md` §8/§11 state the ~60-90 minute ingestion latency explicitly and warn
      against concluding too early.
 
 No remaining Fix/Fail after resolution.
@@ -52,7 +52,7 @@ No remaining Fix/Fail after resolution.
 3. **Readiness before an incident.** Discovering a missing permission mid-incident wastes precious
    time.
    - **Resolution:** `validate/Test-AuditInvestigation.ps1` checks connectivity, scope, config, and
-     runs a **live 1-hour probe query** end-to-end — so readiness is proven before it's needed.
+     runs a **live 1-hour probe query** end-to-end - so readiness is proven before it's needed.
 
 No remaining Fail.
 
@@ -67,14 +67,14 @@ No remaining Fail.
    - **Resolution:** `README.md` §2 ties the scenario to breach-notification obligations and frames
      reproducibility (same config → same evidence set, immutable records) as the defensibility
      argument; §7 includes a repeatability test.
-2. **Risk reduction vs. cost:** strong and cheap. No consumption meter — the cost is investigator time
+2. **Risk reduction vs. cost:** strong and cheap. No consumption meter - the cost is investigator time
    (which automation reduces) plus secure evidence storage; the Premium delta (crucial events + long
    retention) is exactly what makes mailbox-compromise scoping possible.
 3. **Board/IR narrative:** "we can reconstruct any account's activity across the estate from a
-   reviewed, repeatable query, retaining evidence appropriately" — concrete and defensible.
-4. **Privacy/proportionality:** monitoring employee activity is sensitive — mitigated by read-only
+   reviewed, repeatable query, retaining evidence appropriately" - concrete and defensible.
+4. **Privacy/proportionality:** monitoring employee activity is sensitive - mitigated by read-only
    posture, least-privilege scoping, tight time/user windows, and evidence-handling discipline.
-5. **Would I fund this?** Yes — high-value IR capability, low cost, clear guardrails.
+5. **Would I fund this?** Yes - high-value IR capability, low cost, clear guardrails.
 
 No remaining Fix/Fail after resolution.
 
@@ -86,7 +86,7 @@ No remaining Fix/Fail after resolution.
 
 1. **Right, current surface.** The async **Audit Search Graph API** (v1.0 `security`) is the modern,
    scalable path (paging, app-only, service-scoped permissions) versus the classic
-   `Search-UnifiedAuditLog` (5k/50k caps, synchronous) — the latter is honestly noted as the
+   `Search-UnifiedAuditLog` (5k/50k caps, synchronous) - the latter is honestly noted as the
    alternative, not ignored (`design.md` §3).
 2. **Correct endpoints and fields.** Create/get/list-records, the query body filters
    (`filterStartDateTime`, `operationFilters`, `recordTypeFilters`, `userPrincipalNameFilters`, …),

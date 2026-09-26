@@ -1,4 +1,4 @@
-# Four-Lens Review — Allow-List Topologies and Control-Room/Compliance Exceptions
+# Four-Lens Review - Allow-List Topologies and Control-Room/Compliance Exceptions
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round of
 findings below; all **Fix** items were applied before this file was finalized. No **Fail** items were
@@ -10,12 +10,12 @@ raised.
 
 **Verdict: Fix (resolved)**
 
-1. **Legacy-mode Allow policy silently isolates the exception segment from the rest of the company —
+1. **Legacy-mode Allow policy silently isolates the exception segment from the rest of the company -
    a collateral-damage bug dressed as a compliance control.** In Legacy IB mode, assigning an Allow
    policy to `ComplianceControlRoom` hides **every** non-IB user/group from that segment's members,
    not just the segments left off the allow list. A control-room analyst who suddenly can't reach
    their own manager or the IT helpdesk is exactly the kind of self-inflicted outage that gets an
-   ethical-wall program rolled back in a panic — worse, it could push an org toward disabling IB
+   ethical-wall program rolled back in a panic - worse, it could push an org toward disabling IB
    altogether rather than diagnosing the real cause.
    - **Resolution:** Grounded via Microsoft Learn (multi-segment support page, Legacy-mode
      visibility rule) and scripted as a live, non-fatal check: both
@@ -29,7 +29,7 @@ raised.
    policy object.
    - **Resolution:** `README.md` §8 frames a growing exception segment as a finding, recommends
      `Legal`'s narrower, one-sided allow-list as the default model over "sees everything," and points
-     out that IB itself doesn't detect misuse — only unauthorized access — so this is explicitly
+     out that IB itself doesn't detect misuse - only unauthorized access - so this is explicitly
      flagged as a governance responsibility, not something the code can enforce.
 3. **A user matching two segments' attribute filters (e.g. someone tagged both `Trading` and
    `ComplianceControlRoom`) would defeat the wall outright** if it ever happened, since SingleSegment
@@ -90,17 +90,17 @@ No remaining Fail.
      explicit remediation command (`Set-PolicyConfig -InformationBarrierMode SingleSegment`) and a
      scripted, automatic warning rather than relying on a reader to find it in prose.
 2. **Examiner narrative for the exception itself.** A regulator reviewing the ethical wall will ask
-   "who can see across it, and why" — this needs to be a clean answer, not a shrug.
+   "who can see across it, and why" - this needs to be a clean answer, not a shrug.
    - **Resolution:** The config file is the versioned, diffable list of exactly which segments have
      standing cross-wall access and to what scope (`ComplianceControlRoom`: both sides;
-     `Legal`: one side only) — `README.md` §2 and §8 frame this as the audit artifact.
+     `Legal`: one side only) - `README.md` §2 and §8 frame this as the audit artifact.
 3. **Risk vs. cost:** no incremental licensing; the real cost is the governance discipline of keeping
-   exception membership narrow — stated honestly in §10, consistent with the base scenario's own
+   exception membership narrow - stated honestly in §10, consistent with the base scenario's own
    framing.
 4. **Board/compliance narrative:** "our ethical wall has a controlled, reviewable, narrowly-scoped
-   supervisory exception, with the same activation discipline as the wall itself" — strengthens
+   supervisory exception, with the same activation discipline as the wall itself" - strengthens
    rather than undermines the base scenario's own narrative.
-5. **Would I fund this?** Yes — it closes a real gap (an unsupervisable wall is itself a finding) with
+5. **Would I fund this?** Yes - it closes a real gap (an unsupervisable wall is itself a finding) with
    guardrails proportional to both the wall's and the exception's live-communication impact.
 
 No remaining Fix/Fail after resolution.
@@ -117,11 +117,11 @@ No remaining Fix/Fail after resolution.
    cmdlet references and edit-workflow guidance, not invented.
 2. **Product-idiomatic pattern, verbatim from Microsoft's own walkthrough.** The "Get started with
    Information Barriers" doc's own worked example describes a third segment (their example: HR)
-   staying compatible with two segments a Block policy keeps apart — this scenario's
+   staying compatible with two segments a Block policy keeps apart - this scenario's
    `ComplianceControlRoom` plays that exact role for `Trading`/`Research`; not a novel or
    unsupported topology.
-3. **Accurate, non-obvious mode guidance.** The Legacy-vs-SingleSegment-vs-MultiSegment distinction —
-   including the specific Legacy-mode Allow-policy visibility rule most write-ups gloss over — is
+3. **Accurate, non-obvious mode guidance.** The Legacy-vs-SingleSegment-vs-MultiSegment distinction -
+   including the specific Legacy-mode Allow-policy visibility rule most write-ups gloss over - is
    surfaced and enforced by a live tenant check rather than left as a footnote.
 4. **Honest about an unconfirmed mechanic.** The replace-vs-merge semantics of
    `Set-InformationBarrierPolicy -SegmentsAllowed` aren't stated explicitly in Microsoft's own
@@ -147,7 +147,7 @@ No remaining Fail after resolution.
 | 🟦 Microsoft Product Owner | Fix | 1 (mode guidance surfaced + enforced); 5 confirmed correct | Closed |
 
 The Legacy-mode Allow-policy visibility rule (🔴 Red Team finding 1 / 🎩 CISO finding 1) was the
-substantive discovery of this review round — grounded via Microsoft Learn rather than assumed, and
+substantive discovery of this review round - grounded via Microsoft Learn rather than assumed, and
 resolved by requiring SingleSegment mode explicitly (not "Legacy or SingleSegment," as this
 scenario's design would otherwise have allowed) plus a live, scripted `Get-PolicyConfig` check in
 both `deploy/New-ControlRoomAllowException.ps1` and `validate/Test-ControlRoomAllowException.ps1`.

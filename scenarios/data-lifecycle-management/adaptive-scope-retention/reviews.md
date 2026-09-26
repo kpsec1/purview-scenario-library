@@ -1,4 +1,4 @@
-# Four-Lens Review — Adaptive-Scope Retention
+# Four-Lens Review - Adaptive-Scope Retention
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. One round
 of findings below; all **Fix** items were applied (to `README.md` and this file) before this file
@@ -12,7 +12,7 @@ was finalized. No **Fail** items were raised.
 
 1. **Stale or over-broad `Title` query silently under- or over-covers the population.** Unlike a
    static distribution list that visibly needs updating, a stale adaptive-scope query fails quietly
-   — nothing breaks, the wrong people are (or aren't) retained.
+   - nothing breaks, the wrong people are (or aren't) retained.
    - **Resolution:** `README.md` §8 calls out periodic `Title` review as a tuning task and
      specifically frames query drift as "the adaptive-scope equivalent of the distribution list
      going stale, just quieter." §11 repeats the caution against widening the query without
@@ -20,12 +20,12 @@ was finalized. No **Fail** items were raised.
 2. **Whoever can edit the `Title` attribute controls who's in scope.** Because membership is purely
    attribute-driven and re-evaluated daily, a user with self-service profile-edit rights (or an
    admin, or a loosely-owned HR sync) could remove themselves from the retained population just
-   before a sensitive period and restore it after — the adaptive-scope equivalent of quietly
+   before a sensitive period and restore it after - the adaptive-scope equivalent of quietly
    dropping off a distribution list, but self-service and less visible.
    - **Resolution:** `README.md` §11 names this bypass explicitly and recommends sourcing `Title`
      from an authoritative HR feed rather than self-service edit; §8 adds a concrete detection
      signal (`SetAdaptiveScope`/`ApplicableAdaptiveScopeChange` audit monitoring, §14 reference).
-     The scenario doesn't claim to prevent this — only to make it detectable, which is honest given
+     The scenario doesn't claim to prevent this - only to make it detectable, which is honest given
      the object model has no built-in defense against attribute tampering.
 3. **The disclosed location-scope gap (design.md §4) could go the wrong way for a defender.** If
    the undocumented behavior turns out to *under*-cover (e.g. Teams chats aren't actually included
@@ -33,7 +33,7 @@ was finalized. No **Fail** items were raised.
    path an attacker could rely on without the defender knowing.
    - **Resolution:** Rather than assert an answer either way, `README.md` §11 and `design.md` §4
      flag this as `VERIFY (pilot tenant)` and explicitly warn not to assume "Exchange + OneDrive
-     only" in a customer deployment — the safe posture is to verify actual coverage, not guess
+     only" in a customer deployment - the safe posture is to verify actual coverage, not guess
      narrower or broader than what's documented.
 
 No remaining Fix/Fail after resolution.
@@ -63,7 +63,7 @@ No remaining Fix/Fail after resolution.
      existence and settings (exits non-zero for CI), and adds a non-failing
      `Get-AdaptiveScopeMembers` sample so an operator can see real membership without a portal
      round-trip. Its result-metadata property names aren't documented, so the script prints them
-     generically (`Format-List`) instead of guessing a property name — disclosed in `README.md`
+     generically (`Format-List`) instead of guessing a property name - disclosed in `README.md`
      §11 rather than silently risking a runtime property-not-found error.
 
 No remaining Fail.
@@ -75,22 +75,22 @@ No remaining Fail.
 **Verdict: Fix (resolved)**
 
 1. **Conflation risk: governance retention vs. litigation hold.** An early read of the scenario
-   could be mistaken for "this is how we handle litigation" — it isn't; it's a standing governance
+   could be mistaken for "this is how we handle litigation" - it isn't; it's a standing governance
    baseline.
    - **Resolution:** `README.md` §11 adds an explicit distinction: this is a governance baseline,
      not a matter-scoped hold, and points to the `scenarios/ediscovery/` family for actual legal
      holds. Avoids a CISO over-representing this control's coverage to the board or to counsel.
 2. **Risk vs. cost.** The control itself is cheap relative to the E5 entitlement most Purview
    customers already carry for other reasons; the real cost is the discipline to keep the `Title`
-   query accurate — honestly stated in §10 rather than glossed as "set and forget."
+   query accurate - honestly stated in §10 rather than glossed as "set and forget."
 3. **Board/governance-committee narrative:** "executive communications are retained for litigation-
    readiness automatically as the org chart changes, with no distribution list to fall out of
    date, and with an audit trail if anyone edits who's covered." A materially stronger narrative
    than a static list precisely because it names its own known weakness (attribute tampering) and
    the mitigation, rather than presenting adaptive scopes as maintenance-free security theater.
 4. **Change management.** Scope query and retention settings are both config-file-driven and
-   create-or-report — consistent with this repo's established retention-object discipline.
-5. **Would I fund this?** Yes — it removes a real, recurring operational failure mode (stale
+   create-or-report - consistent with this repo's established retention-object discipline.
+5. **Would I fund this?** Yes - it removes a real, recurring operational failure mode (stale
    distribution lists) at E5 entitlement cost the org likely already has, with an honest accounting
    of what it does and doesn't defend against.
 
@@ -110,7 +110,7 @@ No remaining Fix/Fail after resolution.
    draft could have silently assumed the portal's per-policy location-selection step has a
    PowerShell equivalent; it doesn't, as far as this build's grounding pass could confirm. Flagging
    it as `VERIFY (pilot tenant)` rather than fabricating an `-ExchangeLocation` parameter that
-   doesn't exist in this parameter set is the correct call — a fabricated parameter would fail at
+   doesn't exist in this parameter set is the correct call - a fabricated parameter would fail at
    runtime and erode trust in every other cmdlet in this script.
    - **Resolution:** already reflected in `README.md` §11 and `design.md` §4 at initial draft;
      this lens confirms no further correction is needed.

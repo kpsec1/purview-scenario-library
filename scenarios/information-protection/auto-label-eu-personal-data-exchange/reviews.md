@@ -1,4 +1,4 @@
-# Four-Lens Review — Auto-Label EU/UK Personal Data in Exchange Email
+# Four-Lens Review - Auto-Label EU/UK Personal Data in Exchange Email
 
 Reviewed after the initial draft of `README.md`, `design.md`, `deploy/`, and `validate/`. This
 scenario is a deliberate combination of two already-reviewed siblings
@@ -21,14 +21,14 @@ this file was finalized (see "Resolution" under each). No **Fail** items were ra
    Nothing enforces that: an organization that narrows one script's SIT list (e.g., to Germany + France
    only) and not the other's ends up with a data class that's caught in one channel and silently
    missed in the other, with neither script erroring or warning. This is a new finding specific to
-   this scenario's existence as a combination of two independently-parameterized siblings — neither
+   this scenario's existence as a combination of two independently-parameterized siblings - neither
    sibling's own review could have found it alone.
    - **Resolution:** Added an explicit new item to `README.md` §11 describing the exact failure
      mode (an Italy Fiscal Code caught in email but not SharePoint, or vice versa) and added a
      standing review-cadence check to §8 ("confirm both scripts' `-SensitiveInfoTypeName` lists
      match") rather than treating this as a one-time deployment step.
 2. **The external-recipient encryption default gap, inherited mechanically from
-   `auto-label-confidential-exchange`, needed to be reframed rather than just copied — its stakes
+   `auto-label-confidential-exchange`, needed to be reframed rather than just copied - its stakes
    are measurably different here.** The Exchange sibling frames GDPR/CCPA as one of two adjacent
    drivers for a U.S.-format SIT pair; this scenario's entire premise is GDPR-format personal data.
    A first draft that simply repeated the sibling's framing verbatim would understate that, for
@@ -37,15 +37,15 @@ this file was finalized (see "Resolution" under each). No **Fail** items were ra
    - **Resolution:** `README.md` §11 restates this finding with the sharper GDPR-specific framing
      and explicitly recommends treating `-ExternalMailRightsManagementOwner` configuration (or a
      paired content-based DLP rule) as higher-priority for this scenario than for the U.S.-SIT
-     sibling — not an equally-optional extension. `design.md` §6 documents this as "the one place
+     sibling - not an equally-optional extension. `design.md` §6 documents this as "the one place
      the two siblings' designs don't combine without an explicit decision."
 3. **The compromised/repurposed excluded-mailbox exfiltration path, also inherited from
    `auto-label-confidential-exchange`, carries the same sharper GDPR-specific stakes as finding 2
    and needed the same explicit reframing, not a verbatim copy.**
    - **Resolution:** `README.md` §11 restates the finding with the GDPR-Article-33/34-specific
      framing (a breach through that channel is "a direct GDPR exposure, not a secondary one").
-4. **Every other bypass class — manual-label-first, scan-cadence/simulation-window timing, EU
-   national-ID checksum variance, the UK-inclusion naming quirk — is inherited correctly, not new
+4. **Every other bypass class - manual-label-first, scan-cadence/simulation-window timing, EU
+   national-ID checksum variance, the UK-inclusion naming quirk - is inherited correctly, not new
    to this combination, and doesn't need re-derivation.** Confirmed each is already documented in
    `README.md` §11 with an explicit "inherited unchanged from `<sibling>`" pointer rather than a
    second, potentially-drifting copy of the same prose.
@@ -62,7 +62,7 @@ No remaining Fix/Fail after resolution.
    scenarios create a real incident-response risk: disabling the wrong policy under time
    pressure.** `Confidentiality - Auto-Label EU Personal Data in Exchange Email` (this scenario) and
    `Confidentiality - Auto-Label PII in Exchange Email` (`auto-label-confidential-exchange`) differ
-   by a few words in the middle of a long string — exactly the kind of name an on-call operator
+   by a few words in the middle of a long string - exactly the kind of name an on-call operator
    skims past during a live encryption-side-effect incident. This wasn't a risk either sibling's own
    review could have caught alone, since it only exists once a tenant has more than one of these
    policies deployed.
@@ -70,20 +70,20 @@ No remaining Fix/Fail after resolution.
      to `README.md` §8, listing all four sibling-family policy names side by side with their
      location and SIT set, specifically for pre-incident reference.
 2. **The SIT-list-drift finding (Red Team, above) is also an operability gap, not just a data-loss
-   one — there's no automated way to detect the drift, only a documented manual check.** Confirmed
+   one - there's no automated way to detect the drift, only a documented manual check.** Confirmed
    no realistic automated fix exists within this scenario's scope: the two scripts are independent,
    author-only reference code with no shared state store, and building one would be a
    disproportionate abstraction for a two-script drift check (`AGENTS.md`'s "don't design for
    hypothetical future requirements" principle). A documented, standing manual review step is the
    honestly-scoped answer.
    - **Resolution:** No further code change; confirmed the `README.md` §8/§11 additions from the
-     Red Team resolution are also the correct Blue Team answer — recorded here as deliberately
+     Red Team resolution are also the correct Blue Team answer - recorded here as deliberately
      checked, not overlooked.
 3. **Activity Explorer's policy/rule attribution gap is now materially more consequential with a
    third Exchange-targeting policy in play, and this needed to be stated plainly rather than
    inherited by reference alone.** With three sibling-family policies now potentially targeting
-   Exchange in the same tenant (this scenario, `auto-label-confidential-exchange`, and — if an organization
-   ever adds — others), Activity Explorer's inability to name which specific policy applied a label
+   Exchange in the same tenant (this scenario, `auto-label-confidential-exchange`, and - if an organization
+   ever adds - others), Activity Explorer's inability to name which specific policy applied a label
    becomes a real "which of our three policies did this" question, not a hypothetical one.
    - **Resolution:** `README.md` §7 step 4 updated to name the three-policy scenario explicitly
      ("plausible once both this scenario and `auto-label-confidential-exchange` are deployed
@@ -92,7 +92,7 @@ No remaining Fix/Fail after resolution.
 No remaining Fail. The operational surface (Activity Explorer's documented delay and attribution
 limits, Items to review during simulation, the new policy-disambiguation table, and the SIT-list-
 drift review-cadence item) is honestly represented as the point where combining three deployed
-scenarios introduces real, if manageable, operational complexity — not hidden behind reused
+scenarios introduces real, if manageable, operational complexity - not hidden behind reused
 language that would understate it.
 
 ---
@@ -102,29 +102,29 @@ language that would understate it.
 **Verdict: Pass**
 
 - **Risk reduction vs. cost:** proportionate, and the two Red Team GDPR-sharpening findings
-  materially improve the honesty of this scenario's pitch — a CISO now sees explicitly that, for
+  materially improve the honesty of this scenario's pitch - a CISO now sees explicitly that, for
   this specific EU/UK-formatted data class, the default configuration protects internal mail but
   not external mail by default, and that this is the single case in this library's three-scenario
   auto-labeling family where that gap has the most direct regulatory consequence.
 - **Board-level narrative:** "we complete the classification program already funded for
-  SharePoint/OneDrive EU/UK data and U.S.-format email, closing the one remaining gap — EU/UK
-  personal data in email — while being explicit that this exact combination is where our
+  SharePoint/OneDrive EU/UK data and U.S.-format email, closing the one remaining gap - EU/UK
+  personal data in email - while being explicit that this exact combination is where our
   external-mail encryption gap carries the most direct GDPR breach-notification exposure" is a
   stronger, more specific narrative than treating this as a routine third deployment.
 - **Compliance mapping:** GDPR Article 32 as the primary driver, correctly not overclaimed as
   Article-4(1)-complete personal-data coverage (§2), with the sharpened Article 33/34 framing in
   §11 giving a concrete, scoped basis for prioritizing the external-encryption follow-up decision.
 - **Change-management impact:** identical to both sibling scenarios' own already-reviewed
-  change-management profile (staged rollout, encryption side-effect on internal mail) — no new
+  change-management profile (staged rollout, encryption side-effect on internal mail) - no new
   change-management risk introduced by combining them, and the new policy-disambiguation table
   directly reduces incident-response risk for the operations team.
-- **Would I fund this?** Yes — this is the lowest-incremental-cost fragment in the three-scenario
+- **Would I fund this?** Yes - this is the lowest-incremental-cost fragment in the three-scenario
   family (§10: no additional licensing over either already-funded sibling), it closes a real,
   named gap, and its own review surfaced two genuinely new findings (SIT-list drift, policy-name
-  confusion) that only exist once a tenant runs all three — exactly the kind of finding a fourth
+  confusion) that only exist once a tenant runs all three - exactly the kind of finding a fourth
   independent review pass should be expected to catch, and did.
 
-No Fix/Fail items from this lens — it benefited directly from the Red Team and Blue Team findings.
+No Fix/Fail items from this lens - it benefited directly from the Red Team and Blue Team findings.
 
 ---
 
@@ -141,17 +141,17 @@ No Fix/Fail items from this lens — it benefited directly from the Red Team and
   default SIT names, the `-SensitiveInfoTypeName` parameter shape, and the
   `Get-DlpSensitiveInformationType`-based resolution pattern all match
   `auto-label-eu-personal-data-sharepoint/deploy/New-EuPersonalDataAutoLabelPolicy.ps1` exactly. No
-  new product surface was introduced by this combination — confirming that was the point of this
+  new product surface was introduced by this combination - confirming that was the point of this
   check, not assuming it because both sources are "already-reviewed."
 - **No deprecated cmdlets, no invented parameters, no reinvented native capability.** This scenario
   is a direct application of `New-AutoSensitivityLabelPolicy`/`New-AutoSensitivityLabelRule`
-  against the Exchange workload with an EU/UK SIT condition set — exactly the product-intended use
+  against the Exchange workload with an EU/UK SIT condition set - exactly the product-intended use
   of auto-labeling policies, not a workaround for a missing native feature.
-- **Licensing citation accuracy** — confirmed no separate or additional licensing applies to this
+- **Licensing citation accuracy** - confirmed no separate or additional licensing applies to this
   scenario versus either sibling; all three draw from the same Information Protection entitlement
   tier in `docs/licensing-matrix.md` §2.
 - **The two open VERIFY items (SIT-name byte-exact casing; `Get-AutoSensitivityLabelRule` read-back
-  casing) are correctly carried forward as open, not resolved by guessing** — both are the same
+  casing) are correctly carried forward as open, not resolved by guessing** - both are the same
   unresolved items the SharePoint/OneDrive EU sibling's own Product Owner review already accepted
   as the correct application of `AGENTS.md` §4 when grounding is genuinely incomplete; re-deriving
   a different (and potentially inconsistent) answer here would be worse than carrying the same
@@ -167,15 +167,15 @@ No Fix/Fail items from this lens.
 |---|---|---|---|
 | 🔴 Red Team | Fix | 4 (2 new to this combination, closed with doc/design edits; 2 inherited findings reframed for sharper GDPR-specific stakes) | Closed |
 | 🔵 Blue Team | Fix | 3 (1 closed with a new disambiguation table, 2 confirmed as correctly and honestly scoped) | Closed |
-| 🎩 CISO | Pass | 0 (benefited directly from the Red Team's and Blue Team's findings) | — |
-| 🟦 Microsoft Product Owner | Pass | 0 (all product-surface claims verified against source scripts; no new claims introduced) | — |
+| 🎩 CISO | Pass | 0 (benefited directly from the Red Team's and Blue Team's findings) | - |
+| 🟦 Microsoft Product Owner | Pass | 0 (all product-surface claims verified against source scripts; no new claims introduced) | - |
 
 All Fix items from this round are resolved in the current state of `README.md` and `design.md`. No
 Fail items were raised. This fragment meets the definition of done in `AGENTS.md` §9.
 
 ---
 
-## Review round 2 — 2026-09-09 — opt-in travel-document bundle (`-IncludeTravelDocumentSits`)
+## Review round 2 - 2026-09-09 - opt-in travel-document bundle (`-IncludeTravelDocumentSits`)
 
 Scope: the `PROGRESS.md` follow-up asking for parity with the SharePoint/OneDrive EU sibling's own
 `-IncludeTravelDocumentSits` switch, ported to this scenario's `deploy/
@@ -188,20 +188,20 @@ updates.
 **Verdict: Pass**
 
 - The U.S./U.K. passport-merge gotcha this switch introduces was already found and disclosed by
-  the SharePoint/OneDrive sibling's own round 2 review — porting the same switch here doesn't
+  the SharePoint/OneDrive sibling's own round 2 review - porting the same switch here doesn't
   introduce a new bypass or coverage gap, it extends an already-disclosed one to a second channel.
   Re-confirmed (not re-derived) by re-fetching both bundle index pages directly during this round;
   membership is unchanged from the sibling's original grounding.
 - One genuinely Exchange-specific angle checked and found not to be a new risk: whether the
   encryption side-effect finding already in this scenario's round 1 review (external senders not
-  encrypted by default) interacts differently with the two new SITs. It doesn't — encryption
+  encrypted by default) interacts differently with the two new SITs. It doesn't - encryption
   behavior is keyed off the label, not the specific SIT that triggered it, so the existing round 1
   finding and its `-ExternalMailRightsManagementOwner` mitigation apply identically to messages
   matching the new opt-in SITs.
 - The cross-scenario `-SensitiveInfoTypeName` drift finding from round 1 (this scenario vs. the
   SharePoint/OneDrive sibling) now also applies to `-IncludeTravelDocumentSits` specifically: a
   organization could enable the bundle on one channel and not the other. This is the same finding, not a
-  new one — the existing `README.md` §8 standing review-cadence check ("confirm both scripts'
+  new one - the existing `README.md` §8 standing review-cadence check ("confirm both scripts'
   `-SensitiveInfoTypeName` lists match") already covers it without a bulletin change, since the
   bundle switch only changes what's *in* that list, not the drift risk itself.
 
@@ -213,14 +213,14 @@ No Fix/Fail items from this lens.
 
 - The validate script's new `-IncludeTravelDocumentSits` switch mirrors the deploy script's
   parameter name and behavior exactly, and mirrors the SharePoint/OneDrive sibling's validate
-  script's own switch — an operator who already knows how to check the file-scoped sibling's bundle
+  script's own switch - an operator who already knows how to check the file-scoped sibling's bundle
   deployment doesn't have to relearn a different pattern for email.
 - Added `README.md` §7 test case 9 gives operators a concrete way to observe the merge behavior via
-  **Items to review** (simulation) or Activity Explorer (enforced) — the correct Exchange-specific
+  **Items to review** (simulation) or Activity Explorer (enforced) - the correct Exchange-specific
   observability surface, not a copy-pasted reference to the SharePoint sibling's "Labeled items"
   dashboard, which doesn't exist for Exchange (already-established §7/§11 distinction, correctly
   preserved in the new test case).
-- No new alerting/observability surface is introduced — matches from the new SITs surface through
+- No new alerting/observability surface is introduced - matches from the new SITs surface through
   the same Items-to-review/Activity-Explorer path already reviewed in round 1.
 
 No Fix/Fail items from this lens.
@@ -234,9 +234,9 @@ No Fix/Fail items from this lens.
   regulatory framing.
 - The U.S./U.K. passport-merge disclosure, and its interaction with the sharper GDPR/external-
   encryption framing already central to this scenario's round 1 review, are both stated plainly in
-  `README.md` §11 — a CISO evaluating this switch for email specifically sees both risks together,
+  `README.md` §11 - a CISO evaluating this switch for email specifically sees both risks together,
   not just the file-scoped one.
-- Would I fund this? Yes — it removes an inconsistency (a switch available on one channel but not
+- Would I fund this? Yes - it removes an inconsistency (a switch available on one channel but not
   its sibling) that would otherwise be a natural organization question, at no additional cost.
 
 No Fix/Fail items from this lens.
@@ -247,31 +247,31 @@ No Fix/Fail items from this lens.
 
 - Both opt-in SIT names and their full bundle membership were re-fetched directly from Microsoft
   Learn during this round (not re-asserted from the sibling's round 2 citation alone) and confirmed
-  byte-for-byte identical in membership to what the SharePoint/OneDrive sibling already documented —
+  byte-for-byte identical in membership to what the SharePoint/OneDrive sibling already documented -
   no drift in Microsoft's bundle composition since that scenario's own grounding pass, both dated
   2026-09-09.
-- No new cmdlet introduced — `-IncludeTravelDocumentSits` is the same array-append-and-dedupe
+- No new cmdlet introduced - `-IncludeTravelDocumentSits` is the same array-append-and-dedupe
   pattern already reviewed and passed in the sibling scenario, applied in front of this scenario's
   own already-grounded `Get-DlpSensitiveInformationType` resolution path.
 - The byte-exact-casing VERIFY already open for this scenario's default SITs (`README.md` §11)
   extends to `"EU driver's license number"` the same way it already does for the SharePoint/OneDrive
-  sibling — carried forward as open, not resolved by guessing, consistent with how the sibling's own
+  sibling - carried forward as open, not resolved by guessing, consistent with how the sibling's own
   Product Owner review treated the identical gap.
 - Scope discipline: this round did not attempt a per-country checksum table for either opt-in
-  bundle in *this* scenario's files — correctly deferred to the single shared table already tracked
+  bundle in *this* scenario's files - correctly deferred to the single shared table already tracked
   as a `PROGRESS.md` follow-up, avoiding a second, potentially-drifting copy of the same 50+-page
   grounding effort.
 
 No Fix/Fail items from this lens.
 
-### Summary — round 2
+### Summary - round 2
 
 | Lens | Verdict | Findings | Resolution |
 |---|---|---|---|
-| 🔴 Red Team | Pass | 0 (gotcha already disclosed by the ported sibling switch; two Exchange-specific angles checked and confirmed not new risks) | — |
-| 🔵 Blue Team | Pass | 0 | — |
-| 🎩 CISO | Pass | 0 | — |
-| 🟦 Microsoft Product Owner | Pass | 0 (1 VERIFY extended, not newly opened) | — |
+| 🔴 Red Team | Pass | 0 (gotcha already disclosed by the ported sibling switch; two Exchange-specific angles checked and confirmed not new risks) | - |
+| 🔵 Blue Team | Pass | 0 | - |
+| 🎩 CISO | Pass | 0 | - |
+| 🟦 Microsoft Product Owner | Pass | 0 (1 VERIFY extended, not newly opened) | - |
 
 No Fix/Fail items raised this round. This fragment (the parity addition) meets the definition of
 done in `AGENTS.md` §9.
