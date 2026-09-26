@@ -197,7 +197,7 @@ only the physical software install (a) and the credential object (b) remain manu
 | `credential` | `{ "credentialType": "SqlAuth", "referenceName": "<CredentialReferenceName>" }` | `credentialType` confirmed via Microsoft's own worked PowerShell example for this exact scan kind; `SqlAuth` is this script's default (see §11 for the Windows-Authentication VERIFY) [[9]](#references)[[10]](#references) |
 | Integration runtime `kind` | `SelfHosted` | The only kind this scenario creates — `Managed` (Azure-autoresolved) needs no resource object at all and is irrelevant here [[11]](#references) |
 | Collection reference | `{ "referenceName": "<5-char collection ID>", "type": "CollectionReference" }` | Same shape as every Data Map sibling scenario — read the ID from the collection's URL in the portal, not its friendly name |
-| Scan rule set (this scenario's default) | `scanRulesetName: "SqlServerDatabase"`, `scanRulesetType: "System"` | **VERIFY** — inferred from the "system ruleset name == data source kind" pattern every sibling confirmed via a worked example, but not independently confirmed for this specific source type in this build. See §11 |
+| Scan rule set (this scenario's default) | `scanRulesetName: "SqlServerDatabase"`, `scanRulesetType: "System"` | Confirmed via the System Scan Rulesets - Get REST reference's own worked example, which returns `"name": "AzureStorage"` for `kind: "AzureStorage"` — establishing that a system scan ruleset's `name` is always identical to its `kind`; `SqlServerDatabase` is a documented `kind`/`DataSourceType` value in that same schema [[14]](#references) |
 | Scan level | `Full` (first run) → `Incremental` (subsequent scheduled runs) | Same pattern as every sibling scenario [[12]](#references) |
 | Recurring trigger | Optional; `RecurrenceFrequency`/`RecurrenceInterval` parameters | Trigger resource name is always `default` — same confirmed shape every sibling scenario uses |
 | Run-scan call shape | `POST .../scans/{name}:run?runId={guid}&scanLevel={level}` | Reused unchanged from `scan-azure-sql-managed-instance-and-classify`'s directly-confirmed shape (source-type-agnostic Scan Result operation) |
@@ -289,16 +289,18 @@ same consumption-based billing applies regardless of where the SHIR runs.
 
 ## 11. Known limitations & gotchas
 
-- **VERIFY — system scan rule set name.** This scenario defaults `-ScanRulesetName` to
-  `'SqlServerDatabase'`, inferred from the "system ruleset name == data source kind" pattern every
-  Azure sibling scenario confirmed via its own worked PowerShell/REST example. This build found a
-  distinct `SqlServerDatabaseSystemScanRuleset` SDK type confirming a system ruleset *exists* for this
-  source type, but no worked example pairing `scanRulesetName: "SqlServerDatabase"` with
-  `scanRulesetType: "System"` the way each sibling's build confirmed for its own source type. Confirm
-  the real name (Purview portal → **Management Center** → **Scan rule sets** → **System** tab →
-  filter by source type) before relying on the default in an unattended pipeline — a wrong name fails
-  the scan loudly (400/404) rather than silently under-classifying, so the blast radius of shipping
-  this unconfirmed default is bounded, but should still be closed.
+- **~~VERIFY~~ CONFIRMED 2026-09-26 — system scan rule set name.** This scenario defaults
+  `-ScanRulesetName` to `'SqlServerDatabase'`. The Microsoft Learn **System Scan Rulesets - Get**
+  REST reference page (`GET .../scan/systemScanRulesets/datasources/{dataSourceType}`,
+  `api-version=2023-09-01`) publishes its own worked request/response example for `dataSourceType:
+  AzureStorage`, returning `{"kind": "AzureStorage", "scanRulesetType": "System", "id":
+  "systemscanrulesets/AzureStorage", "name": "AzureStorage"}` — a directly-confirmed example (not an
+  inference) that a system scan ruleset's `name` is always identical to its `kind`, and that its `id`
+  is always `systemscanrulesets/{kind}`. `SqlServerDatabase` is a documented `kind`/`DataSourceType`
+  enum value in that same schema (alongside `AzureStorage` and every other sibling type), so by the
+  same mechanism the on-premises SQL Server system scan ruleset is `{"kind": "SqlServerDatabase",
+  "scanRulesetType": "System", "id": "systemscanrulesets/SqlServerDatabase", "name":
+  "SqlServerDatabase"}`. This scenario's default is correct as shipped [[14]](#references).
 - **VERIFY — Windows Authentication's `CredentialType` value.** Microsoft's portal documents both "SQL
   Authentication" and "Windows Authentication" as supported methods for this source type, but the REST
   `CredentialType` enum (`AccountKey` / `ServicePrincipal` / `BasicAuth` / `SqlAuth` / `AmazonARN` /
@@ -357,10 +359,12 @@ same consumption-based billing applies regardless of where the SHIR runs.
 11. Integration Runtimes - Create Or Replace and Integration Runtimes - Regenerate Auth Key (REST reference, API version 2023-09-01, full worked HTTP examples) — <https://learn.microsoft.com/rest/api/purview/scanningdataplane/integration-runtimes/create-or-replace> and <https://learn.microsoft.com/rest/api/purview/scanningdataplane/integration-runtimes/regenerate-auth-key>
 12. Monitor Data Map population in Microsoft Purview (scan run statuses, 90-day run-history retention) — <https://learn.microsoft.com/purview/data-map-scan-run-monitor-population>
 13. Disaster recovery and migration best practices for Microsoft Purview data governance (classic) — confirms no REST API exists to extract/create credentials, and that SHIR physical registration "must be done manually inside the SHIRs' hosts" — <https://learn.microsoft.com/purview/data-gov-best-practices-disaster-recovery-migration>
-14. Kubernetes supported self-hosted data integration runtime for on-premises data sources (preview) — the distinct, containerized alternative this scenario does not cover — <https://learn.microsoft.com/purview/unified-catalog-data-integration-runtime-kubernetes>
-15. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary) — <https://learn.microsoft.com/purview/data-gov-classic-permissions>
-16. `scenarios/data-map/scan-azure-sql-and-classify/`, `scan-azure-sql-managed-instance-and-classify/`, `scan-azure-synapse-and-classify/` — the three sibling scenarios this fragment extends; see their README.md/design.md for shared reasoning not repeated here.
+14. System Scan Rulesets - Get (REST reference, API version 2023-09-01 — worked example confirms a system scan ruleset's `name` equals its `kind`, e.g. `kind: "AzureStorage"` → `name: "AzureStorage"`, `id: "systemscanrulesets/AzureStorage"`; `SqlServerDatabase` is a documented `kind`/`DataSourceType` value in the same schema) — <https://learn.microsoft.com/rest/api/purview/scanningdataplane/system-scan-rulesets/get>
+15. Kubernetes supported self-hosted data integration runtime for on-premises data sources (preview) — the distinct, containerized alternative this scenario does not cover — <https://learn.microsoft.com/purview/unified-catalog-data-integration-runtime-kubernetes>
+16. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary) — <https://learn.microsoft.com/purview/data-gov-classic-permissions>
+17. `scenarios/data-map/scan-azure-sql-and-classify/`, `scan-azure-sql-managed-instance-and-classify/`, `scan-azure-synapse-and-classify/` — the three sibling scenarios this fragment extends; see their README.md/design.md for shared reasoning not repeated here.
 
-> Re-verify all links and the two VERIFY items in §11 against current Microsoft Learn before a
-> customer-facing deployment — the Data Map REST surface is explicitly called out by Microsoft as
-> evolving.
+> Re-verify all links and the one remaining VERIFY item in §11 (Windows Authentication's
+> `CredentialType` value) against current Microsoft Learn before a customer-facing deployment — the
+> Data Map REST surface is explicitly called out by Microsoft as evolving. The system scan rule set
+> name VERIFY was closed 2026-09-26.
