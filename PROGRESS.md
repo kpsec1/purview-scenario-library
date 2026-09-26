@@ -3200,7 +3200,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   pattern, but none is currently tracked.
 
 ### Follow-ups discovered while building the Defender for Endpoint device control macOS Apple/Portable vendorId/productId compound-matching scenario
-- [x] RE-SCOPED, NOT BUILT (2026-09-26, commit `PENDING`): investigated building the Apple/Portable
+- [x] RE-SCOPED, NOT BUILT (2026-09-26, commit `dd02495`): investigated building the Apple/Portable
   `ApprovedAppleDevices`/`ApprovedPortableDevices` group + its `Allow-Approved*Devices` rule from a
   zero-`serialNumber` starting state. Grounding found this is not a one-line guard relaxation:
   Microsoft's own `device_control_policy_schema.json` (same `microsoft/mdatp-devicecontrol` GitHub
@@ -3436,7 +3436,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Re-scoped (not built) the Apple/Portable zero-`serialNumber` Approved-group follow-up with a
-  concrete schema-validity finding** — commit `PENDING` — 2026-09-26. Sub-task fragment:
+  concrete schema-validity finding** — commit `dd02495` — 2026-09-26. Sub-task fragment:
   investigated the open backlog item asking to remove the "at least one `serialNumber` device
   first" prerequisite on
   `defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching`. Grounding
