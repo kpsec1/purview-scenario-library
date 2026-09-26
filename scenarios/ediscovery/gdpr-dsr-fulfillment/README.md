@@ -237,12 +237,18 @@ is the only record of when the request was received and answered.
 - **The Article 12(3) extension notice is not sent by this scenario.** `-ApplyExtension` only
   records that the extension was invoked and why; emailing the data subject, with reasons, within
   the original month remains the operator's action.
-- **Export format may not satisfy Article 20 for Portability specifically.** eDiscovery review-set
-  exports use PST (mail) and native file formats (documents) [[10]](#references) - reasonable for an
-  Access request, but Article 20 requires a "structured, commonly used, machine-readable format"
-  [[2]](#references), a bar PST/native-format exports don't obviously clear for every Portability
-  request. Review the exported package's format against the specific request before delivering it;
-  this scenario doesn't reformat the export.
+- **Export format gap for Article 20 Portability - partially closed (2026-09-26).** eDiscovery
+  review-set exports use PST (mail) and native file formats (documents) [[10]](#references) for the
+  item content itself, which doesn't obviously clear Article 20's "structured, commonly used,
+  machine-readable format" bar [[2]](#references) on its own. But every review-set export also
+  automatically includes a CSV metadata report (`Export_load_file.csv`, a column for each metadata
+  property, one row per exported item) [[14]](#references) - this ships with every export, it isn't
+  an opt-in format choice - so the item-level metadata for a Portability request is already
+  delivered in a structured, machine-readable form. The content itself (email bodies, attachments,
+  documents) still isn't: PST and native files remain the content format, and whether that satisfies
+  a given regulator's reading of Article 20 for content (as opposed to metadata) is still the
+  operator's judgment call. Review the exported package against the specific request before
+  delivering it; this scenario doesn't reformat the export.
 - **The default (custodian-scoped) search only reaches the data subject's own mailbox and site -
   not messages *about* them stored in someone else's mailbox.** A colleague's email discussing the
   data subject, with the data subject only as a recipient/participant, lives in that colleague's
@@ -297,6 +303,7 @@ is the only record of when the request was received and answered.
 11. Legacy eDiscovery tools retired (classic Content Search/eDiscovery, August 31, 2025) - <https://learn.microsoft.com/en-us/purview/ediscovery-legacy-retirement>
 12. Assign permissions in eDiscovery (eDiscovery Manager/Administrator, Custodian role) - <https://learn.microsoft.com/purview/edisc-permissions>
 13. Message properties and search operators for In-Place eDiscovery (the `participants:` recipient property; expands to an Entra ID identity lookup across From/To/Cc/Bcc/Participants/Recipients) - <https://learn.microsoft.com/en-us/exchange/policy-and-compliance/ediscovery/message-properties-and-search-operators>
+14. Export documents in a review set to an Azure Storage account - "More information" (the `Export_load_file.csv` detail export report, "a column for each metadata property for a document," included with every export job) - <https://learn.microsoft.com/purview/ediscovery-download-export-jobs#more-information>
 
 > Re-verify all links and Graph SDK cmdlet names against current Microsoft Learn before a
 > customer-facing deployment - this scenario's grounding pass used web search rather than a direct

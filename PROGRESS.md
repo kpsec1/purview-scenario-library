@@ -3042,11 +3042,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   convention beyond the README's own disclosure) for `dsr-ledger.json` if a pilot deployment's DSR
   volume grows enough that concurrent `New-DsrRequest.ps1` runs become realistic - deferred as
   out of scope for the low-to-moderate volume this fragment is sized for (`README.md` §10/§11).
-- [ ] VERIFY (portal or Microsoft Learn): confirm whether Microsoft Purview eDiscovery's review-set
+- [x] VERIFY (portal or Microsoft Learn): confirm whether Microsoft Purview eDiscovery's review-set
   export can be configured to produce a CSV/JSON metadata companion (not just PST/native files) that
   would more comfortably satisfy Article 20's "structured, commonly used, machine-readable format"
-  wording for a Portability request - `README.md` §11 currently just flags the PST/native-format gap
-  without a confirmed alternative.
+  wording for a Portability request - **partially resolved** (see DONE below): every review-set
+  export automatically includes a CSV metadata report (`Export_load_file.csv`), not an opt-in
+  setting; the underlying item *content* remains PST/native, which is the part still left to the
+  operator's judgment - `README.md` §11 now states this precisely instead of flagging an unconfirmed
+  gap.
 - [ ] Once `scenarios/compliance-manager/gdpr-assessment/`'s own still-open follow-up (a
   cross-border data transfer / data residency scenario, immediately above) is built, cross-check
   whether it should link back to this scenario's ledger for any DSR that also triggers a
@@ -3435,6 +3438,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Partially closed the `gdpr-dsr-fulfillment` Article 20 export-format VERIFY** - commit
+  PENDING - 2026-09-26. Maintenance pass: grounded whether eDiscovery review-set export can produce
+  a CSV/JSON metadata companion alongside PST/native files, via a direct Microsoft Learn fetch of
+  "Export documents in a review set to an Azure Storage account" §More information and cross-checked
+  against "Document metadata fields in eDiscovery." Confirmed every review-set export automatically
+  includes `Export_load_file.csv` - "a column for each metadata property for a document" - as a
+  standard, non-optional report, not something requiring configuration. This closes the
+  metadata-format half of the question: item-level metadata for a Portability request is already
+  structured and machine-readable. Left open (by design, not guessed away): whether PST/native
+  *content* itself (as opposed to metadata) satisfies Article 20 for a given regulator is still the
+  operator's judgment call - the scenario never claimed otherwise and this pass didn't invent an
+  answer to that narrower, genuinely unresolved question. Updated `README.md` §11/§12 (new
+  reference 14); no code changed (read-only documentation scenario).
 - [x] **Closed the `disposition-proof-export` RecordType VERIFY** - commit `a0221c5` - 2026-09-26.
   Maintenance pass: closed the open VERIFY asking whether Graph's `RecordsManagement` or
   `MultiStageDisposition` `auditLogRecordType` member is the correct narrower `-RecordType` for the
