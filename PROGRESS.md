@@ -3435,7 +3435,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **Closed the `disposition-proof-export` RecordType VERIFY** - commit PENDING - 2026-09-26.
+- [x] **Closed the `disposition-proof-export` RecordType VERIFY** - commit `a0221c5` - 2026-09-26.
   Maintenance pass: closed the open VERIFY asking whether Graph's `RecordsManagement` or
   `MultiStageDisposition` `auditLogRecordType` member is the correct narrower `-RecordType` for the
   seven disposition/record-deletion Operations this scenario's `Search-UnifiedAuditLog` query
