@@ -37,16 +37,17 @@
         (README.md Section 8) -- this script surfaces the raw events so that reconciliation is
         possible; it does not itself compute or alert on the pattern.
 
-    No -RecordType filter is applied, matching this repo's existing precedent in
+    No -RecordType filter is applied. Microsoft Graph's microsoft.graph.security.auditLogRecordType
+    enum has a RecordsManagement member and a MultiStageDisposition member whose names suggest they
+    cover these events, but neither is a member of the Office 365 Management Activity API schema's
+    AuditLogRecordType enum that Search-UnifiedAuditLog's own -RecordType parameter type documents
+    itself against (confirmed absent from a full-page fetch of that schema page on 2026-09-26 --
+    design.md Section 2, item 3; .NOTES below) -- so neither value is valid input for this cmdlet's
+    -RecordType parameter at all, independent of whether it would have matched these Operations.
+    Filtering by -Operations alone is therefore not just the conservative choice but the only
+    correct one, matching this repo's existing precedent in
     scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/deploy/
-    Export-AdaptiveProtectionPreservationEvidence.ps1 for the identical class of gap: Microsoft's
-    Graph auditLogRecordType enum confirms a RecordsManagement member and a MultiStageDisposition
-    member (design.md Section 2, item 3) whose names strongly suggest they cover these events, but
-    no worked Search-UnifiedAuditLog example pairs either value with these specific Operations, and
-    RecordDelete's own documentation says it applies to "documents and emails" while being listed
-    under a SharePoint-oriented activities table -- guessing a RecordType risks silently
-    under-matching real disposition evidence (AGENTS.md Section 4). Filtering by -Operations alone
-    is the conservative choice.
+    Export-AdaptiveProtectionPreservationEvidence.ps1 for the identical class of gap.
 
     Idempotency model: identical to the AdaptiveProtection preservation-evidence script and to
     scenarios/ediscovery/premium-legal-hold-and-export/deploy/Export-EdiscoveryAuditTrail.ps1 -- a
@@ -124,12 +125,19 @@
     than asserting one property name (README.md Section 11); the raw AuditData JSON is always
     preserved in the output CSV regardless of whether the filter matches.
 
-    VERIFY (pilot tenant): whether RecordType RecordsManagement or MultiStageDisposition (both
-    confirmed members of Microsoft Graph's auditLogRecordType enum -- design.md Section 2, item 3)
-    is the correct, narrower RecordType for the four Disposition review activities Operations. If
-    confirmed, add -RecordType to this script's search for defense-in-depth (Operations alone
-    already fully scopes the query; a confirmed RecordType would only guard against an
-    Operation-name collision from an unrelated workload, which this build found no evidence of).
+    CLOSED (2026-09-26, Microsoft Learn direct-fetch): RecordsManagement and MultiStageDisposition
+    are NOT usable with Search-UnifiedAuditLog's -RecordType parameter. That parameter's type,
+    AuditRecordType, is documented as drawing its values from the Office 365 Management Activity
+    API schema's AuditLogRecordType enum table (the "Best Practices using the Search-UnifiedAuditLog
+    cmdlet tool" doc links -RecordType candidates directly to that table) -- a full-page fetch of
+    https://learn.microsoft.com/office/office-365-management-api/office-365-management-activity-api-schema#auditlogrecordtype
+    contains neither member name anywhere on the page. RecordsManagement and MultiStageDisposition
+    exist only in the separate, newer microsoft.graph.security.auditLogRecordType enum
+    (https://learn.microsoft.com/graph/api/resources/security-auditlogrecordtype), used by the
+    Purview Audit (Premium) Graph API surface, not by this Exchange PowerShell cmdlet. This
+    confirms -- rather than merely leaves unconfirmed -- that omitting -RecordType from this
+    script's Search-UnifiedAuditLog call is correct: neither candidate value is valid input for it.
+    No code change required (design.md Section 2 item 3 and README.md Section 11 updated to match).
 
     VERIFY (pilot tenant): whether the ApproveDisposal record's AuditData JSON exposes a field
     that distinguishes manual approval from autoapproval. Microsoft's own documentation states only

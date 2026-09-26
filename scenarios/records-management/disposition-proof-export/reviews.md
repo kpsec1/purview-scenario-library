@@ -136,6 +136,14 @@ No remaining Fail after resolution.
 
 No remaining Fail after resolution.
 
+**Addendum (2026-09-26 maintenance pass):** the `RecordType` gap noted in finding 2 above is now
+closed, not merely honestly disclosed. A full-page fetch of the Office 365 Management Activity API
+schema's `AuditLogRecordType` enum table - the value source `Search-UnifiedAuditLog -RecordType`
+documents itself against - confirms neither `RecordsManagement` nor `MultiStageDisposition` appears
+on that page; both are members only of the separate Graph `microsoft.graph.security.auditLogRecordType`
+enum. Neither is valid `-RecordType` input for this cmdlet, so omitting `-RecordType` is confirmed
+correct rather than just the conservative default. See `README.md` §6/§11 and `design.md` §2 item 3.
+
 ---
 
 ## Summary

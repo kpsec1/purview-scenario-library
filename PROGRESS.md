@@ -2618,15 +2618,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   no worked Microsoft example was found. `-RetentionLabelName` on `Export-DispositionProofEvidence.ps1`
   performs a best-effort scan of every top-level string property rather than asserting one property
   name; resolving this would let a future revision target the exact property directly.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether `RecordType RecordsManagement`
-  or `MultiStageDisposition` (both confirmed members of Microsoft Graph's `auditLogRecordType` enum)
-  is the correct, narrower `RecordType` for the four Disposition review activities Operations, and
-  separately whether `RecordDelete`/`LockRecord`/`UnlockRecord` (documented under a SharePoint-
-  oriented "File and page activities" table but stated to apply to Exchange email too) carry a
-  single RecordType or split by workload. If confirmed, add `-RecordType` to
-  `disposition-proof-export/deploy/Export-DispositionProofEvidence.ps1` and `validate/
-  Test-DispositionProofExport.ps1` for defense-in-depth (Operations alone already fully scopes the
-  query, per `design.md` §2 item 3).
 - [ ] Once the manual-vs-autoapproval `AuditData` field above is identified, extend
   `disposition-proof-export/validate/Test-DispositionProofExport.ps1` to report the two counts
   separately rather than only as a combined `ApproveDisposal` total.
@@ -3444,6 +3435,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `disposition-proof-export` RecordType VERIFY** - commit PENDING - 2026-09-26.
+  Maintenance pass: closed the open VERIFY asking whether Graph's `RecordsManagement` or
+  `MultiStageDisposition` `auditLogRecordType` member is the correct narrower `-RecordType` for the
+  seven disposition/record-deletion Operations this scenario's `Search-UnifiedAuditLog` query
+  covers. Grounded via a full-page fetch of the Office 365 Management Activity API schema's
+  `AuditLogRecordType` enum table - the value source `-RecordType`'s own documentation points to -
+  which contains neither member name anywhere on the page; both are members only of the separate
+  Graph `microsoft.graph.security.auditLogRecordType` enum, not valid input for this Exchange
+  PowerShell cmdlet at all. This confirms (rather than merely leaves as an unconfirmed guess-
+  avoidance) that omitting `-RecordType` from the query is correct. Updated `deploy/
+  Export-DispositionProofEvidence.ps1` (`.DESCRIPTION` and `.NOTES`), `design.md` §2 item 3,
+  `README.md` §6/§11/§12, and `reviews.md` (Microsoft Product Owner addendum). No code behavior
+  changed - the script already omitted `-RecordType`. This scenario's separate, still-open VERIFYs
+  (the `AuditData` label-property name and the manual-vs-autoapproval distinguishing field) are
+  untouched by this pass.
 - [x] **Ground RejectDirectSend behavioral description (direct-send-anonymous-relay-hardening)** -
   commit `cab808b` - 2026-09-26. Maintenance pass: closed the open VERIFY on
   `Set-OrganizationConfig -RejectDirectSend`'s behavior by re-fetching its Microsoft Learn

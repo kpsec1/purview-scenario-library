@@ -28,20 +28,28 @@ closes that evidence loop.
    Disposition page] uses information from the unified audit log and therefore requires auditing to
    be enabled and searchable" [[1]](#references) - the audit log IS the underlying evidence store
    for the portal view, not a separate mechanism.
-3. **No confirmed narrower `RecordType`.** Microsoft Graph's `auditLogRecordType` enum confirms two
-   plausibly-relevant members by name and description - `RecordsManagement` ("Records management
-   audit log record") and `MultiStageDisposition` ("Multi-stage disposition audit log record")
-   [[4]](#references) - but no worked `Search-UnifiedAuditLog -RecordType ... -Operations
-   ApproveDisposal` example was found pairing either value with the four disposition-review
-   Operations. `RecordDelete` is documented under a SharePoint-oriented "File and page activities"
-   table (the same table `Search-UnifiedAuditLog`'s own official example queries with `-RecordType
-   SharePointFileOperation`) while its own description explicitly extends to Exchange email
-   [[3]](#references)[[5]](#references) - an unresolved cross-workload ambiguity, not a documented
-   dual-RecordType behavior. This repo already carries the identical class of gap for a different
-   pair of Operations (`SharePointDataProactivelyPreserved`/`ExchangeDataProactivelyPreserved` in
-   `scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/`) and
-   resolved it the same way: **query by `-Operations` only, no `-RecordType` filter**, so a wrong
-   guess never silently under-matches real evidence.
+3. **No usable narrower `RecordType` - confirmed, not just unresolved (grounded 2026-09-26).**
+   Microsoft Graph's `microsoft.graph.security.auditLogRecordType` enum has two plausibly-relevant
+   members by name and description - `RecordsManagement` ("Records management audit log record")
+   and `MultiStageDisposition` ("Multi-stage disposition audit log record") [[4]](#references) - but
+   `Search-UnifiedAuditLog`'s `-RecordType` parameter is typed `AuditRecordType`, whose documented
+   value set is the Office 365 Management Activity API schema's `AuditLogRecordType` enum table (the
+   cmdlet's own "Best Practices" guidance points `-RecordType` candidates at that exact table). A
+   full-page fetch of
+   <https://learn.microsoft.com/office/office-365-management-api/office-365-management-activity-api-schema#auditlogrecordtype>
+   contains neither `RecordsManagement` nor `MultiStageDisposition` anywhere on the page - both
+   names are Graph-API-only members, not valid `-RecordType` input for this Exchange PowerShell
+   cmdlet. `RecordDelete` is separately documented under a SharePoint-oriented "File and page
+   activities" table (the same table `Search-UnifiedAuditLog`'s own official example queries with
+   `-RecordType SharePointFileOperation`) while its own description explicitly extends to Exchange
+   email [[3]](#references)[[5]](#references) - a real cross-workload ambiguity, but moot for the
+   same reason: no candidate `-RecordType` value was ever going to be valid here. This repo already
+   carries the identical class of gap for a different pair of Operations
+   (`SharePointDataProactivelyPreserved`/`ExchangeDataProactivelyPreserved` in
+   `scenarios/data-lifecycle-management/adaptive-protection-deleted-content-preservation/`, left
+   open, untouched by this pass) and resolved this scenario's instance the same way: **query by
+   `-Operations` only, no `-RecordType` filter** - now confirmed correct rather than merely
+   conservative.
 4. **No documented PowerShell/Graph equivalent of the portal's Filter+Export button.** The
    Disposition page's `.csv` export is a portal action with no cited cmdlet or REST call anywhere in
    Microsoft's `disposition` reference [[1]](#references), and no `security.dispositionReview*`

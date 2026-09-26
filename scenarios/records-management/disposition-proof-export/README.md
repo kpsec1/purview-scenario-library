@@ -121,7 +121,7 @@ Read-only against the tenant - the only side effect is the CSV file. `-WhatIf` s
 | Disposition-review Operations | `AddReviewer`, `ApproveDisposal`, `ExtendRetention`, `RelabelItem` | Verbatim from Microsoft's "Disposition review activities" table [[2]](#references) |
 | Record-deletion Operation | `RecordDelete` | "Deleted file marked as a record" - File and page activities [[3]](#references) |
 | Record-lock-status Operations | `LockRecord`, `UnlockRecord` | Context, not disposition itself - a record must be unlocked before it can be modified/deleted by a user; added per `reviews.md` Red Team finding 2 [[3]](#references) |
-| `RecordType` filter | **None** | No worked example confirms a narrower value for these Operations - `design.md` §2 item 3 |
+| `RecordType` filter | **None** | Confirmed correct, not just unconfirmed: `RecordsManagement`/`MultiStageDisposition` are Graph-only enum members, not valid `Search-UnifiedAuditLog -RecordType` input - `design.md` §2 item 3 |
 | `ApproveDisposal` on an interim stage | Moves the item to the **next** disposition stage, not to deletion | Only the final (or only) stage's approval marks an item eligible for permanent delete, within **15 days** [[1]](#references) |
 | `ApproveDisposal` via autoapproval | Same event as manual approval - "no new auditing event for autoapproval" | Distinguishing field not named by Microsoft - §11 VERIFY |
 | Portal `Type = Records Disposed` | Item deleted with **no** disposition review (a plain regulatory-record delete) | Portal-only view; this scenario's `RecordDelete` query covers both reviewed and unreviewed cases [[1]](#references) |
@@ -223,12 +223,15 @@ scratch output).
   but for continuous, near-real-time, high-volume streaming, `scenarios/audit/
   streaming-to-sentinel-or-management-api/` is the Microsoft-recommended path and should be preferred
   at that scale.
-- **No `RecordType` filter is confirmed for these seven Operations.** `RecordsManagement` and
-  `MultiStageDisposition` are both real, documented members of Microsoft Graph's
-  `auditLogRecordType` enum [[4]](#references) and plausible candidates by name, but no worked example pairs either
-  with `AddReviewer`/`ApproveDisposal`/`ExtendRetention`/`RelabelItem`. `RecordDelete` is documented
-  under a SharePoint-oriented table while explicitly stated to apply to Exchange email too. This
-  scenario deliberately omits `-RecordType` rather than guess - `design.md` §2 item 3.
+- **No `RecordType` filter for these seven Operations - confirmed correct, not just unconfirmed
+  (closed 2026-09-26).** `RecordsManagement` and `MultiStageDisposition` are both real, documented
+  members of Microsoft Graph's `auditLogRecordType` enum [[4]](#references) and plausible candidates
+  by name, but they are members of that Graph-only enum, not of the Office 365 Management Activity
+  API schema's `AuditLogRecordType` enum that `Search-UnifiedAuditLog`'s own `-RecordType`
+  parameter documentation points to as its value source - a full-page fetch of that schema page
+  found neither name anywhere on it. Neither value is valid `-RecordType` input for this cmdlet, so
+  omitting `-RecordType` here is the only correct choice, independent of the separate
+  `RecordDelete` SharePoint-vs.-Exchange table ambiguity - `design.md` §2 item 3.
 - **VERIFY (pilot tenant): manual vs. autoapproved `ApproveDisposal`.** Microsoft states
   autoapproval reuses the same event rather than emitting a new one, without naming the
   distinguishing `AuditData` field. The raw `AuditData` JSON is preserved in every exported row so
@@ -262,15 +265,16 @@ scratch output).
 1. Disposition of content (portal Filter/Export, timelines, `Type = Records Disposed`, RBAC, audit-enablement prerequisite) - <https://learn.microsoft.com/purview/disposition>
 2. Audit log activities - Disposition review activities (`AddReviewer`/`ApproveDisposal`/`ExtendRetention`/`RelabelItem`) - <https://learn.microsoft.com/purview/audit-log-activities#disposition-review-activities>
 3. Audit log activities - File and page activities (`RecordDelete`, "documents and emails") - <https://learn.microsoft.com/purview/audit-log-activities#file-and-page-activities>
-4. `auditLogRecordType` enum type - `RecordsManagement`/`MultiStageDisposition` members (Microsoft Graph) - <https://learn.microsoft.com/graph/api/resources/security-auditlogrecordtype>
+4. `auditLogRecordType` enum type - `RecordsManagement`/`MultiStageDisposition` members, Graph-only, not valid `Search-UnifiedAuditLog -RecordType` input (Microsoft Graph) - <https://learn.microsoft.com/graph/api/resources/security-auditlogrecordtype>
 5. Search-UnifiedAuditLog (`-RecordType`, `-Operations`, paging via `-SessionCommand ReturnLargeSet`) - <https://learn.microsoft.com/powershell/module/exchangepowershell/search-unifiedauditlog>
 6. `dispositionReviewStage` resource type (Microsoft Graph - label stage configuration, not a live item) - <https://learn.microsoft.com/graph/api/resources/security-dispositionreviewstage>
 7. Microsoft Purview service description - Records Management licensing - <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description>
 8. Manage audit log retention policies (180-day Standard default, 1-year E5 default, 10-year Premium add-on) - <https://learn.microsoft.com/purview/audit-log-retention-policies>
 9. Learn about auditing solutions in Microsoft Purview (Standard vs. Premium comparison) - <https://learn.microsoft.com/purview/audit-solutions-overview>
 10. Maximum numbers for disposition review (retention-limits reference) - <https://learn.microsoft.com/purview/retention-limits#maximum-numbers-for-disposition-review>
+11. Office 365 Management Activity API schema - `AuditLogRecordType` enum table, the value source `Search-UnifiedAuditLog -RecordType` documents itself against - <https://learn.microsoft.com/office/office-365-management-api/office-365-management-activity-api-schema#auditlogrecordtype>
 
-> Re-verify all links, cmdlet parameters, licensing, and the `RecordType`/`AuditData`-field open
+> Re-verify all links, cmdlet parameters, licensing, and the remaining `AuditData`-field open
 > questions against current Microsoft Learn before a customer-facing deployment. This scenario is
 > read-only against the tenant - the only irreversible-adjacent risk is relying on a stale audit
 > window; see §8/§11.
