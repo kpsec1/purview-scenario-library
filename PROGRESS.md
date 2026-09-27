@@ -3466,7 +3466,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the Managed Instance half of the Azure IAM Reader role-assignment VERIFY** - commit
-  `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Database
+  `6648cc5` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Database
   sibling's confirmed "Access control (IAM) → Add role assignment → Reader → Select box accepts
   your Microsoft Purview account name or UAMI" portal walkthrough also applies to Azure SQL Managed
   Instance. Grounded via a direct fetch of Microsoft's Managed Instance registration/authentication
