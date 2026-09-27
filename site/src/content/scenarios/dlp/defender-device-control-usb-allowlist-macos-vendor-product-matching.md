@@ -53,7 +53,7 @@ requirement this fragment adds:
 ```mermaid
 flowchart TD
     A[User connects a<br/>removable storage device] --> B{Onboarded to Defender<br/>for Endpoint on macOS +<br/>Full Disk Access granted?}
-    B -- No --> Z0[Not visible / not enforced -<br/>no monitoring, no enforcement]
+    B -- No --> Z0["Not visible / not enforced -<br/>no monitoring, no enforcement"]
     B -- Yes --> C{"Device's serialNumber<br/>matches a parent-scenario<br/>serialNumber clause?<br/>(OR)<br/>Device's vendorId+productId<br/>matches a VendorProductMatch-*<br/>sub-group? (this fragment)"}
     C -- Yes, either mechanism --> D["Rule: Allow-ApprovedBackupDrives<br/>(unchanged - keys off<br/>ApprovedBackupDrives group id)<br/>read/write/execute allowed<br/>auditAllow event logged"]
     C -- No --> E["Rule: Deny-AllOtherRemovableStorage<br/>(unchanged)<br/>read/write/execute denied<br/>End-user dialog + auditDeny event"]

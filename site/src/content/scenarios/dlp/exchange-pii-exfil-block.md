@@ -61,15 +61,15 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
 
 ```mermaid
 flowchart TD
-    A[Outbound Exchange email] --> B{Contains SSN or<br/>Credit Card Number,<br/>count >= 1?}
+    A[Outbound Exchange email] --> B{"Contains SSN or<br/>Credit Card Number,<br/>count >= 1?"}
     B -- No --> Z[No action]
     B -- Yes --> C{Recipient scope<br/>bifurcated per-recipient<br/>if mixed - see §11}
-    C -- Internal recipient --> D[Rule: Audit only<br/>alert + incident report,<br/>message delivered]
+    C -- Internal recipient --> D["Rule: Audit only<br/>alert + incident report,<br/>message delivered"]
     C -- External recipient --> E{Sender is a member of<br/>the exception group?<br/>-Action Block only}
     E -- Yes --> F[Rule 0: Block with<br/>justification override<br/>- logged if overridden]
     E -- No / not configured --> G{-Action}
     G -- Block --> H[Rule: BlockAccess = true<br/>halting - not delivered<br/>to that recipient]
-    G -- Encrypt --> I[Rule: EncryptRMSTemplate<br/>non-halting - delivered,<br/>protected]
+    G -- Encrypt --> I["Rule: EncryptRMSTemplate<br/>non-halting - delivered,<br/>protected"]
 ```
 
 One DLP policy (`PII DLP - Exchange External Send Control`), two or three rules depending on

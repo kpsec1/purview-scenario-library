@@ -62,7 +62,7 @@ sequenceDiagram
     alt not found
         Trigger->>SCC: New-ComplianceRetentionEvent -EventType "Employee Departure" -SharePointAssetIdQuery "ComplianceAssetID:<id>" -EventDateTime <date>
     end
-    Note over SCC: retention clock starts (up to 7d sync); at end of duration, Stage 1 (HR) then Stage 2 (Legal) disposition review runs; final approval -> permanent deletion within 15 days
+    Note over SCC: retention clock starts (up to 7d sync) -  at end of duration, Stage 1 (HR) then Stage 2 (Legal) disposition review runs -  final approval -> permanent deletion within 15 days
 ```
 
 Four durable objects (event type, label, policy, rule) created once by the deploy script, plus one

@@ -93,8 +93,8 @@ sequenceDiagram
     Search-->>Op: Report - review before purging (no mutation of mailbox content)
 
     Op->>Purge: -CaseId -SearchId -PurgeType Recoverable|PermanentlyDelete
-    Purge->>Graph: POST .../searches/{id}/purgeData {purgeType, purgeAreas: mailboxes}
-    Graph->>Mbx: Remove matching items (<=100/mailbox/run; skips items under litigation hold)
+    Purge->>Graph: POST .../searches/{id}/purgeData {"purgeType, purgeAreas: mailboxes"}
+    Graph->>Mbx: Remove matching items (<=100/mailbox/run -  skips items under litigation hold)
     Graph-->>Purge: 202 Accepted + Location (ediscoveryPurgeDataOperation) - poll to completion
 
     Note over Mbx: Held mailboxes: items only hidden from view, NOT deleted.<br/>Chain to priority-cleanup-exchange-data-spillage for those.

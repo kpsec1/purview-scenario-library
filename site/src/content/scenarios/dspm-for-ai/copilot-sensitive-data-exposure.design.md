@@ -90,7 +90,7 @@ flowchart TD
     B -- Yes --> C[Rule 0: exclude from processing<br/>citation link may still appear]
     B -- No --> D{Prompt text contains<br/>SSN or Credit Card Number?}
     D -- Yes --> E[Rule 1: block external web-search grounding<br/>internal grounding still used]
-    D -- No --> F[Normal response,<br/>grounded in whatever the user already has access to]
+    D -- No --> F["Normal response,<br/>grounded in whatever the user already has access to"]
 ```
 
 ## 5. Data flow / where enforcement happens

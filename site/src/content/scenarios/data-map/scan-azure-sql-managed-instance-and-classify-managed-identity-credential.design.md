@@ -50,7 +50,7 @@ script with names swapped.
 ```mermaid
 flowchart TD
     subgraph Base["scan-azure-sql-managed-instance-and-classify (prerequisite)"]
-        DS[(Data source:<br/>AzureSqlDatabaseManagedInstance)]
+        DS["(Data source:<br/>AzureSqlDatabaseManagedInstance)"]
         SAMIScan["Scan: AzureSqlDatabaseManagedInstanceMsi<br/>(SAMI-authenticated)"]
     end
 

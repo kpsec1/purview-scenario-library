@@ -92,26 +92,26 @@ sequenceDiagram
         Deploy->>Deploy: skip (idempotent no-op)
     else type missing
         API-->>Deploy: non-success response
-        Deploy->>API: POST types/typedefs (entityDefs: [{name, superTypes:[Process], attributeDefs}])
+        Deploy->>API: POST types/typedefs (entityDefs: [{"name, superTypes:[Process], attributeDefs"}])
         API-->>Deploy: 200 OK
     end
-    Deploy->>API: POST entity/bulk (Process entity; upsert-by-qualifiedName, confirmed)
+    Deploy->>API: POST entity/bulk (Process entity -  upsert-by-qualifiedName, confirmed)
     API-->>Deploy: 200 OK (guidAssignments / mutatedEntities)
     Deploy->>API: GET lineage/uniqueAttribute/type/azure_sql_table (upstream, direction=OUTPUT, depth=2)
     API-->>Deploy: two-hop graph (guidEntityMap + relations)
-    Deploy->>Deploy: resolve Process/downstream GUIDs by qualifiedName; check both relations
+    Deploy->>Deploy: resolve Process/downstream GUIDs by qualifiedName -  check both relations
     opt dataset_process_inputs missing
-        Deploy->>API: POST relationship (dataset_process_inputs; end1=upstream DataSet, end2=Process)
+        Deploy->>API: POST relationship (dataset_process_inputs -  end1=upstream DataSet, end2=Process)
     end
     opt process_dataset_outputs missing
-        Deploy->>API: POST relationship (process_dataset_outputs; end1=Process, end2=downstream DataSet)
+        Deploy->>API: POST relationship (process_dataset_outputs -  end1=Process, end2=downstream DataSet)
     end
     Validate->>AAD: OAuth2 client_credentials
     AAD-->>Validate: Bearer token
     Validate->>API: GET types/entitydef/name/PurviewScenarioLibraryEtlProcess
     Validate->>API: GET lineage/uniqueAttribute/type/azure_sql_table (upstream, direction=OUTPUT, depth=2)
     API-->>Validate: two-hop graph
-    Validate->>Validate: confirm type exists; confirm both hops walkable in order; confirm columnMapping survived
+    Validate->>Validate: confirm type exists -  confirm both hops walkable in order -  confirm columnMapping survived
 ```
 
 The deploy script's Step 3 deliberately fetches the whole two-hop graph in **one** call (depth 2

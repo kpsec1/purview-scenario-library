@@ -74,7 +74,7 @@ flowchart TD
     Ingest --> Connector["HR connector\n(Microsoft Purview Data connectors)"]
     Connector -->|"Resignation / LastWorkingDate\n= triggering event"| Policy["IRM Policy:\n'Departing Employee Data Theft'\n(Data theft by departing users template)\n[portal-authored - no API]"]
     EntraDel["User account deleted\nfrom Microsoft Entra ID\n(fallback trigger)"] --> Policy
-    M365[M365 + Graph activity signals\nSharePoint downloads, printing,\ncloud uploads, USB copy] --> Policy
+    M365["M365 + Graph activity signals\nSharePoint downloads, printing,\ncloud uploads, USB copy"] --> Policy
     Policy -->|risk score crosses threshold| Alert["IRM Alert\n(pseudonymized by default)"]
     Alert --> Dashboard["Purview portal:\nInsider Risk Management ▸ Alerts"]
     Alert --> Defender["Microsoft Defender portal\nunified incident queue"]

@@ -95,9 +95,9 @@ flowchart TD
     B --> F[Compliance score<br/>Controls tab<br/>native Reports page]
     G["Admin changes a Compliance Manager<br/>role or automation-trust setting"] --> H["Unified audit log:<br/>ComplianceManagerRolesChange /<br/>ComplianceManagerAutomationLevelChange /<br/>ComplianceManagerAutomationChange"]
     H --> I["REUSED: assess-against-iso27001/deploy/<br/>Export-ComplianceManagerAuditTrail.ps1"]
-    I --> J[Rolling audit-trail CSV<br/>retained 6+ years per Sec 164.316(b)(2)(i)]
+    I --> J["Rolling audit-trail CSV<br/>retained 6+ years per Sec 164.316(b)(2)(i)"]
     J --> K[validate/Test-ComplianceManagerAuditTrail.ps1<br/>+ crosswalk-manifest check]
-    B -.evidence + exported reports.-> L[Designated Privacy Officer / Security Officer<br/>and, if ever needed, HHS OCR]
+    B -.evidence + exported reports.-> L["Designated Privacy Officer / Security Officer<br/>and, if ever needed, HHS OCR"]
 ```
 
 ## 5. Step-by-step implementation

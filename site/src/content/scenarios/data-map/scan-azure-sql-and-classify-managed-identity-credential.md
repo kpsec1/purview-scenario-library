@@ -66,13 +66,13 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
 ```mermaid
 flowchart TD
     subgraph Azure["Target Azure SQL Database"]
-        SQL[(sql-contoso-prod.database.windows.net<br/>customerdb)]
+        SQL["(sql-contoso-prod.database.windows.net<br/>customerdb)"]
     end
 
     subgraph Purview["Microsoft Purview account"]
         UAMI[("User-assigned managed identity<br/>(added via Managed identities blade)")]
         Cred["Credential: kind ManagedIdentity<br/>(scan-credential-remaining-kinds)"]
-        DS[(Data source:<br/>AzureSqlDatabase - unchanged)]
+        DS["(Data source:<br/>AzureSqlDatabase - unchanged)"]
         Scan["Scan: AzureSqlDatabaseCredential<br/>credential: { ManagedIdentity, &lt;name&gt; }"]
     end
 

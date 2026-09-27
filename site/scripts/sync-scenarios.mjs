@@ -112,6 +112,56 @@ function cleanDashes(text) {
     .replace(/\s*[–—]\s*/g, ', ');
 }
 
+// Quote flowchart node labels that contain characters Mermaid treats as
+// reserved (parentheses, braces, commas, @, #), so labels like B[Foo (Bar)]
+// parse. Only runs on text OUTSIDE existing quoted strings, so already-quoted
+// labels (which may legitimately contain [] , etc.) are left untouched.
+function quoteMermaidLabels(seg) {
+  const needQuote = (i) => i && !i.trim().startsWith('"') && /[(){},@#]/.test(i);
+  const q = (i) => '"' + i.replace(/"/g, '&quot;') + '"';
+  let s = seg;
+  s = s.replace(/\[\[([^\]|]+?)\]\]/g, (m, i) => (needQuote(i) ? `[[${q(i)}]]` : m));
+  s = s.replace(/\[\(([^)|]+?)\)\]/g, (m, i) => (needQuote(i) ? `[(${q(i)})]` : m));
+  s = s.replace(/\(\[([^\]|]+?)\]\)/g, (m, i) => (needQuote(i) ? `([${q(i)}])` : m));
+  s = s.replace(/\{\{([^}|]+?)\}\}/g, (m, i) => (needQuote(i) ? `{{${q(i)}}}` : m));
+  s = s.replace(/(?<![[(])\[([^\][|]+?)\](?![)\]])/g, (m, i) => (needQuote(i) ? `[${q(i)}]` : m));
+  s = s.replace(/(?<!\{)\{([^{}|]+?)\}(?!\})/g, (m, i) => (needQuote(i) ? `{${q(i)}}` : m));
+  return s;
+}
+
+// Make a Mermaid diagram line render-safe without changing its meaning.
+// Long dashes and dash entities become hyphens (comma is reserved in Mermaid);
+// the invalid dotted arrow is repaired; the statement-separator ';' is
+// neutralized in the parts Mermaid parses (it breaks Note/message text);
+// flowchart labels with reserved characters are quoted. All of this runs only
+// OUTSIDE existing quoted strings, and HTML entities (which contain ';') are
+// protected first so they are never corrupted.
+function sanitizeMermaid(line) {
+  let s = line.replace(/&mdash;|&ndash;/g, '-');
+  // Protect HTML entities (e.g. &lt; &gt; &amp; &#39;) from the ';' handling.
+  const ents = [];
+  s = s.replace(/&#?[a-zA-Z0-9]+;/g, (m) => {
+    ents.push(m);
+    return `\u0000${ents.length - 1}\u0000`;
+  });
+  // Split into quoted / unquoted spans; only transform structure outside quotes.
+  const parts = s.split(/("(?:[^"\\]|\\.)*")/g);
+  s = parts
+    .map((seg) => {
+      const isQuoted = seg.length >= 2 && seg.startsWith('"') && seg.endsWith('"');
+      // Long dashes to hyphen everywhere (safe, and satisfies the no-dash rule).
+      let t = seg.replace(/\s*[–—]\s*/g, ' - ');
+      if (isQuoted) return t;
+      t = t.replace(/-\.-\.->/g, '-.->');
+      // Repair a dotted edge label written as `-.-label.->` (should be `-.label.->`).
+      t = t.replace(/-\.-(?=[A-Za-z])/g, '-.');
+      t = t.replace(/;/g, ' - ');
+      return quoteMermaidLabels(t);
+    })
+    .join('');
+  return s.replace(/\u0000(\d+)\u0000/g, (m, i) => ents[Number(i)]);
+}
+
 // Remove citation markers and turn `docs/<name>.md §N` into links to the
 // published reference pages. Operates on a single prose line.
 function cleanReferences(line) {
@@ -155,19 +205,23 @@ function cleanContent(markdown) {
   const lines = markdown.split('\n');
   let inFence = false;
   let fenceChar = '';
+  let isMermaid = false;
   return lines
     .map((line) => {
-      const m = line.match(/^(\s*)(```+|~~~+)/);
+      const m = line.match(/^(\s*)(```+|~~~+)\s*([A-Za-z0-9-]*)/);
       if (m) {
         if (!inFence) {
           inFence = true;
           fenceChar = m[2][0];
+          isMermaid = m[3].toLowerCase() === 'mermaid';
         } else if (line.trim().startsWith(fenceChar)) {
           inFence = false;
+          isMermaid = false;
         }
         return cleanDashes(line);
       }
-      return inFence ? cleanDashes(line) : cleanDashes(cleanReferences(line));
+      if (inFence) return isMermaid ? sanitizeMermaid(line) : cleanDashes(line);
+      return cleanDashes(cleanReferences(line));
     })
     .join('\n');
 }

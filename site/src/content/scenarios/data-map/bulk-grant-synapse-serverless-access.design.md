@@ -121,16 +121,16 @@ sequenceDiagram
     SQL-->>Script: List of serverless databases (or -Database overrides this)
     Script->>SQL: (master) SELECT ... FROM sys.server_principals WHERE name = @PrincipalName
     alt login missing
-        Script->>SQL: (master) CREATE LOGIN [PrincipalName] FROM EXTERNAL PROVIDER;
+        Script->>SQL: (master) CREATE LOGIN [PrincipalName] FROM EXTERNAL PROVIDER - 
     end
     loop for each target database
         Script->>SQL: SELECT ... FROM sys.database_principals WHERE name = @PrincipalName
         alt user missing
-            Script->>SQL: CREATE USER [PrincipalName] FOR LOGIN [PrincipalName];
+            Script->>SQL: CREATE USER [PrincipalName] FOR LOGIN [PrincipalName] - 
         end
         Script->>SQL: SELECT ... sys.database_role_members JOIN ... WHERE role = db_datareader
         alt not yet a member
-            Script->>SQL: ALTER ROLE db_datareader ADD MEMBER [PrincipalName];
+            Script->>SQL: ALTER ROLE db_datareader ADD MEMBER [PrincipalName] - 
         end
     end
     Script->>Script: Build per-database result table, exit non-zero if any database errored

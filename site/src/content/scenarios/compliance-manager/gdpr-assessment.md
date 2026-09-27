@@ -108,7 +108,7 @@ flowchart TD
     H --> I["REUSED: assess-against-iso27001/deploy/<br/>Export-ComplianceManagerAuditTrail.ps1"]
     I --> J[Rolling audit-trail CSV]
     J --> K[validate/Test-ComplianceManagerAuditTrail.ps1<br/>+ crosswalk-manifest check]
-    B -.evidence + exported reports.-> L[Data Protection Officer/privacy lead<br/>and, if ever needed, a Data Protection Authority]
+    B -.evidence + exported reports.-> L["Data Protection Officer/privacy lead<br/>and, if ever needed, a Data Protection Authority"]
 ```
 
 ## 5. Step-by-step implementation

@@ -69,33 +69,58 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
     <script>
       async function renderDiagrams() {
         if (!document.querySelector('pre.mermaid')) return;
+        let mermaid;
         try {
-          const { default: mermaid } = await import('mermaid');
-          mermaid.initialize({
-            startOnLoad: false,
-            securityLevel: 'strict',
-            theme: 'base',
-            fontFamily: 'Inter, system-ui, sans-serif',
-            themeVariables: {
-              primaryColor: '#eef4ff',
-              primaryBorderColor: '#1e3a8a',
-              primaryTextColor: '#0f172a',
-              secondaryColor: '#f1f5f9',
-              tertiaryColor: '#f8fafc',
-              lineColor: '#64748b',
-              fontSize: '15px',
-              clusterBkg: '#f8fafc',
-              clusterBorder: '#cbd5e1',
-            },
-          });
-          await mermaid.run({ querySelector: 'pre.mermaid' });
+          ({ default: mermaid } = await import('mermaid'));
         } catch (err) {
-          // Fallback: show the flowchart source so no content is lost.
-          document
-            .querySelectorAll('pre.mermaid')
-            .forEach((el) => el.classList.add('mermaid-failed'));
+          // Runtime could not load: reveal the diagram source so nothing is lost.
+          document.querySelectorAll('pre.mermaid').forEach((el) => el.classList.add('mermaid-failed'));
           console.error('Mermaid failed to load; showing diagram source.', err);
+          return;
         }
+        mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: 'strict',
+          theme: 'base',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          themeVariables: {
+            primaryColor: '#eef4ff',
+            primaryBorderColor: '#1e3a8a',
+            primaryTextColor: '#0f172a',
+            secondaryColor: '#f1f5f9',
+            tertiaryColor: '#f8fafc',
+            lineColor: '#64748b',
+            fontSize: '15px',
+            clusterBkg: '#f8fafc',
+            clusterBorder: '#cbd5e1',
+          },
+        });
+
+        // Render each diagram in isolation so one bad diagram cannot blank the
+        // rest, and only render nodes that currently have layout (Mermaid needs
+        // real dimensions, so diagrams inside a collapsed <details> are skipped
+        // until the section is opened).
+        const renderIn = async (root) => {
+          const nodes = Array.from(root.querySelectorAll('pre.mermaid:not([data-processed])')).filter(
+            (el) => el.getClientRects().length > 0
+          );
+          for (const node of nodes) {
+            try {
+              await mermaid.run({ nodes: [node] });
+            } catch (err) {
+              node.classList.add('mermaid-failed');
+              console.error('Mermaid could not render a diagram:', err && err.message ? err.message : err);
+            }
+          }
+        };
+
+        await renderIn(document);
+        // Render diagrams the first time their collapsible section is expanded.
+        document.querySelectorAll('details').forEach((d) => {
+          d.addEventListener('toggle', () => {
+            if (d.open) renderIn(d);
+          });
+        });
       }
       renderDiagrams();
     </script>

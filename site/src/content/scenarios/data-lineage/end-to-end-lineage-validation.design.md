@@ -108,7 +108,7 @@ sequenceDiagram
     AAD-->>Validate: Bearer token
     Validate->>API: GET lineage/uniqueAttribute/type/azure_sql_table (origin, direction=OUTPUT, depth=MaxDepth)
     API-->>Validate: full downstream graph (guidEntityMap + relations)
-    Validate->>Validate: breadth-first walk from baseEntityGuid; confirm every expectedDownstreamChain asset is reachable
+    Validate->>Validate: breadth-first walk from baseEntityGuid -  confirm every expectedDownstreamChain asset is reachable
 ```
 
 Both scripts call the *same* Lineage - Get By Unique Attribute operation for two different

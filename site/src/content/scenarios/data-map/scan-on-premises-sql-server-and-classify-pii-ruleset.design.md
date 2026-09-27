@@ -91,7 +91,7 @@ assume.
 ```mermaid
 flowchart TD
     subgraph OnPrem["On-premises network"]
-        SQL[(sql01.contoso.local<br/>CustomerDB)]
+        SQL["(sql01.contoso.local<br/>CustomerDB)"]
         SHIRHost["SHIR host (Windows)<br/>Integration Runtime service"]
     end
 

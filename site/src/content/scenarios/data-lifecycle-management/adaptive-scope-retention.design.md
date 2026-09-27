@@ -56,7 +56,7 @@ sequenceDiagram
     Script->>SCC: Get-AdaptiveScope (scope exists?)
     alt not found
         Script->>SCC: New-AdaptiveScope -Name -LocationType User -FilterConditions {Title in [...]}
-        Note over SCC: Query re-evaluated daily; up to 5 days to fully populate
+        Note over SCC: Query re-evaluated daily -  up to 5 days to fully populate
     end
     Script->>SCC: Get-RetentionCompliancePolicy (policy exists?)
     alt not found

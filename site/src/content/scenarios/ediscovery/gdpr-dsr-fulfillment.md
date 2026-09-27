@@ -83,7 +83,7 @@ sequenceDiagram
     Intake->>New: -DefinitionPath (requestId, requestType, dataSubject, receivedDate)
     New->>Graph: POST /ediscoveryCases (find-or-create)
     New->>Graph: POST .../custodians {email=dataSubject} (find-or-create, NOT held)
-    New->>Graph: POST .../custodians/{id}/userSources {mailbox, site}
+    New->>Graph: POST .../custodians/{id}/userSources {"mailbox, site"}
     New->>Graph: POST .../searches {dataSourceScopes: allCaseCustodians}
     New->>New: Compute dueDate = receivedDate+1mo, maxExtendedDueDate = receivedDate+3mo
     New->>Ledger: Upsert request record (requestId, dates, status, caseId/custodianId/searchId)

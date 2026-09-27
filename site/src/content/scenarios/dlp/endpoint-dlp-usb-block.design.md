@@ -69,9 +69,9 @@ copy attempt matches exactly one of the two rules, never both.
 ```mermaid
 flowchart TD
     A[User attempts to copy a file<br/>to removable USB storage] --> B{Onboarded<br/>device?}
-    B -- No --> Z0[Not visible to Endpoint DLP -<br/>no monitoring, no enforcement]
+    B -- No --> Z0["Not visible to Endpoint DLP -<br/>no monitoring, no enforcement"]
     B -- Yes --> C{Content matches<br/>SSN or Credit Card Number SIT?}
-    C -- No --> Z1[Copy proceeds,<br/>no DLP action]
+    C -- No --> Z1["Copy proceeds,<br/>no DLP action"]
     C -- Yes --> D{User in IT Data<br/>Custodians group?}
     D -- Yes --> E["Rule 1: USB-Audit-ITDataCustodians<br/>Audit only, copy proceeds<br/>Low-severity alert + incident report"]
     D -- No --> F["Rule 0: USB-Block-Sensitive-AllUsers<br/>Block, copy prevented<br/>High-severity alert + incident report"]

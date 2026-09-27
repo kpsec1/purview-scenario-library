@@ -59,10 +59,10 @@ this scenario:
 ```mermaid
 flowchart TD
     subgraph SynapseWS["Azure Synapse Analytics workspace"]
-        Master[(Built-in serverless pool:<br/>master)]
-        DB1[(serverless db: sales_db)]
-        DB2[(serverless db: hr_db)]
-        DBn[(serverless db: ... N more)]
+        Master["(Built-in serverless pool:<br/>master)"]
+        DB1["(serverless db: sales_db)"]
+        DB2["(serverless db: hr_db)"]
+        DBn["(serverless db: ... N more)"]
     end
 
     Operator[["Operator service principal<br/>(Synapse Administrator role)"]]

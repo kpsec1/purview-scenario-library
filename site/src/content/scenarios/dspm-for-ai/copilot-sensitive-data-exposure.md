@@ -88,14 +88,14 @@ flowchart TD
     L -- Yes --> X["Rule 0: Copilot-Exclude-Labeled-Content<br/>Prevent Copilot from processing the item<br/>(item may still appear as a citation link)"]
     L -- No --> P{Prompt text contains<br/>SSN or Credit Card Number SIT?}
     P -- Yes --> W["Rule 1: Copilot-Restrict-WebGrounding-SensitivePrompts<br/>Blocks external web search as a grounding source<br/>Internal M365 grounding still used"]
-    P -- No --> R[Copilot responds normally,<br/>grounded in whatever the user already has permission to access]
+    P -- No --> R["Copilot responds normally,<br/>grounded in whatever the user already has permission to access"]
     X -.alert.-> A[DLP Alerts dashboard /<br/>Microsoft Defender portal]
     W -.alert.-> A
 
     subgraph Assess[" DSPM for AI (classic) - separate, portal-only control "]
         direction LR
-        S[Weekly automatic data risk<br/>assessment, top 100 SharePoint<br/>sites by usage]
-        Rep[Reports: oversharing findings,<br/>unlabeled files referenced<br/>in Copilot prompts]
+        S["Weekly automatic data risk<br/>assessment, top 100 SharePoint<br/>sites by usage"]
+        Rep["Reports: oversharing findings,<br/>unlabeled files referenced<br/>in Copilot prompts"]
     end
     S --> Rep
     Rep -.feeds remediation of.-> L

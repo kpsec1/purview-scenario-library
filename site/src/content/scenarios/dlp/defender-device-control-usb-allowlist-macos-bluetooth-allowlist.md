@@ -75,7 +75,7 @@ flowchart TD
         direction LR
         F[Parent: removableMedia coverage]
         G[Portable-device-coverage: Apple/Portable/Bluetooth catch-all + deny]
-        H[This fragment: Bluetooth approved-device exceptions, 0-N devices]
+        H["This fragment: Bluetooth approved-device exceptions, 0-N devices"]
     end
 
     D -.RemovableStoragePolicyTriggered<br/>Verdict=Allow.-> K[Advanced Hunting - DeviceEvents]

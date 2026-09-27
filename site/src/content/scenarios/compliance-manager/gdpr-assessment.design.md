@@ -265,7 +265,7 @@ flowchart TD
     B --> F[Compliance score<br/>Controls tab<br/>native Reports page]
     G["Admin changes a Compliance Manager<br/>role or automation-trust setting<br/>(tenant-wide, not assessment-scoped)"] --> H["Unified audit log:<br/>ComplianceManagerRolesChange /<br/>ComplianceManagerAutomationLevelChange /<br/>ComplianceManagerAutomationChange"]
     H --> I["REUSED: assess-against-iso27001/deploy/<br/>Export-ComplianceManagerAuditTrail.ps1"]
-    I --> J[Rolling audit-trail CSV<br/>retained per the organization's own<br/>Article 5(1)(e) retention schedule]
+    I --> J["Rolling audit-trail CSV<br/>retained per the organization's own<br/>Article 5(1)(e) retention schedule"]
     J --> K[validate/Test-ComplianceManagerAuditTrail.ps1<br/>+ this scenario's own crosswalk-manifest check]
-    B -.evidence + Export actions report.-> L[Data Protection Officer/privacy lead<br/>and, if ever needed, a Data Protection Authority]
+    B -.evidence + Export actions report.-> L["Data Protection Officer/privacy lead<br/>and, if ever needed, a Data Protection Authority"]
 ```

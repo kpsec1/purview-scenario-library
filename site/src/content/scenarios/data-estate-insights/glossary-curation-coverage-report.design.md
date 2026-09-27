@@ -128,7 +128,7 @@ sequenceDiagram
             Report->>API: GET terms?domainId={id}&skip&top
             API-->>Report: Term[] (id, name, status, description, contacts, ...), nextLink
         end
-        Report->>Report: tally by status; tally completeness<br/>(empty description/owner/expert)
+        Report->>Report: tally by status -  tally completeness<br/>(empty description/owner/expert)
         alt -SkipAssetLinkCheck not set
             loop for each term in this domain
                 Report->>API: GET terms/{termId}/relationships?entityType=DATAASSET
@@ -139,7 +139,7 @@ sequenceDiagram
             Report->>Report: AssetLinkage fields reported as "Skipped" (README.md Section 11)
         end
     end
-    Report->>Report: write/replace this RunId's row(s) in the trend-log CSV;<br/>write a per-run breakdown JSON
+    Report->>Report: write/replace this RunId's row(s) in the trend-log CSV - <br/>write a per-run breakdown JSON
 ```
 
 Every call is a **read-only GET** - the Terms operation group's own read operations

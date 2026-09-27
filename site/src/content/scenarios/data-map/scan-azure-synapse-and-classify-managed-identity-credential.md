@@ -66,13 +66,13 @@ enumeration authentication, and the workspace firewall setting):
 ```mermaid
 flowchart TD
     subgraph Azure["Target Azure Synapse Analytics workspace"]
-        WS[(ws-contoso-prod<br/>dedicated + serverless SQL pools)]
+        WS["(ws-contoso-prod<br/>dedicated + serverless SQL pools)"]
     end
 
     subgraph Purview["Microsoft Purview account"]
         UAMI[("User-assigned managed identity<br/>(added via Managed identities blade)")]
         Cred["Credential: kind ManagedIdentity<br/>(scan-credential-remaining-kinds)"]
-        DS[(Data source:<br/>AzureSynapseWorkspace - unchanged)]
+        DS["(Data source:<br/>AzureSynapseWorkspace - unchanged)"]
         Scan["Scan: AzureSynapseWorkspaceCredential<br/>credential: { ManagedIdentity, &lt;name&gt; }<br/>(no databaseName/serverEndpoint - on DS)"]
     end
 

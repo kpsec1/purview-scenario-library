@@ -75,7 +75,7 @@ page (see `README.md` §11 for the full resolution).
 ```mermaid
 flowchart TD
     subgraph Base["scan-azure-sql-and-classify (prerequisite)"]
-        DS[(Data source:<br/>AzureSqlDatabase)]
+        DS["(Data source:<br/>AzureSqlDatabase)"]
         Scan["Scan: AzureSqlDatabaseMsi<br/>ruleset: AzureSqlDatabase [System]"]
     end
 

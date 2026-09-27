@@ -70,7 +70,7 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
 ```mermaid
 flowchart TD
     subgraph Azure["Target Azure SQL Database"]
-        SQL[(sql-contoso-prod.database.windows.net<br/>customerdb)]
+        SQL["(sql-contoso-prod.database.windows.net<br/>customerdb)"]
     end
 
     subgraph Purview["Microsoft Purview account"]
@@ -78,7 +78,7 @@ flowchart TD
         DS[Data source:<br/>AzureSqlDatabase]
         Scan["Scan: AzureSqlDatabaseMsi<br/>scan rule set: System default"]
         Trigger[Recurring trigger<br/>optional]
-        DataMap[(Data Map / catalog:<br/>schema + classifications)]
+        DataMap["(Data Map / catalog:<br/>schema + classifications)"]
     end
 
     Deployer[["deploy/New-AzureSqlDataMapScan.ps1<br/>(app-only service principal,<br/>Data Source Administrator role)"]]

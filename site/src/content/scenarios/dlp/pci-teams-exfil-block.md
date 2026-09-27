@@ -72,7 +72,7 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
 ```mermaid
 flowchart TD
     A[Teams chat / channel message sent] --> B{Contains<br/>Credit Card Number SIT?}
-    B -- No --> Z[Delivered, no DLP action]
+    B -- No --> Z["Delivered, no DLP action"]
     B -- Yes --> C{Shared with<br/>people outside org?}
     C -- No --> F["Rule 2: PCI-Audit-Internal-AllUsers<br/>Audit only, Low-severity alert<br/>Message delivered"]
     C -- Yes --> D{Sender in<br/>Card Operations group?}

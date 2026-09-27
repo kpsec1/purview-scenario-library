@@ -74,12 +74,12 @@ flowchart TD
     D -.hold status.-> H
 
     B --> E[New-EdiscoverySearchReviewSetExport.ps1]
-    E -->|find-or-create| F[eDiscoverySearch<br/>KQL query, allCaseCustodians]
-    F -->|addToReviewSet<br/>async caseOperation| G[eDiscoveryReviewSet<br/>Azure Storage, case-scoped]
+    E -->|find-or-create| F["eDiscoverySearch<br/>KQL query, allCaseCustodians"]
+    F -->|addToReviewSet<br/>async caseOperation| G["eDiscoveryReviewSet<br/>Azure Storage, case-scoped"]
     G -->|export<br/>async caseOperation| I[ediscoveryExportOperation<br/>exportFileMetadata]
 
     I --> J[Get-EdiscoveryExportPackage.ps1]
-    J -->|separate token,<br/>separate API| K[(Downloaded PST/native files<br/>+ load file + report)]
+    J -->|separate token,<br/>separate API| K["(Downloaded PST/native files<br/>+ load file + report)"]
 
     subgraph Auth["Two separate credentials, same app registration"]
         direction LR

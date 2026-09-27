@@ -96,12 +96,12 @@ before a sales commitment.
 flowchart TD
     E[Email received by a user] --> S{Sender domain in tenant's<br/>Exchange accepted domains?<br/>&#40;FromScope&#41;}
     S -- "No - external" --> B["Rule 3: Copilot-Exclude-ExternalEmail-Processing<br/>Prevent Copilot from processing content<br/>Email excluded from grounding, summarization, citation"]
-    S -- "Yes - internal" --> N[Email remains eligible for<br/>Copilot grounding, subject to Rule 0&ndash;2]
+    S -- "Yes - internal" --> N["Email remains eligible for<br/>Copilot grounding, subject to Rule 0-2"]
     U[User asks Copilot to summarize inbox<br/>or reason over recent email] --> Q{Does the referenced<br/>email pass Rule 3?}
     Q -- Excluded --> R1[Copilot responds using internal<br/>email + other permitted sources only.<br/>User sees: some content excluded<br/>by organizational policy]
-    Q -- Not excluded --> R2[Email eligible as grounding input,<br/>subject to Rule 0&ndash;2's own checks]
+    Q -- Not excluded --> R2["Email eligible as grounding input,<br/>subject to Rule 0-2's own checks"]
     B -.alert.-> A[DLP Alerts dashboard /<br/>Microsoft Defender portal]
-    B -.-.-> U2[User's own access to the<br/>excluded email is unaffected]
+    B -.-> U2[User's own access to the<br/>excluded email is unaffected]
 ```
 
 This scenario adds **one rule** (`Copilot-Exclude-ExternalEmail-Processing`, priority 3) to the

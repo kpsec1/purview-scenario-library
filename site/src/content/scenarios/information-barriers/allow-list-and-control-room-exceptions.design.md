@@ -76,8 +76,8 @@ sequenceDiagram
     opt -Activate (after sign-off)
         Script->>SCC: Set-InformationBarrierPolicy -State Active (each managed policy)
         Script->>SCC: Start-InformationBarrierPoliciesApplication
-        SCC-->>M365: apply user-by-user (~5,000/hr; SharePoint up to 24h)
-        M365-->>M365: ComplianceControlRoom reaches Trading+Research; Legal reaches Research only
+        SCC-->>M365: apply user-by-user (~5,000/hr -  SharePoint up to 24h)
+        M365-->>M365: ComplianceControlRoom reaches Trading+Research -  Legal reaches Research only
     end
 ```
 

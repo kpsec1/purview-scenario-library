@@ -67,7 +67,7 @@ from the Azure sibling scenarios' tables are called out explicitly):
 ```mermaid
 flowchart TD
     subgraph OnPrem["On-premises network"]
-        SQL[(sql01.contoso.local<br/>CustomerDB)]
+        SQL["(sql01.contoso.local<br/>CustomerDB)"]
         SHIRHost["SHIR host (Windows)<br/>Integration Runtime service"]
     end
 
@@ -76,11 +76,11 @@ flowchart TD
         DS[Data source:<br/>SqlServerDatabase]
         Scan["Scan: SqlServerDatabaseCredential<br/>scan rule set: System default"]
         Trigger[Recurring trigger<br/>optional]
-        Cred[Credential object<br/>SQL/Windows auth, Key-Vault-backed]
-        DataMap[(Data Map / catalog:<br/>schema + classifications)]
+        Cred["Credential object<br/>SQL/Windows auth, Key-Vault-backed"]
+        DataMap["(Data Map / catalog:<br/>schema + classifications)"]
     end
 
-    KV[(Azure Key Vault<br/>login password)]
+    KV["(Azure Key Vault<br/>login password)"]
 
     Deployer[["deploy/New-OnPremisesSqlServerDataMapScan.ps1<br/>(app-only service principal,<br/>Data Source Administrator + Data Reader)"]]
 

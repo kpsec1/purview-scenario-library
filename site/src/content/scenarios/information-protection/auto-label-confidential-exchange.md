@@ -70,10 +70,10 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
 flowchart TD
     A[Email sent or received<br/>via Exchange Online] --> B{Sender on the<br/>exclusion list?}
     B -- Yes --> Z[Not evaluated by this policy]
-    B -- No --> C{Subject, body, or Office/PDF<br/>attachment contains SSN or<br/>Credit Card Number, count >= 1?}
+    B -- No --> C{"Subject, body, or Office/PDF<br/>attachment contains SSN or<br/>Credit Card Number, count >= 1?"}
     C -- No --> Y[No action]
     C -- Yes --> D{Existing label state?}
-    D -- Unlabeled --> E[Apply Confidential label<br/>to the EMAIL, not the attachment]
+    D -- Unlabeled --> E["Apply Confidential label<br/>to the EMAIL, not the attachment"]
     D -- Auto-applied, lower priority --> E
     D -- Manual, any priority --> F[Not overridden - left as-is]
     D -- Auto-applied or manual,<br/>higher priority --> F
@@ -81,7 +81,7 @@ flowchart TD
 
     subgraph Rollout["Staged rollout (this scenario's default path)"]
         direction LR
-        S1[Off] --> S2[Simulation mode -<br/>live traffic only] --> S3[Review Items to review<br/>7+ days, with test<br/>traffic during the window] --> S4[Enable]
+        S1[Off] --> S2[Simulation mode -<br/>live traffic only] --> S3["Review Items to review<br/>7+ days, with test<br/>traffic during the window"] --> S4[Enable]
     end
 ```
 

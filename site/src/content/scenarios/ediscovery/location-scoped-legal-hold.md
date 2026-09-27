@@ -61,9 +61,9 @@ scenario:
 ```mermaid
 flowchart TD
     A[New-EdiscoveryLocationHold.ps1] -->|find-or-create| B[eDiscoveryCase]
-    A -->|find-or-create| C[ediscoveryHoldPolicy<br/>displayName, contentQuery]
-    C -->|find-or-create| D[userSource<br/>payments-team@contoso.com]
-    C -->|find-or-create| E[userSource<br/>payments-compliance-dl@contoso.com<br/>distribution list]
+    A -->|find-or-create| C["ediscoveryHoldPolicy<br/>displayName, contentQuery"]
+    C -->|find-or-create| D["userSource<br/>payments-team@contoso.com"]
+    C -->|find-or-create| E["userSource<br/>payments-compliance-dl@contoso.com<br/>distribution list"]
     C -->|find-or-create| F[siteSource<br/>PaymentsTeam SharePoint site]
 
     D -.holdStatus.-> H{{Hold policy status /<br/>portal Hold policies tab}}
@@ -71,7 +71,7 @@ flowchart TD
     F -.holdStatus.-> H
     C -.policy status + errors.-> H
 
-    A -.-Retry, on error/partial.-> G[retryPolicy]
+    A -.Retry, on error/partial.-> G[retryPolicy]
     G -.restamps.-> D
     G -.restamps.-> E
     G -.restamps.-> F

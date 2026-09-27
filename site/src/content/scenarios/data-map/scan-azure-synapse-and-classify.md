@@ -90,9 +90,9 @@ from the sibling scenarios' tables are called out explicitly):
 ```mermaid
 flowchart TD
     subgraph SynapseWS["Azure Synapse Analytics workspace: ws-contoso-prod"]
-        Dedicated[(Dedicated SQL pool<br/>ws-contoso-prod.sql.azuresynapse.net)]
-        Serverless[(Built-in serverless SQL pool<br/>ws-contoso-prod-ondemand.sql.azuresynapse.net)]
-        Storage[(Associated ADLS Gen2 storage)]
+        Dedicated["(Dedicated SQL pool<br/>ws-contoso-prod.sql.azuresynapse.net)"]
+        Serverless["(Built-in serverless SQL pool<br/>ws-contoso-prod-ondemand.sql.azuresynapse.net)"]
+        Storage["(Associated ADLS Gen2 storage)"]
     end
 
     subgraph Purview["Microsoft Purview account"]
@@ -100,7 +100,7 @@ flowchart TD
         DS[Data source:<br/>AzureSynapseWorkspace]
         Scan["Scan: AzureSynapseWorkspaceMsi<br/>scan rule set: AzureSynapseSQL (System)"]
         Trigger[Recurring trigger<br/>optional]
-        DataMap[(Data Map / catalog:<br/>schema + classifications)]
+        DataMap["(Data Map / catalog:<br/>schema + classifications)"]
     end
 
     Deployer[["deploy/New-AzureSynapseDataMapScan.ps1<br/>(app-only service principal,<br/>Data Source Administrator role)"]]

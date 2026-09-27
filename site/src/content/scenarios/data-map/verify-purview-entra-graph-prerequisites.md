@@ -83,11 +83,11 @@ flowchart TD
 
     subgraph Entra["Microsoft Entra ID"]
         Role[Directory Readers role]
-        Members[(Current members:<br/>service principals / users / groups)]
+        Members["(Current members:<br/>service principals / users / groups)"]
     end
 
     Script[["deploy/Confirm-DirectoryReadersMembership.ps1<br/>(Graph app-only,<br/>RoleManagement.Read.Directory)"]]
-    Report[(JSON report:<br/>PASS/FAIL per instance<br/>+ drift list)]
+    Report["(JSON report:<br/>PASS/FAIL per instance<br/>+ drift list)"]
 
     Rows --> Script
     Script -- "GET /directoryRoles?$filter=..." --> Role
@@ -96,7 +96,7 @@ flowchart TD
     Script -.->|"-ReportPath (optional)"| Report
 
     subgraph Sibling["scan-azure-sql-managed-instance-and-classify (sibling scenario)"]
-        MI[(Managed instance's<br/>managed identity)]
+        MI["(Managed instance's<br/>managed identity)"]
         Scan[Purview Data Map scan]
     end
 

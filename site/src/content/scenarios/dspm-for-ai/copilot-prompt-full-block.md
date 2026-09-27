@@ -81,11 +81,11 @@ scenario specifically:
 
 ```mermaid
 flowchart TD
-    U[User prompt to Copilot / Copilot Chat] --> F{Prompt text contains a<br/>configured high-severity SIT?<br/>e.g. Canada physical address,<br/>EU debit card number}
-    F -- Yes --> B["Rule 2: Copilot-Block-SensitivePrompts-FullResponse<br/>Prevent Copilot from processing content &gt; Processing prompts<br/>Copilot does not respond at all &mdash; not used for internal OR web grounding"]
-    F -- No --> W{Prompt text contains a Rule 1 SIT?<br/>e.g. SSN, credit card number<br/>(parent scenario)}
+    U[User prompt to Copilot / Copilot Chat] --> F{"Prompt text contains a<br/>configured high-severity SIT?<br/>e.g. Canada physical address,<br/>EU debit card number"}
+    F -- Yes --> B["Rule 2: Copilot-Block-SensitivePrompts-FullResponse<br/>Prevent Copilot from processing content &gt; Processing prompts<br/>Copilot does not respond at all - not used for internal OR web grounding"]
+    F -- No --> W{"Prompt text contains a Rule 1 SIT?<br/>e.g. SSN, credit card number<br/>(parent scenario)"}
     W -- Yes --> G["Rule 1: Copilot-Restrict-WebGrounding-SensitivePrompts (parent scenario)<br/>Blocks external web search only<br/>Copilot may still answer from internal M365 sources"]
-    W -- No --> N[Normal response,<br/>grounded in whatever the user already has access to]
+    W -- No --> N["Normal response,<br/>grounded in whatever the user already has access to"]
     B -.alert.-> A[DLP Alerts dashboard /<br/>Microsoft Defender portal]
     G -.alert.-> A
     B -.user-facing message.-> U2[User sees: request blocked by organizational policy]

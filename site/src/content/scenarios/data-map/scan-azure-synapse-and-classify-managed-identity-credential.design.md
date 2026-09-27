@@ -51,7 +51,7 @@ needed here for the core REST-level claim.
 ```mermaid
 flowchart TD
     subgraph Base["scan-azure-synapse-and-classify (prerequisite)"]
-        DS[(Data source:<br/>AzureSynapseWorkspace<br/>dedicated + serverless endpoints)]
+        DS["(Data source:<br/>AzureSynapseWorkspace<br/>dedicated + serverless endpoints)"]
         SAMIScan["Scan: AzureSynapseWorkspaceMsi<br/>(SAMI-authenticated)"]
     end
 

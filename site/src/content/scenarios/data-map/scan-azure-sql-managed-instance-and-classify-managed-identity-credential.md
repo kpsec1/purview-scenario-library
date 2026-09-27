@@ -68,13 +68,13 @@ admin on the instance, Directory Readers role):
 ```mermaid
 flowchart TD
     subgraph Azure["Target Azure SQL Managed Instance"]
-        MI[(mi-contoso-prod.public...database.windows.net<br/>customerdb)]
+        MI["(mi-contoso-prod.public...database.windows.net<br/>customerdb)"]
     end
 
     subgraph Purview["Microsoft Purview account"]
         UAMI[("User-assigned managed identity<br/>(added via Managed identities blade)")]
         Cred["Credential: kind ManagedIdentity<br/>(scan-credential-remaining-kinds)"]
-        DS[(Data source:<br/>AzureSqlDatabaseManagedInstance - unchanged)]
+        DS["(Data source:<br/>AzureSqlDatabaseManagedInstance - unchanged)"]
         Scan["Scan: AzureSqlDatabaseManagedInstanceCredential<br/>credential: { ManagedIdentity, &lt;name&gt; }"]
     end
 

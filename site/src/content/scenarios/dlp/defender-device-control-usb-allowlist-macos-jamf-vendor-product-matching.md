@@ -62,7 +62,7 @@ same PCI DSS v4.0 improvement actions this technical control and its siblings su
 ```mermaid
 flowchart TD
     A[User connects a<br/>removable storage device] --> B{Onboarded to Defender<br/>for Endpoint on macOS +<br/>Full Disk Access granted?}
-    B -- No --> Z0[Not visible / not enforced -<br/>no monitoring, no enforcement]
+    B -- No --> Z0["Not visible / not enforced -<br/>no monitoring, no enforcement"]
     B -- Yes --> C{Device matches<br/>ApprovedBackupDrives?<br/>serialNumber OR<br/>vendorId+productId sub-group}
     C -- Yes --> D["Rule: Allow-ApprovedBackupDrives<br/>read/write/execute allowed<br/>auditAllow event logged"]
     C -- No --> E["Rule: Deny-AllOtherRemovableStorage<br/>read/write/execute denied<br/>End-user dialog + auditDeny event"]

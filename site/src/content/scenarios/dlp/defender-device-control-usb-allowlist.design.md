@@ -111,7 +111,7 @@ design of the sibling Endpoint DLP scenario and `pci-teams-exfil-block`'s Card O
 ```mermaid
 flowchart TD
     A[User plugs in a<br/>removable storage device] --> B{Onboarded to<br/>Defender for Endpoint?}
-    B -- No --> Z0[Not visible to device control -<br/>no monitoring, no enforcement]
+    B -- No --> Z0["Not visible to device control -<br/>no monitoring, no enforcement"]
     B -- Yes --> C{Device matches<br/>ApprovedBackupDrives group?<br/>Serial No. / VID_PID}
     C -- Yes --> D["Rule: Allow-ApprovedBackupDrives<br/>Read+Write+Execute allowed<br/>AuditAllowed event logged"]
     C -- No --> E["Rule: Deny-AllOtherRemovableStorage<br/>Read+Write+Execute denied<br/>Toast notification + AuditDenied event"]

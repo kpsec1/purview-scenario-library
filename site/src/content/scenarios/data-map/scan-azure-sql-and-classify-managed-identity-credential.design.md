@@ -58,7 +58,7 @@ the three directly-actionable siblings it identified.
 ```mermaid
 flowchart TD
     subgraph Base["scan-azure-sql-and-classify (prerequisite)"]
-        DS[(Data source:<br/>AzureSqlDatabase)]
+        DS["(Data source:<br/>AzureSqlDatabase)"]
         SAMIScan["Scan: AzureSqlDatabaseMsi<br/>(SAMI-authenticated)"]
     end
 

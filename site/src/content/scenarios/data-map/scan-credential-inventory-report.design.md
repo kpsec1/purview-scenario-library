@@ -95,7 +95,7 @@ sequenceDiagram
     AAD-->>Script: Bearer token
     loop until nextLink is null
         Script->>API: GET /scan/credentials?api-version=2023-09-01
-        API-->>Script: { count, nextLink, value[] } (no secret values ever returned)
+        API-->>Script: {" count, nextLink, value[] "} (no secret values ever returned)
     end
     Script->>Script: Get-CredentialFingerprint per credential (per-kind extraction, Section 3)
     Script->>Expected: read (if -ExpectedStatePath supplied)

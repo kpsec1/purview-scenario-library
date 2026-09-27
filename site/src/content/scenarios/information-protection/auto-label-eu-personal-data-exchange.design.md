@@ -99,17 +99,17 @@ from that sibling's `design.md` §4 and is not re-derived here).
 flowchart TD
     A[Email sent or received<br/>via Exchange Online] --> B{Sender on the<br/>exclusion list?}
     B -- Yes --> Z[Not evaluated by this policy]
-    B -- No --> C{Subject, body, or Office/PDF<br/>attachment contains any configured<br/>EU/UK SIT, count >= 1?}
+    B -- No --> C{"Subject, body, or Office/PDF<br/>attachment contains any configured<br/>EU/UK SIT, count >= 1?"}
     C -- No --> Y[No action]
     C -- Yes --> D{Existing label priority<br/>vs. Confidential}
-    D -- Unlabeled --> E[Apply Confidential label<br/>to the EMAIL, not the attachment]
+    D -- Unlabeled --> E["Apply Confidential label<br/>to the EMAIL, not the attachment"]
     D -- Manual, any priority --> F[Leave as-is]
     D -- Auto/default, lower priority --> E
     D -- Auto/default/manual,<br/>higher or equal priority --> F
     E --> G{Label applies<br/>encryption?}
     G -- Yes, internal sender --> H[Encryption always applied]
     G -- Yes, external sender --> I[Encryption applied only if<br/>ExternalMailRightsManagementOwner<br/>is configured - otherwise not applied]
-    G -- No --> J[Visual marking only,<br/>no encryption]
+    G -- No --> J["Visual marking only,<br/>no encryption"]
 
     subgraph Rollout["Staged rollout (this scenario's default path)"]
         direction LR

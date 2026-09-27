@@ -71,7 +71,7 @@ sequenceDiagram
     Op->>Search: -DefinitionPath (case + search: contentQuery, targetMailboxes[])
     Search->>Graph: POST /ediscoveryCases (find-or-create)
     Search->>Graph: POST .../noncustodialDataSources (find-or-create, one per target mailbox)
-    Search->>Graph: POST .../searches {noncustodialSources@odata.bind} (find-or-create)
+    Search->>Graph: POST .../searches {"noncustodialSources@odata.bind"} (find-or-create)
     Search->>Graph: POST .../searches/{id}/estimateStatistics
     Graph-->>Search: indexedItemCount, mailboxCount (poll operation)
     Search-->>Op: Report - review before purging
@@ -79,7 +79,7 @@ sequenceDiagram
     Note over Op: Manual step (not scripted): remove holds/retention<br/>policies from every target mailbox - README Section 5 Step 3
 
     Op->>Purge: -CaseId -SearchId -PurgeType Recoverable|PermanentlyDelete -ConfirmPermanentDelete (ALWAYS required)
-    Purge->>Graph: POST .../searches/{id}/purgeData {purgeType, purgeAreas: teamsMessages}
+    Purge->>Graph: POST .../searches/{id}/purgeData {"purgeType, purgeAreas: teamsMessages"}
     Graph->>Teams: User copy deleted immediately, replaced with admin-deletion tombstone
     Graph->>Mbx: Compliance copy retained >=24h, then background-deleted (typically 1-7 days)
     Graph-->>Purge: 202 Accepted + Location (ediscoveryPurgeDataOperation) - poll to completion

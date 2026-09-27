@@ -112,16 +112,16 @@ sequenceDiagram
     Report->>AAD: OAuth2 client_credentials (resource=https://purview.azure.net)
     AAD-->>Report: Bearer token
     loop for each configured objectType (Tables, Files, ...)
-        Report->>API: POST search/query {filter:{objectType, collectionId?}, keywords:null, limit:1}
+        Report->>API: POST search/query {filter:{"objectType, collectionId?"}, keywords:null, limit:1}
         API-->>Report: "@search.count" (authoritative total for this objectType/scope)
         loop while continuationToken present
             Report->>API: POST search/query {filter:{...}, limit:1000, continuationToken}
             API-->>Report: value[] (each with its own label[] array), next continuationToken
-            Report->>Report: tally labeled (label.Count > 0) vs. unlabeled per record;<br/>accumulate a per-label-value histogram
+            Report->>Report: tally labeled (label.Count > 0) vs. unlabeled per record - <br/>accumulate a per-label-value histogram
         end
         Report->>Report: reconcile tallied record count against "@search.count" (flags API/network<br/>truncation rather than silently under-reporting)
     end
-    Report->>Report: write/replace this RunId's row(s) in the trend-log CSV;<br/>write a per-run label-breakdown CSV
+    Report->>Report: write/replace this RunId's row(s) in the trend-log CSV - <br/>write a per-run label-breakdown CSV
 ```
 
 Every call is a **read-only POST** to `search/query`, identical to the sibling scenario's own

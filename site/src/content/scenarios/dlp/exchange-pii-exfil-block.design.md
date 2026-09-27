@@ -137,15 +137,15 @@ Both SIT conditions are OR-combined, `mincount 1` each, the same shape as
 
 ```mermaid
 flowchart TD
-    A[Outbound Exchange email] --> B{Contains SSN or<br/>Credit Card Number,<br/>count >= 1?}
+    A[Outbound Exchange email] --> B{"Contains SSN or<br/>Credit Card Number,<br/>count >= 1?"}
     B -- No --> Z[No action]
     B -- Yes --> C{Recipient scope<br/>Bifurcated per-recipient<br/>if mixed}
-    C -- Internal recipient --> D[Rule 2: Audit only<br/>alert + incident report,<br/>message delivered]
+    C -- Internal recipient --> D["Rule 2: Audit only<br/>alert + incident report,<br/>message delivered"]
     C -- External recipient --> E{Sender is a member of<br/>the exception group?}
     E -- Yes, Action=Block --> F[Rule 0: Block with<br/>justification override<br/>- logged if overridden]
     E -- No, or Action=Encrypt --> G{-Action}
     G -- Block --> H[Rule 1: BlockAccess = true<br/>halting - not delivered<br/>to that recipient]
-    G -- Encrypt --> I[Rule 1: EncryptRMSTemplate<br/>non-halting - delivered,<br/>protected]
+    G -- Encrypt --> I["Rule 1: EncryptRMSTemplate<br/>non-halting - delivered,<br/>protected"]
 ```
 
 ## 5. Bifurcation - why a mixed-recipient message needs no special handling

@@ -64,7 +64,7 @@ sequenceDiagram
         Script->>SCC: New-RetentionComplianceRule -PriorityCleanup<br/>-ApplyComplianceTag <label> -ContentMatchQuery 'ProgID:Media AND ProgID:Meeting'
     end
     Script->>SCC: Set-RetentionCompliancePolicy -StartSimulation $true
-    Note over SCC: simulation results (up to ~2 hours); a SECOND, DIFFERENT admin reviews them<br/>in the portal, then runs -EnforceSimulationPolicy $true to turn the policy ON.<br/>Conditional eDiscovery-admin approval happens in the PORTAL ONLY (Pending cleanups)<br/>- no documented approval cmdlet exists.
+    Note over SCC: simulation results (up to ~2 hours) -  a SECOND, DIFFERENT admin reviews them<br/>in the portal, then runs -EnforceSimulationPolicy $true to turn the policy ON.<br/>Conditional eDiscovery-admin approval happens in the PORTAL ONLY (Pending cleanups)<br/>- no documented approval cmdlet exists.
 ```
 
 Two places this scenario had to construct something, one carried over from the Exchange sibling and

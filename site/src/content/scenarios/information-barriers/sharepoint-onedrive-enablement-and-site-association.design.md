@@ -69,7 +69,7 @@ sequenceDiagram
     SegScript->>SCC: Get-OrganizationSegment (resolve segment name -> GUID)
     SegScript->>SPO: Get-SPOSite -Identity <url> (read current segments)
     SegScript->>SPO: Set-SPOSite -AddInformationSegment <GUID>
-    SPO-->>Sites: site mode -> Explicit; only matching-segment users can access/share
+    SPO-->>Sites: site mode -> Explicit -  only matching-segment users can access/share
 ```
 
 Two independent automatic paths (Teams-connected sites, OneDrive) require nothing beyond the

@@ -70,7 +70,7 @@ from the sibling scenario's table are called out explicitly):
 ```mermaid
 flowchart TD
     subgraph MISubnet["Managed instance virtual network"]
-        MI[(mi-contoso-prod<br/>customerdb)]
+        MI["(mi-contoso-prod<br/>customerdb)"]
     end
 
     subgraph Purview["Microsoft Purview account"]
@@ -78,7 +78,7 @@ flowchart TD
         DS[Data source:<br/>AzureSqlDatabaseManagedInstance]
         Scan["Scan: AzureSqlDatabaseManagedInstanceMsi<br/>scan rule set: System default"]
         Trigger[Recurring trigger<br/>optional]
-        DataMap[(Data Map / catalog:<br/>schema + classifications)]
+        DataMap["(Data Map / catalog:<br/>schema + classifications)"]
     end
 
     Deployer[["deploy/New-AzureSqlManagedInstanceDataMapScan.ps1<br/>(app-only service principal,<br/>Data Source Administrator role)"]]

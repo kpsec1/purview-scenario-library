@@ -87,7 +87,7 @@ sequenceDiagram
     end
     Portal->>Portal: Add search results to investigation scope
     Portal->>AI: Automatic vectorization, then run categorization/examination
-    AI-->>Portal: Risk-ranked, categorized items; credential/PII findings
+    AI-->>Portal: Risk-ranked, categorized items -  credential/PII findings
     Portal->>Mit: Add high-risk items to mitigation plan
     Mit->>Purge: Save a purge query (soft or hard)
     Purge->>Src: Review for purge -> Confirm purge -> items removed from source
@@ -110,7 +110,7 @@ sequenceDiagram
         Op->>EXO: Export-DsiActivityAuditTrail.ps1 [-NdjsonOutDir optional]
         EXO->>UAL: Search-UnifiedAuditLog -Operations <28 DSI ops>
         UAL-->>EXO: Matching records
-        EXO-->>Op: Rolling CSV merged; DSIPurgeStarted rows flagged
+        EXO-->>Op: Rolling CSV merged -  DSIPurgeStarted rows flagged
         Note over EXO,Op: If -NdjsonOutDir was supplied, new records are also<br/>written as DSI-Activity-<runStamp>.ndjson (Section 5 table)
     end
 ```

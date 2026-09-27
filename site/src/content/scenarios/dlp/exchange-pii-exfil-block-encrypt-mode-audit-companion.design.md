@@ -44,13 +44,13 @@ Three options were considered:
 
 ```mermaid
 flowchart TD
-    A[Outbound Exchange email from a member<br/>of the exception group] --> B{Contains SSN or<br/>Credit Card Number,<br/>count >= 1?}
+    A[Outbound Exchange email from a member<br/>of the exception group] --> B{"Contains SSN or<br/>Credit Card Number,<br/>count >= 1?"}
     B -- No --> Z[No action]
     B -- Yes --> C{Recipient scope}
     C -- Internal --> D[Parent rule 2:<br/>PII-Exchange-Audit-Internal<br/>unchanged by this companion]
     C -- External --> E{Parent policy's<br/>-Action?}
     E -- Block --> F[Parent rule 0:<br/>PII-Exchange-Override-External<br/>unchanged by this companion]
-    E -- Encrypt --> G[NEW rule:<br/>PII-Exchange-Audit-Encrypt-Exception<br/>BlockAccess=false, Low severity<br/>alert + incident report<br/>message still delivered in cleartext]
+    E -- Encrypt --> G["NEW rule:<br/>PII-Exchange-Audit-Encrypt-Exception<br/>BlockAccess=false, Low severity<br/>alert + incident report<br/>message still delivered in cleartext"]
 ```
 
 This companion adds exactly one rule. It does not modify, reconfigure, or re-deploy any of the

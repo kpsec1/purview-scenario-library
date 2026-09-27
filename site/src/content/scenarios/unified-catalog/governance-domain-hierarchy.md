@@ -77,10 +77,10 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
 
 ```mermaid
 flowchart TD
-    A[hierarchy definition JSON<br/>root + nested children, in source control] --> B[New-GovernanceDomainHierarchy.ps1]
-    B --> C[Enumerate ALL business domains<br/>once, paginated]
+    A["hierarchy definition JSON<br/>root + nested children, in source control"] --> B[New-GovernanceDomainHierarchy.ps1]
+    B --> C["Enumerate ALL business domains<br/>once, paginated"]
     C --> D{Build name+parentId<br/>lookup table}
-    D --> E[Walk tree depth-first<br/>root, then children]
+    D --> E["Walk tree depth-first<br/>root, then children"]
     E --> F{Node exists by<br/>name + resolved parentId?}
     F -- No --> G["POST businessdomains<br/>DRAFT, parentId = resolved parent"]
     F -- Yes --> H["PUT businessdomains/{id}<br/>seeded from live object (design.md S4)"]

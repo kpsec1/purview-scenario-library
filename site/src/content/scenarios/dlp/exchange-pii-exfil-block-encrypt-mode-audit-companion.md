@@ -59,13 +59,13 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
 
 ```mermaid
 flowchart TD
-    A[Outbound Exchange email from a member<br/>of the exception group] --> B{Contains SSN or<br/>Credit Card Number,<br/>count >= 1?}
+    A[Outbound Exchange email from a member<br/>of the exception group] --> B{"Contains SSN or<br/>Credit Card Number,<br/>count >= 1?"}
     B -- No --> Z[No action]
     B -- Yes --> C{Recipient scope}
     C -- Internal --> D[Already covered by parent<br/>rule PII-Exchange-Audit-Internal]
     C -- External --> E{Parent policy's<br/>-Action?}
-    E -- Block --> F[Already covered by parent<br/>rule PII-Exchange-Override-External<br/>- logged, justified override]
-    E -- Encrypt --> G[THIS rule:<br/>PII-Exchange-Audit-Encrypt-Exception<br/>alert + incident report, Low severity<br/>message still delivered in cleartext]
+    E -- Block --> F["Already covered by parent<br/>rule PII-Exchange-Override-External<br/>- logged, justified override"]
+    E -- Encrypt --> G["THIS rule:<br/>PII-Exchange-Audit-Encrypt-Exception<br/>alert + incident report, Low severity<br/>message still delivered in cleartext"]
 ```
 
 One additional rule (`PII-Exchange-Audit-Encrypt-Exception`), added to the parent scenario's

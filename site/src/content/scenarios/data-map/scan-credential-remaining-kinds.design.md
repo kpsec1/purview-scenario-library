@@ -91,17 +91,17 @@ sequenceDiagram
     Script->>AAD: OAuth2 client_credentials (resource=https://purview.azure.net)
     AAD-->>Script: Bearer token
 
-    alt CredentialType in {AccountKey, ConsumerKeyAuth, DelegatedAuth}
+    alt CredentialType in {"AccountKey, ConsumerKeyAuth, DelegatedAuth"}
         alt -KeyVaultBaseUrl supplied
             Script->>API: PUT /scan/azureKeyVaults/{name}
         else omitted
             Script->>API: GET /scan/azureKeyVaults/{name} (fail fast on 404)
         end
-    else CredentialType in {AmazonARN, ManagedIdentity}
+    else CredentialType in {"AmazonARN, ManagedIdentity"}
         Note right of Script: No Key Vault call at all -<br/>these kinds carry no KeyVaultSecret
     end
 
-    Script->>API: PUT /scan/credentials/{name} { kind, properties.typeProperties }
+    Script->>API: PUT /scan/credentials/{name} {" kind, properties.typeProperties "}
     Note right of Script: Body shape depends entirely on kind - see README.md Section 6
     API-->>Script: 200/201 Credential
 ```

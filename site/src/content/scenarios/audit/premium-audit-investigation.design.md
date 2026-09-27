@@ -47,7 +47,7 @@ sequenceDiagram
     participant UAL as Unified audit log
 
     Script->>Graph: POST /security/auditLog/queries (window + UPN + crucial-event operations)
-    Graph-->>Script: 201 query {id, status}
+    Graph-->>Script: 201 query {"id, status"}
     loop until terminal (or timeout)
         Script->>Graph: GET /security/auditLog/queries/{id}
         Graph-->>Script: status (notStarted/running -> succeeded/failed)

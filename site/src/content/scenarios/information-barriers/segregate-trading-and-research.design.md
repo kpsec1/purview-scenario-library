@@ -52,7 +52,7 @@ sequenceDiagram
     opt -Activate (after sign-off)
         Script->>SCC: Set-InformationBarrierPolicy -State Active (each)
         Script->>SCC: Start-InformationBarrierPoliciesApplication
-        SCC-->>M365: apply user-by-user (~5,000/hr; SharePoint up to 24h)
+        SCC-->>M365: apply user-by-user (~5,000/hr -  SharePoint up to 24h)
         M365-->>M365: block Trading<->Research communication/collaboration
     end
 ```

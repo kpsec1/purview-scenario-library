@@ -75,7 +75,7 @@ sequenceDiagram
     alt not found
         Script->>SCC: New-RetentionComplianceRule -PriorityCleanup<br/>-ApplyComplianceTag <label> -ContentMatchQuery <KeyQL>
     end
-    Note over SCC: matching runs (up to 7 days); approvals happen in the PORTAL ONLY<br/>(Pending cleanups) - no documented approval cmdlet exists
+    Note over SCC: matching runs (up to 7 days) -  approvals happen in the PORTAL ONLY<br/>(Pending cleanups) - no documented approval cmdlet exists
 ```
 
 Two places this scenario had to construct something Microsoft's reference doesn't spell out for

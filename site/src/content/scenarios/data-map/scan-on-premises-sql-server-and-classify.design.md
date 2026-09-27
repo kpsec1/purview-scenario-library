@@ -142,7 +142,7 @@ sequenceDiagram
     Script->>API: PUT /scan/integrationruntimes/{name} (kind=SelfHosted)
     API-->>Script: 200/201 integration runtime resource
     Script->>API: POST /scan/integrationruntimes/{name}:regenerateAuthKey
-    API-->>Script: 200 { authKey1, authKey2 }
+    API-->>Script: 200 {" authKey1, authKey2 "}
     Script-->>Operator: Prints authKey1 (once) - paste into the SHIR installer
     Note over Operator,SHIR: Manual, out-of-band: download/install the SHIR software,<br/>paste the key, confirm the node registers as "Running"
     Operator->>SHIR: Install + register with authKey1

@@ -86,7 +86,7 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
 flowchart TD
     A[File created or modified<br/>in SharePoint or OneDrive] --> B{Auto-labeling policy<br/>evaluation pass}
     B -->|Contains SSN or<br/>Credit Card Number, count >= 1| C{Existing label state?}
-    B -->|No SIT match| Z[Not labeled, no action]
+    B -->|No SIT match| Z["Not labeled, no action"]
     C -->|Unlabeled| D[Apply Confidential label]
     C -->|Auto-applied, lower priority| D
     C -->|Manually applied, any priority| E[Not overridden - left as-is]

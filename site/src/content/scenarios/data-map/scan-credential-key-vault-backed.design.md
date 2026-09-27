@@ -102,7 +102,7 @@ sequenceDiagram
         Script->>API: GET /scan/azureKeyVaults/{name}
         API-->>Script: 200 (or 404 -> script throws, goal 2)
     end
-    Script->>API: PUT /scan/credentials/{name} { kind, properties.typeProperties }
+    Script->>API: PUT /scan/credentials/{name} {" kind, properties.typeProperties "}
     Note right of Script: body carries a secret REFERENCE only -<br/>no secret material crosses this call
     API-->>Script: 200/201 Credential
 

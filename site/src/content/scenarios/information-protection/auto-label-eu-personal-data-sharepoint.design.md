@@ -287,7 +287,7 @@ target label.
 
 ```mermaid
 flowchart TD
-    A[SharePoint / OneDrive file] --> B{Any configured EU/UK<br/>SIT present, count >= 1?}
+    A[SharePoint / OneDrive file] --> B{"Any configured EU/UK<br/>SIT present, count >= 1?"}
     B -- No --> Z[No action]
     B -- Yes --> C{Site on the<br/>exclusion list?}
     C -- Yes --> Z

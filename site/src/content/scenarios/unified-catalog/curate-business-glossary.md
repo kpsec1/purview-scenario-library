@@ -79,13 +79,13 @@ further.
 
 ```mermaid
 flowchart TD
-    A[glossary definition JSON<br/>domain + terms, in source control] --> B[New-BusinessGlossary.ps1]
+    A["glossary definition JSON<br/>domain + terms, in source control"] --> B[New-BusinessGlossary.ps1]
     B --> C{Governance domain<br/>exists by name?}
     C -- No --> D[POST businessdomains<br/>DRAFT status]
     C -- Yes --> E[Reuse existing domain id]
     D --> F
     E --> F[For each term: resolve owners/experts]
-    F -->|UPN| G[Microsoft Graph<br/>GET /users/{upn}?$select=id]
+    F -->|UPN| G["Microsoft Graph<br/>GET /users/{upn}?$select=id"]
     F -->|already a GUID| H[Use as-is]
     G --> I
     H --> I{Term exists by<br/>exact name in domain?}
@@ -95,8 +95,8 @@ flowchart TD
     K --> L
     L --> M{-Publish?}
     M -- No --> N[Left in DRAFT -<br/>visible to Data Stewards only]
-    M -- Yes --> O[PUT status: PUBLISHED<br/>domain, then every term]
-    O --> P[Visible catalog-wide -<br/>Enterprise glossary, search]
+    M -- Yes --> O["PUT status: PUBLISHED<br/>domain, then every term"]
+    O --> P["Visible catalog-wide -<br/>Enterprise glossary, search"]
 ```
 
 One Unified Catalog governance domain, authored via the **Purview Unified Catalog REST API**
