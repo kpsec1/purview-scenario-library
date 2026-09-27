@@ -326,13 +326,15 @@ the parent scenario.
   clean, false-negative result with no indication anything was wrong (`reviews.md`). If you need both
   sessions in one process, re-import one with `Import-PSSession ... -Prefix OnPrem` (or similar) and
   adjust this script's cmdlet calls accordingly - not done by default.
-- **`-AdminAuditLogCmdlets`'s default coverage is a VERIFY, not a confirmed fact.** This build's
-  grounding pass confirmed `-AdminAuditLogEnabled` defaults to `$true` and `-AdminAuditLogAgeLimit`
-  defaults to 90 days, but did **not** find a confirmed default value for which cmdlets
-  `-AdminAuditLogCmdlets` audits out of the box on a fresh install. Run `Get-AdminAuditLogConfig |
-  Select-Object AdminAuditLogCmdlets` and confirm `Set-AcceptedDomain`/`New-AcceptedDomain`/
-  `Remove-AcceptedDomain` are covered (or `*` is set) before relying on `-IncludeAuditAttribution`'s
-  output for an incident investigation - `design.md` §2, deploy script `.NOTES`.
+- **`-AdminAuditLogCmdlets`'s default coverage: RESOLVED.** A 2026-09-27 Microsoft Learn re-fetch of
+  `Set-AdminAuditLogConfig`'s reference page found its parameter-properties table now states
+  **Default value: None** for `-AdminAuditLogCmdlets` outright - a fresh on-premises install audits
+  **no** cmdlets by default; `*` (audit everything) is never on out of the box. `Set-AcceptedDomain`/
+  `New-AcceptedDomain`/`Remove-AcceptedDomain` are therefore **not** covered unless the organization
+  has explicitly configured `-AdminAuditLogCmdlets`. Still run `Get-AdminAuditLogConfig |
+  Select-Object AdminAuditLogCmdlets` before relying on `-IncludeAuditAttribution`'s output for an
+  incident investigation, to confirm the organization's actual (non-default) configuration covers
+  these three cmdlets - `design.md` §2, deploy script `.NOTES`.
 - **90-day audit-log ceiling.** Even with `-AdminAuditLogCmdlets` correctly configured, the
   organization's `-AdminAuditLogAgeLimit` (90 days by default) caps how far back `Search-AdminAuditLog`
   can ever see - `-AuditLookbackDays` values beyond that ceiling silently find nothing, regardless of
@@ -400,8 +402,8 @@ the parent scenario.
    listed for Exchange Online, which uses `Search-UnifiedAuditLog` instead), `-Cmdlets`,
    `-StartDate`/`-EndDate` parameters - <https://learn.microsoft.com/powershell/module/exchangepowershell/search-adminauditlog>
 6. Set-AdminAuditLogConfig reference - `-AdminAuditLogEnabled` default `$true`,
-   `-AdminAuditLogAgeLimit` default 90 days, `-AdminAuditLogCmdlets`/`-AdminAuditLogParameters`
-   wildcard behavior (default value for `-AdminAuditLogCmdlets` not confirmed by this build, §11) -
+   `-AdminAuditLogAgeLimit` default 90 days, `-AdminAuditLogCmdlets` default `None` (confirmed
+   2026-09-27, §11) -
    <https://learn.microsoft.com/powershell/module/exchangepowershell/set-adminauditlogconfig>
 7. Administrator audit log structure reference - `Caller`, `CmdletName`, `Succeeded`,
    `ObjectModified`, `RunDate` output properties this scenario's findings JSON surfaces -

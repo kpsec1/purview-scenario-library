@@ -1483,15 +1483,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   neither cmdlet to audit in the first place.
 
 ### Follow-ups discovered while building the on-premises Accepted-Domains Hygiene Check companion
-- [ ] VERIFY (pilot on-premises Exchange server, or a future Microsoft Learn pass): the exact
-  *default* value of `-AdminAuditLogCmdlets` (which cmdlets a fresh on-premises install audits without
-  explicit configuration) - this build confirmed `-AdminAuditLogEnabled` defaults to `$true` and
-  `-AdminAuditLogAgeLimit` defaults to 90 days from `Set-AdminAuditLogConfig`'s own reference page, but
-  that page's fetched content did not state a default for `-AdminAuditLogCmdlets` itself (only that
-  `*` audits everything). `accepted-domains-hygiene-check-on-premises/deploy/
-  Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s `-IncludeAuditAttribution` switch tells the
-  organization to confirm coverage via `Get-AdminAuditLogConfig` rather than assuming the common `*`-default
-  belief is correct - see that scenario's `design.md` §2 and `README.md` §11.
+- [x] VERIFY (pilot on-premises Exchange server, or a future Microsoft Learn pass): the exact
+  *default* value of `-AdminAuditLogCmdlets` - **closed** (see DONE below): a 2026-09-27 re-fetch of
+  `Set-AdminAuditLogConfig`'s reference page confirms **Default value: None**.
 - [x] Re-verify the parent `accepted-domains-hygiene-check/deploy/KnownDomains.sample.json`'s
   `hybrid.contoso.com` entry (`expectedDomainType: InternalRelay`) against a primary, authoritative
   Microsoft Learn conceptual page - **re-grounded and closed, sample confirmed correct, not changed**

@@ -50,14 +50,16 @@ differences from the parent scenario's Exchange Online-only model:
    - `-AdminAuditLogAgeLimit` defaults to **90 days** - sets this scenario's practical audit-lookback
      ceiling; a `-AuditLookbackDays` value beyond 90 will find nothing regardless of what actually
      happened, unless the deploying organization has widened this on their own server.
-   - **VERIFY (pilot tenant or a future Microsoft Learn pass):** the exact *default* value of
-     `-AdminAuditLogCmdlets` (which cmdlets are audited out of the box) was not stated with a
-     confirmed default on the reference page this build fetched - only that `*` audits everything and
-     that the parameter has no default explicitly documented in the fetched content. This scenario
-     does **not** assume `Set-`/`New-`/`Remove-AcceptedDomain` are covered by a fresh install's default
-     configuration; `README.md` §11 and the deploy script's `.NOTES` tell the deploying organization to confirm
-     `Get-AdminAuditLogConfig | Select-Object AdminAuditLogCmdlets` includes them (or `*`) before
-     relying on `-IncludeAuditAttribution`'s output for an incident investigation.
+   - **RESOLVED (2026-09-27 Microsoft Learn re-fetch):** `-AdminAuditLogCmdlets`'s own reference page
+     now states its **Default value: None** outright in the parameter's properties table - a fresh
+     on-premises install audits **no** cmdlets out of the box; `*` (audit everything) must be set
+     explicitly. This confirms this scenario's original caution was warranted: `Set-`/`New-`/
+     `Remove-AcceptedDomain` are **not** covered by a fresh install's default configuration.
+     `README.md` §11 and the deploy script's `.NOTES`/warning text still tell the deploying
+     organization to confirm `Get-AdminAuditLogConfig | Select-Object AdminAuditLogCmdlets` includes
+     them (or `*`) before relying on `-IncludeAuditAttribution`'s output for an incident
+     investigation - that verification step remains good practice even though the default is now
+     confirmed, since an organization may have since narrowed the list away from `*`.
 
 ## 3. Why this is a separate live session, not one combined script
 
@@ -193,8 +195,9 @@ cmdlets (§2), so this scenario's own `-IncludeAuditAttribution` switch queries
 `Search-AdminAuditLog -Cmdlets 'Set-AcceptedDomain','New-AcceptedDomain','Remove-AcceptedDomain'` -
 all three, not just `Set-`. This is a genuine capability gap the on-premises side closes relative to
 cloud, stated as such rather than treated as a routine mirror of the parent's switch. The 90-day
-default retention ceiling (§2) and the unconfirmed default `-AdminAuditLogCmdlets` coverage (§2,
-VERIFY) are the two honest limits carried forward.
+default retention ceiling (§2) is the one honest limit carried forward; the default
+`-AdminAuditLogCmdlets` coverage question (§2) is now resolved - a fresh install audits none of the
+three cmdlets by default.
 
 ## 6. Baseline/drift model - same shape, separate files, same idempotency rule
 
