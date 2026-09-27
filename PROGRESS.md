@@ -3431,7 +3431,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `data-leaks`/`data-leaks-exfiltration-activity-trigger` triggering-event
-  combinability VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY
+  combinability VERIFY** - commit `b1d72db` - 2026-09-27. Maintenance pass: closed the open VERIFY
   asking whether the base `Data leaks` template's two triggering-event options ("User matches a
   DLP policy" and "User performs an exfiltration activity") can be enabled simultaneously on one
   policy. Grounded via the Microsoft Learn MCP: "Create and manage Insider Risk Management
