@@ -89,12 +89,15 @@
     vs. tokenized) are not documented; this script always re-checks for an exact name match in the
     returned page rather than trusting the filter alone, but a domain with more matching terms
     than one page could in principle need pagination this script does not yet implement. The
-    formal REST reference marks several Business Domain Create/Update body fields (systemData,
-    thumbnail, domains, managedAttributes) as "Required" in a way that contradicts Microsoft's own
-    worked examples and basic REST semantics (a create call cannot require the caller to supply
-    server-computed system metadata) - this script sends the minimal practical body used in
-    Microsoft's own disaster-recovery article pattern and omits those fields; confirm against a
-    pilot tenant if the API rejects a minimal body.
+    CLOSED 2026-09-27 (Microsoft Learn MCP re-grounding, see README.md Section 11): the formal
+    REST reference's Create/Update Request Body table marks id, parentId, systemData, thumbnail,
+    domains, and managedAttributes as "Required" for both operations, but this is a
+    documentation-generation artifact - the table reuses the response Domain schema, so it flags
+    server-computed, response-only fields (id, parentId, systemData) as required on the request
+    too. Microsoft's own Disaster recovery for Unified Catalog article independently confirms the
+    minimal body this script sends (name, type, status, description, managedAttributes) is the
+    correct, production-documented pattern. No code change needed; this script's minimal body is
+    correct as written.
 
     Sources (Microsoft Learn, verify before production use):
     - Terms - Create/Update/Query/Delete reference:

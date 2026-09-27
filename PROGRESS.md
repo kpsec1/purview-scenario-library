@@ -1557,12 +1557,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   match rather than trusting the filter, but a domain with more than one page of name-matching
   terms could in principle need pagination the deploy script doesn't yet implement - flagged
   inline in `README.md` §11 and the deploy script's `.NOTES`.
-- [ ] VERIFY (pilot tenant): the Unified Catalog `Business Domain - Create`/`Update` REST
-  reference marks `systemData`/`thumbnail`/`domains`/`managedAttributes` as required request-body
-  fields in a way that contradicts Microsoft's own worked examples and ordinary REST semantics;
-  `curate-business-glossary`'s deploy script sends a minimal practical body instead and flags this
-  discrepancy rather than fabricating placeholder values for those fields - confirm the minimal
-  body is accepted (or find the correct minimal shape) against a pilot tenant.
+- [x] VERIFY closed 2026-09-27 (Microsoft Learn MCP, maintenance pass): the Unified Catalog
+  `Business Domain - Create`/`Update` REST reference marks `id`/`parentId`/`systemData`/
+  `thumbnail`/`domains`/`managedAttributes` as required request-body fields in a way that
+  contradicts Microsoft's own worked examples and ordinary REST semantics -
+  **resolved, not guessed**: a direct fetch of the `Business Domain - Create` reference page
+  confirms its Request Body table reuses the response `Domain` schema (it even marks the
+  server-generated `id` and `parentId` as request-required, which no `POST` can honor), so this
+  is a documentation-generation artifact, not a real API constraint. Microsoft's own
+  **Disaster recovery for Unified Catalog** article independently corroborates the minimal body
+  `curate-business-glossary`'s deploy script already sends (`name`/`type`/`status`/`description`/
+  `managedAttributes`). No code change needed - `README.md` §11/§12, `reviews.md` (new
+  Maintenance addendum), and the deploy script's `.NOTES` updated to record the closure and cite
+  the exact evidence.
 - [x] Consider a `scenarios/unified-catalog/governance-domain-hierarchy/` (or fold into a future
   Unified Catalog pass) covering multi-domain parent/child governance hierarchies, custom
   attribute groups, and data estate mappings to Data Map collections - explicitly out of scope in
@@ -3474,6 +3481,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `curate-business-glossary` Business Domain Create/Update "required" fields
+  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking
+  whether the Business Domain `Create`/`Update` REST reference's `systemData`/`thumbnail`/
+  `domains`/`managedAttributes` "required" markings were real, since they contradicted Microsoft's
+  own worked examples and ordinary REST semantics. Grounded via the Microsoft Learn MCP: a direct
+  fetch of the `Business Domain - Create` reference page shows its Request Body table also marks
+  the server-generated `id` and `parentId` fields as `Required: True` - conclusive evidence the
+  table is a documentation-generation artifact that reuses the response `Domain` schema for the
+  request body, rather than a real per-field constraint. Microsoft's own "Disaster recovery for
+  Unified Catalog" article (production BCDR guidance, not a placeholder) independently confirms
+  the minimal body this scenario already sends (`name`/`type`/`status`/`description`/
+  `managedAttributes`) is correct. Updated `curate-business-glossary/README.md` §11/§12 and the
+  deploy script's `.NOTES` in `deploy/New-BusinessGlossary.ps1` to record the closure and cite the
+  exact evidence, and added a Maintenance addendum to `reviews.md` (no new four-lens round per
+  `AGENTS.md` §6 - a doc/fact fix, no code or architecture change). No script logic changed; no
+  new coverage added.
 - [x] **Closed the `multi-stage-disposition-review` `-ComplianceTagForNextStage` behavior VERIFY** -
   commit `5b3683d` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
   `-ComplianceTagForNextStage` (on `New-ComplianceTag`/`Set-ComplianceTag`) actually does, since its
