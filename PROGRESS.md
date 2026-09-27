@@ -1685,12 +1685,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   confirmed non-VNet worked example) for a non-VNet `Create Data Source` call - Microsoft's request-
   body property table doesn't mark any field required/optional explicitly, unlike its URI-parameter
   table, which does. `connection-and-scorecard-alerts/README.md` §11.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): Create Data Source's create-vs-replace
-  semantics against an already-existing `dataSourceId`, and Update Data Source's PATCH partial-
-  merge-vs-full-replace semantics. Doesn't affect `New-DataQualityConnection.ps1`'s idempotency (it
-  always `GET`s first and picks PUT/PATCH accordingly), but a direct caller of the raw API should
-  confirm both. Same open-question class as `rules-and-scorecards`' own Create Rules PUT-semantics
-  VERIFY.
+- [ ] VERIFY (pilot tenant): Create Data Source's create-vs-replace semantics against an already-
+  existing `dataSourceId` - unlike `Update Alert`, its REST reference doesn't describe the ID as
+  "to create or replace," only "to be created." Doesn't affect `New-DataQualityConnection.ps1`'s
+  idempotency (it always `GET`s first and only calls PUT on a confirmed 404), but a direct caller
+  of the raw API should confirm this. Same open-question class as `rules-and-scorecards`' own
+  Create Rules PUT-semantics VERIFY.
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): Update Data Source's PATCH partial-
+  merge-vs-full-replace semantics - **resolved 2026-09-27** without needing a pilot tenant (see
+  DONE below).
 - [ ] VERIFY (pilot tenant): whether Data Quality Alert `receivers` accepts a raw SMTP address/UPN
   string in addition to a Microsoft Entra object ID - every worked example in Microsoft's Alert REST
   reference pages shows only GUIDs, but the portal's own conceptual doc calls the field a "recipient
@@ -3445,6 +3448,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `connection-and-scorecard-alerts` Update Data Source PATCH partial-merge
+  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  `Update Data Source`'s PATCH performs a partial merge or expects (and replaces with) the full
+  object. Grounded via a direct re-fetch of the Update Data Source REST reference page
+  (`2026-01-12-preview`): its own worked example's request body omits the `name` field entirely,
+  yet the response echoes back the resource's existing `name` ("testconn iceberg") unchanged -
+  direct evidence of partial-merge semantics (a field left out of the PATCH body is preserved, not
+  cleared). This also corrects an earlier misreading of the same example, which had stated
+  Microsoft's worked example "sends the complete object shape on PATCH" - it does not. Never
+  affected this scenario's idempotency (`New-DataQualityConnection.ps1` always sends the full known
+  object shape on both PUT and PATCH, which is safe under either semantics). Updated
+  `connection-and-scorecard-alerts/README.md` §11 and `deploy/New-DataQualityConnection.ps1`'s
+  `.NOTES` to state the confirmed behavior with a citation instead of an open question. The sibling
+  question - Create Data Source's create-vs-replace semantics against an already-existing
+  `dataSourceId` - is **not** resolved by this pass (its own REST reference still doesn't describe
+  the ID as "to create or replace," unlike `Update Alert`) and remains open under TODO above. No
+  script logic changed; no new coverage added.
 - [x] **Closed the `connection-and-scorecard-alerts` Update Alert PUT create-or-replace VERIFY** -
   commit `3f72986` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether `Update
   Alert`'s PUT against an already-existing `alertId` is create-only or create-or-replace. Grounded

@@ -115,10 +115,12 @@
       already exists) or would silently succeed as a replace - this script never relies on the
       answer because it always GETs first and only calls PUT on a confirmed 404, but a production
       integration calling Create Data Source directly should confirm this.
-    - Whether Update Data Source's PATCH performs a partial merge or expects (and replaces with)
-      the full object - Microsoft's own worked example sends the complete object shape on PATCH,
-      which is what this script does too, but the semantics of omitting a field were not
-      independently confirmed.
+    - CONFIRMED (2026-09-27, direct Microsoft Learn re-fetch): Update Data Source's PATCH is a
+      partial merge, not a full replace. Its worked example's request body omits the `name` field
+      entirely, yet the response echoes back the resource's existing `name` unchanged - a field
+      left out of the PATCH body is preserved, not cleared. This script sends the full known
+      object shape on every PATCH regardless (safe under either semantics), so this never changed
+      its behavior - see README.md Section 11.
 
     Sources (Microsoft Learn, verify before production use):
     - Create Data Source:

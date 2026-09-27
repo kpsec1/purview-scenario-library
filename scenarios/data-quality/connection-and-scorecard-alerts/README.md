@@ -285,10 +285,23 @@ See `rollback.md` for the full staged procedure. Quick reference:
   against a pilot tenant before assuming a non-VNet `Create Data Source` call can never fail for
   omitting it.
 - **VERIFY - Create Data Source's create-vs-replace semantics against an already-existing
-  `dataSourceId`, and Update Data Source's PATCH partial-merge-vs-full-replace semantics.** This
-  scenario's script never depends on the answer (it always `GET`s first and picks the verb the
-  result implies - `design.md` §5), but a production integration bypassing this script's existence
-  check should confirm both.
+  `dataSourceId`.** Unlike `Update Alert` (see the confirmed entry below), Create Data Source's
+  own REST reference does not describe its `dataSourceId` URI parameter as "to create or replace"
+  - only "to be created." Whether a PUT against an existing ID 409s, no-ops, or silently replaces
+  is still unconfirmed. This scenario's script never depends on the answer (it always `GET`s first
+  and only calls PUT on a confirmed 404 - `design.md` §5), but a production integration calling
+  Create Data Source directly should confirm this against a pilot tenant.
+- **CONFIRMED (2026-09-27, direct Microsoft Learn fetch), not a remaining VERIFY - Update Data
+  Source's PATCH is a partial merge, not a full replace.** A re-fetch of the operation's own
+  worked example (`2026-01-12-preview`) shows the request body omits the `name` field entirely,
+  yet the response echoes back the resource's existing `name` ("testconn iceberg") unchanged -
+  direct evidence that a field left out of the PATCH body is preserved, not cleared. This
+  corrects an earlier misreading of the same example (recorded in this scenario's `.NOTES` as
+  "Microsoft's own worked example sends the complete object shape on PATCH") - the example is in
+  fact a partial body. Never affected this scenario's idempotency (`New-DataQualityConnection.ps1`
+  always sends the full known object shape on both PUT and PATCH, which is safe under either
+  semantics), but a caller relying on omission-means-preserved for its own partial updates now has
+  an authoritative citation instead of an open question.
 - **VERIFY - `receivers`' accepted value type.** Every worked example in Microsoft's Alert REST
   reference pages shows a Microsoft Entra object ID (GUID), never a raw SMTP address or UPN, even
   though the portal's own conceptual documentation calls the equivalent field a "recipient alias."
