@@ -3069,11 +3069,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   example's concrete entity type was a **built-in** subtype (`hive_view_query`), not a custom one.
   Flagged inline in `custom-process-lineage/README.md` §11 and the deploy script's `.NOTES` rather
   than assumed; a one-line fix if wrong.
-- [ ] VERIFY (pilot tenant or Microsoft Learn): the exact permission required to create a custom
-  **entity type definition** via `Type - Bulk Create` - this build confirmed collection-level Data
-  Curator is sufficient for the closely related "create a custom classification" action but found
-  no equally explicit statement for entity-type creation specifically. `custom-process-lineage/
-  README.md` §3 documents the residual tenant-wide-blast-radius risk either way this resolves.
+- [x] VERIFY (pilot tenant or Microsoft Learn): the exact permission required to create a custom
+  **entity type definition** via `Type - Bulk Create` - **closed** (see DONE below): a 2026-09-27
+  Microsoft Learn fetch of "Manage assets with metamodel" confirms collection-level Data Curator is
+  sufficient for "Create and modify asset types", no broader/root-level grant required.
 - [ ] VERIFY (pilot tenant): the exact REST path and in-use-type deletion behavior of `Type -
   Delete` - confirmed to exist only via the .NET SDK's `TypeDefinition.Delete(name)` method
   signature, not an independently fetched canonical REST reference page. Blocks
