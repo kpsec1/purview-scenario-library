@@ -4,7 +4,7 @@
 # deliberately routing sensitive discussion around it - the exact pattern regulators cite in
 # off-channel-communications enforcement actions as evidence of intent (README.md Section 2,
 # design.md Section 5). This list does NOT duplicate the Corporate sabotage / Customer complaints /
-# Gifts & entertainment / Money laundering / [Workplace/Regulatory] collusion / Stock manipulation /
+# Gifts & entertainment / Money laundering / Regulatory collusion / Stock manipulation /
 # Unauthorized disclosure trainable classifiers, which already cover explicit regulatory-violation
 # language far more robustly than a static word list could.
 #

@@ -3402,12 +3402,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   WebSearch-only grounding (no direct `learn.microsoft.com` fetch available) could not confirm the
   per-template classifier split. `financial-regulatory-supervision/design.md` §5/§8 and `README.md`
   §11 flag this rather than guessing.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the current portal-UI label for the
-  collusion-related Regulatory-compliance classifier - this build's WebSearch-only grounding found it
-  referred to as both "Regulatory collusion" and "Workplace collusion" across independent secondary
-  sources, without a direct canonical-page fetch to resolve which is current. `financial-regulatory-
-  supervision/README.md` §11, `design.md` §5, and the deploy manifest all flag this rather than
-  picking one silently.
 - [ ] VERIFY (pilot tenant): the exact `AuditData` JSON property name Microsoft populates with the
   remediation action taken on a `SupervisoryReviewTag` event. `financial-regulatory-supervision/
   deploy/Export-FinraSupervisionEvidence.ps1` tries a short list of plausible candidate property names
@@ -3446,6 +3440,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `financial-regulatory-supervision` collusion-classifier naming VERIFY** -
+  commit PENDING - 2026-09-27. Maintenance pass: closed the open VERIFY asking the current portal-UI
+  label for the collusion-related Regulatory-compliance trainable classifier, left unresolved because
+  the original build's network could only reach WebSearch (not a direct `learn.microsoft.com` fetch)
+  and independent secondary sources disagreed between "Regulatory collusion" and "Workplace
+  collusion." Grounded via the Microsoft Learn MCP: fetched Microsoft's canonical
+  `trainable-classifiers-definitions#regulatory-collusion` page and the
+  `communication-compliance-policies#policy-settings` table directly - both use only "Regulatory
+  collusion"; "Workplace collusion" appears on neither. Updated `financial-regulatory-supervision/`
+  `README.md` (§4 table, §5 portal steps, §11 VERIFY→resolved, §12 references), `design.md` (§4, §5
+  table, §10 grounding note), `reviews.md` (Product Owner lens addendum), the deploy manifest's
+  `Regulatory collusion` classifier entry, the evasion-phrases keyword-dictionary header comment, and
+  the validation script's classifier-list assertion string. Doc/reference-data correction only - no
+  script logic changed (classifier name is a portal-wizard label and manifest reference field, not a
+  parsed value), no new four-lens review round required, no new VERIFY items opened.
 - [x] **Closed the `manage-data-products` Create Relationship `assetId`/`entityType` body-shape
   VERIFY** - commit `e864d3b` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
   the Unified Catalog `Data Products - Create Relationship` operation needs an `assetId` field for

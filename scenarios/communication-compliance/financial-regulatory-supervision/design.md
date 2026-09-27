@@ -89,10 +89,11 @@ Same reasoning as `harassment-and-code-of-conduct/design.md` §3, restated for t
   scenario needs.
 - **Communication Compliance** is Microsoft's purpose-built solution here: its "Regulatory compliance"
   classifier family (Corporate sabotage, Customer complaints, Gifts & entertainment, Money
-  laundering, [Workplace/Regulatory] collusion - naming VERIFY below, Stock manipulation,
-  Unauthorized disclosure) exists specifically for "regulated customers such as banking or financial
-  services who have specific regulatory compliance obligations" (Microsoft's own classifier
-  description, corroborated across multiple independent secondary sources - see §12 sourcing note).
+  laundering, Regulatory collusion, Stock manipulation, Unauthorized disclosure) exists specifically
+  for "regulated customers such as banking or financial services who have specific regulatory
+  compliance obligations" (Microsoft's own classifier description, confirmed directly against
+  `learn.microsoft.com/purview/communication-compliance-policies#policy-settings` - see §12 sourcing
+  note).
 
 Communication Compliance remains **detective, not preventive** here too - it reviews messages *after*
 they're sent. For the preventive half of this problem (blocking messages that reference specific
@@ -110,7 +111,7 @@ a built-in template - see §8):
 | Customer complaints | Language indicating a customer complaint - relevant to FINRA's own complaint-handling and reporting obligations (Rule 4530) as well as CFPB-style complaint-detection requirements |
 | Gifts & entertainment | Language about exchanging gifts/entertainment for services - maps to FINRA Rule 3220 (Influencing or Rewarding Employees of Others) and firm gifts-and-entertainment policies |
 | Money laundering | Signs of concealing or disguising the origin/destination of proceeds - the classifier Microsoft explicitly frames as extending Communication Compliance's scope to regulated banking/financial-services customers |
-| [Workplace/Regulatory] collusion | Signs of price fixing, sharing trade secrets, or coordinated buying strategies, plus messages referencing secretive/concealing behavior - **naming VERIFY**: this build's grounding found this classifier referred to as "Regulatory collusion" in one context and "Workplace collusion" in another (both from independent secondary sources describing the same Communication Compliance classifier family, since this build's network cannot directly fetch the canonical Microsoft Learn classifier-definitions page - §12). Confirm the exact current portal-UI label at deploy time before finalizing customer-facing documentation, the same discipline the harassment sibling applies to its own "Harassment"/"Targeted harassment" naming question. |
+| Regulatory collusion | Signs of price fixing, sharing trade secrets, or coordinated buying strategies, plus messages referencing secretive/concealing behavior. Confirmed as the current portal-UI label directly against `learn.microsoft.com/purview/trainable-classifiers-definitions#regulatory-collusion` - "Workplace collusion" does not appear on Microsoft's canonical classifier-definitions or policy-settings pages and was an artifact of this build's earlier WebSearch-only grounding pass (§12). |
 | Stock manipulation | Recommendations to buy/sell/hold stock in order to manipulate price - the core classifier for FINRA/SEC market-manipulation supervision |
 | Unauthorized disclosure | Sharing of information explicitly designated confidential/internal-only - the classifier most directly relevant to insider-trading and material-non-public-information (MNPI) leakage supervision |
 
@@ -242,7 +243,11 @@ every other external domain tested (`sec.gov`, `finra.org`, `smarsh.com` all ret
 and every regulatory fact (FINRA Rule 3110(b)(4)'s four evidence-of-review elements, SEC Rule 17a-4's
 retention structure, the SEC/CFTC off-channel-communications enforcement figures) was corroborated
 across **multiple independent secondary sources** returned by WebSearch rather than a single
-canonical-page fetch. Facts that could not be corroborated this way, or where independent sources
-disagreed (the collusion classifier's exact current name), are flagged inline as **VERIFY** rather
-than asserted as certain, per `AGENTS.md` §4. Re-verify against a direct Microsoft Learn fetch or a
-pilot tenant before a customer-facing commitment.
+canonical-page fetch. Facts that could not be corroborated this way, or where independent sources disagreed, were flagged
+inline as **VERIFY** rather than asserted as certain, per `AGENTS.md` §4. The collusion classifier's
+naming VERIFY (this section, §5) has since been closed by a direct Microsoft Learn MCP fetch of
+`learn.microsoft.com/purview/trainable-classifiers-definitions#regulatory-collusion` and
+`learn.microsoft.com/purview/communication-compliance-policies#policy-settings`, both of which use
+only "Regulatory collusion" - "Workplace collusion" appears on neither canonical page. The remaining
+VERIFY items in §5/§11 (built-in template classifier bundling, the `AuditData` action-property name)
+are unaffected and still require a direct Learn fetch or pilot tenant.
