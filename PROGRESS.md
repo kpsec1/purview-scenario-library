@@ -1898,16 +1898,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the sibling script's own `Role`-typed narrowing could move from client-side to server-side,
   reducing the amount of data pulled per run on a high-churn tenant.
   `entra-privileged-role-monitoring/design.md` §10.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the "Add member to role
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the "Add member to role
   (permanent)" activity name Microsoft's own "Security operations for privileged accounts"
   out-of-PIM detection guidance cites (tagged `Service = PIM`) is the same underlying event as the
   plain "Add member to role" (Core Directory service) `Export-EntraPrivilegedRoleAuditTrail.ps1`
-  currently filters on, or a genuinely distinct event this script's filter would miss. Flagged
-  inline in `entra-privileged-role-monitoring/README.md` §11, `design.md` §4a, and the deploy
-  script's `.NOTES` rather than resolved by guessing (`AGENTS.md` §4).
-- [ ] Once the item above is resolved, revisit whether `$monitoredActivities` in
+  currently filters on, or a genuinely distinct event this script's filter would miss - **closed
+  2026-09-27 via a Microsoft Learn pass**: a direct fetch of Microsoft's canonical
+  `reference-audit-activities` reference confirms `Add member to role outside of PIM (permanent)`
+  is listed as its own, separately-documented activity under the Privileged Identity Management
+  (PIM) service's `RoleManagement` category - distinct from `Add member to role`, listed only
+  under the Core Directory service's own `RoleManagement` category. The guidance article's
+  shorthand matches this PIM activity's name and description closely enough to identify them as
+  the same activity. **Resolved: two genuinely distinct events, not one under two display
+  conventions.** `entra-privileged-role-monitoring/README.md` §6/§11/§12, `design.md` §3/§4a, and
+  the deploy/validate scripts corrected in place with the finding.
+- [x] Once the item above is resolved, revisit whether `$monitoredActivities` in
   `Export-EntraPrivilegedRoleAuditTrail.ps1` needs the `(permanent)`-suffixed activity name added,
-  or whether it's confirmed to be a duplicate label for an event already covered.
+  or whether it's confirmed to be a duplicate label for an event already covered - **done
+  2026-09-27**: `Add member to role outside of PIM (permanent)` added to `$monitoredActivities`
+  (deploy script) and the matching `$validActivities` allowlist (validate script).
 
 ### Follow-ups discovered while building the Communication Compliance harassment-and-code-of-conduct scenario
 - [x] `scenarios/communication-compliance/financial-regulatory-supervision/` - **built** (see DONE
@@ -3436,6 +3445,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `entra-privileged-role-monitoring` "Add member to role (permanent)" naming
+  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  Microsoft's "Security operations for privileged accounts" guidance's `"Add member to role
+  (permanent)"` (Service = PIM) detection signal for roles assigned outside PIM is the same
+  underlying event as, or genuinely distinct from, the plain `"Add member to role"` (Core Directory
+  service) that `Export-EntraPrivilegedRoleAuditTrail.ps1` filters on. Grounded via the Microsoft
+  Learn MCP: a direct fetch of the canonical `reference-audit-activities` reference shows `Add
+  member to role outside of PIM (permanent)` listed as its own, separately-documented activity
+  under the PIM service's `RoleManagement` category, distinct from `Add member to role` under Core
+  Directory's own `RoleManagement` category - confirming reading (b) from `design.md` §4a (a
+  genuinely distinct event, not an alternate display convention for the same one). Added `Add
+  member to role outside of PIM (permanent)` to the deploy script's `$monitoredActivities` and the
+  validate script's matching `$validActivities` allowlist (6 → 7 activities in both). Updated
+  `README.md` §6 (config table), §11 (VERIFY → RESOLVED), and §12 (references 7/13 reworded);
+  `design.md` §3 (scope table) and §4a (VERIFY → resolution); and `reviews.md` (new Round 4,
+  closing round 1 Red Team finding 2). No change to `targetResources` extraction logic - already
+  shape-agnostic - so no new unconfirmed assumption was introduced alongside the fix.
 - [x] **Closed the `security-policy-violations-by-departing-users` Defender for Endpoint Plan 1
   vs. Plan 2 VERIFY** - commit `daf41f8` - 2026-09-27. Maintenance pass: closed the open VERIFY
   asking whether this template's specific Defender for Endpoint indicators (malware/harmful-app

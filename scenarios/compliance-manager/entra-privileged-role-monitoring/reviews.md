@@ -435,3 +435,81 @@ No Fix/Fail items from this lens.
 All Fix items from this round are resolved in the current state of `deploy/`, `validate/`,
 `README.md`, and `design.md`. No Fail items were raised. The residual `targetResources`-shape VERIFY
 is deliberately left open (not guessed at) and tracked in `PROGRESS.md`.
+
+## Round 4 - closing the "Add member to role (permanent)" naming VERIFY (round 1 Red Team finding 2)
+
+Reviewed after grounding `PROGRESS.md`'s open VERIFY on whether Microsoft's "Security operations for
+privileged accounts" guidance's `"Add member to role (permanent)"` (Service = PIM) is the same
+underlying event as, or genuinely distinct from, the plain `"Add member to role"` (Core Directory)
+`Export-EntraPrivilegedRoleAuditTrail.ps1` filters on, and updating `$monitoredActivities` to match.
+
+### 🔴 Red Team
+
+**Verdict: Fix (resolved)**
+
+1. **Round 1 correctly declined to guess, but that left a real, bounded detection gap open for three
+   rounds.** If reading (b) from `design.md` §4a was correct, a role assigned permanently through the
+   PIM blade while bypassing PIM's eligible/active workflow would log only under the
+   `(permanent)`-suffixed PIM activity and never appear in this script's output at all - exactly the
+   "roles assigned outside of PIM" risk this scenario exists to catch.
+   - **Resolution:** A direct fetch of Microsoft's canonical `reference-audit-activities` reference
+     (not a search snippet) confirms `Add member to role outside of PIM (permanent)` is listed as
+     its own, separately-documented activity under the PIM service's `RoleManagement` category -
+     distinct from `Add member to role`, listed only under Core Directory's `RoleManagement`
+     category. Reading (b) is confirmed. `$monitoredActivities` now includes both names; the
+     `Get-RoleDisplayNameFromTargetResources`/`Get-PrincipalDisplayNameFromTargetResources` extraction
+     logic is unchanged (already shape-agnostic, filters by `.Type` rather than assuming a specific
+     activity), so no new guess was introduced alongside the fix.
+
+No remaining Fail. This closes the last open item from round 1 Red Team finding 2.
+
+### 🔵 Blue Team
+
+**Verdict: Pass**
+
+- The added activity flows through the same de-duplication (by `Id`), CSV schema, and
+  `Write-Warning` severity logic as the existing six - no new code path for an on-call responder to
+  learn, just a wider net on the existing one.
+- `validate/Test-EntraPrivilegedRoleAuditTrail.ps1`'s allowlist was widened from 6 to 7 activities in
+  lockstep, so a genuinely unexpected `ActivityDisplayName` still fails the same automated check as
+  before.
+
+No Fix/Fail items from this lens.
+
+### 🎩 CISO
+
+**Verdict: Pass**
+
+- Closes a previously-disclosed, bounded detection gap at zero incremental cost - same script,
+  same schedule, same licensing profile (`README.md` §10 unchanged).
+- Strengthens the audit narrative: "this scenario now directly implements Microsoft's own published
+  out-of-PIM detection signal" is a stronger answer than round 1's disclosed VERIFY.
+
+No Fix/Fail items from this lens.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Pass**
+
+- The added activity name was confirmed against Microsoft's own `reference-audit-activities`
+  documentation source via a direct fetch, consistent with `AGENTS.md` §4's grounding requirement -
+  no invented activity name was introduced, and no wildcard/fuzzy match was used to guess at it.
+- This scenario now aligns precisely with the specific activity Microsoft's own "Security operations
+  for privileged accounts" guidance names for this exact detection scenario, closing the one
+  documented gap between this script's filter and Microsoft's published guidance.
+
+No Fix/Fail items from this lens.
+
+### Round 4 Summary
+
+| Lens | Initial verdict | Findings | Resolution |
+|---|---|---|---|
+| 🔴 Red Team | Fix | 1 (naming discrepancy grounded as two genuinely distinct events; missing PIM activity added to `$monitoredActivities`) | Closed |
+| 🔵 Blue Team | Pass | 0 | - |
+| 🎩 CISO | Pass | 0 | - |
+| 🟦 Microsoft Product Owner | Pass | 0 | - |
+
+All Fix items from this round are resolved in the current state of `deploy/`, `validate/`,
+`README.md`, and `design.md`. No Fail items were raised. No VERIFY items remain open for this
+specific naming discrepancy; the unrelated `targetResources`-shape VERIFY from round 3 (bulk import
+group members) remains open and tracked in `PROGRESS.md`.
