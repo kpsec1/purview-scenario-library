@@ -746,12 +746,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   hashtable's key names in use.
 
 ### Follow-ups discovered while building the Adaptive Protection deleted-content-preservation scenario
-- [ ] VERIFY (pilot tenant): whether the Data Lifecycle Management/Records Management Purview role
+- [x] VERIFY (pilot tenant): whether the Data Lifecycle Management/Records Management Purview role
   group is *also* accepted for the "Adaptive protection in Data Lifecycle Management" toggle
   itself (it surfaces under the Data Lifecycle Management solution settings UI, not the Insider
   Risk Management app), or whether only the Insider Risk Management/Insider Risk Management Admins
-  role group Microsoft's own page links to actually works. Flagged inline in
-  `adaptive-protection-deleted-content-preservation/README.md` §3/§11 rather than assumed.
+  role group Microsoft's own page links to actually works - **closed 2026-09-27**: a direct
+  re-fetch of Microsoft's retention documentation for this exact toggle names the Adaptive
+  Protection permissions table's "Configure Adaptive Protection and update settings" row (Insider
+  Risk Management or Insider Risk Management Admins) as the required permissions, with no Data
+  Lifecycle Management/Records Management role group mentioned anywhere in that procedure.
+  `adaptive-protection-deleted-content-preservation/README.md` §3/§11 and `reviews.md` (correction
+  addendum) updated in place.
 - [ ] VERIFY (pilot tenant): the exact `AuditData` JSON field names populated for the
   `SharePointDataProactivelyPreserved`/`ExchangeDataProactivelyPreserved` audit Operations -
   `deploy/Export-AdaptiveProtectionPreservationEvidence.ps1` extracts `Workload`/`ObjectId`/
@@ -3443,6 +3448,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `adaptive-protection-deleted-content-preservation` DLM/Records Management
+  role-group VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY
+  asking whether the Data Lifecycle Management/Records Management Purview role group is also
+  accepted for the "Adaptive protection in Data Lifecycle Management" toggle (which surfaces under
+  the Data Lifecycle Management solution settings UI, not the Insider Risk Management app), or
+  whether only the Insider Risk Management/Insider Risk Management Admins role group works.
+  Grounded via the Microsoft Learn MCP: a direct re-fetch of
+  `purview/retention#dynamically-mitigate-the-risk-of-accidental-or-malicious-deletes` found the
+  procedure for this exact toggle states that the "required permissions" link to the Adaptive
+  Protection permissions table's "Configure Adaptive Protection and update settings" row (Insider
+  Risk Management or Insider Risk Management Admins) - no Data Lifecycle Management/Records
+  Management role group is named anywhere in that procedure, despite the toggle's UI location.
+  Updated `adaptive-protection-deleted-content-preservation/README.md` §3/§11 and `reviews.md`
+  (new correction addendum) to state this as the documented answer, while still flagging that
+  documentation coverage isn't the same as a live-tenant test.
 - [x] **Closed the `post-breach-investigation-and-purge` DSI `RecordType` VERIFY** - commit
   `d8406db` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
   `Search-UnifiedAuditLog` `RecordType` value carries Data Security Investigations audit records

@@ -138,3 +138,22 @@ No Fix/Fail items.
 
 All Fix items from this round are resolved in the current state of `README.md` and `rollback.md`.
 No Fail items were raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+## Correction addendum (2026-09-27)
+
+`README.md` §3/§11 originally carried an open `VERIFY (pilot tenant)` for whether the Data
+Lifecycle Management/Records Management Purview role group is *also* accepted for the "Adaptive
+protection in Data Lifecycle Management" toggle, since the toggle surfaces under the Data Lifecycle
+Management solution settings UI rather than the Insider Risk Management app. A scheduled
+maintenance pass re-fetched `https://learn.microsoft.com/purview/retention#dynamically-mitigate-the-risk-of-accidental-or-malicious-deletes`
+directly (not a search-snippet) and found the retention documentation's own procedure for this
+exact toggle states: *"If your account has the required permissions, you'll see an option to take
+you to the insider risk management solution where you can turn on and configure Adaptive
+Protection"* - with "required permissions" linking, by name, to
+`insider-risk-management-adaptive-protection#permissions-for-adaptive-protection`'s "Configure
+Adaptive Protection and update settings" row (**Insider Risk Management** or **Insider Risk
+Management Admins**). No Data Lifecycle Management/Records Management role group is named anywhere
+in that procedure, despite the toggle's UI location. `README.md` §3/§11 have been corrected in
+place to state this as the documented answer rather than an open question, while still flagging
+that documentation coverage of an admin UI permission gate is not the same as a live-tenant test -
+worth a pilot-tenant spot check before relying on it operationally.
