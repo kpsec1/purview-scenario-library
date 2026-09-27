@@ -3429,7 +3429,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `rules-and-scorecards` Schedule-trigger recurring-type VERIFY** - commit
-  `<pending>` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Data Quality
+  `7fbe4ec` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Data Quality
   Schedule object's `Trigger.type` supports a documented `Recurrence` shape beyond `RunOnce`. Grounded
   via a direct fetch of the `Create Schedule`/`Get Schedule` REST reference for api-version
   `2026-01-12-preview` (the exact version `New-DataQualityRulesAndSchedule.ps1` targets): the
