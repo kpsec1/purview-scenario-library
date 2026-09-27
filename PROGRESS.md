@@ -3430,7 +3430,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `copilot-interaction-detection` Copilot Studio/Microsoft Foundry location VERIFY**
-  - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether this
+  - commit `6884d9b` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether this
   scenario's fixed template location ("Microsoft 365 Copilot and Microsoft 365 Copilot Chat") also
   reaches Copilot Studio-built or Microsoft Foundry agent interactions, or only the core Microsoft
   365 Copilot/Copilot Chat experience. Grounded via the Microsoft Learn MCP: the "Microsoft Purview
