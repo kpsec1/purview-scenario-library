@@ -49,7 +49,8 @@
 
 .NOTES
     Sources: same as deploy/New-InsiderRiskConditionalAccessPolicy.ps1's .NOTES block, including
-    that script's disclosed VERIFY on the exact guestOrExternalUserTypes multi-value wire format.
+    that script's grounding (VERIFY closed 2026-09-27) for the guestOrExternalUserTypes
+    multi-value wire format (comma-separated, single Edm.String property).
 #>
 [CmdletBinding()]
 param(
@@ -83,7 +84,8 @@ function Write-Check {
 
 function ConvertTo-GuestOrExternalUserTypeArray {
     # Same normalization as deploy/New-InsiderRiskConditionalAccessPolicy.ps1's helper of the same
-    # name - see that script's .NOTES for why both shapes are handled.
+    # name - see that script's .NOTES: the string-split branch is the confirmed path (VERIFY
+    # closed 2026-09-27), the collection branch is defensive insurance only.
     param($Value)
     if ($null -eq $Value) { return @() }
     if ($Value -is [string]) {

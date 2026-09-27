@@ -1023,15 +1023,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   narrower VERIFY carried forward rather than resolved by guessing - see the new item immediately
   below. The `externalTenants` sibling property remains a deliberate non-goal (design.md §7):
   Microsoft's own guide doesn't scope this exclusion by tenant either.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn/worked-example pass): the exact separator
-  Microsoft Graph uses between multiple `guestOrExternalUserTypes` flag values on the wire (this
-  scenario's script assumes a bare comma, e.g. `"b2bDirectConnectUser,serviceProvider"`) and
-  whether the Microsoft Graph PowerShell SDK's typed `Get-MgIdentityConditionalAccessPolicy`
-  read-back returns that same raw string or an already-split collection for this specific nested
-  property. Affects only this script's own local idempotency/drift detection, not the deployed
-  policy's actual enforcement behavior (Graph is the source of truth for how the condition
-  evaluates) - flagged inline in `conditional-access-insider-risk-block/deploy/
-  New-InsiderRiskConditionalAccessPolicy.ps1`'s `.NOTES` and `README.md` §11 rather than guessed.
+- [x] VERIFY closed 2026-09-27 (Microsoft Learn MCP): the exact separator Microsoft Graph uses
+  between multiple `guestOrExternalUserTypes` flag values on the wire (this scenario's script
+  assumes a bare comma, e.g. `"b2bDirectConnectUser,serviceProvider"`), and whether the Microsoft
+  Graph PowerShell SDK's typed `Get-MgIdentityConditionalAccessPolicy` read-back returns that same
+  raw string or an already-split collection for this specific nested property. **Confirmed by
+  grounded analogy, not a worked example of this exact property:** the
+  `conditionalAccessGuestsOrExternalUsers` resource's own JSON representation shows
+  `guestOrExternalUserTypes` as a single Edm.String (`"String"`, not `["String"]`) - contrasted
+  directly against the sibling `conditionalAccessEnumeratedExternalTenants.members` property, a
+  true collection whose JSON representation shows `["String"]`. Other Graph resources sharing the
+  identical "multi-valued enumeration on a single Edm.String property" shape (`cloudLicensing`
+  subscription's `tags`/`state`, `cloudLicensing` service's `assignableTo`) explicitly document
+  that shape as "a comma-separated list"; no Microsoft Learn source documents any other separator
+  for a property of this shape. Since the Microsoft Graph PowerShell SDK's typed model classes are
+  generated directly from this same Edm.String metadata, `Get-MgIdentityConditionalAccessPolicy`'s
+  read-back is that same raw comma-separated string, not an already-split collection. Updated
+  `conditional-access-insider-risk-block/deploy/New-InsiderRiskConditionalAccessPolicy.ps1`'s
+  `.NOTES` (+ 2 new source citations) and inline comments, `validate/
+  Test-InsiderRiskConditionalAccessPolicy.ps1`'s `.NOTES` and inline comment, `README.md` §11 (+
+  new reference 14) and its configuration-reference table row, `design.md`'s Users-scope decision
+  row, and `reviews.md` (Red Team finding 2, Product Owner finding 4) in place.
 - [ ] VERIFY (pilot tenant): Microsoft Quick Setup's exact auto-generated Conditional Access
   policy display name, so `conditional-access-insider-risk-block`'s own `(Custom)`-suffixed name
   can be independently confirmed not to collide, the same confirmation the DLP sibling scenario

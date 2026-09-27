@@ -188,7 +188,12 @@ raised.
    - **Resolution:** Confirmed the risk is cosmetic to *this script's own drift reporting*, not to
      the deployed policy's actual behavior (Graph is the source of truth for how the condition
      evaluates, not this script's local string comparison) - stated explicitly in the deploy
-     script's `.NOTES` and `README.md` §11 rather than left implicit.
+     script's `.NOTES` and `README.md` §11 rather than left implicit. **Update 2026-09-27:**
+     re-grounded via the Microsoft Learn MCP - the comma separator is now confirmed by analogy to
+     other Graph resources documenting the identical single-Edm.String multi-valued-enumeration
+     shape as comma-separated, and the SDK's raw-string (non-split) read-back follows directly
+     from that same Edm.String typing. No longer an open VERIFY; `README.md` §11 / `.NOTES` in
+     both `deploy/` and `validate/` updated accordingly.
 
 No remaining Fix/Fail after resolution.
 
@@ -246,7 +251,8 @@ No Fail items.
 4. **The one remaining VERIFY (multi-value separator format) is narrowly scoped and honestly
    labeled** - it affects only this script's own local idempotency/drift detection, not the
    correctness of the deployed Conditional Access policy itself (confirmed in the Red Team
-   resolution above). Not overstated as a functional risk it isn't.
+   resolution above). Not overstated as a functional risk it isn't. **Update 2026-09-27:** closed,
+   not merely narrowly scoped - see Red Team finding 2's update above.
 
 No remaining Fix/Fail after resolution.
 

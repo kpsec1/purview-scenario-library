@@ -153,7 +153,7 @@ least the propagation window in §11 before promoting. Once satisfied:
 |---|---|---|
 | Policy name | `Adaptive Protection - Block Elevated Insider Risk (Custom)` | Deliberately distinct from Microsoft's Quick-Setup-generated name - see §11 |
 | Target resources | `includeApplications = ['All']` | Matches Microsoft's own documented "All resources" step [[1]](#references) |
-| Users | `includeUsers = ['All']` minus `-ExcludeUserIds`/`-ExcludeGroupIds`/`-ExcludeGuestOrExternalUserTypes` | Excludes break-glass accounts/group **and**, by default, `b2bDirectConnectUser`/`serviceProvider`/`otherExternalUser` guest/external categories - Microsoft's own documented Users-step exclusion, now scripted (`conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes`) - see §11 for the one unconfirmed formatting detail |
+| Users | `includeUsers = ['All']` minus `-ExcludeUserIds`/`-ExcludeGroupIds`/`-ExcludeGuestOrExternalUserTypes` | Excludes break-glass accounts/group **and**, by default, `b2bDirectConnectUser`/`serviceProvider`/`otherExternalUser` guest/external categories - Microsoft's own documented Users-step exclusion, now scripted (`conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes`) - see §11 for the wire-format grounding |
 | Insider Risk condition | `insiderRiskLevels = ['elevated']` (default) | Configurable via `-RiskLevels`; adding `moderate`/`minor` applies the **same** block control to those levels too - see §6 note in `design.md` |
 | Grant control | `builtInControls = ['block']`, `operator = 'OR'` | Matches Microsoft's documented "Block access" choice [[1]](#references) |
 | Initial policy state | `enabledForReportingButNotEnforced` (Report-only) | Matches Microsoft's own documented Step 7 [[1]](#references) |
@@ -263,13 +263,24 @@ user's current insider risk level.
   guide names (`b2bDirectConnectUser`, `serviceProvider`, `otherExternalUser` - Graph's
   `excludeGuestsOrExternalUsers.guestOrExternalUserTypes`, confirmed on the
   `conditionalAccessGuestsOrExternalUsers` resource reference [[12]](#references)[[13]](#references)).
-  Two things remain genuinely open rather than guessed at: (1) the exact separator between
-  multiple values on the wire when more than one is set - this script assumes a bare comma, not
-  independently confirmed against a worked multi-value example - **VERIFY** (pilot tenant) before
-  relying on this script's own idempotency (match/drift) detection for this one field in
-  production; and (2) this scenario does not script the sibling `externalTenants` property
-  (scoping the exclusion to specific external tenant IDs) - Microsoft's own guide doesn't scope by
-  tenant either, so this is a deliberate non-goal, not a gap - see `design.md` §7.
+  One thing remains a deliberate non-goal, not a gap: this scenario does not script the sibling
+  `externalTenants` property (scoping the exclusion to specific external tenant IDs) - Microsoft's
+  own guide doesn't scope by tenant either - see `design.md` §7. **VERIFY closed 2026-09-27
+  (Microsoft Learn MCP):** the exact separator between multiple `guestOrExternalUserTypes` values
+  on the wire (this script assumes a bare comma, no space) is now grounded, not guessed - Graph
+  documents the identical "multi-valued enumeration on a single Edm.String property" JSON shape
+  for other resources (e.g. `cloudLicensing subscription`'s `tags`/`state`, `cloudLicensing
+  service`'s `assignableTo` [[14]](#references)) and states explicitly for each that it "can
+  contain multiple values in a comma-separated list"; no Microsoft Learn source documents a
+  different separator for any property of this shape, and the contrasting
+  `conditionalAccessEnumeratedExternalTenants.members` property (a true collection) shows a
+  visibly different JSON shape (`["String"]`, not `"String"`), confirming `guestOrExternalUserTypes`
+  is not that kind of property [[14]](#references). Because the Microsoft Graph PowerShell SDK's
+  typed model classes are generated from this same Edm.String metadata, `Get-
+  MgIdentityConditionalAccessPolicy`'s read-back is that same raw comma-separated string, not an
+  already-split collection - this script's idempotency (match/drift) detection for this field can
+  now be relied on in production. `deploy/New-InsiderRiskConditionalAccessPolicy.ps1`'s `.NOTES`
+  and `validate/Test-InsiderRiskConditionalAccessPolicy.ps1`'s `.NOTES` updated accordingly.
 - **Policy naming deliberately avoids asserting Microsoft's Quick Setup auto-generated name.**
   Unlike the DLP sibling scenario (which independently confirmed and explicitly avoided colliding
   with Microsoft's exact auto-generated DLP policy name), this build could **not** independently
@@ -342,6 +353,9 @@ user's current insider risk level.
     values: `internalGuest`/`b2bCollaborationGuest`/`b2bCollaborationMember`/
     `b2bDirectConnectUser`/`otherExternalUser`/`serviceProvider`, plus the server-only
     `unknownFutureValue`) - <https://learn.microsoft.com/graph/api/resources/enums#conditionalaccessguestorexternalusertypes-values>
+14. cloudLicensing subscription / service resource types and conditionalAccessEnumeratedExternalTenants
+    resource type (grounding for the `guestOrExternalUserTypes` multi-value separator VERIFY closed
+    2026-09-27 - see §11) - <https://learn.microsoft.com/graph/api/resources/cloudlicensing-subscription>, <https://learn.microsoft.com/graph/api/resources/cloudlicensing-service>, <https://learn.microsoft.com/graph/api/resources/conditionalaccessenumeratedexternaltenants>
 
 > Re-verify all links, API behavior, and licensing terms against current Microsoft Learn before a
 > customer-facing assessment or sale - Adaptive Protection and its Conditional Access integration
