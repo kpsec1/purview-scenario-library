@@ -3437,7 +3437,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `security-policy-violations-by-departing-users` Defender for Endpoint Plan 1
-  vs. Plan 2 VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY
+  vs. Plan 2 VERIFY** - commit `daf41f8` - 2026-09-27. Maintenance pass: closed the open VERIFY
   asking whether this template's specific Defender for Endpoint indicators (malware/harmful-app
   install, security-control bypass) require Plan 2's EDR sensor, or whether Plan 1's next-gen
   antivirus/tamper-protection alerting already satisfies them. Grounded via the Microsoft Learn
