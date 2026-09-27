@@ -3424,6 +3424,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `manage-critical-data-elements` entityType=CRITICALDATACOLUMN VERIFY** - commit
+  `8221edf` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  `entityType=DATACOLUMN` or `entityType=CRITICALDATACOLUMN` is the real, accepted value for the
+  Critical Data Elements relationship operations. Grounded via a direct re-fetch of the Critical
+  Data Elements Create/List/Delete Relationship reference pages (`api-version=2025-09-15-preview`)
+  plus the Data Products Create Relationship page (shares the same `EntityCategory` enum): all now
+  list `CRITICALDATACOLUMN` explicitly, matching every worked example, with no plain `DATACOLUMN`
+  value in the enum at all - the earlier enum-vs-example discrepancy this build's grounding pass
+  had found is resolved, apparently by a documentation fix on Microsoft's side since that pass.
+  Updated `manage-critical-data-elements/deploy/New-CriticalDataElement.ps1` and
+  `Remove-CriticalDataElement.ps1` (both now send `entityType=CRITICALDATACOLUMN`),
+  `validate/Test-CriticalDataElement.ps1`, `README.md`, `design.md` §6, and `reviews.md`
+  (addendum). Corrected the same stale `DATACOLUMN` claim where it was echoed elsewhere:
+  `manage-critical-data-elements-related-terms/` (design.md, README.md, reviews.md addendum,
+  rollback.md, `Remove-CdeRelatedTerm.ps1`), `manage-okrs/design.md`, and
+  `docs/automation-surface.md`'s Unified Catalog routing-table rows. No script logic changed
+  beyond the literal `entityType` value; no new coverage added.
 - [x] **Closed the `adaptive-scope-retention` Get-AdaptiveScopeMembers metadata-property-name
   VERIFY** - commit `60ce46c` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
   property names `Get-AdaptiveScopeMembers`'s first (metadata) returned element exposes for total
