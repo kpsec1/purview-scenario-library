@@ -2432,11 +2432,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `AdaptiveScopeLocation` parameter set, unlike the portal's own "choose locations" step in the
   adaptive-policy creation flow. `adaptive-scope-retention/README.md` §11 and `design.md` §4 disclose
   this rather than guessing an answer.
-- [ ] VERIFY: the property name(s) `Get-AdaptiveScopeMembers`'s first (metadata) returned element
-  actually exposes (total count, page size, more-pages flag, watermark) - Microsoft's reference
-  describes them in prose but doesn't name them. `adaptive-scope-retention/validate/
-  Test-AdaptiveScopeRetention.ps1` prints the metadata object generically (`Format-List`) rather than
-  guessing a property name like `TotalMemberCount`.
 - [x] `scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/` - the auto-apply
   retention **label** variant of the same pattern (`New-RetentionComplianceRule -ApplyComplianceTag`
   instead of `-RetentionComplianceAction`, same `-AdaptiveScopeLocation` policy), noted as a non-goal
@@ -3428,6 +3423,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `adaptive-scope-retention` Get-AdaptiveScopeMembers metadata-property-name
+  VERIFY** - commit PENDING - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
+  property names `Get-AdaptiveScopeMembers`'s first (metadata) returned element exposes for total
+  member count, current-page count, the more-pages flag, and the paging watermark - Microsoft's
+  prose description named the concepts but not the properties. Grounded via a direct fetch of the
+  cmdlet's current Microsoft Learn reference page: two worked paging examples (Example 8 and the
+  `Export-AdaptiveScopeMembers` helper in Example 9) now use these fields by name -
+  `TotalMemberCount`, `CurrentPageMemberCount`, `IsLastPage`, `Watermark` - confirming them without
+  guessing. Updated `validate/Test-AdaptiveScopeRetention.ps1` (prints the named values ahead of the
+  existing generic `Format-List` fallback), `README.md` §11 and reference 10. No script behavior
+  changed beyond the added informational output; this scenario's separate, still-open VERIFY (the
+  `AdaptiveScopeLocation` applied-locations parameter-surface gap) is untouched by this pass.
 - [x] **Closed the `rules-and-scorecards` Schedule-trigger recurring-type VERIFY** - commit
   `7fbe4ec` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Data Quality
   Schedule object's `Trigger.type` supports a documented `Recurrence` shape beyond `RunOnce`. Grounded

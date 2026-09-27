@@ -101,14 +101,14 @@ if ($rule) {
 # Informational membership sample (never fails the run)
 if (-not $SkipMembershipSample -and $scope) {
     try {
-        # VERIFY: Microsoft's reference documents that the first returned element carries result
-        # metadata (total member count, page size, whether more pages exist, a Watermark) but does
-        # not name its properties. Printed generically ($meta | Format-List) rather than guessing a
-        # property name (e.g. TotalMemberCount) that isn't in the documented reference - see
-        # README.md Section 11.
+        # Microsoft's reference confirms these result-metadata property names in its own worked
+        # paging examples (TotalMemberCount, CurrentPageMemberCount, IsLastPage, Watermark) - see
+        # README.md Section 11. $meta | Format-List is kept as a fallback display in case a future
+        # API revision adds or renames properties; it never fails the run either way.
         $sample = Get-AdaptiveScopeMembers -Identity $cfg.adaptiveScope.name -State Added -PageResultSize 5 -ErrorAction Stop
         $meta = $sample | Select-Object -First 1
         Write-Host "`n  Membership sample (informational, not a hard check) - result metadata:" -ForegroundColor Cyan
+        Write-Host "    Total members: $($meta.TotalMemberCount)  |  This page: $($meta.CurrentPageMemberCount)  |  Last page: $($meta.IsLastPage)  |  Watermark: $($meta.Watermark)" -ForegroundColor Cyan
         $meta | Format-List | Out-String | Write-Host
         Write-Host "  If membership looks empty shortly after creation, that's expected - allow up to 5 days for the query to populate." -ForegroundColor Cyan
     }
