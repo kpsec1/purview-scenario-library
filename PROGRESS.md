@@ -3447,7 +3447,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `manage-data-products` Create Relationship `assetId`/`entityType` body-shape
-  VERIFY** - commit PENDING - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  VERIFY** - commit `e864d3b` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
   the Unified Catalog `Data Products - Create Relationship` operation needs an `assetId` field for
   `entityType=DATAASSET`/`TERM` calls, since the REST reference's only worked example
   (`entityType=CRITICALDATACOLUMN`) includes one. Grounded via the Microsoft Learn MCP: fetched the
