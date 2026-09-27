@@ -1551,13 +1551,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   a missing **Governance Domain Owner** row to `docs/rbac-model.md` §5.
 
 ### Follow-ups discovered while building the Unified Catalog manage-data-products scenario
-- [ ] VERIFY (pilot tenant or the Swagger spec linked from the Unified Catalog API overview page):
+- [x] VERIFY (pilot tenant or the Swagger spec linked from the Unified Catalog API overview page):
   the exact `Data Products - Create Relationship` request body per `entityType` - the REST
   reference's only worked example (`entityType=CRITICALDATACOLUMN`) includes an `assetId` field
-  this scenario's `DATAASSET`/`TERM` calls omit. Flagged inline in `manage-data-products/README.md`
-  §11, `design.md` §3, and `deploy/New-DataProduct.ps1`'s `.NOTES` rather than resolved by
-  guessing. Closing this would also let `scenarios/unified-catalog/link-glossary-terms-to-data-
-  products/`-style critical-data-element/column linking be added with confidence.
+  this scenario's `DATAASSET`/`TERM` calls omit. - **closed 2026-09-27 (Microsoft Learn grounding,
+  see DONE below)**: that worked example's `entityType=CRITICALDATACOLUMN` value is itself absent
+  from the same page's own `EntityCategory` enum, and every sibling relationship-creation
+  operation (Data Assets - Create Relationship, Critical Data Elements - Create Relationship, and
+  Data Products - Create Relationship's own `DataProductRelationship` response type) documents the
+  plain `entityId`/`description`/`relationshipType` shape this scenario already sends. Read as a
+  documentation-generation artifact, not a real per-`entityType` schema difference - no code change
+  needed. `manage-data-products/README.md` §11/§12, `design.md` §6, and
+  `deploy/New-DataProduct.ps1`'s `.NOTES` updated accordingly.
 - [ ] VERIFY (pilot tenant): whether the Unified Catalog `Data Products - Update` REST operation
   enforces the portal's "must configure a data access policy before Publish" business rule
   server-side, or whether that is a portal-UX-only guardrail this scenario's direct `PUT` call
@@ -3441,6 +3446,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `manage-data-products` Create Relationship `assetId`/`entityType` body-shape
+  VERIFY** - commit PENDING - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  the Unified Catalog `Data Products - Create Relationship` operation needs an `assetId` field for
+  `entityType=DATAASSET`/`TERM` calls, since the REST reference's only worked example
+  (`entityType=CRITICALDATACOLUMN`) includes one. Grounded via the Microsoft Learn MCP: fetched the
+  Data Products, Data Assets, and Critical Data Elements "Create Relationship" REST reference pages
+  directly. Found that (1) `CRITICALDATACOLUMN` is itself absent from the `EntityCategory` enum
+  documented on the same page, and (2) every sibling Create Relationship operation - Data Assets,
+  Critical Data Elements (the operation that actually manages CDE relationships), and even Data
+  Products' own `DataProductRelationship` response type - documents the plain
+  `entityId`/`description`/`relationshipType` shape this scenario's script already sends. The
+  `assetId`+`CRITICALDATACOLUMN` example is best read as a documentation-generation artifact, not a
+  real per-`entityType` schema difference. Updated `manage-data-products/README.md` §11 (VERIFY to
+  CLOSED, new reference [19]) and §12, `design.md` §6, and `deploy/New-DataProduct.ps1`'s `.NOTES`
+  and inline comment. Doc-only correction - no code changed (the script's omission of `assetId` was
+  already correct), no new four-lens review round, no new VERIFY items opened.
 - [x] **Closed the `custom-process-lineage` entity-type-creation permission VERIFY** -
   commit `c1917d0` - 2026-09-27. Maintenance pass: closed the open VERIFY asking the exact
   permission required to create a custom entity type definition via `Type - Bulk Create`. Grounded

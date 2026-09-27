@@ -240,13 +240,17 @@ itself.
   server-side, or only the portal UI does.** Not documented either way (`design.md` §5). If the
   REST call does *not* enforce it, this script could technically publish a data product with no
   access-request path configured for consumers - a real gap flagged in `reviews.md` (Red Team).
-- **VERIFY - the `Data Products - Create Relationship` request body for `entityType=DATAASSET` and
-  `entityType=TERM`.** The REST reference's only worked example is for
-  `entityType=CRITICALDATACOLUMN` and includes an `assetId` field this script's `DATAASSET`/`TERM`
-  calls omit (`design.md` §3, inline `.NOTES` in `deploy/New-DataProduct.ps1`). If a tenant rejects
-  or silently ignores these calls, confirm the correct body shape per entity type against a pilot
-  tenant or the Swagger specification linked from the API overview page
-  [[15]](#12-references) before relying on this pattern at scale.
+- **CLOSED (2026-09-27) - the `Data Products - Create Relationship` request body for
+  `entityType=DATAASSET` and `entityType=TERM`.** The REST reference's only worked example uses
+  `entityType=CRITICALDATACOLUMN` (a value absent from that same page's own `EntityCategory` enum)
+  and includes an `assetId` field this script's `DATAASSET`/`TERM` calls omit - but this is a
+  documentation-generation artifact, not a real per-`entityType` schema. Every sibling
+  relationship-creation operation documents the plain `entityId`/`description`/`relationshipType`
+  shape this script already sends: **Data Assets - Create Relationship**
+  [[9]](#12-references), **Critical Data Elements - Create Relationship** [[19]](#12-references)
+  (the operation that actually manages CDE relationships), and even Data Products - Create
+  Relationship's own `DataProductRelationship` response type. No code change needed
+  (`design.md` §3, inline `.NOTES` in `deploy/New-DataProduct.ps1`).
 - **The two "Policies" concepts in Unified Catalog are not the same thing.** The REST API's
   `Policies` operation group returns the underlying RBAC authorization-policy engine (attribute/
   decision rules keyed by domain/product GUIDs) - **not** the "who can request access, what do they
@@ -286,6 +290,7 @@ itself.
 16. Tutorial: Authenticate for APIs - service principal setup, Unified Catalog role assignment, client-credentials token flow - <https://learn.microsoft.com/purview/data-gov-api-rest-data-plane>
 17. Get a user (Microsoft Graph) - `User.Read.All` application permission - <https://learn.microsoft.com/graph/api/user-get>
 18. Microsoft identity platform and the OAuth 2.0 client credentials flow - v2.0 token endpoint, `scope=.default` - <https://learn.microsoft.com/entra/identity-platform/v2-oauth2-client-creds-grant-flow>
+19. Purview Unified Catalog REST API - Critical Data Elements operation group (Create/Update/Delete By Id/Get By Id/List/Query/Create Relationship/List Relationships/Delete Relationship) - <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/critical-data-elements?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing engagement - this
 > scenario targets Unified Catalog's **preview** REST API surface (`2026-03-20-preview`), whose

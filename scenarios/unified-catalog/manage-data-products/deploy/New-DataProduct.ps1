@@ -104,14 +104,16 @@
 
 .NOTES
     VERIFY before production use (see README.md Section 11 and design.md for full detail):
-    - The Data Products - Create Relationship operation's REST reference documents only one worked
-      request-body example, for entityType=CRITICALDATACOLUMN, whose body includes an `assetId`
-      field alongside `entityId`. This script omits `assetId` for the DATAASSET and TERM
-      relationships it creates (sending only entityId/relationshipType/description), reasoning
-      that `assetId` is specific to critical-data-element/column linking where an asset AND a
-      column both need identifying - but this is not independently confirmed against the
-      DATAASSET/TERM entityTypes. Confirm against a pilot tenant if a relationship call is
-      rejected or silently no-ops.
+    - CLOSED 2026-09-27 (Microsoft Learn grounding): the Data Products - Create Relationship REST
+      reference's single worked example (entityType=CRITICALDATACOLUMN, an entityType value that
+      itself is absent from the same page's own EntityCategory enum) shows a body containing
+      `assetId`, but this is a documentation-generation artifact, not an `entityType`-specific
+      schema. Every sibling relationship-creation operation - Data Assets - Create Relationship,
+      Critical Data Elements - Create Relationship (the operation that actually manages CDE
+      relationships), and Data Products - Create Relationship's own `DataProductRelationship`
+      response type - documents the same plain shape this script already sends:
+      entityId/description/relationshipType, no `assetId`. This script's DATAASSET/TERM calls are
+      correct as written; no code change needed.
     - Whether the REST API's Data Products - Update operation enforces the portal's own
       "must have a data access policy before Publish" business rule, or whether that is a
       portal-UX-only guardrail this script's direct PUT call bypasses. Not documented either way.
@@ -400,10 +402,9 @@ function Test-RelationshipExists {
 }
 
 function Add-DataProductRelationship {
-    # VERIFY (README.md Section 11 / this script's .NOTES): the only documented worked request
-    # body for this operation is for entityType=CRITICALDATACOLUMN and includes an `assetId`
-    # field. This function omits `assetId` for DATAASSET/TERM relationships - not independently
-    # confirmed against those entity types.
+    # CLOSED 2026-09-27 (see this script's .NOTES and README.md Section 11): omitting `assetId`
+    # here is grounded, not a guess - every sibling Create Relationship operation on
+    # Microsoft Learn documents the plain entityId/description/relationshipType shape sent below.
     param(
         [Parameter(Mandatory)][string]$DataProductId,
         [Parameter(Mandatory)][string]$ProductName,
