@@ -3468,7 +3468,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `multi-stage-disposition-review` `-ComplianceTagForNextStage` behavior VERIFY** -
-  commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
+  commit `5b3683d` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
   `-ComplianceTagForNextStage` (on `New-ComplianceTag`/`Set-ComplianceTag`) actually does, since its
   own PowerShell parameter reference leaves the description as an unfilled placeholder and the
   scenario had only the Microsoft Graph `retentionLabel.labelToBeApplied` property as an unconfirmed
