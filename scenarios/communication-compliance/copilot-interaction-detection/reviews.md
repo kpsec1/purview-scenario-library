@@ -173,3 +173,15 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Export-CopilotInteractionAuditTrail.ps1`, `validate/Test-CopilotInteractionAuditTrail.ps1`,
 and `deploy/policy/copilot-interaction-policy-manifest.json`. No Fail items were raised. This
 fragment meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Addendum - 2026-09-27 (maintenance pass)
+
+Red Team finding 1's VERIFY (Copilot Studio/Microsoft Foundry location coverage) is now **resolved**,
+not just disclosed. Microsoft's own AI-apps coverage table (`README.md` §12 ref. 24) groups Microsoft
+Copilot Studio under the same "Copilot experiences and agents" category as Microsoft 365 Copilot/
+Copilot Chat, and Microsoft Foundry under a separate "Enterprise AI apps" category - confirming this
+scenario's fixed location reaches Copilot Studio agent interactions but not Microsoft Foundry agent
+interactions. `README.md` §11 and `design.md` §8 updated from VERIFY to RESOLVED accordingly; no
+code change required (the deploy/validate scripts never asserted either way).

@@ -2213,13 +2213,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   actively moving and should be re-verified before every future sale referencing it.
 
 ### Follow-ups discovered while building the Communication Compliance copilot-interaction-detection scenario
-- [ ] VERIFY: whether this scenario's fixed template location ("Microsoft 365 Copilot and Microsoft
+- [x] VERIFY: whether this scenario's fixed template location ("Microsoft 365 Copilot and Microsoft
   365 Copilot Chat") also reaches Copilot Studio-built or Microsoft Foundry agent interactions, or
-  only the core Microsoft 365 Copilot/Copilot Chat experience - Microsoft's general
-  channel-detection overview describes a same-sounding "Microsoft Copilot experiences" location as
-  covering Copilot Studio agents too, but no worked example in this build's grounding pass confirmed
-  the two phrasings denote the same underlying location. `copilot-interaction-detection/README.md`
-  §11 and `design.md` §8 flag this rather than asserting either way.
+  only the core Microsoft 365 Copilot/Copilot Chat experience - **resolved** (see DONE below):
+  Microsoft's own AI-apps coverage table groups Microsoft Copilot Studio under the same "Copilot
+  experiences and agents" category as Microsoft 365 Copilot/Copilot Chat, and Microsoft Foundry
+  under a separate "Enterprise AI apps" category - so this location reaches Copilot Studio agents but
+  not Microsoft Foundry agents. `copilot-interaction-detection/README.md` §11/§12 and `design.md` §8
+  updated in place.
 - [ ] VERIFY (pilot tenant): the exact `AuditData` JSON shape for a `SupervisionRuleMatch` event
   specific to the Prompt Shields/Protected material classifier pairing, to confirm or replace
   `copilot-interaction-detection/deploy/Export-CopilotInteractionAuditTrail.ps1`'s best-effort
@@ -3428,6 +3429,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `copilot-interaction-detection` Copilot Studio/Microsoft Foundry location VERIFY**
+  - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether this
+  scenario's fixed template location ("Microsoft 365 Copilot and Microsoft 365 Copilot Chat") also
+  reaches Copilot Studio-built or Microsoft Foundry agent interactions, or only the core Microsoft
+  365 Copilot/Copilot Chat experience. Grounded via the Microsoft Learn MCP: the "Microsoft Purview
+  data security and compliance protections for generative AI apps" page's AI-apps coverage table
+  groups **Microsoft Copilot Studio** under the same "Copilot experiences and agents" category as
+  Microsoft 365 Copilot and Microsoft 365 Copilot Chat themselves, while listing **Microsoft
+  Foundry** under a separate "Enterprise AI apps" category - combined with the channel-detection
+  overview's own description of the "Microsoft Copilot experiences" location as covering "Copilots
+  built using Microsoft Copilot Studio," and the Microsoft Copilot "Privacy and protections" page's
+  explicit statement that "Microsoft 365 Copilot"/"Microsoft 365 Copilot Chat" and "Microsoft
+  Copilot"/"Microsoft Copilot Chat" are the same, renamed product with no compliance-behavior
+  change. Result: this location **does** reach Copilot Studio agent interactions, but does **not**
+  reach Microsoft Foundry agent interactions (those need the separate "Enterprise AI apps" location,
+  pay-as-you-go billing required). Updated `copilot-interaction-detection/README.md` §11 (VERIFY →
+  RESOLVED, with the reasoning above) and §12 (two new references), and `design.md` §8 to match. No
+  script change was needed - this scenario's deploy/validate code never asserted either way.
 - [x] **Closed the `auto-label-eu-personal-data-sharepoint` "EU driver's license number" apostrophe
   VERIFY** - commit `8e9385b` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
   the byte-exact SIT name is `"EU driver's license number"` (this scenario's existing default) or
