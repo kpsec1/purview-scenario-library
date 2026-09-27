@@ -1715,16 +1715,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   shape remains inferred-from-schema-and-corroborated, not pilot-tenant-confirmed - stated that way
   in the new file's own header comment, `README.md` §11, and `design.md`, not upgraded to a firm
   claim just because a file now ships it.
-- [ ] Once the Schedule object's recurring-trigger-type VERIFY immediately below is closed, revisit
-  whether a recurring scan schedule changes any of this scenario's alert-cadence assumptions
-  (currently alerts fire per completed scan, whatever triggers it).
-
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the Data Quality Schedule object's
-  trigger `type` values beyond the confirmed `RunOnce` shape - a `Recurrence` type with frequency/
-  interval fields almost certainly exists (the portal's own Scheduled scans wizard supports daily/
-  weekly/monthly recurrence) but wasn't found in this build's REST reference fetch. Needed before
-  `rules-and-scorecards` (or a follow-up) can script an ongoing scan cadence instead of a one-time
-  `RunOnce` schedule.
 - [ ] VERIFY (pilot tenant): the exact mechanism by which a `TypeMatch` (Data type match) rule's
   `typeProperties` specifies the target type a column is checked against - the confirmed REST
   `TypeProperties` schema has no field name for it despite Microsoft's conceptual documentation
@@ -3438,6 +3428,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `rules-and-scorecards` Schedule-trigger recurring-type VERIFY** - commit
+  `<pending>` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Data Quality
+  Schedule object's `Trigger.type` supports a documented `Recurrence` shape beyond `RunOnce`. Grounded
+  via a direct fetch of the `Create Schedule`/`Get Schedule` REST reference for api-version
+  `2026-01-12-preview` (the exact version `New-DataQualityRulesAndSchedule.ps1` targets): the
+  `Trigger.type` property is typed as a bare `string` (not an enum), and the `TypeProperties` object
+  is formally defined in the Definitions section with exactly three fields - `isScheduled`,
+  `timezone`, `triggerTime` - all `RunOnce`-specific, with no second discriminated-union variant or
+  frequency/interval fields documented anywhere on the page (schema or examples alike). This upgrades
+  the finding from "not found in the one worked example this build fetched" to "not present in the
+  formal schema definition of the current API version either" - still a documentation-absence finding
+  rather than pilot-tenant proof the capability doesn't exist server-side, but the strongest evidence
+  obtainable without a live tenant, so the VERIFY is closed with this dated, sourced conclusion instead
+  of carried forward unresolved. Also removed the dependent "revisit alert-cadence assumptions once
+  this is closed" follow-up immediately above it in this file, since with no recurring REST trigger
+  type to schedule against, there is nothing to revisit. Updated `README.md` §11 (and the `.NOTES`
+  cross-reference from §8 to §11), `deploy/New-DataQualityRulesAndSchedule.ps1` `.NOTES`, and
+  `design.md` §5 configuration-reference table. No script behavior changed - it already scheduled
+  `RunOnce` only.
 - [x] **Partially closed the `gdpr-dsr-fulfillment` Article 20 export-format VERIFY** - commit
   `bd49417` - 2026-09-26. Maintenance pass: grounded whether eDiscovery review-set export can produce
   a CSV/JSON metadata companion alongside PST/native files, via a direct Microsoft Learn fetch of

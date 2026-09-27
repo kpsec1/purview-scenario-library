@@ -104,7 +104,7 @@ implements.
 | Rule body construction | Pass-through `typeProperties` from the JSON definition file | Avoids fabricating a shape for any rule type this build's grounding didn't directly confirm - Design goal 3 |
 | Rule types shipped in the example definition file | `NotNull`, `Unique`, `TypeMatch`, `Duplicate`, `CustomTruth` - omitting `Freshness` | The four (plus Custom) directly confirmed via Microsoft's own REST examples; Freshness is explicitly unsupported for Azure SQL, this scenario's target source type |
 | Default rule status | `Active` | Matches the portal's default for a newly authored rule; `-RuleStatus Draft` is available for a review-before-activation workflow, matching this repo's dry-run-first ethos |
-| Schedule trigger type | `RunOnce` only | The only trigger shape this build's grounding independently confirmed in the REST schema - see `README.md` §11 VERIFY rather than guessing a `Recurrence` shape |
+| Schedule trigger type | `RunOnce` only | Confirmed via direct REST reference fetch that no `Recurrence` type is documented for this object (schema and examples alike) - see `README.md` §11 |
 | Data-source connection | Not scripted - portal prerequisite | `Create Data Source`'s body requires a `computeId` this build found no documented provisioning endpoint for - see `README.md` §11 |
 | Alert configuration | Not scripted - portal prerequisite | `Get Alerts`/`Update Alert` REST operations exist per the operation-group index but weren't independently fetched/grounded in this build - flagged as a follow-up, not guessed |
 
