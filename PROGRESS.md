@@ -3441,6 +3441,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `custom-process-lineage` entity-type-creation permission VERIFY** -
+  commit `c1917d0` - 2026-09-27. Maintenance pass: closed the open VERIFY asking the exact
+  permission required to create a custom entity type definition via `Type - Bulk Create`. Grounded
+  via the Microsoft Learn MCP: a fetch of "Manage assets with metamodel" shows its own prerequisites
+  state collection-level Data Curator as sufficient for "Create and modify asset types" - the same
+  scoping already confirmed for the closely related "create a custom classification" action, and
+  consistent with Purview's RBAC model drawing no documented distinction between data-plane create
+  actions on that basis. No broader/root-level grant is required. Updated `README.md` §3
+  (prerequisites table) and §11 (VERIFY to RESOLVED) with new reference [19]. Doc-only correction -
+  no code changed, no new four-lens review round, no new VERIFY items opened. The residual
+  tenant-wide blast-radius caveat (Atlas type definitions are account-wide, unlike entities) is
+  preserved, not removed, since it holds regardless of how this permission-scope question resolved.
 - [x] **Closed the `accepted-domains-hygiene-check-on-premises` `-AdminAuditLogCmdlets` default-value
   VERIFY** - commit `03abd4c` - 2026-09-27. Maintenance pass: closed the open VERIFY asking the exact
   default value of `-AdminAuditLogCmdlets` (which cmdlets a fresh on-premises Exchange install audits
