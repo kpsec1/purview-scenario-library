@@ -294,11 +294,13 @@ See `rollback.md` for the full staged procedure. Quick reference:
   though the portal's own conceptual documentation calls the equivalent field a "recipient alias."
   This scenario's scripts send whatever string the definition file supplies unmodified and do not
   attempt UPN-to-object-ID resolution.
-- **VERIFY - `Update Alert`'s PUT semantics against an already-existing `alertId`.** Its own
-  reference page states only "Creates an alert scoped to the specified business domain," with no
-  explicit statement about reuse against an existing ID. Does not affect this scenario's
-  idempotency (the ID is always caller-chosen and stable), but a direct caller of the raw API
-  should confirm the behavior.
+- **CONFIRMED (2026-09-27, direct Microsoft Learn fetch), not a remaining VERIFY - `Update Alert`'s
+  PUT semantics against an already-existing `alertId`.** A re-fetch of the operation's REST
+  reference page (`2026-01-12-preview`) shows Microsoft now documents the `alertId` URI parameter
+  itself as "Unique identifier of the alert **to create or replace**" - explicit create-or-replace
+  (full-replace) semantics, not create-only. This scenario's idempotency never depended on the
+  answer (the ID is always caller-chosen and stable - `design.md` §5), but a direct caller of the
+  raw API now has an authoritative citation instead of an open question.
 - **This scenario does not test the connection or grant source-side read access.** Both are
   documented manual/portal prerequisites (§3/§5) with no independently confirmed REST equivalent
   found in this build's grounding pass.

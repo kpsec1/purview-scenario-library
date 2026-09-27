@@ -16,10 +16,10 @@
          Status) to flip an existing alert's status without resending its full definition.
 
     This script still performs a GET before the PUT purely for accurate "Created"/"Updated"
-    console reporting - see .NOTES for why the PUT's own create-vs-replace semantics against an
-    already-existing ID were not independently confirmed by this build's grounding pass, and why
-    that ambiguity does not affect this script's idempotency (the alertId is always caller-chosen
-    and stable, so a repeat run always targets the same object either way).
+    console reporting - Update Alert's PUT is a confirmed create-or-replace against an existing
+    alertId (see .NOTES), so the GET is not needed for correctness, only for console messaging.
+    The alertId is always caller-chosen and stable, so a repeat run always targets the same object
+    either way.
 
     This script does NOT create the governance domain, data product, or data asset an alert scopes
     to - those are prerequisites documented in README.md Section 3, matching every other Data
@@ -102,12 +102,12 @@
       alerts" article calls the equivalent field a "recipient alias" without stating the resolved
       value's exact type - this script sends whatever string the definition file supplies
       unmodified, and does not attempt to resolve a UPN to an object ID itself.
-    - Whether Update Alert's PUT is strictly create-only (would error against an already-existing
-      alertId) or create-or-replace - this build's fetch of its reference page states only
-      "Creates an alert scoped to the specified business domain," with no explicit statement about
-      reuse against an existing ID. Does not affect this script's idempotency (see .DESCRIPTION),
-      but a production integration calling Update Alert directly without this script's existence
-      check should confirm the behavior first.
+    - CONFIRMED (2026-09-27, direct Microsoft Learn fetch): Update Alert's PUT is create-or-replace
+      against an already-existing alertId, not create-only. Microsoft's reference page now
+      documents the alertId URI parameter itself as "Unique identifier of the alert to create or
+      replace." Never affected this script's idempotency (the alertId is always caller-chosen and
+      stable), but a production integration calling Update Alert directly now has an authoritative
+      citation instead of an open question.
     - The only two `condition` functions confirmed by this build's grounding pass are
       `score_threshold(GLOBAL_SCORE)` and `score_variance(GLOBAL_SCORE)`, both used in the example
       definition file. Whether a per-rule (not just per-asset global score) condition function

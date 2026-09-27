@@ -1695,10 +1695,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   string in addition to a Microsoft Entra object ID - every worked example in Microsoft's Alert REST
   reference pages shows only GUIDs, but the portal's own conceptual doc calls the field a "recipient
   alias" without stating the resolved type. `connection-and-scorecard-alerts/README.md` §11.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): `Update Alert`'s PUT semantics against
-  an already-existing `alertId` - its reference page states only "Creates an alert," with no
-  explicit create-vs-replace statement. Doesn't affect this scenario's idempotency (the ID is always
-  caller-chosen), but a direct caller should confirm.
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): `Update Alert`'s PUT semantics against
+  an already-existing `alertId` - **resolved 2026-09-27** without needing a pilot tenant: a re-fetch
+  of the `Update Alert` REST reference page (`2026-01-12-preview`) shows Microsoft now documents the
+  `alertId` URI parameter itself as "Unique identifier of the alert to create or replace" - explicit
+  create-or-replace (full-replace) semantics, not create-only, superseding this build's earlier
+  fetch which only saw "Creates an alert scoped to the specified business domain." Never affected
+  this scenario's idempotency (the ID is always caller-chosen). `connection-and-scorecard-alerts/`
+  `README.md` §11 and `deploy/New-DataQualityAlert.ps1` `.DESCRIPTION`/`.NOTES` updated to cite the
+  confirmed behavior instead of the open question.
 - [x] Ground `Search-UnifiedAuditLog` `RecordType`/`Operations` coverage (if any) for Data Quality
   connection/alert `Create`/`Update`/`Delete` actions, then add a dedicated audit-trail export
   script to `connection-and-scorecard-alerts/deploy/` - **grounded and closed, not built** (see
