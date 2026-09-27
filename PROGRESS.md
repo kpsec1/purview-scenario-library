@@ -3445,6 +3445,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `connection-and-scorecard-alerts` Update Alert PUT create-or-replace VERIFY** -
+  commit `3f72986` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether `Update
+  Alert`'s PUT against an already-existing `alertId` is create-only or create-or-replace. Grounded
+  via a direct re-fetch of the Update Alert REST reference page (`2026-01-12-preview`): it now
+  documents the `alertId` URI parameter itself as "Unique identifier of the alert to create or
+  replace," settling the question explicitly - the earlier fetch this build's grounding pass ran
+  had only found the operation's generic "Creates an alert..." description, apparently a
+  documentation gap on Microsoft's side since fixed. Never affected this scenario's idempotency
+  (the alertId is always caller-chosen and stable). Updated
+  `connection-and-scorecard-alerts/README.md` §11 and `deploy/New-DataQualityAlert.ps1`'s
+  `.DESCRIPTION`/`.NOTES` to state the confirmed behavior with a citation instead of an open
+  question. No script logic changed; no new coverage added.
 - [x] **Closed the `financial-regulatory-supervision` collusion-classifier naming VERIFY** -
   commit `073d70f` - 2026-09-27. Maintenance pass: closed the open VERIFY asking the current portal-UI
   label for the collusion-related Regulatory-compliance trainable classifier, left unresolved because
