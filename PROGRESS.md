@@ -3429,7 +3429,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `auto-label-eu-personal-data-sharepoint` "EU driver's license number" apostrophe
-  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  VERIFY** - commit `8e9385b` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
   the byte-exact SIT name is `"EU driver's license number"` (this scenario's existing default) or
   `"EU drivers license number"` (the no-apostrophe title on the SIT's own Microsoft Learn
   bundle-index page). Grounded via a direct fetch of that bundle-index page (confirms its title
