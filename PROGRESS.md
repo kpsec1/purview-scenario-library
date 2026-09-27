@@ -3424,7 +3424,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `adaptive-scope-retention` Get-AdaptiveScopeMembers metadata-property-name
-  VERIFY** - commit PENDING - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
+  VERIFY** - commit `60ce46c` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
   property names `Get-AdaptiveScopeMembers`'s first (metadata) returned element exposes for total
   member count, current-page count, the more-pages flag, and the paging watermark - Microsoft's
   prose description named the concepts but not the properties. Grounded via a direct fetch of the
