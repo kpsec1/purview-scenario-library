@@ -3442,6 +3442,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `accepted-domains-hygiene-check-on-premises` `-AdminAuditLogCmdlets` default-value
+  VERIFY** - commit `03abd4c` - 2026-09-27. Maintenance pass: closed the open VERIFY asking the exact
+  default value of `-AdminAuditLogCmdlets` (which cmdlets a fresh on-premises Exchange install audits
+  without explicit configuration). Grounded via the Microsoft Learn MCP: a re-fetch of
+  `Set-AdminAuditLogConfig`'s reference page shows the parameter's properties table now states
+  **Default value: None** outright - a fresh install audits no cmdlets by default; `*` (audit
+  everything) must be set explicitly. This confirms, rather than contradicts, the scenario's original
+  caution (treating `Set-`/`New-`/`Remove-AcceptedDomain` as *not* covered by default) - already
+  credited as correct discipline by this scenario's own `reviews.md` Product Owner finding. Updated
+  `design.md` §2/§5, `README.md` §11/§12 (reference 6), `reviews.md` (new correction addendum), and
+  `deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s comment-based help/`.NOTES`/runtime
+  `Write-Warning` from VERIFY to RESOLVED. Doc-and-script correction only - no new four-lens review
+  round, no new design surface introduced, no new VERIFY items opened. The `Get-AdminAuditLogConfig`
+  confirmation step remains recommended operational guidance (an organization may have configured a
+  narrower list than `*` since install).
 - [x] **Closed the `adaptive-protection-deleted-content-preservation` DLM/Records Management
   role-group VERIFY** - commit `4a85082` - 2026-09-27. Maintenance pass: closed the open VERIFY
   asking whether the Data Lifecycle Management/Records Management Purview role group is also
