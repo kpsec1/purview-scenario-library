@@ -90,14 +90,25 @@ Microsoft's own data-source table for this exact workflow [[2]](#references):
 
 A separate, deeper Microsoft Learn page on Teams content storage describes private-channel storage
 differently - "messages sent in a private channel are stored in the Exchange Online mailboxes of
-**all members** of the private channel" [[3]](#references) - which does not obviously match "a
-dedicated mailbox for each private channel" from the purge-workflow page. Both pages are current
-(non-retired); this build did not find a third source reconciling them. **VERIFY (pilot tenant or a
-future Microsoft Learn pass):** whether a private channel's compliance copies live in one dedicated
-mailbox, in every member's own mailbox, or both - flagged inline in `README.md` §11 rather than
-guessed. Until resolved, treat a private-channel target as needing per-member verification via the
-`Get-TeamChannelUser` membership-lookup procedure Microsoft documents for the equivalent
-private-channel-search workflow [[3]](#references), not just the "dedicated mailbox" claim alone.
+**all members** of the private channel" [[3]](#references) - which at first reading does not match
+"a dedicated mailbox for each private channel" from the purge-workflow page [[1]](#references).
+**Reconciled (2026-09-27, Microsoft Learn):** this is not a genuine ambiguity between two current
+sources but a documented **migration**, and [[3]](#references) itself is internally inconsistent
+about it - its own "eDiscovery of private and shared channels" section already says compliance
+copies "go to the dedicated private channel mailbox," while the older data-source table on the same
+page (the sentence quoted above) still describes the pre-migration behavior. Microsoft's Teams
+private-channels reference states plainly: "Compliance copies of messages sent in a private channel
+are **now** delivered to the group mailbox (instead of mailbox of all private channel members)"
+[[12]](#references) - i.e. the per-member-mailbox model is the **legacy** behavior and the single
+dedicated (group) mailbox is the **current** one, matching [[1]](#references)'s data-source table.
+Microsoft's retention reference for Teams corroborates the same split by `RecipientTypeDetails`:
+`GroupMailbox` stores private-channel data "post migration," `UserMailbox` stores it "before the
+migration" [[13]](#references). A tenant's own migration completion is nonetheless a per-tenant
+fact, not a documentation one - confirm it with `Get-TenantPrivateChannelMigrationStatus`
+[[12]](#references) before assuming every private channel in scope has already moved to the
+dedicated-mailbox model; only a channel confirmed migrated is safe to target as a single mailbox.
+A channel not yet migrated still needs the per-member `Get-TeamChannelUser` lookup
+[[3]](#references) this section previously treated as the fallback for all private channels.
 
 This scenario's search-definition file takes each target mailbox as an explicit, pre-resolved SMTP
 address tagged with its `sourceType` (`OneToOneChat` / `GroupChat` / `StandardOrSharedChannel` /

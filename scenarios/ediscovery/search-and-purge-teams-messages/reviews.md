@@ -166,3 +166,16 @@ Microsoft Learn (no invented cmdlets - the unconfirmed `$ref`-bind SDK cmdlet na
 and the corrected understanding that no Teams purge is reversible for the user-visible message is
 treated as this scenario's central safety constraint throughout, mirrored by the unconditional
 `-ConfirmPermanentDelete` gate in `Invoke-TeamsMessagePurge.ps1`.
+
+---
+
+## Correction addendum (2026-09-27, maintenance pass - no new four-lens round per `AGENTS.md` §6)
+
+The private-channel compliance-copy storage "conflict" referenced in items 2/6 above (Red Team,
+Microsoft Product Owner) and cited as an open VERIFY in `README.md` §11/`design.md` §4 has been
+**reconciled, not left open**: Microsoft documents it as a completed migration from a per-member
+mailbox model to a single dedicated group mailbox, confirmable per tenant/channel via
+`Get-TenantPrivateChannelMigrationStatus`. This is a doc/fact correction only - no script, policy,
+or architecture change - so it doesn't reopen either lens's verdict above; it tightens the
+Microsoft Product Owner lens's "honestly-flagged documentation conflict" finding from an unresolved
+gap to a resolved fact with a residual per-tenant migration check.

@@ -203,11 +203,19 @@ case, and the holds you removed and must reapply.
   the purge to clear more.
 - **Not supported for Teams Connect Chat (external access/federation) conversations, or for chats
   with yourself** - Microsoft states both plainly [[1]](#references); not scriptable around.
-- **VERIFY:** private-channel compliance-copy storage - one Microsoft Learn page describes "a
-  dedicated mailbox for each private channel" [[1]](#references), another describes storage "in the
-  Exchange Online mailboxes of all members of the private channel" [[3]](#references). This build
-  found no page reconciling the two. Do not assume a single dedicated mailbox is sufficient for a
-  private-channel target without confirming against the member-based model too - `design.md` §4.
+- **Private-channel compliance-copy storage - reconciled 2026-09-27, not left as a VERIFY.** One
+  Microsoft Learn page's data-source table says "a dedicated mailbox for each private channel"
+  [[1]](#references); a separate page's older section says storage is "in the Exchange Online
+  mailboxes of all members of the private channel" [[3]](#references). This is a documented
+  **migration**, not an unreconciled contradiction: Microsoft's Teams private-channels reference
+  confirms compliance copies "are now delivered to the group mailbox (instead of mailbox of all
+  private channel members)" [[12]](#references), and its retention reference ties the same split to
+  `RecipientTypeDetails` - `GroupMailbox` post-migration, `UserMailbox` before it [[13]](#references).
+  The dedicated-mailbox model is current; the per-member model is legacy. What is **not** a
+  documentation fact and stays tenant-specific: whether a given private channel has completed the
+  migration. Confirm with `Get-TenantPrivateChannelMigrationStatus` [[12]](#references) before
+  targeting a private channel as a single dedicated mailbox - an unmigrated channel still needs the
+  per-member `Get-TeamChannelUser` lookup. See `design.md` §4.
 - **VERIFY (pilot tenant or a future Microsoft Learn/SDK pass):** the exact typed PowerShell cmdlet
   for binding an existing `noncustodialDataSource` onto a search via the `$ref` endpoint -
   `deploy/New-TeamsMessagePurgeSearch.ps1` calls the confirmed raw HTTP shape via
@@ -251,8 +259,13 @@ case, and the holds you removed and must reapply.
     Location-header handling.
 11. `scenarios/ediscovery/teams-group-hold-resolution/` - resolves a Team/Microsoft 365 Group's own
     mailbox address, reused here for standard/shared-channel targets.
+12. IT Admins - Private channels in Microsoft Teams (compliance-copy migration to the group mailbox;
+    `Get-TenantPrivateChannelMigrationStatus`) - <https://learn.microsoft.com/microsoftteams/private-channels#compliance-copies-of-private-channel-messages>
+13. Learn about retention for Microsoft Teams (`RecipientTypeDetails` mailbox-type table; `GroupMailbox`
+    post-migration vs. `UserMailbox` before it, for Teams private channels) - <https://learn.microsoft.com/purview/retention-policies-teams#how-retention-works-with-microsoft-teams-messages>
 
-> Re-verify all links, Graph SDK cmdlet names, and - especially - the private-channel storage model
-> and the unconfirmed `$ref`-bind cmdlet name (§11) against current Microsoft Learn before a
-> customer-facing deployment. This scenario treats every Teams purge as irreversible for the user
-> copy; there is no "safe default" to fall back on the way the mailbox sibling has.
+> Re-verify all links, Graph SDK cmdlet names, and - especially - the unconfirmed `$ref`-bind cmdlet
+> name (§11) against current Microsoft Learn before a customer-facing deployment, and confirm each
+> target private channel's own migration status via `Get-TenantPrivateChannelMigrationStatus`
+> (§11). This scenario treats every Teams purge as irreversible for the user copy; there is no
+> "safe default" to fall back on the way the mailbox sibling has.

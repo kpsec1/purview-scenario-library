@@ -861,12 +861,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   than left standing next to a scenario that contradicts them.
 
 ### Follow-ups discovered while building the eDiscovery Teams search-and-purge scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): reconcile the private-channel
-  compliance-copy storage model - "Find and delete Microsoft Teams chat messages in eDiscovery"
-  states "a dedicated mailbox for each private channel," while "Finding content in Microsoft Teams
-  in eDiscovery" states private-channel messages are "stored in the Exchange Online mailboxes of all
-  members of the private channel." This build found no page reconciling the two.
-  `search-and-purge-teams-messages/README.md` §11 and `design.md` §4.
+- [x] Reconcile the private-channel compliance-copy storage model VERIFY - **closed** (see DONE
+  below): not a genuine two-source conflict, but a documented migration (per-member mailboxes →
+  a single dedicated group mailbox), confirmable per tenant/channel via
+  `Get-TenantPrivateChannelMigrationStatus`.
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn/SDK pass): the typed Microsoft.Graph.Security
   v1.0 PowerShell cmdlet name for binding an existing `ediscoveryNoncustodialDataSource` onto a
   search via `POST .../searches/{id}/noncustodialSources/$ref` - this build found no page confirming
@@ -3471,6 +3469,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `search-and-purge-teams-messages` private-channel compliance-copy storage
+  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  a private channel's Teams-message compliance copies live in one dedicated mailbox, in every
+  member's own mailbox, or both - previously left open because two current, non-retired Microsoft
+  Learn pages appeared to disagree ("Find and delete Microsoft Teams chat messages in eDiscovery"
+  says "a dedicated mailbox for each private channel"; "Finding content in Microsoft Teams in
+  eDiscovery" says compliance copies are "stored in the Exchange Online mailboxes of all members of
+  the private channel"). Grounded via the Microsoft Learn MCP: this is not an unreconciled conflict
+  between two current sources but a documented **migration** - Microsoft's Teams private-channels
+  reference states compliance copies "are now delivered to the group mailbox (instead of mailbox of
+  all private channel members)," and its retention reference for Teams corroborates the same split
+  by `RecipientTypeDetails` (`GroupMailbox` post-migration, `UserMailbox` before it). The
+  per-member-mailbox model is legacy; the single dedicated (group) mailbox is current. Also found
+  that the "member mailboxes" page is internally inconsistent - its own "eDiscovery of private and
+  shared channels" section already describes the current dedicated-mailbox model, while the sentence
+  quoted in the original VERIFY comes from an older, unrevised data-source table on the same page.
+  One residual fact stays genuinely tenant-specific rather than a documentation gap: whether a given
+  private channel has completed the migration - confirmable via
+  `Get-TenantPrivateChannelMigrationStatus`, now called out as the operational check to run before
+  treating a private channel as a single dedicated mailbox. Updated
+  `search-and-purge-teams-messages/README.md` §11/§12 and `design.md` §4 to state the reconciled fact
+  with citations instead of an open question, and added a correction addendum to `reviews.md` (no new
+  four-lens round per `AGENTS.md` §6 - a doc/fact fix, no code or architecture change). No script
+  logic changed; no new coverage added.
 - [x] **Closed the Managed Instance half of the Azure IAM Reader role-assignment VERIFY** - commit
   `6648cc5` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Database
   sibling's confirmed "Access control (IAM) → Add role assignment → Reader → Select box accepts
