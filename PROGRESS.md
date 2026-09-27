@@ -3441,7 +3441,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `financial-regulatory-supervision` collusion-classifier naming VERIFY** -
-  commit PENDING - 2026-09-27. Maintenance pass: closed the open VERIFY asking the current portal-UI
+  commit `073d70f` - 2026-09-27. Maintenance pass: closed the open VERIFY asking the current portal-UI
   label for the collusion-related Regulatory-compliance trainable classifier, left unresolved because
   the original build's network could only reach WebSearch (not a direct `learn.microsoft.com` fetch)
   and independent secondary sources disagreed between "Regulatory collusion" and "Workplace
