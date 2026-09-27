@@ -3522,7 +3522,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   four-lens round per `AGENTS.md` §6 - a doc/fact fix, no code or architecture change). No script
   logic changed; no new coverage added.
 - [x] **Closed the `search-and-purge-teams-messages` noncustodial-source `$ref`-bind typed-cmdlet
-  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether a
+  VERIFY** - commit `5a40f47` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether a
   typed `Microsoft.Graph.Security` v1.0 PowerShell cmdlet exists for binding an existing
   `ediscoveryNoncustodialDataSource` onto a search via `POST .../searches/{id}/noncustodialSources/$ref`.
   Grounded via the Microsoft Learn MCP module reference page for `Microsoft.Graph.Security`: its full
