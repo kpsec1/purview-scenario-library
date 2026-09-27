@@ -1478,15 +1478,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   specific cmdlet. `accepted-domains-hygiene-check/deploy/Export-AcceptedDomainsHygieneReport.ps1`'s
   `-IncludeAuditAttribution` switch is flagged `VERIFY` in its own `.NOTES` and `README.md` §11
   rather than assumed correct.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether Microsoft Entra ID's `Add
-  verified domain`/`Remove verified domain`/`Add unverified domain`/`Remove unverified domain`
-  `DirectoryManagement`-category audit activities (confirmed to exist by name in Microsoft's
-  audit-activity reference) surface through `Search-UnifiedAuditLog -RecordType
-  AzureActiveDirectory` with an `Operations` value matching those names verbatim. Resolving this
-  would let `accepted-domains-hygiene-check` attribute a `DomainAddedSincePreviousRun`/
-  `DomainRemovedSincePreviousRun` finding to a specific admin action and timestamp - currently a
-  disclosed, unbuilt gap (`design.md` §5, `README.md` §11) because Exchange Online has no
-  `New-`/`Remove-AcceptedDomain` cmdlet to audit for the domain-addition/removal event itself.
+- [x] VERIFY - whether Microsoft Entra ID's `Add verified domain`/`Remove verified domain`/`Add
+  unverified domain`/`Remove unverified domain` `DirectoryManagement`-category audit activities
+  surface through `Search-UnifiedAuditLog -RecordType AzureActiveDirectory` with an `Operations`
+  value matching those names verbatim. **Closed 2026-09-27** (Microsoft Learn MCP, both reference
+  pages fetched directly): **no.** Those four names are specific to the separate Microsoft Entra
+  audit log (Entra admin center / Graph `auditLogs/directoryAudits`) per
+  `entra/identity/monitoring-health/reference-audit-activities`. The Microsoft 365 unified audit
+  log that `Search-UnifiedAuditLog` reads has its own, different domain-event table
+  (`purview/audit-log-activities#directory-administration-activities`): only `Add domain to
+  company.`/`Remove domain from company.` (no verified/unverified distinction) and `Verify
+  domain.` (one-way, no "unverify" event) exist there. `accepted-domains-hygiene-check` therefore
+  correctly does **not** implement this attribution via `-IncludeAuditAttribution` - the gap is
+  real and confirmed, not unbuilt-pending-verification. `README.md` §8/§11/§12, `design.md` §5,
+  and the deploy script's `.NOTES` updated to state the confirmed negative instead of leaving it
+  open.
 - [x] Consider an on-premises Exchange companion check for `accepted-domains-hygiene-check`, for a
   hybrid Exchange Online/on-premises tenant whose on-premises accepted domains (including any
   genuine `ExternalRelay` domain) are invisible to the current Exchange-Online-only script - **built**
@@ -8371,6 +8377,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   string-format VERIFY above is the only new open item this fragment adds.
 
 ## Blocked / needs user
+- **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,
+  recorded so the next run doesn't misread it as real divergence):** this session also started on a
+  **detached HEAD** with a stale local `main` (49 commits behind). Following the 2026-09-16 fix's own
+  first step - `git merge-base --is-ancestor main HEAD` and `git merge-base --is-ancestor origin/main
+  HEAD` - **both returned "NO"** (and a bare `git merge-base HEAD main` returned nothing, exit 1),
+  which looks exactly like genuine unrelated-history divergence between two real branches. It wasn't:
+  this container's repo is a **shallow clone** (`.git/shallow` present), and the cached local
+  `origin/main` ref was stale from clone time. A plain `git fetch origin main` resolved it
+  immediately - the real `origin/main` turned out to be **identical to the detached HEAD commit**
+  (`d0df21e`), i.e. no divergence at all, just two stale local pointers. **Diagnosis:** in a shallow
+  clone, `git merge-base --is-ancestor` returning "NO" in both directions is **not proof of
+  divergence** - it can equally mean the shallow boundary hides the common history, or that the local
+  remote-tracking ref itself is stale. **Always `git fetch origin <branch>` first and recheck
+  containment against the freshly-fetched ref before concluding real divergence** and reaching for a
+  branch/PR detour or a preserved-backup-branch push; only trust the merge-base verdict once the
+  fetch is current. After the fetch, this run's fix was the same as 2026-09-16's: `git branch -f main
+  HEAD && git checkout main`, then proceed normally (no force-push, no rebase, no new branch needed).
 - **Positioning note (2026-09-25, not a blocker - informational for future runs):** the repo's
   mission changed from a vendor-sellable product to a free, open community resource (part of
   Krunal Patel's Microsoft MVP-in-Security case). `AGENTS.md` §1 and §10 now reflect this as

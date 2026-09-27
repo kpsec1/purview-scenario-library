@@ -119,10 +119,13 @@
       worked example.
     - Domain Added/Removed drift events cannot be attributed to an admin/timestamp by this script -
       Exchange Online has no New-/Remove-AcceptedDomain cmdlet (both are on-premises-Exchange-only
-      per Microsoft's own applicability statements); the likely attribution source (Microsoft Entra
-      ID's "Add verified domain"/"Remove verified domain" DirectoryManagement audit activities) was
-      confirmed to exist by name but not confirmed queryable via Search-UnifiedAuditLog's Operations
-      filter by this build - not implemented for that reason, see design.md Sec 5.
+      per Microsoft's own applicability statements). Microsoft Entra ID's "Add verified domain"/
+      "Remove verified domain" DirectoryManagement audit activities were considered as a substitute
+      but are confirmed (2026-09-27, Microsoft Learn) NOT queryable via Search-UnifiedAuditLog: they
+      belong to the separate Microsoft Entra audit log, not the Microsoft 365 unified audit log this
+      cmdlet reads, which instead exposes only the differently-named "Add domain to company."/
+      "Remove domain from company." for RecordType AzureActiveDirectory. Correctly not implemented
+      in this switch for that reason - see design.md Sec 5 and README.md Sec 11.
 
     Sources (Microsoft Learn, verify before production use):
     - Get-AcceptedDomain reference: https://learn.microsoft.com/powershell/module/exchangepowershell/get-accepteddomain

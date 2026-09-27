@@ -121,18 +121,21 @@ achievable from Exchange Online PowerShell:
   **cannot** be attributed via `ExchangeAdmin`-RecordType `Search-UnifiedAuditLog` queries - there is
   no `New-AcceptedDomain`/`Remove-AcceptedDomain` Exchange admin event to find in a cloud tenant,
   because the underlying action never went through Exchange PowerShell.
-- The more likely attribution source for an added/removed domain is Microsoft Entra ID's own directory
-  audit activities - `Add verified domain`/`Remove verified domain`/`Add unverified domain`/`Remove
-  unverified domain` (category `DirectoryManagement`, confirmed present in Microsoft's audit-activity
-  reference, fetched this build). **VERIFY (pilot tenant or a future Microsoft Learn pass):** whether
-  these specific activity names surface through `Search-UnifiedAuditLog -RecordType
-  AzureActiveDirectory` with an `Operations` value that matches verbatim (Entra audit's own portal
-  typically shows a human-readable "Activity" column that is not always identical to the
-  `Search-UnifiedAuditLog Operations` string for the same underlying event) - this build's grounding
-  pass confirmed the activity names exist in Microsoft's Entra audit-activity reference, but found no
-  worked `Search-UnifiedAuditLog` example querying them by name. Not built into this script's
-  `-IncludeAuditAttribution` switch for that reason; documented as a known gap in `README.md` §11
-  rather than guessed at.
+- Microsoft Entra ID's own directory audit activities - `Add verified domain`/`Remove verified
+  domain`/`Add unverified domain`/`Remove unverified domain` (category `DirectoryManagement`,
+  confirmed present in Microsoft's Entra audit-activity reference) - were considered as an
+  attribution source, but are a **dead end for this purpose. Resolved 2026-09-27** (Microsoft Learn
+  MCP, both pages fetched directly): those four names belong to the **Microsoft Entra audit log**
+  (Entra admin center / Graph `auditLogs/directoryAudits`), a separate log from the Microsoft 365
+  unified audit log that `Search-UnifiedAuditLog` reads. The unified audit log's own domain-event
+  reference (`purview/audit-log-activities`, "Directory administration activities") lists a
+  *different* and coarser set of `Operations` strings for `RecordType AzureActiveDirectory` -
+  `Add domain to company.`/`Remove domain from company.` (no verified/unverified distinction) and
+  `Verify domain.` (one-way; there is no unified-audit-log "unverify" event at all). None of the
+  four Entra-native names appear in that table. Confirmed **not** built into this script's
+  `-IncludeAuditAttribution` switch, and correctly so - the intended query would have returned zero
+  results against real data. `README.md` §11/§12 updated to state this rather than leave it as an
+  open pilot-tenant question.
 
 **Net effect, stated plainly for an organization:** this script reliably **detects** that a domain was added,
 removed, or had its `DomainType`/`Default` changed (§4's baseline diff, which needs no audit log at
