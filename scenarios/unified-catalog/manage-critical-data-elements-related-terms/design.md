@@ -10,7 +10,7 @@ to a CDE with no new grounding required - a natural, small follow-up"
 (`manage-critical-data-elements/design.md` §7). `PROGRESS.md` recorded this exact deferred item as
 a follow-up fragment. This scenario is that follow-up: it links an existing CDE to one or more
 existing glossary terms via the same `criticalDataElements/{id}/relationships` operation the
-sibling scenario already uses for its own `DATACOLUMN` relationships, this time with
+sibling scenario already uses for its own `CRITICALDATACOLUMN` relationships, this time with
 `entityType=TERM`.
 
 ## 2. Design goals
@@ -25,7 +25,7 @@ sibling scenario already uses for its own `DATACOLUMN` relationships, this time 
    already establishes - `manage-critical-data-elements`'s `Test-CdeRelationshipExists`/
    `Add-CdeColumnRelationship` and `manage-data-products`'s `Test-RelationshipExists`/
    `Add-DataProductRelationship` - parameterized only by `entityType=TERM` instead of
-   `DATACOLUMN`/`DATAASSET`.
+   `CRITICALDATACOLUMN`/`DATAASSET`.
 3. Reuse the exact term-resolution code `manage-data-products/deploy/New-DataProduct.ps1`'s own
    `Find-TermByName` already implements verbatim (design goal explicitly named in the
    `PROGRESS.md` follow-up this fragment closes: "the code pattern already exists... and would
@@ -40,18 +40,18 @@ sibling scenario already uses for its own `DATACOLUMN` relationships, this time 
 `manage-critical-data-elements/design.md` §6 already documents, from three independently-fetched
 Microsoft Learn REST reference pages, the full `EntityCategory` enum the Critical Data Elements
 Create/List/Delete Relationship operations share: `DOMAIN`, `DATAPRODUCT`, `TERM`, `DATAASSET`,
-`OBJECTIVE`, `KEYRESULT`, `CRITICALDATAELEMENT`, `DATACOLUMN`, `CUSTOMMETADATA`, `ATTRIBUTE`,
-`ATTRIBUTEINSTANCE`, `WORKFLOW`, `CATALOGSNAPSHOT`, `WORKFLOWRUN`. `TERM` was already a confirmed,
-formally-documented value in that enum before this fragment started - this build's own fresh
-direct fetch of the Create Relationship, List Relationships, and Delete Relationship reference
-pages (README.md §12, refs 8) re-confirms it, and - unlike the sibling scenario's own
-`DATACOLUMN`-vs-`CRITICALDATACOLUMN` finding - every one of those three pages' formal enum table
-lists `TERM` with **no** competing example-only value in tension with it. There is no analogous
-discrepancy to disclose for this entity type.
+`OBJECTIVE`, `KEYRESULT`, `CRITICALDATAELEMENT`, `CRITICALDATACOLUMN`, `CUSTOMMETADATA`,
+`ATTRIBUTE`, `ATTRIBUTEINSTANCE`, `WORKFLOW`, `CATALOGSNAPSHOT`, `WORKFLOWRUN`. `TERM` was already
+a confirmed, formally-documented value in that enum before this fragment started - this build's
+own fresh direct fetch of the Create Relationship, List Relationships, and Delete Relationship
+reference pages (README.md §12, refs 8) re-confirms it, and every one of those three pages'
+formal enum table lists `TERM` with **no** competing example-only value in tension with it (the
+sibling scenario's own now-resolved `CRITICALDATACOLUMN`-vs-`DATACOLUMN` question, see its
+`design.md` §6, never applied to `TERM`).
 
 The relationship-creation request/response shape is also unchanged from the sibling's own
-`DATACOLUMN` call: `{ entityId, relationshipType }` in, `CdeRelationshipWithSystemData` out - the
-sibling's own `Add-CdeColumnRelationship` function's structure ports directly; this scenario's
+`CRITICALDATACOLUMN` call: `{ entityId, relationshipType }` in, `CdeRelationshipWithSystemData`
+out - the sibling's own `Add-CdeColumnRelationship` function's structure ports directly; this scenario's
 `Add-CdeTermRelationship` differs from it only in the `EntityType` literal and the identifier it
 resolves (`Find-TermByName` instead of a Data Map column lookup).
 

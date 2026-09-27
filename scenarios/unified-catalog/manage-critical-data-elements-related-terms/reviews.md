@@ -150,3 +150,13 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Add-CdeRelatedTerm.ps1`, `deploy/Remove-CdeRelatedTerm.ps1`, `rollback.md`, and
 `validate/Test-CdeRelatedTerms.ps1`. No Fail items were raised. This fragment meets the definition
 of done in `AGENTS.md` §9.
+
+---
+
+## Addendum (2026-09-27)
+
+The sibling scenario's `entityType=DATACOLUMN`-vs-`CRITICALDATACOLUMN` question, referenced above
+as context for why `TERM` carries no analogous ambiguity, is now resolved -
+`CRITICALDATACOLUMN` is the confirmed value (see `manage-critical-data-elements/reviews.md`
+addendum). This scenario's own findings and `TERM` choice are unaffected; cross-references to the
+sibling's value were updated for consistency.

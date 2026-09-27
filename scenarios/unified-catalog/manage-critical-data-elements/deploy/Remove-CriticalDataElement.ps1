@@ -39,7 +39,7 @@
     Path to the same critical data element definition JSON file passed to
     New-CriticalDataElement.ps1. Column GUID resolution against Data Map is not required for
     rollback - relationships are enumerated directly from the critical data element's own
-    DATACOLUMN relationships rather than re-resolved from the definition file.
+    CRITICALDATACOLUMN relationships rather than re-resolved from the definition file.
 
 .PARAMETER RemoveLinks
     Deletes the CDE-to-column relationships this scenario created. Implied by -Purge.
@@ -69,9 +69,10 @@
     Stage 3: unmap columns, then permanently delete the critical data element.
 
 .NOTES
-    entityType=DATACOLUMN is used for the relationship delete calls, matching
-    New-CriticalDataElement.ps1's own choice - see that script's .NOTES and design.md Section 6
-    for the CRITICALDATACOLUMN-vs-DATACOLUMN discrepancy this repo's grounding pass found.
+    entityType=CRITICALDATACOLUMN is used for the relationship delete calls, matching
+    New-CriticalDataElement.ps1's own choice - confirmed 2026-09-27 against the Delete
+    Relationship reference page's EntityCategory enum, see that script's .NOTES and design.md
+    Section 6.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
 param(
@@ -209,7 +210,7 @@ if (-not $cde) {
 
 # --- Stage: remove links ---
 if ($RemoveLinks) {
-    $entityType = 'DATACOLUMN'
+    $entityType = 'CRITICALDATACOLUMN'
     $relUri = "$endpoint/datagovernance/catalog/criticalDataElements/$($cde.id)/relationships?api-version=$ApiVersion&entityType=$entityType"
     $relationships = Invoke-Ucm -Method Get -Uri $relUri -Token $ucToken
     foreach ($rel in @($relationships.value)) {

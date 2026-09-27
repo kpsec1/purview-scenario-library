@@ -221,7 +221,7 @@ Test-Check -Description 'At least one owner contact is set' -Condition ($null -n
 Test-Check -Description 'Critical data element is published' -Condition ($cde.status -eq 'PUBLISHED') -Warn
 
 Write-Host "`nValidating mapped columns for '$($definition.criticalDataElement.name)'..." -ForegroundColor Cyan
-$colRelUri = "$endpoint/datagovernance/catalog/criticalDataElements/$($cde.id)/relationships?api-version=$ApiVersion&entityType=DATACOLUMN"
+$colRelUri = "$endpoint/datagovernance/catalog/criticalDataElements/$($cde.id)/relationships?api-version=$ApiVersion&entityType=CRITICALDATACOLUMN"
 $colRelationships = Invoke-UcmGet -Uri $colRelUri -Token $token
 foreach ($col in $definition.columns) {
     $label = "$($col.columnName) ($($col.dataMapAssetId))"

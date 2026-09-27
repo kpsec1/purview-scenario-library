@@ -90,8 +90,8 @@ flowchart TD
     I -- No --> J["POST dataColumns/ingest<br/>dataMapAssetId + dataMapColumnId"]
     I -- Yes --> K[Reuse existing<br/>data column id]
     J --> L
-    K --> L{Already mapped<br/>entityType=DATACOLUMN?}
-    L -- No --> M["POST criticalDataElements/{id}/relationships<br/>entityType=DATACOLUMN"]
+    K --> L{Already mapped<br/>entityType=CRITICALDATACOLUMN?}
+    L -- No --> M["POST criticalDataElements/{id}/relationships<br/>entityType=CRITICALDATACOLUMN"]
     L -- Yes --> N[Skip - already mapped]
     M --> O{-Publish?}
     N --> O
@@ -190,7 +190,7 @@ placeholder nil GUID.
 | Critical data element | `contacts.owner[].id` | Entra object ID | Resolved from the definition file's UPN, same as `manage-data-products` |
 | Data column (Unified Catalog) | `id` | Server-assigned GUID from **Data Columns - Ingest**, distinct from both the Data Map column's own GUID and the Data Map table's GUID | Critical Data Elements - Create Relationship links against *this* id |
 | Data column (Unified Catalog) | `source.assetId` / `source.columnId` | The Data Map table GUID / the Data Map column GUID this scenario resolves | The only fields **Data Columns - Ingest** requires |
-| Relationship | `entityType` | `DATACOLUMN` (this scenario's choice) | See §11's `CRITICALDATACOLUMN`-vs-`DATACOLUMN` VERIFY - every worked example in Microsoft's own reference pages uses `CRITICALDATACOLUMN`, but the formally-documented enum doesn't include it |
+| Relationship | `entityType` | `CRITICALDATACOLUMN` | Confirmed 2026-09-27 against the `EntityCategory` enum on the Create/List/Delete Relationship reference pages - matches every worked example (§11) |
 | Relationship | `relationshipType` | `Related` | The only value this scenario's script sends |
 
 Full request/response shapes: `deploy/New-CriticalDataElement.ps1`'s inline comments and `.NOTES`
@@ -287,12 +287,12 @@ operation as of the API version this scenario targets (design.md §7).
 - **This feature is Microsoft-labeled preview.** The concept documentation's own page title is
   "Critical data elements (preview)," and the bulk-CSV-import path is separately labeled preview
   again. Re-check GA status before a customer-facing commitment.
-- **VERIFY - `entityType=DATACOLUMN` vs. `CRITICALDATACOLUMN`.** Every worked request/response
-  example this build fetched for the Critical Data Elements Create/List/Delete Relationship
-  operations uses `entityType=CRITICALDATACOLUMN`, but the formally-documented `EntityCategory`
-  enum on each of those same pages has no such value - it lists `DATACOLUMN` instead. This
-  scenario's scripts send `DATACOLUMN` (design.md §6). If a tenant rejects it, try
-  `CRITICALDATACOLUMN` and update this scenario's `.NOTES` with the confirmed answer.
+- **`entityType=CRITICALDATACOLUMN` (resolved 2026-09-27).** An earlier build flagged a
+  discrepancy between the worked examples and the formally-documented `EntityCategory` enum on
+  the Critical Data Elements Create/List/Delete Relationship reference pages. A re-fetch of all
+  three pages confirmed the enum now lists `CRITICALDATACOLUMN` explicitly, matching every worked
+  example - there is no plain `DATACOLUMN` value in the enum. This scenario's scripts send
+  `CRITICALDATACOLUMN` (design.md §6).
 - **VERIFY - whether the DATAPRODUCT relationship rollup is actually observable via this REST
   call.** Microsoft's portal documentation describes the "associated data products" list as
   automatically computed, but no Microsoft Learn page this build's grounding pass found confirms

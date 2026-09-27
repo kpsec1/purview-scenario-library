@@ -73,7 +73,7 @@ data element itself** - see the next section.
 Microsoft's own documented delete prerequisite for a critical data element is explicit: "you need
 to unpublish it and delete all columns within it, and any links to glossary terms"
 (`README.md` §1, ref 1). `manage-critical-data-elements/deploy/Remove-CriticalDataElement.ps1`'s
-own `-Purge` stage predates this scenario and only removes `entityType=DATACOLUMN` relationships
+own `-Purge` stage predates this scenario and only removes `entityType=CRITICALDATACOLUMN` relationships
 - it does **not** remove any `TERM` relationship this scenario created. If the CDE has any related
 terms when `-Purge` is attempted, expect the delete call to fail against Microsoft's own stated
 prerequisite (or, if the API is more permissive than the portal's stated procedure, to leave an

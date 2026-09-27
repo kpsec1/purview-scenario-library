@@ -1588,15 +1588,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   policy engine), not the consumer-facing access-request workflow.
 
 ### Follow-ups discovered while building the Unified Catalog manage-critical-data-elements scenario
-- [ ] VERIFY (pilot tenant): whether `entityType=DATACOLUMN` (the value this scenario's scripts
-  send, matching the formally-documented `EntityCategory` enum) or `entityType=CRITICALDATACOLUMN`
-  (the value every worked example on the Critical Data Elements Create/List/Delete Relationship
-  reference pages actually uses) is the real, accepted value for mapping a column to a critical
-  data element. This is a genuine, three-page-consistent discrepancy in Microsoft's own REST
-  reference, not a gap this build failed to research - see `manage-critical-data-elements/
-  design.md` §6 and `README.md` §11. Resolving this would let this scenario and
-  `docs/automation-surface.md`'s new routing-table row drop the hedge and state one confirmed
-  value.
+- [x] VERIFY (pilot tenant): whether `entityType=DATACOLUMN` or `entityType=CRITICALDATACOLUMN` is
+  the real, accepted value for mapping a column to a critical data element - **resolved
+  2026-09-27** without needing a pilot tenant: a re-fetch of the Critical Data Elements
+  Create/List/Delete Relationship reference pages (`api-version=2025-09-15-preview`) found the
+  `EntityCategory` enum now lists `CRITICALDATACOLUMN` explicitly on all three pages, matching
+  every worked example - there is no plain `DATACOLUMN` value in the enum (confirmed identical on
+  the Data Products - Create Relationship page's shared enum too). `manage-critical-data-elements/`
+  scripts, README.md, design.md §6, and reviews.md updated to send/expect `CRITICALDATACOLUMN`;
+  cross-references in `manage-critical-data-elements-related-terms/`, `manage-okrs/design.md`, and
+  `docs/automation-surface.md` corrected to match.
 - [x] `scenarios/unified-catalog/manage-critical-data-elements-related-terms/` - script the
   "Manage related terms" action Microsoft's critical data elements portal exposes - **built** (see
   DONE below): links an existing CDE to one or more existing glossary terms via

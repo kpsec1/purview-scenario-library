@@ -8,7 +8,7 @@ governance object (the CDE, which maps physical columns) and a business-vocabula
 term, which defines what those columns *mean*) point at each other. This is the small, targeted
 companion `scenarios/unified-catalog/manage-critical-data-elements/design.md` §7 named as a
 non-goal to keep that fragment scoped to column-mapping: linking terms reuses the identical
-Create Relationship operation that scenario already calls for `entityType=DATACOLUMN`, just with
+Create Relationship operation that scenario already calls for `entityType=CRITICALDATACOLUMN`, just with
 `entityType=TERM` instead, and the term-resolution code already exists verbatim in
 `scenarios/unified-catalog/manage-data-products/deploy/New-DataProduct.ps1`.
 
@@ -159,7 +159,7 @@ copied-from-the-portal GUID (design.md §2).
 
 | Object | Field | Source | Notes |
 |---|---|---|---|
-| Relationship | `entityType` | `TERM` | The value this scenario sends - confirmed present in the `EntityCategory` enum on the Create/List/Delete Relationship reference pages, fetched directly this build (§12) - unlike the sibling scenario's `DATACOLUMN`-vs-`CRITICALDATACOLUMN` discrepancy, there is no enum-vs-example ambiguity for `TERM` |
+| Relationship | `entityType` | `TERM` | The value this scenario sends - confirmed present in the `EntityCategory` enum on the Create/List/Delete Relationship reference pages, fetched directly this build (§12) - there is no enum-vs-example ambiguity for `TERM` (the sibling scenario's own `CRITICALDATACOLUMN`-vs-`DATACOLUMN` question never applied to `TERM`, and is itself now resolved - see its `README.md` §11) |
 | Relationship | `entityId` | The glossary term's own `id` (GUID), resolved by name via **Terms - Query** | Same `nameKeyword` client-side-exact-match pattern every sibling Unified Catalog scenario in this repo already uses |
 | Relationship | `relationshipType` | `Related` | The only value this scenario's script sends, matching every other relationship this repo creates across Unified Catalog object types |
 
