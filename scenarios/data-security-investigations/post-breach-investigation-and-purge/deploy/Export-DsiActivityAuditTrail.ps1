@@ -17,11 +17,13 @@
     communication-compliance/harassment-and-code-of-conduct/deploy/
     Export-CommunicationComplianceAuditTrail.ps1).
 
-    This script queries by -Operations only, WITHOUT -RecordType: Microsoft's audit-log-activities
-    reference lists the 28 DSI Operation names and friendly descriptions but does not state the
-    RecordType enum value that carries them (VERIFY - README.md Section 11). Search-UnifiedAuditLog
-    does not require -RecordType when -Operations is supplied, so this avoids inventing an
-    unconfirmed RecordType value (AGENTS.md Section 4) while still returning every DSI record.
+    This script queries by -Operations AND -RecordType DataSecurityInvestigation: the Office 365
+    Management Activity API schema's AuditLogRecordType enum documents value 333 as
+    'DataSecurityInvestigation' ("Events from Data Security Investigations in Microsoft Purview"),
+    the same enum Search-UnifiedAuditLog's -RecordType parameter consumes (design.md Section 5,
+    README.md Section 11). Passing both narrows the server-side query and is defense in depth
+    against an -Operations name drifting in a future Microsoft release; -Operations alone remains
+    the authoritative filter since it is the officially documented DSI activity list.
 
     Idempotency model: identical to Export-CommunicationComplianceAuditTrail.ps1 - accumulates a
     rolling history, merging newly-fetched records into an existing CSV and de-duplicating by a
@@ -103,9 +105,9 @@
     README.md Section 8 for why purge starts are this scenario's single highest-priority Blue Team
     signal (it is the one DSI action that can permanently and irreversibly delete tenant data).
 
-    VERIFY - the RecordType enum value for DSI records is not stated in Microsoft's own reference
-    (see .DESCRIPTION); this script relies on -Operations alone. If a future Microsoft Learn
-    revision documents the RecordType, add it as an additional filter for defense in depth.
+    RESOLVED (2026-09-27): the RecordType enum value for DSI records is 'DataSecurityInvestigation'
+    (value 333), confirmed via the Office 365 Management Activity API schema's AuditLogRecordType
+    enum (see .DESCRIPTION and Sources below) and now passed as -RecordType alongside -Operations.
 
     -NdjsonOutDir writes the exact same fields as the CSV (CreationDate/Operation/UserIds/
     RecordType/AuditData), just re-shaped: AuditData is parsed from its JSON string into a nested
@@ -119,6 +121,9 @@
     - Audit log activities - Data Security Investigations activities table (the 28 Operation values
       this script's -Operations list is built from verbatim):
       https://learn.microsoft.com/purview/audit-log-activities#data-security-investigations-activities
+    - Office 365 Management Activity API schema - AuditLogRecordType enum (value 333,
+      'DataSecurityInvestigation', is the -RecordType this script now passes alongside -Operations):
+      https://learn.microsoft.com/office/office-365-management-api/office-365-management-activity-api-schema#auditlogrecordtype
     - Learn about Data Security Investigations - Unified audit log integration (activity logging
       is automatic, no opt-in/configuration step):
       https://learn.microsoft.com/purview/data-security-investigations#integration-with-other-microsoft-platforms-and-solutions
@@ -206,6 +211,10 @@ $dsiOperations = @(
     'DSICapacityDeleted'
 )
 
+# AuditLogRecordType enum value 333 per the Office 365 Management Activity API schema (.NOTES
+# Sources) - passed alongside -Operations as a server-side narrowing filter, defense in depth.
+$dsiRecordType = 'DataSecurityInvestigation'
+
 function Get-StableStringHash {
     # A deterministic, cross-session-stable hash (unlike .NET's [string]::GetHashCode(), which is
     # randomized per process) - folds a full AuditData JSON payload into a fixed-width key
@@ -237,7 +246,7 @@ $allRecords = [System.Collections.Generic.List[object]]::new()
 $sessionId = "dsi-audit-trail-$([guid]::NewGuid())"
 do {
     $page = @(Search-UnifiedAuditLog -StartDate $StartDate -EndDate $EndDate -Operations $dsiOperations `
-            -ResultSize $ResultSize -SessionId $sessionId -SessionCommand ReturnLargeSet)
+            -RecordType $dsiRecordType -ResultSize $ResultSize -SessionId $sessionId -SessionCommand ReturnLargeSet)
     if ($page.Count -gt 0) { $allRecords.AddRange($page) }
 } while ($page.Count -gt 0)
 

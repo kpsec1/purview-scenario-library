@@ -307,10 +307,11 @@ See `rollback.md`.
   OneDrive content, **purge itself does not support those sources at all** - selecting them disables
   purge actions entirely [[7]](#references). An organization expecting DSI to purge an overshared SharePoint
   site needs a different control (sharing/permissions remediation, not DSI purge).
-- **VERIFY - RecordType for `Search-UnifiedAuditLog`.** Microsoft's audit-log-activities reference
-  lists all 28 DSI Operation names but never states the RecordType enum value that carries them.
-  `Export-DsiActivityAuditTrail.ps1` queries by `-Operations` alone rather than guessing a RecordType
-  value - see the script's `.NOTES`.
+- **RecordType for `Search-UnifiedAuditLog` (resolved 2026-09-27).** The Office 365 Management
+  Activity API schema's AuditLogRecordType enum documents value 333 as `DataSecurityInvestigation`
+  [[19]](#references) - `Export-DsiActivityAuditTrail.ps1` now passes `-RecordType
+  DataSecurityInvestigation` alongside `-Operations` (defense in depth; `-Operations` remains the
+  authoritative filter) - see the script's `.NOTES`.
 - **No documented job-status API.** Neither an AI-analysis job's completion nor a purge job's outcome
   is checkable through a documented API this build found - the portal's per-investigation Activities
   tab is authoritative. `validate/Test-DsiRoleGroupAssignments.ps1` cannot and does not attempt to
@@ -361,6 +362,8 @@ See `rollback.md`.
 16. `Search-UnifiedAuditLog` reference - <https://learn.microsoft.com/powershell/module/exchangepowershell/search-unifiedauditlog>
 17. Create investigations in Data Security Investigations (preview) from the Microsoft Defender portal - <https://learn.microsoft.com/defender-xdr/create-dsi-in-defender>
 18. Data Security Investigations limits reference (purge limits - up to 10,000 items per search) - <https://learn.microsoft.com/purview/data-security-investigations-ref-limits>
+19. Office 365 Management Activity API schema - AuditLogRecordType enum (value 333,
+    `DataSecurityInvestigation`) - <https://learn.microsoft.com/office/office-365-management-api/office-365-management-activity-api-schema#auditlogrecordtype>
 19. Manage audit log retention policies (180-day Standard default, 1-year E5 default, up to 10 years
     with Audit Premium) - <https://learn.microsoft.com/purview/audit-log-retention-policies>
 
