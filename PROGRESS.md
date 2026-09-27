@@ -886,11 +886,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   recorded immediately below under their own section rather than duplicated here.
 
 ### Follow-ups discovered while building the Data Security Investigations post-breach-investigation-and-purge scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the `Search-UnifiedAuditLog`
-  `RecordType` enum value for Data Security Investigations records - Microsoft's audit-log-activities
-  reference lists all 28 `DSI*` Operations but never states the RecordType that carries them.
-  `deploy/Export-DsiActivityAuditTrail.ps1` queries by `-Operations` alone rather than guessing one;
-  see the script's `.NOTES`, `README.md` §11, and `design.md` §5.
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): the `Search-UnifiedAuditLog`
+  `RecordType` enum value for Data Security Investigations records - **closed** (see DONE below):
+  resolved via the Office 365 Management Activity API schema's AuditLogRecordType enum.
 - [ ] Once the **Data Security Posture agent (preview)** - a related but separately-enabled DSI
   feature surfaced during this fragment's grounding pass - reaches a more stable/GA state, consider
   its own dedicated fragment; explicitly out of scope here (`design.md` §6).
@@ -3445,6 +3443,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `post-breach-investigation-and-purge` DSI `RecordType` VERIFY** - commit
+  `d8406db` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
+  `Search-UnifiedAuditLog` `RecordType` value carries Data Security Investigations audit records
+  (Microsoft's audit-log-activities reference lists all 28 `DSI*` Operations but never states the
+  RecordType that carries them). Grounded via the Microsoft Learn MCP: a direct fetch of the
+  Office 365 Management Activity API schema's AuditLogRecordType enum shows value `333` as
+  `DataSecurityInvestigation` ("Events from Data Security Investigations in Microsoft Purview") -
+  the same enum `Search-UnifiedAuditLog`'s `-RecordType` parameter consumes. This confirms, rather
+  than contradicts, the value this scenario's original draft had independently guessed and then
+  deliberately rejected for lack of a citation (`reviews.md` Blue Team finding 3). Updated
+  `deploy/Export-DsiActivityAuditTrail.ps1` to pass `-RecordType DataSecurityInvestigation`
+  alongside `-Operations` as a cited defense-in-depth filter (`-Operations` remains the
+  authoritative filter - it's the officially documented DSI activity list); `README.md` §11/§12
+  (new reference 19), `design.md` §5, and `reviews.md` (new correction addendum) updated to match.
+  Doc-and-script correction only - no new four-lens review round, no new design surface
+  introduced.
 - [x] **Closed the `entra-privileged-role-monitoring` "Add member to role (permanent)" naming
   VERIFY** - commit `b47cbe8` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
   Microsoft's "Security operations for privileged accounts" guidance's `"Add member to role
