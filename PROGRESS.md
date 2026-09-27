@@ -3449,7 +3449,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `adaptive-protection-deleted-content-preservation` DLM/Records Management
-  role-group VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY
+  role-group VERIFY** - commit `4a85082` - 2026-09-27. Maintenance pass: closed the open VERIFY
   asking whether the Data Lifecycle Management/Records Management Purview role group is also
   accepted for the "Adaptive protection in Data Lifecycle Management" toggle (which surfaces under
   the Data Lifecycle Management solution settings UI, not the Insider Risk Management app), or
