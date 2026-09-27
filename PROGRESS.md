@@ -3482,7 +3482,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `curate-business-glossary` Business Domain Create/Update "required" fields
-  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking
+  VERIFY** - commit `bf82c94` - 2026-09-27. Maintenance pass: closed the open VERIFY asking
   whether the Business Domain `Create`/`Update` REST reference's `systemData`/`thumbnail`/
   `domains`/`managedAttributes` "required" markings were real, since they contradicted Microsoft's
   own worked examples and ordinary REST semantics. Grounded via the Microsoft Learn MCP: a direct
