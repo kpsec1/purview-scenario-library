@@ -21,10 +21,12 @@ chain as code, using employee separation records as the concrete, representative
    forever, but it also means a stage can advance - or, at the final stage, dispose the record - with
    **no human reviewer having looked at it**. That tension is surfaced everywhere: config comment, deploy
    warning, validate output, README §8/§11, and the four-lens review.
-3. **Never guess at undocumented behavior.** `-ComplianceTagForNextStage` is a real, accepted parameter
-   whose own Microsoft reference page leaves the description as an unfilled placeholder. This scenario
-   wires it through (off by default) rather than either inventing a behavior or silently dropping a
-   documented parameter - and says exactly what is and isn't confirmed.
+3. **Never guess at undocumented behavior.** `-ComplianceTagForNextStage`'s own PowerShell parameter
+   reference page leaves the description as an unfilled placeholder, but its behavior is grounded via the
+   identically-named file plan manager import property and the "Relabeling at the end of the retention
+   period" reference (README.md §11/§12) - this scenario wires it through (off by default) rather than
+   either inventing a behavior or silently dropping a documented parameter, and says exactly what is and
+   isn't confirmed.
 4. **Emit valid JSON, regardless of the doc example.** Microsoft's own published `-MultiStageReviewProperty`
    syntax shows reviewer values unquoted inside a JSON array, which is not valid JSON as literally shown.
    The deploy script builds the payload with `ConvertTo-Json`, not string concatenation, so it is always
@@ -103,7 +105,7 @@ item; only the last stage's approval disposes it.
 | Reviewers per stage | Distribution lists, not individuals | Survives staff turnover; each stage still resolves to ≤10 reviewers per Microsoft's documented limit |
 | `RetentionDuration` | 1,095 days (3 years), illustrative | Above the EEOC 1-year and FLSA 2/3-year floors - set to your real litigation-hold practice |
 | `AutoApprovalPeriod` | 30 days, set explicitly, surfaced everywhere it appears | Prevents an indefinite backlog, but is a documented silent-approval risk for a sign-off chain - never left as an unexamined default |
-| `ComplianceTagForNextStage` | Off by default (`null`); passed through only if configured | Parameter is real but its behavior is undocumented by Microsoft (unfilled description) - never guessed at |
+| `ComplianceTagForNextStage` | Off by default (`null`); passed through only if configured | Parameter's own PowerShell reference leaves the description blank, but behavior is grounded via the identically-named file plan import property and the relabeling reference (README.md §11/§12) - stays opt-in since it changes the record's retention settings at the end of the period |
 | MultiStageReviewProperty payload | Built with `ConvertTo-Json`, not string concatenation | Microsoft's own published example is not valid JSON as literally shown; this always emits well-formed JSON |
 | Idempotency | Create-or-report by name, same as parent scenario | Never silently mutate a records object, including retrofitting stages onto an in-use label |
 | Read-back validation | Defensive (`PSObject.Properties[...]`), `[WARN]` not `[FAIL]` on the reviewer-chain check | `MultiStageReviewerMetadata` is corroborated by third-party examples only, not Microsoft's own reference |
@@ -118,7 +120,7 @@ item; only the last stage's approval disposes it.
 | Over-broad event | Config ships an asset-ID query scoped to one employee; deploy warns loudly if none is set |
 | Invalid JSON reaching `New-ComplianceTag` | Payload built with `ConvertTo-Json`, never string concatenation; `-DryRun` prints the exact JSON before any live run |
 | Config exceeds documented limits (>5 stages, >10 reviewers/stage) | Deploy validates and throws before calling `New-ComplianceTag`, rather than letting the cmdlet reject it opaquely |
-| Guessing at `-ComplianceTagForNextStage` behavior | Passed through only if configured (default `null`); every place it appears (deploy, README, this file) states the description is an undocumented placeholder |
+| Guessing at `-ComplianceTagForNextStage` behavior | Passed through only if configured (default `null`); every place it appears (deploy, README, this file) cites the grounded relabeling behavior rather than assuming it |
 | Casual teardown of a records control | Rollback disables by default; `-Delete` only **attempts** removal and reports (never forces) failures; identical to the parent scenario's rollback discipline |
 | Trusting an unconfirmed read-back property | Validate reads `MultiStageReviewerMetadata` defensively and treats every stage-chain check as `[WARN]` |
 | Chain tampered with outside this repo's scripts (`Set-ComplianceTag` called directly to shorten `AutoApprovalPeriod`, drop a stage, or repoint reviewers) | README §8 recommends tight role restriction + `Search-UnifiedAuditLog` monitoring as a compensating control; exact `RecordType`/`Operations` values not yet grounded - tracked in `PROGRESS.md`, not guessed |
@@ -128,8 +130,9 @@ item; only the last stage's approval disposes it.
 - **A general-purpose N-stage generator for every record class.** This is one representative,
   well-justified use of the multi-stage feature (employee separation), not a claim that every record
   class needs a chain - most don't, and the parent single-reviewer scenario remains the default.
-- **Confirming `MultiStageReviewerMetadata`'s exact schema or `-ComplianceTagForNextStage`'s behavior
-  against a live tenant.** Both are flagged VERIFY rather than resolved by guessing - see README §11.
+- **Confirming `MultiStageReviewerMetadata`'s exact schema against a live tenant.** Still flagged VERIFY
+  rather than resolved by guessing - see README §11. (`-ComplianceTagForNextStage`'s behavior is now
+  grounded via Microsoft Learn, not a live-tenant open item - see README §11/§12.)
 - **Editing an existing label's reviewer chain in place.** `Set-ComplianceTag` documents
   `-MultiStageReviewProperty` as settable post-creation, but this scenario's deploy is deliberately
   create-or-report only; changing who reviews a records-disposal decision already in force is a

@@ -15,9 +15,9 @@ class - and wants that chain, plus its operational risks, defined as reproducibl
 
 **How it differs from the parent scenario:** that one uses `-ReviewerEmail` (a single reviewer set); this
 one uses `-MultiStageReviewProperty` (a JSON-defined, sequential chain of named stages, each with its own
-reviewers), plus `-AutoApprovalPeriod` to stop the chain stalling and an honest, undocumented-by-Microsoft
-`-ComplianceTagForNextStage` pass-through. Same event-based clock, same publish model, same irreversible-
-trigger gating - different disposal-approval shape.
+reviewers), plus `-AutoApprovalPeriod` to stop the chain stalling and an optional
+`-ComplianceTagForNextStage` pass-through for relabeling at the end of the retention period. Same
+event-based clock, same publish model, same irreversible-trigger gating - different disposal-approval shape.
 
 ## 2. Business/regulatory driver
 
@@ -142,7 +142,7 @@ stage**) [[1]](#references); pending disposals - one queue per stage a reviewer 
 | `RetentionDuration` | `1095` (3 years), illustrative | Above the EEOC 1-year / FLSA 2-3-year floors - set to your real practice, `design.md` §3 |
 | `MultiStageReviewProperty` | JSON, 3 stages (HR → Legal → Records Mgmt) | `'{"MultiStageReviewSettings":[{"StageName":"...","Reviewers":[...]},...]}'` - built with `ConvertTo-Json`, up to 5 stages / 10 reviewers-per-stage documented max [[1]](#references)[[2]](#references) |
 | `AutoApprovalPeriod` | `30` days | Valid range 7-365, default 14 if set with no value; **silently advances/disposes a stage with no reviewer action** - see §8 [[2]](#references) |
-| `ComplianceTagForNextStage` | not set (`null`) by default | Documented parameter, **undocumented behavior** (Microsoft's own reference leaves the description as an unfilled placeholder); passed through only if explicitly configured - §11 |
+| `ComplianceTagForNextStage` | not set (`null`) by default | Names a replacement label applied at the end of the retention period (relabeling) - confirmed via the file plan manager's identically-named import property and the "Relabeling at the end of the retention period" reference [[11]](#references)[[14]](#references); passed through only if explicitly configured - §11 |
 | `IsRecordLabel` | `$true` | Declares content a record (lockable) |
 | Publish cmdlets | `New-RetentionCompliancePolicy` + `New-RetentionComplianceRule -PublishComplianceTag` | Publish (not auto-apply), same as parent [[7]](#references) |
 | Event cmdlet | `New-ComplianceRetentionEvent` | Scoped to one employee via `-SharePointAssetIdQuery`/`-ExchangeAssetIdQuery` [[5]](#references) |
@@ -233,14 +233,19 @@ irreversible or out of scope by design; manage in-flight reviews in the portal.
 
 ## 11. Known limitations & gotchas
 
-- **`-ComplianceTagForNextStage`'s behavior is undocumented by Microsoft.** Its own published parameter
-  reference for both `New-ComplianceTag` and `Set-ComplianceTag` leaves the description as an unfilled
-  placeholder [[2]](#references)[[3]](#references). The Microsoft Graph records-management
-  `retentionLabel` resource's `labelToBeApplied` property - "the replacement label to be applied
-  automatically after the retention period of the current label ends" - is the closest documented analog
-  [[11]](#references), but this scenario does **not** assume PowerShell's parameter behaves identically.
-  It is off by default (`null`) and passed through only if explicitly configured; **VERIFY** (pilot
-  tenant, or a future Microsoft Learn pass) before relying on it.
+- **`-ComplianceTagForNextStage`'s behavior is now grounded (closed 2026-09-27, was previously flagged
+  VERIFY).** `New-ComplianceTag`/`Set-ComplianceTag`'s own published parameter reference still leaves the
+  description as an unfilled placeholder [[2]](#references)[[3]](#references), but Microsoft's file plan
+  manager documents an identically-named `ComplianceTagForNextStage` import property: "the name of a
+  [replacement label] to be applied at the end of the retention period. Do not specify this property if
+  Regulatory is TRUE" [[14]](#references), and the "Relabeling at the end of the retention period"
+  reference confirms the full mechanics [[11]](#references): the item becomes subject to the replacement
+  label's own retention settings, replacement labels can be chained with no documented limit, a regulatory
+  record can't be relabeled (though its replacement label can itself be marked regulatory), changing the
+  replacement label after creation synchronizes to already-labeled items within up to 7 days, and a
+  replacement label can't be deleted while selected. The Microsoft Graph records-management `retentionLabel`
+  resource's `labelToBeApplied` property remains a corroborating (not primary) analog. It remains off by
+  default (`null`) and is passed through only if explicitly configured.
 - **VERIFY (pilot tenant): the `MultiStageReviewerMetadata` read-back property.** `Get-ComplianceTag`'s
   own published output documentation does not list a property for reading back the reviewer chain;
   `MultiStageReviewerMetadata` (with `StageId`/`StageName`/`Reviewers`) is corroborated by third-party
@@ -289,14 +294,19 @@ irreversible or out of scope by design; manage in-flight reviews in the portal.
    disposition if a charge is filed) - <https://www.ecfr.gov/current/title-29/subtitle-B/chapter-XIV/part-1602/subpart-C/section-1602.14>
 10. 29 CFR 516.5 / 516.6 - Records to be preserved (FLSA payroll records 3 years; wage-computation
     records 2 years) - <https://www.ecfr.gov/current/title-29/subtitle-B/chapter-V/subchapter-A/part-516/subpart-A/section-516.5>
-11. retentionLabel resource type (Microsoft Graph records management; `labelToBeApplied` - closest
-    documented analog to -ComplianceTagForNextStage, not confirmed identical) - <https://learn.microsoft.com/graph/api/resources/security-retentionlabel>
+11. Common settings for retention policies and retention label policies - "Relabeling at the end of the
+    retention period" (confirms `-ComplianceTagForNextStage`'s behavior: replacement label's own retention
+    settings apply, chaining is unlimited, a regulatory record can't be relabeled, up to 7-day sync on
+    change, can't delete a label selected as a replacement) - <https://learn.microsoft.com/purview/retention-settings#relabeling-at-the-end-of-the-retention-period>
 12. Rescission of Executive Order 11246 Implementing Regulations (Federal Register; effective October 26,
     2026) - <https://www.federalregister.gov/documents/2025/07/01/2025-12276/rescission-of-executive-order-11246-implementing-regulations>
 13. Get-ComplianceTag - <https://learn.microsoft.com/powershell/module/exchangepowershell/get-compliancetag>
+14. Use file plan to create and manage retention labels - `ComplianceTagForNextStage` import property
+    (identically named to the PowerShell parameter; "the name of a replacement label to be applied at the
+    end of the retention period. Do not specify this property if Regulatory is TRUE") - <https://learn.microsoft.com/purview/file-plan-manager#import-retention-labels-into-your-file-plan>
 
 > Re-verify all links, cmdlet parameters, licensing, the `MultiStageReviewerMetadata` read-back property,
-> `-ComplianceTagForNextStage`'s actual behavior, and the irreversibility behaviors against current
-> Microsoft Learn before a customer-facing deployment. Triggered events and applied record labels are
-> irreversible - this scenario is deliberately conservative (dry-run, gated event, create-or-report,
-> no force-removal of records, no unconfirmed read-back treated as a hard failure).
+> and the irreversibility behaviors against current Microsoft Learn before a customer-facing deployment.
+> Triggered events and applied record labels are irreversible - this scenario is deliberately conservative
+> (dry-run, gated event, create-or-report, no force-removal of records, no unconfirmed read-back treated as
+> a hard failure).

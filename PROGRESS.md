@@ -2674,13 +2674,11 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `multi-stage-disposition-review/validate/Test-MultiStageDispositionReview.ps1` reads it defensively via
   `PSObject.Properties[...]` and reports every check touching it as `[WARN]`, never `[FAIL]` - see that
   scenario's `README.md` §11.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): `-ComplianceTagForNextStage`'s actual
-  behavior. Both `New-ComplianceTag` and `Set-ComplianceTag`'s own published parameter reference leave
-  its description as an unfilled placeholder. The Microsoft Graph records-management `retentionLabel`
-  resource's `labelToBeApplied` property ("the replacement label to be applied automatically after the
-  retention period of the current label ends") is the closest documented analog, cited as context only -
-  `multi-stage-disposition-review`'s deploy script passes the parameter through only if explicitly
-  configured (off by default) rather than assuming this behavior. See that scenario's `README.md` §11.
+- [x] `-ComplianceTagForNextStage`'s actual behavior - **closed** (see DONE below): grounded via the
+  file plan manager's identically-named `ComplianceTagForNextStage` import property and the
+  "Relabeling at the end of the retention period" reference, not left to the Graph `labelToBeApplied`
+  analog alone. `multi-stage-disposition-review/README.md` §11/§12, `design.md`, and the deploy
+  script corrected in place.
 - [ ] Ground the exact `Search-UnifiedAuditLog` `RecordType`/`Operations` values for
   `New-ComplianceTag`/`Set-ComplianceTag` activity, then add a monitoring recommendation (or a dedicated
   export/alerting script) to `multi-stage-disposition-review/deploy/` - a Red-Team-flagged gap: nothing
@@ -3469,6 +3467,29 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `multi-stage-disposition-review` `-ComplianceTagForNextStage` behavior VERIFY** -
+  commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
+  `-ComplianceTagForNextStage` (on `New-ComplianceTag`/`Set-ComplianceTag`) actually does, since its
+  own PowerShell parameter reference leaves the description as an unfilled placeholder and the
+  scenario had only the Microsoft Graph `retentionLabel.labelToBeApplied` property as an unconfirmed
+  analog. Grounded via the Microsoft Learn MCP: the file plan manager's "Use file plan to create and
+  manage retention labels" page documents an **identically-named** `ComplianceTagForNextStage` import
+  property - "the name of a replacement label to be applied at the end of the retention period. Do
+  not specify this property if Regulatory is TRUE" - and "Common settings for retention policies and
+  retention label policies" §"Relabeling at the end of the retention period" confirms the full
+  mechanics: the item becomes subject to the replacement label's own retention settings, replacement
+  labels can be chained with no documented limit, a regulatory record can't be relabeled (though its
+  replacement label can itself be marked regulatory), changing the replacement label after creation
+  synchronizes to already-labeled items within up to 7 days, and a label currently selected as a
+  replacement can't be deleted. Updated `multi-stage-disposition-review/README.md` (summary, config
+  table, §11, references list, added citations 11/14) and `design.md` (goals, key-decisions table,
+  failure-modes table, non-goals) to state the grounded fact instead of an open question, corrected
+  the deploy script's inline comments, `.NOTES`, and runtime warning message in
+  `deploy/New-MultiStageDispositionReview.ps1`, and added a correction addendum to `reviews.md` (no
+  new four-lens round per `AGENTS.md` §6 - a doc/fact fix, no code or architecture change). The
+  parameter stays opt-in (off by default) in the deploy script; the `MultiStageReviewerMetadata`
+  read-back property VERIFY for the same scenario remains open. No script logic changed; no new
+  coverage added.
 - [x] **Closed the `search-and-purge-teams-messages` private-channel compliance-copy storage
   VERIFY** - commit `16f53c6` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
   a private channel's Teams-message compliance copies live in one dedicated mailbox, in every
