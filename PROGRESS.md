@@ -3470,7 +3470,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `search-and-purge-teams-messages` private-channel compliance-copy storage
-  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  VERIFY** - commit `16f53c6` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
   a private channel's Teams-message compliance copies live in one dedicated mailbox, in every
   member's own mailbox, or both - previously left open because two current, non-retired Microsoft
   Learn pages appeared to disagree ("Find and delete Microsoft Teams chat messages in eDiscovery"
