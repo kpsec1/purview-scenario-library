@@ -1291,14 +1291,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   valid `credentialType` for the `AzureSynapseWorkspaceCredential` scan `kind`. Also updated the base
   scenario's own stale `resourceTypes` VERIFY and two more stale "portal-only credential" claims
   found in passing.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the Azure IAM Reader
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the Azure IAM Reader
   role-assignment portal walkthrough ("Select box accepts your Microsoft Purview account name or
   UAMI") - directly confirmed only on the Azure SQL Database page - also appears verbatim on the
   Azure SQL Managed Instance or Azure Synapse workspace pages, or is a documentation-page omission on
-  an otherwise-identical Azure RBAC mechanism. Flagged inline in both
-  `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/README.md` §3/§5/§11 and
-  `scan-azure-synapse-and-classify-managed-identity-credential/README.md` §3/§11 rather than assumed
-  identical.
+  an otherwise-identical Azure RBAC mechanism - **Managed Instance half CLOSED 2026-09-27** (see DONE
+  below): a direct fetch of Microsoft's Managed Instance registration/authentication page found this
+  was not a documentation omission but a genuine mechanism difference - no Azure RBAC role
+  assignment of any kind applies to Managed Instance SAMI/UAMI scan authentication, only the T-SQL
+  Entra contained-user + `db_datareader` grant. `scan-azure-sql-managed-instance-and-classify/
+  README.md` §3/§4/§5/§11 (the base scenario, which carried the same unflagged claim as settled fact)
+  and `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/README.md` §3/§4/§5/
+  §11 both corrected, plus their `design.md`/`rollback.md`/`reviews.md`/deploy-script `.NOTES` and
+  runtime messages. **Azure Synapse half remains a separate, narrower open VERIFY** below - the
+  Synapse page's Reader/Storage Blob Data Reader wording ("enter your Microsoft Purview account name,
+  which represents its MSI") was independently confirmed to exist (unlike Managed Instance, where no
+  such wording exists at all) but never names a UAMI alternative anywhere on that page - carried
+  forward in `scan-azure-synapse-and-classify-managed-identity-credential/README.md` §11 unchanged.
 - [ ] **CORRECTION (re-grounded, not built):** A follow-up-to-the-follow-up grounding pass found the
   `-ResourceNames`-style scoping parameter item below was less settled than originally framed. The
   worked JSON example's `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` key
@@ -3456,6 +3465,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the Managed Instance half of the Azure IAM Reader role-assignment VERIFY** - commit
+  `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Database
+  sibling's confirmed "Access control (IAM) → Add role assignment → Reader → Select box accepts
+  your Microsoft Purview account name or UAMI" portal walkthrough also applies to Azure SQL Managed
+  Instance. Grounded via a direct fetch of Microsoft's Managed Instance registration/authentication
+  page: it is **not** a documentation omission - Managed Instance's SAMI/UAMI scan authentication
+  never involves an Azure RBAC role assignment on the instance resource at all, only the Object ID
+  lookup, Entra contained-user creation, and `db_datareader` grant already documented. This
+  corrects an unflagged factual error, not just an open VERIFY: `scan-azure-sql-managed-instance-
+  and-classify/README.md` §3/§4/§5/§11 stated the Reader-role requirement as settled fact (not
+  flagged), copied by `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/
+  README.md` §3/§4/§5/§11. Both corrected in place, along with their `design.md` (goal 2/§4),
+  `rollback.md`, `reviews.md` (correction addendum, no new four-lens round per `AGENTS.md` §6 - a
+  doc/fact fix with no code or architecture change), and the deploy scripts' `.NOTES`/runtime
+  messages. Cross-checked against Microsoft's separate, still-current Purview deployment checklist
+  and data-source readiness-checklist tooling, which corroborate: a subscription-scoped (not
+  resource-scoped) Reader role is documented for Managed Instance, but only to support the portal's
+  registration-time subscription/server browse dropdown, not scan authentication. The **Azure
+  Synapse** half of the same VERIFY is narrower (confirmed to still apply, just never names a UAMI
+  alternative on that page) and remains open in
+  `scan-azure-synapse-and-classify-managed-identity-credential/README.md` §11 - not addressed by
+  this fragment. No new coverage added; no cmdlet, endpoint, or field shape invented.
 - [x] **Closed the `connection-and-scorecard-alerts` Update Data Source PATCH partial-merge
   VERIFY** - commit `3ae287a` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
   `Update Data Source`'s PATCH performs a partial merge or expects (and replaces with) the full

@@ -44,9 +44,11 @@ own documentation: "Deleting your scan does not delete catalog assets created fr
 ```
 
 Also deletes the data source registration. Re-establishing the control means re-running
-`deploy/New-AzureSqlManagedInstanceDataMapScan.ps1` from scratch, including re-verifying all five
+`deploy/New-AzureSqlManagedInstanceDataMapScan.ps1` from scratch, including re-verifying all four
 out-of-band prerequisites (Microsoft Entra admin on the instance, Directory Readers role,
-`db_datareader`, Azure IAM Reader, public endpoint/NSG) are still in place.
+`db_datareader`, public endpoint/NSG) are still in place. (An earlier revision of this list also named
+an Azure IAM Reader grant on the instance resource - removed 2026-09-27, see `README.md` §11: no such
+grant is part of Microsoft's documented SAMI/UAMI scan-authentication mechanism for this source.)
 
 ### Stage 4 (optional, Managed-Instance-specific) - Revoke the Directory Readers role
 
@@ -72,10 +74,10 @@ scenario's Azure IAM Reader grant.
 - **Catalog assets and classifications already ingested.** Same as the sibling scenario - no
   cascading delete.
 - **The four out-of-band grants and settings.** This scenario's deploy script does not create the
-  Microsoft Entra admin assignment, the Directory Readers role grant, the `db_datareader` grant, the
-  Azure IAM `Reader` role assignment, or the public-endpoint/NSG configuration - removing the scan
-  does not remove any of them either. Clean up separately if the intent is a full teardown; see
-  Stage 4 above for Directory Readers specifically.
+  Microsoft Entra admin assignment, the Directory Readers role grant, the `db_datareader` grant, or
+  the public-endpoint/NSG configuration - removing the scan does not remove any of them either. Clean
+  up separately if the intent is a full teardown; see Stage 4 above for Directory Readers
+  specifically.
 - **Scan run history.** Prior run records remain visible in the Purview portal's Monitoring view for
   their standard 90-day retention window regardless of whether the scan object still exists.
 

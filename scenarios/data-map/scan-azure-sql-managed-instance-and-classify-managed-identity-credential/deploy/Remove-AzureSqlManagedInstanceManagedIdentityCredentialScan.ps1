@@ -9,7 +9,7 @@
     with `kind` reset to AzureSqlDatabaseManagedInstanceMsi and the `credential` property removed
     entirely - every other scan property (database name, server endpoint, collection, scan rule set)
     preserved unchanged. Does not delete the ManagedIdentity credential object itself, the UAMI, or
-    its Azure IAM/SQL grants - those are independent objects this script never touches (see
+    its SQL db_datareader grant - those are independent objects this script never touches (see
     rollback.md).
 
     Idempotent: reverting a scan that already authenticates as AzureSqlDatabaseManagedInstanceMsi is
@@ -47,9 +47,9 @@
     Reverts the scan back to SAMI authentication (AzureSqlDatabaseManagedInstanceMsi).
 
 .NOTES
-    Reverting to SAMI requires the Purview account's own SAMI still holds the Azure IAM Reader grant
-    and SQL db_datareader external-provider user from the base scenario - if those were removed when
-    the UAMI credential was adopted, re-run this revert only after re-establishing them.
+    Reverting to SAMI requires the Purview account's own SAMI still holds the SQL db_datareader
+    external-provider user from the base scenario - if it was removed when the UAMI credential was
+    adopted, re-run this revert only after re-establishing it.
 
     Source: Scans - Create Or Replace (confirmed create-or-replace PUT semantics):
     https://learn.microsoft.com/rest/api/purview/scanningdataplane/scans/create-or-replace

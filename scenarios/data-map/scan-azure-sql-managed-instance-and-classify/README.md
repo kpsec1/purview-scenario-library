@@ -45,8 +45,7 @@ from the sibling scenario's table are called out explicitly):
 | **Public endpoint enabled** on the managed instance | [Configure public endpoint in Azure SQL Managed Instance](https://learn.microsoft.com/azure/azure-sql/managed-instance/public-endpoint-configure) | **Different from the sibling scenario** - a managed instance has no public endpoint by default; this scenario's default (SAMI over the public endpoint) does not work until it's explicitly enabled [[2]](#references) |
 | **Microsoft Entra admin set on the instance itself** | `Set-AzSqlInstanceActiveDirectoryAdministrator` (not `Set-AzSqlServerActiveDirectoryAdministrator`) | A different cmdlet/resource type from the logical-server sibling scenario - see §5 step 2 [[3]](#references) |
 | **Directory Readers Microsoft Entra role** for the instance's managed identity | Granted by a **Privileged Role Administrator** | **New prerequisite not present in the sibling scenario** - Managed Instance requires this broader role (or equivalent fine-grained Graph permissions) before Microsoft Entra authentication works at all; Azure SQL Database does not [[3]](#references) |
-| Azure IAM on the target managed instance | **Reader** role for the Purview account's SAMI, scoped to **the managed instance resource itself** | Same narrow-scope recommendation as the sibling scenario (not the resource group or subscription) - see §11 |
-| Database-level access for the scan identity | `db_datareader` granted to the Purview account's SAMI as a Microsoft Entra external-provider database user (`CREATE USER [<PurviewAccountName>] FROM EXTERNAL PROVIDER;`) | T-SQL step in §5 - this scenario cites the exact statement directly rather than a generic cross-reference [[4]](#references) |
+| Database-level access for the scan identity | `db_datareader` granted to the Purview account's SAMI as a Microsoft Entra external-provider database user (`CREATE USER [<PurviewAccountName>] FROM EXTERNAL PROVIDER;`) | T-SQL step in §5 - this scenario cites the exact statement directly rather than a generic cross-reference [[4]](#references). **Corrected 2026-09-27:** an earlier revision of this table also listed an Azure IAM **Reader** role on the managed instance resource itself as a scan-authentication prerequisite, copied from the logical-server sibling scenario. Microsoft's own Managed Instance registration/authentication walkthrough documents no such Azure RBAC step for either SAMI or UAMI - only this T-SQL grant [[2]](#references). A subscription-scoped (not resource-scoped) Azure RBAC **Reader** role for the Purview MSI is separately documented, but only as an aid to the portal's "Select From Azure subscription" *registration-time* browse experience, not as part of scan authentication itself [[17]](#references) - removed from this table, see §11 |
 | Network path to the instance (NSG) | Inbound rule allowing the `AzureCloud` service tag over the ports the instance's connection type requires (Redirect: `1433` + `11000`-`11999`; Proxy: `3342`) | Managed-Instance-specific - a logical server's simpler "Allow Azure services" firewall toggle has no equivalent here; see §6 and §11 [[5]](#references) |
 | Automation identity for the REST calls themselves | App registration with **Data Source Administrator** (and, for the validate script, **Data Reader**) Purview role on the collection | Client-secret app-only OAuth2 - see `docs/automation-surface.md` §3 and §5 below |
 
@@ -78,7 +77,6 @@ flowchart TD
 
     DS -.->|references, via public endpoint| MI
     Scan -- "connects as SAMI<br/>(db_datareader)<br/>tcp:<fqdn>,<port>" --> SAMI
-    SAMI -- "Reader (Azure IAM)" --> MI
     SAMI -- "db_datareader<br/>(external-provider user)" --> MI
     SAMI -.->|"Directory Readers<br/>(Entra role, one-time)"| MI
     Scan -- "extracts schema,<br/>samples rows for SIT match" --> MI
@@ -119,19 +117,18 @@ design rationale and the complete Managed-Instance-vs-Database diff: `design.md`
    CREATE USER [<exact name of your Purview account>] FROM EXTERNAL PROVIDER;
    ```
    then grant it `db_datareader` (e.g. `ALTER ROLE db_datareader ADD MEMBER [<PurviewAccountName>];`)
-   [[4]](#references).
-5. **Grant Azure IAM Reader.** On the managed instance resource itself (not the resource group or
-   subscription - same narrow-scope guidance as the sibling scenario), assign the Purview account's
-   name the **Reader** role.
-6. **Confirm the network path.** If the instance uses the public endpoint, confirm its Network
+   [[4]](#references). This T-SQL grant - not an Azure IAM role assignment on the instance resource -
+   is the only access grant Microsoft documents for SAMI/UAMI scan authentication against Managed
+   Instance; see §11 for a prior revision of this step that assumed otherwise.
+5. **Confirm the network path.** If the instance uses the public endpoint, confirm its Network
    Security Group has an inbound rule allowing the `AzureCloud` service tag over the ports its
    connection type requires (Redirect: `1433` + `11000`-`11999`; Proxy: `3342`) [[5]](#references).
-7. Back in the Purview portal, select **New scan** under the registered source, choose the Azure
+6. Back in the Purview portal, select **New scan** under the registered source, choose the Azure
    integration runtime (public endpoint) or a self-hosted IR (private endpoint - see §11), select the
    SAMI credential, **Test connection**, then **Continue** [[2]](#references).
-8. Scope the scan, choose a scan rule set (system default, this scenario's default), choose a scan
+7. Scope the scan, choose a scan rule set (system default, this scenario's default), choose a scan
    trigger, and **Save and run** [[2]](#references).
-9. After the scan completes, browse the classified assets in **Unified Catalog** to confirm columns
+8. After the scan completes, browse the classified assets in **Unified Catalog** to confirm columns
    matching your target SITs are tagged.
 
 ### Script path (idempotent, parameterized, dry-run capable)
@@ -173,8 +170,8 @@ design rationale and the complete Managed-Instance-vs-Database diff: `design.md`
 ```
 
 The deploy script uses the **Microsoft Purview Data Map / Data Governance REST API** - automation
-surface 4 per `docs/automation-surface.md` §1. Steps 2-6 above (Entra admin, Directory Readers,
-database grant, IAM Reader, network) are one-time, out-of-band prerequisites this script does not
+surface 4 per `docs/automation-surface.md` §1. Steps 2-5 above (Entra admin, Directory Readers,
+database grant, network) are one-time, out-of-band prerequisites this script does not
 perform - see `design.md` §8.
 
 ## 6. Configuration reference
@@ -259,8 +256,8 @@ See `rollback.md` for the full staged procedure (disable trigger → delete scan
 source) - structurally identical to the sibling scenario's. Quick reference:
 `./deploy/Remove-AzureSqlManagedInstanceDataMapScan.ps1` removes the scan and its trigger (reversible
 by re-running the deploy script); add `-RemoveDataSource` to also delete the data source
-registration. Rolling back the scan/data source objects does **not** revert the five out-of-band
-Managed-Instance-specific prerequisites (Entra admin, Directory Readers, database grant, IAM Reader,
+registration. Rolling back the scan/data source objects does **not** revert the four out-of-band
+Managed-Instance-specific prerequisites (Entra admin, Directory Readers, database grant,
 public endpoint) - see `rollback.md`.
 
 ## 10. Cost & licensing notes
@@ -306,6 +303,23 @@ same way regardless of the underlying Azure SQL source type.
   the sibling scenario's assumptions (Run Scan's action-style POST; List Scan History's nested asset
   counts - `design.md` §5) should be backported into `scan-azure-sql-and-classify`'s own scripts, since
   that scenario's `PUT .../runs/{runId}` call would not match the confirmed API contract.
+- **RESOLVED (2026-09-27) - no Azure IAM Reader role is required on the managed instance resource for
+  SAMI/UAMI scan authentication.** §3, §4, and §5 previously listed an Azure IAM **Reader** role
+  assignment on the managed instance resource itself as a scan-authentication prerequisite, carried
+  over from the logical-server sibling scenario's own table. A direct fetch of Microsoft's Managed
+  Instance registration/authentication page found no such Azure RBAC step documented for either SAMI
+  or UAMI - the only documented access grant for scan authentication is the Entra contained-user +
+  `db_datareader` T-SQL grant already in §5 step 4 [[2]](#references). Microsoft's Purview deployment
+  checklist separately documents an Azure RBAC **Reader** role for the Purview MSI, but scoped to the
+  data source's **subscription** (not the individual instance resource) and for a different purpose -
+  populating the portal's "Select From Azure subscription" browse dropdown at *registration* time, not
+  scan-time authentication [[17]](#references); the current data-source readiness-checklist tooling's
+  own Managed-Instance-specific checks (network, ProxyOverride, NSG, Entra admin) confirm this by
+  omission - unlike its Blob Storage/ADLS Gen2/Synapse checks, it has no RBAC Reader check item for
+  Managed Instance at all. The row, diagram edge, and portal step claiming otherwise are corrected in
+  place rather than left to silently mislead a reader granting access. This also corrects the same
+  copied claim in `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/README.md`
+  §3/§4/§5/§11, which closes that scenario's own open VERIFY on this point.
 
 ## 12. References
 
@@ -325,8 +339,9 @@ same way regardless of the underlying Azure SQL source type.
 14. Az.Purview PowerShell module reference (`Remove-AzPurviewDataSource`, `Remove-AzPurviewScan`) - <https://learn.microsoft.com/powershell/module/az.purview/>
 15. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary) - <https://learn.microsoft.com/purview/data-gov-classic-permissions>
 16. `scenarios/data-map/scan-azure-sql-and-classify/` - the sibling scenario this fragment extends; see its README.md and design.md for the shared reasoning not repeated here.
+17. Microsoft Purview (formerly Azure Purview) deployment checklist - item 16, "Grant Azure RBAC Reader role to Microsoft Purview MSI at data sources' Subscriptions" (lists Azure SQL Managed Instance among the applicable source types, scoped to the subscription) - <https://learn.microsoft.com/purview/legacy/tutorial-azure-purview-checklist>; cross-checked against Check Azure data source readiness to register and scan in Microsoft Purview, whose Managed-Instance-specific check list has no RBAC/Reader item - <https://learn.microsoft.com/purview/data-map-data-sources-check-azure-readiness#more-information>
 
 > Re-verify all links, API versions, and the default public-endpoint port against current Microsoft
 > Learn before a customer-facing deployment - the Data Map REST surface is explicitly called out by
-> Microsoft as evolving, and the two VERIFY items in §11 should be closed against a pilot tenant
+> Microsoft as evolving, and the remaining VERIFY item in §11 should be closed against a pilot tenant
 > first.
