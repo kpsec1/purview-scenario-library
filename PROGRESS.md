@@ -865,11 +865,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   below): not a genuine two-source conflict, but a documented migration (per-member mailboxes →
   a single dedicated group mailbox), confirmable per tenant/channel via
   `Get-TenantPrivateChannelMigrationStatus`.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn/SDK pass): the typed Microsoft.Graph.Security
-  v1.0 PowerShell cmdlet name for binding an existing `ediscoveryNoncustodialDataSource` onto a
-  search via `POST .../searches/{id}/noncustodialSources/$ref` - this build found no page confirming
-  it, so `deploy/New-TeamsMessagePurgeSearch.ps1` calls the confirmed raw HTTP shape via
-  `Invoke-MgGraphRequest` instead of guessing. `search-and-purge-teams-messages/design.md` §6.
+- [x] VERIFY closed 2026-09-27 (Microsoft Learn MCP, module reference page): the typed
+  Microsoft.Graph.Security v1.0 PowerShell cmdlet name for binding an existing
+  `ediscoveryNoncustodialDataSource` onto a search via `POST .../searches/{id}/noncustodialSources/$ref`.
+  **Confirmed: no such cmdlet exists.** The module's full cmdlet index for the
+  `EdiscoveryCaseSearchNoncustodialSource` noun lists only `Get-` cmdlets (list/count); the module's
+  only `New-`-verb cmdlet touching a noncustodial source,
+  `New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`, is a different, case-level operation
+  (creates the source object; doesn't bind it to a search). `deploy/New-TeamsMessagePurgeSearch.ps1`
+  calling the raw HTTP shape via `Invoke-MgGraphRequest` for this step is therefore correct, not a
+  stand-in for an as-yet-unconfirmed cmdlet. Updated `search-and-purge-teams-messages/README.md` §11
+  (+ new reference 14), `design.md` §6, the deploy script's own `.NOTES`, and `reviews.md`
+  (Blue Team finding 4).
 - [ ] VERIFY (pilot tenant): how a case-level `ediscoveryNoncustodialDataSource`'s `DisplayName` is
   populated for a `userSource` (mailbox) - only a `siteSource` worked example was found. The deploy
   script's find-or-create idempotency check matches on `DisplayName` as a best-effort heuristic.
@@ -3514,6 +3521,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   with citations instead of an open question, and added a correction addendum to `reviews.md` (no new
   four-lens round per `AGENTS.md` §6 - a doc/fact fix, no code or architecture change). No script
   logic changed; no new coverage added.
+- [x] **Closed the `search-and-purge-teams-messages` noncustodial-source `$ref`-bind typed-cmdlet
+  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether a
+  typed `Microsoft.Graph.Security` v1.0 PowerShell cmdlet exists for binding an existing
+  `ediscoveryNoncustodialDataSource` onto a search via `POST .../searches/{id}/noncustodialSources/$ref`.
+  Grounded via the Microsoft Learn MCP module reference page for `Microsoft.Graph.Security`: its full
+  cmdlet index for the `EdiscoveryCaseSearchNoncustodialSource` noun lists only `Get-` cmdlets
+  (list/count) - no `New-`/`Add-` variant exists for this noun at all. The module's only `New-`
+  cmdlet touching a noncustodial source, `New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`, is
+  a different, case-level operation (creates the source object; doesn't bind it to a search) already
+  used elsewhere in the same script. This confirms `deploy/New-TeamsMessagePurgeSearch.ps1`'s
+  `Invoke-MgGraphRequest` raw-HTTP call for this step is correct - not a stand-in for an
+  as-yet-unconfirmed cmdlet, but the only way to perform this action. Updated
+  `search-and-purge-teams-messages/README.md` §11 (+ new reference 14) and its closing note,
+  `design.md` §6, the deploy script's own `.NOTES`, and `reviews.md` (Blue Team finding 4 addendum).
+  No script logic changed; no new coverage added.
 - [x] **Closed the Managed Instance half of the Azure IAM Reader role-assignment VERIFY** - commit
   `6648cc5` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Database
   sibling's confirmed "Access control (IAM) → Add role assignment → Reader → Select box accepts

@@ -147,13 +147,16 @@ the pattern Microsoft's own `Create searches` reference worked example demonstra
    example response shows when a search's sources are supplied explicitly rather than via a blanket
    scope [[6]](#references).
 
-**VERIFY (pilot tenant or a future Microsoft Learn/SDK pass):** the exact typed PowerShell cmdlet
-name for step 2's `$ref`-bind action (the Graph SDK's usual convention would produce something like
-`New-MgSecurityCaseEdiscoveryCaseSearchNoncustodialSourceByRef`, but this build found no page
-directly confirming that name for the v1.0 `Microsoft.Graph.Security` module). `deploy/
-New-TeamsMessagePurgeSearch.ps1` therefore calls the confirmed raw HTTP shape via
-`Invoke-MgGraphRequest` for that one step rather than guessing an unconfirmed cmdlet name, per
-`AGENTS.md` §4 - flagged in that script's own `.NOTES`.
+**Closed 2026-09-27** (Microsoft Learn MCP, module reference page): step 2's `$ref`-bind action has
+no typed PowerShell cmdlet. The full cmdlet index for the `Microsoft.Graph.Security` v1.0 module's
+`EdiscoveryCaseSearchNoncustodialSource` noun lists only `Get-` cmdlets (list/count); no
+`New-`/`Add-` variant exists for that noun at all, so the SDK's usual `-ByRef` naming convention was
+never generated for this specific action. (The module's only `New-` cmdlet in this area,
+`New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`, is the unrelated case-level "create the
+source object" operation already used in step 1.) `deploy/New-TeamsMessagePurgeSearch.ps1` calling
+the raw HTTP shape via `Invoke-MgGraphRequest` for step 2 is therefore confirmed correct, not a
+stand-in for a cmdlet that simply hasn't been found yet - flagged as resolved in that script's own
+`.NOTES`. [[14]](#references)
 
 **VERIFY (pilot tenant):** how a case-level `ediscoveryNoncustodialDataSource` object's `DisplayName`
 is populated for a `userSource` (a mailbox) - Microsoft's own worked example shows a `siteSource`'s

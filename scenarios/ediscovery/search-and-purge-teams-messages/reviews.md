@@ -78,7 +78,10 @@ No remaining Fix/Fail after resolution.
    - **Resolution:** Accepted as the correct trade-off per `AGENTS.md` §4 (never guess an unconfirmed
      cmdlet name) rather than a defect - flagged plainly in the deploy script's `.NOTES` and
      `design.md` §6 so a future maintainer knows to swap in a typed cmdlet once one is confirmed,
-     rather than assuming the current code is final.
+     rather than assuming the current code is final. **Update 2026-09-27:** re-grounded via the
+     Microsoft.Graph.Security v1.0 module's own cmdlet index - no typed cmdlet exists for this noun
+     beyond `Get-`, so the raw-HTTP call is confirmed as the only way to perform this action, not
+     merely an accepted placeholder. `README.md` §11 / `design.md` §6 updated accordingly.
 
 No remaining Fail.
 

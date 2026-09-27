@@ -77,14 +77,13 @@
       - Invoke-MgEstimateSecurityCaseEdiscoveryCaseSearchStatistics   (POST .../searches/{id}/estimateStatistics)
       - Get-MgSecurityCaseEdiscoveryCaseOperation                     (GET .../operations/{id})
 
-    VERIFY (pilot tenant or a future Microsoft Learn/SDK pass): this script binds a
+    CONFIRMED 2026-09-27 (Microsoft Learn MCP, module reference page): this script binds a
     noncustodialDataSource onto an EXISTING search (the case where the search was created on a
     prior run without every currently-declared mailbox) via a raw Invoke-MgGraphRequest POST to
-    .../searches/{id}/noncustodialSources/$ref rather than a typed cmdlet -- this build found no
-    Microsoft Learn page confirming the typed Microsoft.Graph.Security v1.0 cmdlet name for that
-    specific $ref-bind action (the SDK's usual convention would suggest something like
-    New-MgSecurityCaseEdiscoveryCaseSearchNoncustodialSourceByRef, but that name is unconfirmed).
-    See README.md Section 11 / design.md Section 6.
+    .../searches/{id}/noncustodialSources/$ref because no typed cmdlet exists for this action --
+    the Microsoft.Graph.Security v1.0 module's full cmdlet index for the
+    EdiscoveryCaseSearchNoncustodialSource noun lists only Get- cmdlets (list/count); there is no
+    New-/Add- variant. See README.md Section 11 / design.md Section 6.
 
     VERIFY (pilot tenant): a case-level ediscoveryNoncustodialDataSource's DisplayName for a
     userSource (mailbox) is not shown in any worked example this build found (only a siteSource

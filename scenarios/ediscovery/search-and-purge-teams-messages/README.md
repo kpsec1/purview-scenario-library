@@ -216,10 +216,15 @@ case, and the holds you removed and must reapply.
   migration. Confirm with `Get-TenantPrivateChannelMigrationStatus` [[12]](#references) before
   targeting a private channel as a single dedicated mailbox - an unmigrated channel still needs the
   per-member `Get-TeamChannelUser` lookup. See `design.md` §4.
-- **VERIFY (pilot tenant or a future Microsoft Learn/SDK pass):** the exact typed PowerShell cmdlet
-  for binding an existing `noncustodialDataSource` onto a search via the `$ref` endpoint -
-  `deploy/New-TeamsMessagePurgeSearch.ps1` calls the confirmed raw HTTP shape via
-  `Invoke-MgGraphRequest` instead of guessing an unconfirmed SDK cmdlet name. `design.md` §6.
+- **Closed 2026-09-27** (Microsoft Learn MCP, module reference page): no typed PowerShell cmdlet
+  exists for binding an existing `noncustodialDataSource` onto a search via the `$ref` endpoint.
+  The `Microsoft.Graph.Security` v1.0 module's full cmdlet index for the
+  `EdiscoveryCaseSearchNoncustodialSource` noun lists only `Get-` cmdlets (list/count); the module's
+  only `New-`-verb cmdlet for a noncustodial source is `New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`,
+  a different, case-level operation (creates the source object itself, not the search-level `$ref`
+  bind) [[14]](#references). `deploy/New-TeamsMessagePurgeSearch.ps1` correctly calls the confirmed
+  raw HTTP shape via `Invoke-MgGraphRequest` for this step - not a workaround for an unconfirmed
+  cmdlet, but the only way to perform this specific action. `design.md` §6.
 - **VERIFY (pilot tenant):** how a case-level `ediscoveryNoncustodialDataSource`'s `DisplayName` is
   populated for a mailbox (`userSource`) - this scenario's idempotency check matches on `DisplayName`
   as a best-effort heuristic; `validate/Test-TeamsMessagePurgeSearchAndPurge.ps1` reports this as
@@ -263,9 +268,12 @@ case, and the holds you removed and must reapply.
     `Get-TenantPrivateChannelMigrationStatus`) - <https://learn.microsoft.com/microsoftteams/private-channels#compliance-copies-of-private-channel-messages>
 13. Learn about retention for Microsoft Teams (`RecipientTypeDetails` mailbox-type table; `GroupMailbox`
     post-migration vs. `UserMailbox` before it, for Teams private channels) - <https://learn.microsoft.com/purview/retention-policies-teams#how-retention-works-with-microsoft-teams-messages>
+14. Microsoft.Graph.Security module reference (full `EdiscoveryCaseSearchNoncustodialSource` and
+    `EdiscoveryCaseNoncustodialDataSource` cmdlet index, confirming no typed `New-`/`Add-` cmdlet
+    binds an existing source onto a search via `$ref`) - <https://learn.microsoft.com/powershell/module/microsoft.graph.security/>
 
-> Re-verify all links, Graph SDK cmdlet names, and - especially - the unconfirmed `$ref`-bind cmdlet
-> name (§11) against current Microsoft Learn before a customer-facing deployment, and confirm each
-> target private channel's own migration status via `Get-TenantPrivateChannelMigrationStatus`
-> (§11). This scenario treats every Teams purge as irreversible for the user copy; there is no
-> "safe default" to fall back on the way the mailbox sibling has.
+> Re-verify all links and Graph SDK cmdlet names against current Microsoft Learn before a
+> customer-facing deployment, and confirm each target private channel's own migration status via
+> `Get-TenantPrivateChannelMigrationStatus` (§11). This scenario treats every Teams purge as
+> irreversible for the user copy; there is no "safe default" to fall back on the way the mailbox
+> sibling has.
