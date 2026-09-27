@@ -3449,7 +3449,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `connection-and-scorecard-alerts` Update Data Source PATCH partial-merge
-  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  VERIFY** - commit `3ae287a` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
   `Update Data Source`'s PATCH performs a partial merge or expects (and replaces with) the full
   object. Grounded via a direct re-fetch of the Update Data Source REST reference page
   (`2026-01-12-preview`): its own worked example's request body omits the `name` field entirely,
