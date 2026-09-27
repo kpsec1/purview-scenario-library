@@ -469,16 +469,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `README.md` §6/§11, with a new `reviews.md` round 2 four-lens review specific to this change.
 
 ### Follow-ups discovered while building the opt-in travel-document bundle switch
-- [ ] VERIFY (pilot tenant): whether `"EU driver's license number"` (the spelling used in this
+- [x] VERIFY (pilot tenant): whether `"EU driver's license number"` (the spelling used in this
   repo's prose since the scenario's original build) or `"EU drivers license number"` (the literal,
   no-apostrophe title on the SIT's own Microsoft Learn bundle-index page, fetched directly during
   this round) is the byte-exact name `Get-DlpSensitiveInformationType`/the portal SIT picker
-  actually require - joins the existing open SIT-name-casing VERIFY for this scenario
-  (`README.md` §11) rather than a new, separate uncertainty. The deploy script's existing
-  `Resolve-SensitiveInfoTypeNames` name-resolution check already fails clearly (listing
-  near-matches) if the hardcoded default is wrong, rather than silently deploying a zero-match
-  rule, so this doesn't block use - it would only let a future revision state the default with
-  certainty.
+  actually require - **closed 2026-09-27 (grounded, no tenant access)**: Microsoft's "Create
+  custom sensitive information types" page names this SIT in a portal-display-name context (its
+  list of non-copyable EU-wide SITs), spelling it `"EU driver's license number"` (apostrophe,
+  lowercase) - matching this scenario's existing default. The bundle-index page's own title omits
+  the apostrophe only because Learn page titles are derived from the URL slug (confirmed: every
+  per-country page under it does the same in its title while keeping the apostrophe in its own
+  body prose). See `auto-label-eu-personal-data-sharepoint/README.md` §11, `design.md` §4, and
+  `reviews.md` round 4. This closes only the apostrophe sub-question - the broader
+  byte-exact-*casing* VERIFY for the other bundle names (`README.md` §11) stays open, pilot-tenant
+  only.
 
 ### Follow-ups discovered while building the Exchange PII exfiltration block (DLP) scenario
 - [ ] VERIFY (pilot tenant): the exact `Name` value `Get-RMSTemplate` returns for the auto-created
@@ -3424,6 +3428,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `auto-label-eu-personal-data-sharepoint` "EU driver's license number" apostrophe
+  VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  the byte-exact SIT name is `"EU driver's license number"` (this scenario's existing default) or
+  `"EU drivers license number"` (the no-apostrophe title on the SIT's own Microsoft Learn
+  bundle-index page). Grounded via a direct fetch of that bundle-index page (confirms its title
+  omits the apostrophe, but its own body prose keeps it) plus the "Create custom sensitive
+  information types" page, which names this SIT by its portal display name - not a URL slug - in
+  its list of non-copyable EU-wide SITs, spelling it `"EU driver's license number"` (apostrophe,
+  lowercase), matching this scenario's existing default exactly. Updated
+  `auto-label-eu-personal-data-sharepoint/README.md` §11, `design.md` §4, and `reviews.md` (round
+  4). No script or default-parameter change was needed. This closes only the apostrophe
+  sub-question - the broader byte-exact-*casing* VERIFY for the other bundle names (`README.md`
+  §11) stays open, pilot-tenant only.
 - [x] **Closed the `manage-critical-data-elements` entityType=CRITICALDATACOLUMN VERIFY** - commit
   `8221edf` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
   `entityType=DATACOLUMN` or `entityType=CRITICALDATACOLUMN` is the real, accepted value for the
