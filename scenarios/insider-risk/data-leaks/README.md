@@ -338,16 +338,16 @@ the policy or revoking an app registration's certificate is not.
   policy's own scope (or vice versa) never has an alert processed, with no error surfaced by
   either product. `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1` reminds the operator to check
   this manually; no tool compares the two scopes programmatically.
-- **Whether both triggering-event types (DLP-policy match and exfiltration activity) can be
-  enabled simultaneously on one policy is still unconfirmed, though a stronger single-select
-  signal has since surfaced** - unlike the risky/priority-users family's explicit documented
-  AND/OR prerequisite, this scenario's own grounding found no equivalent explicit statement for
-  the base template. A later sibling fragment,
-  `../data-leaks-exfiltration-activity-trigger/design.md` §2 goal 6, direct-fetched the same
-  Microsoft Learn "Get started with Insider Risk Management" Step 6 workflow and found the two
-  triggering-event options worded as alternative "if you select X... if you select Y..."
-  branches - suggestive of a single-select choice, not an explicit "cannot combine" statement.
-  `design.md` §6 discloses this as an open VERIFY rather than treating it as resolved either way.
+- **Resolved: the two triggering-event types (DLP-policy match and exfiltration activity)
+  cannot be enabled simultaneously on one policy** - a policy has a single triggering-event
+  configuration, set to one mechanism or the other. Confirmed via a direct Microsoft Learn fetch
+  of "Create and manage Insider Risk Management policies" §Policy health, whose `Data leaks`
+  notification-fix guidance twice phrases the choice as "either select an active DLP policy or
+  'User performs an exfiltration activity' as **the** triggering event" (singular, definite
+  article), corroborated by "Learn about Insider Risk Management policy templates" §Policy
+  template prerequisites and triggering events, whose prerequisites column joins this template's
+  two mechanisms with "**OR**" rather than the risky/priority-users family's own "and/or"
+  HR-connector/Communication-Compliance phrasing. See `design.md` §6.
 - **The DLP-alerts indicator is a global, tenant-wide setting**, not scoped to one IRM policy -
   adding or removing a DLP policy from it can affect other Insider Risk Management policies in the
   tenant that also use it. §8.

@@ -67,24 +67,24 @@ policy yet** actually needs.
    there is no API to read any of this back - a durable, versioned record of what the workflow
    button-clicks actually selected, the same role every other portal-only IRM scenario's manifest
    plays in this library).
-6. **Ground, don't guess, whether the two triggering-event options can be combined on one policy -
-   report the sibling's open VERIFY plus a materially stronger signal this fragment's own direct
-   fetch surfaced, without overriding it.** The DLP-trigger sibling's own `design.md` §6 disclosed
-   this as unresolved based on WebSearch-only grounding. This fragment's direct fetch of the same
-   "Get started" page's Step 6, sub-step 12, phrases the two triggering-event choices as mutually
-   exclusive workflow branches - "If you select the **User matches a data loss prevention (DLP)
-   policy** triggering event option, you must select a DLP policy... If you select the **User
-   performs an exfiltration activity** triggering event option, you must select one or more of the
-   listed indicators" - worded as alternative "if you select X... if you select Y..." branches, not
-   an explicit "select either or both" statement either sibling template's own risky-users-family
-   cousin carries for its AND/OR HR-connector/Communication-Compliance prerequisite. This is
-   **suggestive of a single-select choice, not confirmed as mutually exclusive by an explicit
-   statement** - `README.md` §11 states this exact nuance (stronger than the sibling's own framing,
-   still short of confirmed) rather than either re-asserting the sibling's weaker framing or
-   claiming full confirmation. This scenario's own docs use this reading; the sibling's own
-   `data-leaks/design.md` §6 and `README.md` §6/§11 are **not** edited in this fragment (a
-   separate scenario's files, out of scope for a one-fragment turn) - tracked as a follow-up in
-   `PROGRESS.md` instead.
+6. **Ground, don't guess, whether the two triggering-event options can be combined on one policy.**
+   The DLP-trigger sibling's own `design.md` §6 originally disclosed this as unresolved based on
+   WebSearch-only grounding; this fragment's direct fetch of the same "Get started" page's Step 6,
+   sub-step 12, phrased the two triggering-event choices as mutually exclusive workflow branches -
+   "If you select the **User matches a data loss prevention (DLP) policy** triggering event
+   option, you must select a DLP policy... If you select the **User performs an exfiltration
+   activity** triggering event option, you must select one or more of the listed indicators" - a
+   materially stronger single-select signal than the sibling's original framing, though still
+   short of an explicit "cannot combine" statement on its own. A later 2026-09-27 maintenance pass
+   closed the question definitively: a direct fetch of "Create and manage Insider Risk Management
+   policies" §Policy health found the notification-fix guidance twice using the singular, definite
+   "**the** triggering event" for this template ("either select an active DLP policy or 'User
+   performs an exfiltration activity' as the triggering event"), and "Learn about Insider Risk
+   Management policy templates" §Policy template prerequisites and triggering events joins the two
+   mechanisms with "**OR**" rather than the risky/priority-users family's own "and/or" phrasing -
+   confirming a policy has one triggering-event configuration, not two independently-enableable
+   ones. `README.md` §6/§11 and `PROGRESS.md` updated to match; `data-leaks/design.md` §6 and
+   `README.md` §11 updated in the same pass.
 
 ## 3. Why this is its own scenario folder, not an edit to `data-leaks/`
 
@@ -134,7 +134,7 @@ they match.
 | Worked threshold example cited | The Microsoft-published SharePoint-download 10/20/30-events/day (low/medium/high) illustration | Explicitly sourced as Microsoft's own worked example, not this scenario's invented default (§2 goal 3) |
 | Scoring-indicator selection | Office indicators (primary, built-in) + Cumulative exfiltration detection (default-on) + optional Communication Compliance/generative-AI/cloud indicators | Identical to the DLP-trigger sibling - same template, same scoring surface (§2 goal 1) |
 | New script scope | A validation script covering the Graph-side scope check (reused logic) plus a manual checklist for this trigger's own configuration points - no new *deploy*-time mutating or readiness-check script | This trigger path has no DLP policy to check readiness against, unlike the sibling scenario's genuinely new contribution (§2 goal 5) |
-| Whether both triggering events (DLP-policy match and exfiltration activity) can be combined | **Still not confirmed - a stronger, but not conclusive, single-select signal is now disclosed** | §2 goal 6 - this fragment's own direct fetch found alternative "if you select X... if you select Y..." phrasing, stronger than the sibling's WebSearch-only framing, but not an explicit "cannot combine" statement |
+| Whether both triggering events (DLP-policy match and exfiltration activity) can be combined | **Resolved: no - one triggering-event configuration per policy, set to either mechanism** | §2 goal 6 - confirmed 2026-09-27 via a direct Microsoft Learn fetch of "Create and manage Insider Risk Management policies" §Policy health (singular "the triggering event" in either/or fix guidance) and "Learn about Insider Risk Management policy templates" §Policy template prerequisites and triggering events ("OR" between the two mechanisms) |
 | Max-users cap | **15,000**, identical to and shared cumulatively with the DLP-trigger sibling (same template) | Confirmed via the same Microsoft Learn "Limits in Insider Risk Management" table the sibling scenario already cites - this is a per-template cap, not a per-trigger-event cap |
 | Population mechanism | A plain Entra group (or groups), resolved via the reused base-template scope script | Identical reasoning to the DLP-trigger sibling |
 | Alert-export script | Reuse the plain, non-MDE-joining `departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1` | Same reasoning as the DLP-trigger sibling - no Defender for Endpoint signal to join against |

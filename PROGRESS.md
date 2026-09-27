@@ -1996,12 +1996,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   DLP policy spans multiple workloads (for example, Exchange + Endpoint), only the alerts from the
   supported workloads... are processed." `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1`'s WARN for
   this combination is now informational (confirmed-safe), not an open question.
-- [ ] VERIFY (portal or a direct Microsoft Learn fetch): whether the base `Data leaks` template's
+- [x] VERIFY (portal or a direct Microsoft Learn fetch): whether the base `Data leaks` template's
   two triggering-event options ("User matches a DLP policy" and "User performs an exfiltration
   activity") can be enabled simultaneously on one policy, the way the risky/priority-users
   family's HR-connector/Communication-Compliance triggers have an explicit documented AND/OR
   prerequisite. `data-leaks/design.md` §6 discloses this as unresolved rather than assuming
-  symmetry with that sibling.
+  symmetry with that sibling - **resolved** (see DONE below): a policy has one triggering-event
+  configuration, set to either mechanism, not both.
 - [x] Now that the base `Data leaks` template's max-users cap is confirmed (above), consider
   building a second worked example for the "User performs an exfiltration activity" triggering
   event - `data-leaks/design.md` §3/§7 deliberately scoped this fragment to the DLP-policy trigger
@@ -3429,6 +3430,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `data-leaks`/`data-leaks-exfiltration-activity-trigger` triggering-event
+  combinability VERIFY** - commit `PENDING` - 2026-09-27. Maintenance pass: closed the open VERIFY
+  asking whether the base `Data leaks` template's two triggering-event options ("User matches a
+  DLP policy" and "User performs an exfiltration activity") can be enabled simultaneously on one
+  policy. Grounded via the Microsoft Learn MCP: "Create and manage Insider Risk Management
+  policies" §Policy health twice phrases this template's notification-fix guidance using the
+  singular, definite "**the** triggering event" ("either select an active DLP policy or 'User
+  performs an exfiltration activity' as the triggering event") - one field, two possible values -
+  corroborated by "Learn about Insider Risk Management policy templates" §Policy template
+  prerequisites and triggering events, whose prerequisites column joins the `Data leaks` template's
+  two mechanisms with "**OR**", unlike the risky/priority-users family's own explicit "and/or"
+  HR-connector/Communication-Compliance prerequisite. Result: a policy has one triggering-event
+  configuration, set to either mechanism, not both - they cannot be combined on a single policy.
+  Updated `data-leaks/design.md` §6, `data-leaks/README.md` §11,
+  `data-leaks-exfiltration-activity-trigger/design.md` §2 goal 6/§6, and
+  `data-leaks-exfiltration-activity-trigger/README.md` §5 Step 4/§6/§8/§11 to state this as
+  resolved rather than an open question. No script change was needed - neither scenario's code
+  asserted either way.
 - [x] **Closed the `copilot-interaction-detection` Copilot Studio/Microsoft Foundry location VERIFY**
   - commit `6884d9b` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether this
   scenario's fixed template location ("Microsoft 365 Copilot and Microsoft 365 Copilot Chat") also
