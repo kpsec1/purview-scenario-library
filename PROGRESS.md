@@ -841,8 +841,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   independently confirms the hold behavior specifically for `purgeData`. `search-and-purge-data-
   spillage/README.md` §11 and `design.md` §2 goal 5/§6.
 - [ ] VERIFY: how long a `purgeData` job report's `reportFileMetadata.downloadUrl` remains valid
-  before expiring - not stated on the `ediscoveryPurgeDataOperation` Graph reference page.
-  `search-and-purge-data-spillage/README.md` §11.
+  before expiring - not stated on the `ediscoveryPurgeDataOperation` Graph reference page, nor on
+  the `reportFileMetadata` resource type page. **Re-grounded 2026-09-27** (Microsoft Learn MCP):
+  confirmed still undocumented. Microsoft Learn documents expiry only for the differently-typed
+  **export** download links (`ediscoveryExportOperation`/`exportFileMetadata`, the `contentExport`
+  action - search exports expire in 14 days, review-set exports in 30 days, pre-authorized links in
+  1-168 hours); none of that applies to `ediscoveryPurgeDataOperation`/`reportFileMetadata` (the
+  `purgeData` action), a distinct resource type, so assuming parity would be a guess. Remains open;
+  re-open for a fresh pass only if Microsoft publishes an expiry statement specific to
+  `ediscoveryPurgeDataOperation`/`reportFileMetadata`. `search-and-purge-data-spillage/README.md`
+  §11 (note expanded in place) and §12 (reference 15 added).
 - [x] `scenarios/ediscovery/search-and-purge-teams-messages/` - **built** (see DONE below): the
   `purgeAreas: teamsMessages` half of the same `purgeData` Graph action. Re-grounding this item found
   the original follow-up's own premise was **backwards**: current Microsoft Learn states that for
