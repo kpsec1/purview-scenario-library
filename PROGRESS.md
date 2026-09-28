@@ -1909,8 +1909,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   parameter - Microsoft's reference documents the parameter but not a ceiling. This scenario
   defaults `-PageSize` to a conservative 100 and always follows `nextLink`, so an unconfirmed cap
   cannot cause silent truncation, but confirming the real maximum would let a future revision tune
-  the default for fewer round-trips at scale. `glossary-curation-coverage-report/deploy/
-  Export-GlossaryCurationCoverageReport.ps1`'s `.NOTES`.
+  the default for fewer round-trips at scale. **Re-grounded 2026-09-28** (Microsoft Learn MCP):
+  re-fetched the `Terms - List` reference against both the `2025-09-15-preview` and the pinned
+  `2026-03-20-preview` API version - `top` remains documented only as "the number of result items
+  to return," no maximum stated on either version, so this is not guessed away. The
+  `2026-03-20-preview` fetch also surfaced a previously-unrecorded, directly relevant fact: this
+  operation now documents a rate limit of **100 requests per 20-second window**, not present on the
+  `2025-09-15-preview` reference - recorded alongside the still-open VERIFY since `-PageSize 100`'s
+  choice is informed by it (a single domain's pull stays well inside the window; a future revision
+  fanning out across many `-DomainIds` should watch for it). Remains open; re-open for a fresh pass
+  only if Microsoft publishes an explicit `top` ceiling for this operation.
+  `glossary-curation-coverage-report/deploy/Export-GlossaryCurationCoverageReport.ps1`'s `.NOTES`
+  and `README.md` §11 (both updated in place).
 - [ ] Once Microsoft enumerates valid `Terms - Get Facets` `facets[].name` values beyond the single
   worked `owner` example, revisit whether a `status`-facet (or similar) request could replace this
   scenario's per-page client-side status tally with a single aggregate call - see `design.md` §6.
@@ -3634,6 +3644,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Re-grounded the `glossary-curation-coverage-report` `Terms - List` `top`-maximum VERIFY** -
+  commit `PENDING` - 2026-09-28. Maintenance pass: re-fetched the `Terms - List` REST reference via
+  the Microsoft Learn MCP tool against both the `2025-09-15-preview` and the pinned
+  `2026-03-20-preview` API version. `top` is still documented only as "the number of result items to
+  return" on both versions, with no maximum ever stated - the VERIFY remains genuinely open, not
+  closed by assumption. The `2026-03-20-preview` fetch surfaced one new, directly relevant, previously
+  unrecorded fact: `Terms - List` now documents a rate limit of **100 requests per 20-second window**
+  for this operation (absent from the `2025-09-15-preview` reference) - recorded because it bears on
+  this scenario's `-PageSize` default (100, which keeps a single-domain pull well inside that window).
+  Updated `glossary-curation-coverage-report/README.md` §11 and `deploy/
+  Export-GlossaryCurationCoverageReport.ps1`'s `.PARAMETER PageSize`/`.NOTES` in place; no script
+  behavior change (adding 429 backoff would be new functionality, not a correction, and is left as a
+  future consideration rather than built here). No new four-lens review round needed per `AGENTS.md`
+  §6 - doc/comment-only correction.
 - [x] **Closed the `scan-azure-sql-and-classify` Data Sources/Triggers REST body-shape VERIFY** -
   commit `be8d36d` - 2026-09-28. Maintenance pass: the canonical **Data Sources - Create Or Replace**
   and **Triggers - Create Or Replace** REST reference pages, which returned fetch errors in the

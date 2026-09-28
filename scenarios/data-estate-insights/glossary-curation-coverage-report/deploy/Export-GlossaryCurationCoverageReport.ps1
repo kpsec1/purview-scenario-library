@@ -79,7 +79,9 @@
 .PARAMETER PageSize
     Terms - List 'top' page size. Microsoft's reference documents no maximum for this parameter, so
     this defaults to a conservative 100 rather than assuming Discovery - Query's unrelated 1000-row
-    maximum applies here too - see README.md Section 11.
+    maximum applies here too - see README.md Section 11. Terms - List also documents a rate limit of
+    100 requests per 20-second window (re-grounded 2026-09-28); this default keeps a single-domain
+    pull well inside that window, but this script does not implement 429 backoff.
 
 .PARAMETER TrendLogPath
     Path to the append/replace-by-RunId CSV trend log. Created with a header row if it doesn't
@@ -120,6 +122,9 @@
 .NOTES
     VERIFY before production use (see README.md Section 11 for full detail):
     - No documented maximum 'top' value for Terms - List - -PageSize defaults conservatively to 100.
+      Re-grounded 2026-09-28 (Microsoft Learn MCP): still genuinely undocumented on the pinned
+      2026-03-20-preview reference; that same reference now documents a 100-requests-per-20-second
+      rate limit for this operation, which -PageSize 100 stays well inside for a single domain.
     - Terms - Get Facets' facets[].name values are not enumerated by Microsoft (only a worked
       'owner' example exists) - this script does not attempt an unconfirmed 'status'/'hasAssets'
       facet request as a faster alternative to the client-side tally implemented here.

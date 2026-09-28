@@ -291,6 +291,16 @@ to do with the already-produced trend-log/breakdown files.
   conservative 100 and always follows `nextLink` until absent, so an unconfirmed server-side cap
   cannot cause a silently truncated pull - but a tenant with a very large single domain should
   confirm actual page-size behavior in a pilot tenant before assuming 100 is optimal for runtime.
+  **Re-grounded 2026-09-28** (Microsoft Learn MCP, re-fetched against the pinned
+  `2026-03-20-preview` API version this scenario uses): `top`'s reference entry still states only
+  "The number of result items to return" with no ceiling - genuinely still undocumented, not a
+  guess. The same fetch surfaced one previously-undocumented, directly relevant fact worth
+  recording: `Terms - List` now documents a **rate limit of 100 requests per 20-second window** for
+  this API version - not present on the `2025-09-15-preview` reference. `-PageSize 100` (this
+  scenario's default) keeps a single-domain pull well inside that window at any realistic glossary
+  size; a future revision touching multiple `-DomainIds` in a tight loop should be aware a large
+  fan-out could approach the limit and may want a 429 backoff, which this script does not currently
+  implement.
 - **`Terms - Get Facets`' `facets[].name` values are not enumerated in Microsoft's reference** -
   only a worked `owner` example exists. This scenario deliberately does not attempt an unconfirmed
   `status` or `hasAssets` facet request to short-circuit the client-side tally (`design.md` §6) -
