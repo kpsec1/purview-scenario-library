@@ -8639,7 +8639,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   attribution — Exchange Online has no cmdlet for that action to audit) is untouched by this pass and
   remains open.
 - [x] **Maintenance pass — closed the `scan-azure-synapse-and-classify` `resourceTypes` VERIFY** —
-  commit PENDING — 2026-09-28. Re-grounded via the Microsoft Learn MCP tool (reachable this run,
+  commit `7a6f247` — 2026-09-28. Re-grounded via the Microsoft Learn MCP tool (reachable this run,
   unlike the original build and its follow-up grounding passes, which recorded `EGRESS_BLOCKED`): a
   direct fetch of `register-scan-synapse-workspace`'s own "Set up a scan by using an API" section
   confirms the PascalCase `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` key
