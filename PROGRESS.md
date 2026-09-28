@@ -3535,7 +3535,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `priority-cleanup-sharepoint-onedrive` KeyQL-exclusion-parity VERIFY** -
-  commit `TBD` - 2026-09-28. Maintenance pass: closed the open
+  commit `16a0a68` - 2026-09-28. Maintenance pass: closed the open
   VERIFY asking whether the Exchange-specific priority cleanup KeyQL exclusions (`SenderAuthor`,
   `SubjectTitle`, `(c:c)`, `(c:s)` unsupported in a `ContentMatchQuery`) also apply to SharePoint/
   OneDrive priority cleanup. Grounded via the Microsoft Learn MCP: full fetches of both
