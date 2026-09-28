@@ -3277,6 +3277,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   its reference page documents only a 200 OK success shape, so `custom-process-lineage`'s
   existence-check treats any non-success response as "does not exist yet" rather than assuming 404
   specifically. Functionally safe either way (see `README.md` §11) but not confirmed.
+  **Re-grounded 2026-09-28** (Microsoft Learn MCP, maintenance pass): re-fetched the REST reference
+  page directly - it still documents only `200 OK` (`AtlasEntityDef`) and a catch-all
+  `Other Status Codes` -> `AtlasErrorResponse` for everything else, no explicit not-found code.
+  Cross-checked the surface this build hadn't previously checked: the .NET, Java, and JS/TS SDK
+  docs for the equivalent `TypeDefinition.GetEntityByName`/`GetEntityByNameAsync` methods (all four
+  language bindings). Every one exposes only a generic `RequestFailedException`/`HttpResponse`
+  ("service returned a non-success status code") with no documented status-code value or
+  not-found-specific exception type. Remains genuinely undocumented across both the REST reference
+  and every SDK wrapper Microsoft Learn indexes; not resolvable without a pilot tenant. No file
+  changes needed - `custom-process-lineage/README.md` §11 and
+  `deploy/New-CustomProcessLineage.ps1`'s `.NOTES` already state this precisely and non-committally.
 - [ ] `scenarios/data-lineage/custom-process-lineage-multi-job-catalog/` (or fold into a future
   Data Lineage hardening pass) - extend the single custom Process type this scenario ships
   (`PurviewScenarioLibraryEtlProcess`, two attributes) into a richer, multi-job catalog: additional
