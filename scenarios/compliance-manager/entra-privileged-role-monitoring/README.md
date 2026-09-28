@@ -164,7 +164,7 @@ cmdlets - same throttling note as above applies to all three.
 |---|---|---|
 | Graph resource | `/auditLogs/directoryAudits` (`Get-MgAuditLogDirectoryAudit`) | `design.md` §2 |
 | Server-side filter | `category eq 'RoleManagement' and activityDateTime ge <start> and activityDateTime le <end>` | `design.md` §4 - the one compound-`and` shape grounded against a Microsoft worked example |
-| Monitored activities (client-side filter) | `Add member to role`, `Add member to role scoped over Restricted Management Administrative Unit`, `Add scoped member to role`, `Remove member from role`, `Remove member from role scoped over Restricted Management Administrative Unit`, `Remove scoped member from role` | Core Directory category only - PIM-mediated activation is out of scope, `design.md` §3/§9 |
+| Monitored activities (client-side filter) | `Add member to role`, `Add member to role scoped over Restricted Management Administrative Unit`, `Add scoped member to role`, `Add member to role outside of PIM (permanent)`, `Remove member from role`, `Remove member from role scoped over Restricted Management Administrative Unit`, `Remove scoped member from role` | Core Directory category plus one PIM-service out-of-PIM detection activity, `design.md` §3/§4a; the rest of PIM-mediated activation remains out of scope, `design.md` §9 |
 | Monitored roles (`-PrivilegedRoleDisplayNames`) | `Global Administrator`, `Compliance Administrator`, `Compliance Data Administrator`, `Security Administrator` | Matches `docs/rbac-model.md` §3's mapping table; parameterized, override for a different role population |
 | Default lookback window | 24 hours (`-StartDate`/`-EndDate`) | Shorter than the Compliance Manager sibling's 7-day default - matches this log's shorter worst-case retention, `design.md` §6 |
 | Idempotency | De-duplicate by the record's own documented `Id` (GUID) on every merge | Simpler than the Compliance Manager sibling's composite-hash key - `design.md` §5 |
@@ -343,11 +343,13 @@ CSVs' retention fate, and revoking the app registration's Graph permission grant
   shape turns out to differ - confirming or refuting this needs a pilot-tenant test (see
   `validate/Test-RoleAssignableGroupMembershipAuditTrail.ps1`'s manual checklist). See `reviews.md`
   round 3, Red Team finding 3 (revisited).
-- **VERIFY (pilot tenant or a future Microsoft Learn pass):** Microsoft's own "Security operations
-  for privileged accounts" guidance names a differently-suffixed activity ("Add member to role
-  (permanent)", tagged `Service = PIM`) for detecting roles assigned outside PIM - not confirmed to
-  be the same event as, or different from, the plain "Add member to role" this script filters on.
-  See `design.md` §4a and the deploy script's `.NOTES` - not resolved by guessing.
+- **RESOLVED (2026-09-27, Microsoft Learn pass):** Microsoft's own "Security operations for
+  privileged accounts" guidance names a differently-suffixed activity ("Add member to role
+  (permanent)", tagged `Service = PIM`) for detecting roles assigned outside PIM. A direct fetch of
+  Microsoft's canonical audit-activities reference confirmed this is shorthand for that page's own
+  `Add member to role outside of PIM (permanent)` activity - a genuinely distinct, separately-listed
+  activity from the plain "Add member to role" this script otherwise filters on. Both are now in
+  `$monitoredActivities`. See `design.md` §4a and the deploy script's `.NOTES`.
 - **This scenario is not a reinvention of Microsoft's own native "Roles are being assigned outside
   of Privileged Identity Management" PIM alert** - that alert requires **Entra ID P2 or Entra ID
   Governance** to function at all (Microsoft's own PIM alert configuration guidance documents a
@@ -402,7 +404,9 @@ CSVs' retention fate, and revoking the app registration's Graph permission grant
    `Microsoft.Graph.Reports` module) - <https://learn.microsoft.com/powershell/module/microsoft.graph.reports/get-mgauditlogdirectoryaudit>
 6. Microsoft Entra data retention (7 days Free / 30 days P1-P2 for audit logs) - <https://learn.microsoft.com/entra/identity/monitoring-health/reference-reports-data-retention>
 7. Microsoft Entra audit log categories and activities (Core Directory RoleManagement: "Add member
-   to role" / "Remove member from role"; PIM RoleManagement activity family) - <https://learn.microsoft.com/entra/identity/monitoring-health/reference-audit-activities>
+   to role" / "Remove member from role"; PIM RoleManagement: "Add member to role outside of PIM
+   (permanent)", confirmed distinct from the Core Directory activities - the source resolving
+   reference 13's discrepancy) - <https://learn.microsoft.com/entra/identity/monitoring-health/reference-audit-activities>
 8. Manage audit log retention policies (Purview Audit (Premium) default 1-year retention for the
    `AzureActiveDirectory` workload) - <https://learn.microsoft.com/purview/audit-log-retention-policies>
 9. targetResource resource type (`type`/`displayName` per target, including `Role`) - <https://learn.microsoft.com/graph/api/resources/targetresource>
@@ -415,8 +419,9 @@ CSVs' retention fate, and revoking the app registration's Graph permission grant
     native "Roles are being assigned outside of Privileged Identity Management" High-severity
     alert, and the P2/Governance licensing gate on it) - <https://learn.microsoft.com/entra/id-governance/privileged-identity-management/pim-how-to-configure-security-alerts>
 13. Security operations for privileged accounts in Microsoft Entra ID (the differently-suffixed
-    "Add member to role (permanent)" detection guidance underlying this scenario's §11 VERIFY item)
-    - <https://learn.microsoft.com/entra/architecture/security-operations-privileged-accounts>
+    "Add member to role (permanent)" detection guidance, grounded against reference 7 as the same
+    activity as "Add member to role outside of PIM (permanent)" and now included in
+    `$monitoredActivities`) - <https://learn.microsoft.com/entra/architecture/security-operations-privileged-accounts>
 14. Use Microsoft Entra groups to manage role assignments (role-assignable groups; membership
     governance is expected to happen at the group level; 500 role-assignable group maximum per
     tenant - grounds the companion script's discovery design) - <https://learn.microsoft.com/entra/identity/role-based-access-control/groups-concept>

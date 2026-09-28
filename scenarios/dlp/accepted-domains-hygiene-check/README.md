@@ -244,10 +244,12 @@ run cadence - this is a same-day-actionable signal, not a periodic report to bat
 3. **If not legitimate or intent cannot be confirmed** - this is a credential-compromise or
    insider-action indicator. Attempt attribution via `-IncludeAuditAttribution` (covers `DomainType`/
    `Default` changes on an already-accepted domain only - see §11's limit on attributing the
-   domain-addition event itself) and Microsoft Entra ID's own directory audit log (`Add verified
-   domain`/`Add unverified domain` activities, §11) for the actual addition event. Escalate to the
-   identity/security team; consider revoking recently-issued admin credentials with domain-management
-   rights pending investigation.
+   domain-addition event itself) and, for the actual addition/removal event, the **Microsoft Entra
+   audit log** directly (Entra admin center or Graph `auditLogs/directoryAudits`) filtered to the
+   `DirectoryManagement` category's `Add verified domain`/`Add unverified domain`/`Remove verified
+   domain`/`Remove unverified domain` activities - **not** `Search-UnifiedAuditLog`, which does not
+   expose those events (§11). Escalate to the identity/security team; consider revoking
+   recently-issued admin credentials with domain-management rights pending investigation.
 4. **Document** - the findings JSON and drift-log CSV are the evidentiary record for both directions of
    this workflow.
 
@@ -296,17 +298,33 @@ nothing tenant-side to undo.
   this scenario's own testing (§7) must add/remove test domains through the admin center, not
   PowerShell; (2) this script **cannot attribute** a `DomainAddedSincePreviousRun`/
   `DomainRemovedSincePreviousRun` finding to a specific admin action via `Search-UnifiedAuditLog`'s
-  `ExchangeAdmin` record type - there is no such Exchange admin event for a cloud tenant. The more
-  likely attribution source (Microsoft Entra ID's `Add verified domain`/`Remove verified domain`
-  `DirectoryManagement` audit activities) is confirmed to exist by name but its exact
-  `Search-UnifiedAuditLog`-queryable `Operations` value is not confirmed by this build - see
-  `design.md` §5. Tracked as a follow-up in `PROGRESS.md`, not guessed at.
-- **`Set-AcceptedDomain` audit-log attribution (`-IncludeAuditAttribution`) is a VERIFY, not a
-  confirmed capability.** Exchange Online's default admin-audit-logging behavior generally records
-  `Set-`/`New-`/`Remove-` cmdlet executions under `RecordType ExchangeAdmin` by cmdlet name, but no
-  Microsoft-published worked example independently confirms `Set-AcceptedDomain` specifically appears
-  this way. Confirm against a pilot tenant before relying on this switch's output for an incident
-  investigation - see `design.md` §5.
+  `ExchangeAdmin` record type - there is no such Exchange admin event for a cloud tenant.
+  **Confirmed 2026-09-27** (Microsoft Learn MCP): `Search-UnifiedAuditLog` cannot substitute for this
+  either. Microsoft Entra ID's `Add verified domain`/`Remove verified domain`/`Add unverified
+  domain`/`Remove unverified domain` `DirectoryManagement` activities belong to the separate Microsoft
+  Entra audit log (Entra admin center / Graph `auditLogs/directoryAudits`); the Microsoft 365 unified
+  audit log's own domain-event reference (`purview/audit-log-activities`, "Directory administration
+  activities") exposes only the differently-named, coarser `Add domain to company.`/`Remove domain
+  from company.` (no verified/unverified distinction) and `Verify domain.` (one-way; no "unverify"
+  event). None of the four Entra-native names are queryable via `Search-UnifiedAuditLog`. Attributing
+  a domain add/remove therefore requires querying the **Microsoft Entra audit log directly**, not
+  `Search-UnifiedAuditLog` - out of scope for this script, which is an Exchange Online PowerShell tool
+  by design (§7 non-goals). See `design.md` §5.
+- **`Set-AcceptedDomain` audit-log attribution (`-IncludeAuditAttribution`) - VERIFY closed 2026-09-28
+  (Microsoft Learn MCP, maintenance pass).** No Microsoft-published worked example names
+  `Set-AcceptedDomain` specifically, but Microsoft's own "Audit log activities" reference states the
+  rule this cmdlet is measured against directly: *"Exchange administrator audit logging (which
+  Microsoft 365 enables by default) logs an event in the audit log when an administrator ... makes a
+  change in your Exchange Online organization ... by running a cmdlet in Exchange Online PowerShell.
+  The audit log doesn't record cmdlets that begin with the verbs Get-, Search-, or Test-."* The same
+  page's only other named exception is narrower still - internal Microsoft-datacenter/service-account
+  maintenance cmdlets, reportable to Microsoft Support via a DCR if found unaudited.
+  `Set-AcceptedDomain` is a customer-facing `Set-` cmdlet, not a `Get-`/`Search-`/`Test-` cmdlet and
+  not an internal-maintenance cmdlet - it falls under the default-audited rule, not either named
+  exception. This is the strongest grounding obtainable short of a pilot-tenant test or a worked
+  example naming this exact cmdlet, and this scenario now treats the `RecordType ExchangeAdmin`/
+  `Operations 'Set-AcceptedDomain'` shape as confirmed rather than merely the general default -
+  see `design.md` §5.
 - **`KnownDomains.json` and the baseline file are trusted inputs this script does not protect -
   restrict write access to both.** An actor able to write either file can suppress a finding
   entirely: adding a malicious domain to `KnownDomains.json` makes it pass as reviewed, and
@@ -346,10 +364,22 @@ nothing tenant-side to undo.
    `UserScopeFrom` - the trust-boundary mechanism this entire scenario protects - <https://learn.microsoft.com/purview/dlp-exchange-conditions-and-actions>
 6. Search-UnifiedAuditLog reference (`-RecordType`, `-Operations`, `-StartDate`/`-EndDate` parameters
    used by `-IncludeAuditAttribution`) - <https://learn.microsoft.com/powershell/module/exchangepowershell/search-unifiedauditlog>
+6a. Audit log activities reference (Microsoft Purview), "Exchange admin activities" section - the
+    verbatim default-logging rule (all Exchange Online PowerShell changes except `Get-`/`Search-`/
+    `Test-`-prefixed cmdlets and unnamed internal Microsoft-maintenance cmdlets) `Set-AcceptedDomain`
+    is measured against to close the §11 audit-attribution VERIFY - <https://learn.microsoft.com/purview/audit-log-activities#exchange-admin-activities>
 7. Audit activity reference (Microsoft Entra ID) - confirms `Add verified domain`/`Remove verified
    domain`/`Add unverified domain`/`Remove unverified domain`/`Update domain` exist as named
-   `DirectoryManagement`-category audit activities (exact `Search-UnifiedAuditLog` `Operations`
-   string not independently confirmed by this build - §11) - <https://learn.microsoft.com/entra/identity/monitoring-health/reference-audit-activities>
+   `DirectoryManagement`-category audit activities in the **Microsoft Entra audit log** specifically
+   (not the Microsoft 365 unified audit log - see source 9) - <https://learn.microsoft.com/entra/identity/monitoring-health/reference-audit-activities>
+8. `scenarios/dspm-for-ai/copilot-external-email-block/` - the originating scenario whose Red Team
+   review (`reviews.md`, finding 1) scoped this follow-up.
+9. Audit log activities reference (Microsoft Purview) - "Directory administration activities" table
+   confirms the Microsoft 365 unified audit log's actual `RecordType AzureActiveDirectory`
+   `Operations` strings for domain events (`Add domain to company.`/`Remove domain from
+   company.`/`Verify domain.`), independently different from and not a superset of source 7's
+   Entra-native activity names - the basis for §11's confirmed (not guessed) conclusion that those
+   names aren't `Search-UnifiedAuditLog`-queryable - <https://learn.microsoft.com/purview/audit-log-activities#directory-administration-activities>
 8. `scenarios/dspm-for-ai/copilot-external-email-block/` - the originating scenario whose Red Team
    review (`reviews.md`, finding 1) scoped this follow-up.
 9. `scenarios/data-estate-insights/classification-coverage-report/` - the sibling read-only reporting

@@ -151,3 +151,14 @@ No remaining Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`,
 `deploy/New-BusinessGlossary.ps1`, and `deploy/Remove-BusinessGlossary.ps1`. No Fail items were
 raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+## Maintenance addendum - 2026-09-27
+
+Closed the open `README.md` §11 VERIFY on the Business Domain Create/Update "required" fields
+(`systemData`/`thumbnail`/`domains`/`managedAttributes`, plus `id`/`parentId`) via a Microsoft
+Learn MCP re-grounding pass: the REST reference's Request Body table is confirmed to reuse the
+response `Domain` schema, so it over-marks response-only, server-computed fields as request-
+required - a documentation-generation artifact, not a real API constraint. Microsoft's own
+Disaster recovery for Unified Catalog article independently corroborates the minimal body this
+scenario already sends. No code or behavior change; `README.md` §11/§12 and the deploy script's
+`.NOTES` updated to record the closure and cite the exact evidence.

@@ -173,3 +173,16 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/New-CriticalDataElement.ps1`, `deploy/Remove-CriticalDataElement.ps1`, and
 `validate/Test-CriticalDataElement.ps1`. No Fail items were raised. This fragment meets the
 definition of done in `AGENTS.md` §9.
+
+---
+
+## Addendum (2026-09-27) - Microsoft Product Owner finding 1 closed
+
+The `entityType=DATACOLUMN`-vs-`CRITICALDATACOLUMN` open question (Microsoft Product Owner
+finding 1, and the matching `PROGRESS.md` VERIFY item) is now closed. A re-fetch of the Critical
+Data Elements Create/List/Delete Relationship reference pages (`api-version=2025-09-15-preview`)
+found the `EntityCategory` enum now lists `CRITICALDATACOLUMN` explicitly on all three pages,
+matching every worked example - there is no plain `DATACOLUMN` value in the enum. `README.md`,
+`design.md` §6, and the deploy/validate scripts were updated to send/expect `CRITICALDATACOLUMN`.
+No pilot-tenant confirmation was needed; the two previously-conflicting Microsoft Learn sources
+(worked examples and the formal enum) now agree.

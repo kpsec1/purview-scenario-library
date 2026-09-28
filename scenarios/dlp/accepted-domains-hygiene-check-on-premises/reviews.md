@@ -404,3 +404,24 @@ Both the deploy and validate script changes were re-tested after the fix, includ
 re-run to confirm replace-by-`RunId` idempotency held. One VERIFY carried forward rather than resolved
 by guessing: whether `-MakeDefault $true` clears the flag from the domain that previously held it
 (`README.md` §8/§11/§12). This follow-up meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Correction addendum - `-AdminAuditLogCmdlets` default-value VERIFY closed (maintenance pass, 2026-09-27)
+
+**Scope:** doc-and-script correction only, not a new four-lens round (no design surface changed).
+Closes the one open item this review's own Summary above named: "the default value of
+`-AdminAuditLogCmdlets` is not independently confirmed." A 2026-09-27 re-fetch of
+`Set-AdminAuditLogConfig`'s Microsoft Learn reference page (Microsoft Learn MCP) found its parameter
+now states **Default value: None** outright in its properties table - a fresh on-premises install
+audits no cmdlets by default; `*` (audit everything) is never on out of the box.
+
+- **Confirms, does not weaken, the Product Owner finding above.** That finding credited this scenario
+  for treating the default as a genuine unknown rather than an assumed `*`-audits-everything default -
+  the now-confirmed `None` default proves that caution was the correct call, not overcautious.
+- Updated `design.md` §2/§5, `README.md` §11/§12 (reference 6), and the deploy script's
+  comment-based help/`.NOTES`/runtime `Write-Warning` from VERIFY to RESOLVED. The operational
+  guidance (run `Get-AdminAuditLogConfig | Select-Object AdminAuditLogCmdlets` before relying on
+  `-IncludeAuditAttribution`'s output) is unchanged and still recommended, since an organization may
+  have configured a narrower list than `*` since their install.
+- No Fail. No new VERIFY introduced by this closure.

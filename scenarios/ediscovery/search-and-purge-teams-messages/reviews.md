@@ -78,7 +78,10 @@ No remaining Fix/Fail after resolution.
    - **Resolution:** Accepted as the correct trade-off per `AGENTS.md` §4 (never guess an unconfirmed
      cmdlet name) rather than a defect - flagged plainly in the deploy script's `.NOTES` and
      `design.md` §6 so a future maintainer knows to swap in a typed cmdlet once one is confirmed,
-     rather than assuming the current code is final.
+     rather than assuming the current code is final. **Update 2026-09-27:** re-grounded via the
+     Microsoft.Graph.Security v1.0 module's own cmdlet index - no typed cmdlet exists for this noun
+     beyond `Get-`, so the raw-HTTP call is confirmed as the only way to perform this action, not
+     merely an accepted placeholder. `README.md` §11 / `design.md` §6 updated accordingly.
 
 No remaining Fail.
 
@@ -166,3 +169,32 @@ Microsoft Learn (no invented cmdlets - the unconfirmed `$ref`-bind SDK cmdlet na
 and the corrected understanding that no Teams purge is reversible for the user-visible message is
 treated as this scenario's central safety constraint throughout, mirrored by the unconditional
 `-ConfirmPermanentDelete` gate in `Invoke-TeamsMessagePurge.ps1`.
+
+---
+
+## Correction addendum (2026-09-27, maintenance pass - no new four-lens round per `AGENTS.md` §6)
+
+The private-channel compliance-copy storage "conflict" referenced in items 2/6 above (Red Team,
+Microsoft Product Owner) and cited as an open VERIFY in `README.md` §11/`design.md` §4 has been
+**reconciled, not left open**: Microsoft documents it as a completed migration from a per-member
+mailbox model to a single dedicated group mailbox, confirmable per tenant/channel via
+`Get-TenantPrivateChannelMigrationStatus`. This is a doc/fact correction only - no script, policy,
+or architecture change - so it doesn't reopen either lens's verdict above; it tightens the
+Microsoft Product Owner lens's "honestly-flagged documentation conflict" finding from an unresolved
+gap to a resolved fact with a residual per-tenant migration check.
+
+## Correction addendum (2026-09-28, maintenance pass - no new four-lens round per `AGENTS.md` §6)
+
+The `-PurgeType`-affects-compliance-copy-timing question referenced in item 6 above (Microsoft
+Product Owner) and cited as an open VERIFY in `README.md` §11/`design.md` §7 has been **closed, not
+left open**: the `ediscoverySearch: purgeData` Graph reference - the authoritative source for the
+`purgeType` parameter itself - states that for `purgeAreas: teamsMessages`, either `purgeType`
+value results in permanent deletion, documenting no separate compliance-copy retention or
+hold-interaction behavior per value. This is a doc/fact correction only - no script, policy, or
+architecture change (`Invoke-TeamsMessagePurge.ps1` already required `-ConfirmPermanentDelete`
+unconditionally for both values, which this finding confirms rather than changes) - so it doesn't
+reopen the Microsoft Product Owner lens's verdict above; it tightens item 6's "flagged as an open
+question" finding from an unresolved gap to a resolved, cited fact. Two of the original four items
+in that finding remain open VERIFYs - the SDK cmdlet name and the `userSource` `DisplayName` shape
+(private-channel storage was separately reconciled above; `-PurgeType` timing is closed by this
+addendum).

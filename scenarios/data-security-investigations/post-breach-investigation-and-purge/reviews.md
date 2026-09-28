@@ -192,3 +192,22 @@ check on this addition only (the original round above is otherwise unchanged):
 No Fix/Fail raised by this addendum. `design.md` §6 (non-goals) and §5 (key decisions) updated to
 reflect the new parameter; a new `design.md` §8 in `audit/streaming-to-sentinel-or-management-api`
 (plus its README.md §8) cross-links back to it.
+
+## Correction addendum (2026-09-27)
+
+The RecordType VERIFY this scenario carried since its original build (Blue Team finding 3 above;
+🟦 Product Owner finding 5 above) is now resolved. This build re-grounded via the Microsoft Learn
+MCP tool (available this run) and direct-fetched the Office 365 Management Activity API schema
+page in full: its AuditLogRecordType enum documents value `333` as `DataSecurityInvestigation`
+("Events from Data Security Investigations in Microsoft Purview") - the same enum
+`Search-UnifiedAuditLog`'s `-RecordType` parameter consumes. This confirms, rather than
+contradicts, the value this scenario's original draft had independently guessed and then
+deliberately rejected during drafting (Blue Team finding 3: *"An initial pass at the audit script
+considered adding a guessed `-RecordType 'DataSecurityInvestigation'` value ... Rejected during
+drafting - no Microsoft Learn page states this value"*) - the right call at the time, now
+supersedable with a citation. `deploy/Export-DsiActivityAuditTrail.ps1` now passes `-RecordType
+DataSecurityInvestigation` alongside `-Operations` as a confirmed, cited defense-in-depth filter;
+`-Operations` remains the authoritative filter, since it is the officially documented DSI activity
+list. `README.md` §11/§12 (new reference 19) and `design.md` §5 updated to match. Doc-and-script
+correction only, scoped to this one previously-open VERIFY, per `AGENTS.md` §6 - no new four-lens
+review round was run, since no new design surface was introduced.

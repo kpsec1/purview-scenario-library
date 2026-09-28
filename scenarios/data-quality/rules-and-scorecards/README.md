@@ -277,14 +277,23 @@ reference: `./deploy/Remove-DataQualityRulesAndSchedule.ps1` removes the schedul
   example shows it as a pre-existing GUID with no documented endpoint to obtain one. Set up the
   connection once via the portal (§5 step 3); it persists and does not need to be recreated per rule
   deployment. Flagged as VERIFY/follow-up rather than fabricated - see `PROGRESS.md`.
-- **VERIFY - recurring (non-`RunOnce`) schedule trigger type.** The portal's own **Scheduled scans**
-  wizard visibly supports daily/weekly/monthly recurrence, but this build's grounding pass found only
-  the `RunOnce` trigger shape (`timezone`/`isScheduled`/`triggerTime`) in Microsoft's published REST
-  examples for the Schedule object - no `Recurrence` type or frequency/interval fields were
-  independently confirmed, unlike Data Map's Scans trigger, which documents `Hour`/`Day`/`Week`/`Month`
-  explicitly. This scenario's script schedules a single one-time run; for an ongoing cadence, either
-  re-invoke the script periodically (e.g. from a pipeline's own scheduler) or use the portal wizard
-  until Microsoft documents the recurring shape.
+- **Confirmed (2026-09-27 maintenance pass, not merely unconfirmed): no recurring (non-`RunOnce`)
+  schedule trigger type is documented in the current REST schema.** The portal's own **Scheduled
+  scans** wizard visibly supports daily/weekly/monthly recurrence, but a direct fetch of the `Create
+  Schedule`/`Get Schedule` REST reference (api-version `2026-01-12-preview` - the same version this
+  scenario's script targets) shows the `Trigger` object's `type` property typed as a bare `string`
+  with no enumerated values, and its `TypeProperties` object formally defined with exactly three
+  fields - `isScheduled`, `timezone`, `triggerTime` - all `RunOnce`-specific. Unlike Data Map's Scans
+  trigger (which documents `Hour`/`Day`/`Week`/`Month` `Recurrence` explicitly) or Azure ML's
+  `TriggerBase` (a documented `Cron`/`Recurrence` discriminated union), this object's schema is not
+  published as a discriminated union at all - there is no second `type` variant with its own
+  `typeProperties` shape anywhere in the reference, example or Definitions section alike. This
+  scenario's script therefore schedules a single one-time run by design, not as a workaround for an
+  unconfirmed gap; for an ongoing cadence, either re-invoke the script periodically (e.g. from a
+  pipeline's own scheduler) or use the portal wizard, which likely re-issues `RunOnce` schedules (or
+  calls an undocumented endpoint) under the hood rather than exercising a public `Recurrence` trigger
+  type. Re-check this REST reference on a future API version if Microsoft ever documents a `Recurrence`
+  shape for this operation.
 - **VERIFY - `TypeMatch` rule's target-type selection mechanism.** See the deploy script's `.NOTES`:
   the confirmed `TypeProperties` schema has no field name for "the type this column is expected to
   be," despite Microsoft's conceptual documentation describing exactly that behavior. Shipped with

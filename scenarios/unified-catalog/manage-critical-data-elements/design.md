@@ -119,25 +119,25 @@ does not) is not directly confirmed by any Microsoft Learn page this build's gro
 §4's no-guessing standard. If the check finds nothing, that is reported as a `[WARN]`, not
 proof the underlying platform behavior itself doesn't exist - see `README.md` §7.
 
-## 6. The `entityType=DATACOLUMN` vs. `CRITICALDATACOLUMN` discrepancy
+## 6. `entityType=CRITICALDATACOLUMN` (resolved 2026-09-27)
 
-Every worked request/response example this build fetched for the Critical Data Elements **Create
-Relationship**, **List Relationships**, and **Delete Relationship** operations uses
-`entityType=CRITICALDATACOLUMN` in its sample URL - but the `EntityCategory` enum each of those
-same three reference pages formally documents has no `CRITICALDATACOLUMN` value at all; it lists
-`DATACOLUMN` instead (alongside `DOMAIN`, `DATAPRODUCT`, `TERM`, `DATAASSET`, `OBJECTIVE`,
-`KEYRESULT`, `CRITICALDATAELEMENT`, `CUSTOMMETADATA`, `ATTRIBUTE`, `ATTRIBUTEINSTANCE`,
-`WORKFLOW`, `CATALOGSNAPSHOT`, `WORKFLOWRUN`). This is a genuine, internally-inconsistent
-Microsoft Learn reference page, not a gap this build failed to research - the same
-`CRITICALDATACOLUMN`-in-example-vs-not-in-enum pattern repeats identically across all three
-operations, so it is not an isolated typo.
+An earlier build of this scenario flagged a discrepancy: every worked request/response example
+for the Critical Data Elements **Create Relationship**, **List Relationships**, and **Delete
+Relationship** operations used `entityType=CRITICALDATACOLUMN`, while the `EntityCategory` enum
+each page formally documented was read as listing `DATACOLUMN` instead, with no
+`CRITICALDATACOLUMN` value at all.
 
-This scenario's scripts send `entityType=DATACOLUMN` - the value the enum table actually
-declares as valid - reasoning that a formally-documented enum is more likely to reflect the real
-API contract than a copy-pasted example value. This is a judgment call, not a confirmed fact:
-`README.md` §11 states the discrepancy explicitly and names `CRITICALDATACOLUMN` as the fallback
-value to try first if a tenant rejects `DATACOLUMN`, rather than silently picking one and hiding
-the ambiguity.
+A re-fetch of all three reference pages (`api-version=2025-09-15-preview`) on 2026-09-27 found the
+`EntityCategory` enum now lists `CRITICALDATACOLUMN` explicitly (`DOMAIN`, `DATAPRODUCT`, `TERM`,
+`DATAASSET`, `OBJECTIVE`, `KEYRESULT`, `CRITICALDATAELEMENT`, `CRITICALDATACOLUMN`,
+`CUSTOMMETADATA`, `ATTRIBUTE`, `ATTRIBUTEINSTANCE`, `WORKFLOW`, `CATALOGSNAPSHOT`,
+`WORKFLOWRUN`) - there is no plain `DATACOLUMN` value in the enum on any of the three pages. The
+same enum, fetched directly from the Data Products **Create Relationship** reference page, is
+identical. `CRITICALDATACOLUMN` is therefore confirmed as both the documented enum value and the
+value every worked example uses - the two sources agree, and the discrepancy is closed.
+
+This scenario's scripts now send `entityType=CRITICALDATACOLUMN`, matching the confirmed enum and
+every worked example. `README.md` §11 no longer carries this as an open VERIFY.
 
 ## 7. Non-goals
 

@@ -213,10 +213,11 @@ reusable objects across retention, Insider Risk Management, and Communication Co
   this cmdlet, even though the portal's own flow implies per-policy location selection. Confirm the
   actual applied-locations behavior in a pilot tenant before a customer-facing deployment -
   `design.md` §4.
-- **`Get-AdaptiveScopeMembers`'s result-metadata property names aren't documented.** Microsoft's
-  reference describes the first returned element as carrying total-count/paging metadata but
-  doesn't name its properties; `validate/Test-AdaptiveScopeRetention.ps1`'s membership sample prints
-  it generically (`Format-List`) rather than guessing a property name.
+- **`Get-AdaptiveScopeMembers`'s result-metadata property names are confirmed via Microsoft's own
+  worked paging examples**, not a formal properties table: `TotalMemberCount`, `CurrentPageMemberCount`,
+  `IsLastPage`, and `Watermark` [[10]](#references). `validate/Test-AdaptiveScopeRetention.ps1`'s
+  membership sample prints these named values (plus a generic `Format-List` fallback in case a
+  future API revision adds or renames properties).
 - **Up to 5-day population delay, and it's not instant to change either.** A newly created or
   edited adaptive scope's membership isn't immediate - don't expect a same-day roster, and don't
   assume the portal's Scope details view and a live `Get-AdaptiveScopeMembers` query will agree
@@ -260,7 +261,7 @@ reusable objects across retention, Insider Risk Management, and Communication Co
 7. New-AdaptiveScope (-Name/-LocationType/-FilterConditions/-RawQuery) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-adaptivescope>
 8. New-RetentionCompliancePolicy (AdaptiveScopeLocation parameter set) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-retentioncompliancepolicy>
 9. New-RetentionComplianceRule (-RetentionDuration/-RetentionComplianceAction/-ExpirationDateOption) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-retentioncompliancerule>
-10. Get-AdaptiveScopeMembers (-Identity/-State/-PageResultSize; paging, don't use Unlimited on large scopes) - <https://learn.microsoft.com/powershell/module/exchangepowershell/get-adaptivescopemembers>
+10. Get-AdaptiveScopeMembers (-Identity/-State/-PageResultSize; paging, don't use Unlimited on large scopes; result-metadata property names `TotalMemberCount`/`CurrentPageMemberCount`/`IsLastPage`/`Watermark` confirmed in the page's own worked paging examples) - <https://learn.microsoft.com/powershell/module/exchangepowershell/get-adaptivescopemembers>
 11. Adaptive scopes - validating advanced queries via PowerShell (Get-Recipient/Get-Mailbox/Get-User with -Filter) - <https://learn.microsoft.com/purview/purview-adaptive-scopes#to-run-a-query-by-using-powershell>
 12. Remove-RetentionComplianceRule ("causes the release of all Exchange mailbox and SharePoint site retentions that are associated with the rule") - <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-retentioncompliancerule>
 13. Learn about retention policies and retention labels - Skype for Business / Exchange public folders don't support adaptive scopes - <https://learn.microsoft.com/purview/retention#adaptive-or-static-policy-scopes-for-retention>

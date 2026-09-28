@@ -40,7 +40,7 @@ temporary pause while a mapped column's quality is under review.
     -DefinitionPath './deploy/config/customer-id-cde.sample.json' -RemoveLinks
 ```
 
-Deletes every `entityType=DATACOLUMN` relationship the critical data element has
+Deletes every `entityType=CRITICALDATACOLUMN` relationship the critical data element has
 (`DELETE .../criticalDataElements/{id}/relationships`) - enumerated directly from the element's
 own current relationships, not re-derived from the definition file, so this also cleans up any
 column mapped outside this scenario's scripts (e.g. via the portal's own **+ Add column** button).

@@ -358,3 +358,40 @@ No Fix/Fail items from this lens.
 
 No Fix/Fail items from round 3. This fragment (the `PROGRESS.md` follow-up requesting per-country
 checksum/confidence tables for both opt-in bundles) meets the definition of done in `AGENTS.md` §9.
+
+## Review round 4 - 2026-09-27 - closing the "EU driver's license number" apostrophe VERIFY
+
+Scope: a maintenance-only pass (per `AGENTS.md`, post-build-phase) closing the `PROGRESS.md`
+follow-up asking whether the byte-exact SIT name is `"EU driver's license number"` or `"EU
+drivers license number"`. No tenant access; grounded entirely against Microsoft Learn.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Pass**
+
+- Re-fetched the bundle-index page directly: its own H1 title has no apostrophe ("EU drivers
+  license number"), confirming the VERIFY's premise, but its body prose consistently uses "EU
+  Driver's License Number" - a title-vs-body split explained by Learn page titles being derived
+  from the URL slug, not the product's own display name.
+- Found a stronger source for the actual portal display name: "Create custom sensitive
+  information types" lists the non-copyable EU-wide SITs as they appear in the portal's SIT
+  list, not as a page title, and spells this one `"EU driver's license number"` (apostrophe,
+  lowercase) - already cited as [[1]](design.md#references)/[[6]](README.md#references) in this
+  scenario, so no new citation was needed.
+- This matches the scenario's existing default exactly, so no code or default-parameter change
+  was required - only the VERIFY's status and supporting docs (`README.md` §11, `design.md` §4).
+- The broader byte-exact-casing VERIFY (word casing for the other two default/opt-in bundle
+  names) was deliberately left open rather than over-claimed as resolved - this round grounds the
+  apostrophe question only.
+
+No Fix/Fail items from this lens.
+
+### Summary - round 4
+
+| Lens | Verdict | Findings | Resolution |
+|---|---|---|---|
+| 🟦 Microsoft Product Owner | Pass | 0 (1 VERIFY sub-question closed via grounding) | - |
+
+Only the Microsoft Product Owner lens applies to this round (a documentation-grounding fix with
+no behavioral, security, or operability surface). This fragment - closing the apostrophe-spelling
+VERIFY - meets the definition of done in `AGENTS.md` §9.

@@ -234,7 +234,14 @@ life of the incident, matching the sibling scenario's own guidance for its searc
   shows up in `InPlaceHolds` for this specific (non-org-wide) case. This scenario's scripts treat a
   `grp`-prefixed, non-org-wide entry on a confirmed group/team mailbox as exactly that case - the only
   mechanism that could plausibly have produced it - and act on it, but the notation itself is disclosed
-  as unconfirmed rather than asserted. design.md §8.1.
+  as unconfirmed rather than asserted. design.md §8.1. **Re-grounded 2026-09-28** (Microsoft Learn MCP,
+  full fetch of the "Identify Exchange mailbox hold types in eDiscovery" reference): still genuinely
+  undocumented - the `Get-Mailbox` specific-location table names only the `mbx`/`skp` prefixes, and
+  `grp` appears solely in the separate `Get-OrganizationConfig` (org-wide) table on the same page. No
+  other Microsoft Learn page checked this pass (the `Set-RetentionCompliancePolicy`/
+  `Set-AppRetentionCompliancePolicy` references, `edisc-hold-manage`, `edisc-hold-delete-recoverable-
+  items`) states or contradicts this. Re-open only once a page documents the mailbox-scoped
+  Group-location notation explicitly or a pilot-tenant check confirms it directly.
 - **A `grp`-prefixed, non-org-wide `InPlaceHolds` entry on a mailbox that is NOT a group/team mailbox
   is reported as `UnrecognizedPolicyGuids`/`unrecognizedPolicyGuidsNotRemoved` and never acted on.** No
   Microsoft Learn citation this scenario carries explains that combination - treated as a disclosed

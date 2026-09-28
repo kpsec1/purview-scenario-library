@@ -198,6 +198,25 @@ Purview modules.
 > condition (a silent under-coverage gap), blocks their sign-in outright for lacking the required
 > license, or something else. Not independently confirmed during this build; do not assume either
 > behavior when sizing a partial-P2-coverage rollout.
+>
+> **Re-grounded 2026-09-28** (Microsoft Learn MCP): still genuinely undocumented for an
+> admin-authored policy. The Insider Risk recommendation page states only the feature-gate -
+> "Using this feature requires Microsoft Entra ID P2 licenses"
+> [[8]](#sources-microsoft-learn--re-verify-before-quoting) - and the Conditional Access overview's
+> license-requirements section states the same for risk-based conditions generally, with neither
+> page describing sign-in-time behavior for an in-scope user who lacks the license
+> [[10]](#sources-microsoft-learn--re-verify-before-quoting). The overview page does cover an
+> adjacent but distinct case - *tenant-wide* license expiry ("When the licenses required for
+> Conditional Access expire, policies aren't automatically disabled or deleted... you can't update
+> them") - which is not the same question as a single unlicensed user caught in an active policy's
+> scope. The closest documented precedent is Microsoft's own **managed** "Risky sign-in MFA" policy,
+> which explicitly caps its auto-assigned security group to users who hold a P2 license rather than
+> evaluating the condition tenant-wide
+> [[12]](#sources-microsoft-learn--re-verify-before-quoting) - suggestive that Microsoft's own
+> tooling treats P2 as a scoping gate, not a block condition, but this is documented only for that
+> specific Microsoft-managed policy and is never generalized to admin-authored policies using the
+> Insider Risk condition. Continue to disclose this as an open, undocumented behavior rather than
+> assuming either (a) or (b) above.
 
 **Cost note for a CISO conversation:** unlike the Defender for Endpoint + Intune adjacency in §7
 (which can be a materially *cheaper* entry point than E5-gated Purview controls), this adjacency

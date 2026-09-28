@@ -98,8 +98,8 @@
     after the data source and scan objects are created/updated.
 
 .PARAMETER ApiVersion
-    Data Map REST API version to pin. Defaults to '2023-09-01', confirmed current for the Scans
-    object at the time of this build (see README.md Section 11 VERIFY for the sibling endpoints).
+    Data Map REST API version to pin. Defaults to '2023-09-01', confirmed current for the Scans,
+    Data Sources, and Triggers objects (see README.md Section 11).
 
 .PARAMETER WhatIf
     Standard PowerShell ShouldProcess dry-run. Reports every REST call that would be made without
@@ -125,12 +125,14 @@
     full scan.
 
 .NOTES
-    VERIFY before production use (see README.md Section 11 for full detail): the Data Sources and
-    Triggers REST body shapes were reconstructed from the confirmed Scans - Create Or Replace
-    endpoint's path pattern and API version, the official @azure-rest/purview-scanning JS SDK type
-    definitions, and the Az.Purview PowerShell module's parameter signatures - their own canonical
-    REST reference pages returned fetch errors in this build's environment. Confirm against a pilot
-    tenant or the OpenAPI spec before relying on this in production.
+    RESOLVED (2026-09-28, see README.md Section 11 for full detail): the Data Sources and Triggers
+    REST body shapes below were originally reconstructed from the confirmed Scans - Create Or
+    Replace endpoint's path pattern and API version, the official @azure-rest/purview-scanning JS
+    SDK type definitions, and the Az.Purview PowerShell module's parameter signatures, because their
+    own canonical REST reference pages returned fetch errors in the original build's environment.
+    Both pages (Data Sources - Create Or Replace; Triggers - Create Or Replace) were since
+    direct-fetched via the Microsoft Learn MCP tool and confirm the shapes already used below -
+    no script change required.
 
     CORRECTED (2026-09-04, backported from scenarios/data-map/scan-azure-sql-managed-instance-and-
     classify/, whose build independently direct-fetched the canonical Scan Result reference pages
@@ -143,6 +145,12 @@
     Sources (Microsoft Learn, verify before production use):
     - Scans - Create Or Replace (API version 2023-09-01, confirmed body schema):
       https://learn.microsoft.com/rest/api/purview/scanningdataplane/scans/create-or-replace
+    - Data Sources - Create Or Replace (confirmed AzureSqlDatabaseDataSource/AzureSqlDatabaseProperties
+      body schema, direct-fetched 2026-09-28):
+      https://learn.microsoft.com/rest/api/purview/scanningdataplane/data-sources/create-or-replace
+    - Triggers - Create Or Replace (confirmed properties.recurrence/TriggerRecurrence body schema,
+      direct-fetched 2026-09-28):
+      https://learn.microsoft.com/rest/api/purview/scanningdataplane/triggers/create-or-replace
     - Scan Result - Run Scan (confirmed the POST .../:run?runId=... shape, direct-fetched during the
       Azure SQL Managed Instance sibling scenario's build):
       https://learn.microsoft.com/rest/api/purview/scanningdataplane/scan-result/run-scan

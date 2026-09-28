@@ -92,7 +92,7 @@ Four Microsoft-provided trainable classifiers are combined as OR conditions:
 | Classifier | What it detects | Documented expected volume [[8]](#references) |
 |---|---|---|
 | Discrimination | Explicit discriminatory language (particularly sensitive to language targeting Black/African American communities relative to other groups, per Microsoft's own classifier definition) | Low |
-| Harassment | Offensive content targeting race, color, religion, national origin - also labeled "Targeted harassment" on some Microsoft Learn pages and in the portal's Filters UI (§11 VERIFY - a documented naming inconsistency, not this scenario's error) | Low |
+| Harassment | Offensive content targeting race, color, religion, national origin - still labeled "Targeted harassment" on some current Microsoft Learn pages (the Get-started policy workflow, the solution overview's template list, condition-builder examples), though the classifier-definitions page and the `communication-compliance-policies` policy-settings table both now use "Harassment" (re-grounded 2026-09-28; the live portal UI label itself remains an open §11 VERIFY - a documented naming inconsistency, not this scenario's error) | Low |
 | Profanity | Profane content likely to offend most people | Medium |
 | Threat | Content aimed at committing violence or physical harm to a person or property | Low |
 

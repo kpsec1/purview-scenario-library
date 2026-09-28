@@ -90,14 +90,25 @@ Microsoft's own data-source table for this exact workflow [[2]](#references):
 
 A separate, deeper Microsoft Learn page on Teams content storage describes private-channel storage
 differently - "messages sent in a private channel are stored in the Exchange Online mailboxes of
-**all members** of the private channel" [[3]](#references) - which does not obviously match "a
-dedicated mailbox for each private channel" from the purge-workflow page. Both pages are current
-(non-retired); this build did not find a third source reconciling them. **VERIFY (pilot tenant or a
-future Microsoft Learn pass):** whether a private channel's compliance copies live in one dedicated
-mailbox, in every member's own mailbox, or both - flagged inline in `README.md` §11 rather than
-guessed. Until resolved, treat a private-channel target as needing per-member verification via the
-`Get-TeamChannelUser` membership-lookup procedure Microsoft documents for the equivalent
-private-channel-search workflow [[3]](#references), not just the "dedicated mailbox" claim alone.
+**all members** of the private channel" [[3]](#references) - which at first reading does not match
+"a dedicated mailbox for each private channel" from the purge-workflow page [[1]](#references).
+**Reconciled (2026-09-27, Microsoft Learn):** this is not a genuine ambiguity between two current
+sources but a documented **migration**, and [[3]](#references) itself is internally inconsistent
+about it - its own "eDiscovery of private and shared channels" section already says compliance
+copies "go to the dedicated private channel mailbox," while the older data-source table on the same
+page (the sentence quoted above) still describes the pre-migration behavior. Microsoft's Teams
+private-channels reference states plainly: "Compliance copies of messages sent in a private channel
+are **now** delivered to the group mailbox (instead of mailbox of all private channel members)"
+[[12]](#references) - i.e. the per-member-mailbox model is the **legacy** behavior and the single
+dedicated (group) mailbox is the **current** one, matching [[1]](#references)'s data-source table.
+Microsoft's retention reference for Teams corroborates the same split by `RecipientTypeDetails`:
+`GroupMailbox` stores private-channel data "post migration," `UserMailbox` stores it "before the
+migration" [[13]](#references). A tenant's own migration completion is nonetheless a per-tenant
+fact, not a documentation one - confirm it with `Get-TenantPrivateChannelMigrationStatus`
+[[12]](#references) before assuming every private channel in scope has already moved to the
+dedicated-mailbox model; only a channel confirmed migrated is safe to target as a single mailbox.
+A channel not yet migrated still needs the per-member `Get-TeamChannelUser` lookup
+[[3]](#references) this section previously treated as the fallback for all private channels.
 
 This scenario's search-definition file takes each target mailbox as an explicit, pre-resolved SMTP
 address tagged with its `sourceType` (`OneToOneChat` / `GroupChat` / `StandardOrSharedChannel` /
@@ -136,13 +147,16 @@ the pattern Microsoft's own `Create searches` reference worked example demonstra
    example response shows when a search's sources are supplied explicitly rather than via a blanket
    scope [[6]](#references).
 
-**VERIFY (pilot tenant or a future Microsoft Learn/SDK pass):** the exact typed PowerShell cmdlet
-name for step 2's `$ref`-bind action (the Graph SDK's usual convention would produce something like
-`New-MgSecurityCaseEdiscoveryCaseSearchNoncustodialSourceByRef`, but this build found no page
-directly confirming that name for the v1.0 `Microsoft.Graph.Security` module). `deploy/
-New-TeamsMessagePurgeSearch.ps1` therefore calls the confirmed raw HTTP shape via
-`Invoke-MgGraphRequest` for that one step rather than guessing an unconfirmed cmdlet name, per
-`AGENTS.md` §4 - flagged in that script's own `.NOTES`.
+**Closed 2026-09-27** (Microsoft Learn MCP, module reference page): step 2's `$ref`-bind action has
+no typed PowerShell cmdlet. The full cmdlet index for the `Microsoft.Graph.Security` v1.0 module's
+`EdiscoveryCaseSearchNoncustodialSource` noun lists only `Get-` cmdlets (list/count); no
+`New-`/`Add-` variant exists for that noun at all, so the SDK's usual `-ByRef` naming convention was
+never generated for this specific action. (The module's only `New-` cmdlet in this area,
+`New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`, is the unrelated case-level "create the
+source object" operation already used in step 1.) `deploy/New-TeamsMessagePurgeSearch.ps1` calling
+the raw HTTP shape via `Invoke-MgGraphRequest` for step 2 is therefore confirmed correct, not a
+stand-in for a cmdlet that simply hasn't been found yet - flagged as resolved in that script's own
+`.NOTES`. [[14]](#references)
 
 **VERIFY (pilot tenant):** how a case-level `ediscoveryNoncustodialDataSource` object's `DisplayName`
 is populated for a `userSource` (a mailbox) - Microsoft's own worked example shows a `siteSource`'s
@@ -158,10 +172,14 @@ selected, because `-PurgeType Recoverable` is genuinely reversible there (Outloo
 Items). For Teams, §2/§3 established that **no** `-PurgeType` value is reversible for the
 user-visible message. `Invoke-TeamsMessagePurge.ps1` therefore requires `-ConfirmPermanentDelete`
 unconditionally, for both `-PurgeType Recoverable` and `-PurgeType PermanentlyDelete` - the switch
-still exists (it's a required Graph request property, and it plausibly still affects the compliance
-copy's own retention/hold-interaction timeline, which this build found no page confirming either
-way - a second, narrower VERIFY carried into `README.md` §11), but it is no longer, by itself, a
-safety gate the way it is for the mailbox sibling.
+still exists (it's a required Graph request property), but it is no longer, by itself, a safety
+gate the way it is for the mailbox sibling. **Grounded 2026-09-28** (Microsoft Learn MCP): the
+`ediscoverySearch: purgeData` Graph reference states that for `purgeAreas: teamsMessages`, either
+`purgeType` value results in permanent deletion - the two values are documented to behave
+identically for Teams, with no separate compliance-copy retention/hold-interaction branch
+described per value. This closes the narrower VERIFY previously carried into `README.md` §11:
+`-PurgeType` does not meaningfully differentiate Teams behavior for either the user copy or the
+compliance copy.
 
 ## 8. Key decisions
 

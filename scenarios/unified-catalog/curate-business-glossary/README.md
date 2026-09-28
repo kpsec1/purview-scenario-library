@@ -275,13 +275,22 @@ See `rollback.md` for the full staged procedure (unpublish → purge). Quick ref
   name-matching terms than fit in one page (`top`, capped at 50 by this script) could in principle
   miss an existing term past that page. This scenario's four-term glossary never approaches that
   limit; a much larger rollout should confirm pagination behavior first.
-- **VERIFY - Business Domain Create/Update "required" fields.** The formal REST reference marks
-  `systemData`, `thumbnail`, `domains`, and `managedAttributes` as required in the request body for
-  both operations - a claim that contradicts Microsoft's own worked examples (which omit several
-  of these) and ordinary REST semantics (a create call cannot require the caller to supply
-  server-computed system metadata like `systemData.createdAt`). This script sends the minimal,
-  practical body pattern used in Microsoft's Unified Catalog disaster-recovery article instead.
-  Confirm against a pilot tenant if a tenant's API instance rejects the minimal body.
+- **CLOSED 2026-09-27 (Microsoft Learn MCP, re-grounded) - Business Domain Create/Update
+  "required" fields.** The formal REST reference's auto-generated Request Body table marks
+  `id`, `parentId`, `systemData`, `thumbnail`, `domains`, and `managedAttributes` as
+  `Required: True` for both **Create** and **Update**
+  [[16]](#12-references) - including `id` and `parentId`, which is conclusive evidence this is a
+  documentation-generation artifact: the reference reuses the same `Domain` response schema for
+  the request body table, so every property of that schema is flagged "required" regardless of
+  whether the operation is a client-supplied create field or a server-computed response-only
+  field (a client cannot be required to supply the `id` a `POST` itself allocates). Microsoft's
+  own **Disaster recovery for Unified Catalog** article - production BCDR guidance, not a
+  placeholder example - independently confirms the minimal body works: its worked
+  `POST .../businessdomains` call sends only `name`, `type`, `status`, `description`, and
+  `managedAttributes: []`, omitting `id`, `parentId`, `systemData`, `thumbnail`, and `domains`
+  entirely [[3]](#12-references). This script's minimal-body pattern is correct as documented;
+  no code change needed. Re-open as a pilot-tenant VERIFY only if a specific tenant's API
+  instance is observed rejecting this minimal body in practice.
 - **This scenario does not link terms to data products, data assets, or columns.** That requires
   the target assets to already exist and the automation identity to also hold **Data Reader** on
   the assets' Data Map collection - a natural follow-up scenario once this library has a Data
@@ -309,6 +318,7 @@ See `rollback.md` for the full staged procedure (unpublish → purge). Quick ref
 13. Data governance billing frequently asked questions - unattached domains/data products aren't charged - <https://learn.microsoft.com/purview/data-governance-billing-faq>
 14. Migrate governance private endpoints from classic portal to Microsoft Purview portal - the two API endpoint hosts - <https://learn.microsoft.com/purview/data-governance-private-endpoints-migrate>
 15. Purview Unified Catalog REST API - Terms operation group (Create/Update/Delete/Get/List/Query/AddRelatedEntity/ListRelatedEntities/Count) - <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/terms?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
+16. Purview Unified Catalog REST API - Business Domain - Create (Request Body table, auto-generated schema shared with the response `Domain` type) - <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/business-domain/create?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
 16. Purview Unified Catalog REST API - Business Domain operation group (Create/Update/Delete/Get/Enumerate) - <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/business-domain?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
 17. Unified Catalog API (Public Preview) overview - scope, GA-only coverage, preview API versions - <https://learn.microsoft.com/rest/api/purview/unified-catalog-api-overview>
 18. Tutorial: Authenticate for APIs - service principal setup, Unified Catalog role assignment, client-credentials token flow - <https://learn.microsoft.com/purview/data-gov-api-rest-data-plane>

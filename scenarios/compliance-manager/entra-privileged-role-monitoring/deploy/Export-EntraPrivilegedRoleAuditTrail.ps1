@@ -30,9 +30,12 @@
     separately-named "scoped member" form) - filtered client-side to targetResources entries of
     type "Role" whose displayName matches one of the four monitored role names
     (-PrivilegedRoleDisplayNames, parameterized, defaults to the four roles rbac-model.md Section 3
-    documents). It does NOT cover
-    Privileged Identity Management (PIM) eligible/time-bound activations, which log under a
-    different, larger family of activity names (e.g. "Add member to role in PIM completed
+    documents). It ALSO monitors the PIM-service RoleManagement activity "Add member to role
+    outside of PIM (permanent)" - Microsoft's own canonical audit-activities reference lists this as
+    a distinct, separately-named activity from plain "Add member to role" (2026-09-27 grounding,
+    design.md Section 4a; formerly an open VERIFY). It does NOT cover the rest of Privileged
+    Identity Management (PIM)'s eligible/time-bound activation family, which logs under a different,
+    much larger set of activity names (e.g. "Add member to role in PIM completed
     (permanent/timebound)") - see design.md Section 3 Non-goals and README.md Section 11 for why that
     family is out of scope for this fragment rather than guessed at.
 
@@ -116,19 +119,19 @@
     script does not assume ordering - it filters the full array by .Type at each step - but does
     assume at least one "Role"-typed entry exists on a matching row (README.md Section 11).
 
-    VERIFY (pilot tenant or a future Microsoft Learn pass): Microsoft's own "Security operations for
-    privileged accounts" guidance recommends detecting roles assigned outside PIM by filtering the
-    audit log to Service=PIM, Category=Role management, Activity type="Add member to role
-    (permanent)" - a differently-named activity from the plain "Add member to role" this script
-    filters on (Core Directory service). Whether these are the same underlying event surfaced with
-    two different display-name conventions, or genuinely distinct events, is not confirmed by any
-    source this build located. This script does NOT additionally filter on the "(permanent)"-suffixed
-    form - broadening $monitoredActivities to a wildcard match risked silently pulling in an
-    unrelated activity this build couldn't confirm the meaning of (AGENTS.md Section 4) - so a
-    directly-assigned role whose only audit trace uses that exact suffixed name would currently be
-    missed. Confirm against a pilot tenant (make a test direct - non-PIM - role assignment, then
-    inspect the raw activityDisplayName value) before treating this script's coverage of the
-    "outside-PIM" scenario as complete; see README.md Section 11.
+    RESOLVED 2026-09-27 (Microsoft Learn pass): Microsoft's own "Security operations for privileged
+    accounts" guidance recommends detecting roles assigned outside PIM by filtering the audit log to
+    Service=PIM, Category=Role management, Activity type="Add member to role (permanent)". A direct
+    fetch of Microsoft's canonical "Microsoft Entra audit log categories and activities" reference
+    confirms this is shorthand for that page's own "Add member to role outside of PIM (permanent)"
+    activity, listed under the Privileged Identity Management (PIM) service's RoleManagement
+    category - a separately-named, separately-documented activity from the plain "Add member to
+    role" this script otherwise filters on, which is listed only under the Core Directory service's
+    own RoleManagement category. They are confirmed to be two genuinely distinct audit activities,
+    not one event under two display conventions, so $monitoredActivities below now includes both.
+    See design.md Section 4a (updated in place; the "two readings" discrepancy this section
+    previously carried as open is resolved to reading (b) - a genuinely distinct event) and README.md
+    Section 11.
 
     THROTTLING: Get-MgAuditLogDirectoryAudit is a Microsoft Graph PowerShell SDK cmdlet, which
     implements automatic retry with exponential backoff honoring the Retry-After header for
@@ -144,14 +147,17 @@
       https://learn.microsoft.com/graph/api/directoryaudit-list
     - Get-MgAuditLogDirectoryAudit reference (-Filter/-All/-PageSize parameters, Microsoft.Graph.Reports module):
       https://learn.microsoft.com/powershell/module/microsoft.graph.reports/get-mgauditlogdirectoryaudit
-    - Microsoft Entra audit log categories and activities (Core Directory RoleManagement: all 6
-      monitored activities, headed by "Add member to role" / "Remove member from role"): https://learn.microsoft.com/entra/identity/monitoring-health/reference-audit-activities
+    - Microsoft Entra audit log categories and activities (Core Directory RoleManagement: 6 direct-
+      assignment activities headed by "Add member to role" / "Remove member from role"; PIM
+      RoleManagement: "Add member to role outside of PIM (permanent)", confirmed by direct fetch
+      2026-09-27 to be listed separately from the Core Directory activities above): https://learn.microsoft.com/entra/identity/monitoring-health/reference-audit-activities
     - Microsoft Entra data retention (7 days Free / 30 days P1-P2 for audit logs):
       https://learn.microsoft.com/entra/identity/monitoring-health/reference-reports-data-retention
     - A worked example combining `eq` and `ge` with `and` directly against /auditLogs/directoryAudits
       (grounds this script's -Filter composition): https://learn.microsoft.com/entra/identity/monitoring-health/scenario-health-conditional-access-block-policy
     - Security operations for privileged accounts in Microsoft Entra ID ("Roles assigned out of PIM"
-      detection guidance citing a differently-suffixed activity name - the unresolved VERIFY above):
+      detection guidance citing "Add member to role (permanent)", Service=PIM - grounded above as the
+      same activity as "Add member to role outside of PIM (permanent)"):
       https://learn.microsoft.com/entra/architecture/security-operations-privileged-accounts
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Low')]
@@ -188,17 +194,18 @@ function Assert-GraphSession {
 
 Assert-GraphSession
 
-# All 6 are documented Core Directory / RoleManagement activities for a DIRECT (non-PIM) role
+# The first 6 are documented Core Directory / RoleManagement activities for a DIRECT (non-PIM) role
 # membership change - the plain tenant-wide form plus its two scoped variants (Administrative-Unit-
-# restricted assignment, and the separately-named "scoped member" form). Deliberately does NOT
-# include a "(permanent)"-suffixed Service=PIM variant some Microsoft security-operations guidance
-# references for out-of-PIM detection - its exact relationship to "Add member to role" (identical
-# event under a different service tag, vs. a genuinely distinct event) is not confirmed by any
-# source this build located; see README.md Section 11 and design.md Section 4a rather than guessing.
+# restricted assignment, and the separately-named "scoped member" form). The 7th, "Add member to
+# role outside of PIM (permanent)", is a PIM-service RoleManagement activity confirmed (2026-09-27,
+# see .NOTES) to be a genuinely distinct event from plain "Add member to role" - it is Microsoft's
+# own detection signal for a role assigned permanently while bypassing PIM's eligible/active
+# workflow in a PIM-enabled tenant; see README.md Section 11 and design.md Section 4a.
 $monitoredActivities = @(
     'Add member to role',
     'Add member to role scoped over Restricted Management Administrative Unit',
     'Add scoped member to role',
+    'Add member to role outside of PIM (permanent)',
     'Remove member from role',
     'Remove member from role scoped over Restricted Management Administrative Unit',
     'Remove scoped member from role'

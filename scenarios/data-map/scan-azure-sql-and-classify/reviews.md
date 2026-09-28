@@ -196,3 +196,31 @@ were wrong (§11 VERIFY previously covered this - see `README.md` for the correc
   this pass, and not claimed to be.
 
 No Fix/Fail from this follow-up pass.
+
+---
+
+## Follow-up review - Data Sources / Triggers REST shape direct-fetch closure (2026-09-28)
+
+A targeted pass closing the Data Sources/Triggers half of the VERIFY item raised in the round
+above: the canonical **Data Sources - Create Or Replace** and **Triggers - Create Or Replace**
+REST reference pages, which returned fetch errors in the original build's environment, were
+successfully direct-fetched via the Microsoft Learn MCP tool this run.
+
+- **🔴 Red Team - Pass.** No new attack surface: this is a documentation-grounding closure, not a
+  code change. The script's request bodies were already correct; nothing behavioral changed.
+- **🔵 Blue Team - Pass.** No operational change.
+- **🎩 CISO - Pass.** No cost or licensing impact. Removes the one remaining "reconstructed, not
+  confirmed" caveat around this scenario's two most load-bearing API calls (registering the data
+  source and scheduling the recurring scan), raising confidence in the classification coverage
+  this scenario is meant to produce evidence for.
+- **🟦 Microsoft Product Owner - Pass (closes the finding).** Both operations are now confirmed by
+  direct fetch rather than three converging indirect sources: `kind: "AzureSqlDatabase"` and all
+  six `AzureSqlDatabaseProperties` fields (`serverEndpoint`, `resourceName`, `resourceGroup`,
+  `subscriptionId`, `location`, `collection`) match the schema exactly, as does the Triggers
+  `properties.recurrence`/`TriggerRecurrence` shape. One correction surfaced along the way: the
+  Data Sources operation is named **Create Or Replace**, not "Create Or Update" as this scenario's
+  `README.md`/`design.md` had been calling it (the `create-or-update` URL slug does not resolve) -
+  fixed in place. One narrower VERIFY item remains open in this scenario (the custom scan-rule-set
+  REST body shape) - not resolved by this pass, and not claimed to be.
+
+No Fix/Fail from this follow-up pass.

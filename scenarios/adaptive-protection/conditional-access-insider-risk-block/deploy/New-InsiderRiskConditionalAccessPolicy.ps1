@@ -31,8 +31,8 @@
           nested condition - confirmed independently on Microsoft Learn; reproduces the exact
           "B2B direct connect users / Service provider users / Other external users" exclusion
           Microsoft's own "Block access for users with insider risk" guide's Users step
-          documents - see design.md Section 6 and .NOTES for the exact grounding and the one
-          byte-level format detail (multi-value separator) not independently confirmed)
+          documents - see design.md Section 6 and .NOTES for the exact grounding, including the
+          multi-value separator format, VERIFY closed 2026-09-27)
         - conditions.insiderRiskLevels = -RiskLevels (Graph v1.0 conditionalAccessConditionSet
           property - confirmed independently on Microsoft Learn; distinct from, and NOT the same
           parameter as, the Purview DLP sibling's -SharedByIRMUserRisk GUID-based condition - see
@@ -136,18 +136,27 @@
     policy in the portal breaks this script's idempotency detection - documented as a known
     limitation in README.md Section 11, not silently worked around.
 
-    EXCLUDE-GUESTS-OR-EXTERNAL-USERS FORMAT: the conditionalAccessGuestsOrExternalUsers resource's
-    guestOrExternalUserTypes property is documented as a single, multi-valued String on the wire
-    (its JSON representation shows "guestOrExternalUserTypes": "String", not a string collection),
-    and its seven real enum members (excluding the server-only unknownFutureValue) are confirmed on
-    the conditionalAccessGuestOrExternalUserTypes enum reference. What is NOT independently
-    confirmed against a worked multi-value request/response example: the exact separator between
-    values when more than one is set (this script assumes comma, no space) and whether the
-    Microsoft Graph PowerShell SDK's typed Get-MgIdentityConditionalAccessPolicy read-back returns
-    that same raw comma-separated string or an already-split collection for this specific nested
-    property - ConvertTo-GuestOrExternalUserTypeArray (above) handles either shape rather than
-    assuming one. VERIFY against a pilot tenant before relying on this script's idempotency
-    (match/drift) detection for this one field in production - see README.md Section 11.
+    EXCLUDE-GUESTS-OR-EXTERNAL-USERS FORMAT (VERIFY closed 2026-09-27, Microsoft Learn MCP): the
+    conditionalAccessGuestsOrExternalUsers resource's guestOrExternalUserTypes property is
+    documented as a single, multi-valued String on the wire (its JSON representation shows
+    "guestOrExternalUserTypes": "String" - Edm.String, not a string collection like the sibling
+    conditionalAccessEnumeratedExternalTenants.members property, whose JSON representation shows
+    "members": ["String"] for comparison), and its seven real enum members (excluding the
+    server-only unknownFutureValue) are confirmed on the conditionalAccessGuestOrExternalUserTypes
+    enum reference. The exact separator was not independently confirmed against a worked example
+    for THIS specific property, but Microsoft Graph documents the identical "multi-valued
+    enumeration on a single String property" JSON shape for other resources (e.g. the
+    cloudLicensing subscription resource's tags/state properties, the cloudLicensing service
+    resource's assignableTo property) and states explicitly for each: "This property is a
+    multi-valued enumeration and the property can contain multiple values in a comma-separated
+    list." No Microsoft Learn source documents a different separator for any Graph property of
+    this shape. Combined with the property's Edm.String (non-collection) wire type - which the
+    Microsoft Graph PowerShell SDK's typed model classes are generated directly from - a raw,
+    comma-separated string, not an already-split collection, is what
+    Get-MgIdentityConditionalAccessPolicy's read-back returns for this property.
+    ConvertTo-GuestOrExternalUserTypeArray (above) still handles both shapes defensively (cheap
+    insurance against an SDK-side collection-splitting convenience this grounding pass did not
+    find evidence of), but the split-string branch is now the confirmed, not assumed, path.
 
     Sources (Microsoft Learn, verify before production use):
     - Block access for users with insider risk (portal steps, including the exact Users-step
@@ -167,6 +176,16 @@
       b2bCollaborationGuest/b2bCollaborationMember/b2bDirectConnectUser/otherExternalUser/
       serviceProvider/unknownFutureValue):
       https://learn.microsoft.com/graph/api/resources/enums#conditionalaccessguestorexternalusertypes-values
+    - cloudLicensing subscription / service resource types (analogous "multi-valued enumeration
+      on a single String property" JSON shape; both explicitly document the comma-separated-list
+      wire convention this script's multi-value separator assumption for guestOrExternalUserTypes
+      is grounded on by analogy):
+      https://learn.microsoft.com/graph/api/resources/cloudlicensing-subscription
+      https://learn.microsoft.com/graph/api/resources/cloudlicensing-service
+    - conditionalAccessEnumeratedExternalTenants resource type (members property; JSON
+      representation showing a true string *collection*, "members": ["String"], contrasted
+      against guestOrExternalUserTypes's single-String shape above):
+      https://learn.microsoft.com/graph/api/resources/conditionalaccessenumeratedexternaltenants
     - conditionalAccessPolicy resource type (state property: enabled/disabled/
       enabledForReportingButNotEnforced; conditions/grantControls properties):
       https://learn.microsoft.com/graph/api/resources/conditionalaccesspolicy
@@ -253,11 +272,14 @@ function Test-SameStringSet {
 }
 
 function ConvertTo-GuestOrExternalUserTypeArray {
-    # conditionalAccessGuestsOrExternalUsers.guestOrExternalUserTypes is documented as a single
-    # comma-separated flags String on the wire (Microsoft Learn JSON representation), but the
-    # Microsoft Graph PowerShell SDK's typed read-back for this nested, less-common property was
-    # not independently confirmed during this build to return that same raw string versus an
-    # already-split collection - handle both shapes rather than assuming one. See .NOTES.
+    # conditionalAccessGuestsOrExternalUsers.guestOrExternalUserTypes is a single, comma-separated
+    # flags String on the wire (Edm.String, not a collection - Microsoft Learn JSON
+    # representation), confirmed by analogy to other Graph resources documenting the identical
+    # shape as "a comma-separated list" (VERIFY closed 2026-09-27; see .NOTES). The Microsoft
+    # Graph PowerShell SDK's typed model classes are generated from this same Edm.String metadata,
+    # so Get-MgIdentityConditionalAccessPolicy's read-back is that same raw string, not an
+    # already-split collection - the collection branch below is defensive insurance, not the
+    # expected path.
     param($Value)
     if ($null -eq $Value) { return @() }
     if ($Value -is [string]) {
@@ -286,10 +308,10 @@ $desiredUsers = [ordered]@{
 if ($ExcludeUserIds.Count -gt 0) { $desiredUsers.excludeUsers = @($ExcludeUserIds) }
 if ($ExcludeGroupIds.Count -gt 0) { $desiredUsers.excludeGroups = @($ExcludeGroupIds) }
 if ($ExcludeGuestOrExternalUserTypes.Count -gt 0) {
-    # Comma, no space: the Microsoft Graph PowerShell SDK's own -BodyParameter examples for other
-    # flags-as-String properties elsewhere in this library's scripts use this convention; the
-    # exact separator was not independently confirmed against a worked example for THIS specific
-    # property - flagged in README.md Section 11 and .NOTES rather than asserted as certain.
+    # Comma, no space: confirmed by analogy (VERIFY closed 2026-09-27, see .NOTES) to other Graph
+    # resources documenting the identical "multi-valued enumeration on a single Edm.String
+    # property" shape as a comma-separated list - no Microsoft Learn source documents a different
+    # separator for any property of this shape.
     $desiredUsers.excludeGuestsOrExternalUsers = [ordered]@{
         guestOrExternalUserTypes = ($ExcludeGuestOrExternalUserTypes | ForEach-Object { $_.ToString() }) -join ','
     }

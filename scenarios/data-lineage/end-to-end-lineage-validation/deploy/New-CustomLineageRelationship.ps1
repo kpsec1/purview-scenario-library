@@ -96,10 +96,12 @@
       every POST) makes its own idempotency independent of the answer, but a production
       integration calling Relationship - Create directly, without this script's check first,
       should confirm the behavior.
-    - The exact qualifiedName string format Purview assigns to an azure_sql_table asset. This
-      script does not construct or guess it - the operator copies it from the asset's Overview
-      page in the portal (or resolves it via the Data Map search/GraphQL API) into the definition
-      file. See README.md Section 11.
+    - The qualifiedName scheme for an azure_sql_table asset is confirmed (mssql://<server-fqdn>/
+      <database>/<schema-or-path>/<table>, per the Discovery - Query REST reference below), but
+      this script still does not construct or guess the real per-asset value - the operator copies
+      it from the asset's Overview page in the portal (or resolves it via the Data Map search/
+      GraphQL API) into the definition file, since the exact schema/path segment is asset-specific.
+      See README.md Section 11.
 
     Sources (Microsoft Learn, verify before production use):
     - Create and get lineage relationships using the REST API (concepts, relationship types,
@@ -107,6 +109,9 @@
       https://learn.microsoft.com/purview/data-gov-api-create-lineage-relationships
     - Relationship - Create REST reference (API version 2023-09-01):
       https://learn.microsoft.com/rest/api/purview/datamapdataplane/relationship/create
+    - Discovery - Query REST reference (API version 2023-09-01; worked examples confirm the
+      mssql:// qualifiedName scheme for azure_sql_table):
+      https://learn.microsoft.com/rest/api/purview/catalogdataplane/discovery/query
     - Lineage - Get By Unique Attribute REST reference (API version 2023-09-01):
       https://learn.microsoft.com/rest/api/purview/datamapdataplane/lineage/get-by-unique-attribute
     - Tutorial: Authenticate for Microsoft Purview data-plane APIs (token acquisition, Data

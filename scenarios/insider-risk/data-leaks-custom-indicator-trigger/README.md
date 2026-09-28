@@ -257,7 +257,7 @@ without modification.
 
 | Setting | Value this scenario uses | Notes |
 |---|---|---|
-| Policy template | `Data leaks` | Same template as both siblings. Custom indicators are documented as usable with "any *Data theft* or *Data leaks* policies" - imprecise wording; this scenario scopes itself to the base template only. See §11 |
+| Policy template | `Data leaks` | Same template as both siblings. Confirmed (§11) that `Data leaks by priority users` also supports a custom indicator as its triggering event and `Data leaks by risky users` does not; this scenario scopes itself to the base template only |
 | Triggering mechanism | Custom indicator(s), imported via the Insider Risk Indicators (preview) connector | The third and final documented Data-leaks-template trigger mechanism this library builds |
 | Mandatory CSV column roles | A user-identifier column (any name) + an ISO 8601 event-time column (any name) | Column *names* are not fixed by Microsoft for this connector - a real difference from the HR-connector sibling's fixed 3-column schema |
 | Optional CSV column roles | A Number-typed threshold column; a Source column (with an exact-match `-RelatedValues` list) for multi-indicator-from-one-CSV | `deploy/Send-InsiderRiskIndicatorRecord.ps1` `-ThresholdColumn`/`-SourceColumn`/`-RelatedValues` |
@@ -355,12 +355,19 @@ revoking the app registration's certificate is not.
 
 ## 11. Known limitations & gotchas
 
-- **Microsoft's own wording for which policy templates support custom indicators is imprecise - this
-  scenario deliberately does not extend beyond the base `Data leaks` template.** The documentation
-  states custom indicators can be added to "any *Data theft* or *Data leaks* policies," which does not
-  clearly state whether this covers `Data leaks by priority users`/`Data leaks by risky users`, or only
-  `Data theft by departing users` among the "Data theft" family. **VERIFY (portal)** before assuming this
-  extends to a sibling template not built in this fragment (`design.md` §2 goal 7).
+- **Which policy templates support custom indicators — confirmed 2026-09-28, this scenario
+  deliberately still does not extend beyond the base `Data leaks` template.** One part of the
+  documentation states custom indicators can be added to "any *Data theft* or *Data leaks* policies,"
+  which alone did not clearly state whether this covers `Data leaks by priority users`/`Data leaks by
+  risky users`, or only `Data theft by departing users` among the "Data theft" family. A more precise
+  statement on the same "Configure policy indicators in Insider Risk Management" page's "Built-in
+  indicators vs. custom indicators" section resolves it: "You can only modify triggering events for
+  policies created from the *Data leaks* or *Data leaks by priority users* templates. Policies created
+  from all other templates don't have customizable triggering indicators or events." So
+  `Data leaks by priority users` **does** support a custom indicator as its trigger; `Data leaks by
+  risky users` and `Data theft by departing users` **do not**. Extending this scenario's pattern to
+  `Data leaks by priority users` is a valid future fragment (`design.md` §2 goal 7/§6), not attempted
+  here to keep this fragment's scope to one template.
 - **No documented confirmation of whether the connector's Source-column value matching is
   case-sensitive.** `deploy/Send-InsiderRiskIndicatorRecord.ps1` treats it as case-sensitive (the
   stricter, fail-safer assumption) - **VERIFY (pilot tenant)** before relying on a specific casing

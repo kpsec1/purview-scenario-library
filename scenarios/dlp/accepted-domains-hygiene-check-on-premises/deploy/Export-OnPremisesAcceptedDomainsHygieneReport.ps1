@@ -106,9 +106,10 @@
     parent scenario's -IncludeAuditAttribution, this DOES cover domain Added/Removed events - both
     New-AcceptedDomain and Remove-AcceptedDomain are real, on-premises-auditable cmdlets (design.md
     Sec 5), a genuine capability gap the on-premises side closes relative to cloud.
-    VERIFY (pilot tenant, or a future Microsoft Learn pass, before production reliance): the exact
-    DEFAULT value of -AdminAuditLogCmdlets (which cmdlets a fresh install audits out of the box) was
-    not confirmed by this build's grounding pass - see design.md Sec 2 and README.md Sec 11. Run
+    RESOLVED (2026-09-27 Microsoft Learn re-fetch, see design.md Sec 2 and README.md Sec 11): a
+    fresh on-premises install's DEFAULT value for -AdminAuditLogCmdlets is 'None' - no cmdlets are
+    audited out of the box. Set-AcceptedDomain/New-AcceptedDomain/Remove-AcceptedDomain are therefore
+    NOT covered unless the organization has explicitly configured -AdminAuditLogCmdlets. Run
     `Get-AdminAuditLogConfig | Select-Object AdminAuditLogCmdlets` first and confirm it includes
     Set-AcceptedDomain/New-AcceptedDomain/Remove-AcceptedDomain (or '*') before relying on this
     switch's output for an incident investigation.
@@ -148,9 +149,10 @@
 
 .NOTES
     VERIFY before production reliance (full detail: README.md Sec 11, design.md Sec 2/4):
-    - The default value of -AdminAuditLogCmdlets (whether a fresh on-premises install audits
-      Set-/New-/Remove-AcceptedDomain without explicit configuration) was not confirmed by this
-      build's grounding pass.
+    - (RESOLVED 2026-09-27) The default value of -AdminAuditLogCmdlets is 'None' - a fresh
+      on-premises install does NOT audit Set-/New-/Remove-AcceptedDomain (or anything else) without
+      explicit configuration. Still confirm the organization's actual configuration with
+      Get-AdminAuditLogConfig before relying on -IncludeAuditAttribution's output.
     - Which DomainType (Authoritative vs. InternalRelay) is "correct" for a shared-namespace hybrid
       domain depends on that domain's actual migration/coexistence state and is not resolved to a
       single rule by this script - a CrossEnvironmentMismatch WARN is not automatically a misconfig.
@@ -415,7 +417,7 @@ if ($IncludeAuditAttribution) {
         Write-Warning 'Search-AdminAuditLog is not available in this session. It is on-premises-Exchange-only (design.md Sec 2) - confirm the imported session is the on-premises Exchange remote session, not Connect-ExchangeOnline. Skipping audit attribution for this run.'
     }
     else {
-        Write-Warning 'VERIFY (pilot tenant): the DEFAULT value of -AdminAuditLogCmdlets (whether a fresh install audits these three cmdlets without explicit configuration) was not confirmed by this build - see README.md Sec 11 and design.md Sec 2. Run Get-AdminAuditLogConfig | Select-Object AdminAuditLogCmdlets to confirm coverage before relying on this output for an investigation. Also note the 90-day default -AdminAuditLogAgeLimit caps how far back this query can ever see, regardless of -AuditLookbackDays.'
+        Write-Warning 'The DEFAULT value of -AdminAuditLogCmdlets is "None" (confirmed via Microsoft Learn) - a fresh install audits none of these three cmdlets without explicit configuration. See README.md Sec 11 and design.md Sec 2. Run Get-AdminAuditLogConfig | Select-Object AdminAuditLogCmdlets to confirm the organization''s actual (non-default) coverage before relying on this output for an investigation. Also note the 90-day default -AdminAuditLogAgeLimit caps how far back this query can ever see, regardless of -AuditLookbackDays.'
         $auditEvents = @(Search-AdminAuditLog -Cmdlets 'Set-AcceptedDomain', 'New-AcceptedDomain', 'Remove-AcceptedDomain' `
             -StartDate ([datetime]::UtcNow.AddDays(-$AuditLookbackDays)) -EndDate ([datetime]::UtcNow))
         Write-Host "  Found $($auditEvents.Count) matching admin audit log record(s)." -ForegroundColor $(if ($auditEvents.Count -gt 0) { 'Yellow' } else { 'Gray' })

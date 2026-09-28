@@ -40,7 +40,7 @@ scripts only). Summary:
 | Licensing | **Microsoft 365 E5** or **Suite** (Adaptive Protection - built on Insider Risk Management + Data Lifecycle Management) | Same entitlement row as `dynamic-risk-dlp-enforcement` - `docs/licensing-matrix.md` §2, "Adaptive Protection" row. Not a new license requirement if that scenario is already deployed. |
 | Feature status | **Preview** as of this writing | Directly re-confirmed via `microsoft_docs_fetch` against the live page during this build: *"In preview, you can use this solution with Insider Risk Management..."* [[1]](#references). Unlike the Conditional Access insider-risk integration (re-verified GA elsewhere in this library), this one has **not** graduated - see §11. |
 | Pre-existing dependency | Adaptive Protection already turned on, with Elevated risk level defined and at least one IRM policy in scope | This scenario does not enable Adaptive Protection or configure IRM - see `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/README.md` §3/§5. |
-| Role to enable/disable the toggle | **Insider Risk Management** or **Insider Risk Management Admins** Purview role group | The toggle's own documentation page links to the Adaptive Protection permissions table for "Configure Adaptive Protection and update settings" [[1]](#references)[[3]](#references) - `docs/rbac-model.md` §4. VERIFY: whether the Data Lifecycle Management/Records Management role group is *also* accepted for this specific toggle (it lives under the Data Lifecycle Management solution settings UI, not the Insider Risk Management app) is not stated either way - see §11. |
+| Role to enable/disable the toggle | **Insider Risk Management** or **Insider Risk Management Admins** Purview role group | Re-grounded directly against the retention documentation's own "Dynamically mitigate the risk of accidental or malicious deletes" procedure, which states for this exact toggle: *"If your account has the [required permissions], you'll see an option to take you to the insider risk management solution where you can turn on and configure Adaptive Protection"* - linking, by name, to the same Adaptive Protection permissions table's "Configure Adaptive Protection and update settings" row [[1]](#references)[[2]](#references)[[3]](#references) - `docs/rbac-model.md` §4. No Data Lifecycle Management/Records Management role group is named anywhere in that procedure despite the toggle's UI location under the Data Lifecycle Management solution settings - see §11. |
 | Role for the audit-evidence scripts | **View-Only Audit Logs** or **Audit Logs** Exchange Online role | `Search-UnifiedAuditLog` is an Exchange Online cmdlet, not a Purview role group - `docs/rbac-model.md` §6. |
 | Auth (scripts only) | `Connect-ExchangeOnline` (certificate app-only preferred) | `docs/automation-surface.md` §3 |
 
@@ -231,12 +231,16 @@ relevant (independent hold or a Microsoft Support restore request) **before** di
   this scenario queries - Microsoft's own "Audit log activities" reference does not document one
   specifically for them (`design.md` §6). If a future grounding pass finds one, adding it would
   only narrow (not change) the result set.
-- **VERIFY (pilot tenant, before assuming only Insider Risk Management role members can toggle
-  this setting):** whether the Data Lifecycle Management/Records Management Purview role group is
-  *also* accepted for the toggle itself, since the control surfaces under the Data Lifecycle
-  Management solution settings UI rather than the Insider Risk Management app - Microsoft's own
-  page links only to the Adaptive Protection permissions table, which is framed around
-  *enabling Adaptive Protection*, not this specific downstream setting (§3).
+- **RESOLVED (re-grounded 2026-09-27, closing the prior VERIFY):** whether the Data Lifecycle
+  Management/Records Management Purview role group is *also* accepted for the toggle itself, since
+  the control surfaces under the Data Lifecycle Management solution settings UI rather than the
+  Insider Risk Management app. A direct re-fetch of the retention documentation's own procedure for
+  this exact toggle names the Adaptive Protection permissions table's "Configure Adaptive
+  Protection and update settings" row (**Insider Risk Management** or **Insider Risk Management
+  Admins**) as the "required permissions" gating it [[2]](#references)[[3]](#references) - no
+  Data Lifecycle Management/Records Management role group is mentioned anywhere in that procedure.
+  Treat the two Insider Risk Management role groups as the sole documented path unless a future
+  pilot-tenant test finds an undocumented DLM-role exception (§3).
 - **VERIFY (pilot tenant):** the exact `AuditData` field names (`Workload`, `ObjectId`,
   `SourceFileName`) `deploy/Export-AdaptiveProtectionPreservationEvidence.ps1` extracts are
   populated best-effort from the general Search-UnifiedAuditLog schema, not confirmed by a worked
@@ -250,8 +254,10 @@ relevant (independent hold or a Microsoft Support restore request) **before** di
    no self-service restore) - <https://learn.microsoft.com/purview/insider-risk-management-adaptive-protection>
 2. Learn about retention policies and retention labels - "Dynamically mitigate the risk of
    accidental or malicious deletes" (preview status, opt-in requirement, exact turn-on/off portal
-   steps, "not visible in the Microsoft Purview portal", eDiscovery-searchable) - <https://learn.microsoft.com/purview/retention#retention-policies-and-retention-labels>
-   - directly re-fetched (not search-snippet-only) during this build.
+   steps, "not visible in the Microsoft Purview portal", eDiscovery-searchable, and - re-fetched
+   again 2026-09-27 to close the role-group VERIFY - the "required permissions" link on the toggle
+   itself) - <https://learn.microsoft.com/purview/retention#dynamically-mitigate-the-risk-of-accidental-or-malicious-deletes>
+   - directly re-fetched (not search-snippet-only) during this build and re-verified 2026-09-27.
 3. Insider Risk Management permissions (role groups) - <https://learn.microsoft.com/purview/insider-risk-management-permissions>
 4. Audit log activities - Retention policy and retention label activities (Operation names) - <https://learn.microsoft.com/purview/audit-log-activities#retention-policy-and-retention-label-activities>
 5. Search-UnifiedAuditLog reference - <https://learn.microsoft.com/powershell/module/exchangepowershell/search-unifiedauditlog>
@@ -259,5 +265,7 @@ relevant (independent hold or a Microsoft Support restore request) **before** di
 7. `docs/rbac-model.md` §4 (Insider Risk Management/Adaptive Protection role groups), §6 (Exchange
    Online audit-search role dependency)
 
-> Re-verify all links, the preview status, and the permissions VERIFY item against current
-> Microsoft Learn before a customer-facing deployment.
+> Re-verify all links and the preview status against current Microsoft Learn before a
+> customer-facing deployment. The role-group question is resolved against documentation (§3/§11)
+> but, like any permissions claim in this library, is worth a pilot-tenant spot check before relying
+> on it operationally.

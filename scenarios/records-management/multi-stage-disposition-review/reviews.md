@@ -146,3 +146,18 @@ via the `MicrosoftDocs/office-docs-powershell` GitHub mirror) and the `dispositi
 conceptual documentation - with the two remaining genuine gaps (the `MultiStageReviewerMetadata` read-back
 property and `-ComplianceTagForNextStage`'s actual behavior) disclosed as VERIFY items rather than resolved
 by guessing, per `AGENTS.md` §4.
+
+---
+
+## Correction addendum (2026-09-27, maintenance pass - no new four-lens round per `AGENTS.md` §6)
+
+The `-ComplianceTagForNextStage` VERIFY referenced in finding 1/3 above (Microsoft Product Owner) and
+cited as open in `README.md` §11/`design.md` §5 has been **grounded, not left open**: Microsoft's file
+plan manager documents an identically-named `ComplianceTagForNextStage` import property ("the name of a
+replacement label to be applied at the end of the retention period"), and its "Relabeling at the end of
+the retention period" reference confirms the full mechanics. The Graph `labelToBeApplied` analog cited in
+finding 3 is now a corroborating source, not the primary grounding. This is a doc/fact correction only -
+the parameter stays opt-in (off by default) in the deploy script, so it doesn't reopen the Product Owner
+lens's Pass verdict; it tightens finding 1/3 from "documented-but-unexplained, closest analog only" to
+"confirmed via a same-name Microsoft-documented property." The `MultiStageReviewerMetadata` read-back
+property remains the one open VERIFY for this scenario.

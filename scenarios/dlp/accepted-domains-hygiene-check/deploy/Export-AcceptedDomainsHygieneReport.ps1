@@ -83,9 +83,11 @@
     'Set-AcceptedDomain' over the -AuditLookbackDays window and includes matching events in the
     findings report, best-effort. Does NOT attribute a domain Added/Removed drift event - Exchange
     Online has no New-/Remove-AcceptedDomain cmdlet to audit (design.md Sec 5); only DomainType/
-    Default changes on an already-existing accepted domain are in scope for this switch. VERIFY
-    (pilot tenant): whether Set-AcceptedDomain is independently confirmed to appear under this
-    RecordType/Operations pair - see design.md Sec 5 and README.md Sec 11.
+    Default changes on an already-existing accepted domain are in scope for this switch. Confirmed
+    2026-09-28 (Microsoft Learn, maintenance pass): Set-AcceptedDomain falls under the documented
+    default-audited-cmdlet rule (every Exchange Online PowerShell change except Get-/Search-/Test-
+    cmdlets and unnamed internal Microsoft-maintenance cmdlets) - see design.md Sec 5 and
+    README.md Sec 11/12 reference 6a.
 
 .PARAMETER AuditLookbackDays
     -IncludeAuditAttribution only: how many days back to query Search-UnifiedAuditLog. Defaults to 7.
@@ -112,17 +114,22 @@
     the last 7 days, overwrites the baseline, and appends/replaces today's drift-log rows.
 
 .NOTES
-    VERIFY before production reliance (full detail: README.md Sec 11, design.md Sec 5):
+    Audit-attribution grounding detail (full detail: README.md Sec 11, design.md Sec 5):
     - Set-AcceptedDomain's appearance under RecordType ExchangeAdmin / Operations
-      'Set-AcceptedDomain' in Search-UnifiedAuditLog is the general documented default for Exchange
-      admin cmdlets, not independently confirmed for this specific cmdlet by a Microsoft-published
-      worked example.
+      'Set-AcceptedDomain' in Search-UnifiedAuditLog - CONFIRMED 2026-09-28 (Microsoft Learn,
+      maintenance pass): no Microsoft-published worked example names this cmdlet specifically, but
+      the "Audit log activities" reference's documented default rule (every Exchange Online
+      PowerShell change is logged except Get-/Search-/Test--prefixed cmdlets and unnamed internal
+      Microsoft-maintenance cmdlets) covers it, since Set-AcceptedDomain is neither.
     - Domain Added/Removed drift events cannot be attributed to an admin/timestamp by this script -
       Exchange Online has no New-/Remove-AcceptedDomain cmdlet (both are on-premises-Exchange-only
-      per Microsoft's own applicability statements); the likely attribution source (Microsoft Entra
-      ID's "Add verified domain"/"Remove verified domain" DirectoryManagement audit activities) was
-      confirmed to exist by name but not confirmed queryable via Search-UnifiedAuditLog's Operations
-      filter by this build - not implemented for that reason, see design.md Sec 5.
+      per Microsoft's own applicability statements). Microsoft Entra ID's "Add verified domain"/
+      "Remove verified domain" DirectoryManagement audit activities were considered as a substitute
+      but are confirmed (2026-09-27, Microsoft Learn) NOT queryable via Search-UnifiedAuditLog: they
+      belong to the separate Microsoft Entra audit log, not the Microsoft 365 unified audit log this
+      cmdlet reads, which instead exposes only the differently-named "Add domain to company."/
+      "Remove domain from company." for RecordType AzureActiveDirectory. Correctly not implemented
+      in this switch for that reason - see design.md Sec 5 and README.md Sec 11.
 
     Sources (Microsoft Learn, verify before production use):
     - Get-AcceptedDomain reference: https://learn.microsoft.com/powershell/module/exchangepowershell/get-accepteddomain
@@ -310,7 +317,7 @@ else {
 $auditEvents = @()
 if ($IncludeAuditAttribution) {
     Write-Host "`nQuerying Search-UnifiedAuditLog for Set-AcceptedDomain events (last $AuditLookbackDays day(s))..." -ForegroundColor Cyan
-    Write-Warning 'VERIFY (pilot tenant): Set-AcceptedDomain is not independently confirmed to appear under RecordType ExchangeAdmin / Operations ''Set-AcceptedDomain'' by a Microsoft-published worked example - see README.md Sec 11 and design.md Sec 5. This does not attribute Added/Removed domain events - Exchange Online has no New-/Remove-AcceptedDomain cmdlet to audit.'
+    Write-Warning 'This does not attribute Added/Removed domain events - Exchange Online has no New-/Remove-AcceptedDomain cmdlet to audit. See README.md Sec 11 and design.md Sec 5.'
     $auditEvents = @(Search-UnifiedAuditLog -RecordType ExchangeAdmin -Operations 'Set-AcceptedDomain' `
         -StartDate ([datetime]::UtcNow.AddDays(-$AuditLookbackDays)) -EndDate ([datetime]::UtcNow))
     Write-Host "  Found $($auditEvents.Count) matching audit record(s)." -ForegroundColor $(if ($auditEvents.Count -gt 0) { 'Yellow' } else { 'Gray' })

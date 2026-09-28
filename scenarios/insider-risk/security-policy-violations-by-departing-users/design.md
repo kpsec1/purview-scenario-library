@@ -41,7 +41,11 @@ availability without the same notice as GA features.
    reached IRM's E5-equivalent entitlement via a narrower add-on (e.g., the standalone
    **Microsoft 365 E5 Insider Risk Management** add-on) does **not** get Defender for Endpoint for
    free and must budget for it separately - a genuine cost difference from the sibling scenario
-   that this design flags rather than glossing over.
+   that this design flags rather than glossing over. **Plan 1 is the confirmed minimum**: the two
+   indicator categories this template scores (malware/harmful-app installation, security-control
+   tampering) map to next-generation protection and tamper protection, both included in Plan 1 -
+   EDR, the capability gated to Plan 2, isn't required for either (`README.md` §3, resolved
+   2026-09-27; previously an open VERIFY).
 3. **Don't fabricate a policy-authoring or advanced-features API.** As with the sibling scenario,
    Insider Risk Management policy authoring has no PowerShell/Graph write surface
    (`docs/automation-surface.md` §6). This build additionally searched for a documented Graph or

@@ -73,16 +73,15 @@ different categories/services**, both under the `RoleManagement` audit category:
 | Family | Example activity names | Source service | This scenario's scope |
 |---|---|---|---|
 | **Core Directory** (direct/permanent assignment, non-PIM) | `Add member to role`, `Add member to role scoped over Restricted Management Administrative Unit`, `Add scoped member to role`, `Remove member from role`, `Remove member from role scoped over Restricted Management Administrative Unit`, `Remove scoped member from role` | Core Directory | **In scope** - this is what a Global Administrator (or anyone with `RoleManagement.ReadWrite.Directory`) triggers via `Add-EntraDirectoryRoleMember`/the Entra portal's direct "Add assignment" flow with no PIM eligibility step, at tenant scope or scoped to an administrative unit |
-| **Privileged Identity Management (PIM)** | `Add member to role in PIM completed (permanent)`, `...(timebound)`, `Add eligible member to role`, `Remove eligible member from role`, and roughly 30 more distinct activity names for request/approve/deny/expire/cancel lifecycle events | Privileged Identity Management (PIM) | **Out of scope for this fragment** - see §9 |
+| **Privileged Identity Management (PIM)** | `Add member to role in PIM completed (permanent)`, `...(timebound)`, `Add eligible member to role`, `Remove eligible member from role`, `Add member to role outside of PIM (permanent)`, and roughly 30 more distinct activity names for request/approve/deny/expire/cancel lifecycle events | Privileged Identity Management (PIM) | **One activity in scope** - `Add member to role outside of PIM (permanent)` specifically (Microsoft's own out-of-PIM detection signal, §4a); the rest of the PIM lifecycle family is **out of scope for this fragment** - see §9 |
 
-This scenario's `deploy/Export-EntraPrivilegedRoleAuditTrail.ps1` filters to exactly the six
-documented Core Directory activity names in the table above - the same level of precision the
-Compliance Manager sibling script applies to its own three operations (`AGENTS.md` §4: no
-invented or overbroad filters). All six are grounded directly against the same canonical
-`reference-audit-activities` Core Directory table - including the two scoped variants is
-completing coverage of an already-fully-documented activity family, not extending into
-unconfirmed territory (§4a discusses one genuinely unconfirmed adjacent activity name that was
-deliberately **not** added this same way).
+This scenario's `deploy/Export-EntraPrivilegedRoleAuditTrail.ps1` filters to the six documented
+Core Directory activity names in the table above, plus the one PIM-service activity grounded in
+§4a - the same level of precision the Compliance Manager sibling script applies to its own three
+operations (`AGENTS.md` §4: no invented or overbroad filters). All seven are grounded directly
+against the same canonical `reference-audit-activities` page - including the two Core Directory
+scoped variants is completing coverage of an already-fully-documented activity family, not
+extending into unconfirmed territory.
 
 ## 4. How the client-side role-name filter works (grounded against the documented schema)
 
@@ -109,25 +108,25 @@ for this specific activity was found to confirm either. Both extraction function
 array by `.Type` rather than indexing by position, and fail soft (return `$null`, surfaced as an
 empty CSV column) rather than throwing - see README.md §11's VERIFY item.
 
-## 4a. An unresolved naming discrepancy against Microsoft's own detection guidance (disclosed, not guessed past)
+## 4a. A naming discrepancy against Microsoft's own detection guidance - resolved 2026-09-27
 
 Microsoft's own **"Security operations for privileged accounts in Microsoft Entra ID"** guidance
 recommends detecting exactly this scenario's target risk ("roles assigned outside of PIM") by
 filtering the audit log to `Service = PIM`, `Category = Role management`, `Activity type = "Add
 member to role (permanent)"` - a **differently-named** activity from the plain `Add member to
-role` (Core Directory service) this scenario's script filters on. Two readings are both plausible
-from the public documentation: (a) this is the same underlying event, surfaced under a different
-service tag/display convention in that specific guidance article, or (b) it is a genuinely distinct
-event - e.g. specifically the "permanent, active, directly-created-through-the-PIM-blade" case, as
-opposed to a role assignment made through the classic Entra roles blade with no PIM involvement at
-all. No source this build located resolves which. Rather than widen `$monitoredActivities` to a
-wildcard/fuzzy match that would guess at the answer (`AGENTS.md` §4), this script's activity list
-stays exactly the six names directly confirmed on the canonical Core Directory table (§3), and this
-discrepancy is carried as an explicit VERIFY in `README.md` §11 and the deploy script's `.NOTES`.
-**Practical consequence if reading (b) is correct:** a role assigned permanently through the PIM
-blade itself (as opposed to the classic Entra roles blade) might log only under the `(permanent)`-
-suffixed name and be missed by this script's current filter - a real, bounded gap, not a
-theoretical one, and the reason this is flagged as a VERIFY rather than closed with an assumption.
+role` (Core Directory service) this scenario's script otherwise filters on. This was carried as an
+open VERIFY (two readings both plausible: the same underlying event under a different display
+convention, or a genuinely distinct event) until a direct fetch of Microsoft's canonical
+**"Microsoft Entra audit log categories and activities"** reference resolved it: that page lists
+`Add member to role outside of PIM (permanent)` as its own, separately-documented activity under
+the **Privileged Identity Management (PIM)** service's `RoleManagement` category - distinct from
+`Add member to role`, which appears only under the **Core Directory** service's own `RoleManagement`
+category. The guidance article's shorthand `"Add member to role (permanent)"` matches this PIM
+activity's name and its own description ("Roles assigned out of PIM" / "Users shouldn't be assigned
+roles outside of PIM") closely enough to identify the two as the same activity. **Resolved: these
+are two genuinely distinct audit activities, not one event under two display conventions** - reading
+(b) from the original VERIFY. `$monitoredActivities` in the deploy script now includes both; see §3
+and the deploy script's `.NOTES`/Sources for the citation.
 
 ## 4b. A separate gap this scenario originally did not close: role-assignable groups - now closed by a companion script (§10)
 

@@ -35,7 +35,6 @@
       - Microsoft Entra admin set on the managed instance itself (Set-AzSqlInstanceActiveDirectoryAdministrator)
       - "Directory Readers" Microsoft Entra role (or fine-grained Graph permissions) for the
         instance's managed identity - MI-specific; the single-database scenario does not need this
-      - Azure IAM "Reader" role for the Purview account on the managed instance resource
       - db_datareader for the Purview account as a Microsoft Entra external-provider database user
         (CREATE USER [<PurviewAccountName>] FROM EXTERNAL PROVIDER;)
       - Public endpoint enabled on the managed instance, and the NSG inbound rule allowing the
@@ -399,4 +398,4 @@ if ($RunNow) {
     }
 }
 
-Write-Host "`nDone. Remember: the SAMI-authenticated scan will fail at run time unless the Microsoft Entra admin, Directory Readers role, Azure IAM Reader grant, and SQL db_datareader grant documented in README.md Sections 3 and 5 are already in place." -ForegroundColor Cyan
+Write-Host "`nDone. Remember: the SAMI-authenticated scan will fail at run time unless the Microsoft Entra admin, Directory Readers role, and SQL db_datareader grant documented in README.md Sections 3 and 5 are already in place." -ForegroundColor Cyan

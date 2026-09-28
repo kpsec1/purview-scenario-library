@@ -125,14 +125,15 @@ Copilot-specific audit surface that doesn't exist) is the same "don't fabricate 
 
 ## 8. Non-goals
 
-- **The Insider Risk Management "Risky Agents" or "Risky AI usage" policy templates.** Whether this
-  scenario's fixed "Microsoft 365 Copilot and Microsoft 365 Copilot Chat" location also reaches
-  Copilot Studio-built or Microsoft Foundry agent interactions is an open VERIFY (`README.md` §11) -
-  Microsoft's general channel-detection overview describes a same-sounding "Microsoft Copilot
-  experiences" location as covering Copilot Studio agents too, but no worked example in this build's
-  grounding pass confirmed the two phrasings denote the same location. If agent-specific risk is the
-  actual concern, IRM's dedicated **Risky Agents** template is the purpose-built control for that
-  surface - not something this scenario asserts it already covers.
+- **The Insider Risk Management "Risky Agents" or "Risky AI usage" policy templates.** This
+  scenario's fixed "Microsoft 365 Copilot and Microsoft 365 Copilot Chat" location is now confirmed
+  (`README.md` §11) to reach Copilot Studio-built agent interactions - Microsoft's own AI-apps
+  coverage table lists Microsoft Copilot Studio under the same "Copilot experiences and agents"
+  category as Microsoft 365 Copilot/Copilot Chat, distinct from Microsoft Foundry (which falls under
+  the separate "Enterprise AI apps" category this policy doesn't enable). Microsoft Foundry
+  agent-specific risk is therefore still out of this scenario's scope - IRM's dedicated **Risky
+  Agents** template, or a policy that also enables the "Enterprise AI apps" location, is the
+  purpose-built control for that surface instead.
 - **The Insider Risk Management "Risky AI usage" policy template integration.** Microsoft documents
   an optional path where these same two classifiers (Prompt Shields, Protected material detection)
   feed IRM's risk-scoring templates via the **Policy indicators** setting on *Data leaks*, *Data

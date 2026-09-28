@@ -41,10 +41,10 @@
       - The Azure Key Vault, or the secret inside it (AccountKey/ConsumerKeyAuth/DelegatedAuth).
       - The Key Vault access grant for the Purview account's managed identity.
       - The AWS IAM role an AmazonARN credential references, or configure its trust policy. Per
-        README.md Section 3, the Microsoft account ID / external ID needed to configure that trust
-        policy are surfaced only in the Purview PORTAL's "New credential" pane - this script cannot
-        supply them because no REST endpoint returning them was found during this build's grounding
-        pass (README.md Section 11).
+        README.md Section 3/11, the external ID needed for that trust policy is confirmed readable
+        via Get-AzPurviewAccount's CloudConnectorAwsExternalId (a control-plane call this script does
+        not make); the Microsoft account ID has no equivalent and remains surfaced only in the
+        Purview PORTAL's "New credential" pane - this script does not supply either value.
       - The user-assigned managed identity a ManagedIdentity credential references, or add it to the
         Purview account (an Azure portal / Managed identities blade action).
       - Any data source or scan object.
@@ -123,9 +123,10 @@
 .PARAMETER RoleArn
     Required for -CredentialType AmazonARN. The AWS IAM role's ARN, e.g.
     arn:aws:iam::181328463391:role/PurviewS3ScanRole. The role must already exist and trust the
-    Microsoft account ID / external ID Purview's portal displays - see README.md Section 3. This
-    script does not validate the ARN against AWS; -WhatIf and the validate/ script only check its
-    string shape.
+    Microsoft account ID / external ID Purview's portal displays (the external ID is also readable
+    via Get-AzPurviewAccount - see README.md Section 3/11) - this script does not fetch either value
+    itself. This script does not validate the ARN against AWS; -WhatIf and the validate/ script only
+    check its string shape.
 
 .PARAMETER PrincipalId
     Required for -CredentialType ManagedIdentity. The principal (object) ID of an existing
@@ -209,9 +210,13 @@
       its six supported source types):
       https://learn.microsoft.com/purview/data-map-data-scan-credentials
     - Amazon S3 Multicloud Scanning Connector for Microsoft Purview (Role ARN as the only auth
-      method for S3; the portal-displayed Microsoft account ID / external ID that have no confirmed
-      REST source - see README.md Section 11):
+      method for S3; the portal-displayed Microsoft account ID / external ID - external ID now also
+      confirmed scriptable via Get-AzPurviewAccount, account ID still portal-only - see README.md
+      Section 11):
       https://learn.microsoft.com/purview/register-scan-amazon-s3
+    - Account.CloudConnectorAwsExternalId Property (Az.Purview) - the read-only control-plane
+      property confirming the external ID is scriptable:
+      https://learn.microsoft.com/dotnet/api/microsoft.azure.powershell.cmdlets.purview.models.account.cloudconnectorawsexternalid
     - Connect to your Microsoft Fabric tenant in the same tenant as Microsoft Purview (Delegated
       Auth worked example: Client ID, User name, Password):
       https://learn.microsoft.com/purview/register-scan-fabric-tenant
@@ -221,8 +226,9 @@
 
     VERIFY (pilot tenant) - carried from the parent scenario, unchanged for the secret-bearing kinds
     here: the KeyVaultSecret `type`/`store.type` discriminator literals, and omitted-secretVersion
-    semantics. See README.md Section 11 for the two VERIFYs specific to this fragment (the AmazonARN
-    account ID/external ID source, and ManagedIdentity's current preview status).
+    semantics. See README.md Section 11 for the VERIFYs specific to this fragment (the AmazonARN
+    Microsoft account ID source - the external ID half is now resolved - and ManagedIdentity's
+    current preview status).
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(

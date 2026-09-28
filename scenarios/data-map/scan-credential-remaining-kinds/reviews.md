@@ -205,3 +205,20 @@ VERIFY the parent scenario already carries for the three secret-bearing kinds he
 **Update:** `-CheckKeyVaultSecret`'s vault-name derivation (Blue Team finding 2) has since been
 code-fixed - see the Resolution under that finding above and `PROGRESS.md`'s DONE entry for this
 follow-up. It no longer appears in the carried-forward list.
+
+## Correction addendum (2026-09-28, maintenance pass - no new four-lens round per `AGENTS.md` §6)
+
+The Microsoft Product Owner lens's finding 5 above ("declines to derive the `AmazonARN` account
+ID/external ID because no documented source was found") and the carried-forward VERIFY both **narrow,
+without fully closing**: a Microsoft Learn re-grounding pass found that the **external ID** half
+*is* documented and scriptable after all - not via the Scanning data-plane Credential API this
+fragment calls, but as a read-only property, `properties.cloudConnectors.awsExternalId`, on the
+Purview account's own management/control-plane resource (`Microsoft.Purview/accounts`), confirmed
+consistently across the `Az.Purview` PowerShell module and three other independent SDK surfaces. The
+**Microsoft account ID** half has no sibling property in that same schema and remains genuinely
+undocumented via any REST/SDK surface found. This is a documentation correction only -
+`New-PurviewScanCredentialExtended.ps1` was not changed to call the newly-confirmed control-plane API
+(that would be new functionality, not a correction, and is left for a future fragment) - so it
+doesn't reopen the Product Owner lens's overall verdict; it tightens the finding from "neither value
+has a documented source" to "one of the two now does." `README.md` §11/§12, `design.md` §4/§6/§8,
+and the script's comment-based help updated in place to match.

@@ -79,6 +79,17 @@ national-ID and payment-card numbers, not because they're any less real. An orga
 travel-document- or HR-record-heavy can add both with `-IncludeTravelDocumentSits` (§5) instead of
 retyping the full `-SensitiveInfoTypeName` list by hand.
 
+**Grounded (2026-09-27): the apostrophe in "EU driver's license number" is real, not a typo to
+reconcile against the no-apostrophe page title above.** Microsoft's "Create custom sensitive
+information types" page names this SIT `"EU driver's license number"` (apostrophe, lowercase)
+in its list of non-copyable EU-wide SITs - a portal-display-name context, not a URL slug
+[[1]](#references). The bundle-index page's own title strips the apostrophe purely because
+Learn page titles are derived from the URL slug (every per-country page under it does the same,
+e.g. "France drivers license number" as a title vs. "the EU Driver's License Number sensitive
+information type" in that same page's body). This closes the apostrophe-specific sub-question of
+`README.md` §11's byte-exact-casing VERIFY for this one SIT; the broader question of exact
+word-casing across the other bundle names remains an open, pilot-tenant-only VERIFY.
+
 **Bundle-membership grounding (fetched directly, 2026-09-09) - and why the three EU-wide bundles
 this scenario can reference are not interchangeable in coverage:**
 

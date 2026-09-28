@@ -334,12 +334,21 @@ in the portal for a reversible stop; **Delete** only when permanently retiring t
   this scenario cannot block a harassing message before delivery - the recipient(s) already saw it
   before a reviewer ever triages the alert. Pair with clear internal reporting channels and manager
   training as complementary, non-technical controls.
-- **Classifier naming inconsistency across Microsoft's own docs.** Some Microsoft Learn pages and
-  the classifier-definitions reference use "Harassment"; others (the policy-template table, the
-  Alerts-page Filters UI) use "Targeted harassment" for what appears to be the same underlying
-  classifier. This scenario standardizes on "Harassment" per the dedicated classifier-definitions
-  page but flags this explicitly rather than asserting certainty - **VERIFY** the exact label shown
-  in the tenant's current portal UI at deploy time.
+- **Classifier naming inconsistency across Microsoft's own docs (re-grounded 2026-09-28, still
+  open).** A fresh Microsoft Learn direct-fetch narrows but doesn't close this gap. As of this
+  re-check, **"Harassment"** is used by both the dedicated classifier-definitions page
+  (`trainable-classifiers-definitions#harassment`, including its own word-count-requirements table)
+  **and** the `communication-compliance-policies#policy-settings` "Policy settings" table - the
+  latter previously cited (in this note) as using "Targeted harassment"; it no longer does, so
+  Microsoft appears to have partly unified the naming since this note was first written. **"Targeted
+  harassment"/"Targeted Harassment"** still appears elsewhere on current pages: the Get-started
+  policy-creation workflow steps (`communication-compliance-configure`, Step 5), the solution
+  overview's template list (`communication-compliance-solution-overview`), and the condition-builder
+  worked examples (`communication-compliance-conditions-scenarios`). This scenario continues to
+  standardize on "Harassment" per the classifier-definitions page (now corroborated by the policy
+  settings reference table too), but the **live portal UI label a tenant admin actually sees when
+  building the policy** remains unconfirmed without a tenant - **VERIFY** (portal, at deploy time)
+  still stands for that specific point.
 - **Off-platform harassment is invisible to this control.** Communication Compliance only sees
   Microsoft 365-native and configured third-party-connector channels - personal phones, SMS,
   personal social media, and in-person conduct are entirely outside its visibility. This control is

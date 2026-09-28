@@ -42,8 +42,7 @@ admin on the instance, Directory Readers role):
 | A user-assigned managed identity (UAMI) created and added to the Purview account | Azure identity-administration action, via the Purview account's own **Managed identities** blade | Out-of-band Azure step - see `scan-credential-remaining-kinds/README.md` §3 [[9]](#references) |
 | A Purview credential object, kind `ManagedIdentity`, referencing that UAMI | Built via `scenarios/data-map/scan-credential-remaining-kinds/deploy/New-PurviewScanCredentialExtended.ps1 -CredentialType ManagedIdentity` | This scenario's `-CredentialReferenceName` parameter is that credential object's name |
 | Reconcile the scan onto the new credential | **Data Source Administrator** role on the scan's collection | Same Purview role the base scenario's own deploy script needs |
-| Azure IAM on the managed instance, for the **UAMI** (not the Purview account's SAMI) | **Reader** role, scoped to the **managed instance resource itself**, granted to the UAMI | A separate grant from the base scenario's SAMI grant. Confirmed that UAMI is a supported authentication identity for this source type and that "either managed identity" needs this access [[4]](#references)[[9]](#references) - the exact "Access control (IAM) → Add role assignment → Reader → Select box accepts SAMI or UAMI" portal walkthrough is directly confirmed on the Azure SQL Database page, not independently re-confirmed word-for-word on this source's own page; same underlying Azure RBAC mechanism, so treated as applying identically - see §11 |
-| Database-level access for the UAMI | `db_datareader` granted to the **UAMI's exact managed-identity name** as a Microsoft Entra external-provider database user | Same T-SQL pattern as the base scenario's SAMI grant, different `[Username]` value - see §5 [[4]](#references) |
+| Database-level access for the UAMI | `db_datareader` granted to the **UAMI's exact managed-identity name** as a Microsoft Entra external-provider database user | Same T-SQL pattern as the base scenario's SAMI grant, different `[Username]` value - see §5 [[4]](#references). This is the **only** identity-specific access grant Microsoft documents for Managed Instance scan authentication - **no separate Azure IAM Reader role assignment applies**, unlike the Database sibling; corrected 2026-09-27, see §11 |
 | Instance-level prerequisites (unchanged from the base scenario) | Public endpoint enabled; Microsoft Entra admin set via `Set-AzSqlInstanceActiveDirectoryAdministrator`; **Directory Readers** role for the instance's own managed identity | Orthogonal to which Purview identity authenticates - these enable Microsoft Entra auth on the instance at all, regardless of SAMI vs UAMI (`design.md` §2) - already satisfied if the base scenario's scan is running |
 | Network path to the instance | Unchanged from the base scenario - **neither SAMI nor UAMI works over a self-hosted integration runtime** | Same restriction as the Database sibling |
 | Automation identity for the REST calls themselves | App registration with **Data Source Administrator** (and, for `validate/`, **Data Reader**) Purview role on the collection | Same as the base scenario |
@@ -75,7 +74,6 @@ flowchart TD
     DS -.->|unchanged reference| MI
     Scan -- "references by name" --> Cred
     Cred -. "principalId/resourceId/tenantId<br/>reference, does not create" .-> UAMI
-    UAMI -- "Reader (Azure IAM)" --> MI
     UAMI -- "db_datareader<br/>(external-provider user)" --> MI
     Scan -- "extracts schema,<br/>samples rows for SIT match" --> MI
 ```
@@ -95,15 +93,11 @@ flowchart TD
    EXEC sp_addrolemember 'db_datareader', [Username]
    GO
    ```
-   [[4]](#references)
-3. In the Azure portal, on the **managed instance resource itself**, grant the **Reader** IAM role
-   to the UAMI (the same **Access control (IAM) → Add role assignment** pane the base scenario's
-   SAMI grant used, selecting the UAMI by name instead - see §11 for the one detail in this step not
-   independently re-confirmed for this specific source page).
-4. Back in the Purview portal, open the base scenario's already-registered scan and select **Edit**.
+   [[4]](#references). No separate Azure IAM role assignment applies - see §11 for the grounding.
+3. Back in the Purview portal, open the base scenario's already-registered scan and select **Edit**.
    Under **Credential**, switch from the system-assigned managed identity to the UAMI, select **Test
    connection**, then **Save** [[1]](#references).
-5. Re-run (or wait for the next scheduled trigger) and confirm the scan still completes
+4. Re-run (or wait for the next scheduled trigger) and confirm the scan still completes
    successfully under the new identity.
 
 ### Script path (idempotent, parameterized, dry-run capable)
@@ -216,27 +210,29 @@ Azure cost, only the operational cost of provisioning, granting, and monitoring 
   principal or SQL authentication via `scan-credential-key-vault-backed`.
 - **A UAMI can be deleted independently of the credential object that references it, and
   independently of this scan's configuration.** Same disclosed gap as the Database sibling.
-- **Reverting to SAMI (rollback) assumes the SAMI's own Reader/`db_datareader` grants from the base
-  scenario are still in place.** See `rollback.md`.
+- **Reverting to SAMI (rollback) assumes the SAMI's own `db_datareader` grant from the base
+  scenario is still in place.** See `rollback.md`.
 - **This scenario's precheck cannot detect every misconfiguration** - it confirms the credential
   object exists and is the right *kind*, not that the UAMI it references is attached to the Purview
-  account or holds the Azure IAM/SQL grants - same disclosed gap as the Database sibling.
+  account or holds the `db_datareader` grant - same disclosed gap as the Database sibling.
 - **Instance-level prerequisites are assumed, not re-verified.** This scenario's scripts do not
   re-check the public endpoint, Microsoft Entra admin, or Directory Readers role the base scenario
   already established - see `design.md` §2 goal 2 for why that's a deliberate scope boundary, not an
   oversight.
-- **VERIFY - the Azure IAM Reader role-assignment portal walkthrough for a UAMI is directly confirmed
-  on the Azure SQL Database page, not independently re-confirmed word-for-word on the Managed
-  Instance page.** Both are grounded facts: Microsoft's "Supported data sources for UAMI" list
-  explicitly includes Azure SQL Managed Instance, and the Managed Instance registration page confirms
-  "either managed identity will need permission to get metadata for the database, schemas and
-  tables." What is *not* independently confirmed is the exact **Access control (IAM) → Add role
-  assignment → Reader → Select box** step-by-step sequence on the Managed Instance page specifically
-  - only on the Database page. Since IAM role assignment is the same generic Azure RBAC mechanism
-  regardless of resource type, this is very likely a documentation-page omission rather than a real
-  product difference, but it is flagged here rather than silently assumed identical, per `AGENTS.md`
-  §4. Confirm against a pilot tenant or a future Microsoft Learn pass before treating §5 step 3 as
-  page-verified rather than mechanism-inferred.
+- **RESOLVED (2026-09-27) - no Azure IAM Reader role applies to Managed Instance scan authentication,
+  for either SAMI or UAMI.** This row previously carried an open VERIFY, framing the Database
+  sibling's confirmed "Access control (IAM) → Add role assignment → Reader → Select box" portal
+  walkthrough as very likely applying identically here, just not independently re-confirmed
+  word-for-word on the Managed Instance page. A direct fetch of that page found the reverse: no Azure
+  RBAC role-assignment step appears anywhere in its managed-identity authentication section for
+  either SAMI or UAMI - only the Object ID lookup, Entra contained-user creation, and `db_datareader`
+  grant already in §5 step 2. This is a genuine mechanism difference from the Database sibling, not a
+  documentation-page omission - Managed Instance's SAMI/UAMI authentication path never involves an
+  Azure IAM role assignment on the instance resource at all. `scan-azure-sql-managed-instance-and-
+  classify/README.md` §11 carries the full grounding (including the separate, subscription-scoped,
+  registration-time-only Reader recommendation this could otherwise be confused with) and corrects
+  the same claim in the base scenario this fragment extends. §3, §4, and §5 above are corrected to
+  match.
 
 ## 12. References
 

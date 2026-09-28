@@ -40,7 +40,7 @@ Full licensing detail: `docs/licensing-matrix.md`. RBAC: `docs/rbac-model.md`. A
 | License | Any Microsoft 365/Office 365 plan with Exchange Online + Entra ID - **no Purview Audit entitlement required** | Unlike its investigation sibling, this scenario doesn't call the Audit Search API; it's cataloged alongside it as the operate/incident-response counterpart |
 | Graph permissions | `User.EnableDisableAccount.All` + `User.Read.All` (disable), `User.RevokeSessions.All` (revoke sessions), `User-PasswordProfile.ReadWrite.All` (password reset) | Least-privileged per-property grants [[2]](#references)[[3]](#references); Microsoft's own compromised-account article instead connects once with the broader `User.ReadWrite.All` [[1]](#references) - either works, the table above is the least-privilege breakdown |
 | Entra ID role (delegated) | **Privileged Authentication Administrator** to disable/reset an admin account; **User Administrator** is the least-privileged role for a non-admin account | `accountEnabled` and `passwordProfile` are both Microsoft Entra "sensitive properties" - see [Who can perform sensitive actions](https://learn.microsoft.com/entra/identity/role-based-access-control/privileged-roles-permissions#who-can-perform-sensitive-actions) [[4]](#references) |
-| Exchange Online role | **Mail Recipients** role (default in the **Recipient Management**/**Organization Management** role groups) | Covers `Set-Mailbox`, `Remove-InboxRule`, `Remove-MailboxPermission`, `Remove-RecipientPermission` - the exact cmdlet-to-role mapping isn't itemized on each cmdlet's own reference page; confirm with `Get-ManagementRoleEntry "*\Remove-InboxRule"` against your tenant before relying on this (VERIFY - §11) |
+| Exchange Online role | **Organization Management** role group (`Set-Mailbox`/`Remove-InboxRule` also work from **Recipient Management**; `Remove-MailboxPermission`/`Remove-RecipientPermission` need **Organization Management** specifically) | Per Microsoft's "Feature permissions in Exchange Online" table: `Set-Mailbox`/`Remove-InboxRule` fall under the **Mailbox settings** feature (Organization Management *or* Recipient Management), but `Remove-MailboxPermission`/`Remove-RecipientPermission` fall under **Permissions and delegation**, which lists **Organization Management only** - Recipient Management isn't sufficient for those two [[10]](#references). Confirm against your own tenant with `Get-ManagementRoleEntry "*\<CmdletName>"` before narrowing further |
 | Auth (this scenario) | `Connect-MgGraph -Scopes 'User.EnableDisableAccount.All','User.Read.All','User.RevokeSessions.All','User-PasswordProfile.ReadWrite.All'` **and** `Connect-ExchangeOnline` | Two surfaces, two sessions - the script opens neither; `docs/automation-surface.md` §3 |
 | PowerShell modules | `Microsoft.Graph.Users`, `Microsoft.Graph.Users.Actions`, `ExchangeOnlineManagement` | `#Requires` lines in `deploy/Invoke-CompromisedAccountResponse.ps1` |
 
@@ -223,15 +223,19 @@ turns out to be a false positive, and re-enabling the account once the investiga
 - **The generated password is shown once, in the console, and nowhere else.** If you lose it, run the
   script again (idempotent - a second password reset just rotates the credential again) rather than
   looking for it in a log or the backup file, where it deliberately isn't written.
-- **VERIFY (your tenant) - exact Exchange Online RBAC role for the mailbox cmdlets.** Microsoft's own
-  reference pages for `Remove-InboxRule`, `Set-Mailbox`, `Remove-MailboxPermission`, and
-  `Remove-RecipientPermission` state only "you need to be assigned permissions" without naming a
-  specific role; this README's Prerequisites table names **Mail Recipients**
-  (Recipient Management/Organization Management role groups) as the documented least-privilege
-  candidate based on the general "Modify existing mail users and mail contacts" role description
-  [[10]](#references), not a per-cmdlet confirmation. Confirm with
-  `Get-ManagementRoleEntry "*\<CmdletName>"` against your tenant before relying on a narrower role
-  than Organization Management.
+- **RESOLVED (2026-09-28, Microsoft Learn MCP) - Exchange Online RBAC role for the mailbox
+  cmdlets.** Each cmdlet's own reference page (`Remove-InboxRule`, `Set-Mailbox`,
+  `Remove-MailboxPermission`, `Remove-RecipientPermission`) states only "you need to be assigned
+  permissions" without naming a role, but Microsoft's **"Feature permissions in Exchange Online"**
+  table [[10]](#references) maps the underlying *features* to role groups directly: `Set-Mailbox`
+  and `Remove-InboxRule` fall under **Mailbox settings** (Organization Management *or* Recipient
+  Management - the **Mail Recipients** role, default in both), while `Remove-MailboxPermission`
+  and `Remove-RecipientPermission` fall under **Permissions and delegation**, which lists
+  **Organization Management only** - Recipient Management is not sufficient for those two. The
+  Prerequisites table (§3) has been corrected to reflect this split rather than naming one role
+  for all four cmdlets. This is still Microsoft's feature-level mapping, not a per-cmdlet
+  statement, so confirming with `Get-ManagementRoleEntry "*\<CmdletName>"` against your own tenant
+  before a customer-facing deployment remains good practice.
 - **VERIFY (your tenant) - Exchange Online RBAC propagation delay.** Newly assigned Exchange Online
   roles can take time to propagate; if a mutating call fails with an access-denied error immediately
   after granting a role, wait and retry before assuming the role mapping above is wrong.
@@ -276,8 +280,8 @@ turns out to be a false positive, and re-enabling the account once the investiga
    `Get-RecipientPermission`) - <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-recipientpermission?view=exchange-ps>
 8. Set-Mailbox (`ForwardingAddress`, `ForwardingSmtpAddress`, `DeliverToMailboxAndForward`) - <https://learn.microsoft.com/powershell/module/exchangepowershell/set-mailbox?view=exchange-ps>
 9. Remove-InboxRule / Get-InboxRule (`-IncludeHidden`) - <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-inboxrule?view=exchange-ps>
-10. Permissions in Exchange Online - roles and role groups (**Mail Recipients** role;
-    **Recipient Management**/**Organization Management** role groups) - <https://learn.microsoft.com/exchange/permissions-exo/permissions-exo>
+10. Feature permissions in Exchange Online - the **Mailbox settings** and **Permissions and
+    delegation** feature-to-role-group mapping this scenario's RBAC guidance is grounded in - <https://learn.microsoft.com/exchange/permissions-exo/feature-permissions>
 11. Risk-based access policies - Microsoft Entra ID Protection automatic risk remediation (require
     password change, block access, session revocation) - <https://learn.microsoft.com/entra/id-protection/concept-identity-protection-policies>
 

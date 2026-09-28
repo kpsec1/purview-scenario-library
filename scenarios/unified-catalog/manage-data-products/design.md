@@ -104,9 +104,10 @@ it is an open **VERIFY** - see `README.md` Section 11.
 - **Configuring the data product access policy itself** (Section 5) - portal-only, no REST surface
   found during this build's grounding pass.
 - **Critical data elements.** Linking assets/columns to critical data elements is a related but
-  distinct Unified Catalog capability (`entityType=CRITICALDATAELEMENT`/`CRITICALDATACOLUMN`) with
-  its own worked REST example this scenario deliberately does not reuse for asset/term linking
-  (`README.md` Section 11's VERIFY on the `Create Relationship` body shape) - a natural follow-up.
+  distinct Unified Catalog capability (`entityType=CRITICALDATAELEMENT`/`CRITICALDATACOLUMN`) this
+  scenario deliberately does not reuse for asset/term linking - a natural follow-up. (The Create
+  Relationship body-shape question `README.md` Section 11 once flagged here is now closed: see
+  that section.)
 - **OKR linking.** Data products can link to Objectives and Key Results the same way they link to
   terms; this scenario's definition file and scripts cover only `TERM` and `DATAASSET` entity
   types, matching the "Customer 360" narrative's actual needs rather than exercising every

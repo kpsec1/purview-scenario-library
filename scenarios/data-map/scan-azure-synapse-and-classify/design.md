@@ -35,8 +35,9 @@ where Microsoft's own documentation says Synapse genuinely differs.
    (Microsoft's own `register-scan-synapse-workspace` article, fetched via a verified mirror after
    direct `learn.microsoft.com` fetches were blocked in this build environment - see §8's Grounding
    note). One property - the scan object's optional `resourceTypes` field - could not be independently
-   confirmed to an exact JSON shape; this scenario's script omits it rather than guess, per
-   `AGENTS.md` §4. See `README.md` §11.
+   confirmed to an exact JSON shape at the time; this scenario's script omits it rather than guess, per
+   `AGENTS.md` §4. **Closed 2026-09-28** via a direct re-fetch of the canonical page once
+   `learn.microsoft.com` access was available - see `README.md` §11.
 5. **Don't re-litigate what the siblings already decided correctly.** SAMI-first authentication,
    system-default scan rule set (not a fabricated custom PII-only set), create-or-replace-native
    idempotency, and the "register + scan, don't act on results" scope boundary all carry over
@@ -99,11 +100,16 @@ the Synapse-specific workflow from search-result snippets alone, this build:
    cmdlet reference pages (fetched via GitHub raw source, since the same pages on `learn.microsoft.com`
    were blocked) - the same cross-check method the first sibling scenario used for three of its four
    object shapes.
-3. Did **not** find an authoritative worked example of the scan object's `resourceTypes` property's
-   exact JSON shape (dictionary keys/enum values distinguishing "dedicated" from "serverless" - if
-   such a distinction is even needed given the portal's single "SQL Database" Type option, §4). This
-   scenario's deploy script omits the property entirely rather than fabricate a shape - see
-   `README.md` §11.
+3. At the time, did **not** find an authoritative worked example of the scan object's `resourceTypes`
+   property's exact JSON shape (dictionary keys/enum values distinguishing "dedicated" from
+   "serverless" - if such a distinction is even needed given the portal's single "SQL Database" Type
+   option, §4), so this scenario's deploy script omitted the property entirely rather than fabricate a
+   shape. **Closed 2026-09-28**: once `learn.microsoft.com` access was available, a direct re-fetch of
+   `register-scan-synapse-workspace`'s "Set up a scan by using an API" section confirmed the worked
+   example's `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` key is Microsoft's
+   current, live documented shape for scoping a scan to named serverless databases - see `README.md`
+   §11. The deploy script still omits `resourceTypes` by default (its auto-enumeration design doesn't
+   need it), so this closure is documentation-only.
 4. Reused, unchanged, the four generic REST call shapes (Data Sources / Scans / Triggers / Scan Result
    - Run Scan, all API version `2023-09-01`) the Managed Instance sibling scenario already confirmed by
    direct fetch of Microsoft's own canonical REST reference pages during its own build - these are
@@ -150,7 +156,7 @@ payloads are Synapse-specific, confirmed per §5.
 | Deploy surface | Purview Data Map REST API (`Invoke-RestMethod`), per `docs/automation-surface.md` surface 4 | Same as both sibling scenarios - no PowerShell module or Graph equivalent exists for data source/scan objects themselves |
 | Registration granularity | One data source object per **workspace**, with both `-DedicatedSqlEndpoint` and `-ServerlessSqlEndpoint` as optional parameters (at least one required) | Matches Microsoft's own object model - Synapse is registered as a workspace, not per pool, and the portal wizard's endpoint fields "automatically fill in based on your workspace selection" rather than being separate registrations |
 | Scan authentication (default) | System-assigned managed identity (`AzureSynapseWorkspaceMsi`) | Microsoft's own documented default option (the "Managed identity" tab is listed first), and the credential-free default both sibling scenarios standardize on |
-| `resourceTypes` scan property | Omitted from the request body by default | Not independently confirmed to an exact JSON shape during this build (§5.3); the portal wizard exposes only a single "SQL Database" Type with no dedicated/serverless split to encode, which is weak evidence the property may not be required for the common case - omitting it is safer than guessing a shape that could silently mis-scope the scan. Flagged as an explicit VERIFY in `README.md` §11 |
+| `resourceTypes` scan property | Omitted from the request body by default | The portal wizard exposes only a single "SQL Database" Type with no dedicated/serverless split to encode, and the property isn't needed for this scenario's auto-enumeration design. Its exact JSON shape (`resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]`, confirmed against Microsoft's own `register-scan-synapse-workspace` "Set up a scan by using an API" example - §5.3/`README.md` §11) is now grounded for a future named-database scoping parameter, but this scenario's default behavior is unchanged |
 | SIT set | Microsoft's system default scan rule set (`scanRulesetName: AzureSynapseSQL`, `scanRulesetType: System`) | Same rationale as both sibling scenarios - includes the SSN + Credit Card Number pair this repo standardizes on |
 | Network path (default) | Public/firewall-open ("Allow Azure services and resources to access this workspace" = On) | Matches Microsoft's own documented default path and both sibling scenarios' "credential-free, network-simple by default" posture; the fallback (REST API + SQL Auth, no MSI) for a locked-down workspace is documented but not scripted - see §8 Non-goals |
 | Idempotency mechanism | Rely on the API's native create-or-replace semantics, same as both sibling scenarios | Consistency with this repo's established Data Map pattern |

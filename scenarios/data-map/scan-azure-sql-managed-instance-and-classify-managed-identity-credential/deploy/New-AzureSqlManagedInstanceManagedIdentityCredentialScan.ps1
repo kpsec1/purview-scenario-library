@@ -41,13 +41,12 @@
     reference rather than erroring or duplicating; re-running it with a different
     -CredentialReferenceName switches which UAMI credential the scan authenticates as.
 
-    This script does NOT create the out-of-band grants the UAMI-authenticated scan depends on:
-      - Azure IAM "Reader" role for the UAMI (not the Purview account's SAMI) on the managed
-        instance resource
+    This script does NOT create the out-of-band grant the UAMI-authenticated scan depends on:
       - db_datareader for the UAMI's exact managed-identity name as a Microsoft Entra
-        external-provider database user
-    Both are one-time, ARM/SQL-side prerequisites documented in README.md Sections 3 and 5 - grant
-    them before running this script, or the scan will reconcile successfully but fail on its first
+        external-provider database user (no separate Azure IAM role applies - see README.md
+        Section 11)
+    This is a one-time, SQL-side prerequisite documented in README.md Sections 3 and 5 - grant
+    it before running this script, or the scan will reconcile successfully but fail on its first
     run under the new identity. This script does NOT re-verify the Managed-Instance-specific
     prerequisites the base scenario already established (public endpoint enabled, Microsoft Entra
     admin set on the instance, Directory Readers role for the instance's own managed identity) -
@@ -316,4 +315,4 @@ if ($RunNow) {
     }
 }
 
-Write-Host "`nDone. Remember: this scan will fail at run time unless the Azure IAM Reader grant and the SQL db_datareader grant for the UAMI (not the Purview account's SAMI) documented in README.md Sections 3 and 5 are already in place." -ForegroundColor Cyan
+Write-Host "`nDone. Remember: this scan will fail at run time unless the SQL db_datareader grant for the UAMI (not the Purview account's SAMI) documented in README.md Sections 3 and 5 is already in place." -ForegroundColor Cyan

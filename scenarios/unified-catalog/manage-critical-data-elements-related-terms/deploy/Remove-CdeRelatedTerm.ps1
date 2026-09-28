@@ -19,7 +19,7 @@
          own "+ Add term" button or the reciprocal "Add critical data element" button on a term's
          own Related tab). The same discipline
          scenarios/unified-catalog/manage-critical-data-elements/deploy/Remove-CriticalDataElement.ps1's
-         own -RemoveLinks uses for its DATACOLUMN relationships.
+         own -RemoveLinks uses for its CRITICALDATACOLUMN relationships.
 
     Run this before scenarios/unified-catalog/manage-critical-data-elements/deploy/
     Remove-CriticalDataElement.ps1 -Purge if the CDE has any related terms - Microsoft's own
@@ -84,8 +84,9 @@
 .NOTES
     entityType=TERM is used for the relationship delete calls, the same EntityCategory value
     Add-CdeRelatedTerm.ps1 uses to create them (design.md Section 3) - unlike
-    scenarios/unified-catalog/manage-critical-data-elements/'s own entityType=DATACOLUMN choice,
-    TERM has no documented enum-vs-worked-example discrepancy to flag (README.md Section 12).
+    scenarios/unified-catalog/manage-critical-data-elements/'s own entityType=CRITICALDATACOLUMN
+    choice, TERM has no documented enum-vs-worked-example discrepancy to flag (README.md
+    Section 12).
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
 param(

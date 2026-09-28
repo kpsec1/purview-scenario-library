@@ -187,12 +187,13 @@
     byte-for-byte mirror of Microsoft's own register-scan-synapse-workspace article. See design.md
     Section 5 for the full grounding method and PROGRESS.md for this scenario's build record.
 
-    One property is deliberately NOT sent: the scan object's optional `resourceTypes` field. No
-    authoritative worked example of its exact JSON shape was found during this build, and the Purview
-    portal's own scan wizard exposes only a single "SQL Database" Type for this source (no
-    dedicated-vs-serverless toggle to encode) - weak evidence the property may not be required for the
-    common case. Omitting it is safer than guessing a shape that could silently mis-scope the scan.
-    Flagged as an explicit VERIFY in README.md Section 11.
+    One property is deliberately NOT sent: the scan object's optional `resourceTypes` field. The
+    Purview portal's own scan wizard exposes only a single "SQL Database" Type for this source (no
+    dedicated-vs-serverless toggle to encode), and this scenario's auto-enumeration design doesn't need
+    it. Its exact JSON shape (resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[],
+    confirmed 2026-09-28 against Microsoft's own register-scan-synapse-workspace "Set up a scan by
+    using an API" example) is now grounded for a future named-database scoping parameter - see
+    README.md Section 11 - but this script's default behavior is unchanged.
 
     Sources (Microsoft Learn, verify before production use):
     - Connect to and manage Azure Synapse Analytics workspaces in Microsoft Purview (registration,

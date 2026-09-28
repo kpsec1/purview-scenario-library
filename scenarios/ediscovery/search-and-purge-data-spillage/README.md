@@ -224,8 +224,19 @@ search/operation records but never reverses a completed purge.
   reviewing.
 - **VERIFY:** how long a purge job report's `reportFileMetadata.downloadUrl`
   (`Invoke-DataSpillagePurge.ps1`'s printed proof-of-purge link) remains valid before expiring - not
-  stated on the `ediscoveryPurgeDataOperation` reference page. Download and archive the report
-  promptly with the case record rather than relying on it staying reachable indefinitely.
+  stated on the `ediscoveryPurgeDataOperation` reference page, nor on the `reportFileMetadata`
+  resource type page itself [[15]](#references), which documents only `downloadUrl`/`fileName`/
+  `size` with no TTL. Re-grounded 2026-09-27: Microsoft Learn *does* document expiry for the
+  differently-typed, differently-named **export** download links - search exports expire 14 days
+  after creation, review set exports must be downloaded within 30 days, and a separate
+  pre-authorized-link feature offers 1-168 hour windows - but all three apply to
+  `ediscoveryExportOperation`/`exportFileMetadata` (the `contentExport` action), a distinct resource
+  type and action from this scenario's `ediscoveryPurgeDataOperation`/`reportFileMetadata`
+  (the `purgeData` action). No Microsoft Learn page states or implies the purge job report's
+  `downloadUrl` shares either expiry window, so assuming parity would be a guess, not a grounded
+  fact. Treated as still-undocumented; download and archive the report promptly with the case
+  record rather than relying on it staying reachable indefinitely. Re-open only if Microsoft
+  publishes an expiry statement specific to `ediscoveryPurgeDataOperation`/`reportFileMetadata`.
 - **The classic "Data spillage scenario: Search and purge" walkthrough is retired** (2025-08-31,
   21Vianet-only now) [[3]](#references) - this scenario's workflow shape (search → validate → purge →
   verify) is re-derived from it for concept only; every cmdlet/API call is grounded in current,
@@ -249,6 +260,7 @@ search/operation records but never reverses a completed purge.
 12. ediscoverySearch: estimateStatistics (Graph v1.0 action reference) - <https://learn.microsoft.com/graph/api/security-ediscoverysearch-estimatestatistics>
 13. ediscoveryPurgeDataOperation resource type (`status`, `purgeType`/`purgeAreas` value tables) - <https://learn.microsoft.com/graph/api/resources/security-ediscoverypurgedataoperation>
 14. Message trace in the Security & Compliance Center (complementary "how far did the spillage travel" check, cited by the retired data-spillage walkthrough's own Step 5) - <https://learn.microsoft.com/microsoft-365/security/office-365-security/message-trace-scc>
+15. reportFileMetadata resource type (`downloadUrl`/`fileName`/`size`; no expiry documented) - <https://learn.microsoft.com/graph/api/resources/security-ediscoveryreportfilemetadata>
 
 > Re-verify all links, Graph SDK cmdlet names, and - especially - the litigation-hold VERIFY (§11)
 > against current Microsoft Learn before a customer-facing deployment. This scenario deliberately

@@ -33,10 +33,12 @@
     is not valid JSON as literally written. This script always emits properly quoted, valid JSON (built
     with ConvertTo-Json, not string concatenation) - see .NOTES.
 
-    !!! -ComplianceTagForNextStage is undocumented by Microsoft !!! its own published parameter reference
-    leaves the description as an unfilled placeholder. This script passes it through ONLY if
-    label.complianceTagForNextStage is set in the config (default: null / omitted) - see .NOTES and
-    README.md Section 11 before relying on it.
+    !!! -ComplianceTagForNextStage names a replacement label applied at the end of the retention period !!!
+    its own PowerShell parameter reference leaves the description blank, but the behavior is grounded via
+    the identically-named file plan manager import property and the "Relabeling at the end of the
+    retention period" reference - see .NOTES and README.md Section 11/12. This script passes it through
+    ONLY if label.complianceTagForNextStage is set in the config (default: null / omitted), since it
+    changes the record's retention settings once the primary label's period ends.
 
     Idempotent: each object is located by name via Get-* before create; if present it is reported
     (records objects are high-consequence and not silently mutated - this includes NOT retrofitting a
@@ -79,8 +81,9 @@
     Grounded in Microsoft Learn (verify before production use):
     - New-ComplianceTag / Set-ComplianceTag (-MultiStageReviewProperty JSON syntax
       '{"MultiStageReviewSettings":[{"StageName":"Stage1","Reviewers":[...]},...]}'; -AutoApprovalPeriod
-      7-365 days, default 14; -ComplianceTagForNextStage is a documented parameter whose description is
-      an unfilled placeholder in Microsoft's own reference - behavior not confirmed):
+      7-365 days, default 14; -ComplianceTagForNextStage's own description is left as an unfilled
+      placeholder in this parameter reference - see the file plan manager and relabeling references below
+      for its grounded behavior):
       https://learn.microsoft.com/powershell/module/exchangepowershell/new-compliancetag
       https://learn.microsoft.com/powershell/module/exchangepowershell/set-compliancetag
     - Disposition of content (multi-stage review: up to 5 stages, up to 10 reviewers/stage - individual
@@ -88,12 +91,15 @@
       disposal / Relabel / Extend / Add reviewers; auto-approval auto-advances a stage - or auto-disposes
       at the final stage - if no reviewer acts within the configured window):
       https://learn.microsoft.com/purview/disposition
-    - Microsoft Graph records-management retentionLabel resource's analogous (but not confirmed
-      identical) `labelToBeApplied` property - "the replacement label to be applied automatically after
-      the retention period of the current label ends" - the closest documented description of what
-      -ComplianceTagForNextStage likely does, cited here only as context, not as confirmed PowerShell
-      behavior:
-      https://learn.microsoft.com/graph/api/resources/security-retentionlabel
+    - Use file plan to create and manage retention labels - the identically-named ComplianceTagForNextStage
+      import property: "the name of a replacement label to be applied at the end of the retention period.
+      Do not specify this property if Regulatory is TRUE":
+      https://learn.microsoft.com/purview/file-plan-manager#import-retention-labels-into-your-file-plan
+    - Common settings for retention policies and retention label policies - "Relabeling at the end of the
+      retention period" (full mechanics: replacement label's own retention settings apply once selected,
+      chaining is unlimited, a regulatory record can't be relabeled, up to 7-day sync on change, can't
+      delete a label currently selected as a replacement):
+      https://learn.microsoft.com/purview/retention-settings#relabeling-at-the-end-of-the-retention-period
     - New-ComplianceRetentionEventType / New-ComplianceRetentionEvent; event-based retention:
       https://learn.microsoft.com/powershell/module/exchangepowershell/new-complianceretentioneventtype
       https://learn.microsoft.com/powershell/module/exchangepowershell/new-complianceretentionevent
@@ -199,7 +205,7 @@ else {
     if ($cfg.label.isRecordLabel) { $tagParams.IsRecordLabel = $true }
     if ($cfg.label.autoApprovalPeriodDays) { $tagParams.AutoApprovalPeriod = [int]$cfg.label.autoApprovalPeriodDays }
     if (-not [string]::IsNullOrWhiteSpace("$($cfg.label.complianceTagForNextStage)")) {
-        Write-Host "  NOTE: complianceTagForNextStage is set but Microsoft's own parameter reference does not document its behavior (unfilled description). Passed through as configured - VERIFY before relying on it. See README.md Section 11." -ForegroundColor Yellow
+        Write-Host "  NOTE: complianceTagForNextStage is set - '$($cfg.label.complianceTagForNextStage)' will be applied as the replacement label once this label's retention period ends, taking on that label's own retention settings. See README.md Section 11/12." -ForegroundColor Yellow
         $tagParams.ComplianceTagForNextStage = $cfg.label.complianceTagForNextStage
     }
 

@@ -15,8 +15,9 @@
        - No duplicate Id rows - proof the deploy script's merge-and-de-duplicate design
          (design.md Section 6) is actually holding across re-runs, not silently accumulating
          duplicates on every overlapping-window run.
-       - Every row's ActivityDisplayName is one of the two monitored activities ("Add member to
-         role" / "Remove member from role") and every row's RoleDisplayName is one of the
+       - Every row's ActivityDisplayName is one of the 7 monitored activities ("Add member to
+         role" / "Remove member from role", their scoped variants, and the PIM-service "Add member
+         to role outside of PIM (permanent)") and every row's RoleDisplayName is one of the
          monitored role names - catches a scenario where the CSV was hand-edited or produced by a
          different script by mistake.
        - ActivityDateTime values parse as valid timestamps and are monotonically non-decreasing
@@ -117,12 +118,13 @@ else {
         'Add member to role',
         'Add member to role scoped over Restricted Management Administrative Unit',
         'Add scoped member to role',
+        'Add member to role outside of PIM (permanent)',
         'Remove member from role',
         'Remove member from role scoped over Restricted Management Administrative Unit',
         'Remove scoped member from role'
     )
     $invalidActivityRows = $rows | Where-Object { $_.ActivityDisplayName -notin $validActivities }
-    Test-Check -Description "Every row's ActivityDisplayName is one of the 6 monitored activities" -Condition ($invalidActivityRows.Count -eq 0)
+    Test-Check -Description "Every row's ActivityDisplayName is one of the 7 monitored activities" -Condition ($invalidActivityRows.Count -eq 0)
     if ($invalidActivityRows.Count -gt 0) {
         Write-Host "         Unexpected activity value(s): $(($invalidActivityRows.ActivityDisplayName | Select-Object -Unique) -join ', ')" -ForegroundColor Yellow
     }

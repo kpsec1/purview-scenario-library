@@ -76,7 +76,7 @@ The fix is on the *other* side of the relationship. The **Data Products** operat
 `Create Relationship`/`List Relationships`/`Delete Relationship` operations all share one
 `EntityCategory` enum, and that enum - fetched directly from the **Create Relationship** REST
 reference - lists `OBJECTIVE` and `KEYRESULT` as valid values alongside `DATAASSET`, `TERM`,
-`CRITICALDATAELEMENT`, `DATACOLUMN`, and others
+`CRITICALDATAELEMENT`, `CRITICALDATACOLUMN`, and others
 [[9]](README.md#12-references). This means the documented way to link an objective to a data
 product is to call the **data product's own** `Create Relationship` operation with
 `entityType=OBJECTIVE` and `entityId=<objective id>` - exactly the same operation

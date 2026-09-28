@@ -469,16 +469,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `README.md` §6/§11, with a new `reviews.md` round 2 four-lens review specific to this change.
 
 ### Follow-ups discovered while building the opt-in travel-document bundle switch
-- [ ] VERIFY (pilot tenant): whether `"EU driver's license number"` (the spelling used in this
+- [x] VERIFY (pilot tenant): whether `"EU driver's license number"` (the spelling used in this
   repo's prose since the scenario's original build) or `"EU drivers license number"` (the literal,
   no-apostrophe title on the SIT's own Microsoft Learn bundle-index page, fetched directly during
   this round) is the byte-exact name `Get-DlpSensitiveInformationType`/the portal SIT picker
-  actually require - joins the existing open SIT-name-casing VERIFY for this scenario
-  (`README.md` §11) rather than a new, separate uncertainty. The deploy script's existing
-  `Resolve-SensitiveInfoTypeNames` name-resolution check already fails clearly (listing
-  near-matches) if the hardcoded default is wrong, rather than silently deploying a zero-match
-  rule, so this doesn't block use - it would only let a future revision state the default with
-  certainty.
+  actually require - **closed 2026-09-27 (grounded, no tenant access)**: Microsoft's "Create
+  custom sensitive information types" page names this SIT in a portal-display-name context (its
+  list of non-copyable EU-wide SITs), spelling it `"EU driver's license number"` (apostrophe,
+  lowercase) - matching this scenario's existing default. The bundle-index page's own title omits
+  the apostrophe only because Learn page titles are derived from the URL slug (confirmed: every
+  per-country page under it does the same in its title while keeping the apostrophe in its own
+  body prose). See `auto-label-eu-personal-data-sharepoint/README.md` §11, `design.md` §4, and
+  `reviews.md` round 4. This closes only the apostrophe sub-question - the broader
+  byte-exact-*casing* VERIFY for the other bundle names (`README.md` §11) stays open, pilot-tenant
+  only.
 
 ### Follow-ups discovered while building the Exchange PII exfiltration block (DLP) scenario
 - [ ] VERIFY (pilot tenant): the exact `Name` value `Get-RMSTemplate` returns for the auto-created
@@ -559,12 +563,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   and `README.md` §11).
 
 ### Follow-ups discovered while building the Security Policy Violations by Departing Users scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether this template's specific
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): whether this template's specific
   Defender for Endpoint indicators (malware/harmful-app install, security-control bypass) require
   Defender for Endpoint **Plan 2**'s EDR sensor, or whether Plan 1's next-gen antivirus/tamper-
-  protection alerting already satisfies them - Microsoft's own prerequisite table for this
-  template names only "an active Defender for Endpoint subscription" with no plan qualifier, and
-  no page found during this build resolves it either way. `README.md` §3.
+  protection alerting already satisfies them - **closed 2026-09-27 via a Microsoft Learn pass**:
+  the Defender for Endpoint Plan 1/Plan 2 feature-comparison table shows Next-generation
+  protection and Attack surface reduction (which tamper protection is part of) included in
+  **both** plans, while Endpoint detection and response (EDR) is the only capability gated to
+  Plan 2. Malware/harmful-app installation is a next-generation-protection detection and
+  security-control tampering is a tamper-protection detection - neither indicator this template
+  scores depends on the EDR sensor, so **Plan 1 is sufficient**. `README.md` §3/§11 and
+  `design.md` §2 goal 2 corrected in place with the finding and two new citations (Defender for
+  Endpoint Plan 1 overview + feature-comparison table; Tamper protection overview).
 - [ ] VERIFY (pilot tenant): whether a Defender for Endpoint alert and the Insider Risk
   Management alert it triggers under this template actually share one `incidentId` - the core
   assumption behind `deploy/Export-SecurityViolationInsiderRiskAlerts.ps1`'s join. Microsoft
@@ -701,7 +711,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   declares an app (not an action), and no Setting name for the cloud/browser restriction is
   documented anywhere this build found - see that scenario's `README.md` §11 and `design.md`
   §2/§6/§7. If either is resolved, extend `deploy/New-AdaptiveProtectionDevicesDlpPolicy.ps1`'s
-  two rules to the full 6-action Quick Setup shape.
+  two rules to the full 6-action Quick Setup shape. **Re-grounded 2026-09-28** (Microsoft Learn
+  MCP): still genuinely undocumented. `New-DlpComplianceRule`'s full parameter reference page was
+  re-fetched in full; its `-EndpointDlpRestrictions` example list remains exactly `Print`,
+  `CopyPaste`, `ScreenCapture`, `RemovableMedia`, `NetworkShare`, and `UnallowedApps` (app
+  declaration only) - no `Setting` name for either missing action appears there or on the DLP
+  policy reference / Configure endpoint DLP settings pages. One adjacent lead checked and ruled
+  out rather than left implicit: the new macOS 27 Endpoint DLP page documents an
+  `unallowedBrowserMode` configuration key, but that key belongs to a different feature (the
+  device-profile permission-notification settings for cloud egress when browser context is
+  unavailable), not to a `-EndpointDlpRestrictions` rule-level `Setting`, so it doesn't resolve
+  this gap and README.md §11 was not changed on that basis. The cmdlet reference does newly
+  confirm `-EndpointDlpRestrictions` requires Compliance Administrator or Compliance Data
+  Administrator role membership and points to `Get-PolicyConfig`/`Set-PolicyConfig` for viewing
+  the organization's configured restrictions - both added to `README.md` §11 as a documented,
+  non-fabricated way for a pilot-tenant operator to inspect available settings directly. Re-open
+  only once a page states a `Setting` name for either missing action, or a pilot-tenant
+  `Get-PolicyConfig` check confirms one.
 - [ ] VERIFY (pilot tenant): `-ContentFileTypeMatches`'s value syntax and valid strings - both
   `New-DlpComplianceRule` and `Set-DlpComplianceRule`'s official reference pages carry unpublished
   placeholder text for this parameter as of this writing. `endpoint-dlp-usb-block-adaptive-
@@ -736,12 +762,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   hashtable's key names in use.
 
 ### Follow-ups discovered while building the Adaptive Protection deleted-content-preservation scenario
-- [ ] VERIFY (pilot tenant): whether the Data Lifecycle Management/Records Management Purview role
+- [x] VERIFY (pilot tenant): whether the Data Lifecycle Management/Records Management Purview role
   group is *also* accepted for the "Adaptive protection in Data Lifecycle Management" toggle
   itself (it surfaces under the Data Lifecycle Management solution settings UI, not the Insider
   Risk Management app), or whether only the Insider Risk Management/Insider Risk Management Admins
-  role group Microsoft's own page links to actually works. Flagged inline in
-  `adaptive-protection-deleted-content-preservation/README.md` §3/§11 rather than assumed.
+  role group Microsoft's own page links to actually works - **closed 2026-09-27**: a direct
+  re-fetch of Microsoft's retention documentation for this exact toggle names the Adaptive
+  Protection permissions table's "Configure Adaptive Protection and update settings" row (Insider
+  Risk Management or Insider Risk Management Admins) as the required permissions, with no Data
+  Lifecycle Management/Records Management role group mentioned anywhere in that procedure.
+  `adaptive-protection-deleted-content-preservation/README.md` §3/§11 and `reviews.md` (correction
+  addendum) updated in place.
 - [ ] VERIFY (pilot tenant): the exact `AuditData` JSON field names populated for the
   `SharePointDataProactivelyPreserved`/`ExchangeDataProactivelyPreserved` audit Operations -
   `deploy/Export-AdaptiveProtectionPreservationEvidence.ps1` extracts `Workload`/`ObjectId`/
@@ -826,8 +857,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   independently confirms the hold behavior specifically for `purgeData`. `search-and-purge-data-
   spillage/README.md` §11 and `design.md` §2 goal 5/§6.
 - [ ] VERIFY: how long a `purgeData` job report's `reportFileMetadata.downloadUrl` remains valid
-  before expiring - not stated on the `ediscoveryPurgeDataOperation` Graph reference page.
-  `search-and-purge-data-spillage/README.md` §11.
+  before expiring - not stated on the `ediscoveryPurgeDataOperation` Graph reference page, nor on
+  the `reportFileMetadata` resource type page. **Re-grounded 2026-09-27** (Microsoft Learn MCP):
+  confirmed still undocumented. Microsoft Learn documents expiry only for the differently-typed
+  **export** download links (`ediscoveryExportOperation`/`exportFileMetadata`, the `contentExport`
+  action - search exports expire in 14 days, review-set exports in 30 days, pre-authorized links in
+  1-168 hours); none of that applies to `ediscoveryPurgeDataOperation`/`reportFileMetadata` (the
+  `purgeData` action), a distinct resource type, so assuming parity would be a guess. Remains open;
+  re-open for a fresh pass only if Microsoft publishes an expiry statement specific to
+  `ediscoveryPurgeDataOperation`/`reportFileMetadata`. `search-and-purge-data-spillage/README.md`
+  §11 (note expanded in place) and §12 (reference 15 added).
 - [x] `scenarios/ediscovery/search-and-purge-teams-messages/` - **built** (see DONE below): the
   `purgeAreas: teamsMessages` half of the same `purgeData` Graph action. Re-grounding this item found
   the original follow-up's own premise was **backwards**: current Microsoft Learn states that for
@@ -838,26 +877,34 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   than left standing next to a scenario that contradicts them.
 
 ### Follow-ups discovered while building the eDiscovery Teams search-and-purge scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): reconcile the private-channel
-  compliance-copy storage model - "Find and delete Microsoft Teams chat messages in eDiscovery"
-  states "a dedicated mailbox for each private channel," while "Finding content in Microsoft Teams
-  in eDiscovery" states private-channel messages are "stored in the Exchange Online mailboxes of all
-  members of the private channel." This build found no page reconciling the two.
-  `search-and-purge-teams-messages/README.md` §11 and `design.md` §4.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn/SDK pass): the typed Microsoft.Graph.Security
-  v1.0 PowerShell cmdlet name for binding an existing `ediscoveryNoncustodialDataSource` onto a
-  search via `POST .../searches/{id}/noncustodialSources/$ref` - this build found no page confirming
-  it, so `deploy/New-TeamsMessagePurgeSearch.ps1` calls the confirmed raw HTTP shape via
-  `Invoke-MgGraphRequest` instead of guessing. `search-and-purge-teams-messages/design.md` §6.
+- [x] Reconcile the private-channel compliance-copy storage model VERIFY - **closed** (see DONE
+  below): not a genuine two-source conflict, but a documented migration (per-member mailboxes →
+  a single dedicated group mailbox), confirmable per tenant/channel via
+  `Get-TenantPrivateChannelMigrationStatus`.
+- [x] VERIFY closed 2026-09-27 (Microsoft Learn MCP, module reference page): the typed
+  Microsoft.Graph.Security v1.0 PowerShell cmdlet name for binding an existing
+  `ediscoveryNoncustodialDataSource` onto a search via `POST .../searches/{id}/noncustodialSources/$ref`.
+  **Confirmed: no such cmdlet exists.** The module's full cmdlet index for the
+  `EdiscoveryCaseSearchNoncustodialSource` noun lists only `Get-` cmdlets (list/count); the module's
+  only `New-`-verb cmdlet touching a noncustodial source,
+  `New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`, is a different, case-level operation
+  (creates the source object; doesn't bind it to a search). `deploy/New-TeamsMessagePurgeSearch.ps1`
+  calling the raw HTTP shape via `Invoke-MgGraphRequest` for this step is therefore correct, not a
+  stand-in for an as-yet-unconfirmed cmdlet. Updated `search-and-purge-teams-messages/README.md` §11
+  (+ new reference 14), `design.md` §6, the deploy script's own `.NOTES`, and `reviews.md`
+  (Blue Team finding 4).
 - [ ] VERIFY (pilot tenant): how a case-level `ediscoveryNoncustodialDataSource`'s `DisplayName` is
   populated for a `userSource` (mailbox) - only a `siteSource` worked example was found. The deploy
   script's find-or-create idempotency check matches on `DisplayName` as a best-effort heuristic.
   `search-and-purge-teams-messages/design.md` §6.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether `-PurgeType` still meaningfully
-  affects the Teams **compliance copy's** own retention/hold-interaction timing, even though it no
-  longer gates the user-copy outcome (both values delete the user copy immediately). No Microsoft
-  Learn page found during this build confirms either way. `search-and-purge-teams-messages/README.md`
-  §11.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, `ediscoverySearch: purgeData` Graph reference):
+  `-PurgeType` does **not** meaningfully affect the Teams **compliance copy's** retention/
+  hold-interaction timing. The reference states plainly that for `purgeAreas: teamsMessages`,
+  either `purgeType` value results in permanent deletion - both values are documented to behave
+  identically, with no separate compliance-copy timing per value.
+  `search-and-purge-teams-messages/README.md` §11, `design.md` §7,
+  `deploy/Invoke-TeamsMessagePurge.ps1` (`.PARAMETER PurgeType`/`.NOTES`), and `reviews.md`
+  (correction addendum) updated in place.
 - [x] Consider a cross-cutting follow-up scripting the Teams-purge hold-removal/reapplication
   sequence (identify holds on target mailboxes via Top Locations, remove, purge, reapply) that
   `search-and-purge-teams-messages` deliberately left manual (`design.md` §3 goal 5) - a genuinely
@@ -876,11 +923,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   recorded immediately below under their own section rather than duplicated here.
 
 ### Follow-ups discovered while building the Data Security Investigations post-breach-investigation-and-purge scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the `Search-UnifiedAuditLog`
-  `RecordType` enum value for Data Security Investigations records - Microsoft's audit-log-activities
-  reference lists all 28 `DSI*` Operations but never states the RecordType that carries them.
-  `deploy/Export-DsiActivityAuditTrail.ps1` queries by `-Operations` alone rather than guessing one;
-  see the script's `.NOTES`, `README.md` §11, and `design.md` §5.
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): the `Search-UnifiedAuditLog`
+  `RecordType` enum value for Data Security Investigations records - **closed** (see DONE below):
+  resolved via the Office 365 Management Activity API schema's AuditLogRecordType enum.
 - [ ] Once the **Data Security Posture agent (preview)** - a related but separately-enabled DSI
   feature surfaced during this fragment's grounding pass - reaches a more stable/GA state, consider
   its own dedicated fragment; explicitly out of scope here (`design.md` §6).
@@ -958,7 +1003,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   parameters, but no Microsoft Learn page states what, if anything, shows up in `InPlaceHolds` for this
   specific case (as opposed to the org-wide `grp<guid>:n` notation, which Microsoft's own
   `Get-OrganizationConfig` reference does confirm). `teams-purge-hold-lifecycle-management/design.md`
-  §8.1, `README.md` §11.
+  §8.1, `README.md` §11. **Re-grounded 2026-09-28** (Microsoft Learn MCP, full fetch of
+  `purview/edisc-hold-types-mailboxes`): still genuinely undocumented. That page's `Get-Mailbox`
+  ("specific location retention policy") table states explicitly "you can identify retention
+  policies because the GUID starts with the `mbx` or the `skp` prefix" - `grp` is never mentioned in
+  that table. The `grp` prefix appears only in the page's separate `Get-OrganizationConfig`
+  (organization-wide) table, confirming the premise that `grp` is documented solely for the
+  org-wide case, never for a mailbox-scoped, non-org-wide Group-location policy. No other Microsoft
+  Learn page found in this pass (searched `Set-RetentionCompliancePolicy`/
+  `Set-AppRetentionCompliancePolicy` reference pages, `edisc-hold-manage`,
+  `edisc-hold-delete-recoverable-items`) states or contradicts this. Re-open only once a page
+  explicitly documents the mailbox-scoped Group-location `InPlaceHolds` notation or a pilot-tenant
+  check confirms it directly.
 - [ ] If a Microsoft Learn source or pilot-tenant test ever surfaces a real, confirmed case of a `grp`-
   prefixed, non-org-wide `InPlaceHolds` entry on a mailbox that is genuinely NOT a group/team mailbox
   (the `UnrecognizedPolicyGuids`/`unrecognizedPolicyGuidsNotRemoved` bucket
@@ -982,8 +1038,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn licensing-enforcement pass): what actually
   happens at sign-in for a user in a Conditional Access policy's scope who lacks the required
   Entra ID P2 license for the Insider Risk condition specifically - silently exempted, blocked
-  outright, or another behavior. Flagged inline as VERIFY in `docs/licensing-matrix.md` §8 and
-  `conditional-access-insider-risk-block/README.md` §11 rather than assumed.
+  outright, or another behavior. Flagged inline as VERIFY in `docs/licensing-matrix.md` §8 (the
+  scenario's `README.md` §3 only links to that matrix entry rather than duplicating the VERIFY
+  box, so no separate README edit was needed). **Re-grounded 2026-09-28** (Microsoft Learn MCP):
+  still genuinely undocumented. The Insider Risk recommendation page and the Conditional Access
+  overview's license-requirements section both state the P2 *feature-gate* only, never sign-in-time
+  behavior for an in-scope-but-unlicensed user; the overview's license-expiry passage covers a
+  different case (tenant-wide expiry, not a per-user mismatch). The closest documented precedent -
+  Microsoft's own managed "Risky sign-in MFA" policy, which caps its auto-assigned group to
+  P2-licensed users rather than evaluating tenant-wide - is suggestive but documented only for that
+  specific Microsoft-managed policy, not generalized to admin-authored policies. Full citation
+  trail and quotes added to `docs/licensing-matrix.md` §8 in place; re-open only once a page states
+  the sign-in-time behavior explicitly or a pilot-tenant check confirms it directly.
 - [x] Script Graph's `conditions.users.excludeGuestsOrExternalUsers` nested condition (the
   "exclude B2B direct connect / service providers / other external" categories Microsoft's own
   documented procedure also recommends) - **built** (see DONE below): the resource shape
@@ -997,15 +1063,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   narrower VERIFY carried forward rather than resolved by guessing - see the new item immediately
   below. The `externalTenants` sibling property remains a deliberate non-goal (design.md §7):
   Microsoft's own guide doesn't scope this exclusion by tenant either.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn/worked-example pass): the exact separator
-  Microsoft Graph uses between multiple `guestOrExternalUserTypes` flag values on the wire (this
-  scenario's script assumes a bare comma, e.g. `"b2bDirectConnectUser,serviceProvider"`) and
-  whether the Microsoft Graph PowerShell SDK's typed `Get-MgIdentityConditionalAccessPolicy`
-  read-back returns that same raw string or an already-split collection for this specific nested
-  property. Affects only this script's own local idempotency/drift detection, not the deployed
-  policy's actual enforcement behavior (Graph is the source of truth for how the condition
-  evaluates) - flagged inline in `conditional-access-insider-risk-block/deploy/
-  New-InsiderRiskConditionalAccessPolicy.ps1`'s `.NOTES` and `README.md` §11 rather than guessed.
+- [x] VERIFY closed 2026-09-27 (Microsoft Learn MCP): the exact separator Microsoft Graph uses
+  between multiple `guestOrExternalUserTypes` flag values on the wire (this scenario's script
+  assumes a bare comma, e.g. `"b2bDirectConnectUser,serviceProvider"`), and whether the Microsoft
+  Graph PowerShell SDK's typed `Get-MgIdentityConditionalAccessPolicy` read-back returns that same
+  raw string or an already-split collection for this specific nested property. **Confirmed by
+  grounded analogy, not a worked example of this exact property:** the
+  `conditionalAccessGuestsOrExternalUsers` resource's own JSON representation shows
+  `guestOrExternalUserTypes` as a single Edm.String (`"String"`, not `["String"]`) - contrasted
+  directly against the sibling `conditionalAccessEnumeratedExternalTenants.members` property, a
+  true collection whose JSON representation shows `["String"]`. Other Graph resources sharing the
+  identical "multi-valued enumeration on a single Edm.String property" shape (`cloudLicensing`
+  subscription's `tags`/`state`, `cloudLicensing` service's `assignableTo`) explicitly document
+  that shape as "a comma-separated list"; no Microsoft Learn source documents any other separator
+  for a property of this shape. Since the Microsoft Graph PowerShell SDK's typed model classes are
+  generated directly from this same Edm.String metadata, `Get-MgIdentityConditionalAccessPolicy`'s
+  read-back is that same raw comma-separated string, not an already-split collection. Updated
+  `conditional-access-insider-risk-block/deploy/New-InsiderRiskConditionalAccessPolicy.ps1`'s
+  `.NOTES` (+ 2 new source citations) and inline comments, `validate/
+  Test-InsiderRiskConditionalAccessPolicy.ps1`'s `.NOTES` and inline comment, `README.md` §11 (+
+  new reference 14) and its configuration-reference table row, `design.md`'s Users-scope decision
+  row, and `reviews.md` (Red Team finding 2, Product Owner finding 4) in place.
 - [ ] VERIFY (pilot tenant): Microsoft Quick Setup's exact auto-generated Conditional Access
   policy display name, so `conditional-access-insider-risk-block`'s own `(Custom)`-suffixed name
   can be independently confirmed not to collide, the same confirmation the DLP sibling scenario
@@ -1102,16 +1180,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `scenarios/adaptive-protection/direct-send-anonymous-relay-hardening/`.
 
 ### Follow-ups discovered while building the Data Map Azure SQL scan-and-classify scenario
-- [ ] VERIFY (pilot tenant or the Purview OpenAPI spec, before production use): the exact REST
-  request body shapes for the **Data Sources - Create Or Update**, **Triggers - Create Or
-  Replace**, and **Scan Result - Run Scan** operations used by
-  `scenarios/data-map/scan-azure-sql-and-classify/deploy/New-AzureSqlDataMapScan.ps1`. Their
-  canonical Microsoft Learn REST reference pages returned fetch errors in this build environment;
-  the shapes used are reconstructed from the confirmed sibling **Scans - Create Or Replace**
-  endpoint (direct-fetched, API version `2023-09-01`), the official
-  `@azure-rest/purview-scanning` JS SDK type definitions, and the `Az.Purview` PowerShell module's
-  parameter signatures - three converging but indirect sources. Flagged inline in that scenario's
-  `README.md` §11 and the deploy script's `.NOTES`.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP): the exact REST request body shapes for the
+  **Data Sources - Create Or Replace** and **Triggers - Create Or Replace** operations used by
+  `scenarios/data-map/scan-azure-sql-and-classify/deploy/New-AzureSqlDataMapScan.ps1` (the
+  **Scan Result - Run Scan** half of the original follow-up was already closed 2026-09-04, backported
+  from the Managed Instance sibling - see DONE below). Their canonical Microsoft Learn REST reference
+  pages, which returned fetch errors in the original build's environment, were successfully
+  direct-fetched this run. **Confirmed: the reconstructed shapes were already correct.** The
+  `AzureSqlDatabaseDataSource`/`AzureSqlDatabaseProperties` schema confirms all six claimed fields
+  (`serverEndpoint`, `resourceName`, `resourceGroup`, `subscriptionId`, `location`, `collection`),
+  and the Triggers `properties.recurrence`/`TriggerRecurrence` schema confirms the nesting the script
+  already sends - no script change required. One naming error surfaced and was corrected: the Data
+  Sources operation is **Create Or Replace**, not "Create Or Update" as this scenario's own build had
+  guessed (the `create-or-update` URL slug does not resolve). `scan-azure-sql-and-classify/README.md`
+  §11/§12, `design.md`, the deploy script's `.NOTES`, and `reviews.md` updated in place.
 - [x] `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/` - script a **custom, PII-only
   scan rule set** (excluding all system classifications except U.S. Social Security Number and
   Credit Card Number by default) - **built** (see DONE below): the "Scan Rulesets - Create Or
@@ -1223,14 +1305,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   VERIFYs recorded below rather than guessed at.
 
 ### Follow-ups discovered while building the scan-credential-remaining-kinds scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether any documented REST endpoint
-  returns the Microsoft account ID / external ID pair a Role ARN credential's AWS-side IAM role must
-  trust. Microsoft's Amazon S3 connector walkthrough shows both values surfacing only in the
-  **portal's** "New credential" pane; `RoleARNCredentialTypeProperties` itself contains only
-  `roleARN` (confirmed directly from the Scanning-data-plane reference). Until this is resolved, a
-  fully scripted Amazon S3 onboarding still requires at least one portal visit upstream of
-  `scenarios/data-map/scan-credential-remaining-kinds/deploy/New-PurviewScanCredentialExtended.ps1`
-  - flagged inline in that scenario's `README.md` §3/§11 and `design.md` §4 rather than guessed at.
+- [ ] VERIFY narrowed 2026-09-28 (Microsoft Learn MCP) - now covers only the **Microsoft account ID**
+  half, not both values: the **external ID** half of the Role ARN trust pair IS exposed by a
+  documented REST-backed property after all - not `RoleARNCredentialTypeProperties` (Scanning
+  data-plane, still only `roleARN`), but `Microsoft.Purview/accounts`' own control-plane
+  `properties.cloudConnectors.awsExternalId` (read-only), confirmed consistently across the
+  `Az.Purview` PowerShell module (`Get-AzPurviewAccount`'s `CloudConnectorAwsExternalId`) and three
+  other independent SDK surfaces. No sibling property for the **Microsoft account ID** exists in that
+  same schema, or anywhere else this pass checked - it remains confirmed portal-only. A fully
+  scripted Amazon S3 onboarding can now script the external-ID half (via a second, control-plane API
+  call `New-PurviewScanCredentialExtended.ps1` does not currently make) but still requires a portal
+  visit for the Microsoft account ID.
+  `scenarios/data-map/scan-credential-remaining-kinds/README.md` §11/§12, `design.md` §4/§6/§8,
+  `deploy/New-PurviewScanCredentialExtended.ps1` comment-based help, and `reviews.md` (correction
+  addendum) updated in place. No script behavior change.
 - [ ] Periodically re-check the GA/preview status of the `ManagedIdentity` (user-assigned) credential
   kind. Microsoft's "Credentials for source authentication" page currently labels it "(preview)";
   the Scanning-data-plane REST reference carries no preview annotation of its own for the same kind.
@@ -1270,15 +1358,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   valid `credentialType` for the `AzureSynapseWorkspaceCredential` scan `kind`. Also updated the base
   scenario's own stale `resourceTypes` VERIFY and two more stale "portal-only credential" claims
   found in passing.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the Azure IAM Reader
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the Azure IAM Reader
   role-assignment portal walkthrough ("Select box accepts your Microsoft Purview account name or
   UAMI") - directly confirmed only on the Azure SQL Database page - also appears verbatim on the
   Azure SQL Managed Instance or Azure Synapse workspace pages, or is a documentation-page omission on
-  an otherwise-identical Azure RBAC mechanism. Flagged inline in both
-  `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/README.md` §3/§5/§11 and
-  `scan-azure-synapse-and-classify-managed-identity-credential/README.md` §3/§11 rather than assumed
-  identical.
-- [ ] **CORRECTION (re-grounded, not built):** A follow-up-to-the-follow-up grounding pass found the
+  an otherwise-identical Azure RBAC mechanism - **Managed Instance half CLOSED 2026-09-27** (see DONE
+  below): a direct fetch of Microsoft's Managed Instance registration/authentication page found this
+  was not a documentation omission but a genuine mechanism difference - no Azure RBAC role
+  assignment of any kind applies to Managed Instance SAMI/UAMI scan authentication, only the T-SQL
+  Entra contained-user + `db_datareader` grant. `scan-azure-sql-managed-instance-and-classify/
+  README.md` §3/§4/§5/§11 (the base scenario, which carried the same unflagged claim as settled fact)
+  and `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/README.md` §3/§4/§5/
+  §11 both corrected, plus their `design.md`/`rollback.md`/`reviews.md`/deploy-script `.NOTES` and
+  runtime messages. **Azure Synapse half remains a separate, narrower open VERIFY** below - the
+  Synapse page's Reader/Storage Blob Data Reader wording ("enter your Microsoft Purview account name,
+  which represents its MSI") was independently confirmed to exist (unlike Managed Instance, where no
+  such wording exists at all) but never names a UAMI alternative anywhere on that page - carried
+  forward in `scan-azure-synapse-and-classify-managed-identity-credential/README.md` §11 unchanged.
+- [x] **CORRECTION, then CLOSED 2026-09-28:** A follow-up-to-the-follow-up grounding pass found the
   `-ResourceNames`-style scoping parameter item below was less settled than originally framed. The
   worked JSON example's `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` key
   name does not appear anywhere in the formal `AzureSynapseWorkspaceCredentialScanProperties`
@@ -1289,10 +1386,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   *sub-object* shape independently matches the formal `ResourceTypeFilter` type, which is reassuring
   but doesn't resolve the key-name conflict. Likely a shared/reused schema type whose full valid key
   set isn't fully enumerated for every scan kind that references it (a common auto-generated-API-doc
-  pattern), but that is an inference, not a confirmation - flagged inline in
+  pattern), but that was an inference, not a confirmation - flagged inline in
   `scan-azure-synapse-and-classify/README.md` §11 as a VERIFY rather than built on an unresolved
-  conflict, per `AGENTS.md` §4. Re-open only once confirmed against a pilot tenant or a more specific
-  Synapse-only REST reference page.
+  conflict, per `AGENTS.md` §4. **Closed**: a direct re-fetch (Microsoft Learn MCP tool, reachable this
+  run unlike prior builds) of the canonical `register-scan-synapse-workspace` page's own "Set up a scan
+  by using an API" section confirms the PascalCase `AzureSynapseServerlessSql` key is Microsoft's
+  current, live documented shape for this exact scan kind - the generic REST type reference's key
+  enumeration is confirmed incomplete for kinds reusing its shared schema, exactly as suspected.
+  `scan-azure-synapse-and-classify/README.md` §11, `design.md` §2/§5.3/§7, and the deploy script's
+  `.NOTES` corrected in place; the deploy script's own default behavior (omitting `resourceTypes`) is
+  unchanged.
 - [ ] Amazon S3 (`AmazonARN`), Salesforce (`ConsumerKeyAuth`), and Microsoft Fabric/Power BI
   (`DelegatedAuth`) still have no scan scenario of any kind in this library - each would need its own
   new base scan scenario (data source + scan, not just a credential variant of an existing one), a
@@ -1441,22 +1544,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `InternalRelay` (both in-organization), and that the external-relay clause matters only for a hybrid
   tenant whose on-premises domains this scenario's tooling can't see. `reviews.md` carries a matching
   correction addendum, doc-only per `AGENTS.md` §6, no new four-lens round run.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples pass): whether `Set-
-  AcceptedDomain` is independently confirmed to appear under `Search-UnifiedAuditLog`'s `RecordType
-  ExchangeAdmin` / `Operations 'Set-AcceptedDomain'` - this build found the general documented
-  default (Exchange admin cmdlet executions are logged this way) but no worked example naming this
-  specific cmdlet. `accepted-domains-hygiene-check/deploy/Export-AcceptedDomainsHygieneReport.ps1`'s
-  `-IncludeAuditAttribution` switch is flagged `VERIFY` in its own `.NOTES` and `README.md` §11
-  rather than assumed correct.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether Microsoft Entra ID's `Add
-  verified domain`/`Remove verified domain`/`Add unverified domain`/`Remove unverified domain`
-  `DirectoryManagement`-category audit activities (confirmed to exist by name in Microsoft's
-  audit-activity reference) surface through `Search-UnifiedAuditLog -RecordType
-  AzureActiveDirectory` with an `Operations` value matching those names verbatim. Resolving this
-  would let `accepted-domains-hygiene-check` attribute a `DomainAddedSincePreviousRun`/
-  `DomainRemovedSincePreviousRun` finding to a specific admin action and timestamp - currently a
-  disclosed, unbuilt gap (`design.md` §5, `README.md` §11) because Exchange Online has no
-  `New-`/`Remove-AcceptedDomain` cmdlet to audit for the domain-addition/removal event itself.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, maintenance pass): whether `Set-AcceptedDomain`
+  is independently confirmed to appear under `Search-UnifiedAuditLog`'s `RecordType ExchangeAdmin` /
+  `Operations 'Set-AcceptedDomain'` - no worked example names this cmdlet specifically, but the
+  "Audit log activities" reference's "Exchange admin activities" section states the full default
+  rule (every Exchange Online PowerShell change is logged except `Get-`/`Search-`/`Test-`-prefixed
+  cmdlets and unnamed internal Microsoft-maintenance cmdlets); `Set-AcceptedDomain` falls under the
+  default rule, matching neither exception. `accepted-domains-hygiene-check/README.md` §11/§12,
+  `design.md` §5, `reviews.md`, and `deploy/Export-AcceptedDomainsHygieneReport.ps1`'s `.NOTES`/
+  runtime warning updated from VERIFY to confirmed - see DONE below.
+- [x] VERIFY - whether Microsoft Entra ID's `Add verified domain`/`Remove verified domain`/`Add
+  unverified domain`/`Remove unverified domain` `DirectoryManagement`-category audit activities
+  surface through `Search-UnifiedAuditLog -RecordType AzureActiveDirectory` with an `Operations`
+  value matching those names verbatim. **Closed 2026-09-27** (Microsoft Learn MCP, both reference
+  pages fetched directly): **no.** Those four names are specific to the separate Microsoft Entra
+  audit log (Entra admin center / Graph `auditLogs/directoryAudits`) per
+  `entra/identity/monitoring-health/reference-audit-activities`. The Microsoft 365 unified audit
+  log that `Search-UnifiedAuditLog` reads has its own, different domain-event table
+  (`purview/audit-log-activities#directory-administration-activities`): only `Add domain to
+  company.`/`Remove domain from company.` (no verified/unverified distinction) and `Verify
+  domain.` (one-way, no "unverify" event) exist there. `accepted-domains-hygiene-check` therefore
+  correctly does **not** implement this attribution via `-IncludeAuditAttribution` - the gap is
+  real and confirmed, not unbuilt-pending-verification. `README.md` §8/§11/§12, `design.md` §5,
+  and the deploy script's `.NOTES` updated to state the confirmed negative instead of leaving it
+  open.
 - [x] Consider an on-premises Exchange companion check for `accepted-domains-hygiene-check`, for a
   hybrid Exchange Online/on-premises tenant whose on-premises accepted domains (including any
   genuine `ExternalRelay` domain) are invisible to the current Exchange-Online-only script - **built**
@@ -1470,15 +1581,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   neither cmdlet to audit in the first place.
 
 ### Follow-ups discovered while building the on-premises Accepted-Domains Hygiene Check companion
-- [ ] VERIFY (pilot on-premises Exchange server, or a future Microsoft Learn pass): the exact
-  *default* value of `-AdminAuditLogCmdlets` (which cmdlets a fresh on-premises install audits without
-  explicit configuration) - this build confirmed `-AdminAuditLogEnabled` defaults to `$true` and
-  `-AdminAuditLogAgeLimit` defaults to 90 days from `Set-AdminAuditLogConfig`'s own reference page, but
-  that page's fetched content did not state a default for `-AdminAuditLogCmdlets` itself (only that
-  `*` audits everything). `accepted-domains-hygiene-check-on-premises/deploy/
-  Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s `-IncludeAuditAttribution` switch tells the
-  organization to confirm coverage via `Get-AdminAuditLogConfig` rather than assuming the common `*`-default
-  belief is correct - see that scenario's `design.md` §2 and `README.md` §11.
+- [x] VERIFY (pilot on-premises Exchange server, or a future Microsoft Learn pass): the exact
+  *default* value of `-AdminAuditLogCmdlets` - **closed** (see DONE below): a 2026-09-27 re-fetch of
+  `Set-AdminAuditLogConfig`'s reference page confirms **Default value: None**.
 - [x] Re-verify the parent `accepted-domains-hygiene-check/deploy/KnownDomains.sample.json`'s
   `hybrid.contoso.com` entry (`expectedDomainType: InternalRelay`) against a primary, authoritative
   Microsoft Learn conceptual page - **re-grounded and closed, sample confirmed correct, not changed**
@@ -1522,12 +1627,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   match rather than trusting the filter, but a domain with more than one page of name-matching
   terms could in principle need pagination the deploy script doesn't yet implement - flagged
   inline in `README.md` §11 and the deploy script's `.NOTES`.
-- [ ] VERIFY (pilot tenant): the Unified Catalog `Business Domain - Create`/`Update` REST
-  reference marks `systemData`/`thumbnail`/`domains`/`managedAttributes` as required request-body
-  fields in a way that contradicts Microsoft's own worked examples and ordinary REST semantics;
-  `curate-business-glossary`'s deploy script sends a minimal practical body instead and flags this
-  discrepancy rather than fabricating placeholder values for those fields - confirm the minimal
-  body is accepted (or find the correct minimal shape) against a pilot tenant.
+- [x] VERIFY closed 2026-09-27 (Microsoft Learn MCP, maintenance pass): the Unified Catalog
+  `Business Domain - Create`/`Update` REST reference marks `id`/`parentId`/`systemData`/
+  `thumbnail`/`domains`/`managedAttributes` as required request-body fields in a way that
+  contradicts Microsoft's own worked examples and ordinary REST semantics -
+  **resolved, not guessed**: a direct fetch of the `Business Domain - Create` reference page
+  confirms its Request Body table reuses the response `Domain` schema (it even marks the
+  server-generated `id` and `parentId` as request-required, which no `POST` can honor), so this
+  is a documentation-generation artifact, not a real API constraint. Microsoft's own
+  **Disaster recovery for Unified Catalog** article independently corroborates the minimal body
+  `curate-business-glossary`'s deploy script already sends (`name`/`type`/`status`/`description`/
+  `managedAttributes`). No code change needed - `README.md` §11/§12, `reviews.md` (new
+  Maintenance addendum), and the deploy script's `.NOTES` updated to record the closure and cite
+  the exact evidence.
 - [x] Consider a `scenarios/unified-catalog/governance-domain-hierarchy/` (or fold into a future
   Unified Catalog pass) covering multi-domain parent/child governance hierarchies, custom
   attribute groups, and data estate mappings to Data Map collections - explicitly out of scope in
@@ -1544,13 +1656,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   a missing **Governance Domain Owner** row to `docs/rbac-model.md` §5.
 
 ### Follow-ups discovered while building the Unified Catalog manage-data-products scenario
-- [ ] VERIFY (pilot tenant or the Swagger spec linked from the Unified Catalog API overview page):
+- [x] VERIFY (pilot tenant or the Swagger spec linked from the Unified Catalog API overview page):
   the exact `Data Products - Create Relationship` request body per `entityType` - the REST
   reference's only worked example (`entityType=CRITICALDATACOLUMN`) includes an `assetId` field
-  this scenario's `DATAASSET`/`TERM` calls omit. Flagged inline in `manage-data-products/README.md`
-  §11, `design.md` §3, and `deploy/New-DataProduct.ps1`'s `.NOTES` rather than resolved by
-  guessing. Closing this would also let `scenarios/unified-catalog/link-glossary-terms-to-data-
-  products/`-style critical-data-element/column linking be added with confidence.
+  this scenario's `DATAASSET`/`TERM` calls omit. - **closed 2026-09-27 (Microsoft Learn grounding,
+  see DONE below)**: that worked example's `entityType=CRITICALDATACOLUMN` value is itself absent
+  from the same page's own `EntityCategory` enum, and every sibling relationship-creation
+  operation (Data Assets - Create Relationship, Critical Data Elements - Create Relationship, and
+  Data Products - Create Relationship's own `DataProductRelationship` response type) documents the
+  plain `entityId`/`description`/`relationshipType` shape this scenario already sends. Read as a
+  documentation-generation artifact, not a real per-`entityType` schema difference - no code change
+  needed. `manage-data-products/README.md` §11/§12, `design.md` §6, and
+  `deploy/New-DataProduct.ps1`'s `.NOTES` updated accordingly.
 - [ ] VERIFY (pilot tenant): whether the Unified Catalog `Data Products - Update` REST operation
   enforces the portal's "must configure a data access policy before Publish" business rule
   server-side, or whether that is a portal-UX-only guardrail this scenario's direct `PUT` call
@@ -1588,15 +1705,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   policy engine), not the consumer-facing access-request workflow.
 
 ### Follow-ups discovered while building the Unified Catalog manage-critical-data-elements scenario
-- [ ] VERIFY (pilot tenant): whether `entityType=DATACOLUMN` (the value this scenario's scripts
-  send, matching the formally-documented `EntityCategory` enum) or `entityType=CRITICALDATACOLUMN`
-  (the value every worked example on the Critical Data Elements Create/List/Delete Relationship
-  reference pages actually uses) is the real, accepted value for mapping a column to a critical
-  data element. This is a genuine, three-page-consistent discrepancy in Microsoft's own REST
-  reference, not a gap this build failed to research - see `manage-critical-data-elements/
-  design.md` §6 and `README.md` §11. Resolving this would let this scenario and
-  `docs/automation-surface.md`'s new routing-table row drop the hedge and state one confirmed
-  value.
+- [x] VERIFY (pilot tenant): whether `entityType=DATACOLUMN` or `entityType=CRITICALDATACOLUMN` is
+  the real, accepted value for mapping a column to a critical data element - **resolved
+  2026-09-27** without needing a pilot tenant: a re-fetch of the Critical Data Elements
+  Create/List/Delete Relationship reference pages (`api-version=2025-09-15-preview`) found the
+  `EntityCategory` enum now lists `CRITICALDATACOLUMN` explicitly on all three pages, matching
+  every worked example - there is no plain `DATACOLUMN` value in the enum (confirmed identical on
+  the Data Products - Create Relationship page's shared enum too). `manage-critical-data-elements/`
+  scripts, README.md, design.md §6, and reviews.md updated to send/expect `CRITICALDATACOLUMN`;
+  cross-references in `manage-critical-data-elements-related-terms/`, `manage-okrs/design.md`, and
+  `docs/automation-surface.md` corrected to match.
 - [x] `scenarios/unified-catalog/manage-critical-data-elements-related-terms/` - script the
   "Manage related terms" action Microsoft's critical data elements portal exposes - **built** (see
   DONE below): links an existing CDE to one or more existing glossary terms via
@@ -1637,11 +1755,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Update, then `dataset_process_inputs`/`process_dataset_outputs` relationships; "Create New Custom
   Types": the custom-Process-type body). Composable with, not a replacement for, this scenario's
   own `direct_lineage_dataset_dataset` edge - see the new scenario's `design.md` §6.
-- [ ] VERIFY (pilot tenant): the exact qualifiedName string format Purview assigns to an
-  `azure_sql_table` asset (e.g. whether it follows an `mssql://...` scheme) - not found during this
-  build's grounding pass; `end-to-end-lineage-validation`'s definition file currently requires the
-  operator to copy the value from the portal rather than having either script construct it. Closing
-  this would let a future scenario auto-resolve qualifiedNames instead of requiring manual copy.
+- [x] VERIFY (pilot tenant): the exact qualifiedName string format Purview assigns to an
+  `azure_sql_table` asset (e.g. whether it follows an `mssql://...` scheme) - **closed 2026-09-28**.
+  Microsoft's own "Discovery - Query" REST reference
+  (`https://learn.microsoft.com/rest/api/purview/catalogdataplane/discovery/query`) shows the
+  `mssql://` scheme directly, twice, in its own worked example responses (`Discovery_Query_Classification`
+  and `Discovery_Query_Collection`): `"entityType": "azure_sql_table"` paired with
+  `"qualifiedName": "mssql://exampleserver.database.windows.net/examplesqldb/examplepath/exampledata1"`.
+  This confirms the scheme (`mssql://<server-fqdn>/<database>/<schema-or-path>/<table>`) directly
+  from Microsoft's own documentation - no pilot tenant needed. `end-to-end-lineage-validation`'s
+  README.md §11/§12 and `deploy/New-CustomLineageRelationship.ps1` updated in place to cite this;
+  the script still requires the operator to copy the real per-asset value (now format-confirmed,
+  not merely portal-derived) rather than auto-constructing it, since the exact schema/path segment
+  for a given table is asset-specific and copying from the portal remains the safer default.
 - [ ] VERIFY (pilot tenant): whether `Relationship - Create` rejects, no-ops, or duplicates a
   second POST of an identical relationship - this build's grounding pass confirmed the operation's
   request/response shape directly from Microsoft's REST reference but not this specific behavior;
@@ -1672,20 +1798,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   confirmed non-VNet worked example) for a non-VNet `Create Data Source` call - Microsoft's request-
   body property table doesn't mark any field required/optional explicitly, unlike its URI-parameter
   table, which does. `connection-and-scorecard-alerts/README.md` §11.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): Create Data Source's create-vs-replace
-  semantics against an already-existing `dataSourceId`, and Update Data Source's PATCH partial-
-  merge-vs-full-replace semantics. Doesn't affect `New-DataQualityConnection.ps1`'s idempotency (it
-  always `GET`s first and picks PUT/PATCH accordingly), but a direct caller of the raw API should
-  confirm both. Same open-question class as `rules-and-scorecards`' own Create Rules PUT-semantics
-  VERIFY.
+- [ ] VERIFY (pilot tenant): Create Data Source's create-vs-replace semantics against an already-
+  existing `dataSourceId` - unlike `Update Alert`, its REST reference doesn't describe the ID as
+  "to create or replace," only "to be created." Doesn't affect `New-DataQualityConnection.ps1`'s
+  idempotency (it always `GET`s first and only calls PUT on a confirmed 404), but a direct caller
+  of the raw API should confirm this. Same open-question class as `rules-and-scorecards`' own
+  Create Rules PUT-semantics VERIFY.
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): Update Data Source's PATCH partial-
+  merge-vs-full-replace semantics - **resolved 2026-09-27** without needing a pilot tenant (see
+  DONE below).
 - [ ] VERIFY (pilot tenant): whether Data Quality Alert `receivers` accepts a raw SMTP address/UPN
   string in addition to a Microsoft Entra object ID - every worked example in Microsoft's Alert REST
   reference pages shows only GUIDs, but the portal's own conceptual doc calls the field a "recipient
   alias" without stating the resolved type. `connection-and-scorecard-alerts/README.md` §11.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): `Update Alert`'s PUT semantics against
-  an already-existing `alertId` - its reference page states only "Creates an alert," with no
-  explicit create-vs-replace statement. Doesn't affect this scenario's idempotency (the ID is always
-  caller-chosen), but a direct caller should confirm.
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): `Update Alert`'s PUT semantics against
+  an already-existing `alertId` - **resolved 2026-09-27** without needing a pilot tenant: a re-fetch
+  of the `Update Alert` REST reference page (`2026-01-12-preview`) shows Microsoft now documents the
+  `alertId` URI parameter itself as "Unique identifier of the alert to create or replace" - explicit
+  create-or-replace (full-replace) semantics, not create-only, superseding this build's earlier
+  fetch which only saw "Creates an alert scoped to the specified business domain." Never affected
+  this scenario's idempotency (the ID is always caller-chosen). `connection-and-scorecard-alerts/`
+  `README.md` §11 and `deploy/New-DataQualityAlert.ps1` `.DESCRIPTION`/`.NOTES` updated to cite the
+  confirmed behavior instead of the open question.
 - [x] Ground `Search-UnifiedAuditLog` `RecordType`/`Operations` coverage (if any) for Data Quality
   connection/alert `Create`/`Update`/`Delete` actions, then add a dedicated audit-trail export
   script to `connection-and-scorecard-alerts/deploy/` - **grounded and closed, not built** (see
@@ -1715,16 +1849,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   shape remains inferred-from-schema-and-corroborated, not pilot-tenant-confirmed - stated that way
   in the new file's own header comment, `README.md` §11, and `design.md`, not upgraded to a firm
   claim just because a file now ships it.
-- [ ] Once the Schedule object's recurring-trigger-type VERIFY immediately below is closed, revisit
-  whether a recurring scan schedule changes any of this scenario's alert-cadence assumptions
-  (currently alerts fire per completed scan, whatever triggers it).
-
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the Data Quality Schedule object's
-  trigger `type` values beyond the confirmed `RunOnce` shape - a `Recurrence` type with frequency/
-  interval fields almost certainly exists (the portal's own Scheduled scans wizard supports daily/
-  weekly/monthly recurrence) but wasn't found in this build's REST reference fetch. Needed before
-  `rules-and-scorecards` (or a follow-up) can script an ongoing scan cadence instead of a one-time
-  `RunOnce` schedule.
 - [ ] VERIFY (pilot tenant): the exact mechanism by which a `TypeMatch` (Data type match) rule's
   `typeProperties` specifies the target type a column is checked against - the confirmed REST
   `TypeProperties` schema has no field name for it despite Microsoft's conceptual documentation
@@ -1763,16 +1887,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   mismatch is expected (e.g. due to near-real-time index changes mid-page-through) or a sign of a
   client-side pagination bug. Confirm against a pilot tenant with a large, stable (non-changing)
   asset population before treating a persistent mismatch as benign.
-- [ ] Note for a future Data Lineage follow-up: this build's `Discovery_Query_Collection` worked
+- [x] Note for a future Data Lineage follow-up: this build's `Discovery_Query_Collection` worked
   example response (Microsoft's own REST reference page for Discovery - Query) shows a real
   `azure_sql_table` `qualifiedName` value -
   `mssql://exampleserver.database.windows.net/examplesqldb/examplepath/exampledata1` - which
   directly bears on the open VERIFY in `scenarios/data-lineage/end-to-end-lineage-validation/
   README.md` §11 ("the exact qualifiedName string format Purview assigns to an azure_sql_table
-  asset"). Not applied retroactively to that already-DONE fragment in this build (out of scope for
-  this turn), but the next pass on that scenario (or a dedicated Data Map/Data Lineage grounding
-  fragment) should confirm this `mssql://` scheme against a pilot tenant and, if confirmed, update
-  that scenario's README/design.md to close the VERIFY instead of requiring manual portal copy.
+  asset"). **Applied 2026-09-28** (see the VERIFY closure above in this same section): the same
+  worked example (and its `Discovery_Query_Classification` sibling) is a direct, first-party
+  Microsoft citation for the `mssql://` scheme, no pilot tenant needed - `end-to-end-lineage-
+  validation`'s README.md §11/§12 and deploy script updated to close the VERIFY.
 
 ### Follow-ups discovered while building the Data Estate Insights glossary-curation-coverage-report scenario
 - [ ] VERIFY (pilot tenant): whether `Global Catalog Reader`/`Local Catalog Reader` can see
@@ -1785,8 +1909,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   parameter - Microsoft's reference documents the parameter but not a ceiling. This scenario
   defaults `-PageSize` to a conservative 100 and always follows `nextLink`, so an unconfirmed cap
   cannot cause silent truncation, but confirming the real maximum would let a future revision tune
-  the default for fewer round-trips at scale. `glossary-curation-coverage-report/deploy/
-  Export-GlossaryCurationCoverageReport.ps1`'s `.NOTES`.
+  the default for fewer round-trips at scale. **Re-grounded 2026-09-28** (Microsoft Learn MCP):
+  re-fetched the `Terms - List` reference against both the `2025-09-15-preview` and the pinned
+  `2026-03-20-preview` API version - `top` remains documented only as "the number of result items
+  to return," no maximum stated on either version, so this is not guessed away. The
+  `2026-03-20-preview` fetch also surfaced a previously-unrecorded, directly relevant fact: this
+  operation now documents a rate limit of **100 requests per 20-second window**, not present on the
+  `2025-09-15-preview` reference - recorded alongside the still-open VERIFY since `-PageSize 100`'s
+  choice is informed by it (a single domain's pull stays well inside the window; a future revision
+  fanning out across many `-DomainIds` should watch for it). Remains open; re-open for a fresh pass
+  only if Microsoft publishes an explicit `top` ceiling for this operation.
+  `glossary-curation-coverage-report/deploy/Export-GlossaryCurationCoverageReport.ps1`'s `.NOTES`
+  and `README.md` §11 (both updated in place).
 - [ ] Once Microsoft enumerates valid `Terms - Get Facets` `facets[].name` values beyond the single
   worked `owner` example, revisit whether a `status`-facet (or similar) request could replace this
   scenario's per-page client-side status tally with a single aggregate call - see `design.md` §6.
@@ -1897,16 +2031,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the sibling script's own `Role`-typed narrowing could move from client-side to server-side,
   reducing the amount of data pulled per run on a high-churn tenant.
   `entra-privileged-role-monitoring/design.md` §10.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the "Add member to role
+- [x] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the "Add member to role
   (permanent)" activity name Microsoft's own "Security operations for privileged accounts"
   out-of-PIM detection guidance cites (tagged `Service = PIM`) is the same underlying event as the
   plain "Add member to role" (Core Directory service) `Export-EntraPrivilegedRoleAuditTrail.ps1`
-  currently filters on, or a genuinely distinct event this script's filter would miss. Flagged
-  inline in `entra-privileged-role-monitoring/README.md` §11, `design.md` §4a, and the deploy
-  script's `.NOTES` rather than resolved by guessing (`AGENTS.md` §4).
-- [ ] Once the item above is resolved, revisit whether `$monitoredActivities` in
+  currently filters on, or a genuinely distinct event this script's filter would miss - **closed
+  2026-09-27 via a Microsoft Learn pass**: a direct fetch of Microsoft's canonical
+  `reference-audit-activities` reference confirms `Add member to role outside of PIM (permanent)`
+  is listed as its own, separately-documented activity under the Privileged Identity Management
+  (PIM) service's `RoleManagement` category - distinct from `Add member to role`, listed only
+  under the Core Directory service's own `RoleManagement` category. The guidance article's
+  shorthand matches this PIM activity's name and description closely enough to identify them as
+  the same activity. **Resolved: two genuinely distinct events, not one under two display
+  conventions.** `entra-privileged-role-monitoring/README.md` §6/§11/§12, `design.md` §3/§4a, and
+  the deploy/validate scripts corrected in place with the finding.
+- [x] Once the item above is resolved, revisit whether `$monitoredActivities` in
   `Export-EntraPrivilegedRoleAuditTrail.ps1` needs the `(permanent)`-suffixed activity name added,
-  or whether it's confirmed to be a duplicate label for an event already covered.
+  or whether it's confirmed to be a duplicate label for an event already covered - **done
+  2026-09-27**: `Add member to role outside of PIM (permanent)` added to `$monitoredActivities`
+  (deploy script) and the matching `$validActivities` allowlist (validate script).
 
 ### Follow-ups discovered while building the Communication Compliance harassment-and-code-of-conduct scenario
 - [x] `scenarios/communication-compliance/financial-regulatory-supervision/` - **built** (see DONE
@@ -2001,12 +2144,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   DLP policy spans multiple workloads (for example, Exchange + Endpoint), only the alerts from the
   supported workloads... are processed." `deploy/Test-DlpPolicyIrmTriggerReadiness.ps1`'s WARN for
   this combination is now informational (confirmed-safe), not an open question.
-- [ ] VERIFY (portal or a direct Microsoft Learn fetch): whether the base `Data leaks` template's
+- [x] VERIFY (portal or a direct Microsoft Learn fetch): whether the base `Data leaks` template's
   two triggering-event options ("User matches a DLP policy" and "User performs an exfiltration
   activity") can be enabled simultaneously on one policy, the way the risky/priority-users
   family's HR-connector/Communication-Compliance triggers have an explicit documented AND/OR
   prerequisite. `data-leaks/design.md` §6 discloses this as unresolved rather than assuming
-  symmetry with that sibling.
+  symmetry with that sibling - **resolved** (see DONE below): a policy has one triggering-event
+  configuration, set to either mechanism, not both.
 - [x] Now that the base `Data leaks` template's max-users cap is confirmed (above), consider
   building a second worked example for the "User performs an exfiltration activity" triggering
   event - `data-leaks/design.md` §3/§7 deliberately scoped this fragment to the DLP-policy trigger
@@ -2074,12 +2218,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   mechanics are identical. New follow-ups from this build are filed immediately below.
 
 ### Follow-ups discovered while building the Data leaks custom-indicator (third-party-connector) trigger scenario
-- [ ] VERIFY (portal): whether custom indicators can actually be added to `Data leaks by priority
+- [x] VERIFY (portal): whether custom indicators can actually be added to `Data leaks by priority
   users` and/or `Data leaks by risky users` (not just the base `Data leaks` template this fragment
   scoped itself to) - Microsoft's own wording ("any *Data theft* or *Data leaks* policies") is not
   precise enough to confirm either direction. `data-leaks-custom-indicator-trigger/design.md` §2
   goal 7/`README.md` §11 flag this rather than guessing. If confirmed, extend this scenario's
-  pattern to those sibling templates as a new fragment rather than editing this one.
+  pattern to those sibling templates as a new fragment rather than editing this one. — **closed**
+  (see DONE below): a direct Microsoft Learn fetch of "Configure policy indicators in Insider Risk
+  Management" §Built-in indicators vs. custom indicators found a second, precise statement beyond
+  the imprecise one this fragment originally grounded against: "You can only modify triggering
+  events for policies created from the *Data leaks* or *Data leaks by priority users* templates.
+  Policies created from all other templates don't have customizable triggering indicators or
+  events." Confirms `Data leaks by priority users` **does** support a custom indicator as its
+  trigger; `Data leaks by risky users` (and `Data theft by departing users`) **does not**.
 - [ ] VERIFY (portal): whether Source-column value matching for the Insider Risk Indicators
   connector is case-sensitive - `data-leaks-custom-indicator-trigger/deploy/
   Send-InsiderRiskIndicatorRecord.ps1` assumes case-sensitive matching (the stricter, fail-safer
@@ -2204,7 +2355,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   label for the "Harassment"/"Targeted harassment" trainable classifier - Microsoft's own docs use
   both names for what reads as the same classifier across different pages
   (`harassment-and-code-of-conduct/README.md` §11, `design.md` §4). Not resolved by guessing in
-  this build per `AGENTS.md` §4.
+  this build per `AGENTS.md` §4. **Re-grounded 2026-09-28** (Microsoft Learn MCP direct fetch):
+  the inconsistency has narrowed but not closed. `trainable-classifiers-definitions#harassment`
+  and, as of this re-check, the `communication-compliance-policies#policy-settings` "Policy
+  settings" table both now use **"Harassment"** (this table previously cited as using "Targeted
+  harassment" - no longer the case). **"Targeted harassment"/"Targeted Harassment"** still appears
+  on the Get-started policy-creation workflow (`communication-compliance-configure` Step 5), the
+  solution overview's template list (`communication-compliance-solution-overview`), and the
+  condition-builder worked examples (`communication-compliance-conditions-scenarios`). The scenario
+  continues to standardize on "Harassment" (now corroborated by two pages instead of one), but the
+  live portal UI label a tenant admin actually sees remains unconfirmed without a tenant - VERIFY
+  stays open for that specific point. Re-open for a fresh pass only if Microsoft fully unifies the
+  naming or a pilot tenant confirms the live label.
 - [ ] VERIFY (employment counsel, jurisdiction-by-jurisdiction): monitoring-notice/consent
   obligations for the Investigator-role full-content-visibility design in
   `harassment-and-code-of-conduct` - flagged as a gating prerequisite in that scenario's `README.md`
@@ -2218,13 +2380,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   actively moving and should be re-verified before every future sale referencing it.
 
 ### Follow-ups discovered while building the Communication Compliance copilot-interaction-detection scenario
-- [ ] VERIFY: whether this scenario's fixed template location ("Microsoft 365 Copilot and Microsoft
+- [x] VERIFY: whether this scenario's fixed template location ("Microsoft 365 Copilot and Microsoft
   365 Copilot Chat") also reaches Copilot Studio-built or Microsoft Foundry agent interactions, or
-  only the core Microsoft 365 Copilot/Copilot Chat experience - Microsoft's general
-  channel-detection overview describes a same-sounding "Microsoft Copilot experiences" location as
-  covering Copilot Studio agents too, but no worked example in this build's grounding pass confirmed
-  the two phrasings denote the same underlying location. `copilot-interaction-detection/README.md`
-  §11 and `design.md` §8 flag this rather than asserting either way.
+  only the core Microsoft 365 Copilot/Copilot Chat experience - **resolved** (see DONE below):
+  Microsoft's own AI-apps coverage table groups Microsoft Copilot Studio under the same "Copilot
+  experiences and agents" category as Microsoft 365 Copilot/Copilot Chat, and Microsoft Foundry
+  under a separate "Enterprise AI apps" category - so this location reaches Copilot Studio agents but
+  not Microsoft Foundry agents. `copilot-interaction-detection/README.md` §11/§12 and `design.md` §8
+  updated in place.
 - [ ] VERIFY (pilot tenant): the exact `AuditData` JSON shape for a `SupervisionRuleMatch` event
   specific to the Prompt Shields/Protected material classifier pairing, to confirm or replace
   `copilot-interaction-detection/deploy/Export-CopilotInteractionAuditTrail.ps1`'s best-effort
@@ -2274,13 +2437,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   immediately below.
 
 ### Follow-ups discovered while building the Compromised Account Incident Response scenario
-- [ ] VERIFY (your tenant): the exact Exchange Online RBAC role for `Remove-InboxRule`/`Set-Mailbox`/
-  `Remove-MailboxPermission`/`Remove-RecipientPermission` - none of these cmdlets' own Microsoft Learn
-  reference pages name a specific role, only "you need to be assigned permissions." This scenario's
-  `README.md` §3/§11 names **Mail Recipients** (Recipient Management/Organization Management role
-  groups) as the documented least-privilege candidate based on that role's general "modify existing
-  mail users and mail contacts" description, not a per-cmdlet confirmation, and gives the
-  `Get-ManagementRoleEntry "*\<CmdletName>"` command to confirm directly against a tenant.
+- [x] VERIFY (your tenant): the exact Exchange Online RBAC role for `Remove-InboxRule`/`Set-Mailbox`/
+  `Remove-MailboxPermission`/`Remove-RecipientPermission` - **closed** (see DONE below): none of
+  these cmdlets' own Microsoft Learn reference pages name a specific role, but Microsoft's
+  **"Feature permissions in Exchange Online"** table maps the underlying features instead -
+  `Set-Mailbox`/`Remove-InboxRule` need Organization Management *or* Recipient Management
+  (**Mailbox settings** feature), while `Remove-MailboxPermission`/`Remove-RecipientPermission`
+  need **Organization Management specifically** (**Permissions and delegation** feature, which
+  doesn't list Recipient Management). `README.md` §3/§11 corrected to reflect the split instead of
+  naming one role for all four cmdlets; the `Get-ManagementRoleEntry "*\<CmdletName>"` per-tenant
+  confirmation command is kept as a residual check since this is still a feature-level mapping, not
+  a per-cmdlet one.
 - [ ] Consider scripting Microsoft's documented Steps 3-5 (MFA-registered-device review, OAuth app
   consent review, admin-role review) once a safe, non-judgment-call automation shape is found for at
   least the *detection* half (e.g., list an account's registered auth methods/app consents/admin
@@ -2442,11 +2609,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `AdaptiveScopeLocation` parameter set, unlike the portal's own "choose locations" step in the
   adaptive-policy creation flow. `adaptive-scope-retention/README.md` §11 and `design.md` §4 disclose
   this rather than guessing an answer.
-- [ ] VERIFY: the property name(s) `Get-AdaptiveScopeMembers`'s first (metadata) returned element
-  actually exposes (total count, page size, more-pages flag, watermark) - Microsoft's reference
-  describes them in prose but doesn't name them. `adaptive-scope-retention/validate/
-  Test-AdaptiveScopeRetention.ps1` prints the metadata object generically (`Format-List`) rather than
-  guessing a property name like `TotalMemberCount`.
 - [x] `scenarios/data-lifecycle-management/adaptive-scope-auto-apply-label/` - the auto-apply
   retention **label** variant of the same pattern (`New-RetentionComplianceRule -ApplyComplianceTag`
   instead of `-RetentionComplianceAction`, same `-AdaptiveScopeLocation` policy), noted as a non-goal
@@ -2636,13 +2798,11 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `multi-stage-disposition-review/validate/Test-MultiStageDispositionReview.ps1` reads it defensively via
   `PSObject.Properties[...]` and reports every check touching it as `[WARN]`, never `[FAIL]` - see that
   scenario's `README.md` §11.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): `-ComplianceTagForNextStage`'s actual
-  behavior. Both `New-ComplianceTag` and `Set-ComplianceTag`'s own published parameter reference leave
-  its description as an unfilled placeholder. The Microsoft Graph records-management `retentionLabel`
-  resource's `labelToBeApplied` property ("the replacement label to be applied automatically after the
-  retention period of the current label ends") is the closest documented analog, cited as context only -
-  `multi-stage-disposition-review`'s deploy script passes the parameter through only if explicitly
-  configured (off by default) rather than assuming this behavior. See that scenario's `README.md` §11.
+- [x] `-ComplianceTagForNextStage`'s actual behavior - **closed** (see DONE below): grounded via the
+  file plan manager's identically-named `ComplianceTagForNextStage` import property and the
+  "Relabeling at the end of the retention period" reference, not left to the Graph `labelToBeApplied`
+  analog alone. `multi-stage-disposition-review/README.md` §11/§12, `design.md`, and the deploy
+  script corrected in place.
 - [ ] Ground the exact `Search-UnifiedAuditLog` `RecordType`/`Operations` values for
   `New-ComplianceTag`/`Set-ComplianceTag` activity, then add a monitoring recommendation (or a dedicated
   export/alerting script) to `multi-stage-disposition-review/deploy/` - a Red-Team-flagged gap: nothing
@@ -2660,11 +2820,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   create-or-report only by this repo's records-object convention (`design.md` §7).
 
 ### Follow-ups discovered while building the Records Management file-plan-bulk-import scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the exact `Search-UnifiedAuditLog`
-  `RecordType`/`Operations` values for a retention-label **definition/creation** event (as distinct
-  from the already-documented label **application** events, `Changed retention label for a file` /
-  `Labeled message as a record`). Not found during this build; an `Export-*` audit-trail companion
-  for bulk-creation events is a genuine follow-up once grounded, not guessed.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, maintenance pass): the exact
+  `Search-UnifiedAuditLog` `RecordType`/`Operations` values for a retention-label
+  **definition/creation** event (as distinct from the already-documented label **application**
+  events, `Changed retention label for a file` / `Labeled message as a record`) are
+  `RecordType DataGovernance` (38) / `Operations NewComplianceTag` ("Created retention label") -
+  confirmed directly from Microsoft's "Audit log activities" and "Office 365 Management Activity API
+  schema" reference pages. `file-plan-bulk-import/README.md` §11/§12 and `reviews.md` (Blue Team
+  correction addendum) updated in place. An `Export-*` audit-trail companion for bulk-creation events,
+  now buildable against this confirmed `RecordType DataGovernance`/`Operations NewComplianceTag`
+  pair, remains the same pre-existing follow-up noted in this item's own original text - not built in
+  this maintenance-only pass (new coverage is out of scope for a maintenance fragment).
 - [ ] VERIFY (pilot tenant): the property name(s) `Get-ComplianceTag` exposes for file-plan-descriptor
   read-back (Department/Category/SubCategory/Citation/ReferenceId/Authority) - undocumented;
   `file-plan-bulk-import/validate/Test-FilePlanBulkImport.ps1` reports them informationally rather
@@ -2796,13 +2962,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   building the scan it reports on.
 
 ### Follow-ups discovered while building the Data Map Azure Synapse Analytics scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn/SDK grounding pass): the exact JSON shape of the
+- [x] VERIFY (pilot tenant or a future Microsoft Learn/SDK grounding pass): the exact JSON shape of the
   `AzureSynapseWorkspaceMsiScan` object's optional `resourceTypes` property (seen only as an opaque
   `-ResourceType` parameter on the Az.Purview PowerShell module's `New-AzPurviewAzureSynapseWorkspaceMsiScanObject`
   cmdlet, with no worked example of its value) - `scan-azure-synapse-and-classify/deploy/
   New-AzureSynapseDataMapScan.ps1` omits the property entirely rather than guess a shape that could
   silently mis-scope the scan between dedicated and serverless pools. Flagged inline in the deploy
-  script's `.NOTES`, `README.md` §6/§11, and `design.md` §5/§7.
+  script's `.NOTES`, `README.md` §6/§11, and `design.md` §5/§7. **CLOSED 2026-09-28** (see DONE below):
+  a direct fetch of `register-scan-synapse-workspace`'s "Set up a scan by using an API" section
+  confirms `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` (PascalCase key)
+  is Microsoft's current documented shape for scoping to named serverless databases - it does not
+  mis-scope between dedicated/serverless, and no dedicated-pool equivalent key is documented. The
+  deploy script's default (omitting `resourceTypes`) is unchanged; this closes the grounding gap only.
 - [x] `scenarios/data-map/bulk-grant-synapse-serverless-access/` (or fold into a future Data Map
   hardening pass) - script to bulk-apply the per-serverless-database `CREATE LOGIN`/`CREATE USER`/
   `db_datareader` grants across every database in a workspace (e.g. iterating `sys.databases` via
@@ -3029,10 +3200,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   endpoint, or only a single value at a time - inherited unresolved from
   `premium-legal-hold-and-export`'s own open VERIFY on the same call shape; no new evidence surfaced
   during this build's grounding pass either way.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether `dataSourceScopes` accepts a
-  comma-combined value (the way `IncludedSources` does) or requires one call per scope - this
-  scenario's script only ever passes a single value (`allCaseCustodians` or, separately,
-  `allTenantMailboxes`) and was never tested against a combined-scope request.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP): `dataSourceScopes` requires one call per
+  scope - it is a scalar OData enum (`microsoft.graph.security.dataSourceScopes`: `none`,
+  `allTenantMailboxes`, `allTenantSites`, `allCaseCustodians`, `allCaseNoncustodialDataSources`),
+  not a collection/flags type. Confirmed against the `ediscoverySearch` resource-type reference,
+  the Create/Update `ediscoverySearch` operation docs, and the Create-searches worked example's
+  response body, which serializes it as a single string (`"dataSourceScopes": "none"`) - unlike
+  `includedSources`, which Microsoft documents as accepting a comma-separated string. No code
+  change needed: `New-DsrRequest.ps1` already issues one search per scope.
+  `gdpr-dsr-fulfillment/README.md` §11.
 - [ ] No KQL property equivalent to `participants:` was found for "SharePoint/OneDrive content
   *about* a person who isn't its author/owner" - `-IncludeParticipantSearch` (built this fragment)
   closes the analogous Exchange-side gap but SharePoint/OneDrive content mentioning a data subject
@@ -3065,17 +3241,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   example's concrete entity type was a **built-in** subtype (`hive_view_query`), not a custom one.
   Flagged inline in `custom-process-lineage/README.md` §11 and the deploy script's `.NOTES` rather
   than assumed; a one-line fix if wrong.
-- [ ] VERIFY (pilot tenant or Microsoft Learn): the exact permission required to create a custom
-  **entity type definition** via `Type - Bulk Create` - this build confirmed collection-level Data
-  Curator is sufficient for the closely related "create a custom classification" action but found
-  no equally explicit statement for entity-type creation specifically. `custom-process-lineage/
-  README.md` §3 documents the residual tenant-wide-blast-radius risk either way this resolves.
-- [ ] VERIFY (pilot tenant): the exact REST path and in-use-type deletion behavior of `Type -
-  Delete` - confirmed to exist only via the .NET SDK's `TypeDefinition.Delete(name)` method
-  signature, not an independently fetched canonical REST reference page. Blocks
-  `custom-process-lineage/rollback.md` from scripting deletion of the custom Process type
-  definition it creates; that file documents the deliberate decision to leave the type in place by
-  default and describes the manual, reviewed alternative.
+- [x] VERIFY (pilot tenant or Microsoft Learn): the exact permission required to create a custom
+  **entity type definition** via `Type - Bulk Create` - **closed** (see DONE below): a 2026-09-27
+  Microsoft Learn fetch of "Manage assets with metamodel" confirms collection-level Data Curator is
+  sufficient for "Create and modify asset types", no broader/root-level grant required.
+- [x] VERIFY (pilot tenant): the exact REST path and in-use-type deletion behavior of `Type -
+  Delete` - **REST path half closed 2026-09-28** (see DONE below): the canonical REST reference
+  page confirms `DELETE {endpoint}/datamap/api/atlas/v2/types/typedef/name/{name}`, `204 No
+  Content` on success. The **in-use-type deletion behavior half remains an open VERIFY** - the
+  page's only documented error shape is a generic `AtlasErrorResponse`, with no statement of
+  whether deleting a type that has (or ever had) entity instances succeeds, no-ops, or errors.
+  Still blocks `custom-process-lineage/rollback.md` from scripting deletion of the custom Process
+  type definition it creates; that file documents the deliberate decision to leave the type in
+  place by default and describes the manual, reviewed alternative.
 - [ ] VERIFY (pilot tenant): the not-found HTTP status code for `Type - Get Entity Def By Name` -
   its reference page documents only a 200 OK success shape, so `custom-process-lineage`'s
   existence-check treats any non-success response as "does not exist yet" rather than assuming 404
@@ -3237,11 +3415,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   ties this parameter to priority cleanup for SharePoint/OneDrive specifically. Flagged inline in
   `priority-cleanup-sharepoint-onedrive/design.md` §4, `README.md` §6/§11, and the config's
   `_labelNote` rather than guessed.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the Exchange-specific KeyQL
-  exclusions (`SenderAuthor`, `SubjectTitle`, `(c:c)`, `(c:s)` unsupported in a priority cleanup
-  `ContentMatchQuery`) also apply to SharePoint/OneDrive priority cleanup queries - Microsoft's
-  SharePoint/OneDrive-specific page neither repeats nor contradicts that Exchange-page-only list.
-  `priority-cleanup-sharepoint-onedrive/README.md` §11.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, `edisc-condition-builder` reference): whether
+  the Exchange-specific KeyQL exclusions (`SenderAuthor`, `SubjectTitle`, `(c:c)`, `(c:s)`
+  unsupported in a priority cleanup `ContentMatchQuery`) also apply to SharePoint/OneDrive priority
+  cleanup queries. Fetched both `priority-cleanup-exchange` and `priority-cleanup-onedrive-
+  sharepoint` in full: the SharePoint/OneDrive page's own "Limitations of priority cleanup" section
+  genuinely omits this bullet, so no page states the answer directly either way. Resolved the
+  underlying nature of the four items instead: Microsoft's eDiscovery condition-builder reference
+  confirms `(c:c)`/`c:s` are condition-builder-generated KeyQL notation, not query operators -
+  "Don't use `(c:c)` in manually entered queries" and `c:s` insertion "doesn't require manual
+  entry" - so the exclusion is a hand-typing caution intrinsic to the shared KeyQL editor, not an
+  Exchange-only rule. `SenderAuthor`/`SubjectTitle` map to the **Sender/Author** and **Subject/
+  Title** eDiscovery common properties, documented as applying to *both* mail and documents (the
+  Author/Title Office-metadata fields), not Exchange-only properties. Conclusion: treat all four as
+  unsupported for this workload too (matching the Exchange sibling) rather than assume the
+  SharePoint/OneDrive page's silence means broader support - documented as a reasoned, cited
+  closure, not a guess. `priority-cleanup-sharepoint-onedrive/README.md` §11 (bullet expanded in
+  place) and §12 (reference 13 added).
 - [ ] Consider a small scheduled-task helper script that periodically reviews/re-simulates a
   continual priority-cleanup rule's query - the KeyQL surface this scenario grounds has no
   confirmed relative-date ("older than N days") operator, so a "stale content" query as documented
@@ -3309,7 +3499,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   availability by cloud environment. This build's own date (2026-09-09) is after the cited
   2026-08-24 Worldwide multi-tenant public-preview rollout start, but GCC/GCC High/DoD timing is
   not stated on the official Learn page this scenario cites - `README.md` §11 flags this rather
-  than assuming parity with Worldwide multi-tenant.
+  than assuming parity with Worldwide multi-tenant. **Re-grounded 2026-09-28** (Microsoft Learn
+  MCP): fetched the GCC High deployment guide's Step 4 capability-difference table (the
+  authoritative source for Purview features unavailable/delayed/in-development for GCC High) -
+  no row exists for Priority Cleanup at all, base feature or permanent-deletion sub-feature. Also
+  checked the Microsoft Purview service description's licensing table, which lists Priority
+  Cleanup's required licenses (including Microsoft Purview Suite/EDU/**GOV**/FLW and Office 365
+  E5/A5/G5) with no cloud-environment qualifier. Neither is an affirmative parity statement - an
+  absent table row is equally consistent with the table not yet covering a feature this new -
+  so this remains genuinely unconfirmed rather than guessed either way. `README.md` §3/§11 and
+  §12 (references 10-11 added) updated in place with the full grounding trail; re-open only once
+  either page states GCC/GCC High/DoD timing explicitly or a pilot-tenant check confirms/denies
+  presence directly.
 - [ ] Once Microsoft publishes a PowerShell/Graph parameter or worked example for selecting
   "Delete data permanently" (closing this scenario's central disclosed gap - `design.md` §4), script
   it directly in `New-PriorityCleanupPermanentDeletionPolicy.ps1` instead of the current
@@ -3382,24 +3583,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   departing-employee-data-theft/`'s own HR-connector follow-up tracks for a different population.
 - [ ] The built-in **"Detect conflict of interest"** Communication Compliance policy template, as its
   own standalone scenario - deferred as a non-goal in `financial-regulatory-supervision/design.md` §5/
-  §7 pending confirmation of its exact classifier bundling (see the VERIFY item below).
+  §7. Now confirmed (2026-09-28, see DONE below) to carry no classifier conditions at all - it matches
+  communications between two scoped groups/users, not content - so a standalone scenario would be a
+  distinct conflict-of-interest-pairing control, not a classifier-bundling variant of this one.
 - [ ] A preventive DLP companion scoped to a firm's actual restricted-list/watch-list tickers (real-time
   blocking, not just detective review) - deferred as a non-goal in `financial-regulatory-supervision/
   design.md` §7; natural complement to `scenarios/information-barriers/segregate-trading-and-research/`.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether Microsoft's built-in "Detect
-  financial regulatory compliance" and "Detect conflict of interest" policy templates bundle Corporate
-  sabotage, Customer complaints, Gifts & entertainment, Money laundering, [Workplace/Regulatory]
-  collusion, Stock manipulation, and Unauthorized disclosure identically to how
-  `financial-regulatory-supervision`'s custom policy selects all seven explicitly - this build's
-  WebSearch-only grounding (no direct `learn.microsoft.com` fetch available) could not confirm the
-  per-template classifier split. `financial-regulatory-supervision/design.md` §5/§8 and `README.md`
-  §11 flag this rather than guessing.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the current portal-UI label for the
-  collusion-related Regulatory-compliance classifier - this build's WebSearch-only grounding found it
-  referred to as both "Regulatory collusion" and "Workplace collusion" across independent secondary
-  sources, without a direct canonical-page fetch to resolve which is current. `financial-regulatory-
-  supervision/README.md` §11, `design.md` §5, and the deploy manifest all flag this rather than
-  picking one silently.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, direct fetch of `communication-compliance-
+  policies#choose-a-policy-template`): whether Microsoft's built-in "Detect financial regulatory
+  compliance" and "Detect conflict of interest" policy templates bundle the same seven classifiers as
+  `financial-regulatory-supervision`'s custom policy. **Confirmed they do not.** "Detect financial
+  regulatory compliance" bundles six of the seven (Customer complaints, Gifts & entertainment, Money
+  laundering, Regulatory collusion, Stock manipulation, Unauthorized disclosure) at a 10% review
+  percentage and omits Corporate sabotage entirely; "Detect conflict of interest" carries no classifier
+  conditions at all (it matches on communications between two scoped groups/users, not content).
+  Neither template can produce this scenario's seven-classifier, 100%-review-percentage posture as
+  shipped - confirms, rather than merely defers, the original custom-policy decision. Updated
+  `financial-regulatory-supervision/design.md` §5/§7/§10, `README.md` §11/§12, and `reviews.md`
+  (Microsoft Product Owner finding 2).
 - [ ] VERIFY (pilot tenant): the exact `AuditData` JSON property name Microsoft populates with the
   remediation action taken on a `SupervisoryReviewTag` event. `financial-regulatory-supervision/
   deploy/Export-FinraSupervisionEvidence.ps1` tries a short list of plausible candidate property names
@@ -3419,13 +3620,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   and `README.md` §11 (a different connector, different destination table
   `MicrosoftPurviewInformationProtection`, label/protection-event-specific, with documented
   duplication against `OfficeActivity` and unpopulated label names) - not built here.
-- [ ] VERIFY (pilot tenant): the exact naming contract for a `Microsoft.SecurityInsights/
-  dataConnectors` resource of `kind: Office365` - Microsoft's ARM/Bicep reference page for this kind
-  doesn't state whether `name` must be a GUID (as several other connector kinds' samples use) or
-  accepts an arbitrary string. `streaming-to-sentinel-or-management-api/deploy/
-  office365-connector.bicep` defaults to a deterministic `guid()`-derived name so re-deployments
-  target the same resource regardless of the answer, flagged inline in the template's header comment
-  and `README.md` §11.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP): the exact naming contract for a
+  `Microsoft.SecurityInsights/dataConnectors` resource `name` - **confirmed not required to be a
+  GUID.** The resource-format reference documents `name` as plain `string (required)` with no
+  format constraint, and its own worked Bicep/ARM/Terraform example sets it to an arbitrary string
+  (`'acctest0001'`) for a data connector on this same resource type. The REST/Codeless-Connector-
+  Framework URI-parameter reference confirms the only real constraint: `dataConnectorId` "must be a
+  unique name that's the same as the `name` parameter in the request body" - uniqueness, not a GUID
+  format. (`New-AzSentinelDataConnector`'s `-Id` parameter defaults to `(New-Guid).Guid`, but that's
+  a convenience default, not a documented requirement.) `streaming-to-sentinel-or-management-api/
+  deploy/office365-connector.bicep`'s deterministic `guid()`-derived name is unchanged (still a
+  valid, idempotent choice) but is now framed as a design choice rather than a workaround for an
+  unstated constraint - header comment, `README.md` §11, and reference 16 updated in place.
 - [ ] VERIFY (pilot tenant): the exact wall-clock enforcement of the Office 365 Management Activity
   API's 15-minute cooldown between `/subscriptions/start` calls for the same content type - whether
   it's measured from the previous call regardless of outcome, or only from a successful one.
@@ -3438,6 +3644,501 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Re-grounded the `glossary-curation-coverage-report` `Terms - List` `top`-maximum VERIFY** -
+  commit `782651d` - 2026-09-28. Maintenance pass: re-fetched the `Terms - List` REST reference via
+  the Microsoft Learn MCP tool against both the `2025-09-15-preview` and the pinned
+  `2026-03-20-preview` API version. `top` is still documented only as "the number of result items to
+  return" on both versions, with no maximum ever stated - the VERIFY remains genuinely open, not
+  closed by assumption. The `2026-03-20-preview` fetch surfaced one new, directly relevant, previously
+  unrecorded fact: `Terms - List` now documents a rate limit of **100 requests per 20-second window**
+  for this operation (absent from the `2025-09-15-preview` reference) - recorded because it bears on
+  this scenario's `-PageSize` default (100, which keeps a single-domain pull well inside that window).
+  Updated `glossary-curation-coverage-report/README.md` §11 and `deploy/
+  Export-GlossaryCurationCoverageReport.ps1`'s `.PARAMETER PageSize`/`.NOTES` in place; no script
+  behavior change (adding 429 backoff would be new functionality, not a correction, and is left as a
+  future consideration rather than built here). No new four-lens review round needed per `AGENTS.md`
+  §6 - doc/comment-only correction.
+- [x] **Closed the `scan-azure-sql-and-classify` Data Sources/Triggers REST body-shape VERIFY** -
+  commit `be8d36d` - 2026-09-28. Maintenance pass: the canonical **Data Sources - Create Or Replace**
+  and **Triggers - Create Or Replace** REST reference pages, which returned fetch errors in the
+  original build's environment, were successfully direct-fetched via the Microsoft Learn MCP tool.
+  Both confirm the shapes `deploy/New-AzureSqlDataMapScan.ps1` already used - `kind:
+  "AzureSqlDatabase"` and all six `AzureSqlDatabaseProperties` fields (`serverEndpoint`,
+  `resourceName`, `resourceGroup`, `subscriptionId`, `location`, `collection`), and the Triggers
+  `properties.recurrence`/`TriggerRecurrence` nesting - so no script change was required. One naming
+  error surfaced and was corrected: the Data Sources operation is **Create Or Replace**, not "Create
+  Or Update" as this scenario's own build had guessed. Updated
+  `scenarios/data-map/scan-azure-sql-and-classify/README.md` §11/§12, `design.md`, the deploy
+  script's `.NOTES`, and `reviews.md` (new dated follow-up review section) in place.
+- [x] **Narrowed the `scan-credential-remaining-kinds` `AmazonARN` account-ID/external-ID VERIFY** -
+  commit `acaca4a` - 2026-09-28. Maintenance pass: re-grounded the open VERIFY asking whether any
+  documented REST endpoint returns the Microsoft account ID/external ID pair a Role ARN credential's
+  AWS-side IAM role must trust. Grounded via the Microsoft Learn MCP: the **external ID** half is
+  exposed after all - not by the Scanning data-plane `RoleARNCredentialTypeProperties` (still only
+  `roleARN`), but by a read-only property on the Purview account's own control-plane resource,
+  `Microsoft.Purview/accounts` `properties.cloudConnectors.awsExternalId`, confirmed consistently
+  across the `Az.Purview` PowerShell module (`Get-AzPurviewAccount`'s `CloudConnectorAwsExternalId`,
+  explicitly `ReadOnly`), the legacy `Microsoft.Azure.Management.Purview` .NET SDK, the current
+  `Azure.ResourceManager.Purview` .NET SDK, and the `@azure-rest/purview-administration` JS SDK. The
+  **Microsoft account ID** half has no sibling property in that same `cloudConnectors` schema, or
+  anywhere else this pass checked, and remains confirmed portal-only - so this narrows the VERIFY
+  rather than closing it. Updated `scan-credential-remaining-kinds/README.md` §11/§12, `design.md`
+  §4/§6/§8, `deploy/New-PurviewScanCredentialExtended.ps1` (comment-based help only), and
+  `reviews.md` (correction addendum) in place. Doc/comment-only correction - the newly-confirmed
+  control-plane lookup was deliberately not wired into the script itself (that would be new
+  functionality, not a correction); no new four-lens review round needed per `AGENTS.md` §6.
+- [x] **Closed the `search-and-purge-teams-messages` `-PurgeType` compliance-copy-timing VERIFY** -
+  commit `85d6764` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether `-PurgeType`
+  still meaningfully affects the Teams **compliance copy's** retention/hold-interaction timing, even
+  though it no longer gates the user-copy outcome. Grounded via the Microsoft Learn MCP: the
+  `ediscoverySearch: purgeData` Graph reference - the authoritative source for the `purgeType`
+  parameter itself - states that for `purgeAreas: teamsMessages`, either `purgeType` value results
+  in permanent deletion; both values are documented to behave identically, with no separate
+  compliance-copy retention/hold-interaction branch described per value (unlike the mailbox sibling,
+  where `recoverable`/`permanentlyDelete` map to genuinely different soft-delete/hard-delete
+  mechanics). Updated `search-and-purge-teams-messages/README.md` §11 (VERIFY reworded to grounded
+  finding), `design.md` §7, `deploy/Invoke-TeamsMessagePurge.ps1` (`.PARAMETER PurgeType`/`.NOTES`),
+  and `reviews.md` (correction addendum, matching the existing private-channel-VERIFY addendum
+  pattern) in place. Doc/comment-only correction - no script behavior change (the script already
+  required `-ConfirmPermanentDelete` unconditionally for both values), no new four-lens review round
+  needed per `AGENTS.md` §6.
+- [x] **Closed the `streaming-to-sentinel-or-management-api` data-connector naming-contract VERIFY**
+  - commit `fe2a09c` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether a
+  `Microsoft.SecurityInsights/dataConnectors` resource's `name` must be a GUID or accepts an
+  arbitrary string. Grounded via the Microsoft Learn MCP: the resource-format reference documents
+  `name` as plain `string (required)` with no format constraint, and its own worked Bicep/ARM/
+  Terraform example sets it to an arbitrary string (`'acctest0001'`) for a data connector on this
+  same resource type; the REST/Codeless-Connector-Framework URI-parameter reference confirms the
+  only real constraint is uniqueness ("must be a unique name that's the same as the `name`
+  parameter in the request body"), not a GUID format. Updated
+  `streaming-to-sentinel-or-management-api/deploy/office365-connector.bicep` (header comment and
+  the `connectorName` inline comment) and `README.md` (§11 bullet reworded from open VERIFY to
+  grounded finding, reference 16 added) - the template's deterministic `guid()`-derived name is
+  unchanged, now framed as a design choice rather than a workaround. Doc/comment-only correction -
+  no code behavior change, no new four-lens review round needed.
+- [x] **Closed the `compromised-account-incident-response` Exchange Online RBAC-role VERIFY** -
+  commit `08edfbc` - 2026-09-28. Maintenance pass: closed the open VERIFY asking which Exchange
+  Online role covers `Remove-InboxRule`/`Set-Mailbox`/`Remove-MailboxPermission`/
+  `Remove-RecipientPermission`, none of which name a role on their own Microsoft Learn reference
+  pages. Grounded via the Microsoft Learn MCP's fetch of "Feature permissions in Exchange Online"
+  (`exchange/permissions-exo/feature-permissions`): `Set-Mailbox`/`Remove-InboxRule` fall under the
+  **Mailbox settings** feature (Organization Management *or* Recipient Management), but
+  `Remove-MailboxPermission`/`Remove-RecipientPermission` fall under **Permissions and delegation**,
+  which lists **Organization Management only**. This corrects the scenario's prior claim that a
+  single role (**Mail Recipients**, i.e. Recipient Management) covers all four cmdlets - it doesn't,
+  for the two permission-removal cmdlets. `compromised-account-incident-response/README.md` §3
+  (Prerequisites table), §11 (VERIFY note resolved in place), and §12 (reference 10 replaced with
+  the feature-permissions page) updated; `design.md`/`rollback.md`/`reviews.md` had no matching
+  claim to correct.
+- [x] **Closed the `gdpr-dsr-fulfillment` `dataSourceScopes` combinability VERIFY** -
+  commit `290eb09` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether the
+  `ediscoverySearch` resource's `dataSourceScopes` property accepts a comma-combined value (the way
+  the custodian `userSource` `includedSources` parameter does) or requires one call per scope.
+  Grounded via the Microsoft Learn MCP: the `ediscoverySearch` resource-type reference and the
+  Create/Update `ediscoverySearch` operation pages all type `dataSourceScopes` as
+  `microsoft.graph.security.dataSourceScopes`, a scalar OData enum with five discrete members
+  (`none`, `allTenantMailboxes`, `allTenantSites`, `allCaseCustodians`,
+  `allCaseNoncustodialDataSources`), never documented as a collection or flags-style type, and the
+  Create-searches worked example's response body serializes it as a single JSON string
+  (`"dataSourceScopes": "none"`) - unlike `includedSources`, which Microsoft explicitly documents
+  as comma-separated. No code change needed: `New-DsrRequest.ps1` already issues one search per
+  scope (`allCaseCustodians` for the primary search, a separate `allTenantMailboxes` search under
+  `-IncludeParticipantSearch`), never a combined value. `gdpr-dsr-fulfillment/README.md` §11
+  updated in place; no script or policy manifest changed - documentation-accuracy closure only.
+- [x] **Re-grounded the `priority-cleanup-permanent-deletion` GCC/GCC High/DoD availability VERIFY**
+  - commit `e53f70e` - 2026-09-28. Maintenance pass (no live tenant access): re-fetched the GCC
+  High deployment guide's Step 4 capability-difference table and the Microsoft Purview service
+  description's licensing table via the Microsoft Learn MCP. Confirmed neither documents
+  GCC/GCC High/DoD-specific timing for Priority Cleanup permanent deletion - the capability table
+  has no Priority Cleanup row at all (base feature or permanent-deletion sub-feature), and the
+  licensing table lists GOV-tier SKUs (Microsoft Purview Suite/EDU/GOV/FLW, Office 365 E5/A5/G5)
+  without a cloud-environment qualifier. Documented as absence of evidence rather than evidence of
+  availability - the VERIFY remains open, now with the full grounding trail recorded instead of a
+  stale "not stated" note, and narrowed reopen criteria (either page states GCC/GCC High/DoD
+  timing explicitly, or a pilot-tenant check). `priority-cleanup-permanent-deletion/README.md` §3
+  table, §11, and §12 (references 10-11 added) updated in place; no script or policy manifest
+  changed - documentation-accuracy closure only.
+- [x] **Closed the `priority-cleanup-sharepoint-onedrive` KeyQL-exclusion-parity VERIFY** -
+  commit `16a0a68` - 2026-09-28. Maintenance pass: closed the open
+  VERIFY asking whether the Exchange-specific priority cleanup KeyQL exclusions (`SenderAuthor`,
+  `SubjectTitle`, `(c:c)`, `(c:s)` unsupported in a `ContentMatchQuery`) also apply to SharePoint/
+  OneDrive priority cleanup. Grounded via the Microsoft Learn MCP: full fetches of both
+  `priority-cleanup-exchange` and `priority-cleanup-onedrive-sharepoint` confirmed the SharePoint/
+  OneDrive page's own Limitations section genuinely omits this bullet (no direct statement either
+  way), then a fetch of `edisc-condition-builder` established what the four items actually are -
+  `(c:c)`/`c:s` are condition-builder-generated KeyQL notation Microsoft's own text says not to
+  type manually (an editor-wide caution, not Exchange-specific), and `SenderAuthor`/`SubjectTitle`
+  map to the **Sender/Author**/**Subject/Title** common properties documented as applying to both
+  mail and documents. Concluded (reasoned, cited closure, not a guess) that this scenario should
+  keep treating all four as unsupported for SharePoint/OneDrive too, matching the Exchange sibling.
+  Updated `priority-cleanup-sharepoint-onedrive/README.md` §11 (bullet expanded in place) and §12
+  (reference 13 added). No script or policy manifest changed - documentation-accuracy closure only;
+  no new VERIFY items opened.
+- [x] **Closed the `financial-regulatory-supervision` built-in-template classifier-bundling VERIFY**
+  - commit `83f1267` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether the
+  built-in "Detect financial regulatory compliance" and "Detect conflict of interest" Communication
+  Compliance policy templates bundle the same seven classifiers as this scenario's custom policy.
+  Grounded via the Microsoft Learn MCP: a direct fetch of `communication-compliance-policies#choose-
+  a-policy-template` confirms "Detect financial regulatory compliance" bundles six of the seven
+  classifiers (Customer complaints, Gifts & entertainment, Money laundering, Regulatory collusion,
+  Stock manipulation, Unauthorized disclosure) at a 10% review percentage and omits Corporate
+  sabotage entirely, while "Detect conflict of interest" carries no classifier conditions at all (it
+  matches communications between two scoped groups/users, not content). Neither built-in template can
+  produce this scenario's seven-classifier, 100%-review-percentage Rule-3110(b)(4) posture as
+  shipped, which confirms - rather than merely defers - the scenario's existing custom-policy
+  decision. Updated `financial-regulatory-supervision/design.md` (§5, §7, §10), `README.md` (§11,
+  §12 reference 2), and `reviews.md` (Microsoft Product Owner finding 2) in place. No cmdlet, script,
+  or policy manifest changed - this was a documentation-accuracy closure, not a behavior change; no
+  new four-lens review round required, no new VERIFY items opened.
+- [x] **Closed the `curate-business-glossary` Business Domain Create/Update "required" fields
+  VERIFY** - commit `bf82c94` - 2026-09-27. Maintenance pass: closed the open VERIFY asking
+  whether the Business Domain `Create`/`Update` REST reference's `systemData`/`thumbnail`/
+  `domains`/`managedAttributes` "required" markings were real, since they contradicted Microsoft's
+  own worked examples and ordinary REST semantics. Grounded via the Microsoft Learn MCP: a direct
+  fetch of the `Business Domain - Create` reference page shows its Request Body table also marks
+  the server-generated `id` and `parentId` fields as `Required: True` - conclusive evidence the
+  table is a documentation-generation artifact that reuses the response `Domain` schema for the
+  request body, rather than a real per-field constraint. Microsoft's own "Disaster recovery for
+  Unified Catalog" article (production BCDR guidance, not a placeholder) independently confirms
+  the minimal body this scenario already sends (`name`/`type`/`status`/`description`/
+  `managedAttributes`) is correct. Updated `curate-business-glossary/README.md` §11/§12 and the
+  deploy script's `.NOTES` in `deploy/New-BusinessGlossary.ps1` to record the closure and cite the
+  exact evidence, and added a Maintenance addendum to `reviews.md` (no new four-lens round per
+  `AGENTS.md` §6 - a doc/fact fix, no code or architecture change). No script logic changed; no
+  new coverage added.
+- [x] **Closed the `multi-stage-disposition-review` `-ComplianceTagForNextStage` behavior VERIFY** -
+  commit `5b3683d` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
+  `-ComplianceTagForNextStage` (on `New-ComplianceTag`/`Set-ComplianceTag`) actually does, since its
+  own PowerShell parameter reference leaves the description as an unfilled placeholder and the
+  scenario had only the Microsoft Graph `retentionLabel.labelToBeApplied` property as an unconfirmed
+  analog. Grounded via the Microsoft Learn MCP: the file plan manager's "Use file plan to create and
+  manage retention labels" page documents an **identically-named** `ComplianceTagForNextStage` import
+  property - "the name of a replacement label to be applied at the end of the retention period. Do
+  not specify this property if Regulatory is TRUE" - and "Common settings for retention policies and
+  retention label policies" §"Relabeling at the end of the retention period" confirms the full
+  mechanics: the item becomes subject to the replacement label's own retention settings, replacement
+  labels can be chained with no documented limit, a regulatory record can't be relabeled (though its
+  replacement label can itself be marked regulatory), changing the replacement label after creation
+  synchronizes to already-labeled items within up to 7 days, and a label currently selected as a
+  replacement can't be deleted. Updated `multi-stage-disposition-review/README.md` (summary, config
+  table, §11, references list, added citations 11/14) and `design.md` (goals, key-decisions table,
+  failure-modes table, non-goals) to state the grounded fact instead of an open question, corrected
+  the deploy script's inline comments, `.NOTES`, and runtime warning message in
+  `deploy/New-MultiStageDispositionReview.ps1`, and added a correction addendum to `reviews.md` (no
+  new four-lens round per `AGENTS.md` §6 - a doc/fact fix, no code or architecture change). The
+  parameter stays opt-in (off by default) in the deploy script; the `MultiStageReviewerMetadata`
+  read-back property VERIFY for the same scenario remains open. No script logic changed; no new
+  coverage added.
+- [x] **Closed the `search-and-purge-teams-messages` private-channel compliance-copy storage
+  VERIFY** - commit `16f53c6` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  a private channel's Teams-message compliance copies live in one dedicated mailbox, in every
+  member's own mailbox, or both - previously left open because two current, non-retired Microsoft
+  Learn pages appeared to disagree ("Find and delete Microsoft Teams chat messages in eDiscovery"
+  says "a dedicated mailbox for each private channel"; "Finding content in Microsoft Teams in
+  eDiscovery" says compliance copies are "stored in the Exchange Online mailboxes of all members of
+  the private channel"). Grounded via the Microsoft Learn MCP: this is not an unreconciled conflict
+  between two current sources but a documented **migration** - Microsoft's Teams private-channels
+  reference states compliance copies "are now delivered to the group mailbox (instead of mailbox of
+  all private channel members)," and its retention reference for Teams corroborates the same split
+  by `RecipientTypeDetails` (`GroupMailbox` post-migration, `UserMailbox` before it). The
+  per-member-mailbox model is legacy; the single dedicated (group) mailbox is current. Also found
+  that the "member mailboxes" page is internally inconsistent - its own "eDiscovery of private and
+  shared channels" section already describes the current dedicated-mailbox model, while the sentence
+  quoted in the original VERIFY comes from an older, unrevised data-source table on the same page.
+  One residual fact stays genuinely tenant-specific rather than a documentation gap: whether a given
+  private channel has completed the migration - confirmable via
+  `Get-TenantPrivateChannelMigrationStatus`, now called out as the operational check to run before
+  treating a private channel as a single dedicated mailbox. Updated
+  `search-and-purge-teams-messages/README.md` §11/§12 and `design.md` §4 to state the reconciled fact
+  with citations instead of an open question, and added a correction addendum to `reviews.md` (no new
+  four-lens round per `AGENTS.md` §6 - a doc/fact fix, no code or architecture change). No script
+  logic changed; no new coverage added.
+- [x] **Closed the `search-and-purge-teams-messages` noncustodial-source `$ref`-bind typed-cmdlet
+  VERIFY** - commit `5a40f47` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether a
+  typed `Microsoft.Graph.Security` v1.0 PowerShell cmdlet exists for binding an existing
+  `ediscoveryNoncustodialDataSource` onto a search via `POST .../searches/{id}/noncustodialSources/$ref`.
+  Grounded via the Microsoft Learn MCP module reference page for `Microsoft.Graph.Security`: its full
+  cmdlet index for the `EdiscoveryCaseSearchNoncustodialSource` noun lists only `Get-` cmdlets
+  (list/count) - no `New-`/`Add-` variant exists for this noun at all. The module's only `New-`
+  cmdlet touching a noncustodial source, `New-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`, is
+  a different, case-level operation (creates the source object; doesn't bind it to a search) already
+  used elsewhere in the same script. This confirms `deploy/New-TeamsMessagePurgeSearch.ps1`'s
+  `Invoke-MgGraphRequest` raw-HTTP call for this step is correct - not a stand-in for an
+  as-yet-unconfirmed cmdlet, but the only way to perform this action. Updated
+  `search-and-purge-teams-messages/README.md` §11 (+ new reference 14) and its closing note,
+  `design.md` §6, the deploy script's own `.NOTES`, and `reviews.md` (Blue Team finding 4 addendum).
+  No script logic changed; no new coverage added.
+- [x] **Closed the Managed Instance half of the Azure IAM Reader role-assignment VERIFY** - commit
+  `6648cc5` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Database
+  sibling's confirmed "Access control (IAM) → Add role assignment → Reader → Select box accepts
+  your Microsoft Purview account name or UAMI" portal walkthrough also applies to Azure SQL Managed
+  Instance. Grounded via a direct fetch of Microsoft's Managed Instance registration/authentication
+  page: it is **not** a documentation omission - Managed Instance's SAMI/UAMI scan authentication
+  never involves an Azure RBAC role assignment on the instance resource at all, only the Object ID
+  lookup, Entra contained-user creation, and `db_datareader` grant already documented. This
+  corrects an unflagged factual error, not just an open VERIFY: `scan-azure-sql-managed-instance-
+  and-classify/README.md` §3/§4/§5/§11 stated the Reader-role requirement as settled fact (not
+  flagged), copied by `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/
+  README.md` §3/§4/§5/§11. Both corrected in place, along with their `design.md` (goal 2/§4),
+  `rollback.md`, `reviews.md` (correction addendum, no new four-lens round per `AGENTS.md` §6 - a
+  doc/fact fix with no code or architecture change), and the deploy scripts' `.NOTES`/runtime
+  messages. Cross-checked against Microsoft's separate, still-current Purview deployment checklist
+  and data-source readiness-checklist tooling, which corroborate: a subscription-scoped (not
+  resource-scoped) Reader role is documented for Managed Instance, but only to support the portal's
+  registration-time subscription/server browse dropdown, not scan authentication. The **Azure
+  Synapse** half of the same VERIFY is narrower (confirmed to still apply, just never names a UAMI
+  alternative on that page) and remains open in
+  `scan-azure-synapse-and-classify-managed-identity-credential/README.md` §11 - not addressed by
+  this fragment. No new coverage added; no cmdlet, endpoint, or field shape invented.
+- [x] **Closed the `connection-and-scorecard-alerts` Update Data Source PATCH partial-merge
+  VERIFY** - commit `3ae287a` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  `Update Data Source`'s PATCH performs a partial merge or expects (and replaces with) the full
+  object. Grounded via a direct re-fetch of the Update Data Source REST reference page
+  (`2026-01-12-preview`): its own worked example's request body omits the `name` field entirely,
+  yet the response echoes back the resource's existing `name` ("testconn iceberg") unchanged -
+  direct evidence of partial-merge semantics (a field left out of the PATCH body is preserved, not
+  cleared). This also corrects an earlier misreading of the same example, which had stated
+  Microsoft's worked example "sends the complete object shape on PATCH" - it does not. Never
+  affected this scenario's idempotency (`New-DataQualityConnection.ps1` always sends the full known
+  object shape on both PUT and PATCH, which is safe under either semantics). Updated
+  `connection-and-scorecard-alerts/README.md` §11 and `deploy/New-DataQualityConnection.ps1`'s
+  `.NOTES` to state the confirmed behavior with a citation instead of an open question. The sibling
+  question - Create Data Source's create-vs-replace semantics against an already-existing
+  `dataSourceId` - is **not** resolved by this pass (its own REST reference still doesn't describe
+  the ID as "to create or replace," unlike `Update Alert`) and remains open under TODO above. No
+  script logic changed; no new coverage added.
+- [x] **Closed the `connection-and-scorecard-alerts` Update Alert PUT create-or-replace VERIFY** -
+  commit `3f72986` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether `Update
+  Alert`'s PUT against an already-existing `alertId` is create-only or create-or-replace. Grounded
+  via a direct re-fetch of the Update Alert REST reference page (`2026-01-12-preview`): it now
+  documents the `alertId` URI parameter itself as "Unique identifier of the alert to create or
+  replace," settling the question explicitly - the earlier fetch this build's grounding pass ran
+  had only found the operation's generic "Creates an alert..." description, apparently a
+  documentation gap on Microsoft's side since fixed. Never affected this scenario's idempotency
+  (the alertId is always caller-chosen and stable). Updated
+  `connection-and-scorecard-alerts/README.md` §11 and `deploy/New-DataQualityAlert.ps1`'s
+  `.DESCRIPTION`/`.NOTES` to state the confirmed behavior with a citation instead of an open
+  question. No script logic changed; no new coverage added.
+- [x] **Closed the `financial-regulatory-supervision` collusion-classifier naming VERIFY** -
+  commit `073d70f` - 2026-09-27. Maintenance pass: closed the open VERIFY asking the current portal-UI
+  label for the collusion-related Regulatory-compliance trainable classifier, left unresolved because
+  the original build's network could only reach WebSearch (not a direct `learn.microsoft.com` fetch)
+  and independent secondary sources disagreed between "Regulatory collusion" and "Workplace
+  collusion." Grounded via the Microsoft Learn MCP: fetched Microsoft's canonical
+  `trainable-classifiers-definitions#regulatory-collusion` page and the
+  `communication-compliance-policies#policy-settings` table directly - both use only "Regulatory
+  collusion"; "Workplace collusion" appears on neither. Updated `financial-regulatory-supervision/`
+  `README.md` (§4 table, §5 portal steps, §11 VERIFY→resolved, §12 references), `design.md` (§4, §5
+  table, §10 grounding note), `reviews.md` (Product Owner lens addendum), the deploy manifest's
+  `Regulatory collusion` classifier entry, the evasion-phrases keyword-dictionary header comment, and
+  the validation script's classifier-list assertion string. Doc/reference-data correction only - no
+  script logic changed (classifier name is a portal-wizard label and manifest reference field, not a
+  parsed value), no new four-lens review round required, no new VERIFY items opened.
+- [x] **Closed the `manage-data-products` Create Relationship `assetId`/`entityType` body-shape
+  VERIFY** - commit `e864d3b` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  the Unified Catalog `Data Products - Create Relationship` operation needs an `assetId` field for
+  `entityType=DATAASSET`/`TERM` calls, since the REST reference's only worked example
+  (`entityType=CRITICALDATACOLUMN`) includes one. Grounded via the Microsoft Learn MCP: fetched the
+  Data Products, Data Assets, and Critical Data Elements "Create Relationship" REST reference pages
+  directly. Found that (1) `CRITICALDATACOLUMN` is itself absent from the `EntityCategory` enum
+  documented on the same page, and (2) every sibling Create Relationship operation - Data Assets,
+  Critical Data Elements (the operation that actually manages CDE relationships), and even Data
+  Products' own `DataProductRelationship` response type - documents the plain
+  `entityId`/`description`/`relationshipType` shape this scenario's script already sends. The
+  `assetId`+`CRITICALDATACOLUMN` example is best read as a documentation-generation artifact, not a
+  real per-`entityType` schema difference. Updated `manage-data-products/README.md` §11 (VERIFY to
+  CLOSED, new reference [19]) and §12, `design.md` §6, and `deploy/New-DataProduct.ps1`'s `.NOTES`
+  and inline comment. Doc-only correction - no code changed (the script's omission of `assetId` was
+  already correct), no new four-lens review round, no new VERIFY items opened.
+- [x] **Closed the `custom-process-lineage` entity-type-creation permission VERIFY** -
+  commit `c1917d0` - 2026-09-27. Maintenance pass: closed the open VERIFY asking the exact
+  permission required to create a custom entity type definition via `Type - Bulk Create`. Grounded
+  via the Microsoft Learn MCP: a fetch of "Manage assets with metamodel" shows its own prerequisites
+  state collection-level Data Curator as sufficient for "Create and modify asset types" - the same
+  scoping already confirmed for the closely related "create a custom classification" action, and
+  consistent with Purview's RBAC model drawing no documented distinction between data-plane create
+  actions on that basis. No broader/root-level grant is required. Updated `README.md` §3
+  (prerequisites table) and §11 (VERIFY to RESOLVED) with new reference [19]. Doc-only correction -
+  no code changed, no new four-lens review round, no new VERIFY items opened. The residual
+  tenant-wide blast-radius caveat (Atlas type definitions are account-wide, unlike entities) is
+  preserved, not removed, since it holds regardless of how this permission-scope question resolved.
+- [x] **Closed the `accepted-domains-hygiene-check-on-premises` `-AdminAuditLogCmdlets` default-value
+  VERIFY** - commit `03abd4c` - 2026-09-27. Maintenance pass: closed the open VERIFY asking the exact
+  default value of `-AdminAuditLogCmdlets` (which cmdlets a fresh on-premises Exchange install audits
+  without explicit configuration). Grounded via the Microsoft Learn MCP: a re-fetch of
+  `Set-AdminAuditLogConfig`'s reference page shows the parameter's properties table now states
+  **Default value: None** outright - a fresh install audits no cmdlets by default; `*` (audit
+  everything) must be set explicitly. This confirms, rather than contradicts, the scenario's original
+  caution (treating `Set-`/`New-`/`Remove-AcceptedDomain` as *not* covered by default) - already
+  credited as correct discipline by this scenario's own `reviews.md` Product Owner finding. Updated
+  `design.md` §2/§5, `README.md` §11/§12 (reference 6), `reviews.md` (new correction addendum), and
+  `deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1`'s comment-based help/`.NOTES`/runtime
+  `Write-Warning` from VERIFY to RESOLVED. Doc-and-script correction only - no new four-lens review
+  round, no new design surface introduced, no new VERIFY items opened. The `Get-AdminAuditLogConfig`
+  confirmation step remains recommended operational guidance (an organization may have configured a
+  narrower list than `*` since install).
+- [x] **Closed the `adaptive-protection-deleted-content-preservation` DLM/Records Management
+  role-group VERIFY** - commit `4a85082` - 2026-09-27. Maintenance pass: closed the open VERIFY
+  asking whether the Data Lifecycle Management/Records Management Purview role group is also
+  accepted for the "Adaptive protection in Data Lifecycle Management" toggle (which surfaces under
+  the Data Lifecycle Management solution settings UI, not the Insider Risk Management app), or
+  whether only the Insider Risk Management/Insider Risk Management Admins role group works.
+  Grounded via the Microsoft Learn MCP: a direct re-fetch of
+  `purview/retention#dynamically-mitigate-the-risk-of-accidental-or-malicious-deletes` found the
+  procedure for this exact toggle states that the "required permissions" link to the Adaptive
+  Protection permissions table's "Configure Adaptive Protection and update settings" row (Insider
+  Risk Management or Insider Risk Management Admins) - no Data Lifecycle Management/Records
+  Management role group is named anywhere in that procedure, despite the toggle's UI location.
+  Updated `adaptive-protection-deleted-content-preservation/README.md` §3/§11 and `reviews.md`
+  (new correction addendum) to state this as the documented answer, while still flagging that
+  documentation coverage isn't the same as a live-tenant test.
+- [x] **Closed the `post-breach-investigation-and-purge` DSI `RecordType` VERIFY** - commit
+  `d8406db` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
+  `Search-UnifiedAuditLog` `RecordType` value carries Data Security Investigations audit records
+  (Microsoft's audit-log-activities reference lists all 28 `DSI*` Operations but never states the
+  RecordType that carries them). Grounded via the Microsoft Learn MCP: a direct fetch of the
+  Office 365 Management Activity API schema's AuditLogRecordType enum shows value `333` as
+  `DataSecurityInvestigation` ("Events from Data Security Investigations in Microsoft Purview") -
+  the same enum `Search-UnifiedAuditLog`'s `-RecordType` parameter consumes. This confirms, rather
+  than contradicts, the value this scenario's original draft had independently guessed and then
+  deliberately rejected for lack of a citation (`reviews.md` Blue Team finding 3). Updated
+  `deploy/Export-DsiActivityAuditTrail.ps1` to pass `-RecordType DataSecurityInvestigation`
+  alongside `-Operations` as a cited defense-in-depth filter (`-Operations` remains the
+  authoritative filter - it's the officially documented DSI activity list); `README.md` §11/§12
+  (new reference 19), `design.md` §5, and `reviews.md` (new correction addendum) updated to match.
+  Doc-and-script correction only - no new four-lens review round, no new design surface
+  introduced.
+- [x] **Closed the `entra-privileged-role-monitoring` "Add member to role (permanent)" naming
+  VERIFY** - commit `b47cbe8` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  Microsoft's "Security operations for privileged accounts" guidance's `"Add member to role
+  (permanent)"` (Service = PIM) detection signal for roles assigned outside PIM is the same
+  underlying event as, or genuinely distinct from, the plain `"Add member to role"` (Core Directory
+  service) that `Export-EntraPrivilegedRoleAuditTrail.ps1` filters on. Grounded via the Microsoft
+  Learn MCP: a direct fetch of the canonical `reference-audit-activities` reference shows `Add
+  member to role outside of PIM (permanent)` listed as its own, separately-documented activity
+  under the PIM service's `RoleManagement` category, distinct from `Add member to role` under Core
+  Directory's own `RoleManagement` category - confirming reading (b) from `design.md` §4a (a
+  genuinely distinct event, not an alternate display convention for the same one). Added `Add
+  member to role outside of PIM (permanent)` to the deploy script's `$monitoredActivities` and the
+  validate script's matching `$validActivities` allowlist (6 → 7 activities in both). Updated
+  `README.md` §6 (config table), §11 (VERIFY → RESOLVED), and §12 (references 7/13 reworded);
+  `design.md` §3 (scope table) and §4a (VERIFY → resolution); and `reviews.md` (new Round 4,
+  closing round 1 Red Team finding 2). No change to `targetResources` extraction logic - already
+  shape-agnostic - so no new unconfirmed assumption was introduced alongside the fix.
+- [x] **Closed the `security-policy-violations-by-departing-users` Defender for Endpoint Plan 1
+  vs. Plan 2 VERIFY** - commit `daf41f8` - 2026-09-27. Maintenance pass: closed the open VERIFY
+  asking whether this template's specific Defender for Endpoint indicators (malware/harmful-app
+  install, security-control bypass) require Plan 2's EDR sensor, or whether Plan 1's next-gen
+  antivirus/tamper-protection alerting already satisfies them. Grounded via the Microsoft Learn
+  MCP: the Defender for Endpoint Plan 1 vs. Plan 2 feature-comparison table shows Next-generation
+  protection and Attack surface reduction (which tamper protection is part of) included in
+  **both** plans, while Endpoint detection and response (EDR) is the only capability gated to
+  Plan 2 - corroborated by the Tamper protection overview page, which describes tampering alerts
+  (disabling antivirus/security features) as generated by the anti-tampering capabilities built on
+  attack surface reduction, not by EDR. Result: malware/harmful-app installation and
+  security-control tampering are both next-gen-protection/tamper-protection detections, neither
+  gated to Plan 2 - **Plan 1 is a confirmed-sufficient minimum** for this template's two
+  indicators. Updated `security-policy-violations-by-departing-users/README.md` §3 (prerequisites
+  table row), §11 (corrected an imprecise "EDR-sourced signal" characterization), and §12
+  (two new citations), plus `design.md` §2 goal 2, to state this as resolved rather than an open
+  question. No script change was needed - no deploy/validate script asserted either way.
+- [x] **Closed the `data-leaks`/`data-leaks-exfiltration-activity-trigger` triggering-event
+  combinability VERIFY** - commit `b1d72db` - 2026-09-27. Maintenance pass: closed the open VERIFY
+  asking whether the base `Data leaks` template's two triggering-event options ("User matches a
+  DLP policy" and "User performs an exfiltration activity") can be enabled simultaneously on one
+  policy. Grounded via the Microsoft Learn MCP: "Create and manage Insider Risk Management
+  policies" §Policy health twice phrases this template's notification-fix guidance using the
+  singular, definite "**the** triggering event" ("either select an active DLP policy or 'User
+  performs an exfiltration activity' as the triggering event") - one field, two possible values -
+  corroborated by "Learn about Insider Risk Management policy templates" §Policy template
+  prerequisites and triggering events, whose prerequisites column joins the `Data leaks` template's
+  two mechanisms with "**OR**", unlike the risky/priority-users family's own explicit "and/or"
+  HR-connector/Communication-Compliance prerequisite. Result: a policy has one triggering-event
+  configuration, set to either mechanism, not both - they cannot be combined on a single policy.
+  Updated `data-leaks/design.md` §6, `data-leaks/README.md` §11,
+  `data-leaks-exfiltration-activity-trigger/design.md` §2 goal 6/§6, and
+  `data-leaks-exfiltration-activity-trigger/README.md` §5 Step 4/§6/§8/§11 to state this as
+  resolved rather than an open question. No script change was needed - neither scenario's code
+  asserted either way.
+- [x] **Closed the `copilot-interaction-detection` Copilot Studio/Microsoft Foundry location VERIFY**
+  - commit `6884d9b` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether this
+  scenario's fixed template location ("Microsoft 365 Copilot and Microsoft 365 Copilot Chat") also
+  reaches Copilot Studio-built or Microsoft Foundry agent interactions, or only the core Microsoft
+  365 Copilot/Copilot Chat experience. Grounded via the Microsoft Learn MCP: the "Microsoft Purview
+  data security and compliance protections for generative AI apps" page's AI-apps coverage table
+  groups **Microsoft Copilot Studio** under the same "Copilot experiences and agents" category as
+  Microsoft 365 Copilot and Microsoft 365 Copilot Chat themselves, while listing **Microsoft
+  Foundry** under a separate "Enterprise AI apps" category - combined with the channel-detection
+  overview's own description of the "Microsoft Copilot experiences" location as covering "Copilots
+  built using Microsoft Copilot Studio," and the Microsoft Copilot "Privacy and protections" page's
+  explicit statement that "Microsoft 365 Copilot"/"Microsoft 365 Copilot Chat" and "Microsoft
+  Copilot"/"Microsoft Copilot Chat" are the same, renamed product with no compliance-behavior
+  change. Result: this location **does** reach Copilot Studio agent interactions, but does **not**
+  reach Microsoft Foundry agent interactions (those need the separate "Enterprise AI apps" location,
+  pay-as-you-go billing required). Updated `copilot-interaction-detection/README.md` §11 (VERIFY →
+  RESOLVED, with the reasoning above) and §12 (two new references), and `design.md` §8 to match. No
+  script change was needed - this scenario's deploy/validate code never asserted either way.
+- [x] **Closed the `auto-label-eu-personal-data-sharepoint` "EU driver's license number" apostrophe
+  VERIFY** - commit `8e9385b` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  the byte-exact SIT name is `"EU driver's license number"` (this scenario's existing default) or
+  `"EU drivers license number"` (the no-apostrophe title on the SIT's own Microsoft Learn
+  bundle-index page). Grounded via a direct fetch of that bundle-index page (confirms its title
+  omits the apostrophe, but its own body prose keeps it) plus the "Create custom sensitive
+  information types" page, which names this SIT by its portal display name - not a URL slug - in
+  its list of non-copyable EU-wide SITs, spelling it `"EU driver's license number"` (apostrophe,
+  lowercase), matching this scenario's existing default exactly. Updated
+  `auto-label-eu-personal-data-sharepoint/README.md` §11, `design.md` §4, and `reviews.md` (round
+  4). No script or default-parameter change was needed. This closes only the apostrophe
+  sub-question - the broader byte-exact-*casing* VERIFY for the other bundle names (`README.md`
+  §11) stays open, pilot-tenant only.
+- [x] **Closed the `manage-critical-data-elements` entityType=CRITICALDATACOLUMN VERIFY** - commit
+  `8221edf` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether
+  `entityType=DATACOLUMN` or `entityType=CRITICALDATACOLUMN` is the real, accepted value for the
+  Critical Data Elements relationship operations. Grounded via a direct re-fetch of the Critical
+  Data Elements Create/List/Delete Relationship reference pages (`api-version=2025-09-15-preview`)
+  plus the Data Products Create Relationship page (shares the same `EntityCategory` enum): all now
+  list `CRITICALDATACOLUMN` explicitly, matching every worked example, with no plain `DATACOLUMN`
+  value in the enum at all - the earlier enum-vs-example discrepancy this build's grounding pass
+  had found is resolved, apparently by a documentation fix on Microsoft's side since that pass.
+  Updated `manage-critical-data-elements/deploy/New-CriticalDataElement.ps1` and
+  `Remove-CriticalDataElement.ps1` (both now send `entityType=CRITICALDATACOLUMN`),
+  `validate/Test-CriticalDataElement.ps1`, `README.md`, `design.md` §6, and `reviews.md`
+  (addendum). Corrected the same stale `DATACOLUMN` claim where it was echoed elsewhere:
+  `manage-critical-data-elements-related-terms/` (design.md, README.md, reviews.md addendum,
+  rollback.md, `Remove-CdeRelatedTerm.ps1`), `manage-okrs/design.md`, and
+  `docs/automation-surface.md`'s Unified Catalog routing-table rows. No script logic changed
+  beyond the literal `entityType` value; no new coverage added.
+- [x] **Closed the `adaptive-scope-retention` Get-AdaptiveScopeMembers metadata-property-name
+  VERIFY** - commit `60ce46c` - 2026-09-27. Maintenance pass: closed the open VERIFY asking what
+  property names `Get-AdaptiveScopeMembers`'s first (metadata) returned element exposes for total
+  member count, current-page count, the more-pages flag, and the paging watermark - Microsoft's
+  prose description named the concepts but not the properties. Grounded via a direct fetch of the
+  cmdlet's current Microsoft Learn reference page: two worked paging examples (Example 8 and the
+  `Export-AdaptiveScopeMembers` helper in Example 9) now use these fields by name -
+  `TotalMemberCount`, `CurrentPageMemberCount`, `IsLastPage`, `Watermark` - confirming them without
+  guessing. Updated `validate/Test-AdaptiveScopeRetention.ps1` (prints the named values ahead of the
+  existing generic `Format-List` fallback), `README.md` §11 and reference 10. No script behavior
+  changed beyond the added informational output; this scenario's separate, still-open VERIFY (the
+  `AdaptiveScopeLocation` applied-locations parameter-surface gap) is untouched by this pass.
+- [x] **Closed the `rules-and-scorecards` Schedule-trigger recurring-type VERIFY** - commit
+  `7fbe4ec` - 2026-09-27. Maintenance pass: closed the open VERIFY asking whether the Data Quality
+  Schedule object's `Trigger.type` supports a documented `Recurrence` shape beyond `RunOnce`. Grounded
+  via a direct fetch of the `Create Schedule`/`Get Schedule` REST reference for api-version
+  `2026-01-12-preview` (the exact version `New-DataQualityRulesAndSchedule.ps1` targets): the
+  `Trigger.type` property is typed as a bare `string` (not an enum), and the `TypeProperties` object
+  is formally defined in the Definitions section with exactly three fields - `isScheduled`,
+  `timezone`, `triggerTime` - all `RunOnce`-specific, with no second discriminated-union variant or
+  frequency/interval fields documented anywhere on the page (schema or examples alike). This upgrades
+  the finding from "not found in the one worked example this build fetched" to "not present in the
+  formal schema definition of the current API version either" - still a documentation-absence finding
+  rather than pilot-tenant proof the capability doesn't exist server-side, but the strongest evidence
+  obtainable without a live tenant, so the VERIFY is closed with this dated, sourced conclusion instead
+  of carried forward unresolved. Also removed the dependent "revisit alert-cadence assumptions once
+  this is closed" follow-up immediately above it in this file, since with no recurring REST trigger
+  type to schedule against, there is nothing to revisit. Updated `README.md` §11 (and the `.NOTES`
+  cross-reference from §8 to §11), `deploy/New-DataQualityRulesAndSchedule.ps1` `.NOTES`, and
+  `design.md` §5 configuration-reference table. No script behavior changed - it already scheduled
+  `RunOnce` only.
 - [x] **Partially closed the `gdpr-dsr-fulfillment` Article 20 export-format VERIFY** - commit
   `bd49417` - 2026-09-26. Maintenance pass: grounded whether eDiscovery review-set export can produce
   a CSV/JSON metadata companion alongside PST/native files, via a direct Microsoft Learn fetch of
@@ -8071,8 +8772,91 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the live-reconciliation check's scope confirmed intentional, not a gap) - CISO and Product Owner
   both Pass with no findings. No cmdlet, endpoint, or field shape was invented; the numeric
   string-format VERIFY above is the only new open item this fragment adds.
+- [x] **Maintenance: close the `data-leaks-custom-indicator-trigger` template-scope VERIFY** —
+  commit `9fc50bf` — 2026-09-28. Grounded via a direct Microsoft Learn fetch (Microsoft Learn MCP)
+  of "Configure policy indicators in Insider Risk Management" §Built-in indicators vs. custom
+  indicators, which states: "You can only modify triggering events for policies created from the
+  *Data leaks* or *Data leaks by priority users* templates. Policies created from all other
+  templates don't have customizable triggering indicators or events." This is more precise than
+  the same page's earlier, looser "any *Data theft* or *Data leaks* policies" wording this
+  scenario originally grounded against, and settles the open question: `Data leaks by priority
+  users` does support a custom indicator as its triggering event; `Data leaks by risky users` (and
+  `Data theft by departing users`) does not. Updated in place:
+  `data-leaks-custom-indicator-trigger/design.md` §2 goal 7/§6 and `README.md` §6/§11 now state the
+  confirmed template list instead of an open VERIFY. This fragment's own scope (base `Data leaks`
+  template only) is unchanged — extending the pattern to `Data leaks by priority users` remains a
+  valid future fragment, now unblocked rather than gated on an unresolved grounding question. No
+  code changed; maintenance-only, per this run's scope.
+- [x] **Closed the `accepted-domains-hygiene-check` `Set-AcceptedDomain` audit-attribution VERIFY** —
+  commit `872ece8` — 2026-09-28. Maintenance pass: closed the open VERIFY asking whether
+  `Set-AcceptedDomain` is independently confirmed to appear under `Search-UnifiedAuditLog -RecordType
+  ExchangeAdmin -Operations 'Set-AcceptedDomain'`. Grounded via the Microsoft Learn MCP: a direct
+  fetch of `purview/audit-log-activities`'s "Exchange admin activities" section states the full
+  default rule verbatim — every Exchange Online PowerShell change is logged except cmdlets beginning
+  with `Get-`/`Search-`/`Test-`, plus a separately-named, narrower exception for internal
+  Microsoft-datacenter/service-account maintenance cmdlets (reportable via DCR if found unaudited).
+  No worked example names `Set-AcceptedDomain` specifically, but it is a customer-facing `Set-`
+  cmdlet and matches neither named exception, so it falls under the default-audited rule — the
+  strongest grounding obtainable short of a pilot-tenant test. Updated
+  `accepted-domains-hygiene-check/README.md` §11 (VERIFY → confirmed, with the verbatim quote) and
+  §12 (new reference 6a), `design.md` §5 (VERIFY → confirmed) and its "Net effect" paragraph,
+  `reviews.md` (new correction addendum, re-checking rather than just carrying forward finding 4's
+  "no overclaim" verdict), and `deploy/Export-AcceptedDomainsHygieneReport.ps1`'s comment-based
+  help/`.NOTES`/runtime `Write-Warning` (which now states only the still-open Added/Removed
+  attribution gap, not the closed VERIFY). Doc-and-script correction only — no new four-lens review
+  round, no new design surface introduced. The scenario's second open item (domain add/remove
+  attribution — Exchange Online has no cmdlet for that action to audit) is untouched by this pass and
+  remains open.
+- [x] **Maintenance pass — closed the `scan-azure-synapse-and-classify` `resourceTypes` VERIFY** —
+  commit `7a6f247` — 2026-09-28. Re-grounded via the Microsoft Learn MCP tool (reachable this run,
+  unlike the original build and its follow-up grounding passes, which recorded `EGRESS_BLOCKED`): a
+  direct fetch of `register-scan-synapse-workspace`'s own "Set up a scan by using an API" section
+  confirms the PascalCase `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` key
+  from the earlier-found worked example is Microsoft's current, live documented shape for scoping an
+  `AzureSynapseWorkspace*` scan to named serverless databases — the formal
+  `ExpandingResourceScanPropertiesResourceTypes` REST type's generic camelCase key enumeration
+  (confirmed independently via `microsoft_docs_fetch` of its own reference page) is genuinely
+  incomplete for scan kinds that reuse it, exactly as the prior grounding pass's inference suspected.
+  No dedicated-pool equivalent key is documented anywhere on that page. Updated
+  `scan-azure-synapse-and-classify/README.md` §11 and its closing re-verify note, `design.md`
+  §2/§5.3/§7, and the deploy script's `.NOTES` in place (VERIFY → RESOLVED); the deploy script's own
+  default behavior (omitting `resourceTypes`) is unchanged — this was a documentation-only grounding
+  fix, not a code change. Both `PROGRESS.md` tracking entries for this item (the original follow-up
+  and the later re-grounding correction) marked closed in place rather than duplicated.
+- [x] **Maintenance pass — closed the REST-path half of `custom-process-lineage`'s `Type - Delete`
+  VERIFY** — commit `73efc62` — 2026-09-28. The Microsoft Learn MCP tool was reachable this run;
+  a direct fetch of the canonical `Type - Delete` REST reference page (API version 2023-09-01,
+  `https://learn.microsoft.com/rest/api/purview/datamapdataplane/type/delete`) confirms
+  `DELETE {endpoint}/datamap/api/atlas/v2/types/typedef/name/{name}`, returning `204 No Content`
+  on success — independent of, and matching, the .NET SDK's `TypeDefinition.Delete(name)` method
+  signature this build's original grounding pass had relied on alone. The reference page's only
+  documented non-success shape is a generic `AtlasErrorResponse` ("an unexpected error response"),
+  so the **in-use-type deletion behavior half of this VERIFY stays open** — no statement either way
+  on whether deleting a type with existing (or previously-existing) entity instances succeeds,
+  no-ops, or errors. Updated `scenarios/data-lineage/custom-process-lineage/README.md` (§11 bullet,
+  reference 18) and `rollback.md` (the type-definition-retention rationale and the manual-decommission
+  paragraph) to cite the confirmed path while keeping the in-use-behavior question explicitly open;
+  this file's own tracking bullet above marked `[x]` with both halves called out separately rather
+  than closed wholesale. Doc-only correction — no code change, no new four-lens review round.
 
 ## Blocked / needs user
+- **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,
+  recorded so the next run doesn't misread it as real divergence):** this session also started on a
+  **detached HEAD** with a stale local `main` (49 commits behind). Following the 2026-09-16 fix's own
+  first step - `git merge-base --is-ancestor main HEAD` and `git merge-base --is-ancestor origin/main
+  HEAD` - **both returned "NO"** (and a bare `git merge-base HEAD main` returned nothing, exit 1),
+  which looks exactly like genuine unrelated-history divergence between two real branches. It wasn't:
+  this container's repo is a **shallow clone** (`.git/shallow` present), and the cached local
+  `origin/main` ref was stale from clone time. A plain `git fetch origin main` resolved it
+  immediately - the real `origin/main` turned out to be **identical to the detached HEAD commit**
+  (`d0df21e`), i.e. no divergence at all, just two stale local pointers. **Diagnosis:** in a shallow
+  clone, `git merge-base --is-ancestor` returning "NO" in both directions is **not proof of
+  divergence** - it can equally mean the shallow boundary hides the common history, or that the local
+  remote-tracking ref itself is stale. **Always `git fetch origin <branch>` first and recheck
+  containment against the freshly-fetched ref before concluding real divergence** and reaching for a
+  branch/PR detour or a preserved-backup-branch push; only trust the merge-base verdict once the
+  fetch is current. After the fetch, this run's fix was the same as 2026-09-16's: `git branch -f main
+  HEAD && git checkout main`, then proceed normally (no force-push, no rebase, no new branch needed).
 - **Positioning note (2026-09-25, not a blocker - informational for future runs):** the repo's
   mission changed from a vendor-sellable product to a free, open community resource (part of
   Krunal Patel's Microsoft MVP-in-Security case). `AGENTS.md` §1 and §10 now reflect this as

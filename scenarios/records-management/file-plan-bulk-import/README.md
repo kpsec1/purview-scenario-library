@@ -260,12 +260,17 @@ creates are removed the same way, one at a time.
 - **VERIFY (pilot tenant):** the property name(s) `Get-ComplianceTag` exposes for file-plan
   descriptor read-back - not documented, so `validate/Test-FilePlanBulkImport.ps1` reports
   descriptors informationally rather than asserting on them.
-- **VERIFY (pilot tenant or a future Microsoft Learn pass):** the exact `Search-UnifiedAuditLog`
-  `RecordType`/`Operations` values for a retention-label **definition/creation** event. Microsoft
-  documents the values for label **application** events (`Changed retention label for a file` /
-  `Labeled message as a record` [[8]](#references)) but this scenario did not find a documented
-  record type for the act of creating the label object itself - an audit-trail export script for
-  bulk-creation events is a tracked follow-up rather than a guessed `RecordType`.
+- **VERIFY closed 2026-09-28 (Microsoft Learn MCP, maintenance pass):** the exact
+  `Search-UnifiedAuditLog` `RecordType`/`Operations` values for a retention-label
+  **definition/creation** event are `RecordType DataGovernance` (value 38 - "Events related to
+  retention policies and retention labels in the Microsoft Purview portal") /
+  `Operations NewComplianceTag` (friendly name "Created retention label" - "Administrator created a
+  new retention label") [[9]](#references)[[10]](#references), directly confirmed against Microsoft's
+  own **Audit log activities** and **Office 365 Management Activity API schema** reference pages
+  rather than assumed. This is distinct from the already-documented label **application** events
+  (`Changed retention label for a file` / `Labeled message as a record` [[8]](#references)). An
+  audit-trail export script for bulk-creation events built on this confirmed `RecordType`/`Operations`
+  pair remains a tracked follow-up (`PROGRESS.md`) - not built in this maintenance-only pass.
 - **CSV/formula-injection guard is a general defensive control, not a Microsoft-documented rule.**
   `FilePlanRow.Validate.ps1` refuses any free-text column whose value starts with `=`, `+`, `-`, or
   `@`, or contains a raw tab/CR/LF - the classic spreadsheet-formula-injection vector, relevant
@@ -293,6 +298,9 @@ creates are removed the same way, one at a time.
 6. Learn about records management - <https://learn.microsoft.com/purview/records-management>
 7. Microsoft Purview service description - Records Management licensing - <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description>
 8. Declare records by using retention labels - audit log activities for labeling - <https://learn.microsoft.com/purview/declare-records>
+9. Audit log activities - Retention policy and retention label activities (`NewComplianceTag` /
+   "Created retention label") - <https://learn.microsoft.com/purview/audit-log-activities#retention-policy-and-retention-label-activities>
+10. Office 365 Management Activity API schema - Common schema (`RecordType` 38 `DataGovernance`) - <https://learn.microsoft.com/office/office-365-management-api/office-365-management-activity-api-schema#common-schema>
 
 > Re-verify all links, cmdlet parameters, licensing, and the portal template's exact column order
 > against current Microsoft Learn (and a live template download) before a customer-facing

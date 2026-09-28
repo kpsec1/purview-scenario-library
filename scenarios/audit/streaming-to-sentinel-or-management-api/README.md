@@ -231,10 +231,17 @@ See `rollback.md`.
 - **No webhook/push mode built.** Path B polls; Microsoft also documents a webhook push mode
   requiring a hosted, internet-reachable endpoint, deliberately out of scope for this author-only
   library (`design.md` §6).
-- **VERIFY - connector resource naming (Path A).** The Bicep template derives a deterministic name
-  via `guid()` so re-deployments target the same resource; Microsoft's `Office365`-kind reference
-  page doesn't state an explicit naming contract for this resource type - see the `.bicep` file's
-  own header comment.
+- **Connector resource naming (Path A) - grounded 2026-09-28.** The `Microsoft.SecurityInsights/
+  dataConnectors` name isn't required to be a GUID: the resource-format reference documents `name`
+  as plain `string (required)` with no format constraint, and its own worked Bicep/ARM/Terraform
+  example sets it to an arbitrary string (`'acctest0001'`) for a different connector kind on the
+  same resource type [[9]](#references). The REST/Codeless-Connector-Framework URI-parameter
+  reference confirms the only real constraint: `dataConnectorId` "must be a unique name that's the
+  same as the `name` parameter in the request body" - uniqueness, not a GUID format
+  [[16]](#references). (`New-AzSentinelDataConnector`'s `-Id` parameter defaults to
+  `(New-Guid).Guid`, but that's a convenience default, not a documented requirement.) The Bicep
+  template's deterministic `guid()`-derived name remains unchanged - it's still a valid, idempotent
+  choice - but is now a design choice rather than a workaround for an unstated constraint.
 - **VERIFY - 15-minute `/start` cooldown edge case (Path B).** Whether the cooldown is measured from
   the previous `/start` call's timestamp regardless of outcome, or only from a successful one, isn't
   documented - `Enable-ManagementActivitySubscriptions.ps1` sidesteps this by skipping `/start`
@@ -265,6 +272,7 @@ See `rollback.md`.
 13. Integrate Microsoft Sentinel and Microsoft Purview - prerequisites (existing Sentinel workspace + Purview onboarded) - <https://learn.microsoft.com/azure/sentinel/purview-solution>
 14. Connect Microsoft Sentinel to other Microsoft services with an API-based data connector - prerequisites (Security Administrator, Log Analytics read/write) - <https://learn.microsoft.com/azure/sentinel/connect-services-api-based#prerequisites>
 15. Microsoft Sentinel in the Azure portal retirement timeline (March 31, 2027) - <https://learn.microsoft.com/azure/sentinel/overview#microsoft-sentinel-in-the-azure-portal-retirement-timeline>
+16. RestApiPoller data connector reference for the Codeless Connector Framework - URI parameters (`dataConnectorId` must be a unique name matching the request body's `name`) - <https://learn.microsoft.com/azure/sentinel/data-connector-connection-rules-reference>
 16. ARM/Bicep deployment what-if operation (`New-AzResourceGroupDeployment -WhatIf`) - <https://learn.microsoft.com/azure/azure-resource-manager/bicep/deploy-what-if>
 
 > Re-verify all links, the API version/resource schema, throttling figures, and connector coverage

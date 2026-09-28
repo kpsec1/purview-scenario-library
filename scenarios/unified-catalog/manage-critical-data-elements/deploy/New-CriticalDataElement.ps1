@@ -107,11 +107,12 @@
     Creates/updates the critical data element, maps its columns, and publishes it.
 
 .NOTES
+    entityType=CRITICALDATACOLUMN confirmed 2026-09-27 against the Critical Data Elements
+    Create/List/Delete Relationship reference pages (api-version=2025-09-15-preview): the
+    EntityCategory enum on all three now lists CRITICALDATACOLUMN explicitly, matching every
+    worked example - see design.md Section 6.
+
     VERIFY before production use (see README.md Section 11 and design.md for full detail):
-    - Every worked example for the Critical Data Elements Create/List/Delete Relationship
-      operations uses entityType=CRITICALDATACOLUMN, but the EntityCategory enum each of those
-      same pages formally documents has no such value - it lists DATACOLUMN instead. This script
-      sends DATACOLUMN (design.md Section 6). If a tenant rejects it, try CRITICALDATACOLUMN.
     - Whether the Critical Data Elements List Relationships entityType=DATAPRODUCT call actually
       surfaces the portal's automatically-computed "associated data products" rollup, or only a
       relationship this script would have to create itself (which it does not - design.md
@@ -432,11 +433,10 @@ function Test-CdeRelationshipExists {
 }
 
 function Add-CdeColumnRelationship {
-    # design.md Section 6: this repo's grounding pass found every worked example for this
-    # operation uses entityType=CRITICALDATACOLUMN, but the formally-documented EntityCategory
-    # enum has no such value - it lists DATACOLUMN instead. This function sends DATACOLUMN,
-    # reasoning the declared enum is more likely to be the real contract. VERIFY before relying on
-    # this at scale (README.md Section 11): if a tenant rejects DATACOLUMN, try CRITICALDATACOLUMN.
+    # design.md Section 6: entityType=CRITICALDATACOLUMN confirmed 2026-09-27 - the
+    # EntityCategory enum on the Create/List/Delete Relationship reference pages
+    # (api-version=2025-09-15-preview) lists CRITICALDATACOLUMN explicitly, matching every
+    # worked example.
     param(
         [Parameter(Mandatory)][string]$CdeId,
         [Parameter(Mandatory)][string]$CdeName,
@@ -444,7 +444,7 @@ function Add-CdeColumnRelationship {
         [Parameter(Mandatory)][string]$ColumnLabel,
         [Parameter(Mandatory)][string]$Token
     )
-    $entityType = 'DATACOLUMN'
+    $entityType = 'CRITICALDATACOLUMN'
     if (Test-CdeRelationshipExists -CdeId $CdeId -EntityType $entityType -EntityId $ColumnId -Token $Token) {
         Write-Host "'$CdeName' is already mapped to column '$ColumnLabel'." -ForegroundColor Yellow
         return

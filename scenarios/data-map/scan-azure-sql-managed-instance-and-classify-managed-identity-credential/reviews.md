@@ -115,6 +115,20 @@ No Fix/Fail.
 
 No remaining Fix/Fail after resolution.
 
+### Correction addendum (2026-09-27, doc-only, no new four-lens round)
+
+Finding 1's VERIFY is now closed, and its resolution reversed. A direct fetch of the Managed
+Instance registration/authentication page (rather than the targeted search this round's original
+grounding pass relied on) found no Azure RBAC role-assignment step anywhere in its managed-identity
+authentication section, for either SAMI or UAMI - only the Object ID lookup, Entra contained-user
+creation, and `db_datareader` grant. This is not the "likely a documentation-page omission" outcome
+this finding's resolution anticipated as the probable answer: Managed Instance's SAMI/UAMI
+authentication path genuinely never involves an Azure IAM role assignment on the instance resource,
+unlike the Database sibling. `README.md` §3, §4, §5, and §11 and `design.md` §2/§4 corrected in
+place - see `README.md` §11 for the full grounding and the separate, subscription-scoped,
+registration-time-only Reader recommendation this could otherwise be confused with. Per `AGENTS.md`
+§6, a doc/fact correction with no code or architecture change does not require a new four-lens round.
+
 ---
 
 ## Round summary
@@ -124,11 +138,10 @@ No remaining Fix/Fail after resolution.
 | 🔴 Red Team | Pass | 0 (confirmed sibling's fixes ported correctly) | - |
 | 🔵 Blue Team | Pass | 0 (confirmed sibling's disclosures and corrected REST shape both ported correctly) | - |
 | 🎩 CISO | Pass | 0 | - |
-| 🟦 Microsoft Product Owner | Fix | 1 (overstated grounding for the IAM role-assignment portal walkthrough on this specific source page) | Resolved - corrected in place with an explicit VERIFY |
+| 🟦 Microsoft Product Owner | Fix | 1 (overstated grounding for the IAM role-assignment portal walkthrough on this specific source page) | Resolved 2026-09-25 with an explicit VERIFY; VERIFY itself closed 2026-09-27 (see correction addendum above) - no Azure IAM Reader role applies to Managed Instance scan authentication at all |
 
 Carried forward as `PROGRESS.md` follow-ups (out of this fragment's scope): the same UAMI wiring for
 the third and last sibling, Azure Synapse dedicated SQL pools (`scan-credential-remaining-kinds/
-README.md` §6); the VERIFY raised above (Azure IAM Reader role-assignment walkthrough for Managed
-Instance UAMI, pilot-tenant or future Microsoft Learn pass); every VERIFY already carried by
-`scan-azure-sql-managed-instance-and-classify` itself (unchanged by this fragment); and
-`scan-credential-remaining-kinds`'s own carried-forward `ManagedIdentity` GA/preview-status recheck.
+README.md` §6); every VERIFY already carried by `scan-azure-sql-managed-instance-and-classify` itself
+(unchanged by this fragment); and `scan-credential-remaining-kinds`'s own carried-forward
+`ManagedIdentity` GA/preview-status recheck.

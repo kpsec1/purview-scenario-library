@@ -20,9 +20,9 @@ Reverts the scan's `kind` from `AzureSqlDatabaseManagedInstanceCredential` back 
 collection, scan rule set - left unchanged). The UAMI and the `ManagedIdentity` credential object
 referencing it stay defined.
 
-**Before running Stage 1**, confirm the Purview account's own SAMI still holds the Azure IAM Reader
-grant and `db_datareader` external-provider user this scan depended on before the UAMI was adopted
-(`scan-azure-sql-managed-instance-and-classify/README.md` §3/§5). If either was removed, re-establish
+**Before running Stage 1**, confirm the Purview account's own SAMI still holds the `db_datareader`
+external-provider user this scan depended on before the UAMI was adopted
+(`scan-azure-sql-managed-instance-and-classify/README.md` §3/§5). If it was removed, re-establish
 it first - otherwise the reverted scan will register successfully but fail on its next run. This
 scenario's rollback does **not** need to re-verify the instance-level prerequisites (public
 endpoint, Microsoft Entra admin, Directory Readers) - those are orthogonal to which Purview identity
@@ -48,8 +48,9 @@ caveat as the Database sibling.
 Identical scope boundary to the Database sibling
 (`scan-azure-sql-and-classify-managed-identity-credential/rollback.md`): classifications already
 applied by prior scan runs; the base scenario's data source and scan registration (delete via that
-scenario's own `rollback.md`); the UAMI's Azure IAM Reader grant or SQL `db_datareader` permission;
-any other scan or credential object still referencing the same UAMI. Additionally: the Managed
+scenario's own `rollback.md`); the UAMI's SQL `db_datareader` permission (no Azure IAM role
+applies here - see `README.md` §11); any other scan or credential object still referencing the same
+UAMI. Additionally: the Managed
 Instance-specific instance-level prerequisites (public endpoint, Microsoft Entra admin, Directory
 Readers role) are never touched by either stage - decommissioning those, if desired, is the base
 scenario's own `rollback.md`'s scope, not this fragment's.

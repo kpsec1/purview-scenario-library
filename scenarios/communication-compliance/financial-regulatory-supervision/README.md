@@ -121,8 +121,8 @@ schedule, reading (never writing) the unified audit log.
    - Communication direction: **Inbound**, **Outbound**, and **Internal** (desk-to-desk internal chat
      is exactly where collusion/stock-manipulation language is most likely to appear).
    - Conditions: add the **Corporate sabotage**, **Customer complaints**, **Gifts & entertainment**,
-     **Money laundering**, **[Workplace/Regulatory] collusion** (naming VERIFY - §11), **Stock
-     manipulation**, and **Unauthorized disclosure** trainable classifiers as OR conditions, plus
+     **Money laundering**, **Regulatory collusion**, **Stock manipulation**, and **Unauthorized
+     disclosure** trainable classifiers as OR conditions, plus
      **Message/Attachment contains any of these words** using the custom keyword dictionary imported
      from `deploy/policy/finra-supervision-evasion-phrases.txt`.
    - Enable **Use OCR to extract text from images**.
@@ -181,7 +181,7 @@ Communication Compliance has no surface of its own for anything, including its o
 | Locations | Exchange Online, Microsoft Teams (Viva Engage optional) | `design.md` §5 |
 | Direction | Inbound, Outbound, Internal | Internal desk-to-desk chat is a primary collusion/stock-manipulation surface |
 | Users in scope | The firm's registered-representative group/adaptive scope, **not All users** | `design.md` §3 |
-| Trainable classifiers | Corporate sabotage, Customer complaints, Gifts & entertainment, Money laundering, [Workplace/Regulatory] collusion, Stock manipulation, Unauthorized disclosure | `design.md` §5 |
+| Trainable classifiers | Corporate sabotage, Customer complaints, Gifts & entertainment, Money laundering, Regulatory collusion, Stock manipulation, Unauthorized disclosure | `design.md` §5 |
 | Custom keyword dictionary | `deploy/policy/finra-supervision-evasion-phrases.txt` | Evasion/concealment phrases only - never restricted-list tickers/company names - `design.md` §5 |
 | OCR | Enabled | |
 | Review percentage | 100% | Rule 3110(b)(4)'s evidence-of-review requirement, not just an alert-volume preference - `design.md` §8, §8 below |
@@ -304,18 +304,20 @@ removes all captured messages, attachments, and alerts**.
 - **This scenario cannot script policy creation, condition tuning, reviewer assignment, or population
   scoping.** No write API exists (`design.md` §2). Purview's RBAC also cannot verify FINRA registration
   status for reviewers (`design.md` §6) - that verification is entirely the firm's own responsibility.
-- **Naming inconsistency, unconfirmed by direct fetch:** this build found the collusion-related
-  classifier referred to as both "Regulatory collusion" and "Workplace collusion" across independent
-  secondary sources (this build's network cannot directly fetch the canonical Microsoft Learn
-  classifier-definitions page - `design.md` §10). **VERIFY** the exact current portal-UI label at
-  deploy time before finalizing customer-facing documentation.
-- **This build's classifier-to-template mapping is inferred, not confirmed.** Microsoft documents a
-  built-in "Detect financial regulatory compliance" template (and a related "Detect conflict of
-  interest" template) but this build could not confirm, without a direct Learn fetch or pilot tenant,
-  exactly which of the seven classifiers each template bundles by default. This scenario sidesteps the
-  question by building a custom policy naming all seven explicitly (`design.md` §5) - this does not
-  depend on resolving the template question, but a future revision should still confirm it for anyone
-  choosing to start from a template instead.
+- **Classifier naming - resolved.** The collusion-related classifier's current portal-UI label is
+  **"Regulatory collusion"**, confirmed directly against
+  [Trainable classifiers definitions](https://learn.microsoft.com/purview/trainable-classifiers-definitions#regulatory-collusion)
+  and [Create and manage Communication Compliance policies](https://learn.microsoft.com/purview/communication-compliance-policies#policy-settings).
+  "Workplace collusion" does not appear on either canonical page and was an artifact of this
+  scenario's original WebSearch-only grounding pass (`design.md` §10).
+- **Classifier-to-template mapping - resolved 2026-09-28.** The built-in "Detect financial regulatory
+  compliance" template bundles six of this scenario's seven classifiers (Customer complaints, Gifts &
+  entertainment, Money laundering, Regulatory collusion, Stock manipulation, Unauthorized disclosure) at
+  a 10% review percentage, and omits **Corporate sabotage** entirely. The separate "Detect conflict of
+  interest" template carries **no classifier conditions** - it matches on communications between two
+  scoped groups/users, not content. Neither template can produce this scenario's seven-classifier,
+  100%-review-percentage posture as shipped, confirming (not just deferring) the decision to build a
+  custom policy naming all seven classifiers explicitly (`design.md` §5).
 - **The evidence-of-review CSV's "action taken" field is best-effort, not guaranteed-complete.** This
   build could not confirm the exact `AuditData` JSON property name Microsoft populates for the
   specific remediation action (Resolve/Tag/Escalate/etc.) on a `SupervisoryReviewTag` event, beyond
@@ -341,14 +343,16 @@ removes all captured messages, attachments, and alerts**.
 ## 12. References
 
 1. Communication Compliance - regulatory compliance classifier family (Corporate sabotage, Customer
-   complaints, Gifts & entertainment, Money laundering, collusion, Stock manipulation, Unauthorized
-   disclosure) - corroborated via WebSearch across multiple independent secondary sources summarizing
-   `learn.microsoft.com/purview/communication-compliance-policies` and
-   `learn.microsoft.com/purview/communication-compliance` (not directly fetchable from this build's
-   network - `design.md` §10).
+   complaints, Gifts & entertainment, Money laundering, Regulatory collusion, Stock manipulation,
+   Unauthorized disclosure) - confirmed directly via
+   <https://learn.microsoft.com/purview/communication-compliance-policies#policy-settings> and
+   <https://learn.microsoft.com/purview/trainable-classifiers-definitions#regulatory-collusion>
+   (`design.md` §10).
 2. "Detect financial regulatory compliance" and "Detect conflict of interest" built-in policy
-   templates - corroborated via WebSearch summarizing the same Communication Compliance policies page;
-   exact per-template classifier bundling not independently confirmed - `design.md` §5.
+   templates, including each template's exact classifier bundling, location, direction, and review
+   percentage - confirmed directly via
+   <https://learn.microsoft.com/purview/communication-compliance-policies#choose-a-policy-template>
+   (`design.md` §5).
 3. Create and manage Communication Compliance policies (policy templates, PowerShell-not-supported
    statement, storage limits, pause/copy) - <https://learn.microsoft.com/purview/communication-compliance-policies>
 4. Get started with Communication Compliance (step-by-step policy workflow, notice templates/

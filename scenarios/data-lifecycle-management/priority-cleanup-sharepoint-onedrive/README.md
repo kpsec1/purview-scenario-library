@@ -226,10 +226,25 @@ irreversible permanent deletion. The label is not force-removed by default.
   register, beyond the `EDiscoveryAdmin` stage this scenario includes.
 - **`RetentionDuration 0` / `TaggedAgeInDays` for "as soon as possible" is inferred, not confirmed**
   - carried over from the Exchange sibling's same open gap. See `design.md` §4.
-- **KeyQL exclusions for this workload are unconfirmed either way.** Microsoft's Exchange-specific
-  page documents that `SenderAuthor`, `SubjectTitle`, `(c:c)`, and `(c:s)` are unsupported in a
-  priority cleanup `ContentMatchQuery` - its SharePoint/OneDrive-specific page does not repeat or
-  contradict this list. Not assumed to apply or not apply here.
+- **KeyQL exclusions for this workload - re-grounded 2026-09-28, treat as applicable here too.**
+  Microsoft's Exchange-specific priority cleanup page documents that `SenderAuthor`, `SubjectTitle`,
+  `(c:c)`, and `(c:s)` are unsupported in a priority cleanup `ContentMatchQuery`; the SharePoint/
+  OneDrive-specific page's own Limitations section doesn't repeat that bullet. Checking what these
+  four actually are (Microsoft's eDiscovery condition-builder reference [[13]](#references))
+  resolves the gap without a pilot tenant: `(c:c)` and `c:s` aren't general query operators at
+  all - they're notation the condition builder UI auto-inserts when it converts point-and-click
+  conditions into KeyQL (`(c:c)` marks where builder-added conditions start; `c:s` separates
+  keyword segments), and Microsoft's own text says "Don't use `(c:c)` in manually entered queries"
+  and that `c:s` insertion "doesn't require manual entry" - a caution about hand-typing
+  condition-builder syntax, not an Exchange-only restriction, so it applies equally to a
+  SharePoint/OneDrive KeyQL query built the same way. `SenderAuthor`/`SubjectTitle` map to the
+  eDiscovery common properties **Sender/Author** and **Subject/Title**, which that same reference
+  documents as applying to *both* mail and documents (the Author/Title metadata fields on Office
+  files) - not Exchange-only properties, which is consistent with the exclusion carrying over to
+  this workload's documents too. No Microsoft page states the SharePoint/OneDrive priority cleanup
+  exclusion in so many words, so this scenario still treats all four as unsupported in its
+  `ContentMatchQuery` here (matching the Exchange sibling) rather than assuming the SharePoint/
+  OneDrive page's silence means broader support.
 - **No built-in query age filter.** `ProgID:Media AND ProgID:Meeting` matches all Teams recordings/
   transcripts, not just stale ones - see §8.
 - **No confirmed cmdlet for the tenant-wide on/off toggle.** Same gap as the Exchange sibling - the
@@ -256,6 +271,7 @@ irreversible permanent deletion. The label is not force-removed by default.
 10. Get-RetentionCompliancePolicy / Get-RetentionComplianceRule (`-PriorityCleanup` filter switch) - <https://learn.microsoft.com/powershell/module/exchangepowershell/get-retentioncompliancepolicy>
 11. Set-RetentionCompliancePolicy (`-StartSimulation`, `-EnforceSimulationPolicy`, `-RetryDistribution`) - <https://learn.microsoft.com/powershell/module/exchangepowershell/set-retentioncompliancepolicy>
 12. Permanently delete files with Microsoft Purview Priority Cleanup (the separate permanent-deletion sub-feature, out of scope for this fragment and built as its own sibling scenario; public preview from 2026-08-24) - <https://learn.microsoft.com/purview/priority-cleanup-permanent-deletion>
+13. Use the condition builder to create search queries in eDiscovery (`(c:c)`/`c:s` as condition-builder-generated KeyQL notation, not manual-entry operators; Sender/Author and Subject/Title as common properties spanning mail and documents) - <https://learn.microsoft.com/purview/edisc-condition-builder>
 
 > Re-verify all links, cmdlet parameters, licensing, and - especially - the `-MultiStageReviewProperty`
 > single-stage shape and preview status against current Microsoft Learn before a customer-facing

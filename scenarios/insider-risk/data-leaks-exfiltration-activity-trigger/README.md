@@ -129,9 +129,9 @@ Purview portal → **Insider Risk Management** → **Policies** → **Create pol
 1. Template: **Data leaks**. Confirm this is the base template and not `Data leaks by risky users`
    or `Data leaks by priority users` - all three share overlapping naming in the template picker.
 2. Name: `Data Leaks - Exfiltration Activity Trigger` (distinct from the DLP-trigger sibling's own
-   `Data Leaks` policy name, so both can coexist in the same tenant if desired - pending §6/§11's
-   open question on whether a single policy can use both trigger types at once). The template and
-   name can't be changed after policy creation - confirm before continuing.
+   `Data Leaks` policy name, so both can coexist in the same tenant as two separate policies - a
+   single policy cannot use both trigger types at once, see §6/§11). The template and name can't
+   be changed after policy creation - confirm before continuing.
 3. **Users and groups**: assign the scope resolved in Step 3. If you intend to use **real-time
    analytics (preview)** threshold recommendations (optional), scope to **Include all users and
    groups** instead - that feature requires it.
@@ -211,7 +211,7 @@ has no documented way to map back to a named Purview policy.
 | Defender for Endpoint dependency | **None** | |
 | User-identity privacy | Pseudonymized (Microsoft default) | Not disabled by this scenario |
 | Alert export mechanism | Reused: `../departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1`, unmodified | The plain, non-MDE-joining variant |
-| Whether both triggering-event types can be combined on one policy | **Not confirmed** - a stronger single-select signal than the sibling scenario's own framing, still not an explicit "cannot combine" statement | `design.md` §2 goal 6/§6; `README.md` §11 |
+| Whether both triggering-event types can be combined on one policy | **Resolved: no** - one triggering-event configuration per policy, set to either mechanism, not both | `design.md` §2 goal 6/§6; `README.md` §11 |
 | Cross-policy disambiguation | Not attempted - same disclosed gap as every IRM scenario in this library | `AlertPolicyId` has no documented policy-name mapping |
 
 ## 7. Validation / how to prove it works
@@ -249,9 +249,9 @@ has no documented way to map back to a named Purview policy.
   calculation; a threshold tuned for a prior activity baseline can under- or over-alert as normal
   usage patterns change.
 - **Coordinate policy naming and trigger choice explicitly if deploying this scenario alongside the
-  DLP-trigger sibling in the same tenant** - until §6/§11's open combinability question is
-  resolved, treat them as two separate, distinctly-named policies (as this scenario's own §5 Step 4
-  already directs) rather than assuming either can absorb the other's trigger mechanism.
+  DLP-trigger sibling in the same tenant** - a single policy cannot use both trigger mechanisms
+  (§6/§11), so deploy them as two separate, distinctly-named policies (as this scenario's own §5
+  Step 4 already directs) rather than assuming either can absorb the other's trigger mechanism.
 - **Re-scope on group-membership change**, same reasoning as every group-scoped IRM template in
   this library - `security-policy-violations/README.md` §8, not repeated here in full.
 - **Cumulative exfiltration detection depends on Microsoft Entra data sharing** for peer-group
@@ -305,13 +305,16 @@ app registration's certificate is not.
   (trigger-threshold sub-step)/§6 recommend using custom thresholds instead whenever the exact
   trigger sensitivity needs to be documented precisely for a customer commitment - **VERIFY
   (portal)** the live default values if they must be stated.
-- **Whether the two triggering-event options (DLP-policy match and exfiltration activity) can be
-  enabled simultaneously on one policy is still not confirmed**, though this build's direct fetch of
-  "Get started with Insider Risk Management" Step 6 found the two options worded as alternative
-  "if you select X... if you select Y..." branches - a stronger single-select signal than this
-  library's DLP-trigger sibling scenario disclosed from its own WebSearch-only grounding, but not
-  an explicit "cannot be combined" statement. `design.md` §2 goal 6/§6. This scenario's own §5
-  Step 4 treats the two as separate, independently-named policies pending confirmation either way.
+- **Resolved: the two triggering-event options (DLP-policy match and exfiltration activity)
+  cannot be enabled simultaneously on one policy** - a policy has a single triggering-event
+  configuration, set to one mechanism or the other. Confirmed via a direct Microsoft Learn fetch
+  of "Create and manage Insider Risk Management policies" §Policy health (singular, definite "the
+  triggering event" in the either/or fix guidance) and "Learn about Insider Risk Management policy
+  templates" §Policy template prerequisites and triggering events ("OR" between the two
+  mechanisms, unlike the risky/priority-users family's own "and/or" prerequisite). `design.md` §2
+  goal 6/§6. This scenario's own §5 Step 4 names its policy distinctly from the DLP-trigger
+  sibling's so both can still coexist in the same tenant as two separate policies, each using one
+  trigger mechanism.
 - **The trigger-indicator threshold and the scoring-indicator threshold are two separate decisions
   in the same policy-creation workflow - a real and easy misconfiguration to make is assuming they
   are one setting.** `design.md` §2 goal 2/§5; §6/§8 above call this out explicitly because no

@@ -129,13 +129,17 @@
       script's idempotency does not depend on the answer (see .DESCRIPTION), but a production
       integration that calls Create Rules directly without this script's existence check first
       should confirm the behavior.
-    - The Schedule object's Trigger `type` values beyond 'RunOnce' (i.e., a documented Recurrence
-      type with frequency/interval fields, analogous to Data Map's Scans trigger). This build's
-      grounding pass found only the 'RunOnce' shape in Microsoft's own REST examples for this
-      operation; the portal's "Scheduled scans" wizard visibly supports daily/weekly/monthly
-      recurrence, so a recurring type almost certainly exists, but its exact typeProperties were not
-      independently confirmed. This script schedules a single RunOnce scan only - see README.md
-      Section 8 for the portal-based recurring-schedule workaround until this is closed.
+    - CONFIRMED (2026-09-27 maintenance pass): the Schedule object's Trigger has no documented
+      'Recurrence' type. A direct fetch of the Create Schedule / Get Schedule REST reference for
+      api-version 2026-01-12-preview (the version this script targets) shows Trigger.type typed as a
+      bare string (not an enum) and TypeProperties formally defined with exactly three fields -
+      isScheduled, timezone, triggerTime - all 'RunOnce'-specific. No second type variant or
+      frequency/interval fields appear anywhere in the reference, unlike Data Map's Scans trigger
+      (which documents Hour/Day/Week/Month explicitly). The portal's "Scheduled scans" wizard still
+      visibly supports daily/weekly/monthly recurrence, so it either calls an undocumented endpoint
+      or re-issues RunOnce schedules under the hood - this script schedules a single RunOnce scan by
+      design, not as a workaround for an unconfirmed gap. See README.md Section 11 for the portal-
+      based recurring-schedule workaround.
 
     Sources (Microsoft Learn, verify before production use):
     - Purview Data Quality REST operation groups (Create Rules, Get Rules, Create Schedule, Get

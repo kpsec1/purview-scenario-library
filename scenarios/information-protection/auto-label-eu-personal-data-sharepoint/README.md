@@ -317,6 +317,19 @@ to permanently delete the policy and its rules.
   failing clearly (with near-matches) rather than silently deploying a rule that matches nothing -
   but the *default* names in this scenario's parameters have not themselves been confirmed against
   a live tenant. See `design.md` §4.
+  - **Update (2026-09-27, grounded, no tenant access):** the narrower apostrophe question this
+    VERIFY had absorbed - `"EU driver's license number"` (this scenario's spelling) vs. `"EU
+    drivers license number"` (the bundle-index page's own URL-derived title) - is now resolved.
+    Microsoft's "Create custom sensitive information types" page lists the non-copyable EU-wide
+    SITs by their portal display name, not a URL slug, and spells this one `"EU driver's license
+    number"` (apostrophe, lowercase) [[6]](#references) - matching this scenario's existing
+    default exactly. Every per-country entity-definition page's own prose (as opposed to its
+    page-title metadata, which strips the apostrophe for the URL) is consistent with this: e.g.
+    "This entity is available in the EU Driver's License Number sensitive information type."
+    Title-*casing* of the other bundle names (`EU national identification number`, `EU Social
+    Security Number (SSN) or Equivalent ID`, `EU passport number`) remains unconfirmed against a
+    live tenant, so the broader VERIFY above stays open for those - only the apostrophe question
+    is closed.
 - **VERIFY (pilot tenant): `Get-AutoSensitivityLabelRule`'s read-back property casing for
   `ContentContainsSensitiveInformation`.** Microsoft's documented *write* shape for this parameter
   family uses lowercase `name`/`mincount` keys (confirmed directly against `New-DlpComplianceRule`'s

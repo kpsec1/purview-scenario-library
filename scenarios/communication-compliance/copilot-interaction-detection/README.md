@@ -354,19 +354,25 @@ the portal for a reversible stop; **Delete** only when permanently retiring the 
   table-sourced name (matching this repo's naming convention of citing the authoritative
   template-catalog page), but **VERIFY the exact label shown in the tenant's current portal UI at
   deploy time** rather than assuming either name is necessarily still current.
-- **VERIFY: whether this policy's fixed location also covers Copilot Studio-built or Microsoft
-  Foundry agents, or only the core Microsoft 365 Copilot/Copilot Chat experience.** Microsoft's
-  channel-detection overview describes the **"Microsoft Copilot experiences"** location category
+- **RESOLVED: this policy's fixed location covers Copilot Studio-built agents, but not Microsoft
+  Foundry agents.** Microsoft's own AI-apps coverage table groups locations into three categories -
+  **"Copilot experiences and agents"**, **"Enterprise AI apps"**, and **"Other AI apps"**
+  [[24]](#references) - and lists **Microsoft Copilot Studio** under "Copilot experiences and
+  agents" alongside Microsoft 365 Copilot and Microsoft 365 Copilot Chat themselves, while listing
+  **Microsoft Foundry** under the separate "Enterprise AI apps" category. Combined with the
+  channel-detection overview's own description of the **"Microsoft Copilot experiences"** location
   as covering "user interactions in Microsoft 365 Copilot and other Copilots built using Microsoft
-  Copilot Studio" [[22]](#references) - but this scenario's specific template locks its location to
-  the narrower-sounding **"Microsoft 365 Copilot and Microsoft 365 Copilot Chat"** [[3]](#references),
-  and no worked example in this build's grounding pass confirmed whether those two phrasings denote
-  the same underlying location or a genuinely narrower one. Do not assume Copilot Studio agent
-  interactions are covered by this policy without confirming this in the tenant. If a Copilot
-  Studio/Microsoft Foundry agent-specific risk is the actual concern, the **Risky Agents** Insider
-  Risk Management policy template is Microsoft's purpose-built control for that surface instead
-  [[23]](#references) - not something this Communication Compliance policy is confirmed to already
-  cover.
+  Copilot Studio" [[22]](#references), and Microsoft's explicit statement that "Microsoft 365
+  Copilot"/"Microsoft 365 Copilot Chat" and "Microsoft Copilot"/"Microsoft Copilot Chat" are the
+  same, renamed product with "no changes to security, compliance, and privacy" [[25]](#references),
+  this scenario's **"Microsoft 365 Copilot and Microsoft 365 Copilot Chat"** template location
+  [[3]](#references) is confirmed to be the same "Copilot experiences" location - and therefore
+  **does** reach Copilot Studio-built agent interactions. It does **not**, however, reach Microsoft
+  Foundry agent interactions - those fall under the separate "Enterprise AI apps" location this
+  policy does not enable (§8 Non-goals). If a Microsoft Foundry agent-specific risk is the actual
+  concern, either add the "Enterprise AI apps" location to a policy (pay-as-you-go billing
+  required - §8) or use the **Risky Agents** Insider Risk Management policy template instead
+  [[23]](#references).
 - **This is a detective, not a preventive, control.** By the time an Investigator reviews a flagged
   interaction, the jailbroken response or the copyrighted content has already reached the user.
   Preventive controls for Copilot prompts live in `scenarios/dspm-for-ai/copilot-prompt-full-block/`
@@ -462,6 +468,14 @@ the portal for a reversible stop; **Delete** only when permanently retiring the 
     Copilot experiences" location description, including Copilot Studio-built Copilots) - <https://learn.microsoft.com/purview/communication-compliance-channels#generative-ai>
 23. Learn about Insider Risk Management policy templates - Risky Agents template (Copilot Studio/
     Microsoft Foundry agent risk detection) - <https://learn.microsoft.com/purview/insider-risk-management-policy-templates#policy-templates>
+24. Microsoft Purview data security and compliance protections for generative AI apps - AI-apps
+    coverage table grouping Microsoft Copilot Studio under "Copilot experiences and agents" (with
+    Microsoft 365 Copilot & Microsoft 365 Copilot Chat) and Microsoft Foundry under the separate
+    "Enterprise AI apps" category - <https://learn.microsoft.com/purview/ai-microsoft-purview>
+25. Privacy and protections (Microsoft Copilot) - explicit rename note: "Microsoft 365 Copilot is
+    now named Microsoft Copilot, and Microsoft 365 Copilot Chat is now named Microsoft Copilot
+    Chat... There are no changes to security, compliance, and privacy for organizations." -
+    <https://learn.microsoft.com/copilot/privacy-and-protections>
 
 > Re-verify all links, the licensing model, and the applicable regulatory-driver framing (§2, §11)
 > against current Microsoft Learn guidance before a customer-facing assessment or sale - both
