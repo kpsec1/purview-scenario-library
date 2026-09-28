@@ -99,8 +99,8 @@ sequenceDiagram
 ```
 
 Every `PUT` in this sequence is a create-or-replace call at the same API version (`2023-09-01`
-for the Scans object, confirmed by direct fetch of Microsoft's REST reference; the sibling
-Data Sources/Triggers calls use the same version by inference - see `README.md` §11 VERIFY). The
+for the Scans, Data Sources, and Triggers objects, all three now confirmed by direct fetch of
+Microsoft's REST reference pages - see `README.md` §11). The
 `-RunNow` call is deliberately not a `PUT`: **Scan Result - Run Scan** is an action-style
 `POST .../scans/{name}:run?runId={guid}&scanLevel={level}` (colon-suffixed, `runId` as a query
 parameter) - confirmed by direct fetch during the Azure SQL Managed Instance sibling scenario's

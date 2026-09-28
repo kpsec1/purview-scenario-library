@@ -1180,16 +1180,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `scenarios/adaptive-protection/direct-send-anonymous-relay-hardening/`.
 
 ### Follow-ups discovered while building the Data Map Azure SQL scan-and-classify scenario
-- [ ] VERIFY (pilot tenant or the Purview OpenAPI spec, before production use): the exact REST
-  request body shapes for the **Data Sources - Create Or Update**, **Triggers - Create Or
-  Replace**, and **Scan Result - Run Scan** operations used by
-  `scenarios/data-map/scan-azure-sql-and-classify/deploy/New-AzureSqlDataMapScan.ps1`. Their
-  canonical Microsoft Learn REST reference pages returned fetch errors in this build environment;
-  the shapes used are reconstructed from the confirmed sibling **Scans - Create Or Replace**
-  endpoint (direct-fetched, API version `2023-09-01`), the official
-  `@azure-rest/purview-scanning` JS SDK type definitions, and the `Az.Purview` PowerShell module's
-  parameter signatures - three converging but indirect sources. Flagged inline in that scenario's
-  `README.md` §11 and the deploy script's `.NOTES`.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP): the exact REST request body shapes for the
+  **Data Sources - Create Or Replace** and **Triggers - Create Or Replace** operations used by
+  `scenarios/data-map/scan-azure-sql-and-classify/deploy/New-AzureSqlDataMapScan.ps1` (the
+  **Scan Result - Run Scan** half of the original follow-up was already closed 2026-09-04, backported
+  from the Managed Instance sibling - see DONE below). Their canonical Microsoft Learn REST reference
+  pages, which returned fetch errors in the original build's environment, were successfully
+  direct-fetched this run. **Confirmed: the reconstructed shapes were already correct.** The
+  `AzureSqlDatabaseDataSource`/`AzureSqlDatabaseProperties` schema confirms all six claimed fields
+  (`serverEndpoint`, `resourceName`, `resourceGroup`, `subscriptionId`, `location`, `collection`),
+  and the Triggers `properties.recurrence`/`TriggerRecurrence` schema confirms the nesting the script
+  already sends - no script change required. One naming error surfaced and was corrected: the Data
+  Sources operation is **Create Or Replace**, not "Create Or Update" as this scenario's own build had
+  guessed (the `create-or-update` URL slug does not resolve). `scan-azure-sql-and-classify/README.md`
+  §11/§12, `design.md`, the deploy script's `.NOTES`, and `reviews.md` updated in place.
 - [x] `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/` - script a **custom, PII-only
   scan rule set** (excluding all system classifications except U.S. Social Security Number and
   Credit Card Number by default) - **built** (see DONE below): the "Scan Rulesets - Create Or
@@ -3630,6 +3634,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `scan-azure-sql-and-classify` Data Sources/Triggers REST body-shape VERIFY** -
+  commit `PENDING` - 2026-09-28. Maintenance pass: the canonical **Data Sources - Create Or Replace**
+  and **Triggers - Create Or Replace** REST reference pages, which returned fetch errors in the
+  original build's environment, were successfully direct-fetched via the Microsoft Learn MCP tool.
+  Both confirm the shapes `deploy/New-AzureSqlDataMapScan.ps1` already used - `kind:
+  "AzureSqlDatabase"` and all six `AzureSqlDatabaseProperties` fields (`serverEndpoint`,
+  `resourceName`, `resourceGroup`, `subscriptionId`, `location`, `collection`), and the Triggers
+  `properties.recurrence`/`TriggerRecurrence` nesting - so no script change was required. One naming
+  error surfaced and was corrected: the Data Sources operation is **Create Or Replace**, not "Create
+  Or Update" as this scenario's own build had guessed. Updated
+  `scenarios/data-map/scan-azure-sql-and-classify/README.md` §11/§12, `design.md`, the deploy
+  script's `.NOTES`, and `reviews.md` (new dated follow-up review section) in place.
 - [x] **Narrowed the `scan-credential-remaining-kinds` `AmazonARN` account-ID/external-ID VERIFY** -
   commit `acaca4a` - 2026-09-28. Maintenance pass: re-grounded the open VERIFY asking whether any
   documented REST endpoint returns the Microsoft account ID/external ID pair a Role ARN credential's
