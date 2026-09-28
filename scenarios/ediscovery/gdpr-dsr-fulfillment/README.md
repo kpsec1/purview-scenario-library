@@ -280,10 +280,18 @@ is the only record of when the request was received and answered.
   current v1.0 endpoint, or only a single value at a time - see that sibling's `README.md` §11.
   Unresolved here for the same reason: no Microsoft Learn worked example was found confirming either
   way during this build's grounding pass.
-- **VERIFY (pilot tenant or a future Microsoft Learn pass):** whether `dataSourceScopes` accepts a
-  comma-combined value the way `IncludedSources` does, or requires separate handling - this
-  scenario's script passes the single value `'allCaseCustodians'` (matching `premium-legal-hold-and-
-  export`'s own confirmed usage) and was not tested against any combined-scope value.
+- **`dataSourceScopes` is a single-value enum, not a combinable list - grounded 2026-09-28**
+  (Microsoft Learn MCP): the `ediscoverySearch` resource type defines `dataSourceScopes` as
+  `microsoft.graph.security.dataSourceScopes`, a scalar OData enum (`none`, `allTenantMailboxes`,
+  `allTenantSites`, `allCaseCustodians`, `allCaseNoncustodialDataSources`), not a collection or
+  flags-style type. The Create/Update `ediscoverySearch` reference pages both document the
+  property the same way, and the Create-searches worked example's response shows it serialized as
+  a single JSON string (`"dataSourceScopes": "none"`), never a comma-joined value. This contrasts
+  with the custodian `userSource` `includedSources` parameter, which Microsoft explicitly documents
+  as accepting a comma-separated string. This scenario's script already matches that behavior: it
+  never attempts to combine scopes, issuing the primary search with `'allCaseCustodians'` and, when
+  `-IncludeParticipantSearch` is used, a wholly separate search with `'allTenantMailboxes'` - no
+  code change required.
 - **Illustrative values.** The request ID, data subject, and dates in the sample definition are
   placeholders - replace with the real, confirmed request details before use, and treat the
   populated file (and the ledger it produces) as containing personal data (§4 of `design.md`).

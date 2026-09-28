@@ -3114,10 +3114,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   endpoint, or only a single value at a time - inherited unresolved from
   `premium-legal-hold-and-export`'s own open VERIFY on the same call shape; no new evidence surfaced
   during this build's grounding pass either way.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether `dataSourceScopes` accepts a
-  comma-combined value (the way `IncludedSources` does) or requires one call per scope - this
-  scenario's script only ever passes a single value (`allCaseCustodians` or, separately,
-  `allTenantMailboxes`) and was never tested against a combined-scope request.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP): `dataSourceScopes` requires one call per
+  scope - it is a scalar OData enum (`microsoft.graph.security.dataSourceScopes`: `none`,
+  `allTenantMailboxes`, `allTenantSites`, `allCaseCustodians`, `allCaseNoncustodialDataSources`),
+  not a collection/flags type. Confirmed against the `ediscoverySearch` resource-type reference,
+  the Create/Update `ediscoverySearch` operation docs, and the Create-searches worked example's
+  response body, which serializes it as a single string (`"dataSourceScopes": "none"`) - unlike
+  `includedSources`, which Microsoft documents as accepting a comma-separated string. No code
+  change needed: `New-DsrRequest.ps1` already issues one search per scope.
+  `gdpr-dsr-fulfillment/README.md` §11.
 - [ ] No KQL property equivalent to `participants:` was found for "SharePoint/OneDrive content
   *about* a person who isn't its author/owner" - `-IncludeParticipantSearch` (built this fragment)
   closes the analogous Exchange-side gap but SharePoint/OneDrive content mentioning a data subject
@@ -3545,6 +3550,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `gdpr-dsr-fulfillment` `dataSourceScopes` combinability VERIFY** -
+  commit `PENDING` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether the
+  `ediscoverySearch` resource's `dataSourceScopes` property accepts a comma-combined value (the way
+  the custodian `userSource` `includedSources` parameter does) or requires one call per scope.
+  Grounded via the Microsoft Learn MCP: the `ediscoverySearch` resource-type reference and the
+  Create/Update `ediscoverySearch` operation pages all type `dataSourceScopes` as
+  `microsoft.graph.security.dataSourceScopes`, a scalar OData enum with five discrete members
+  (`none`, `allTenantMailboxes`, `allTenantSites`, `allCaseCustodians`,
+  `allCaseNoncustodialDataSources`), never documented as a collection or flags-style type, and the
+  Create-searches worked example's response body serializes it as a single JSON string
+  (`"dataSourceScopes": "none"`) - unlike `includedSources`, which Microsoft explicitly documents
+  as comma-separated. No code change needed: `New-DsrRequest.ps1` already issues one search per
+  scope (`allCaseCustodians` for the primary search, a separate `allTenantMailboxes` search under
+  `-IncludeParticipantSearch`), never a combined value. `gdpr-dsr-fulfillment/README.md` §11
+  updated in place; no script or policy manifest changed - documentation-accuracy closure only.
 - [x] **Re-grounded the `priority-cleanup-permanent-deletion` GCC/GCC High/DoD availability VERIFY**
   - commit `e53f70e` - 2026-09-28. Maintenance pass (no live tenant access): re-fetched the GCC
   High deployment guide's Step 4 capability-difference table and the Microsoft Purview service
