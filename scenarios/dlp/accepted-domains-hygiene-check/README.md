@@ -310,12 +310,21 @@ nothing tenant-side to undo.
   a domain add/remove therefore requires querying the **Microsoft Entra audit log directly**, not
   `Search-UnifiedAuditLog` - out of scope for this script, which is an Exchange Online PowerShell tool
   by design (§7 non-goals). See `design.md` §5.
-- **`Set-AcceptedDomain` audit-log attribution (`-IncludeAuditAttribution`) is a VERIFY, not a
-  confirmed capability.** Exchange Online's default admin-audit-logging behavior generally records
-  `Set-`/`New-`/`Remove-` cmdlet executions under `RecordType ExchangeAdmin` by cmdlet name, but no
-  Microsoft-published worked example independently confirms `Set-AcceptedDomain` specifically appears
-  this way. Confirm against a pilot tenant before relying on this switch's output for an incident
-  investigation - see `design.md` §5.
+- **`Set-AcceptedDomain` audit-log attribution (`-IncludeAuditAttribution`) - VERIFY closed 2026-09-28
+  (Microsoft Learn MCP, maintenance pass).** No Microsoft-published worked example names
+  `Set-AcceptedDomain` specifically, but Microsoft's own "Audit log activities" reference states the
+  rule this cmdlet is measured against directly: *"Exchange administrator audit logging (which
+  Microsoft 365 enables by default) logs an event in the audit log when an administrator ... makes a
+  change in your Exchange Online organization ... by running a cmdlet in Exchange Online PowerShell.
+  The audit log doesn't record cmdlets that begin with the verbs Get-, Search-, or Test-."* The same
+  page's only other named exception is narrower still - internal Microsoft-datacenter/service-account
+  maintenance cmdlets, reportable to Microsoft Support via a DCR if found unaudited.
+  `Set-AcceptedDomain` is a customer-facing `Set-` cmdlet, not a `Get-`/`Search-`/`Test-` cmdlet and
+  not an internal-maintenance cmdlet - it falls under the default-audited rule, not either named
+  exception. This is the strongest grounding obtainable short of a pilot-tenant test or a worked
+  example naming this exact cmdlet, and this scenario now treats the `RecordType ExchangeAdmin`/
+  `Operations 'Set-AcceptedDomain'` shape as confirmed rather than merely the general default -
+  see `design.md` §5.
 - **`KnownDomains.json` and the baseline file are trusted inputs this script does not protect -
   restrict write access to both.** An actor able to write either file can suppress a finding
   entirely: adding a malicious domain to `KnownDomains.json` makes it pass as reviewed, and
@@ -355,6 +364,10 @@ nothing tenant-side to undo.
    `UserScopeFrom` - the trust-boundary mechanism this entire scenario protects - <https://learn.microsoft.com/purview/dlp-exchange-conditions-and-actions>
 6. Search-UnifiedAuditLog reference (`-RecordType`, `-Operations`, `-StartDate`/`-EndDate` parameters
    used by `-IncludeAuditAttribution`) - <https://learn.microsoft.com/powershell/module/exchangepowershell/search-unifiedauditlog>
+6a. Audit log activities reference (Microsoft Purview), "Exchange admin activities" section - the
+    verbatim default-logging rule (all Exchange Online PowerShell changes except `Get-`/`Search-`/
+    `Test-`-prefixed cmdlets and unnamed internal Microsoft-maintenance cmdlets) `Set-AcceptedDomain`
+    is measured against to close the §11 audit-attribution VERIFY - <https://learn.microsoft.com/purview/audit-log-activities#exchange-admin-activities>
 7. Audit activity reference (Microsoft Entra ID) - confirms `Add verified domain`/`Remove verified
    domain`/`Add unverified domain`/`Remove unverified domain`/`Update domain` exist as named
    `DirectoryManagement`-category audit activities in the **Microsoft Entra audit log** specifically

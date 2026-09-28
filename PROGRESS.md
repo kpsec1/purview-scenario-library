@@ -1488,13 +1488,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `InternalRelay` (both in-organization), and that the external-relay clause matters only for a hybrid
   tenant whose on-premises domains this scenario's tooling can't see. `reviews.md` carries a matching
   correction addendum, doc-only per `AGENTS.md` §6, no new four-lens round run.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples pass): whether `Set-
-  AcceptedDomain` is independently confirmed to appear under `Search-UnifiedAuditLog`'s `RecordType
-  ExchangeAdmin` / `Operations 'Set-AcceptedDomain'` - this build found the general documented
-  default (Exchange admin cmdlet executions are logged this way) but no worked example naming this
-  specific cmdlet. `accepted-domains-hygiene-check/deploy/Export-AcceptedDomainsHygieneReport.ps1`'s
-  `-IncludeAuditAttribution` switch is flagged `VERIFY` in its own `.NOTES` and `README.md` §11
-  rather than assumed correct.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, maintenance pass): whether `Set-AcceptedDomain`
+  is independently confirmed to appear under `Search-UnifiedAuditLog`'s `RecordType ExchangeAdmin` /
+  `Operations 'Set-AcceptedDomain'` - no worked example names this cmdlet specifically, but the
+  "Audit log activities" reference's "Exchange admin activities" section states the full default
+  rule (every Exchange Online PowerShell change is logged except `Get-`/`Search-`/`Test-`-prefixed
+  cmdlets and unnamed internal Microsoft-maintenance cmdlets); `Set-AcceptedDomain` falls under the
+  default rule, matching neither exception. `accepted-domains-hygiene-check/README.md` §11/§12,
+  `design.md` §5, `reviews.md`, and `deploy/Export-AcceptedDomainsHygieneReport.ps1`'s `.NOTES`/
+  runtime warning updated from VERIFY to confirmed - see DONE below.
 - [x] VERIFY - whether Microsoft Entra ID's `Add verified domain`/`Remove verified domain`/`Add
   unverified domain`/`Remove unverified domain` `DirectoryManagement`-category audit activities
   surface through `Search-UnifiedAuditLog -RecordType AzureActiveDirectory` with an `Operations`
@@ -8533,6 +8535,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   template only) is unchanged — extending the pattern to `Data leaks by priority users` remains a
   valid future fragment, now unblocked rather than gated on an unresolved grounding question. No
   code changed; maintenance-only, per this run's scope.
+- [x] **Closed the `accepted-domains-hygiene-check` `Set-AcceptedDomain` audit-attribution VERIFY** —
+  commit TBD — 2026-09-28. Maintenance pass: closed the open VERIFY asking whether
+  `Set-AcceptedDomain` is independently confirmed to appear under `Search-UnifiedAuditLog -RecordType
+  ExchangeAdmin -Operations 'Set-AcceptedDomain'`. Grounded via the Microsoft Learn MCP: a direct
+  fetch of `purview/audit-log-activities`'s "Exchange admin activities" section states the full
+  default rule verbatim — every Exchange Online PowerShell change is logged except cmdlets beginning
+  with `Get-`/`Search-`/`Test-`, plus a separately-named, narrower exception for internal
+  Microsoft-datacenter/service-account maintenance cmdlets (reportable via DCR if found unaudited).
+  No worked example names `Set-AcceptedDomain` specifically, but it is a customer-facing `Set-`
+  cmdlet and matches neither named exception, so it falls under the default-audited rule — the
+  strongest grounding obtainable short of a pilot-tenant test. Updated
+  `accepted-domains-hygiene-check/README.md` §11 (VERIFY → confirmed, with the verbatim quote) and
+  §12 (new reference 6a), `design.md` §5 (VERIFY → confirmed) and its "Net effect" paragraph,
+  `reviews.md` (new correction addendum, re-checking rather than just carrying forward finding 4's
+  "no overclaim" verdict), and `deploy/Export-AcceptedDomainsHygieneReport.ps1`'s comment-based
+  help/`.NOTES`/runtime `Write-Warning` (which now states only the still-open Added/Removed
+  attribution gap, not the closed VERIFY). Doc-and-script correction only — no new four-lens review
+  round, no new design surface introduced. The scenario's second open item (domain add/remove
+  attribution — Exchange Online has no cmdlet for that action to audit) is untouched by this pass and
+  remains open.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,

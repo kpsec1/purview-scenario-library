@@ -173,10 +173,24 @@ No remaining Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`,
 `deploy/Export-AcceptedDomainsHygieneReport.ps1`, and
 `validate/Test-AcceptedDomainsHygieneReport.ps1`. No Fail items were raised. This fragment meets the
-definition of done in `AGENTS.md` §9. Two open items are carried forward honestly rather than resolved
-by guessing, both already disclosed in `README.md` §11 and `design.md` §5: `Set-AcceptedDomain`'s
-exact audit-log `RecordType`/`Operations` shape is not independently confirmed by a Microsoft-published
+definition of done in `AGENTS.md` §9. Two open items were originally carried forward honestly rather
+than resolved by guessing, both disclosed in `README.md` §11 and `design.md` §5: `Set-AcceptedDomain`'s
+exact audit-log `RecordType`/`Operations` shape was not independently confirmed by a Microsoft-published
 worked example, and this scenario cannot attribute a domain-addition or -removal event to a specific
 admin action (Exchange Online has no cmdlet for that action to audit in the first place). A
 `PROGRESS.md` follow-up tracks backporting the `ExternalRelay`-on-premises-only correction into
 `copilot-external-email-block/design.md` §4.
+
+**Correction addendum - VERIFY closed 2026-09-28 (maintenance pass, Microsoft Learn MCP):** the first
+of those two open items is now resolved. Finding 4 above (no overclaim found) still holds - re-checked
+before closing, not merely carried forward. Microsoft's "Audit log activities" reference's "Exchange
+admin activities" section states the default rule directly: every Exchange Online PowerShell change is
+logged under `RecordType ExchangeAdmin` except cmdlets beginning with `Get-`/`Search-`/`Test-`, plus a
+narrower, separately-named exception for internal Microsoft-datacenter/service-account maintenance
+cmdlets. `Set-AcceptedDomain` is a customer-facing `Set-` cmdlet and falls under neither exception, so
+it is covered by the default rule. This is the strongest evidence obtainable short of a pilot-tenant
+test or a worked example naming this exact cmdlet, and is treated as sufficient to close the VERIFY.
+`README.md` §11/§12 (new reference 6a) and `design.md` §5 updated from VERIFY to confirmed; the
+`.NOTES`/inline `Write-Warning` in `deploy/Export-AcceptedDomainsHygieneReport.ps1` updated to match.
+The second open item (domain add/remove attribution) is untouched by this pass and remains open. No new
+four-lens review round required - doc-and-script correction only, no design surface or behavior change.

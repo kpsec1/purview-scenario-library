@@ -108,10 +108,15 @@ achievable from Exchange Online PowerShell:
   ExchangeAdmin`, `Operations` matching the cmdlet name (`docs/rbac-model.md` §6's own established
   pattern for Exchange admin actions). This script's `-IncludeAuditAttribution` switch queries
   `Search-UnifiedAuditLog -RecordType ExchangeAdmin -Operations 'Set-AcceptedDomain'` for this reason.
-  **VERIFY (pilot tenant):** no Microsoft-published worked example independently confirms
-  `Set-AcceptedDomain` specifically appears under this `RecordType`/`Operations` pair (as opposed to
-  being logged at all, which is the general documented default) - flagged in `README.md` §11 and the
-  script's own `.NOTES` rather than assumed.
+  **VERIFY closed 2026-09-28** (Microsoft Learn MCP, maintenance pass): no Microsoft-published worked
+  example independently names `Set-AcceptedDomain` under this `RecordType`/`Operations` pair, but the
+  "Audit log activities" reference's "Exchange admin activities" section states the default rule in
+  full: every Exchange Online PowerShell change is logged **except** cmdlets beginning with `Get-`,
+  `Search-`, or `Test-`, and (named separately, narrower still) internal Microsoft-datacenter/
+  service-account maintenance cmdlets. `Set-AcceptedDomain` is neither - it is a customer-facing
+  `Set-` cmdlet - so it falls under the default-audited rule rather than either named exception. This
+  scenario now treats the `RecordType`/`Operations` shape as confirmed (not merely "logged in
+  general") - see `README.md` §11/§12 reference 6a.
 - **`New-AcceptedDomain`/`Remove-AcceptedDomain`** - the two cmdlets that would add or remove a domain
   outright - are **on-premises Exchange only** per Microsoft's own applicability statements on both
   reference pages (fetched directly this build). **Exchange Online has no cmdlet for adding or
@@ -139,8 +144,8 @@ achievable from Exchange Online PowerShell:
 
 **Net effect, stated plainly for an organization:** this script reliably **detects** that a domain was added,
 removed, or had its `DomainType`/`Default` changed (§4's baseline diff, which needs no audit log at
-all - it's a direct state comparison). It can **sometimes attribute** a `DomainType`/`Default` change
-to an admin and timestamp via the Exchange admin audit trail (VERIFY above). It **cannot currently**
+all - it's a direct state comparison). It can **attribute** a `DomainType`/`Default` change
+to an admin and timestamp via the Exchange admin audit trail (confirmed above). It **cannot currently**
 attribute a domain addition or removal to a specific admin action from this script alone - that
 requires a separate Entra ID directory-audit query this build could not fully ground, tracked as a
 follow-up in `PROGRESS.md`.
