@@ -3545,6 +3545,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Re-grounded the `priority-cleanup-permanent-deletion` GCC/GCC High/DoD availability VERIFY**
+  - commit `e53f70e` - 2026-09-28. Maintenance pass (no live tenant access): re-fetched the GCC
+  High deployment guide's Step 4 capability-difference table and the Microsoft Purview service
+  description's licensing table via the Microsoft Learn MCP. Confirmed neither documents
+  GCC/GCC High/DoD-specific timing for Priority Cleanup permanent deletion - the capability table
+  has no Priority Cleanup row at all (base feature or permanent-deletion sub-feature), and the
+  licensing table lists GOV-tier SKUs (Microsoft Purview Suite/EDU/GOV/FLW, Office 365 E5/A5/G5)
+  without a cloud-environment qualifier. Documented as absence of evidence rather than evidence of
+  availability - the VERIFY remains open, now with the full grounding trail recorded instead of a
+  stale "not stated" note, and narrowed reopen criteria (either page states GCC/GCC High/DoD
+  timing explicitly, or a pilot-tenant check). `priority-cleanup-permanent-deletion/README.md` §3
+  table, §11, and §12 (references 10-11 added) updated in place; no script or policy manifest
+  changed - documentation-accuracy closure only.
 - [x] **Closed the `priority-cleanup-sharepoint-onedrive` KeyQL-exclusion-parity VERIFY** -
   commit `16a0a68` - 2026-09-28. Maintenance pass: closed the open
   VERIFY asking whether the Exchange-specific priority cleanup KeyQL exclusions (`SenderAuthor`,
