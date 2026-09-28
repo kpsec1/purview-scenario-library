@@ -2366,13 +2366,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   immediately below.
 
 ### Follow-ups discovered while building the Compromised Account Incident Response scenario
-- [ ] VERIFY (your tenant): the exact Exchange Online RBAC role for `Remove-InboxRule`/`Set-Mailbox`/
-  `Remove-MailboxPermission`/`Remove-RecipientPermission` - none of these cmdlets' own Microsoft Learn
-  reference pages name a specific role, only "you need to be assigned permissions." This scenario's
-  `README.md` §3/§11 names **Mail Recipients** (Recipient Management/Organization Management role
-  groups) as the documented least-privilege candidate based on that role's general "modify existing
-  mail users and mail contacts" description, not a per-cmdlet confirmation, and gives the
-  `Get-ManagementRoleEntry "*\<CmdletName>"` command to confirm directly against a tenant.
+- [x] VERIFY (your tenant): the exact Exchange Online RBAC role for `Remove-InboxRule`/`Set-Mailbox`/
+  `Remove-MailboxPermission`/`Remove-RecipientPermission` - **closed** (see DONE below): none of
+  these cmdlets' own Microsoft Learn reference pages name a specific role, but Microsoft's
+  **"Feature permissions in Exchange Online"** table maps the underlying features instead -
+  `Set-Mailbox`/`Remove-InboxRule` need Organization Management *or* Recipient Management
+  (**Mailbox settings** feature), while `Remove-MailboxPermission`/`Remove-RecipientPermission`
+  need **Organization Management specifically** (**Permissions and delegation** feature, which
+  doesn't list Recipient Management). `README.md` §3/§11 corrected to reflect the split instead of
+  naming one role for all four cmdlets; the `Get-ManagementRoleEntry "*\<CmdletName>"` per-tenant
+  confirmation command is kept as a residual check since this is still a feature-level mapping, not
+  a per-cmdlet one.
 - [ ] Consider scripting Microsoft's documented Steps 3-5 (MFA-registered-device review, OAuth app
   consent review, admin-role review) once a safe, non-judgment-call automation shape is found for at
   least the *detection* half (e.g., list an account's registered auth methods/app consents/admin
@@ -3564,6 +3568,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `compromised-account-incident-response` Exchange Online RBAC-role VERIFY** -
+  commit `PENDING` - 2026-09-28. Maintenance pass: closed the open VERIFY asking which Exchange
+  Online role covers `Remove-InboxRule`/`Set-Mailbox`/`Remove-MailboxPermission`/
+  `Remove-RecipientPermission`, none of which name a role on their own Microsoft Learn reference
+  pages. Grounded via the Microsoft Learn MCP's fetch of "Feature permissions in Exchange Online"
+  (`exchange/permissions-exo/feature-permissions`): `Set-Mailbox`/`Remove-InboxRule` fall under the
+  **Mailbox settings** feature (Organization Management *or* Recipient Management), but
+  `Remove-MailboxPermission`/`Remove-RecipientPermission` fall under **Permissions and delegation**,
+  which lists **Organization Management only**. This corrects the scenario's prior claim that a
+  single role (**Mail Recipients**, i.e. Recipient Management) covers all four cmdlets - it doesn't,
+  for the two permission-removal cmdlets. `compromised-account-incident-response/README.md` §3
+  (Prerequisites table), §11 (VERIFY note resolved in place), and §12 (reference 10 replaced with
+  the feature-permissions page) updated; `design.md`/`rollback.md`/`reviews.md` had no matching
+  claim to correct.
 - [x] **Closed the `gdpr-dsr-fulfillment` `dataSourceScopes` combinability VERIFY** -
   commit `290eb09` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether the
   `ediscoverySearch` resource's `dataSourceScopes` property accepts a comma-combined value (the way
