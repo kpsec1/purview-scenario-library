@@ -1325,7 +1325,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   which represents its MSI") was independently confirmed to exist (unlike Managed Instance, where no
   such wording exists at all) but never names a UAMI alternative anywhere on that page - carried
   forward in `scan-azure-synapse-and-classify-managed-identity-credential/README.md` §11 unchanged.
-- [ ] **CORRECTION (re-grounded, not built):** A follow-up-to-the-follow-up grounding pass found the
+- [x] **CORRECTION, then CLOSED 2026-09-28:** A follow-up-to-the-follow-up grounding pass found the
   `-ResourceNames`-style scoping parameter item below was less settled than originally framed. The
   worked JSON example's `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` key
   name does not appear anywhere in the formal `AzureSynapseWorkspaceCredentialScanProperties`
@@ -1336,10 +1336,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   *sub-object* shape independently matches the formal `ResourceTypeFilter` type, which is reassuring
   but doesn't resolve the key-name conflict. Likely a shared/reused schema type whose full valid key
   set isn't fully enumerated for every scan kind that references it (a common auto-generated-API-doc
-  pattern), but that is an inference, not a confirmation - flagged inline in
+  pattern), but that was an inference, not a confirmation - flagged inline in
   `scan-azure-synapse-and-classify/README.md` §11 as a VERIFY rather than built on an unresolved
-  conflict, per `AGENTS.md` §4. Re-open only once confirmed against a pilot tenant or a more specific
-  Synapse-only REST reference page.
+  conflict, per `AGENTS.md` §4. **Closed**: a direct re-fetch (Microsoft Learn MCP tool, reachable this
+  run unlike prior builds) of the canonical `register-scan-synapse-workspace` page's own "Set up a scan
+  by using an API" section confirms the PascalCase `AzureSynapseServerlessSql` key is Microsoft's
+  current, live documented shape for this exact scan kind - the generic REST type reference's key
+  enumeration is confirmed incomplete for kinds reusing its shared schema, exactly as suspected.
+  `scan-azure-synapse-and-classify/README.md` §11, `design.md` §2/§5.3/§7, and the deploy script's
+  `.NOTES` corrected in place; the deploy script's own default behavior (omitting `resourceTypes`) is
+  unchanged.
 - [ ] Amazon S3 (`AmazonARN`), Salesforce (`ConsumerKeyAuth`), and Microsoft Fabric/Power BI
   (`DelegatedAuth`) still have no scan scenario of any kind in this library - each would need its own
   new base scan scenario (data source + scan, not just a credential variant of an existing one), a
@@ -2881,13 +2887,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   building the scan it reports on.
 
 ### Follow-ups discovered while building the Data Map Azure Synapse Analytics scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn/SDK grounding pass): the exact JSON shape of the
+- [x] VERIFY (pilot tenant or a future Microsoft Learn/SDK grounding pass): the exact JSON shape of the
   `AzureSynapseWorkspaceMsiScan` object's optional `resourceTypes` property (seen only as an opaque
   `-ResourceType` parameter on the Az.Purview PowerShell module's `New-AzPurviewAzureSynapseWorkspaceMsiScanObject`
   cmdlet, with no worked example of its value) - `scan-azure-synapse-and-classify/deploy/
   New-AzureSynapseDataMapScan.ps1` omits the property entirely rather than guess a shape that could
   silently mis-scope the scan between dedicated and serverless pools. Flagged inline in the deploy
-  script's `.NOTES`, `README.md` §6/§11, and `design.md` §5/§7.
+  script's `.NOTES`, `README.md` §6/§11, and `design.md` §5/§7. **CLOSED 2026-09-28** (see DONE below):
+  a direct fetch of `register-scan-synapse-workspace`'s "Set up a scan by using an API" section
+  confirms `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` (PascalCase key)
+  is Microsoft's current documented shape for scoping to named serverless databases - it does not
+  mis-scope between dedicated/serverless, and no dedicated-pool equivalent key is documented. The
+  deploy script's default (omitting `resourceTypes`) is unchanged; this closes the grounding gap only.
 - [x] `scenarios/data-map/bulk-grant-synapse-serverless-access/` (or fold into a future Data Map
   hardening pass) - script to bulk-apply the per-serverless-database `CREATE LOGIN`/`CREATE USER`/
   `db_datareader` grants across every database in a workspace (e.g. iterating `sys.databases` via
@@ -8627,6 +8638,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   round, no new design surface introduced. The scenario's second open item (domain add/remove
   attribution — Exchange Online has no cmdlet for that action to audit) is untouched by this pass and
   remains open.
+- [x] **Maintenance pass — closed the `scan-azure-synapse-and-classify` `resourceTypes` VERIFY** —
+  commit PENDING — 2026-09-28. Re-grounded via the Microsoft Learn MCP tool (reachable this run,
+  unlike the original build and its follow-up grounding passes, which recorded `EGRESS_BLOCKED`): a
+  direct fetch of `register-scan-synapse-workspace`'s own "Set up a scan by using an API" section
+  confirms the PascalCase `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` key
+  from the earlier-found worked example is Microsoft's current, live documented shape for scoping an
+  `AzureSynapseWorkspace*` scan to named serverless databases — the formal
+  `ExpandingResourceScanPropertiesResourceTypes` REST type's generic camelCase key enumeration
+  (confirmed independently via `microsoft_docs_fetch` of its own reference page) is genuinely
+  incomplete for scan kinds that reuse it, exactly as the prior grounding pass's inference suspected.
+  No dedicated-pool equivalent key is documented anywhere on that page. Updated
+  `scan-azure-synapse-and-classify/README.md` §11 and its closing re-verify note, `design.md`
+  §2/§5.3/§7, and the deploy script's `.NOTES` in place (VERIFY → RESOLVED); the deploy script's own
+  default behavior (omitting `resourceTypes`) is unchanged — this was a documentation-only grounding
+  fix, not a code change. Both `PROGRESS.md` tracking entries for this item (the original follow-up
+  and the later re-grounding correction) marked closed in place rather than duplicated.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,

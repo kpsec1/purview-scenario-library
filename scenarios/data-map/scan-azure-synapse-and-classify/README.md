@@ -327,27 +327,35 @@ out of scope for this scenario's cost notes, same as the compute layer of both s
 
 ## 11. Known limitations & gotchas
 
-- **VERIFY - `resourceTypes` shape now has a worked example, but it conflicts with the generic REST
-  schema's own key enumeration; this scenario's deploy script continues to omit the property either
-  way.** `scan-azure-synapse-and-classify-managed-identity-credential/`'s build direct-fetched the
-  canonical `register-scan-synapse-workspace` page's "Set up a scan by using an API" section and
-  found a worked JSON body scoping a scan to named serverless databases via
-  `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]`. A follow-up grounding
-  pass then direct-fetched the formal `AzureSynapseWorkspaceCredentialScanProperties` REST reference
-  and found its `resourceTypes` field is typed `ExpandingResourceScanPropertiesResourceTypes` - whose
-  own documented key enumeration is a *different*, generic set of per-source-kind names
-  (`azureSqlDatabase`, `azureSynapseWorkspace`, `azureSynapse`, etc., all camelCase) with **no**
-  `AzureSynapseServerlessSql` key anywhere in it. This looks like a shared/reused schema type in
-  Microsoft's auto-generated reference whose full valid key set isn't actually enumerated for every
-  scan kind that references it (a plausible, common API-doc pattern), rather than evidence the worked
-  example is wrong - but that is an inference, not a confirmation. The worked example's *sub-object*
-  shape (`scanRulesetName`/`scanRulesetType`/`resourceNameFilter`) does independently match the
-  formal `ResourceTypeFilter` type, which is reassuring but does not resolve the key-name conflict.
-  This scenario's deploy script omits `resourceTypes` regardless of how this resolves (§4's
-  auto-enumeration design doesn't need it), so the conflict doesn't block this scenario itself - but
-  it does block confidently building the `-ResourceNames` scoping parameter this item's earlier text
-  proposed as a follow-up, until confirmed against a pilot tenant or a more specific Synapse-only REST
-  page.
+- **RESOLVED (2026-09-28) - `resourceTypes` key-name conflict.** This item previously flagged a
+  conflict between a worked JSON example's
+  `resourceTypes.AzureSynapseServerlessSql.resourceNameFilter.resources[]` key and the formal
+  `AzureSynapseWorkspaceCredentialScanProperties` REST reference's own `resourceTypes` field, typed
+  `ExpandingResourceScanPropertiesResourceTypes` - whose documented key enumeration is a different,
+  generic camelCase set (`azureSqlDatabase`, `azureSynapseWorkspace`, `azureSynapse`, etc.) with no
+  `AzureSynapseServerlessSql` entry. A direct re-fetch (via the Microsoft Learn MCP tool, available
+  this run) of the canonical `register-scan-synapse-workspace` page's own "Set up a scan by using an
+  API" section confirms the PascalCase `AzureSynapseServerlessSql` key **is** Microsoft's current,
+  live documented example for this exact scan kind - exactly as this item's earlier inference
+  suspected, the generic `ExpandingResourceScanPropertiesResourceTypes` type reference's enumerated
+  keys are confirmed incomplete for scan kinds (like this one) that reuse that shared schema type,
+  not evidence the worked example is wrong. The confirmed shape for scoping a scan to named
+  serverless databases is:
+  ```json
+  "resourceTypes": {
+    "AzureSynapseServerlessSql": {
+      "scanRulesetName": "AzureSynapseSQL",
+      "scanRulesetType": "System",
+      "resourceNameFilter": { "resources": ["{serverless_database_name_1}", "{serverless_database_name_2}"] }
+    }
+  }
+  ```
+  Microsoft's example documents only the serverless-scoping key; no equivalent dedicated-pool key is
+  shown anywhere on that page, so a future `-ResourceNames` scoping parameter built from this should
+  scope to serverless databases only unless a dedicated-pool key is separately confirmed. This
+  scenario's deploy script continues to omit `resourceTypes` by default (§4's auto-enumeration design
+  doesn't need it) - the fact is now grounded, not guessed, which closes the VERIFY without changing
+  the script's behavior.
 - **SAMI cannot be used if the workspace firewall's "Allow Azure services and resources to access this
   workspace" control cannot be enabled.** Microsoft's own documentation states the Purview portal
   cannot configure a Synapse scan at all in that case, and directs operators to the Scans REST API with
@@ -392,7 +400,8 @@ out of scope for this scenario's cost notes, same as the compute layer of both s
 12. `scenarios/data-map/scan-azure-sql-and-classify/` and `scenarios/data-map/scan-azure-sql-managed-instance-and-classify/` - the sibling scenarios this fragment extends; see their README.md and design.md for shared reasoning not repeated here.
 13. Connect to and manage dedicated SQL pools (formerly SQL DW) in Microsoft Purview - the older, standalone data source this scenario deliberately does **not** use; cited here so a reader who lands on this page while researching Synapse scanning understands it documents a different, separate Purview data source `kind` from the workspace-based one this scenario automates - <https://learn.microsoft.com/purview/register-scan-azure-synapse-analytics>
 
-> Re-verify all links, API versions, and the `resourceTypes` VERIFY item against current Microsoft
-> Learn before a customer-facing deployment - the Data Map REST surface is explicitly called out by
-> Microsoft as evolving, and `learn.microsoft.com` was unreachable for direct verification throughout
-> this build (see §11's grounding-method note).
+> Re-verify all links and API versions against current Microsoft Learn before a customer-facing
+> deployment - the Data Map REST surface is explicitly called out by Microsoft as evolving, and
+> `learn.microsoft.com` was unreachable for direct verification throughout this build (see §11's
+> grounding-method note). The `resourceTypes` VERIFY was closed 2026-09-28 via a direct re-fetch of
+> the canonical page once `learn.microsoft.com` access was available - see §11.
