@@ -3551,7 +3551,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `gdpr-dsr-fulfillment` `dataSourceScopes` combinability VERIFY** -
-  commit `PENDING` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether the
+  commit `290eb09` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether the
   `ediscoverySearch` resource's `dataSourceScopes` property accepts a comma-combined value (the way
   the custodian `userSource` `includedSources` parameter does) or requires one call per scope.
   Grounded via the Microsoft Learn MCP: the `ediscoverySearch` resource-type reference and the
