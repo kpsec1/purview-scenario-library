@@ -8658,7 +8658,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   fix, not a code change. Both `PROGRESS.md` tracking entries for this item (the original follow-up
   and the later re-grounding correction) marked closed in place rather than duplicated.
 - [x] **Maintenance pass — closed the REST-path half of `custom-process-lineage`'s `Type - Delete`
-  VERIFY** — commit PENDING — 2026-09-28. The Microsoft Learn MCP tool was reachable this run;
+  VERIFY** — commit `73efc62` — 2026-09-28. The Microsoft Learn MCP tool was reachable this run;
   a direct fetch of the canonical `Type - Delete` REST reference page (API version 2023-09-01,
   `https://learn.microsoft.com/rest/api/purview/datamapdataplane/type/delete`) confirms
   `DELETE {endpoint}/datamap/api/atlas/v2/types/typedef/name/{name}`, returning `204 No Content`
