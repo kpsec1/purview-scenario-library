@@ -8505,7 +8505,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   both Pass with no findings. No cmdlet, endpoint, or field shape was invented; the numeric
   string-format VERIFY above is the only new open item this fragment adds.
 - [x] **Maintenance: close the `data-leaks-custom-indicator-trigger` template-scope VERIFY** —
-  commit `PENDING` — 2026-09-28. Grounded via a direct Microsoft Learn fetch (Microsoft Learn MCP)
+  commit `9fc50bf` — 2026-09-28. Grounded via a direct Microsoft Learn fetch (Microsoft Learn MCP)
   of "Configure policy indicators in Insider Risk Management" §Built-in indicators vs. custom
   indicators, which states: "You can only modify triggering events for policies created from the
   *Data leaks* or *Data leaks by priority users* templates. Policies created from all other
