@@ -171,3 +171,10 @@ items, the system scan rule set name (`scanRulesetName: "SqlServerDatabase"`, `s
 "System"`) is now confirmed via the System Scan Rulesets - Get REST reference's own worked example
 (`README.md` §11, `#14` reference). The Windows Authentication `CredentialType` mapping remains an
 open VERIFY, unaffected by this pass.
+
+**Maintenance addendum (2026-09-28):** the Windows Authentication `CredentialType` VERIFY was
+re-grounded, not closed. A direct fetch of the Credential - Create Or Replace REST reference
+(`README.md` §11, `#18` reference) confirmed the `CredentialType` enum is exhaustive at eight values,
+none Windows-specific, narrowing the script's `'BasicAuth'` default-alternative to an
+elimination-grounded (not Microsoft-published) mapping. Still open; re-close only on a Microsoft
+worked example or explicit statement.

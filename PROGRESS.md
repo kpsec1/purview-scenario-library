@@ -2925,13 +2925,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   §12 ref [14]), `design.md` (§4, §5, §7), and the deploy script's `.PARAMETER`/`.NOTES` blocks;
   `reviews.md` carries a maintenance addendum. The sibling `CredentialType`/Windows Authentication
   VERIFY (next item below) remains open and untouched by this pass.
-- [ ] VERIFY (pilot tenant): which `CredentialType` REST enum value corresponds to "Windows
-  Authentication" in the portal for the `SqlServerDatabaseCredential` scan kind - Microsoft's portal
-  documents Windows Authentication as a supported method for this source type, but the confirmed
-  enum (`AccountKey`/`ServicePrincipal`/`BasicAuth`/`SqlAuth`/`AmazonARN`/`ConsumerKeyAuth`/
-  `DelegatedAuth`/`ManagedIdentity`) has no value independently confirmed to map to it.
-  `scan-on-premises-sql-server-and-classify`'s deploy script offers `'BasicAuth'` as an unconfirmed
-  best-effort alternative to the confirmed `'SqlAuth'` default - see that scenario's `README.md` §11.
+- [ ] VERIFY narrowed 2026-09-28 (Microsoft Learn MCP): which `CredentialType` REST enum value
+  corresponds to "Windows Authentication" in the portal for the `SqlServerDatabaseCredential` scan
+  kind - Microsoft's portal documents Windows Authentication as a supported method for this source
+  type. This pass fetched the **Credential - Create Or Replace** REST reference directly (a more
+  authoritative source than the Data Sources reference this scenario had previously cited the enum
+  from) and confirmed the `CredentialType` enum is exhaustive at exactly eight values
+  (`AccountKey`/`ServicePrincipal`/`BasicAuth`/`SqlAuth`/`AmazonARN`/`ConsumerKeyAuth`/
+  `DelegatedAuth`/`ManagedIdentity`), each with its own Microsoft-published description, none naming
+  or describing a Windows-specific credential type. By elimination `BasicAuth` is the only
+  structurally-compatible remaining candidate (every other value is either not username/password-shaped,
+  or - for `SqlAuth` - already Microsoft-confirmed as the value for SQL Authentication on this exact
+  scan kind), but this is this repo's elimination argument, not a Microsoft-published mapping
+  statement, so it remains open. `scan-on-premises-sql-server-and-classify`'s deploy script continues
+  to offer `'BasicAuth'` as its elimination-grounded (not Microsoft-confirmed) alternative to the
+  confirmed `'SqlAuth'` default - see that scenario's `README.md` §11/§12 ref [18], `design.md` §7,
+  `reviews.md` maintenance addendum, and the deploy script's `.PARAMETER`/`.NOTES` blocks. Re-close
+  only on a Microsoft worked example or explicit statement naming the value for Windows Authentication.
 - [ ] `scenarios/data-map/scan-on-premises-sql-server-and-classify-kubernetes-shir/` (or fold into a
   future Data Map hardening pass) - the Kubernetes-based, containerized self-hosted *data* integration
   runtime Microsoft documents as a separate, newer capability (SQL Server and Oracle only,
@@ -3653,6 +3663,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Narrowed the `scan-on-premises-sql-server-and-classify` Windows Authentication `CredentialType`
+  VERIFY** - commit `PENDING` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
+  Replace** REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace`)
+  directly via the Microsoft Learn MCP tool - a more authoritative, dedicated source than the Data
+  Sources reference this scenario had previously drawn the `CredentialType` enum's member list from.
+  Confirmed the enum is exhaustive at exactly eight values (`AccountKey`, `ServicePrincipal`,
+  `BasicAuth`, `SqlAuth`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, `ManagedIdentity`), each
+  with its own Microsoft-published one-line description, none naming or describing a Windows-specific
+  credential type. This lets the elimination argument for `'BasicAuth'` (the script's default
+  alternative to the confirmed `'SqlAuth'`) be stated with full confidence that no ninth, unlisted
+  value exists - but it remains an elimination argument, not a Microsoft-published mapping statement,
+  so the VERIFY stays open, narrowed rather than closed. Updated `scan-on-premises-sql-server-and-classify/README.md`
+  (§11, §12 new ref [18], §12 footnote), `design.md` (§7), `reviews.md` (new maintenance addendum), and
+  the deploy script's `.PARAMETER CredentialType`/`.NOTES` blocks to cite the new reference and the
+  narrowed reasoning. No script behavior change (default remains `'SqlAuth'`; `'BasicAuth'` remains the
+  documented, still-unconfirmed alternative) and no new four-lens review round needed per `AGENTS.md`
+  §6 - doc/citation-only correction.
 - [x] **Narrowed the `teams-purge-hold-lifecycle-management` Group-location-exclusion `InPlaceHolds`
   VERIFY and fixed a citation-numbering bug it surfaced** - commit `8a719aa` - 2026-09-28. Maintenance
   pass: re-fetched the `Set-RetentionCompliancePolicy` PowerShell reference and the "Identify Exchange

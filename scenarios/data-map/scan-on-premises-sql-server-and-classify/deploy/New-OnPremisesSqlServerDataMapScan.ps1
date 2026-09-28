@@ -106,12 +106,16 @@
 
 .PARAMETER CredentialType
     'SqlAuth' (default) or 'BasicAuth'. Microsoft's portal documents both "SQL Authentication" and
-    "Windows Authentication" as supported methods for this source type, but the REST CredentialType
-    enum has no value confirmed in this build to correspond specifically to Windows Authentication -
-    'BasicAuth' is this script's best-effort mapping (Microsoft's generic credential taxonomy
-    describes "Basic authentication" as username/password, the same shape Windows Authentication
-    uses), flagged as an explicit VERIFY. 'SqlAuth' is the default because it is the credential type
-    Microsoft's own worked PowerShell example for this exact scan kind uses. See README.md Section 11.
+    "Windows Authentication" as supported methods for this source type. The Credential - Create Or
+    Replace REST reference publishes the complete CredentialType enum (AccountKey / ServicePrincipal /
+    BasicAuth / SqlAuth / AmazonARN / ConsumerKeyAuth / DelegatedAuth / ManagedIdentity - confirmed
+    exhaustive, re-grounded 2026-09-28) with no value named or described as Windows-specific.
+    'BasicAuth' is this script's elimination-grounded best-effort mapping (every other value is
+    structurally incompatible with username+password auth except 'SqlAuth', which Microsoft's own
+    worked example already confirms is used for SQL Authentication) - not a Microsoft-published
+    mapping, still flagged as an explicit VERIFY. 'SqlAuth' is the default because it is the
+    credential type Microsoft's own worked PowerShell example for this exact scan kind uses. See
+    README.md Section 11.
 
 .PARAMETER DataSourceName
     Name for the registered data source object. Defaults to a sanitized form of -ServerEndpoint.
@@ -223,6 +227,9 @@
       name "AzureStorage" - and that SqlServerDatabase is a documented kind/DataSourceType value
       in the same schema; this grounds the -ScanRulesetName default below):
       https://learn.microsoft.com/rest/api/purview/scanningdataplane/system-scan-rulesets/get
+    - Credential - Create Or Replace (publishes the complete, authoritative CredentialType enum -
+      confirmed exhaustive at eight values, none Windows-specific; re-grounded 2026-09-28):
+      https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace
 
     CONFIRMED 2026-09-26 - the -ScanRulesetName default ('SqlServerDatabase') was previously
     flagged VERIFY here; it is now grounded by the System Scan Rulesets - Get worked example
@@ -231,8 +238,9 @@
     VERIFY before production use (not resolved by guessing, per AGENTS.md Section 4 - see README.md
     Section 11 for the full writeup):
     - Which CredentialType enum value corresponds to "Windows Authentication" in the portal - this
-      script's -CredentialType 'BasicAuth' default-alternative is a best-effort mapping, not a
-      confirmed one.
+      script's -CredentialType 'BasicAuth' default-alternative is now grounded by elimination against
+      the complete, confirmed-exhaustive CredentialType enum (re-grounded 2026-09-28), but remains an
+      elimination argument, not a Microsoft-published mapping statement.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(
