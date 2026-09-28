@@ -3500,7 +3500,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `financial-regulatory-supervision` built-in-template classifier-bundling VERIFY**
-  - commit `PENDING` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether the
+  - commit `83f1267` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether the
   built-in "Detect financial regulatory compliance" and "Detect conflict of interest" Communication
   Compliance policy templates bundle the same seven classifiers as this scenario's custom policy.
   Grounded via the Microsoft Learn MCP: a direct fetch of `communication-compliance-policies#choose-
