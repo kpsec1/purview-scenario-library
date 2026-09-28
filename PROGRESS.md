@@ -957,9 +957,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   synchronization delay Microsoft documents explicitly for the org-wide `-AddExchangeLocationException`
   path - no equivalent explicit statement was found for the mailbox-scoped path during this build.
   `teams-purge-hold-lifecycle-management/README.md` §11.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): a confirmed `InPlaceHolds` notation for a
-  **Group-location exclusion** (the `grp`-prefixed equivalent of `-mbx<guid>` for Exchange-location
-  exclusions) - none was found during this build's grounding pass, so
+- [ ] VERIFY narrowed 2026-09-28 (Microsoft Learn MCP): `-AddModernGroupLocationException`/
+  `-RemoveModernGroupLocationException` are now confirmed real, documented `Set-RetentionCompliancePolicy`
+  parameters (fetched in full: `set-retentioncompliancepolicy` PowerShell reference on
+  `learn.microsoft.com/powershell/module/exchangepowershell/`, parameter description: "specifies the
+  Microsoft 365 Groups to add to the list of excluded Microsoft 365 Groups when you're using the value
+  All for the ModernGroupLocation parameter"). Also confirmed by the same pass: the resulting
+  `InPlaceHolds` notation for a **Group-location exclusion** (the `grp`-prefixed equivalent of
+  `-mbx<guid>` for Exchange-location exclusions) is still **not documented anywhere on Microsoft Learn**
+  - the "Identify Exchange mailbox hold types in eDiscovery" reference's `InPlaceHolds` prefix table
+  covers only the `-mbx` exclusion notation, never a `-grp` equivalent, and the word "InPlaceHolds" does
+  not appear on the `Set-RetentionCompliancePolicy` reference page at all. So this item now covers only
+  the narrower, genuinely undocumented half - a pilot-tenant check remains the only way to close it.
   `Restore-TeamsPurgeMailboxHolds.ps1` cannot pre-check whether a Group-kind org-wide exception is
   already removed before calling `-RemoveModernGroupLocationException`, and `validate/
   Test-TeamsPurgeMailboxHoldLifecycle.ps1` reports it as `[WARN]` ("cannot verify"), never
@@ -3644,6 +3653,26 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Narrowed the `teams-purge-hold-lifecycle-management` Group-location-exclusion `InPlaceHolds`
+  VERIFY and fixed a citation-numbering bug it surfaced** - commit `PENDING` - 2026-09-28. Maintenance
+  pass: re-fetched the `Set-RetentionCompliancePolicy` PowerShell reference and the "Identify Exchange
+  mailbox hold types in eDiscovery" reference via the Microsoft Learn MCP tool. Confirmed
+  `-AddModernGroupLocationException`/`-RemoveModernGroupLocationException` are real, documented
+  `Set-RetentionCompliancePolicy` parameters (quoted in the reference: "specifies the Microsoft 365
+  Groups to add to the list of excluded Microsoft 365 Groups when you're using the value All for the
+  ModernGroupLocation parameter"). Confirmed the other half of the VERIFY remains genuinely open: no
+  Microsoft Learn page documents the resulting `InPlaceHolds` notation for this exclusion (the
+  identify-hold-types reference's prefix table covers only the `-mbx` exclusion, never a `-grp`
+  equivalent) - narrowed the item to that half rather than closing it by assumption. While re-checking
+  every citation touching `Set-RetentionCompliancePolicy` in this scenario, found and fixed a
+  mis-numbered reference: four spots in `design.md` (lines 28/29/30/229) and two in `README.md`
+  (the "Remove/Restore - mailbox-scoped Group-location policy" config-reference rows) cited `[[4]]`
+  ("Manage holds in eDiscovery" portal guide) for `Set-RetentionCompliancePolicy` cmdlet facts that
+  belong to `[[7]]` (the actual `Set-RetentionCompliancePolicy` reference) - every sibling row for the
+  same cmdlet already correctly cited `[[7]]`. Corrected all six to `[[7]]`; no other `[[4]]` citations
+  in the scenario were affected (the one remaining use, README.md §6, is genuinely about the eDiscovery
+  case-hold portal path). No script behavior change and no new four-lens review round needed per
+  `AGENTS.md` §6 - doc/citation-only correction.
 - [x] **Re-grounded the `glossary-curation-coverage-report` `Terms - List` `top`-maximum VERIFY** -
   commit `782651d` - 2026-09-28. Maintenance pass: re-fetched the `Terms - List` REST reference via
   the Microsoft Learn MCP tool against both the `2025-09-15-preview` and the pinned

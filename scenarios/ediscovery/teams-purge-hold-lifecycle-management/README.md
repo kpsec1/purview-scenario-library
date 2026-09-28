@@ -141,14 +141,14 @@ location list directly.
 | Resolve policy name | `Get-RetentionCompliancePolicy <guid> -DistributionDetail` | Security & Compliance PowerShell [[3]](#references)[[5]](#references) |
 | Remove - Litigation Hold | `Set-Mailbox -LitigationHoldEnabled $false` | [[6]](#references) |
 | Remove - mailbox-scoped policy (regular mailbox) | `Set-RetentionCompliancePolicy -RemoveExchangeLocation <mailbox>` | [[7]](#references); never used against a group/team mailbox - [[10]](#references) |
-| Remove - mailbox-scoped Group-location policy | `Set-RetentionCompliancePolicy -RemoveModernGroupLocation <mailbox>` | **Only** when the target is a group/team mailbox (`RecipientTypeDetails -eq 'GroupMailbox'`) - [[4]](#references); resulting `InPlaceHolds` notation is an open VERIFY, design.md §8.1 |
+| Remove - mailbox-scoped Group-location policy | `Set-RetentionCompliancePolicy -RemoveModernGroupLocation <mailbox>` | **Only** when the target is a group/team mailbox (`RecipientTypeDetails -eq 'GroupMailbox'`) - [[7]](#references); resulting `InPlaceHolds` notation is an open VERIFY, design.md §8.1 |
 | Remove - org-wide Exchange policy | `Set-RetentionCompliancePolicy -AddExchangeLocationException <mailbox>` (excludes the mailbox; does not edit the policy itself) | **Only** for a non-group mailbox - [[6]](#references)[[7]](#references)[[10]](#references) |
 | Remove - org-wide Group policy | `Set-RetentionCompliancePolicy -AddModernGroupLocationException <mailbox>` | **Only** when the target is a group/team mailbox (`RecipientTypeDetails -eq 'GroupMailbox'`, e.g. a standard/shared channel's parent team) - never conflate with the Exchange-location parameter above. design.md §8 |
 | Remove - retention-label hold (opt-in) | `Set-Mailbox -RemoveComplianceTagHoldApplied -ProvideConsent` | `-IncludeComplianceTagHold` switch; **irreversible**, no restore cmdlet exists [[5]](#references) |
 | Remove - delay hold (pre-existing only) | `Set-Mailbox -RemoveDelayHoldApplied` / `-RemoveDelayReleaseHoldApplied` | Requires the **Legal Hold** role [[5]](#references) |
 | Restore - Litigation Hold | `Set-Mailbox -LitigationHoldEnabled $true` | |
 | Restore - mailbox-scoped policy (regular mailbox) | `Set-RetentionCompliancePolicy -AddExchangeLocation <mailbox>` | [[7]](#references) |
-| Restore - mailbox-scoped Group-location policy | `Set-RetentionCompliancePolicy -AddModernGroupLocation <mailbox>` | [[4]](#references); design.md §8.1 |
+| Restore - mailbox-scoped Group-location policy | `Set-RetentionCompliancePolicy -AddModernGroupLocation <mailbox>` | [[7]](#references); design.md §8.1 |
 | Restore - org-wide exception | `Set-RetentionCompliancePolicy -RemoveExchangeLocationException <mailbox>` | [[7]](#references) |
 | Never touched | eDiscovery case holds (`UniH`), legacy In-Place Holds, `*-AppRetentionCompliancePolicy`-governed newer-location policies, an unrecognized `grp`-prefixed entry on a non-group mailbox | design.md §6/§7/§8.1 |
 | Informational listing | `Get-AppRetentionCompliancePolicy` | Tenant-wide, never matched to a specific mailbox [[8]](#references) |
