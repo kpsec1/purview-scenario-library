@@ -2332,7 +2332,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   label for the "Harassment"/"Targeted harassment" trainable classifier - Microsoft's own docs use
   both names for what reads as the same classifier across different pages
   (`harassment-and-code-of-conduct/README.md` §11, `design.md` §4). Not resolved by guessing in
-  this build per `AGENTS.md` §4.
+  this build per `AGENTS.md` §4. **Re-grounded 2026-09-28** (Microsoft Learn MCP direct fetch):
+  the inconsistency has narrowed but not closed. `trainable-classifiers-definitions#harassment`
+  and, as of this re-check, the `communication-compliance-policies#policy-settings` "Policy
+  settings" table both now use **"Harassment"** (this table previously cited as using "Targeted
+  harassment" - no longer the case). **"Targeted harassment"/"Targeted Harassment"** still appears
+  on the Get-started policy-creation workflow (`communication-compliance-configure` Step 5), the
+  solution overview's template list (`communication-compliance-solution-overview`), and the
+  condition-builder worked examples (`communication-compliance-conditions-scenarios`). The scenario
+  continues to standardize on "Harassment" (now corroborated by two pages instead of one), but the
+  live portal UI label a tenant admin actually sees remains unconfirmed without a tenant - VERIFY
+  stays open for that specific point. Re-open for a fresh pass only if Microsoft fully unifies the
+  naming or a pilot tenant confirms the live label.
 - [ ] VERIFY (employment counsel, jurisdiction-by-jurisdiction): monitoring-notice/consent
   obligations for the Investigator-role full-content-visibility design in
   `harassment-and-code-of-conduct` - flagged as a gating prerequisite in that scenario's `README.md`
