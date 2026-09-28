@@ -284,11 +284,15 @@ didn't create them).
   REST-documented body for creating a *custom* Process-typed entity (only for referencing the
   built-in `Process` type against entities a tutorial had already created via a different flow -
   see `design.md` Section 1/7). Follow-up tracked in `PROGRESS.md`.
-- **VERIFY - the exact qualifiedName format Purview assigns to an `azure_sql_table` asset.** This
-  build's grounding pass did not find a documented format string (e.g. an `mssql://...` scheme) for
-  this asset type specifically. This scenario's definition file requires the operator to copy the
-  real value from each asset's Overview page in the portal rather than having either script
-  construct or guess it.
+- **Confirmed (was VERIFY) - the qualifiedName format Purview assigns to an `azure_sql_table`
+  asset.** Microsoft's own Discovery - Query REST reference documents the `mssql://` scheme
+  directly, in two independent worked examples pairing `"entityType": "azure_sql_table"` with
+  `"qualifiedName": "mssql://exampleserver.database.windows.net/examplesqldb/examplepath/exampledata1"`
+  [[15]](#references) - i.e. `mssql://<server-fqdn>/<database>/<schema-or-path>/<table>`. This
+  scenario's definition file still requires the operator to copy the real, per-asset value from
+  the portal (or resolve it via Discovery - Query/GraphQL) rather than having either script
+  auto-construct it - the scheme is now format-confirmed, but the exact schema/path segment is
+  asset-specific, so copying the real value stays the safer default.
 - **VERIFY - `Relationship - Create`'s behavior on a duplicate POST.** This build's grounding pass
   confirmed `Relationship - Create`'s request/response shape directly from Microsoft's REST
   reference, but that reference does not state whether re-POSTing an identical relationship
@@ -325,8 +329,9 @@ didn't create them).
 12. Lineage - Get REST reference (API version 2023-09-01) - <https://learn.microsoft.com/rest/api/purview/datamapdataplane/lineage/get>
 13. Lineage - Get By Unique Attribute REST reference (API version 2023-09-01) - <https://learn.microsoft.com/rest/api/purview/datamapdataplane/lineage/get-by-unique-attribute>
 14. Entity - Bulk Create Or Update REST reference (API version 2023-09-01; upsert-by-qualifiedName semantics, referenced for contrast in `design.md`) - <https://learn.microsoft.com/rest/api/purview/datamapdataplane/entity/bulk-create-or-update>
+15. Discovery - Query REST reference (API version 2023-09-01; `Discovery_Query_Classification` and `Discovery_Query_Collection` worked examples confirm the `mssql://` qualifiedName scheme for `azure_sql_table`) - <https://learn.microsoft.com/rest/api/purview/catalogdataplane/discovery/query>
 
-> Re-verify all links and the two VERIFY items in §11 against current Microsoft Learn before a
-> customer-facing deployment - Microsoft's own Data Map REST surface is explicitly called out
-> elsewhere in this repo (`scenarios/data-map/scan-azure-sql-and-classify/README.md` §11) as
+> Re-verify all links and the one remaining VERIFY item in §11 against current Microsoft Learn
+> before a customer-facing deployment - Microsoft's own Data Map REST surface is explicitly called
+> out elsewhere in this repo (`scenarios/data-map/scan-azure-sql-and-classify/README.md` §11) as
 > evolving.

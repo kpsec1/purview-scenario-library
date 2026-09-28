@@ -106,9 +106,12 @@
 
 .NOTES
     VERIFY before production use (see README.md Section 11 for full detail):
-    - The exact qualifiedName string format Purview assigns to an azure_sql_table asset (applies
-      to -Upstream/-Downstream only, not the Process entity, whose qualifiedName this script
-      authors itself). Same open item as end-to-end-lineage-validation/README.md Section 11.
+    - The qualifiedName scheme for an azure_sql_table asset is confirmed (mssql://<server-fqdn>/
+      <database>/<schema-or-path>/<table>, per end-to-end-lineage-validation's Discovery - Query
+      citation) - applies to -Upstream/-Downstream only, not the Process entity, whose
+      qualifiedName this script authors itself. Not fully closed here: the exact schema/path
+      segment is still asset-specific, so -Upstream/-Downstream still take the real per-asset value
+      as a parameter rather than constructing it.
     - Whether Relationship - Create rejects, no-ops, or duplicates a second POST of an identical
       relationship. This script's own existence check (a single depth-2 Lineage - Get By Unique
       Attribute call before either relationship POST) makes its own idempotency independent of the

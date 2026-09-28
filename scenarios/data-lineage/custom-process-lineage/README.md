@@ -258,9 +258,11 @@ entity; the upstream/downstream assets and the custom Process type definition ar
   specifically - see the deploy script's `.NOTES`. Functionally safe (a transient error would also
   be misread as "missing," causing a redundant-but-harmless Type - Bulk Create attempt that itself
   would then either succeed or surface a clearer error), but not the same as a confirmed 404.
-- **VERIFY - the exact qualifiedName string format Purview assigns to an `azure_sql_table` asset.**
-  Same open item the sibling scenario already carries (`end-to-end-lineage-validation/README.md`
-  §11) - applies here identically to the upstream/downstream references, not to the Process
+- **Confirmed (was VERIFY) - the qualifiedName format Purview assigns to an `azure_sql_table`
+  asset.** Same item the sibling scenario carries and has since confirmed
+  (`end-to-end-lineage-validation/README.md` §11/§12: Microsoft's own Discovery - Query REST
+  reference documents the `mssql://<server-fqdn>/<database>/<schema-or-path>/<table>` scheme
+  directly) - applies here identically to the upstream/downstream references, not to the Process
   entity's own (self-authored) qualifiedName.
 - **This scenario does not validate that `runbookUrl` points at a live, current document** - see
   §8. A stale link is not detected by `validate/Test-ProcessLineage.ps1`.

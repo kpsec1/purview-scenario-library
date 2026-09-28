@@ -1697,11 +1697,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Update, then `dataset_process_inputs`/`process_dataset_outputs` relationships; "Create New Custom
   Types": the custom-Process-type body). Composable with, not a replacement for, this scenario's
   own `direct_lineage_dataset_dataset` edge - see the new scenario's `design.md` §6.
-- [ ] VERIFY (pilot tenant): the exact qualifiedName string format Purview assigns to an
-  `azure_sql_table` asset (e.g. whether it follows an `mssql://...` scheme) - not found during this
-  build's grounding pass; `end-to-end-lineage-validation`'s definition file currently requires the
-  operator to copy the value from the portal rather than having either script construct it. Closing
-  this would let a future scenario auto-resolve qualifiedNames instead of requiring manual copy.
+- [x] VERIFY (pilot tenant): the exact qualifiedName string format Purview assigns to an
+  `azure_sql_table` asset (e.g. whether it follows an `mssql://...` scheme) - **closed 2026-09-28**.
+  Microsoft's own "Discovery - Query" REST reference
+  (`https://learn.microsoft.com/rest/api/purview/catalogdataplane/discovery/query`) shows the
+  `mssql://` scheme directly, twice, in its own worked example responses (`Discovery_Query_Classification`
+  and `Discovery_Query_Collection`): `"entityType": "azure_sql_table"` paired with
+  `"qualifiedName": "mssql://exampleserver.database.windows.net/examplesqldb/examplepath/exampledata1"`.
+  This confirms the scheme (`mssql://<server-fqdn>/<database>/<schema-or-path>/<table>`) directly
+  from Microsoft's own documentation - no pilot tenant needed. `end-to-end-lineage-validation`'s
+  README.md §11/§12 and `deploy/New-CustomLineageRelationship.ps1` updated in place to cite this;
+  the script still requires the operator to copy the real per-asset value (now format-confirmed,
+  not merely portal-derived) rather than auto-constructing it, since the exact schema/path segment
+  for a given table is asset-specific and copying from the portal remains the safer default.
 - [ ] VERIFY (pilot tenant): whether `Relationship - Create` rejects, no-ops, or duplicates a
   second POST of an identical relationship - this build's grounding pass confirmed the operation's
   request/response shape directly from Microsoft's REST reference but not this specific behavior;
@@ -1821,16 +1829,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   mismatch is expected (e.g. due to near-real-time index changes mid-page-through) or a sign of a
   client-side pagination bug. Confirm against a pilot tenant with a large, stable (non-changing)
   asset population before treating a persistent mismatch as benign.
-- [ ] Note for a future Data Lineage follow-up: this build's `Discovery_Query_Collection` worked
+- [x] Note for a future Data Lineage follow-up: this build's `Discovery_Query_Collection` worked
   example response (Microsoft's own REST reference page for Discovery - Query) shows a real
   `azure_sql_table` `qualifiedName` value -
   `mssql://exampleserver.database.windows.net/examplesqldb/examplepath/exampledata1` - which
   directly bears on the open VERIFY in `scenarios/data-lineage/end-to-end-lineage-validation/
   README.md` §11 ("the exact qualifiedName string format Purview assigns to an azure_sql_table
-  asset"). Not applied retroactively to that already-DONE fragment in this build (out of scope for
-  this turn), but the next pass on that scenario (or a dedicated Data Map/Data Lineage grounding
-  fragment) should confirm this `mssql://` scheme against a pilot tenant and, if confirmed, update
-  that scenario's README/design.md to close the VERIFY instead of requiring manual portal copy.
+  asset"). **Applied 2026-09-28** (see the VERIFY closure above in this same section): the same
+  worked example (and its `Discovery_Query_Classification` sibling) is a direct, first-party
+  Microsoft citation for the `mssql://` scheme, no pilot tenant needed - `end-to-end-lineage-
+  validation`'s README.md §11/§12 and deploy script updated to close the VERIFY.
 
 ### Follow-ups discovered while building the Data Estate Insights glossary-curation-coverage-report scenario
 - [ ] VERIFY (pilot tenant): whether `Global Catalog Reader`/`Local Catalog Reader` can see
