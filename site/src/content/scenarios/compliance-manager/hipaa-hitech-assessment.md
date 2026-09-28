@@ -157,7 +157,7 @@ licensing are tenant-wide, not per-regulation):
   be confused with. Do not let a customer conversation, an internal deck, or this scenario's own
   tooling output imply "HIPAA certified" status.
 - **This assessment does not substitute for the organization's own legally required Security Risk
-  Analysis** (45 CFR §164.308(a)(1)(ii)(A)) - a periodic risk assessment every
+  Analysis** (45 CFR 164.308(a)(1)(ii)(A)) - a periodic risk assessment every
   covered entity and business associate must perform themselves. A Compliance Manager score,
   however complete, is an internal readiness-tracking and evidence tool for that broader legal
   obligation, not a replacement for it.

@@ -252,7 +252,7 @@ goals, ISO 27001's Annex A domains, or HIPAA's rule-with-safeguard-categories st
 
 ```mermaid
 flowchart TD
-    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - README.md Section 5] --> B["EU GDPR assessment<br/>Group: Security & Compliance Assessments (joined or created)<br/>Scope: Microsoft 365"]
+    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - this page Section 5] --> B["EU GDPR assessment<br/>Group: Security & Compliance Assessments (joined or created)<br/>Scope: Microsoft 365"]
     C["Already-deployed GDPR-relevant scenarios in this tenant:<br/>Data Map classification / Data Estate Insights /<br/>Info Protection labeling / DLP exfil block /<br/>Retention-disposition / Unified Catalog / Audit"] -.built-in automation<br/>feeds technical-action signals<br/>tenant-wide, any group.-> B
     D[Contributors/Assessors] -->|manual work: evidence,<br/>notes, test status,<br/>Excel Action Update wizard| B
     E["ISO/IEC 27001:2022, PCI DSS v4.0,<br/>SOC 2, and/or HIPAA/HITECH assessments<br/>(if deployed, same group)"] <-.nontechnical improvement-action<br/>updates sync within the shared group only.-> B

@@ -65,7 +65,7 @@ trigger, which the constraint above rules out.
 
 ```mermaid
 flowchart TD
-    subgraph Detect["Detection - portal-configured, not scriptable (§6)"]
+    subgraph Detect["Detection - portal-configured, not scriptable"]
         CC["Communication Compliance indicator:\ndetect Credit Card Number SIT in messages\n(covers Exchange, Teams, Viva Engage, Copilot)"]
         IRM["New IRM policy: 'Data leaks' template\nTriggering event: user performs an exfiltration activity\nIndicators: Communication Compliance (Credit Card Number),\nbuilt-in Office exfiltration indicators\nCumulative exfiltration detection: ON"]
         CC -->|"scored Communication Risk activity\n(evaluated ~daily, not real-time)"| IRM

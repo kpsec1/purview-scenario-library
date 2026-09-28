@@ -7,7 +7,7 @@ parent: "data-lifecycle-management/publish-labels-for-manual-application"
 ### PowerShell path
 
 ```powershell
-# Connect (certificate app-only preferred - docs/automation-surface.md §3)
+# Connect (certificate app-only preferred - Automation surface, section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
 # 0. Prerequisite: the label must already exist (see retention-labels-financial-records)

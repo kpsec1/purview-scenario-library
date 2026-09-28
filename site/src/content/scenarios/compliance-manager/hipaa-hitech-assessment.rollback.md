@@ -40,7 +40,7 @@ considerations specific to this scenario:
   sibling scenario or the nontechnical improvement-action data it shares with them.
 - **Export a report first** (the validation steps, "Export an assessment report") - the exported Excel
   file is the only durable record of this assessment's state once it's deleted. Given HIPAA's own
-  six-year documentation-retention requirement (45 CFR §164.316(b)(2)(i) - the known limitations),
+  six-year documentation-retention requirement (45 CFR 164.316(b)(2)(i) - the known limitations),
   archive this export (and the audit-trail CSV) for at least that long, independent of Compliance
   Manager's own retention or this scenario's continued deployment.
 - **The group itself is never deleted**, regardless of how many assessments remain in it - groups

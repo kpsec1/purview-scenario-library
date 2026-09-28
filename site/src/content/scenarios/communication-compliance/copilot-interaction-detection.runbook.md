@@ -43,8 +43,8 @@ parent: "communication-compliance/copilot-interaction-detection"
 ### Script path - the audit-trail export (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md §3). The connecting identity
-#    needs Exchange.ManageAsApp PLUS the View-Only Audit Logs Exchange Online role (docs/rbac-model.md §6).
+# 1. Connect (certificate app-only - see Automation surface, section 3). The connecting identity
+# needs Exchange.ManageAsApp PLUS the View-Only Audit Logs Exchange Online role (RBAC model, section 6).
 Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
 # 2. Dry run - queries the last 7 days across all 3 categories, reports what would be merged, writes nothing
@@ -55,7 +55,7 @@ Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDom
     -StartDate (Get-Date).AddDays(-180) -EndDate (Get-Date) `
     -OutputCsvPath './out/copilot-interaction-audit-trail.csv'
 
-# 4. Recurring run (schedule daily or weekly - overlapping windows are safe, see design.md §7)
+# 4. Recurring run (schedule daily or weekly - overlapping windows are safe, see the design notes)
 ./deploy/Export-CopilotInteractionAuditTrail.ps1 -OutputCsvPath './out/copilot-interaction-audit-trail.csv'
 
 # 5. Validate

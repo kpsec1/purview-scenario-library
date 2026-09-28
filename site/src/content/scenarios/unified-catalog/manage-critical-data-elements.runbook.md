@@ -23,8 +23,8 @@ parent: "unified-catalog/manage-critical-data-elements"
 
 ```powershell
 # 1. Dry run - reports every change, makes none (still performs read-only lookups against the
-#    live tenant, including the Data Map column-resolution call, to accurately report
-#    create-vs-update - see Section 11)
+# live tenant, including the Data Map column-resolution call, to accurately report
+# create-vs-update - see Section 11)
 ./deploy/New-CriticalDataElement.ps1 `
     -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
     -DataMapEndpoint 'https://api.purview-service.microsoft.com' `

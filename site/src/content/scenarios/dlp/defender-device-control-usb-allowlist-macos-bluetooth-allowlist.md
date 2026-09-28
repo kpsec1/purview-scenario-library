@@ -41,7 +41,7 @@ Neither is acceptable to a security team trying to run a policy pilot without ge
 tickets. This fragment closes that gap the same way the rest of this control's approved-device
 model works: a small, named, audited allowlist - not a blanket carve-out.
 
-The same regulatory drivers the parent scenario cites (GDPR Article 32, HIPAA 45 CFR §164.312
+The same regulatory drivers the parent scenario cites (GDPR Article 32, HIPAA 45 CFR 164.312
 media controls, PCI DSS Requirement 3, SOC 2 CC6) apply unchanged; this fragment doesn't introduce
 a new compliance citation, it removes an operational blocker to actually running the existing
 control's Bluetooth coverage in enforce mode.

@@ -20,7 +20,7 @@ parent: "dlp/accepted-domains-hygiene-check"
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only, Exchange Online PowerShell - see docs/automation-surface.md Sec 3)
+# 1. Connect (certificate app-only, Exchange Online PowerShell - see Automation surface Sec 3)
 Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
 # 2. Copy and edit the known-domains config for your tenant
@@ -47,8 +47,8 @@ Copy-Item ./deploy/KnownDomains.sample.json ./deploy/KnownDomains.json
     -KnownDomainsConfigPath ./deploy/KnownDomains.json -CheckLive
 
 # 6. Schedule step 4 to run on a recurring cadence (daily recommended - see Sec 8).
-#    This scenario ships no scheduler-specific code; wire it into your own Azure Automation
-#    runbook, Azure Function timer trigger, or equivalent (docs/automation-surface.md Sec 6).
+# This scenario ships no scheduler-specific code; wire it into your own Azure Automation
+# runbook, Azure Function timer trigger, or equivalent (Automation surface Sec 6).
 ```
 
 Every finding category, its severity model, and the baseline/drift mechanics are fully documented in

@@ -155,7 +155,7 @@ means for decommissioning.
 
 `deploy/policy/hipaa-hitech-assessment-manifest.json`'s `controlCrosswalk` maps HIPAA/HITECH's own
 published rule structure - the **Privacy Rule**, the **Security Rule**'s three safeguard categories
-(**Administrative**, **Physical**, **Technical** - 45 CFR §section 164.308/164.310/164.312), and the
+(**Administrative**, **Physical**, **Technical** - 45 CFR section 164.308/164.310/164.312), and the
 **Breach Notification Rule** - against **this library's own scenarios**. This is the same category
 of claim every sibling scenario's the design notes makes and bounds identically: Microsoft's proprietary
 per-improvement-action-to-control mapping is rendered inside the Compliance Manager UI per action,
@@ -223,7 +223,7 @@ goals:
 
 ```mermaid
 flowchart TD
-    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - README.md Section 5] --> B["HIPAA/HITECH assessment<br/>Group: Security & Compliance Assessments (joined or created)<br/>Scope: Microsoft 365"]
+    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - this page Section 5] --> B["HIPAA/HITECH assessment<br/>Group: Security & Compliance Assessments (joined or created)<br/>Scope: Microsoft 365"]
     C["Already-deployed HIPAA-relevant scenarios in this tenant:<br/>Info Protection labeling / DLP exfil block / Endpoint DLP /<br/>Legacy-auth block / IRM / Audit / Compromised-account response"] -.built-in automation<br/>feeds technical-action signals<br/>tenant-wide, any group.-> B
     D[Contributors/Assessors] -->|manual work: evidence,<br/>notes, test status,<br/>Excel Action Update wizard| B
     E["ISO/IEC 27001:2022, PCI DSS v4.0,<br/>and/or SOC 2 assessments<br/>(if deployed, same group)"] <-.nontechnical improvement-action<br/>updates sync within the shared group only.-> B

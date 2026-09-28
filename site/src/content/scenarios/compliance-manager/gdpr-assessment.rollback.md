@@ -41,8 +41,7 @@ considerations specific to this scenario:
 - **Export a report first** (the validation steps, "Export an assessment report") - the exported Excel
   file is the only durable record of this assessment's state once it's deleted. Archive this export
   (and the audit-trail CSV) per the organization's own Article 5(1)(e) record-retention schedule
- - GDPR does not prescribe a fixed number of years the way HIPAA's 45 CFR §
-  164.316(b)(2)(i) does, so there is no single correct retention period to apply here; follow the
+ - GDPR does not prescribe a fixed number of years the way HIPAA's 45 CFR 164.316(b)(2)(i) does, so there is no single correct retention period to apply here; follow the
   organization's own documented schedule instead.
 - **The group itself is never deleted**, regardless of how many assessments remain in it - groups
   can't be deleted at all. If any of *Assess Against ISO/IEC 27001:2022*, *PCI DSS v4.0 Assessment*, *SOC 2 Assessment*, and/or *HIPAA/HITECH Assessment* are also in the `Security &

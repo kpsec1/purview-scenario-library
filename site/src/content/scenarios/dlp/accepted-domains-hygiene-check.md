@@ -61,7 +61,7 @@ flowchart TD
         BL[Baseline snapshot JSON]
     end
 
-    AD --> C1{"Known-domains check<br/>(§3 design.md)"}
+    AD --> C1{"Known-domains check<br/>"}
     KD --> C1
     C1 -- "Required domain missing,<br/>or DomainType mismatch" --> F1["MissingExpectedDomain /<br/>DomainTypeMismatch finding"]
 
@@ -72,7 +72,7 @@ flowchart TD
     AD --> C3{ExternalRelay observed?}
     C3 -- "Yes - unexpected on a<br/>cloud-only tenant" --> F3[ExternalRelayObserved finding]
 
-    AD --> C4{"Baseline diff<br/>(design.md Sec 4)"}
+    AD --> C4{"Baseline diff<br/>(the design notes Sec 4)"}
     BL --> C4
     C4 -- Added/Removed/Changed --> F4["Drift findings<br/>(this run vs. last run)"]
 
@@ -80,7 +80,7 @@ flowchart TD
 
     F1 & F2 & F3 & F4 & F5 --> R["Findings JSON + drift-log CSV<br/>(replace-by-RunId)"]
     AD --> BLNEW[New baseline snapshot<br/>overwrites Prior]
-    R -.alert.-> SOC["SOC / DLP operations team<br/>(scheduled-run exit code, §8)"]
+    R -.alert.-> SOC["SOC / DLP operations team<br/>(scheduled-run exit code, operations and tuning)"]
 ```
 
 This scenario introduces **no new Exchange or Purview object** - see the rollback runbook. Every arrow into

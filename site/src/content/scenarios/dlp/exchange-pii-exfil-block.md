@@ -44,7 +44,7 @@ answer that doesn't depend on a label's side effects - this scenario is that ans
 flowchart TD
     A[Outbound Exchange email] --> B{"Contains SSN or<br/>Credit Card Number,<br/>count >= 1?"}
     B -- No --> Z[No action]
-    B -- Yes --> C{Recipient scope<br/>bifurcated per-recipient<br/>if mixed - see §11}
+    B -- Yes --> C{Recipient scope<br/>bifurcated per-recipient<br/>if mixed - see the known limitations}
     C -- Internal recipient --> D["Rule: Audit only<br/>alert + incident report,<br/>message delivered"]
     C -- External recipient --> E{Sender is a member of<br/>the exception group?<br/>-Action Block only}
     E -- Yes --> F[Rule 0: Block with<br/>justification override<br/>- logged if overridden]
@@ -66,7 +66,7 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| DLP for Exchange Online | **Microsoft 365 E3** (basic) | This scenario uses only built-in sensitive information types and standard conditions - no advanced classification, no Teams - so it does not require the E5-tier uplift [Licensing matrix](/docs/licensing-matrix/) §DLP row notes for advanced classification/Teams. |
+| DLP for Exchange Online | **Microsoft 365 E3** (basic) | This scenario uses only built-in sensitive information types and standard conditions - no advanced classification, no Teams - so it does not require the E5-tier uplift [Licensing matrix](/docs/licensing-matrix/) DLP row notes for advanced classification/Teams. |
 | `-Action Encrypt` mode (Microsoft Purview Message Encryption / `EncryptRMSTemplate`) | Included in the same **Office 365 / Microsoft 365 Enterprise E3 or E5** entitlement - no extra license for the basic Encrypt-Only/Do Not Forward templates this scenario uses | Only the **Advanced** Message Encryption add-on (expiration, revocation, custom branding) needs a higher tier - not used by this scenario. |
 | Azure Rights Management activated | Usually active by default for eligible plans | Prerequisite for `-Action Encrypt` only. Confirm with `Get-IRMConfiguration` (`AzureRMSLicensingEnabled = $true`); see the design notes and Microsoft's "Set up Message Encryption" guide. |
 | Role to author/edit the DLP policy and rules | **Compliance Administrator**, **Compliance Data Administrator**, or a custom role group with the **DLP Compliance Management** role | [RBAC model, section 3](/docs/rbac-model/#3-microsoft-entra-roles-that-map-into-purview), DLP row. |
@@ -81,7 +81,7 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
 
 - **No PAYG component for M365 mail.** Base DLP for Exchange is included at **E3**, not E5 - this
   scenario deliberately avoids advanced classification or Teams conditions that would raise the
-  tier, per [Licensing matrix](/docs/licensing-matrix/) §DLP row. This is a genuine cost advantage over
+  tier, per [Licensing matrix](/docs/licensing-matrix/) DLP row. This is a genuine cost advantage over
   *PCI Teams Card-Data Exfiltration Block*, which needs E5 for Teams DLP.
 - **`-Action Encrypt` adds no incremental license cost** for the basic templates this scenario
   uses (Encrypt-Only / Do Not Forward) - included in the same E3/E5 entitlement as base Message

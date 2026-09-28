@@ -30,7 +30,7 @@ parent: "data-lineage/end-to-end-lineage-validation"
 
 ```powershell
 # 1. Copy the assets' real Qualified Name values from the portal into the definition file first -
-#    see deploy/lineage/customer-risk-summary-lineage.json and README.md Section 11.
+# see deploy/lineage/customer-risk-summary-lineage.json and this page Section 11.
 
 # 2. Deploy (dry run first - reports which links already exist and which would be created)
 ./deploy/New-CustomLineageRelationship.ps1 `

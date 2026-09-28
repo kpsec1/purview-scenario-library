@@ -7,7 +7,7 @@ parent: "information-barriers/sharepoint-onedrive-enablement-and-site-associatio
 ### PowerShell path
 
 ```powershell
-# Connect both surfaces (certificate app-only preferred - docs/automation-surface.md Section 3)
+# Connect both surfaces (certificate app-only preferred - Automation surface Section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 Connect-SPOService -Url https://contoso-admin.sharepoint.com -ClientId $AppId -Certificate $Cert
 

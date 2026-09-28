@@ -24,13 +24,13 @@ parent: "insider-risk/irm-case-escalation-to-ediscovery"
 
 ```powershell
 # 1. Fill in deploy/policy/escalation-link-definition.json with the IRM case ID, the escalated
-#    user's UPN, any alert IDs from the IRM case's Alerts tab, and the exact case name typed in
-#    portal step 2.
+# user's UPN, any alert IDs from the IRM case's Alerts tab, and the exact case name typed in
+# portal step 2.
 
-# 2. Connect (app-only, certificate -- see docs/automation-surface.md §3).
+# 2. Connect (app-only, certificate -- see Automation surface, section 3).
 
 # 3. Dry run -- confirms the case is findable and reports every provenance/custodian/hold action
-#    this run would take, without calling any mutating Graph endpoint.
+# this run would take, without calling any mutating Graph endpoint.
 ./deploy/Confirm-EdiscoveryEscalationLink.ps1 `
     -DefinitionPath ./deploy/policy/escalation-link-definition.json `
     -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint -WhatIf
@@ -46,7 +46,7 @@ parent: "insider-risk/irm-case-escalation-to-ediscovery"
     -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 6. From here, the case is a normal eDiscovery (Premium) case -- proceed with the sibling
-#    scenario's search/review-set/export scripts, unmodified:
+# scenario's search/review-set/export scripts, unmodified:
 ../ediscovery/premium-legal-hold-and-export/deploy/New-EdiscoverySearchReviewSetExport.ps1 `
     -DefinitionPath ../ediscovery/premium-legal-hold-and-export/deploy/policy/ediscovery-case-definition.json `
     -CaseId $caseId -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint

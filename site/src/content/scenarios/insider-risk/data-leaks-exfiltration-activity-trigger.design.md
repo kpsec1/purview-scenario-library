@@ -78,10 +78,10 @@ policy yet** actually needs.
    materially stronger single-select signal than the sibling's original framing, though still
    short of an explicit "cannot combine" statement on its own. A later 2026-09-27 maintenance pass
    closed the question definitively: a direct fetch of "Create and manage Insider Risk Management
-   policies" §Policy health found the notification-fix guidance twice using the singular, definite
+   policies" Policy health found the notification-fix guidance twice using the singular, definite
    "**the** triggering event" for this template ("either select an active DLP policy or 'User
    performs an exfiltration activity' as the triggering event"), and "Learn about Insider Risk
-   Management policy templates" §Policy template prerequisites and triggering events joins the two
+   Management policy templates" Policy template prerequisites and triggering events joins the two
    mechanisms with "**OR**" rather than the risky/priority-users family's own "and/or" phrasing -
    confirming a policy has one triggering-event configuration, not two independently-enableable
    ones. the configuration reference and the known limitations and the project backlog updated to match; *Data Leaks (base template)* (the configuration reference) and
@@ -132,7 +132,7 @@ they match.
 | Worked threshold example cited | The Microsoft-published SharePoint-download 10/20/30-events/day (low/medium/high) illustration | Explicitly sourced as Microsoft's own worked example, not this scenario's invented default (why this matters goal 3) |
 | Scoring-indicator selection | Office indicators (primary, built-in) + Cumulative exfiltration detection (default-on) + optional Communication Compliance/generative-AI/cloud indicators | Identical to the DLP-trigger sibling - same template, same scoring surface (why this matters goal 1) |
 | New script scope | A validation script covering the Graph-side scope check (reused logic) plus a manual checklist for this trigger's own configuration points - no new *deploy*-time mutating or readiness-check script | This trigger path has no DLP policy to check readiness against, unlike the sibling scenario's genuinely new contribution (why this matters goal 5) |
-| Whether both triggering events (DLP-policy match and exfiltration activity) can be combined | **Resolved: no - one triggering-event configuration per policy, set to either mechanism** | why this matters goal 6 - confirmed 2026-09-27 via a direct Microsoft Learn fetch of "Create and manage Insider Risk Management policies" §Policy health (singular "the triggering event" in either/or fix guidance) and "Learn about Insider Risk Management policy templates" §Policy template prerequisites and triggering events ("OR" between the two mechanisms) |
+| Whether both triggering events (DLP-policy match and exfiltration activity) can be combined | **Resolved: no - one triggering-event configuration per policy, set to either mechanism** | why this matters goal 6 - confirmed 2026-09-27 via a direct Microsoft Learn fetch of "Create and manage Insider Risk Management policies" Policy health (singular "the triggering event" in either/or fix guidance) and "Learn about Insider Risk Management policy templates" Policy template prerequisites and triggering events ("OR" between the two mechanisms) |
 | Max-users cap | **15,000**, identical to and shared cumulatively with the DLP-trigger sibling (same template) | Confirmed via the same Microsoft Learn "Limits in Insider Risk Management" table the sibling scenario already cites - this is a per-template cap, not a per-trigger-event cap |
 | Population mechanism | A plain Entra group (or groups), resolved via the reused base-template scope script | Identical reasoning to the DLP-trigger sibling |
 | Alert-export script | Reuse the plain, non-MDE-joining `departing-employee-data-theft/deploy/Export-InsiderRiskAlerts.ps1` | Same reasoning as the DLP-trigger sibling - no Defender for Endpoint signal to join against |

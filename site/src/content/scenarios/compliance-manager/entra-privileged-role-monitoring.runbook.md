@@ -19,20 +19,20 @@ parent: "compliance-manager/entra-privileged-role-monitoring"
 ### Script path - the audit-trail export (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md §3)
+# 1. Connect (certificate app-only - see Automation surface, section 3)
 Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 2. Dry run - queries the last 24 hours, reports what would be merged, writes nothing
 ./deploy/Export-EntraPrivilegedRoleAuditTrail.ps1 -OutputCsvPath './out/entra-privileged-role-audit-trail.csv' -WhatIf
 
 # 3. First real run - a one-time backfill covering the tenant's actual retention window
-#    (30 days shown; use 7 on Entra ID Free - see Section 11)
+# (30 days shown; use 7 on Entra ID Free - see Section 11)
 ./deploy/Export-EntraPrivilegedRoleAuditTrail.ps1 `
     -StartDate (Get-Date).AddDays(-30) -EndDate (Get-Date) `
     -OutputCsvPath './out/entra-privileged-role-audit-trail.csv'
 
 # 4. Recurring run - schedule DAILY, not weekly (Section 8 explains why this cadence differs
-#    from the Compliance Manager sibling script's weekly-safe default)
+# from the Compliance Manager sibling script's weekly-safe default)
 ./deploy/Export-EntraPrivilegedRoleAuditTrail.ps1 -OutputCsvPath './out/entra-privileged-role-audit-trail.csv'
 
 # 5. Validate
@@ -57,7 +57,7 @@ registration (with the two additional permissions from the prerequisites):
 Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 2. Dry run - discovers the current monitored group set, queries the last 24 hours, reports what
-#    would be merged, writes nothing
+# would be merged, writes nothing
 ./deploy/Export-RoleAssignableGroupMembershipAuditTrail.ps1 -OutputCsvPath './out/role-assignable-group-membership-audit-trail.csv' -WhatIf
 
 # 3. First real run - a one-time backfill covering the tenant's actual retention window

@@ -42,8 +42,8 @@ stronger, still-honest position for a board-level or audit narrative.
 
 ```mermaid
 flowchart TD
-    subgraph Detect["Portal-configured detection (not scriptable - §6)"]
-        CC["Communication Compliance indicator:\ndetect Credit Card Number SIT in messages\n(the ONLY documented path covering Teams -\nTeams DLP alerts are explicitly unsupported\nas an IRM trigger, see §11)"]
+    subgraph Detect["Portal-configured detection (not scriptable - the configuration reference)"]
+        CC["Communication Compliance indicator:\ndetect Credit Card Number SIT in messages\n(the ONLY documented path covering Teams -\nTeams DLP alerts are explicitly unsupported\nas an IRM trigger, see the known limitations)"]
         IRM["New IRM policy 'IRM-PCI-Card-Data-Drip-Exfiltration'\n(Data leaks template)\nTrigger: user performs an exfiltration activity\nCumulative exfiltration detection: ON"]
         CC -->|"scored Communication Risk activity\n(~daily evaluation, not real-time)"| IRM
     end

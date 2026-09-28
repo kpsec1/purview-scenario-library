@@ -8,10 +8,10 @@ parent: "ediscovery/search-and-purge-teams-messages"
 
 ```powershell
 # 1. Resolve target mailboxes first (not this scenario's job):
-#    - Standard/shared channel -> parent team mailbox via
-#      ../teams-group-hold-resolution/deploy/Resolve-TeamsGroupHoldLocations.ps1
-#    - 1:1 / group chat -> the participants' own known mailbox addresses
-#    - Private channel -> see README Section 11's VERIFY before relying on a single "dedicated mailbox"
+# - Standard/shared channel -> parent team mailbox via
+# ../teams-group-hold-resolution/deploy/Resolve-TeamsGroupHoldLocations.ps1
+# - 1:1 / group chat -> the participants' own known mailbox addresses
+# - Private channel -> see page Section 11's VERIFY before relying on a single "dedicated mailbox"
 
 # 2. Create (or find) the case and search, bind target mailboxes, then estimate.
 ./deploy/New-TeamsMessagePurgeSearch.ps1 -DefinitionPath ./deploy/policy/teams-message-purge-search-definition.sample.json `
@@ -24,11 +24,11 @@ parent: "ediscovery/search-and-purge-teams-messages"
 # search.contentQuery (add a date range or distinctive keyword) and re-run (idempotent).
 
 # 3. MANUAL, not scripted: identify and remove any hold or retention policy on every target
-#    mailbox the estimate's Top Locations reported -- an active hold BLOCKS this purge entirely
-#    (it does not just hide the item, unlike the mailbox sibling). Record which holds you removed
-#    so you can reapply them in step 6.
+# mailbox the estimate's Top Locations reported -- an active hold BLOCKS this purge entirely
+# (it does not just hide the item, unlike the mailbox sibling). Record which holds you removed
+# so you can reapply them in step 6.
 
-# 4. Purge -- ALWAYS requires -ConfirmPermanentDelete, for EITHER -PurgeType value (README Section 2).
+# 4. Purge -- ALWAYS requires -ConfirmPermanentDelete, for EITHER -PurgeType value (page Section 2).
 ./deploy/Invoke-TeamsMessagePurge.ps1 -CaseId $caseId -SearchId $searchId -PurgeType Recoverable `
     -ConfirmPermanentDelete -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint -WhatIf
 

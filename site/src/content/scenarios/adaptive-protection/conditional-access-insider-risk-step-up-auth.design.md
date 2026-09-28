@@ -69,13 +69,13 @@ scenario's default configuration stays cross-checkable against Microsoft's own g
 flowchart TD
     IRM["Existing Insider Risk Management policy\n[not created by this scenario]"] -->|alerts / activity insights| APEngine["Adaptive Protection engine\n(ML-computed insider risk levels)\n[portal-only: enable + define\nrisk-level thresholds]"]
     APEngine -->|"assigns Elevated / Moderate / Minor\nrisk level to a user"| RiskLevel[("User's current\ninsider risk level")]
-    RiskLevel -.->|"already built - broadest response"| ElevatedSibling["scenarios/adaptive-protection/\nconditional-access-insider-risk-block\n(Elevated: block sign-in entirely)"]
+    RiskLevel -.->|"already built - broadest response"| ElevatedSibling["Adaptive Protection\nconditional-access-insider-risk-block\n(Elevated: block sign-in entirely)"]
     RiskLevel -->|"Moderate risk\n+ signing in to Microsoft Admin Portals"| ModeratePolicy["Conditional Access Policy:\n'Adaptive Protection - Require Terms of Use\nfor Moderate Insider Risk (Custom)'\n(deploy/New-InsiderRiskStepUpPolicies.ps1)"]
     ModeratePolicy -->|"Moderate risk\n+ not excluded (break-glass)"| ToU["Require Terms of Use\nacceptance (grantControls.termsOfUse)"]
     RiskLevel -->|"Minor risk\n+ any resource"| MinorPolicy["Conditional Access Policy:\n'Adaptive Protection - Insights for\nMinor Insider Risk (Custom)'\n(same deploy script)\npermanently Report-only"]
     MinorPolicy -->|"evaluated, never enforced"| Insights["Entra sign-in logs /\nConditional Access Insights and reporting\n(visibility only)"]
     ToU --> Reports["Entra sign-in logs /\nConditional Access Insights and reporting"]
-    ToUAgreement[("Terms of Use agreement\n(PDF-backed, portal- or delegated-auth-created\n- NOT scriptable app-only, see design.md S7)")] -.->|"grantControls.termsOfUse\nreferences this agreement's id"| ModeratePolicy
+    ToUAgreement[("Terms of Use agreement\n(PDF-backed, portal- or delegated-auth-created\n- NOT scriptable app-only, see the design notes S7)")] -.->|"grantControls.termsOfUse\nreferences this agreement's id"| ModeratePolicy
 ```
 
 ## 5. Data flow

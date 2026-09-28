@@ -43,8 +43,8 @@ parent: "data-quality/connection-and-scorecard-alerts"
     -AlertDefinitionPath './deploy/alerts/customer-master-score-alerts.json'
 
 # 3b. (Optional) Alerts - deploy the product-level companion example instead of/alongside 3
-#     One alert covers every asset in the 'Customer 360' data product (dataAssetId omitted) -
-#     see the Configuration reference (Section 6) and Section 11 for the scope trade-off.
+# One alert covers every asset in the 'Customer 360' data product (dataAssetId omitted) -
+# see the Configuration reference (Section 6) and Section 11 for the scope trade-off.
 ./deploy/New-DataQualityAlert.ps1 `
     -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `

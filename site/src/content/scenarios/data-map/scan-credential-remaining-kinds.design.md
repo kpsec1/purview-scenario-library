@@ -110,7 +110,7 @@ sequenceDiagram
     end
 
     Script->>API: PUT /scan/credentials/{name} {" kind, properties.typeProperties "}
-    Note right of Script: Body shape depends entirely on kind - see README.md Section 6
+    Note right of Script: Body shape depends entirely on kind - see this page Section 6
     API-->>Script: 200/201 Credential
 ```
 

@@ -54,8 +54,8 @@ parent: "communication-compliance/financial-regulatory-supervision"
 ### Script path - the audit-trail and evidence-of-review export (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md Section 3). The connecting identity
-#    needs Exchange.ManageAsApp PLUS the View-Only Audit Logs Exchange Online role (docs/rbac-model.md Section 6).
+# 1. Connect (certificate app-only - see Automation surface Section 3). The connecting identity
+# needs Exchange.ManageAsApp PLUS the View-Only Audit Logs Exchange Online role (RBAC model Section 6).
 Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
 # 2. Dry run - queries the last 7 days across all 3 categories, reports what would be merged, writes nothing
@@ -69,7 +69,7 @@ Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDom
     -AuditTrailCsvPath './out/finra-audit-trail.csv' `
     -EvidenceOfReviewCsvPath './out/finra-evidence-of-review.csv'
 
-# 4. Recurring run (schedule daily - overlapping windows are safe, see design.md Section 8)
+# 4. Recurring run (schedule daily - overlapping windows are safe, see the design notes Section 8)
 ./deploy/Export-FinraSupervisionEvidence.ps1 `
     -AuditTrailCsvPath './out/finra-audit-trail.csv' `
     -EvidenceOfReviewCsvPath './out/finra-evidence-of-review.csv'

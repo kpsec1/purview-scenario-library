@@ -33,7 +33,7 @@ apply unchanged to `AccountKey`, `ConsumerKeyAuth`, and `DelegatedAuth` (skip th
     -KeyVaultConnectionName 'kv-contoso-purview' -SecretName 'adls-storage-account-key' -WhatIf
 
 # AmazonARN - Amazon S3. No Key Vault connection at all; the role must already trust Microsoft
-# (README.md Section 3/11 - external ID: scriptable via Get-AzPurviewAccount; Microsoft account ID:
+# (this page Section 3/11 - external ID: scriptable via Get-AzPurviewAccount; Microsoft account ID:
 # PORTAL-only, not this script).
 ./deploy/New-PurviewScanCredentialExtended.ps1 `
     -PurviewAccountName 'contoso-purview' -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `

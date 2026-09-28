@@ -30,7 +30,7 @@ PATCH, because JAMF's device control deployment path has no documented API to pa
 ## Why this matters
 
 Identical framing to both the base JAMF scenario and the Intune vendor-product-matching sibling -
-GDPR Article 32, HIPAA's 45 CFR §164.312 media controls, PCI DSS Requirement 3, and SOC 2 CC6 all
+GDPR Article 32, HIPAA's 45 CFR 164.312 media controls, PCI DSS Requirement 3, and SOC 2 CC6 all
 reference media/physical safeguards broadly enough to expect device-identity coverage regardless of
 whether a specific approved drive happens to expose a serial number. A tenant that deploys the base
 JAMF scenario but has any approved drive with no readable serial number has a real, disclosed gap in

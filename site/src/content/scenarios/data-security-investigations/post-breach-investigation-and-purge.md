@@ -82,7 +82,7 @@ flowchart TD
     DSI -->|"every action logged automatically"| UAL
     Audit -->|"Search-UnifiedAuditLog -Operations"| UAL
     Audit --> CSV
-    Audit -.->|"optional companion feed<br/>(README.md Section 8)"| NDJSON
+    Audit -.->|"optional companion feed<br/>(this page Section 8)"| NDJSON
     NDJSON -.-> SiemOut
 ```
 

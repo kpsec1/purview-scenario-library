@@ -29,9 +29,9 @@ parent: "ediscovery/search-and-purge-data-spillage"
     -CaseId $caseId -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 4. Only if a mailbox is on hold and step 2's estimate/validation still shows the item present:
-#    hand off to the priority-cleanup sibling, pointed at the same content (its own
-#    ContentMatchQuery, written in KeyQL, targeting the same content this scenario's KQL
-#    search.contentQuery matches).
+# hand off to the priority-cleanup sibling, pointed at the same content (its own
+# ContentMatchQuery, written in KeyQL, targeting the same content this scenario's KQL
+# search.contentQuery matches).
 ../../data-lifecycle-management/priority-cleanup-exchange-data-spillage/deploy/New-PriorityCleanupExchangePolicy.ps1 `
     -ConfigPath <a config whose ContentMatchQuery matches this scenario's search.contentQuery> -Simulate
 

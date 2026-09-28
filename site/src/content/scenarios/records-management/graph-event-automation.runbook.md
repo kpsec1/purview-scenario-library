@@ -5,7 +5,7 @@ parent: "records-management/graph-event-automation"
 ## Implementation steps
 
 ```powershell
-# Connect (app-only certificate preferred for a service integration - docs/automation-surface.md §3)
+# Connect (app-only certificate preferred for a service integration - Automation surface, section 3)
 Connect-MgGraph -Scopes 'RecordsManagement.ReadWrite.All'
 
 # 1. Dry run (real -WhatIf via the SDK) - shows the event type (and event, with -FireEvent) it would create

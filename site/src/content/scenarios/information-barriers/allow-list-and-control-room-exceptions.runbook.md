@@ -7,7 +7,7 @@ parent: "information-barriers/allow-list-and-control-room-exceptions"
 ### PowerShell path
 
 ```powershell
-# Connect (certificate app-only preferred - docs/automation-surface.md §3)
+# Connect (certificate app-only preferred - Automation surface, section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
 # 0. Prerequisite: segregate-trading-and-research must already be deployed (Trading/Research segments exist)

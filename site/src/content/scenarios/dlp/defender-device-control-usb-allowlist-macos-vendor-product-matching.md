@@ -27,7 +27,7 @@ scenario's existing serialNumber-matched devices, with no new Intune profile and
 ## Why this matters
 
 Identical regulatory framing to the parent scenario (`defender-device-control-usb-allowlist-macos/
-why this matters) - GDPR Article 32, HIPAA's 45 CFR §164.312 media controls, PCI DSS Requirement 3, and
+why this matters) - GDPR Article 32, HIPAA's 45 CFR 164.312 media controls, PCI DSS Requirement 3, and
 SOC 2 CC6. This fragment closes a specific operational gap in that control's own coverage: a tenant
 that cannot approve a legitimate IT-issued drive because it has no serial number is left choosing
 between an unapproved control gap (leaving the drive functionally denied, prompting shadow-IT

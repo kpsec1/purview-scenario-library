@@ -60,7 +60,7 @@ parent: "dspm-for-ai/copilot-sensitive-data-exposure"
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md §3)
+# 1. Connect (certificate app-only - see Automation surface, section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
 # 2. Dry run - reports every change, makes none

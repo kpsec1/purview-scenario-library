@@ -8,7 +8,7 @@ parent: "ediscovery/gdpr-dsr-fulfillment"
 
 ```powershell
 # 1. Intake - creates the case/custodian/userSource/search, computes SLA dates, writes the ledger.
-#    -WhatIf first: reports every Graph action and the ledger write, mutates nothing.
+# -WhatIf first: reports every Graph action and the ledger write, mutates nothing.
 ./deploy/New-DsrRequest.ps1 -DefinitionPath ./deploy/policy/dsr-request-definition.sample.json `
     -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint -WhatIf
 
@@ -16,8 +16,8 @@ parent: "ediscovery/gdpr-dsr-fulfillment"
     -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 1b. (Optional, Access/Portability where completeness matters) also search tenant-wide for
-#     messages ABOUT the data subject stored in other people's mailboxes -- content the primary
-#     custodian-scoped search cannot see (reviews.md Red Team finding 1):
+# messages ABOUT the data subject stored in other people's mailboxes -- content the primary
+# custodian-scoped search cannot see (the Red Team review, finding 1):
 ./deploy/New-DsrRequest.ps1 -DefinitionPath ./deploy/policy/dsr-request-definition.sample.json `
     -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint -IncludeParticipantSearch
 
@@ -37,7 +37,7 @@ parent: "ediscovery/gdpr-dsr-fulfillment"
     -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint -WhatIf
 
 # 3c. Rectification / Restriction / Objection - no script; correct the record in its system of
-#     record, or make the licensing/service decision the Discovery search's results inform (§6).
+# record, or make the licensing/service decision the Discovery search's results inform.
 
 # 4. Update the ledger's Status as the request progresses, and/or record an extension:
 ./deploy/New-DsrRequest.ps1 -DefinitionPath ./deploy/policy/dsr-request-definition.sample.json `
@@ -49,7 +49,7 @@ parent: "ediscovery/gdpr-dsr-fulfillment"
     -ApplyExtension -ExtensionReason 'High request volume this quarter - Article 12(3)'
 
 # 5. SLA check (run ad hoc or on a schedule) - reports every open request's days-remaining/overdue
-#    status; exits non-zero on any breach.
+# status; exits non-zero on any breach.
 ./validate/Test-DsrRequest.ps1 -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 ```
 

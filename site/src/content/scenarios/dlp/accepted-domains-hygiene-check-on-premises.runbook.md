@@ -17,17 +17,17 @@ parent: "dlp/accepted-domains-hygiene-check-on-premises"
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect to the on-premises Exchange organization via remote PowerShell (design.md Sec 3/8).
-#    Run this on a domain-joined machine with network line-of-sight to the CAS/Mailbox server.
+# 1. Connect to the on-premises Exchange organization via remote PowerShell (the design notes Sec 3/8).
+# Run this on a domain-joined machine with network line-of-sight to the CAS/Mailbox server.
 $OnPremCred = Get-Credential
 $OnPremSession = New-PSSession -ConfigurationName Microsoft.Exchange `
     -ConnectionUri "http://$OnPremServerFqdn/PowerShell/" -Authentication Kerberos -Credential $OnPremCred
 Import-PSSession $OnPremSession -DisableNameChecking
 # Do NOT also import a Connect-ExchangeOnline session into this same process unless you re-import
-# one of the two with -Prefix (design.md Sec 3) - both export a cmdlet named Get-AcceptedDomain.
+# one of the two with -Prefix (the design notes Sec 3) - both export a cmdlet named Get-AcceptedDomain.
 
 # 2. Reuse the SAME known-domains config the parent scenario uses - do not create a second copy.
-#    (If you haven't set up the parent scenario yet, copy and edit its sample first - parent README.md Sec 5.)
+# (If you haven't set up the parent scenario yet, copy and edit its sample first - parent this page Sec 5.)
 
 # 3. Dry run - reports every on-premises finding, writes nothing
 ./deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1 `
@@ -43,7 +43,7 @@ Import-PSSession $OnPremSession -DisableNameChecking
     -DriftLogPath './deploy/out/onprem-accepted-domains-drift-log.csv'
 
 # 5. (Optional, recommended for a hybrid organization) Re-run with cross-environment reconciliation, once
-#    the parent scenario has produced at least one baseline of its own:
+# the parent scenario has produced at least one baseline of its own:
 ./deploy/Export-OnPremisesAcceptedDomainsHygieneReport.ps1 `
     -KnownDomainsConfigPath '../accepted-domains-hygiene-check/deploy/KnownDomains.json' `
     -BaselinePath './deploy/out/onprem-accepted-domains-baseline.json' `
@@ -52,7 +52,7 @@ Import-PSSession $OnPremSession -DisableNameChecking
     -IncludeAuditAttribution
 
 # 6. Validate the report files (add -CloudBaselinePath to also verify CrossEnvironmentMismatch
-#    findings against a live comparison, once the cloud baseline exists)
+# findings against a live comparison, once the cloud baseline exists)
 ./validate/Test-OnPremisesAcceptedDomainsHygieneReport.ps1 `
     -BaselinePath './deploy/out/onprem-accepted-domains-baseline.json' `
     -DriftLogPath './deploy/out/onprem-accepted-domains-drift-log.csv' `
@@ -60,9 +60,9 @@ Import-PSSession $OnPremSession -DisableNameChecking
     -CloudBaselinePath '../accepted-domains-hygiene-check/deploy/out/accepted-domains-baseline.json'
 
 # 7. Schedule step 4/5 on a recurring cadence, independently of the parent scenario's own schedule
-#    (design.md Sec 6 - separate files, no contention). This scenario ships no scheduler-specific
-#    code; wire it into a Windows Task Scheduler task or Azure Automation hybrid runbook worker with
-#    network access to the on-premises server - see Sec 3's Kerberos/network-reachability note.
+# (the design notes Sec 6 - separate files, no contention). This scenario ships no scheduler-specific
+# code; wire it into a Windows Task Scheduler task or Azure Automation hybrid runbook worker with
+# network access to the on-premises server - see Sec 3's Kerberos/network-reachability note.
 ```
 
 Every finding category, its severity model, and the baseline/drift mechanics are fully documented in

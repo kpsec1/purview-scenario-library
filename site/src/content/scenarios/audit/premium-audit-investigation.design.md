@@ -52,7 +52,7 @@ sequenceDiagram
         Script->>Graph: GET /security/auditLog/queries/{id}
         Graph-->>Script: status (notStarted/running -> succeeded/failed)
     end
-    Script->>Graph: GET /security/auditLog/queries/{id}/records  (+ @odata.nextLink paging)
+    Script->>Graph: GET /security/auditLog/queries/{id}/records (+ @odata.nextLink paging)
     Graph->>UAL: read matching records
     Graph-->>Script: auditLogRecord page(s)
     Script->>Script: export CSV (key fields) + JSON (full auditData) + operation summary

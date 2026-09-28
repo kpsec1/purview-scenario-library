@@ -29,7 +29,7 @@ OMA-URI/XML mechanism.
 ## Why this matters
 
 Identical regulatory framing to the Windows sibling (`defender-device-control-usb-allowlist/
-why this matters) - GDPR Article 32, HIPAA's 45 CFR §164.312 media controls, PCI DSS Requirement 3,
+why this matters) - GDPR Article 32, HIPAA's 45 CFR 164.312 media controls, PCI DSS Requirement 3,
 and SOC 2 CC6 all reference media/physical safeguards broadly enough to expect device-identity
 coverage regardless of endpoint operating system. A tenant that deploys the Windows sibling alone
 and tells an auditor "no unapproved USB storage device, period" is materially overclaiming if any

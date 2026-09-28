@@ -178,7 +178,7 @@ rather than stretched to look like coverage that doesn't exist.
 
 ```mermaid
 flowchart TD
-    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - README.md Section 5] --> B["PCI DSS v4.0 assessment<br/>Group: Security & Compliance Assessments (joined or created)<br/>Scope: Microsoft 365"]
+    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - this page Section 5] --> B["PCI DSS v4.0 assessment<br/>Group: Security & Compliance Assessments (joined or created)<br/>Scope: Microsoft 365"]
     C["Already-deployed PCI-relevant scenarios in this tenant:<br/>DLP PCI Teams Part 1+2 / Info Protection / Endpoint DLP /<br/>Adaptive Protection / IRM / Audit"] -.built-in automation<br/>feeds technical-action signals<br/>tenant-wide, any group.-> B
     D[Contributors/Assessors] -->|manual work: evidence,<br/>notes, test status,<br/>Excel Action Update wizard| B
     E["ISO/IEC 27001:2022 assessment<br/>(assess-against-iso27001, if deployed)<br/>same group"] <-.nontechnical improvement-action<br/>updates sync within the shared group only.-> B

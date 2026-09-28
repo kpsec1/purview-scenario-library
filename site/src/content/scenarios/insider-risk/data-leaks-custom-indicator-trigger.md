@@ -54,7 +54,7 @@ mechanism's own specific value:
 
 ```mermaid
 flowchart TD
-    ThirdParty["Third-party CASB / DLP tool / SIEM\n(Microsoft's own example: Sentinel/Splunk\naggregating Salesforce + Dropbox activity)"] -->|"pre-aggregated CSV export\n(operator/scheduled job, outside this repo)"| CSV["Indicator-data CSV\nUserColumn, EventTimeColumn (ISO 8601),\noptional ThresholdColumn (Number),\noptional SourceColumn"]
+    ThirdParty["Third-party CASB / DLP tool / SIEM\n(Microsoft's own example: Sentinel/Splunk\naggregating Salesforce + Dropbox activity)"] -->|"pre-aggregated CSV export\n(operator/scheduled job, outside this library)"| CSV["Indicator-data CSV\nUserColumn, EventTimeColumn (ISO 8601),\noptional ThresholdColumn (Number),\noptional SourceColumn"]
     CSV --> Script["deploy/Send-InsiderRiskIndicatorRecord.ps1\n(schema/dedup/source-value validation,\nthen chunked upload, -WhatIf-capable)"]
     App["Entra app registration\n(reused: Register-HrConnectorApp.ps1)"] -->|"OAuth client-credentials token"| Script
     Script -->|"POST webhook.ingestion.office.com/api/signals\n?jobid=..."| Connector["Insider Risk Indicators (preview) connector\n[portal-authored - no write API]"]

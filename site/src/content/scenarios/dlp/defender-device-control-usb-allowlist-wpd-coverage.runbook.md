@@ -23,11 +23,11 @@ parent: "dlp/defender-device-control-usb-allowlist-wpd-coverage"
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md Section 3)
+# 1. Connect (certificate app-only - see Automation surface Section 3)
 Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 2. Edit deploy/config/wpd-device-control-coverage.sample.json (or copy it) with your approved
-#    WPD devices' Device Manager friendly names (see Section 6, Section 11).
+# WPD devices' Device Manager friendly names (see Section 6, Section 11).
 
 # 3. Dry run - reports the planned PATCH, makes no changes
 ./deploy/Add-WpdDeviceControlCoverage.ps1 `

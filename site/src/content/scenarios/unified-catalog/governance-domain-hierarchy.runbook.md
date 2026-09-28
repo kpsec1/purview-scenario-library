@@ -40,7 +40,7 @@ parent: "unified-catalog/governance-domain-hierarchy"
     -SkipDataEstateMapping
 
 # 3. After confirming data estate mapping behavior in a pilot tenant (Section 11), re-run without
-#    -SkipDataEstateMapping to reconcile the mapping in too, then publish
+# -SkipDataEstateMapping to reconcile the mapping in too, then publish
 ./deploy/New-GovernanceDomainHierarchy.ps1 `
     -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `

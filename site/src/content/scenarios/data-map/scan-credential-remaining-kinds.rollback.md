@@ -43,7 +43,7 @@ delete, and refuses if any are found (override with `-Force` only when they're a
 That reference check walks any `KeyVaultSecret`-shaped child of `properties.typeProperties` -
 it correctly finds `ConsumerKeyAuth`'s **two** references (`consumerSecret` and `password`) as two
 separate hits against the same connection, and correctly finds nothing for `AmazonARN`/
-`ManagedIdentity` credentials, which is the accurate answer for those two kinds (§ below).
+`ManagedIdentity` credentials, which is the accurate answer for those two kinds (below).
 
 ## `AmazonARN` and `ManagedIdentity`: nothing to check against a Key Vault connection
 

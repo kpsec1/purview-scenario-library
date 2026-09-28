@@ -124,7 +124,7 @@ sequenceDiagram
   disambiguation, not built here.
 - **DLP sensitive-content detail beyond what `DLP.All` carries.** Retrieving DLP policy match
   *content* (not just the event) needs the separate "Read DLP sensitive data" application permission
-  and is out of scope; the config flags this explicitly (§ page the configuration reference).
+  and is out of scope; the config flags this explicitly (page the configuration reference).
 
 ## 7. Forward hand-off (documented, not built)
 

@@ -66,7 +66,7 @@ flowchart TD
         Custom[["Custom policies from this scenario<br/>(highest priority wins per matching record)"]]
     end
     Live -.governs.-> Pipeline
-    Pipeline -.feeds.-> Search["scenarios/audit/premium-audit-investigation/<br/>(search & export - this scenario's<br/>data still has to BE there)"]
+    Pipeline -.feeds.-> Search["Forensic Investigation of a Compromised Account<br/>(search & export - this scenario's<br/>data still has to BE there)"]
 ```
 
 `New-AuditRetentionPolicy.ps1` authors policy **objects**; it never touches audit records

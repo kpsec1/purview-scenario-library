@@ -89,7 +89,7 @@ flowchart TD
     Policy -->|"scores in-scope user's\nDefender for Endpoint activity"| Alert["IRM Alert\n(pseudonymized by default)\ndetectionSource = microsoftInsiderRiskManagement"]
     MDEAlert["Underlying Defender for Endpoint alert\ndetectionSource = microsoftDefenderForEndpoint"] -.->|"same incidentId?\n(VERIFY - same open question\nas every sibling)"| Alert
     Alert --> Dashboard["Purview portal:\nInsider Risk Management ▸ Alerts"]
-    Alert -->|"Graph Security API\n/security/alerts_v2"| Export["../security-policy-violations-by-departing-users/\ndeploy/Export-SecurityViolationInsiderRiskAlerts.ps1\n(reused, not duplicated - see §5 Step 8)"]
+    Alert -->|"Graph Security API\n/security/alerts_v2"| Export["../security-policy-violations-by-departing-users/\ndeploy/Export-SecurityViolationInsiderRiskAlerts.ps1\n(reused, not duplicated - see step 8 of the implementation steps)"]
     MDEAlert -->|"Graph Security API\n/security/alerts_v2"| Export
     Export --> SIEM["SIEM / ticketing\n(Sentinel, ServiceNow, Splunk, ...)"]
 ```

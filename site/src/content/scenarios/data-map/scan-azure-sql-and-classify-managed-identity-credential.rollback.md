@@ -42,7 +42,7 @@ them:
 
 ```powershell
 # Remove the Purview credential object (only after confirming no other scan still references it -
-# see scan-credential-remaining-kinds/rollback.md for the full staged procedure and its own caveats).
+# see scan-credential-remaining-kinds/the rollback runbook for the full staged procedure and its own caveats).
 # Remove-PurviewScanCredential.ps1 is kind-agnostic and lives in the original parent scenario's
 # deploy/ folder - scan-credential-remaining-kinds reuses it unmodified rather than duplicating it.
 ../scan-credential-key-vault-backed/deploy/Remove-PurviewScanCredential.ps1 `

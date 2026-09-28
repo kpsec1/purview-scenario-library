@@ -33,7 +33,7 @@ or malicious employee, or simply careless handling, can move gigabytes of regula
 managed endpoint in seconds, with no email, chat, or cloud-sharing trail at all. This is a control
 area referenced across nearly every regulatory framework this library's organizations face - GDPR Article 32
 ("appropriate technical measures" against unauthorized disclosure), HIPAA Security Rule technical
-safeguards (45 CFR §164.312, media controls), PCI DSS Requirement 3 (protect stored cardholder
+safeguards (45 CFR 164.312, media controls), PCI DSS Requirement 3 (protect stored cardholder
 data) and SOC 2 CC6 (logical access controls) - without any one of them mandating this specific
 technical control by name. Organizations typically deploy this as a baseline data-loss-prevention control
 alongside, not instead of, the classification work in *Auto-Label Confidential PII in SharePoint & OneDrive* and the

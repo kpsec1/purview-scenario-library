@@ -74,12 +74,12 @@ moment their insider risk level is Elevated - a coarser but much wider net.
 
 ```mermaid
 flowchart TD
-    IRM["Existing Insider Risk Management policy\n(e.g. scenarios/insider-risk/\ndeparting-employee-data-theft,\nor Data leaks template)\n[not created by this scenario]"] -->|alerts / activity insights| APEngine["Adaptive Protection engine\n(ML-computed insider risk levels)\n[portal-only: enable + define\nrisk-level thresholds]"]
+    IRM["Existing Insider Risk Management policy\n(e.g. Insider Risk Management\ndeparting-employee-data-theft,\nor Data leaks template)\n[not created by this scenario]"] -->|alerts / activity insights| APEngine["Adaptive Protection engine\n(ML-computed insider risk levels)\n[portal-only: enable + define\nrisk-level thresholds]"]
     APEngine -->|"assigns Elevated / Moderate / Minor\nrisk level to a user"| RiskLevel[("User's current\ninsider risk level")]
     RiskLevel -->|"read at sign-in time via\nconditions.insiderRiskLevels\n(Microsoft Graph v1.0)"| CaPolicy["Conditional Access Policy:\n'Adaptive Protection - Block Elevated\nInsider Risk (Custom)'\n(deploy/New-InsiderRiskConditionalAccessPolicy.ps1)"]
     CaPolicy -->|"Elevated risk\n+ not excluded (break-glass)"| Block["Block sign-in to\nMicrosoft 365 applications"]
     Block --> Reports["Entra sign-in logs /\nConditional Access Insights and reporting"]
-    RiskLevel -.->|"already built - narrower, content-scoped"| DlpSibling["scenarios/adaptive-protection/\ndynamic-risk-dlp-enforcement\n(Exchange/Teams DLP block+audit)"]
+    RiskLevel -.->|"already built - narrower, content-scoped"| DlpSibling["Adaptive Protection\ndynamic-risk-dlp-enforcement\n(Exchange/Teams DLP block+audit)"]
     RiskLevel -.->|"out of scope this fragment"| DLM["Data Lifecycle Management\n(120-day deleted-content preservation)"]
     RiskLevel -.->|"out of scope this fragment"| EDLP["Endpoint DLP (Devices)\n(clipboard/USB/print/network-share restrictions)"]
 ```

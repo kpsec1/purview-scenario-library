@@ -145,9 +145,9 @@ Full licensing detail and citations: [Licensing matrix, section 2](/docs/licensi
 - **Resolved: the two triggering-event options (DLP-policy match and exfiltration activity)
   cannot be enabled simultaneously on one policy** - a policy has a single triggering-event
   configuration, set to one mechanism or the other. Confirmed via a direct Microsoft Learn fetch
-  of "Create and manage Insider Risk Management policies" §Policy health (singular, definite "the
+  of "Create and manage Insider Risk Management policies" Policy health (singular, definite "the
   triggering event" in the either/or fix guidance) and "Learn about Insider Risk Management policy
-  templates" §Policy template prerequisites and triggering events ("OR" between the two
+  templates" Policy template prerequisites and triggering events ("OR" between the two
   mechanisms, unlike the risky/priority-users family's own "and/or" prerequisite). the design notes
   goal 6/section 6. This scenario's own step 4 of the implementation steps names its policy distinctly from the DLP-trigger
   sibling's so both can still coexist in the same tenant as two separate policies, each using one

@@ -101,7 +101,7 @@ sequenceDiagram
     participant Graph as Microsoft Graph API
     participant CSV as ManagedInstanceInventoryPath (CSV)
 
-    Note over Script,AAD: Connect-MgGraph run by the OPERATOR before this script (docs/automation-surface.md Section 3)
+    Note over Script,AAD: Connect-MgGraph run by the OPERATOR before this script (Automation surface Section 3)
     Script->>CSV: Import-Csv (InstanceName, PrincipalObjectId, ...)
     Script->>Graph: GET /directoryRoles?$filter=displayName eq 'Directory Readers'
     alt role never activated in this tenant

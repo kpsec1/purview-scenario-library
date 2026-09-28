@@ -36,7 +36,7 @@ Connect-ExchangeOnline
 ./deploy/Invoke-CompromisedAccountResponse.ps1 -ConfigPath ./deploy/config/compromise-jdoe.json -WhatIf
 
 # 2. Contain: backup -> disable -> revoke sessions -> reset password -> clear forwarding ->
-#    remove Inbox rules -> remove delegate grants
+# remove Inbox rules -> remove delegate grants
 ./deploy/Invoke-CompromisedAccountResponse.ps1 -ConfigPath ./deploy/config/compromise-jdoe.json -BackupDir ./out/jdoe
 ```
 

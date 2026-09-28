@@ -70,9 +70,9 @@ scenario cross-link each other rather than duplicate content.
 
 ```mermaid
 flowchart TD
-    IRM["Insider Risk Management policy\n(e.g. scenarios/insider-risk/\ndeparting-employee-data-theft,\nor Data leaks template)\n[not created by this scenario]"] -->|alerts / activity insights| APEngine["Adaptive Protection engine\n(ML-computed insider risk levels)\n[portal-only]"]
+    IRM["Insider Risk Management policy\n(e.g. Insider Risk Management\ndeparting-employee-data-theft,\nor Data leaks template)\n[not created by this scenario]"] -->|alerts / activity insights| APEngine["Adaptive Protection engine\n(ML-computed insider risk levels)\n[portal-only]"]
     APEngine -->|assigns Elevated risk level| RiskLevel[("User's current\ninsider risk level")]
-    Toggle["Purview portal toggle:\n'Adaptive protection in\nData Lifecycle Management'\n[portal-only -- README.md Section 5]"] -->|creates, tenant-wide,\nsingle policy| DLMPolicy["Auto-created retention label\n+ auto-apply policy\n[invisible in portal; no\nGet-/New-/Set- cmdlet exists]"]
+    Toggle["Purview portal toggle:\n'Adaptive protection in\nData Lifecycle Management'\n[portal-only -- this page Section 5]"] -->|creates, tenant-wide,\nsingle policy| DLMPolicy["Auto-created retention label\n+ auto-apply policy\n[invisible in portal; no\nGet-/New-/Set- cmdlet exists]"]
     RiskLevel -->|"Elevated user deletes content\nin SharePoint/OneDrive/Exchange"| DLMPolicy
     DLMPolicy -->|applies label,\nretains 120 days| Preserved[("Deleted item,\npreserved 120 days,\nsearchable via eDiscovery")]
     DLMPolicy -->|generates| AuditEvt["Audit events:\nRetained file proactively\n(SharePointDataProactivelyPreserved)\nRetained email item proactively\n(ExchangeDataProactivelyPreserved)"]

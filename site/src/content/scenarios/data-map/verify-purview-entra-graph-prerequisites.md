@@ -29,7 +29,7 @@ Data Map-scoped validate script has no reason to also hold a Graph directory-rea
 ## Why this matters
 
 This scenario doesn't itself discover or classify data - it protects the *availability* of a
-control that does. GDPR Art. 30, PCI DSS Requirement 3.2/12.5.2, and HIPAA §164.308 (cited by the
+control that does. GDPR Art. 30, PCI DSS Requirement 3.2/12.5.2, and HIPAA section 164.308 (cited by the
 sibling scenario's own why this matters) all depend on an accurate, *current* data inventory; a Data Map
 scan that has silently stopped authenticating produces stale classification results that look
 identical, in the Unified Catalog, to a scan that is still running correctly. Detecting the loss of

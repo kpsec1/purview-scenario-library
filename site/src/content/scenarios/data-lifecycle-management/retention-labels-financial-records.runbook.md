@@ -7,7 +7,7 @@ parent: "data-lifecycle-management/retention-labels-financial-records"
 ### PowerShell path
 
 ```powershell
-# Connect (certificate app-only preferred - docs/automation-surface.md §3)
+# Connect (certificate app-only preferred - Automation surface, section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
 # 1. Dry run - prints the exact New-ComplianceTag / New-RetentionCompliancePolicy / -Rule cmdlets

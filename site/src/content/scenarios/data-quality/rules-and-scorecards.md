@@ -54,7 +54,7 @@ internal data-trust program, instead of "we believe the customer data is general
 
 ```mermaid
 flowchart TD
-    subgraph Prereqs["Already governed (built by other scenarios in this repo)"]
+    subgraph Prereqs["Already governed (built by other scenarios in this library)"]
         Asset[("Customer data asset<br/>customerdb.dbo.Customers<br/>(Azure SQL)")]
         Domain["Governance domain:<br/>Customer Experience"]
         Product["Data product:<br/>Customer 360"]

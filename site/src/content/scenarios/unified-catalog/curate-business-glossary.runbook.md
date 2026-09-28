@@ -23,7 +23,7 @@ parent: "unified-catalog/curate-business-glossary"
 
 ```powershell
 # 1. Dry run - reports every change, makes none (still performs read-only lookups against the
-#    live tenant to accurately report create-vs-update - see README.md Section 11)
+# live tenant to accurately report create-vs-update - see this page Section 11)
 ./deploy/New-BusinessGlossary.ps1 `
     -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `

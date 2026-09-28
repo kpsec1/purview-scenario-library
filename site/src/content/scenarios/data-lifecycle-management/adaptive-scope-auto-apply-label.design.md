@@ -86,7 +86,7 @@ sequenceDiagram
         Script->>SCC: Get-RetentionComplianceRule -Policy (rule exists?)
         alt not found
             Script->>SCC: New-RetentionComplianceRule -Policy -ApplyComplianceTag <label> [-ContentMatchQuery]
-            Note over SCC: NOT -Name - documented mutually exclusive with -ApplyComplianceTag (§3)
+            Note over SCC: NOT -Name - documented mutually exclusive with -ApplyComplianceTag
         end
     end
     Note over SCC: Two independent delays stack: scope population (5 days) + auto-apply distribution (7 days)

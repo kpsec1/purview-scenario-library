@@ -80,7 +80,7 @@ flowchart TD
     TERM -.->|resolved by name| F
 
     subgraph Downstream["Observed, not created here"]
-        POL["Inherited access policy<br/>(design.md Section 2 / README.md Section 2)"]
+        POL["Inherited access policy<br/>(the design notes Section 2 / this page Section 2)"]
     end
     J -.-> POL
     J -.-> V[validate/Test-CdeRelatedTerms.ps1]

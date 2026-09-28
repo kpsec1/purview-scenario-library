@@ -7,18 +7,18 @@ parent: "data-lifecycle-management/priority-cleanup-sharepoint-onedrive"
 ### PowerShell path
 
 ```powershell
-# Connect (certificate app-only preferred - docs/automation-surface.md Section 3)
+# Connect (certificate app-only preferred - Automation surface Section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
 # 1. Dry run - prints the exact New-ComplianceTag / New-RetentionCompliancePolicy / -Rule cmdlets
 ./deploy/New-PriorityCleanupSharePointOneDrivePolicy.ps1 -ConfigPath ./deploy/config/priority-cleanup-sharepoint-onedrive.json -Simulate -DryRun
 
 # 2. Deploy in SIMULATION mode - the ONLY supported creation path for this workload (mandatory, not
-#    merely recommended)
+# merely recommended)
 ./deploy/New-PriorityCleanupSharePointOneDrivePolicy.ps1 -ConfigPath ./deploy/config/priority-cleanup-sharepoint-onedrive.json -Simulate
 
 # 3. Review simulation sample results in the portal (Data Lifecycle Management > Priority cleanup >
-#    View simulation details) - a SECOND, DIFFERENT Priority Cleanup Admin must do this review.
+# View simulation details) - a SECOND, DIFFERENT Priority Cleanup Admin must do this review.
 
 # 4. That second admin turns the policy on:
 ./deploy/New-PriorityCleanupSharePointOneDrivePolicy.ps1 -ConfigPath ./deploy/config/priority-cleanup-sharepoint-onedrive.json -EnforceSimulation

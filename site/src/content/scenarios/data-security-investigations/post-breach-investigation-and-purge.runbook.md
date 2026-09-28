@@ -22,7 +22,7 @@ Connect-IPPSSession -UserPrincipalName admin@contoso.com
 # 1. Preview (changes nothing)
 ./deploy/New-DsiRoleGroupAssignments.ps1 -ConfigPath ./deploy/policy/dsi-role-assignments.json -WhatIf
 
-# 2. Apply (additive-only by default - see design.md Section 5)
+# 2. Apply (additive-only by default - see the design notes Section 5)
 ./deploy/New-DsiRoleGroupAssignments.ps1 -ConfigPath ./deploy/policy/dsi-role-assignments.json
 
 # 3. Confirm

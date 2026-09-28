@@ -25,11 +25,11 @@ parent: "dlp/defender-device-control-usb-allowlist"
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md §3)
+# 1. Connect (certificate app-only - see Automation surface, section 3)
 Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 2. Edit deploy/config/device-control-usb-allowlist.sample.json (or copy it) with your
-#    approved-device serial numbers/VID_PIDs and pilot Entra group ID.
+# approved-device serial numbers/VID_PIDs and pilot Entra group ID.
 
 # 3. Dry run - reports every change, makes none
 ./deploy/New-DeviceControlUsbAllowlistPolicy.ps1 `

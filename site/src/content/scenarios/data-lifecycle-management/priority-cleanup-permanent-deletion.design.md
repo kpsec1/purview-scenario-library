@@ -146,7 +146,7 @@ permanent-deletion mode is active - the only reliable confirmation is post-hoc, 
   distinct control (purging mailbox/site content found via an eDiscovery content search, not a
   standing priority-cleanup policy); out of scope here.
 - **GCC/GCC High/DoD availability timing** - this fragment targets Worldwide multi-tenant; separate,
-  later government-cloud rollout timing is not modeled (§ the known limitations).
+  later government-cloud rollout timing is not modeled (the known limitations).
 
 ## References
 

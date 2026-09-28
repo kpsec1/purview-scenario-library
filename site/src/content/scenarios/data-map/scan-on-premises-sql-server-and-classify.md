@@ -32,7 +32,7 @@ the design notes for the full diff.
 ## Why this matters
 
 Same underlying drivers as the three Azure siblings - GDPR Art. 30 records of processing, CCPA/CPRA
-data inventory obligations, PCI DSS Requirement 3.2/12.5.2 cardholder data discovery, HIPAA §164.308
+data inventory obligations, PCI DSS Requirement 3.2/12.5.2 cardholder data discovery, HIPAA section 164.308
 risk analysis all require an accurate, current inventory of where regulated data lives. On-premises SQL Server is disproportionately likely to be where an organization's
 **oldest, least-documented** regulated data lives - instances that predate a cloud migration program,
 were never in scope for it, or are deliberately kept on-premises for latency, licensing, or regulatory

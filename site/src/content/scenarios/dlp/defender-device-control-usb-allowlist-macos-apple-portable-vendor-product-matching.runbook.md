@@ -23,12 +23,12 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-apple-portable-vendor-p
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md Section 3)
+# 1. Connect (certificate app-only - see Automation surface Section 3)
 Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 2. Edit deploy/config/mac-apple-portable-vendor-product-device-allowlist.sample.json (or copy it)
-#    with your approved devices' vendorId/productId pairs, per family. Leave either family's array
-#    empty (or omitted) if you don't need it.
+# with your approved devices' vendorId/productId pairs, per family. Leave either family's array
+# empty (or omitted) if you don't need it.
 
 # 3. Dry run - reports every change, makes none
 ./deploy/Add-MacApplePortableVendorProductDeviceAllowlist.ps1 `
@@ -44,7 +44,7 @@ Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thu
     -ConfigPath ./deploy/config/mac-apple-portable-vendor-product-device-allowlist.sample.json
 
 # 6. To revoke a device: remove its entry from the config file and re-run step 4 - the deploy
-#    script detects and removes the now-orphaned sub-group automatically, no -Force required.
+# script detects and removes the now-orphaned sub-group automatically, no -Force required.
 ```
 
 The deploy script uses the Microsoft Graph PowerShell SDK (`Invoke-MgGraphRequest` against the same

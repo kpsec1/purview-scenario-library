@@ -64,7 +64,7 @@ flowchart TD
     D --> E["Walk tree depth-first<br/>root, then children"]
     E --> F{Node exists by<br/>name + resolved parentId?}
     F -- No --> G["POST businessdomains<br/>DRAFT, parentId = resolved parent"]
-    F -- Yes --> H["PUT businessdomains/{id}<br/>seeded from live object (design.md S4)"]
+    F -- Yes --> H["PUT businessdomains/{id}<br/>seeded from live object (the design notes S4)"]
     G --> I[Apply managedAttributes<br/>+ optional data estate mapping]
     H --> I
     I --> J{More children?}

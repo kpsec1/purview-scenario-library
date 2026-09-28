@@ -66,14 +66,14 @@ parent: "compliance-manager/soc2-assessment"
 ### Script path - the audit-trail export (reused, not duplicated - see the design notes)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md §3). The connecting identity
-#    needs Exchange.ManageAsApp PLUS the View-Only Audit Logs Exchange Online role (docs/rbac-model.md §6).
+# 1. Connect (certificate app-only - see Automation surface, section 3). The connecting identity
+# needs Exchange.ManageAsApp PLUS the View-Only Audit Logs Exchange Online role (RBAC model, section 6).
 Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
-# 2. If scenarios/compliance-manager/assess-against-iso27001/ and/or .../pci-dss-assessment/ are
-#    ALSO deployed in this tenant, run only ONE instance of Export-ComplianceManagerAuditTrail.ps1
-#    (any copy - they're identical; see design.md Section 2) against a single shared CSV path. The
-#    commands below assume this is the only Compliance Manager assessment in the tenant so far.
+# 2. If Assess Against ISO/IEC 27001:2022 and/or .../pci-dss-assessment/ are
+# ALSO deployed in this tenant, run only ONE instance of Export-ComplianceManagerAuditTrail.ps1
+# (any copy - they're identical; see the design notes Section 2) against a single shared CSV path. The
+# commands below assume this is the only Compliance Manager assessment in the tenant so far.
 
 # 3. Dry run - queries the last 7 days, reports what would be merged, writes nothing
 ./deploy/Export-ComplianceManagerAuditTrail.ps1 -OutputCsvPath './out/compliance-manager-audit-trail.csv' -WhatIf
@@ -83,8 +83,8 @@ Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDom
     -StartDate (Get-Date).AddDays(-180) -EndDate (Get-Date) `
     -OutputCsvPath './out/compliance-manager-audit-trail.csv'
 
-# 5. Recurring run (schedule daily or weekly - overlapping windows are safe, see design.md §4).
-#    Keep this running for the full duration of any SOC 2 Type II period of performance (§8).
+# 5. Recurring run (schedule daily or weekly - overlapping windows are safe, see the design notes).
+# Keep this running for the full duration of any SOC 2 Type II period of performance.
 ./deploy/Export-ComplianceManagerAuditTrail.ps1 -OutputCsvPath './out/compliance-manager-audit-trail.csv'
 
 # 6. Validate the audit trail AND this scenario's own control-crosswalk manifest

@@ -37,7 +37,7 @@ and corrects those two scenarios' notes in place.
 
 The driver here is **completing an automated control, not adding a new one**. The regulatory case
 for Data Map scanning itself (GDPR Art. 30 records of processing, PCI DSS cardholder-data
-discovery, HIPAA §164.308 risk analysis) is made in
+discovery, HIPAA section 164.308 risk analysis) is made in
 *Scan Azure SQL Database and Classify Sensitive Columns* (why this matters). This fragment removes the one manual,
 un-auditable step that kept that control from being fully reproducible:
 

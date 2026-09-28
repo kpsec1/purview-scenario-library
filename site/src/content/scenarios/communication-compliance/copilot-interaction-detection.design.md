@@ -186,7 +186,7 @@ this library's standards requires. What is genuinely new in this scenario's scri
 
 ```mermaid
 flowchart TD
-    A[Compliance/Responsible-AI admin completes<br/>portal runbook - README.md Section 5] --> B["Detect Microsoft 365 Copilot and<br/>Microsoft 365 Copilot Chat interactions<br/>policy - template, unmodified conditions"]
+    A[Compliance/Responsible-AI admin completes<br/>portal runbook - this page Section 5] --> B["Detect Microsoft 365 Copilot and<br/>Microsoft 365 Copilot Chat interactions<br/>policy - template, unmodified conditions"]
     U[User submits a Copilot prompt] --> C{Prompt matches<br/>Prompt Shields?}
     B --> C
     R[Copilot returns a response] --> D{Response matches<br/>Protected material?}

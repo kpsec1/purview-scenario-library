@@ -31,11 +31,11 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist"
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md Section 3)
+# 1. Connect (certificate app-only - see Automation surface Section 3)
 Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 2. Edit deploy/config/mac-bluetooth-device-allowlist.sample.json (or copy it) with one or more
-#    approved devices' vendorId/productId. Leave approvedBluetoothDevices empty for pure default-deny.
+# approved devices' vendorId/productId. Leave approvedBluetoothDevices empty for pure default-deny.
 
 # 3. Dry run - reports the planned PATCH, makes no changes
 ./deploy/Add-MacBluetoothDeviceAllowlist.ps1 `

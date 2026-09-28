@@ -18,7 +18,7 @@ parent: "records-management/disposition-proof-export"
 ### Script path (this scenario's automation)
 
 ```powershell
-# Connect (certificate app-only preferred - docs/automation-surface.md §3)
+# Connect (certificate app-only preferred - Automation surface, section 3)
 Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
 # 1. Dry run - queries the last 7 days tenant-wide, writes nothing

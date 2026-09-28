@@ -47,7 +47,7 @@ specifically matter for a defensible investigation and, later, litigation postur
 
 ```mermaid
 flowchart TD
-    A[Insider Risk Management case] -->|manual portal click:<br/>Escalate for investigation<br/>NO API - README §3/§11| B["New eDiscovery (Premium) case<br/>named per this scenario's<br/>IRM-&lt;CaseID&gt;-&lt;UPN&gt; convention"]
+    A[Insider Risk Management case] -->|manual portal click:<br/>Escalate for investigation<br/>NO API - page the prerequisites and the known limitations| B["New eDiscovery (Premium) case<br/>named per this scenario's<br/>IRM-&lt;CaseID&gt;-&lt;UPN&gt; convention"]
 
     B --> C[Confirm-EdiscoveryEscalationLink.ps1]
     C -->|find by displayName<br/>throws if not found| B
@@ -55,13 +55,13 @@ flowchart TD
     C -->|PATCH description<br/>idempotent, marker-delimited| B
     C -->|find-or-create + applyHold,<br/>same pattern as the sibling scenario| E[Custodian: flagged user<br/>mailbox + OneDrive userSource]
 
-    B --> F["scenarios/ediscovery/premium-legal-hold-and-export/<br/>New-EdiscoverySearchReviewSetExport.ps1<br/>-- unmodified, reused as-is"]
+    B --> F["Legal Hold, Collection, Review, and Export<br/>New-EdiscoverySearchReviewSetExport.ps1<br/>-- unmodified, reused as-is"]
 
     subgraph ThisScenario["This scenario's scope"]
         C
         E
     end
-    subgraph SiblingScenario["scenarios/ediscovery/premium-legal-hold-and-export (reused, not duplicated)"]
+    subgraph SiblingScenario["Legal Hold, Collection, Review, and Export (reused, not duplicated)"]
         F
     end
 ```

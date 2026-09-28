@@ -69,7 +69,7 @@ flowchart TD
     K --> M{-Publish?}
     L --> M
     M -- No --> N[Left in DRAFT -<br/>Data Product Owners/Stewards only]
-    M -- Yes --> O["PUT status: PUBLISHED<br/>(requires access policy already set - Section 5 design.md)"]
+    M -- Yes --> O["PUT status: PUBLISHED<br/>(requires access policy already set - Section 5 the design notes)"]
     O --> P[Discoverable + requestable -<br/>Discovery -> Data products]
 
     subgraph Upstream["Already deployed by other scenarios"]

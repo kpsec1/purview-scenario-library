@@ -66,7 +66,7 @@ it draws on DLP alert data and built-in activity indicators, not performance-man
 flowchart TD
     DlpPolicy["Existing Purview DLP policy/policies\n(Exchange/SharePoint/OneDrive,\nHigh-severity rule)\n[operator-owned, not created here]"] -->|"checked for readiness"| ReadyScript["deploy/Test-DlpPolicyIrmTriggerReadiness.ps1\n(NEW - read-only)"]
     ReadyScript -->|"pass/fail/warn report"| GlobalInd["Purview portal: Insider Risk Management ->\nSettings -> Policy indicators ->\nDLP alerts indicators -> Add DLP policy\n(up to 20 policies)\n[portal-only]"]
-    DlpPolicy -->|"High severity DLP alert\n(only for users in BOTH\nDLP policy scope AND IRM policy scope -\ndesign.md §2 goal 3)"| Policy["IRM Policy: 'Data Leaks'\n[portal-authored - no API]\nTrigger: User matches a DLP policy"]
+    DlpPolicy -->|"High severity DLP alert\n(only for users in BOTH\nDLP policy scope AND IRM policy scope -\nthe design notes goal 3)"| Policy["IRM Policy: 'Data Leaks'\n[portal-authored - no API]\nTrigger: User matches a DLP policy"]
     GlobalInd -.->|enables the indicator tenant-wide| Policy
     Group["Entra security group\n(operator-chosen population,\nno HR/CC/priority-user requirement)"] -->|"Get-MgGroupTransitiveMemberAsUser"| ScopeScript["../security-policy-violations/deploy/\nGet-SecurityPolicyViolationsScopeCandidates.ps1\n(reused, -MaxUsers = 15000 confirmed cap)"]
     ScopeScript -->|"policy scope\n(portal manual-add)"| Policy
@@ -177,10 +177,10 @@ Full licensing detail and citations: [Licensing matrix, section 2](/docs/licensi
 - **Resolved: the two triggering-event types (DLP-policy match and exfiltration activity)
   cannot be enabled simultaneously on one policy** - a policy has a single triggering-event
   configuration, set to one mechanism or the other. Confirmed via a direct Microsoft Learn fetch
-  of "Create and manage Insider Risk Management policies" §Policy health, whose `Data leaks`
+  of "Create and manage Insider Risk Management policies" Policy health, whose `Data leaks`
   notification-fix guidance twice phrases the choice as "either select an active DLP policy or
   'User performs an exfiltration activity' as **the** triggering event" (singular, definite
-  article), corroborated by "Learn about Insider Risk Management policy templates" §Policy
+  article), corroborated by "Learn about Insider Risk Management policy templates" Policy
   template prerequisites and triggering events, whose prerequisites column joins this template's
   two mechanisms with "**OR**" rather than the risky/priority-users family's own "and/or"
   HR-connector/Communication-Compliance phrasing. See the design notes.

@@ -23,7 +23,7 @@ parent: "data-lifecycle-management/adaptive-protection-deleted-content-preservat
 ### PowerShell path (evidence and verification, not enablement)
 
 ```powershell
-# Connect (certificate app-only preferred - docs/automation-surface.md Section 3)
+# Connect (certificate app-only preferred - Automation surface Section 3)
 Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
 # Prove the control has fired (health check - never asserts a definitive on/off status; see Section 7)

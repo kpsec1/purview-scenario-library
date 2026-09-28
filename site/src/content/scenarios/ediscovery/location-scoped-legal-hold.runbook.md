@@ -19,7 +19,7 @@ parent: "ediscovery/location-scoped-legal-hold"
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (app-only, certificate -- see docs/automation-surface.md section 3).
+# 1. Connect (app-only, certificate -- see Automation surface section 3).
 
 # 2. Dry run -- reports every case/hold/source action this run would take, makes none.
 ./deploy/New-EdiscoveryLocationHold.ps1 `

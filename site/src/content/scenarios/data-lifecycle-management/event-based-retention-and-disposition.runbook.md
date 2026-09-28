@@ -7,7 +7,7 @@ parent: "data-lifecycle-management/event-based-retention-and-disposition"
 ### PowerShell path
 
 ```powershell
-# Connect (certificate app-only preferred - docs/automation-surface.md §3)
+# Connect (certificate app-only preferred - Automation surface, section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
 # 1. One-time: dry run then deploy the event type, label, and publish policy/rule
@@ -18,7 +18,7 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 ./validate/Test-EventBasedRetentionAndDisposition.ps1 -ConfigPath ./deploy/config/employee-departure-retention.json
 
 # 3. Ongoing: HR/records manager applies the published label to the departed employee's
-#    records (portal), sets that content's ComplianceAssetID to the employee ID, then:
+# records (portal), sets that content's ComplianceAssetID to the employee ID, then:
 ./deploy/New-RetentionTriggerEvent.ps1 -EventName 'Employee Departure - 123456' -EmployeeId '123456' -EventDate '2026-09-01' -DryRun
 ./deploy/New-RetentionTriggerEvent.ps1 -EventName 'Employee Departure - 123456' -EmployeeId '123456' -EventDate '2026-09-01'
 ```

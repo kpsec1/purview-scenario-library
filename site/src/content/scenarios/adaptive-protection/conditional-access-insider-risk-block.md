@@ -53,7 +53,7 @@ flowchart TD
     RiskLevel -->|"read at sign-in time via\nconditions.insiderRiskLevels\n(Microsoft Graph v1.0)"| CaPolicy["Conditional Access Policy:\n'Adaptive Protection - Block Elevated\nInsider Risk (Custom)'\n(deploy/New-InsiderRiskConditionalAccessPolicy.ps1)"]
     CaPolicy -->|"Elevated risk\n+ not excluded (break-glass)"| Block["Block sign-in to\nMicrosoft 365 applications"]
     Block --> Reports["Entra sign-in logs /\nConditional Access Insights and reporting"]
-    RiskLevel -.->|"already built - narrower, content-scoped"| DlpSibling["scenarios/adaptive-protection/\ndynamic-risk-dlp-enforcement\n(Exchange/Teams DLP block+audit)"]
+    RiskLevel -.->|"already built - narrower, content-scoped"| DlpSibling["Adaptive Protection\ndynamic-risk-dlp-enforcement\n(Exchange/Teams DLP block+audit)"]
 ```
 
 Full rule-by-rule rationale, including exactly what this scenario can and cannot script and how

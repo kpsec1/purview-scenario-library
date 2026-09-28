@@ -44,7 +44,7 @@ knowledge of which team owns which script.
 
 ```mermaid
 flowchart TD
-    subgraph Assets["Already governed (built by other scenarios in this repo)"]
+    subgraph Assets["Already governed (built by other scenarios in this library)"]
         Src[("customerdb.dbo.Customers<br/>(azure_sql_table)")]
         Dst[("analyticsdb.dbo.CustomerRiskSummary<br/>(azure_sql_table)")]
     end

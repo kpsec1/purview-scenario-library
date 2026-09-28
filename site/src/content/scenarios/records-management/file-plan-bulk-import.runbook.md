@@ -14,8 +14,8 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 ./deploy/New-FilePlanImportCsv.ps1 -TenantChecks -OutputPath ./deploy/config/file-plan-import-ready.csv
 
 # 3. Upload file-plan-import-ready.csv via the portal:
-#    Purview portal > Records Management > File plan > Import > Download a blank template (once, to
-#    confirm current column order) > Upload a file > select file-plan-import-ready.csv
+# Purview portal > Records Management > File plan > Import > Download a blank template (once, to
+# confirm current column order) > Upload a file > select file-plan-import-ready.csv
 
 # --- Path B: fully scripted, no portal step ---
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'

@@ -122,7 +122,7 @@ Full licensing detail and citations: [Licensing matrix](/docs/licensing-matrix/)
   organization's actual current tier before assuming zero incremental cost.
 - **DSPM for AI (classic) itself carries no separate SKU** beyond the underlying Compliance
   Administrator-tier permissions and (for custom, non-default assessments) potential PAYG billing
-  for advanced item-level scanning - see [Licensing matrix](/docs/licensing-matrix/) §"DSPM for AI" row and
+  for advanced item-level scanning - see [Licensing matrix](/docs/licensing-matrix/) "DSPM for AI" row and
   re-verify before quoting a custom-assessment engagement.
 
 ## Proof it works

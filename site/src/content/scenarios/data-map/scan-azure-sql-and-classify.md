@@ -31,7 +31,7 @@ first finds out.
 ## Why this matters
 
 Every major data-protection regulation (GDPR Art. 30 records of processing, CCPA/CPRA data
-inventory obligations, PCI DSS Requirement 3.2/12.5.2 cardholder data discovery, HIPAA §164.308
+inventory obligations, PCI DSS Requirement 3.2/12.5.2 cardholder data discovery, HIPAA section 164.308
 risk analysis) starts from the same unglamorous prerequisite: an accurate, current inventory of
 where regulated data lives. Manual spreadsheet-based data inventories go stale the moment a new
 table or column is added. Microsoft Purview Data Map scanning automates that inventory for

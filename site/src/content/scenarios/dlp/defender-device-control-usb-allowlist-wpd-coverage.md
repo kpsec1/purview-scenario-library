@@ -36,7 +36,7 @@ policy's entire "default-deny, named allowlist" model with zero signal. That is 
 gap than "this activity type isn't restricted": it is a silent, undetected bypass of a control
 whose stated purpose is "no unapproved USB storage device, period" (the parent scenario's short version).
 
-The same regulatory drivers the parent scenario cites - GDPR Article 32, HIPAA 45 CFR §164.312
+The same regulatory drivers the parent scenario cites - GDPR Article 32, HIPAA 45 CFR 164.312
 media controls, PCI DSS Requirement 3, SOC 2 CC6 - reference "media controls"/"physical
 safeguards" broadly enough that an auditor who learns the control has a phone-shaped hole in it
 will treat that as an open finding, not a footnote. Closing it converts the parent scenario's

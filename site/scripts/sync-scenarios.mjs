@@ -222,7 +222,7 @@ const ctxData = {
 };
 
 // A section mark, optionally a list ("§3/§7", "§3, §7") or a range ("§4-6").
-const SEC = '§\\s?\\d+(?:\\s*(?:[\\/,]|[-\\u2013\\u2014])\\s*§?\\s?\\d+)*';
+const SEC = '§{1,2}\\s?\\d+(?:\\s*(?:[\\/,]|[-\\u2013\\u2014])\\s*§?\\s?\\d+)*';
 
 // Section numbers in a mark; a hyphen or dash between two numbers is a range.
 function nums(str) {
@@ -239,23 +239,24 @@ function nums(str) {
   return out;
 }
 
-function scenarioRef(id, slug, secs, selfId, followedByParen) {
+function scenarioRef(id, slug, secs, selfId, followedByParen, plain) {
   if (id === selfId) return 'this page';
+  const em = plain ? '' : '*';
   const title = ctxData.titleById[id] ?? humanizeSlug(slug);
   const nouns = nums(secs).map((n) => SECTION_NOUN[n]).filter(Boolean);
   // Skip the section name when a parenthetical already follows: avoids "(a) (b)".
-  return nouns.length && !followedByParen ? `*${title}* (${nouns.join(' and ')})` : `*${title}*`;
+  return nouns.length && !followedByParen ? `${em}${title}${em} (${nouns.join(' and ')})` : `${em}${title}${em}`;
 }
 
 const startsWithParen = (str, end) => /^[ \t]*\(/.test(str.slice(end));
 
-function docLink(name, secs) {
+function docLink(name, secs, plain) {
   const n = nums(secs);
   const first = n[0];
   const anchor = first && ctxData.docSections[name]?.[first] ? `#${ctxData.docSections[name][first]}` : '';
   const label =
     REF_DOCS[name] + (n.length ? `, section${n.length > 1 ? 's' : ''} ${n.join(' and ')}` : '');
-  return `[${label}](/docs/${name}/${anchor})`;
+  return plain ? label : `[${label}](/docs/${name}/${anchor})`;
 }
 
 // A parenthetical that holds nothing but file or section pointers is deleted.
@@ -272,8 +273,9 @@ function isPureRefs(inner) {
   return rest.length === 0;
 }
 
-function normalizeProse(text, mode, selfId) {
+function normalizeProse(text, mode, selfId, plain = false) {
   let s = text;
+  const em = plain ? '' : '*';
 
   // A. Inline citation markers such as [[1]](#references).
   s = s.replace(/[ \t]?\[\[[^[\]]{1,15}\]\]\([^)]*\)/g, '').replace(/[ \t]?\[\[[^[\]]{1,15}\]\]/g, '');
@@ -287,7 +289,7 @@ function normalizeProse(text, mode, selfId) {
   // B. Shared reference docs: `docs/licensing-matrix.md` §9 -> link.
   s = s.replace(
     new RegExp('`?(?:docs\\/)?\\b(' + DOC_NAMES + ')\\.md`?((?:\\s*' + SEC + ')?)', 'g'),
-    (m, name, secs) => docLink(name, secs)
+    (m, name, secs) => docLink(name, secs, plain)
   );
 
   // C. Other scenarios, by full path, short path or bare slug.
@@ -299,19 +301,19 @@ function normalizeProse(text, mode, selfId) {
       'g'
     ),
     (m, cat, slug, secs, offset, str) =>
-      scenarioRef(`${cat}/${slug}`, slug, secs, selfId, startsWithParen(str, offset + m.length))
+      scenarioRef(`${cat}/${slug}`, slug, secs, selfId, startsWithParen(str, offset + m.length), plain)
   );
   // Area folders: `scenarios/dlp/` or `scenarios/dlp/*` -> the area's name.
-  s = s.replace(/`?\bscenarios\/([a-z0-9-]+)\/(?:\*+)?`?(?![a-z0-9])/g, (m, cat) => `*${ctxData.areaLabel[cat] ?? humanizeSlug(cat)}*`);
+  s = s.replace(/`?\bscenarios\/([a-z0-9-]+)\/(?:\*+)?`?(?![a-z0-9])/g, (m, cat) => `${em}${ctxData.areaLabel[cat] ?? humanizeSlug(cat)}${em}`);
   s = s.replace(
     new RegExp('`([a-z0-9][a-z0-9-]*)\\/(?:README|design|rollback|reviews)\\.md`((?:\\s*' + SEC + ')?)', 'g'),
     (m, slug, secs, offset, str) =>
       ctxData.idBySlug[slug]
-        ? scenarioRef(ctxData.idBySlug[slug], slug, secs, selfId, startsWithParen(str, offset + m.length))
+        ? scenarioRef(ctxData.idBySlug[slug], slug, secs, selfId, startsWithParen(str, offset + m.length), plain)
         : m
   );
   s = s.replace(/`([a-z0-9]+(?:-[a-z0-9]+)+)`/g, (m, slug) =>
-    ctxData.idBySlug[slug] ? scenarioRef(ctxData.idBySlug[slug], slug, '', selfId) : m
+    ctxData.idBySlug[slug] ? scenarioRef(ctxData.idBySlug[slug], slug, '', selfId, false, plain) : m
   );
 
   // D. Parentheticals that are only pointers to other files or sections. After
@@ -403,6 +405,13 @@ function normalizeProse(text, mode, selfId) {
     return n.every((x) => Number(x) < 100) ? neutral : m;
   });
 
+  // F2. No section symbol may survive. Legal citations keep their standard form
+  // ("45 CFR §164.312" -> "45 CFR 164.312"); anything else is spelled out.
+  s = s.replace(/\b(CFR|U\.S\.C\.?|USC)\s*§§?\s?(?=\d)/g, '$1 ');
+  s = s.replace(/§§\s?(?=\d)/g, 'sections ');
+  s = s.replace(/§\s?(?=\d)/g, 'section ');
+  s = s.replace(/§+\s?/g, '');
+
   // G. Wording and tidy-up.
   s = s.replace(
     /\b(own|its|their)\s+the (design notes|rollback runbook|review notes|(?:Red Team|Blue Team|CISO|Microsoft Product Owner|Product Owner) review)\b/g,
@@ -438,8 +447,30 @@ function cleanContent(markdown, mode, selfId) {
       }
       return after;
     },
-    (line, lang) => (lang === 'mermaid' ? sanitizeMermaid(line) : cleanDashes(line))
+    (line, lang) => {
+      if (lang === 'mermaid') return sanitizeMermaid(normalizeProse(line, mode, selfId, true));
+      if (isCommentLine(line)) return cleanDashes(normalizeProse(line, mode, selfId, true));
+      return cleanDashes(line);
+    }
   );
+}
+
+const isCommentLine = (line) => /^\s*(#|\/\/)/.test(line);
+
+// Shipped scripts: only comment lines are rewritten (never string literals or
+// code), so behavior and output are untouched. Tracks <# ... #> block comments.
+function cleanScriptComments(code, selfId) {
+  let inBlock = false;
+  return code
+    .split('\n')
+    .map((line) => {
+      const t = line.trim();
+      if (t.startsWith('<#')) inBlock = true;
+      const isComment = inBlock || t.startsWith('#') || t.startsWith('//');
+      if (t.includes('#>')) inBlock = false;
+      return isComment ? normalizeProse(line, 'scenario', selfId, true) : line;
+    })
+    .join('\n');
 }
 
 // -------------------------------------------------------- README structure
@@ -640,14 +671,15 @@ function frontmatter(obj) {
   return lines.join('\n');
 }
 
-async function collectScripts(dir) {
+async function collectScripts(dir, selfId) {
   const files = await walkFiles(dir);
   const scripts = [];
   for (const file of files) {
     const rel = path.relative(dir, file).split(path.sep).join('/');
     const lang = LANG_BY_EXT[path.extname(file).toLowerCase()] ?? 'text';
     const code = (await readMaybe(file)) ?? '';
-    scripts.push({ path: rel, lang, code: code.replace(/\s+$/, '') });
+    const body = code.replace(/\s+$/, '');
+    scripts.push({ path: rel, lang, code: lang === 'powershell' || lang === 'bicep' ? cleanScriptComments(body, selfId) : body });
   }
   return scripts;
 }
@@ -834,8 +866,8 @@ async function main() {
       const frameworks = detectFromList(readme, FRAMEWORKS);
       const licensing = detectFromList(byNum[10]?.body || readme, LICENSES);
 
-      const deploy = await collectScripts(path.join(dir, 'deploy'));
-      const validate = await collectScripts(path.join(dir, 'validate'));
+      const deploy = await collectScripts(path.join(dir, 'deploy'), id);
+      const validate = await collectScripts(path.join(dir, 'validate'), id);
       const designRaw = await readMaybe(path.join(dir, 'design.md'));
       const rollbackRaw = await readMaybe(path.join(dir, 'rollback.md'));
 

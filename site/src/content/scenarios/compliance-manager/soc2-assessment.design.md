@@ -190,7 +190,7 @@ crosswalk states explicitly rather than treating all five categories as equally 
 
 ```mermaid
 flowchart TD
-    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - README.md Section 5] --> B["SOC 2 assessment<br/>Group: Security & Compliance Assessments (joined or created)<br/>Scope: Microsoft 365"]
+    A[Compliance Manager Administrator/Assessor<br/>completes portal runbook - this page Section 5] --> B["SOC 2 assessment<br/>Group: Security & Compliance Assessments (joined or created)<br/>Scope: Microsoft 365"]
     C["Already-deployed SOC 2-relevant scenarios in this tenant:<br/>Info Protection labeling / DLP exfil block / Endpoint DLP /<br/>Legacy-auth block / IRM / Audit"] -.built-in automation<br/>feeds technical-action signals<br/>tenant-wide, any group.-> B
     D[Contributors/Assessors] -->|manual work: evidence,<br/>notes, test status,<br/>Excel Action Update wizard| B
     E["ISO/IEC 27001:2022 assessment and/or<br/>PCI DSS v4.0 assessment<br/>(if deployed, same group)"] <-.nontechnical improvement-action<br/>updates sync within the shared group only.-> B

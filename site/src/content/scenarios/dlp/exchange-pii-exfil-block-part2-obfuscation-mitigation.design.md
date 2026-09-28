@@ -63,10 +63,10 @@ sibling had to use) is deliberately *not* used here even though it would also wo
 
 ```mermaid
 flowchart TD
-    subgraph Detect["Detection - portal-configured, not scriptable (§5)"]
+    subgraph Detect["Detection - portal-configured, not scriptable"]
         GlobalInd["Global setting: Insider Risk Management ->\nSettings -> Policy indicators -> DLP alerts indicator\nAdd DLP policy: 'PII DLP - Exchange External Send Control'"]
-        ParentPolicy["Parent scenario's own policy\n(scenarios/dlp/exchange-pii-exfil-block)\nHigh-severity rule match ->\nHigh severity DLP alert written to audit log"]
-        IRM["New IRM policy: 'Data leaks' template\nTriggering event: User matches a DLP policy\n(the parent policy, directly - no Communication\nCompliance detour needed, see §3)\nCumulative exfiltration detection: ON"]
+        ParentPolicy["Parent scenario's own policy\n(Exchange PII Exfiltration Block (Block or Encrypt))\nHigh-severity rule match ->\nHigh severity DLP alert written to audit log"]
+        IRM["New IRM policy: 'Data leaks' template\nTriggering event: User matches a DLP policy\n(the parent policy, directly - no Communication\nCompliance detour needed, see the prerequisites)\nCumulative exfiltration detection: ON"]
         GlobalInd -.->|enables the indicator tenant-wide| ParentPolicy
         ParentPolicy -->|High severity alert| IRM
     end
@@ -127,7 +127,7 @@ built-in-exfiltration-indicators trigger the Teams sibling fragment had to use, 
    generic exfiltration-activity path only because a workload gap forces it elsewhere (as the Teams
    sibling must).
 
-**Guideline this fragment's manifest deliberately surfaces** (§ manifest,
+**Guideline this fragment's manifest deliberately surfaces** (manifest,
 `parentDlpPolicyPrerequisite`): Microsoft's own Data leaks policy guidance cautions against
 over-assigning High severity broadly, since it directly gates this triggering event
  - the parent scenario's default of High severity only on its two

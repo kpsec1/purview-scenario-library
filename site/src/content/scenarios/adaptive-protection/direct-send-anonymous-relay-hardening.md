@@ -71,7 +71,7 @@ flowchart TD
     Reject --> Evaluate["Inbound message via MX endpoint,\nno authentication presented"]
     Evaluate -->|"RejectDirectSend = true"| Rejected["Rejected at the perimeter"]
     Evaluate -->|"RejectDirectSend = false\n(audit stage only)"| Delivered["Delivered, tagged by\nthe audit rule for review"]
-    ConnAudit --> Findings["README.md Section 5 Step 2\nWARN list - migrate to\ncertificate-based relay"]
+    ConnAudit --> Findings["this page Section 5 Step 2\nWARN list - migrate to\ncertificate-based relay"]
 ```
 
 Full rationale for the audit-before-enforce sequencing and the connector-risk heuristic is in

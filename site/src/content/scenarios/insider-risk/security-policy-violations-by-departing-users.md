@@ -65,7 +65,7 @@ flowchart TD
     EntraDel["User account deleted\nfrom Microsoft Entra ID\n(alternate trigger)"] --> Policy
     MDE["Microsoft Defender for Endpoint\nsecurity alerts: malware/harmful-app\ninstall, security-control bypass"] -->|"Advanced feature:\n'Share endpoint alerts with\nMicrosoft Compliance Center'\n[Defender portal - no API]"| Policy
     Policy -->|risk score crosses threshold| Alert["IRM Alert\n(pseudonymized by default)\ndetectionSource = microsoftInsiderRiskManagement"]
-    MDEAlert["Underlying Defender for Endpoint alert\ndetectionSource = microsoftDefenderForEndpoint"] -.->|"same incidentId?\n(VERIFY - design.md §2 goal 5)"| Alert
+    MDEAlert["Underlying Defender for Endpoint alert\ndetectionSource = microsoftDefenderForEndpoint"] -.->|"same incidentId?\n(VERIFY - the design notes goal 5)"| Alert
     Alert --> Dashboard["Purview portal:\nInsider Risk Management ▸ Alerts"]
     Alert --> Defender["Microsoft Defender portal\nunified incident queue"]
     Alert -->|"Graph Security API\n/security/alerts_v2"| Export["deploy/Export-SecurityViolationInsiderRiskAlerts.ps1\n(joins by incidentId, best-effort)"]

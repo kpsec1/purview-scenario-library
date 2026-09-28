@@ -73,15 +73,15 @@ parent: "compliance-manager/hipaa-hitech-assessment"
 ### Script path - the audit-trail export (reused, not duplicated - see the design notes)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md §3). The connecting identity
-#    needs Exchange.ManageAsApp PLUS the View-Only Audit Logs Exchange Online role (docs/rbac-model.md §6).
+# 1. Connect (certificate app-only - see Automation surface, section 3). The connecting identity
+# needs Exchange.ManageAsApp PLUS the View-Only Audit Logs Exchange Online role (RBAC model, section 6).
 Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
-# 2. If scenarios/compliance-manager/assess-against-iso27001/, .../pci-dss-assessment/, and/or
-#    .../soc2-assessment/ are ALSO deployed in this tenant, run only ONE instance of
-#    Export-ComplianceManagerAuditTrail.ps1 (any copy - they're identical; see design.md Section 2)
-#    against a single shared CSV path. The commands below assume this is the only Compliance
-#    Manager assessment in the tenant so far.
+# 2. If Assess Against ISO/IEC 27001:2022, .../pci-dss-assessment/, and/or
+# .../soc2-assessment/ are ALSO deployed in this tenant, run only ONE instance of
+# Export-ComplianceManagerAuditTrail.ps1 (any copy - they're identical; see the design notes Section 2)
+# against a single shared CSV path. The commands below assume this is the only Compliance
+# Manager assessment in the tenant so far.
 
 # 3. Dry run - queries the last 7 days, reports what would be merged, writes nothing
 ./deploy/Export-ComplianceManagerAuditTrail.ps1 -OutputCsvPath './out/compliance-manager-audit-trail.csv' -WhatIf
@@ -91,9 +91,9 @@ Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDom
     -StartDate (Get-Date).AddDays(-180) -EndDate (Get-Date) `
     -OutputCsvPath './out/compliance-manager-audit-trail.csv'
 
-# 5. Recurring run (schedule daily or weekly - overlapping windows are safe, see design.md §4).
-#    Keep this running indefinitely - HIPAA's own documentation retention requirement (§8, §11)
-#    outlives any Audit retention configuration this script depends on.
+# 5. Recurring run (schedule daily or weekly - overlapping windows are safe, see the design notes).
+# Keep this running indefinitely - HIPAA's own documentation retention requirement
+# outlives any Audit retention configuration this script depends on.
 ./deploy/Export-ComplianceManagerAuditTrail.ps1 -OutputCsvPath './out/compliance-manager-audit-trail.csv'
 
 # 6. Validate the audit trail AND this scenario's own control-crosswalk manifest
@@ -170,13 +170,13 @@ does not delete or affect the shared group or the other assessment(s) in it.
 6. Microsoft Purview service description - Compliance Manager - <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-compliance-manager>
 7. Compliance Manager regulations list - US Government category lists "HIPAA/HITECH" and, separately, "HITRUST" as distinct premium templates; 3-free-templates allotment (direct fetch, 2026-09-16) - <https://learn.microsoft.com/purview/compliance-manager-regulations-list#premium-regulations>
 8. Get started with Compliance Manager (role types table incl. Entra role mapping) - <https://learn.microsoft.com/purview/compliance-manager-setup>
-9. HHS.gov - Privacy Rule, personnel designation requirement (45 CFR §164.530(a)(1)) - <https://www.hhs.gov/hipaa/for-professionals/privacy/index.html>
-10. Configuring Microsoft Entra ID for HIPAA compliance - HIPAA Security Rule overview, 45 CFR Part 160/164 structure, Security Officer designation (§164.308(a)(2)), Security Risk Analysis (§164.308(a)(1)(ii)(A)) - <https://learn.microsoft.com/entra/standards/hipaa-configure-for-compliance>
+9. HHS.gov - Privacy Rule, personnel designation requirement (45 CFR 164.530(a)(1)) - <https://www.hhs.gov/hipaa/for-professionals/privacy/index.html>
+10. Configuring Microsoft Entra ID for HIPAA compliance - HIPAA Security Rule overview, 45 CFR Part 160/164 structure, Security Officer designation (section 164.308(a)(2)), Security Risk Analysis (section 164.308(a)(1)(ii)(A)) - <https://learn.microsoft.com/entra/standards/hipaa-configure-for-compliance>
 11. Build and manage assessments in Compliance Manager (create-assessment wizard, Groups for assessments - technical-vs-nontechnical improvement-action sync scope, one-assessment-per-product-per-regulation-per-group rule, groups can't be deleted, Data Protection Baseline default, Export an assessment report, Delete an assessment) - <https://learn.microsoft.com/purview/compliance-manager-assessments>
 12. Working with improvement actions in Compliance Manager (built-in automation from DLM/Information Protection/DLP/Communication Compliance/IRM; automated testing/monitoring) - <https://learn.microsoft.com/purview/compliance-manager-improvement-actions>
 13. (see reference 12) "Assign improvement action to assessor for completion"
 14. Update improvement actions and bring compliance data into Compliance Manager (Export actions / Action Update tab / Update actions wizard) - <https://learn.microsoft.com/purview/compliance-manager-update-actions>
-15. eCFR - 45 CFR §164.316, Policies and procedures and documentation requirements (six-year retention of required Security Rule documentation, §164.316(b)(2)(i)) - <https://www.ecfr.gov/current/title-45/section-164.316>
+15. eCFR - 45 CFR 164.316, Policies and procedures and documentation requirements (six-year retention of required Security Rule documentation, section 164.316(b)(2)(i)) - <https://www.ecfr.gov/current/title-45/section-164.316>
 16. (see reference 1) Frequently asked questions - "There's currently no certification standard that the Department of Health and Human Services approves to demonstrate compliance with HIPAA or the HITECH Act by a business associate"
 17. Configuring Microsoft Entra ID for HIPAA compliance - "Addressable doesn't mean that an implementation specification is optional. Therefore, subparts that are defined as addressable are also required." - <https://learn.microsoft.com/entra/standards/hipaa-configure-for-compliance>
 18. What the DLP policy templates include - "U.S. Health Insurance Act (HIPAA) Enhanced" built-in DLP policy template (SSN/DEA Number/US Physical Addresses/All Full Names SITs, ICD-9-CM/ICD-10-CM keyword terms, Healthcare and Health/Medical Forms trainable classifiers) - <https://learn.microsoft.com/purview/dlp-policy-templates-include#us-health-insurance-act-hipaa-enhanced>

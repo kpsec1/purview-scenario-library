@@ -37,7 +37,7 @@ window.
 
 ## Why this matters
 
-**Title VII of the Civil Rights Act of 1964** (42 U.S.C. § 2000e-2) prohibits harassment based on
+**Title VII of the Civil Rights Act of 1964** (42 U.S.C. 2000e-2) prohibits harassment based on
 race, color, religion, sex, or national origin that is severe or pervasive enough to create a
 hostile work environment. Under the Supreme Court's *Faragher v. City of Boca Raton* and
 *Burlington Industries v. Ellerth* framework, an employer facing a hostile-work-environment claim

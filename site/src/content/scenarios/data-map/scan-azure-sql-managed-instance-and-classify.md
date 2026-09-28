@@ -31,7 +31,7 @@ Purview data source `kind` - see the design notes for the full diff.
 ## Why this matters
 
 Same underlying drivers as the sibling scenario - GDPR Art. 30 records of processing, CCPA/CPRA
-data inventory obligations, PCI DSS Requirement 3.2/12.5.2 cardholder data discovery, HIPAA §164.308
+data inventory obligations, PCI DSS Requirement 3.2/12.5.2 cardholder data discovery, HIPAA section 164.308
 risk analysis all require an accurate, current inventory of where regulated data lives. Azure SQL Managed Instance is a common landing zone for lift-and-shift
 migrations of on-premises SQL Server estates specifically *because* it preserves near-full SQL
 Server surface area (cross-database queries, SQL Agent, linked servers) - which also means it tends

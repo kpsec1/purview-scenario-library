@@ -68,7 +68,7 @@ against `PII-Exchange-Protect-External`, `PII-Exchange-Override-External`, or
 | No user-facing policy tip / `NotifyUser` | Not set | Matches `PII-Exchange-Audit-Internal`'s own convention (the design notes/deploy script of the parent scenario) - this traffic is an approved, intentional exception; notifying the sender would surface a confusing signal about mail that was not, in fact, blocked or altered for them. Visibility is for the SOC/admin audience only (`GenerateAlert`/`GenerateIncidentReport`), not the sender. |
 | Priority | Computed at deploy time: one greater than the highest `Priority` currently present among the target policy's rules, unless `-Priority` is explicitly supplied | Microsoft's own guidance states Exchange-hosted-location rules are normally assigned priority by creation order, and that when a message matches multiple rules only the most-restrictive one is enforced (though all matches are logged). Because this rule's `FromMemberOf`/`AccessScope` combination is structurally exclusive of every other rule in the target policy in Encrypt mode, the exact priority value has no correctness impact on which rule "wins" for any given message - but an explicit, deploy-script-computed value keeps repeated deploys idempotent and avoids relying on portal-side creation-order side effects that would differ between a first deploy and a `-Force` re-run. |
 | No `StopPolicyProcessing` | Left unset (defaults to `$false`) | Nothing meaningfully follows this rule in the priority order for its exclusive target population - the parent's `PII-Exchange-Protect-External` rule already excludes this population via its own `ExceptIfFromMemberOf`, so there is nothing this rule needs to prevent from also evaluating. |
-| Idempotency check on `-ExceptionGroupEmail` | The deploy script reads the parent's `PII-Exchange-Protect-External` rule and warns (does not fail) if its `ExceptIfFromMemberOf` doesn't already contain the same group | Surfaces configuration drift (§ the known limitations) without making this companion's own deploy fail on account of a problem in a different rule it doesn't own. |
+| Idempotency check on `-ExceptionGroupEmail` | The deploy script reads the parent's `PII-Exchange-Protect-External` rule and warns (does not fail) if its `ExceptIfFromMemberOf` doesn't already contain the same group | Surfaces configuration drift (the known limitations) without making this companion's own deploy fail on account of a problem in a different rule it doesn't own. |
 | Deploy surface | Security & Compliance PowerShell (`Connect-IPPSSession`, `Get-/New-/Set-/Remove-DlpComplianceRule`) against an existing policy | Automation surface 2 per [Automation surface, section 1](/docs/automation-surface/#1-five-automation-surfaces-not-one-read-this-first) - same surface the parent scenario and every other DLP scenario in this library uses. No `New-DlpCompliancePolicy` call - this fragment never creates a policy. |
 
 ## 5. Non-goals
@@ -87,7 +87,7 @@ against `PII-Exchange-Protect-External`, `PII-Exchange-Override-External`, or
   `Mode` (Enable/Disable/simulation) - see why this matters, option 3.
 - This scenario does not attempt automatic reconciliation if the parent scenario's
   `-ExceptionGroupEmail` or `-PolicyName` changes - it is a deploy-time snapshot, checked for drift
-  at validation time (§ the validation steps step 2, the known limitations) but not continuously synchronized.
+  at validation time (the validation steps step 2, the known limitations) but not continuously synchronized.
 
 ## References
 

@@ -58,7 +58,7 @@ sequenceDiagram
     Graph-->>Search: indexedItemCount, mailboxCount (poll operation)
     Search-->>Op: Report - review before purging
 
-    Note over Op: Manual step (not scripted): remove holds/retention<br/>policies from every target mailbox - README Section 5 Step 3
+    Note over Op: Manual step (not scripted): remove holds/retention<br/>policies from every target mailbox - page Section 5 Step 3
 
     Op->>Purge: -CaseId -SearchId -PurgeType Recoverable|PermanentlyDelete -ConfirmPermanentDelete (ALWAYS required)
     Purge->>Graph: POST .../searches/{id}/purgeData {"purgeType, purgeAreas: teamsMessages"}
@@ -66,7 +66,7 @@ sequenceDiagram
     Graph->>Mbx: Compliance copy retained >=24h, then background-deleted (typically 1-7 days)
     Graph-->>Purge: 202 Accepted + Location (ediscoveryPurgeDataOperation) - poll to completion
 
-    Note over Op: Manual step (not scripted): reapply the holds/retention<br/>policies removed above - README Section 5 Step 7
+    Note over Op: Manual step (not scripted): reapply the holds/retention<br/>policies removed above - page Section 5 Step 7
 ```
 
 Full rationale - including the correction to this library's own mailbox sibling's prior "compliance-copy-only" assumption - is in the design notes.

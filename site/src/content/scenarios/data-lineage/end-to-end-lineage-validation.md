@@ -62,7 +62,7 @@ flowchart TD
         ADF["Any future ADF/Synapse/Power BI hop"]
     end
 
-    subgraph Assets["Already governed (built by other scenarios in this repo)"]
+    subgraph Assets["Already governed (built by other scenarios in this library)"]
         Src[("customerdb.dbo.Customers<br/>(azure_sql_table, SSN/Credit Card<br/>classified - scan-azure-sql-and-classify)")]
         Dst[("analyticsdb.dbo.CustomerRiskSummary<br/>(azure_sql_table, separately scanned)")]
     end

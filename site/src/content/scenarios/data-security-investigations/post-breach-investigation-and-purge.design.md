@@ -90,7 +90,7 @@ sequenceDiagram
     Portal->>Mit: Add high-risk items to mitigation plan
     Mit->>Purge: Save a purge query (soft or hard)
     Purge->>Src: Review for purge -> Confirm purge -> items removed from source
-    Note over Portal,Src: Every step above is logged automatically to the<br/>unified audit log (28 DSI Operations - design.md Section 3)
+    Note over Portal,Src: Every step above is logged automatically to the<br/>unified audit log (28 DSI Operations - the design notes Section 3)
 ```
 
 ```mermaid

@@ -71,7 +71,7 @@ flowchart TD
     MDEAlert["Underlying Defender for Endpoint alert\ndetectionSource = microsoftDefenderForEndpoint"] -.->|"same incidentId?\n(VERIFY - same open question\nas the departing-users sibling)"| Alert
     Alert --> Dashboard["Purview portal:\nInsider Risk Management ▸ Alerts"]
     Alert --> Defender["Microsoft Defender portal\nunified incident queue"]
-    Alert -->|"Graph Security API\n/security/alerts_v2"| Export["../security-policy-violations-by-departing-users/\ndeploy/Export-SecurityViolationInsiderRiskAlerts.ps1\n(reused, not duplicated - see §5 Step 4)"]
+    Alert -->|"Graph Security API\n/security/alerts_v2"| Export["../security-policy-violations-by-departing-users/\ndeploy/Export-SecurityViolationInsiderRiskAlerts.ps1\n(reused, not duplicated - see step 4 of the implementation steps)"]
     MDEAlert -->|"Graph Security API\n/security/alerts_v2"| Export
     Export --> SIEM["SIEM / ticketing\n(Sentinel, ServiceNow, Splunk, ...)"]
 ```

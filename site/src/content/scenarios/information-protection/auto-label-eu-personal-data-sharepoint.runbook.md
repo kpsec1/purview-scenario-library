@@ -32,10 +32,10 @@ parent: "information-protection/auto-label-eu-personal-data-sharepoint"
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md §3)
+# 1. Connect (certificate app-only - see Automation surface, section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 
-# 2. Dry run - reports every change, makes none. Default SIT set: EU-wide bundles (§6).
+# 2. Dry run - reports every change, makes none. Default SIT set: EU-wide bundles.
 ./deploy/New-EuPersonalDataAutoLabelPolicy.ps1 `
     -LabelName 'Confidential' `
     -ExcludedSharePointSiteUrl 'https://contoso.sharepoint.com/sites/LegalHold' `
@@ -46,14 +46,14 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
     -LabelName 'Confidential' `
     -ExcludedSharePointSiteUrl 'https://contoso.sharepoint.com/sites/LegalHold'
 
-# 3b. Or, localized to specific member states instead of the full EU-wide bundle (§6):
+# 3b. Or, localized to specific member states instead of the full EU-wide bundle:
 ./deploy/New-EuPersonalDataAutoLabelPolicy.ps1 `
     -LabelName 'Confidential' `
     -SensitiveInfoTypeName 'Germany Identity Card Number','France Social Security Number','EU debit card number'
 
 # 3c. Or, add the opt-in passport/driver's-license bundle on top of whichever set above is in
-#     effect (§6) - read the U.S./U.K. passport-merge gotcha in §11 before enabling for a
-#     U.K.-only organization:
+# effect - read the U.S./U.K. passport-merge gotcha in the known limitations before enabling for a
+# U.K.-only organization:
 ./deploy/New-EuPersonalDataAutoLabelPolicy.ps1 `
     -LabelName 'Confidential' `
     -IncludeTravelDocumentSits

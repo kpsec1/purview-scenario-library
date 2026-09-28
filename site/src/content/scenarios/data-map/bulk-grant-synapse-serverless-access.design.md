@@ -75,7 +75,7 @@ the parent scenario's implementation steps step 3c and the design notes describe
 `CREATE LOGIN ... FROM EXTERNAL PROVIDER` step as something to **"repeat for every serverless database
 to be scanned"** - a direct, literal transcription of Microsoft's own portal walkthrough, which frames
 the step as something you do from inside each database's own Synapse Studio "New SQL script" context
-(`register-scan-synapse-workspace` §"Authentication for enumerating serverless SQL Database
+(`register-scan-synapse-workspace` "Authentication for enumerating serverless SQL Database
 resources").
 
 This build's own grounding pass, going one level deeper than the parent scenario's build did, found two

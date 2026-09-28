@@ -7,7 +7,7 @@ parent: "ediscovery/teams-purge-hold-lifecycle-management"
 ### PowerShell path
 
 ```powershell
-# 1. Connect both surfaces (docs/automation-surface.md Section 3).
+# 1. Connect both surfaces (Automation surface Section 3).
 Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
@@ -17,8 +17,8 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 # (or point -DefinitionPath at the SAME incident config file used with search-and-purge-teams-messages)
 
 # Review BlocksPurge per mailbox. If a mailbox's only blocker is an eDiscovery case hold or legacy
-# In-Place Hold, this scenario's Remove script cannot help -- resolve it manually first (README.md
-# Section 6/design.md Section 6).
+# In-Place Hold, this scenario's Remove script cannot help -- resolve it manually first (this page
+# Section 6/the design notes Section 6).
 
 # 3. Remove -- preview first.
 ./deploy/Remove-TeamsPurgeMailboxHolds.ps1 `
@@ -28,17 +28,17 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 ./deploy/Remove-TeamsPurgeMailboxHolds.ps1 `
     -DefinitionPath ./deploy/policy/teams-purge-hold-lifecycle-mailboxes.sample.json `
     -StatePath ./hold-removal-state-2026-014.json
-# Add -IncludeComplianceTagHold only after reading design.md Section 5 -- this one clear is IRREVERSIBLE.
+# Add -IncludeComplianceTagHold only after reading the design notes Section 5 -- this one clear is IRREVERSIBLE.
 
 # 4. Re-confirm readiness before purging.
 ./validate/Test-TeamsPurgeMailboxHoldLifecycle.ps1 `
     -DefinitionPath ./deploy/policy/teams-purge-hold-lifecycle-mailboxes.sample.json
 
 # 5. Run the sibling scenario's purge -- NOT part of this scenario.
-#    ../search-and-purge-teams-messages/deploy/New-TeamsMessagePurgeSearch.ps1 ...
-#    ../search-and-purge-teams-messages/deploy/Invoke-TeamsMessagePurge.ps1 ...
+# ../search-and-purge-teams-messages/deploy/New-TeamsMessagePurgeSearch.ps1 ...
+# ../search-and-purge-teams-messages/deploy/Invoke-TeamsMessagePurge.ps1 ...
 
-# 6. Restore -- as soon as the purge is validated. Time-sensitive (README.md Section 8).
+# 6. Restore -- as soon as the purge is validated. Time-sensitive (this page Section 8).
 ./deploy/Restore-TeamsPurgeMailboxHolds.ps1 -StatePath ./hold-removal-state-2026-014.json -WhatIf
 ./deploy/Restore-TeamsPurgeMailboxHolds.ps1 -StatePath ./hold-removal-state-2026-014.json
 

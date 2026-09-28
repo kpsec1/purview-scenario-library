@@ -7,7 +7,7 @@ parent: "data-lifecycle-management/priority-cleanup-permanent-deletion"
 ### PowerShell path
 
 ```powershell
-# Connect (certificate app-only preferred - docs/automation-surface.md Section 3)
+# Connect (certificate app-only preferred - Automation surface Section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
 # 1. Dry run - prints the exact New-ComplianceTag / New-RetentionCompliancePolicy / -Rule cmdlets
@@ -17,13 +17,13 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 ./deploy/New-PriorityCleanupPermanentDeletionPolicy.ps1 -ConfigPath ./deploy/config/priority-cleanup-permanent-deletion.json -Simulate
 
 # 3. MANDATORY MANUAL STEP - no CLI/Graph equivalent (see Section 3/4/11):
-#    Purview portal > Data Lifecycle Management > Priority cleanup > open the policy >
-#    "Choose what to do with the content" > select "Delete data permanently".
-#    VERIFY (pilot tenant) this is even a valid action against a PowerShell-provisioned policy -
-#    design.md Section 4 documents the two open readings.
+# Purview portal > Data Lifecycle Management > Priority cleanup > open the policy >
+# "Choose what to do with the content" > select "Delete data permanently".
+# VERIFY (pilot tenant) this is even a valid action against a PowerShell-provisioned policy -
+# the design notes Section 4 documents the two open readings.
 
 # 4. Review simulation sample results in the portal - a SECOND, DIFFERENT Priority Cleanup Admin
-#    must do this review.
+# must do this review.
 
 # 5. That second admin turns the policy on:
 ./deploy/New-PriorityCleanupPermanentDeletionPolicy.ps1 -ConfigPath ./deploy/config/priority-cleanup-permanent-deletion.json -EnforceSimulation
@@ -50,7 +50,7 @@ pending disposals happens only in the portal - **Pending cleanups → select ite
 | Content-disposition mode | **Not scriptable** | "Delete data permanently" vs. default Recycle-Bin outcome - portal-wizard-only, see the implementation steps and the known limitations |
 | Policy cmdlet | `New-RetentionCompliancePolicy -PriorityCleanup -IsSimulation` | Same as sibling; needs ≥1 of `-OneDriveLocation`/`-SharePointLocation` |
 | Scope | Deliberately **narrow, static, incident-specific** (named sites/accounts) | Unlike the sibling's broad/continual scope - see the design notes |
-| Rule cmdlet | `New-RetentionComplianceRule -PriorityCleanup -ApplyComplianceTag -ContentMatchQuery` | Query is **incident-specific**, not a generic worked example like the sibling's `ProgID:Media AND ProgID:Meeting` - construct per §config `_ruleNote` |
+| Rule cmdlet | `New-RetentionComplianceRule -PriorityCleanup -ApplyComplianceTag -ContentMatchQuery` | Query is **incident-specific**, not a generic worked example like the sibling's `ProgID:Media AND ProgID:Meeting` - construct per config `_ruleNote` |
 | Audit operation (disposal) | **`PriorityCleanupFileDeleted`** | Distinct from the sibling's `PriorityCleanupFileRecycled` - the only scriptable confirmation that permanent deletion occurred |
 | Classification check | `Get-ComplianceTag`/`Get-RetentionCompliancePolicy`/`Get-RetentionComplianceRule -PriorityCleanup` | Same filter switch as the sibling; **cannot** distinguish permanent-deletion mode |
 

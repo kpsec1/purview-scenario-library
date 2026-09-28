@@ -80,9 +80,9 @@ flowchart TD
         DP[("Data product: Customer Master Data<br/>(manage-data-products)")]
     end
     DOM -.->|resolved by name| C
-    DP -.->|resolved by name, linked from ITS OWN<br/>relationships endpoint - design.md Section 4| L
+    DP -.->|resolved by name, linked from ITS OWN<br/>relationships endpoint - the design notes Section 4| L
 
-    subgraph Gap["Confirmed API gap - design.md Section 4"]
+    subgraph Gap["Confirmed API gap - the design notes Section 4"]
         GAP["Okr operation group has NO<br/>Create/List/Delete Relationship operation"]
     end
     GAP -.->|"link created on the DATA PRODUCT side instead<br/>(entityType=OBJECTIVE is a documented<br/>EntityCategory value there)"| N

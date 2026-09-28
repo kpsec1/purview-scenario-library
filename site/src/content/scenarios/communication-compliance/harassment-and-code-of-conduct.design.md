@@ -189,7 +189,7 @@ wired together but are independent unless that specific IRM-side option is expli
 
 ```mermaid
 flowchart TD
-    A[Compliance/HR admin completes<br/>portal runbook - README.md Section 5] --> B["Workplace Harassment & Code of<br/>Conduct policy - Exchange/Teams/<br/>Viva Engage, 4 classifiers + dictionary"]
+    A[Compliance/HR admin completes<br/>portal runbook - this page Section 5] --> B["Workplace Harassment & Code of<br/>Conduct policy - Exchange/Teams/<br/>Viva Engage, 4 classifiers + dictionary"]
     U[Employee self-reports a Teams/<br/>Viva Engage message] --> V[User-reported messages<br/>policy - reviewers reassigned<br/>to HR/Legal]
     B --> C{Message matches<br/>a condition?}
     C -- Yes --> D[Alert generated<br/>up to 24h depending on content type]

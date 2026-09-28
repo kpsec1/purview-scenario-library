@@ -23,7 +23,7 @@ Connect-ExchangeOnline -AppId $AppId -CertificateThumbprint $Thumbprint -Organiz
     -ResolveMembers
 
 # 2. Author the selection file recording which roster members counsel identified, and why
-#    (see deploy/config/roster-selection.sample.json).
+# (see deploy/config/roster-selection.sample.json).
 
 # 3. Dry-run the merge -- reports what would change, writes nothing.
 ./deploy/Merge-RosterIntoHoldDefinition.ps1 `

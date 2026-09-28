@@ -56,7 +56,7 @@ flowchart TD
         AAL["Search-AdminAuditLog<br/>(-IncludeAuditAttribution, optional)"]
     end
     subgraph Config["Organization-maintained input (shared with parent)"]
-        KD["KnownDomains.json<br/>(same file, design.md Sec 7)"]
+        KD["KnownDomains.json<br/>(same file, the design notes Sec 7)"]
     end
     subgraph Prior["Previous on-premises run"]
         BL["On-premises baseline snapshot JSON"]
@@ -80,7 +80,7 @@ flowchart TD
     BL --> C4
     C4 -- Added/Removed/Changed --> F4["Drift findings<br/>(this run vs. last on-prem run)"]
 
-    AD --> C5{"Cross-environment check<br/>(design.md Sec 4)"}
+    AD --> C5{"Cross-environment check<br/>(the design notes Sec 4)"}
     CBL -. "file read only,<br/>no live cloud connection" .-> C5
     C5 -- "DomainType / MatchSubDomains /<br/>Default disagrees between environments" --> F5["CrossEnvironmentMismatch /<br/>CrossEnvironmentMatchSubDomainsMismatch /<br/>CrossEnvironmentDefaultMismatch finding<br/>(one category per field, Sec 6)"]
 

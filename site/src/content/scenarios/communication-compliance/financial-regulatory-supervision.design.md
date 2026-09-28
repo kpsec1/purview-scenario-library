@@ -217,7 +217,7 @@ own written supervisory procedures) Rule 3110(b)(4) requires, separately from co
 
 ```mermaid
 flowchart TD
-    A[Compliance/Legal admin completes<br/>portal runbook - README.md Section 5] --> B["Financial Regulatory Supervision<br/>policy - Exchange/Teams, 7 classifiers<br/>+ evasion-phrase dictionary,<br/>scoped to registered-rep group"]
+    A[Compliance/Legal admin completes<br/>portal runbook - this page Section 5] --> B["Financial Regulatory Supervision<br/>policy - Exchange/Teams, 7 classifiers<br/>+ evasion-phrase dictionary,<br/>scoped to registered-rep group"]
     B --> C{Message matches<br/>a condition?}
     C -- Yes --> D[Alert generated<br/>up to 24h depending on content type]
     D --> E["Registered-principal Investigators<br/>review content, sentiment, classifiers"]
@@ -232,7 +232,7 @@ flowchart TD
     J --> L["FINRA 3110(b)(4) evidence-of-review CSV<br/>reviewer / content ref / date / action"]
     K --> M[validate/Test-FinraSupervisionEvidence.ps1]
     L --> M
-    N["scenarios/data-lifecycle-management/<br/>retention-labels-financial-records/<br/>(17a-4/4511 retention - separate control)"] -.complements, not replaces.-> B
+    N["Data Lifecycle Management<br/>retention-labels-financial-records/<br/>(17a-4/4511 retention - separate control)"] -.complements, not replaces.-> B
 ```
 
 ## 10. Grounding note (this build's environment)

@@ -87,7 +87,7 @@ flowchart TD
     SQL -.->|shared underlying asset| DP
 
     subgraph Observed["Computed by Microsoft's platform - not created by this scenario"]
-        R["'Associated data products' rollup<br/>(design.md Section 5)"]
+        R["'Associated data products' rollup<br/>(the design notes Section 5)"]
     end
     DP -.-> R
     Q -.-> R

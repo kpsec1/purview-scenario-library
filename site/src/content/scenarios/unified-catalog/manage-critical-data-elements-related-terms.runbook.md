@@ -19,7 +19,7 @@ parent: "unified-catalog/manage-critical-data-elements-related-terms"
 
 ```powershell
 # 1. Dry run - reports every change, makes none (still performs read-only lookups against the
-#    live tenant, including the term/CDE existence checks, to accurately report the plan)
+# live tenant, including the term/CDE existence checks, to accurately report the plan)
 ./deploy/Add-CdeRelatedTerm.ps1 `
     -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `

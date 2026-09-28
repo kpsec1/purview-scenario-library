@@ -69,7 +69,7 @@ flowchart TD
         Scope["Adaptive scope (New-AdaptiveScope)<br/>LocationType: User · query: Title in [...]<br/>(shared with adaptive-scope-retention sibling)"]
         Label["Retention label (New-ComplianceTag)<br/>Keep 3650 days · Record (not regulatory)"]
         Policy["Auto-apply policy (New-RetentionCompliancePolicy)<br/>-AdaptiveScopeLocation &lt;scope&gt;"]
-        Rule["Rule (New-RetentionComplianceRule)<br/>-ApplyComplianceTag &lt;label&gt; (no -Name - see design.md Section 3)"]
+        Rule["Rule (New-RetentionComplianceRule)<br/>-ApplyComplianceTag &lt;label&gt; (no -Name - see the design notes Section 3)"]
         Publish[["publish-labels-for-manual-application/<br/>(sibling scenario - REGULATORY RECORD path)"]]
     end
 

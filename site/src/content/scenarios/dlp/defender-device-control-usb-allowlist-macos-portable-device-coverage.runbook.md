@@ -26,12 +26,12 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-portable-device-coverag
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (certificate app-only - see docs/automation-surface.md Section 3)
+# 1. Connect (certificate app-only - see Automation surface Section 3)
 Connect-MgGraph -ClientId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 2. Edit deploy/config/mac-portable-device-coverage.sample.json (or copy it). Leave
-#    approvedAppleDevices/approvedPortableDevices empty for pure default-deny, or add entries to
-#    allowlist specific IT-issued devices by serial number.
+# approvedAppleDevices/approvedPortableDevices empty for pure default-deny, or add entries to
+# allowlist specific IT-issued devices by serial number.
 
 # 3. Dry run - reports the planned PATCH, makes no changes
 ./deploy/Add-MacPortableDeviceCoverage.ps1 `

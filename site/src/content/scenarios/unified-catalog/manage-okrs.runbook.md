@@ -29,7 +29,7 @@ other Unified Catalog scenarios:
 
 ```powershell
 # 1. Dry run - reports every change, makes none (still performs read-only lookups against the
-#    live tenant to accurately report create-vs-update - see Section 11)
+# live tenant to accurately report create-vs-update - see Section 11)
 ./deploy/New-Okr.ps1 `
     -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `
@@ -54,7 +54,7 @@ other Unified Catalog scenarios:
     -DefinitionPath './deploy/config/customer-data-trust-okr.sample.json'
 
 # 5. Optional, on a recurring schedule (Windows Task Scheduler / cron / Azure Automation runbook -
-#    see Section 8): trend progress over time and flag a key result that has stopped changing.
+# see Section 8): trend progress over time and flag a key result that has stopped changing.
 ./deploy/Export-OkrProgressTrend.ps1 `
     -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `

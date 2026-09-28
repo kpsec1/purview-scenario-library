@@ -36,7 +36,7 @@ unsupported file types - see that scenario's own the known limitations) all cros
 content-only control. Device-identity control closes that gap by asking a different question
 entirely: not "is this content sensitive?" but "is this physical device one we've approved?" -
 the same two-layer posture (content-aware + device-identity-aware) that regulators and auditors
-increasingly expect for removable-media handling under GDPR Article 32, HIPAA's 45 CFR §164.312
+increasingly expect for removable-media handling under GDPR Article 32, HIPAA's 45 CFR 164.312
 media controls, PCI DSS Requirement 3, and SOC 2 CC6, none of which name this exact control but
 all of which reference "media controls"/"physical safeguards" broadly enough to expect both
 dimensions covered, not just one.

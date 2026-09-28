@@ -56,7 +56,7 @@ sequenceDiagram
     Op->>Remove: -DefinitionPath -StatePath (re-identifies fresh)
     Remove->>EXO: Set-Mailbox -LitigationHoldEnabled $false / -RemoveDelayHoldApplied
     Remove->>SCC: Set-RetentionCompliancePolicy -RemoveExchangeLocation/-RemoveModernGroupLocation / -AddExchangeLocationException
-    Note over Remove: eDiscovery case holds and legacy In-Place<br/>Holds are identify-only - never removed (design.md Section 6)
+    Note over Remove: eDiscovery case holds and legacy In-Place<br/>Holds are identify-only - never removed (the design notes Section 6)
     Remove-->>Op: -StatePath JSON (exactly what was changed)
 
     Op->>Purge: New-TeamsMessagePurgeSearch.ps1 / Invoke-TeamsMessagePurge.ps1 (sibling scenario, unmodified)
@@ -64,7 +64,7 @@ sequenceDiagram
     Op->>Restore: -StatePath
     Restore->>EXO: Set-Mailbox -LitigationHoldEnabled $true
     Restore->>SCC: Set-RetentionCompliancePolicy -AddExchangeLocation/-AddModernGroupLocation / -RemoveExchangeLocationException
-    Note over Restore: ComplianceTagHoldApplied clears are<br/>NOT reversible - reported, not restored (design.md Section 5)
+    Note over Restore: ComplianceTagHoldApplied clears are<br/>NOT reversible - reported, not restored (the design notes Section 5)
 ```
 
 Full rationale, including the hold-type scope table and why two hold types are identify-only by

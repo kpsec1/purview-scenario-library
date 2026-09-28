@@ -45,7 +45,7 @@ the design notes for the full diff.
 ## Why this matters
 
 Same underlying drivers as both sibling scenarios - GDPR Art. 30 records of processing, CCPA/CPRA data
-inventory obligations, PCI DSS Requirement 3.2/12.5.2 cardholder data discovery, HIPAA §164.308 risk
+inventory obligations, PCI DSS Requirement 3.2/12.5.2 cardholder data discovery, HIPAA section 164.308 risk
 analysis all require an accurate, current inventory of where regulated data lives. Azure Synapse Analytics is frequently the landing zone for an enterprise's
 integrated analytics estate - dedicated SQL pools hosting curated, governed data marts and serverless
 SQL pools querying data lake files on demand - which means it is disproportionately likely to

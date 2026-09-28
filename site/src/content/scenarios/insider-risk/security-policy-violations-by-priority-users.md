@@ -67,7 +67,7 @@ flowchart TD
     Policy -->|"MDE alert on a priority-group\nmember IS the triggering event"| Alert["IRM Alert\n(pseudonymized by default,\nhigher likelihood/severity for\npriority-group members)\ndetectionSource = microsoftInsiderRiskManagement"]
     MDEAlert["Underlying Defender for Endpoint alert\ndetectionSource = microsoftDefenderForEndpoint"] -.->|"same incidentId?\n(VERIFY - same open question\nas the base/departing-users siblings)"| Alert
     Alert --> Dashboard["Purview portal:\nInsider Risk Management ▸ Alerts\n(reviewable only by the role groups/\nusers assigned in the priority\nuser group's review permissions)"]
-    Alert -->|"Graph Security API\n/security/alerts_v2"| Export["../security-policy-violations-by-departing-users/\ndeploy/Export-SecurityViolationInsiderRiskAlerts.ps1\n(reused, not duplicated - see §5 Step 6)"]
+    Alert -->|"Graph Security API\n/security/alerts_v2"| Export["../security-policy-violations-by-departing-users/\ndeploy/Export-SecurityViolationInsiderRiskAlerts.ps1\n(reused, not duplicated - see step 6 of the implementation steps)"]
     MDEAlert -->|"Graph Security API\n/security/alerts_v2"| Export
     Export --> SIEM["SIEM / ticketing\n(Sentinel, ServiceNow, Splunk, ...)"]
 ```

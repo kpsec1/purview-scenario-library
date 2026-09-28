@@ -80,7 +80,7 @@ the case is still open and before an analyst has necessarily looked at it.
 
 ```mermaid
 flowchart TD
-    IRM["Existing Insider Risk Management policy\n(e.g. scenarios/insider-risk/\ndeparting-employee-data-theft,\nor Data leaks template)\n[not created by this scenario]"] -->|alerts / activity insights| APEngine["Adaptive Protection engine\n(ML-computed insider risk levels)\n[portal-only: enable + define\nrisk-level thresholds]"]
+    IRM["Existing Insider Risk Management policy\n(e.g. Insider Risk Management\ndeparting-employee-data-theft,\nor Data leaks template)\n[not created by this scenario]"] -->|alerts / activity insights| APEngine["Adaptive Protection engine\n(ML-computed insider risk levels)\n[portal-only: enable + define\nrisk-level thresholds]"]
     APEngine -->|"assigns Elevated / Moderate / Minor\nrisk level to a user"| RiskLevel[("User's current\ninsider risk level")]
     RiskLevel -->|"read at evaluation time via\n-SharedByIRMUserRisk condition"| DlpPolicy["DLP Policy:\n'Adaptive Protection - Teams and Exchange DLP'\n(deploy/New-AdaptiveProtectionDlpPolicy.ps1)"]
     DlpPolicy -->|"Rule 1: Elevated risk\n+ shared externally"| Block["Block external share\n(policy tip, incident report)"]

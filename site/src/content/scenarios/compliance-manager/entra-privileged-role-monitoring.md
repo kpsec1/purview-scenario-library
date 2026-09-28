@@ -58,7 +58,7 @@ flowchart TD
     B --> C["deploy/Export-EntraPrivilegedRoleAuditTrail.ps1<br/>(Get-MgAuditLogDirectoryAudit, surface 3)"]
     C --> D[Rolling audit-trail CSV]
     D --> E["validate/Test-EntraPrivilegedRoleAuditTrail.ps1"]
-    D -.same time window, cross-referenced.-> F["scenarios/compliance-manager/assess-against-iso27001/<br/>deploy/out/compliance-manager-audit-trail.csv"]
+    D -.same time window, cross-referenced.-> F["Assess Against ISO/IEC 27001:2022<br/>deploy/out/compliance-manager-audit-trail.csv"]
 
     G["Get-MgGroup -Filter isAssignableToRole eq true<br/>+ Get-MgRoleManagementDirectoryRoleAssignment<br/>(Phase 1: discover role-assignable groups<br/>holding one of the 4 monitored roles)"] --> H["Monitored group set - current state, re-discovered every run"]
     H --> I["Member added/removed from a<br/>monitored role-assignable group"] --> J["Microsoft Entra directory audit log<br/>category=GroupManagement<br/>activity: Add/Remove member to/from group"]

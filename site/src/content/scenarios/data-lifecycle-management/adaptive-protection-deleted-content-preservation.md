@@ -46,7 +46,7 @@ enforcement): together the three form detect → block-sharing → preserve-dele
 flowchart TD
     IRM["Insider Risk Management policy\n[not built by this scenario]"] -->|alerts| APEngine["Adaptive Protection engine\n[portal-only]"]
     APEngine -->|Elevated risk level| RiskLevel[("User's insider\nrisk level")]
-    Toggle["Portal toggle: 'Adaptive protection\nin Data Lifecycle Management'\n[README.md Section 5 -- portal-only]"] -->|creates| DLMPolicy["Auto-created retention label\n+ policy [invisible; no API]"]
+    Toggle["Portal toggle: 'Adaptive protection\nin Data Lifecycle Management'\n[this page Section 5 -- portal-only]"] -->|creates| DLMPolicy["Auto-created retention label\n+ policy [invisible; no API]"]
     RiskLevel -->|Elevated user deletes content| DLMPolicy
     DLMPolicy -->|preserve 120 days| Preserved[("Deleted item,\nsearchable via eDiscovery")]
     DLMPolicy -->|emits| AuditEvt["Audit: Retained file/email\nitem proactively"]

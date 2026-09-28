@@ -33,9 +33,9 @@ parent: "ediscovery/premium-legal-hold-and-export"
 ### Script path (idempotent, parameterized, dry-run capable)
 
 ```powershell
-# 1. Connect (app-only, certificate - see docs/automation-surface.md §3). All three deploy
-#    scripts below share this connection if you Connect-MgGraph once first, or connect
-#    per-invocation using the -AppId/-TenantId/-CertificateThumbprint parameters shown.
+# 1. Connect (app-only, certificate - see Automation surface, section 3). All three deploy
+# scripts below share this connection if you Connect-MgGraph once first, or connect
+# per-invocation using the -AppId/-TenantId/-CertificateThumbprint parameters shown.
 
 # 2. Dry run - reports every case/custodian/hold action this run would take, makes none.
 ./deploy/New-EdiscoveryPremiumLegalHold.ps1 `
@@ -50,14 +50,14 @@ parent: "ediscovery/premium-legal-hold-and-export"
 # Get-MgSecurityCaseEdiscoveryCase | Where-Object DisplayName -eq '<name>').
 
 # 4. Search, commit to review set, export. Stop short of export with -SkipExport to let a
-#    reviewer tag/cull first.
+# reviewer tag/cull first.
 ./deploy/New-EdiscoverySearchReviewSetExport.ps1 `
     -DefinitionPath ./deploy/policy/ediscovery-case-definition.json `
     -CaseId $caseId `
     -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
-# 5. Download the export package (requires the eDiscovery.Download.Read permission from §5
-#    step 6, above).
+# 5. Download the export package (requires the eDiscovery.Download.Read permission from the implementation steps
+# step 6, above).
 ./deploy/Get-EdiscoveryExportPackage.ps1 `
     -CaseId $caseId -ExportOperationId $exportOpId `
     -OutputDirectory ./exports/CONTOSO-LIT-2026-014-export1 `
@@ -69,7 +69,7 @@ parent: "ediscovery/premium-legal-hold-and-export"
     -CaseId $caseId -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 # 7. Audit trail (independent of the Graph objects above; run on a recurring schedule per Section 8
-#    "Audit visibility" - Exchange Online PowerShell, not Graph, so connect separately).
+# "Audit visibility" - Exchange Online PowerShell, not Graph, so connect separately).
 Connect-ExchangeOnline -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 ./deploy/Export-EdiscoveryAuditTrail.ps1 `
     -CaseName 'CONTOSO-LIT-2026-014' -OutputCsvPath ./deploy/out/edisc-audit-trail.csv

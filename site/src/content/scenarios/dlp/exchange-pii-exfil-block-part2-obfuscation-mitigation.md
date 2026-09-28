@@ -42,7 +42,7 @@ materially stronger, still-honest position for a board-level or audit narrative.
 
 ```mermaid
 flowchart TD
-    subgraph Detect["Detection - portal-configured, not scriptable (§5)"]
+    subgraph Detect["Detection - portal-configured, not scriptable"]
         GlobalInd["Global setting: DLP alerts indicator ->\nAdd DLP policy 'PII DLP -\nExchange External Send Control'"]
         ParentPolicy["Parent policy's own High-severity\nrule match -> written to audit log"]
         IRM["New IRM policy 'IRM-PII-Exchange-Drip-Exfiltration'\n(Data leaks template)\nTrigger: User matches a DLP policy\n(the parent policy, directly)\nCumulative exfiltration detection: ON"]

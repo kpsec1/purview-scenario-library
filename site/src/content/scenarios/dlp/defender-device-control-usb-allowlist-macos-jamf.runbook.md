@@ -17,7 +17,7 @@ Purview-specific JAMF onboarding guide.
 
 ```powershell
 # 1. Edit deploy/config/mac-device-control-usb-allowlist-jamf.sample.json (or copy it) with your
-#    approved-device serial numbers.
+# approved-device serial numbers.
 
 # 2. Dry run - reports what would be written, writes nothing
 ./deploy/New-JamfDeviceControlPolicyJson.ps1 `

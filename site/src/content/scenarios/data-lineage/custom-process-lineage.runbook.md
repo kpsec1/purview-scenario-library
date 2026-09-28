@@ -22,8 +22,8 @@ parent: "data-lineage/custom-process-lineage"
 
 ```powershell
 # 1. Copy the upstream/downstream assets' real Qualified Name values from the portal into the
-#    definition file first - see deploy/lineage/customer-risk-summary-process-lineage.json.
-#    (The Process entity's own qualifiedName is authored by this scenario, not copied - see §11.)
+# definition file first - see deploy/lineage/customer-risk-summary-process-lineage.json.
+# (The Process entity's own qualifiedName is authored by this scenario, not copied - see the known limitations.)
 
 # 2. Deploy (dry run first - reports what already exists and what would be created)
 ./deploy/New-CustomProcessLineage.ps1 `
@@ -33,7 +33,7 @@ parent: "data-lineage/custom-process-lineage"
     -WhatIf
 
 # 3. Deploy for real - creates the custom type (if missing), upserts the Process entity, and
-#    creates either or both relationships if missing
+# creates either or both relationships if missing
 ./deploy/New-CustomProcessLineage.ps1 `
     -PurviewAccountEndpoint 'https://api.purview-service.microsoft.com' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `

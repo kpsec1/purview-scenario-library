@@ -5,7 +5,7 @@ parent: "records-management/multi-stage-disposition-review"
 ## Implementation steps
 
 ```powershell
-# Connect (certificate app-only preferred - docs/automation-surface.md Section 3)
+# Connect (certificate app-only preferred - Automation surface Section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
 # 1. Dry run - prints the exact cmdlets AND the exact -MultiStageReviewProperty JSON, starts nothing

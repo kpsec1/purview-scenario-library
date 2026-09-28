@@ -144,7 +144,7 @@ sequenceDiagram
     Script-->>Operator: Prints authKey1 (once) - paste into the SHIR installer
     Note over Operator,SHIR: Manual, out-of-band: download/install the SHIR software,<br/>paste the key, confirm the node registers as "Running"
     Operator->>SHIR: Install + register with authKey1
-    Note over Operator,SQL: Manual, out-of-band: create the SQL/Windows login,<br/>grant db_datareader, store the password in Key Vault,<br/>create the Purview credential object (portal-only, no REST endpoint - see design.md §8)
+    Note over Operator,SQL: Manual, out-of-band: create the SQL/Windows login,<br/>grant db_datareader, store the password in Key Vault,<br/>create the Purview credential object (portal-only, no REST endpoint - see the design notes)
     Script->>API: PUT /scan/datasources/{name} (kind=SqlServerDatabase)
     API-->>Script: 200/201 data source
     Script->>API: PUT /scan/datasources/{name}/scans/{name} (kind=SqlServerDatabaseCredential, connectedVia=SHIR, credential=ref)

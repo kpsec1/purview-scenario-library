@@ -31,8 +31,7 @@ closed the identical gap for removable-media (USB mass-storage) devices.
 ## Why this matters
 
 Identical regulatory framing to the parent and portable-device-coverage scenarios
-(*Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist* (why this matters)) - GDPR Article 32, HIPAA's 45 CFR
-§164.312 media controls, PCI DSS Requirement 3, SOC 2 CC6. This fragment closes a specific
+(*Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist* (why this matters)) - GDPR Article 32, HIPAA's 45 CFR 164.312 media controls, PCI DSS Requirement 3, SOC 2 CC6. This fragment closes a specific
 operational gap in the Apple/Portable coverage control: a tenant that cannot approve a legitimate
 IT-issued iPad or barcode scanner because it lacks a serial number is left choosing between an
 unapproved control gap (the device stays denied, prompting shadow-IT workarounds or a support ticket

@@ -193,7 +193,7 @@ flowchart TD
     B --> C["deploy/Export-EntraPrivilegedRoleAuditTrail.ps1<br/>(Get-MgAuditLogDirectoryAudit, surface 3)"]
     C --> D[Rolling audit-trail CSV]
     D --> E["validate/Test-EntraPrivilegedRoleAuditTrail.ps1"]
-    D -.same time window, cross-referenced.-> F["scenarios/compliance-manager/assess-against-iso27001/<br/>deploy/out/compliance-manager-audit-trail.csv"]
+    D -.same time window, cross-referenced.-> F["Assess Against ISO/IEC 27001:2022<br/>deploy/out/compliance-manager-audit-trail.csv"]
 ```
 
 ## 9. Non-goals

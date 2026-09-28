@@ -60,7 +60,7 @@ natural "how healthy is the glossary we just curated, over time" companion to th
 flowchart TD
     subgraph Native["Native classic glossary report (portal-only, for context - not called by this scenario)"]
         Insights["Classic glossary report<br/>(Unified Catalog → Health management → Reports)"]
-        ClassicModel["Targets the classic, Atlas-based<br/>glossary model - a DIFFERENT object<br/>model from this repo's Unified Catalog terms"]
+        ClassicModel["Targets the classic, Atlas-based<br/>glossary model - a DIFFERENT object<br/>model from this library's Unified Catalog terms"]
         Insights --> ClassicModel
     end
 

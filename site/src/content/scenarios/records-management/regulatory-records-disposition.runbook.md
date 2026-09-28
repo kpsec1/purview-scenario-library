@@ -5,7 +5,7 @@ parent: "records-management/regulatory-records-disposition"
 ## Implementation steps
 
 ```powershell
-# Connect (certificate app-only preferred - docs/automation-surface.md §3)
+# Connect (certificate app-only preferred - Automation surface, section 3)
 Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmicrosoft.com'
 
 # 1. Dry run - prints the exact cmdlets, starts nothing

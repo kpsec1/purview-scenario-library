@@ -30,7 +30,7 @@ Connect-ExchangeOnline -AppId $AppId -CertificateThumbprint $Thumbprint -Organiz
     -DefinitionPath ./deploy/config/teams-group-hold-resolution.sample.json
 
 # 4a. Merge the resolved fragment into location-scoped-legal-hold's definition file by hand, then
-#     run that sibling scenario's own deploy script -- OR --
+# run that sibling scenario's own deploy script -- OR --
 # 4b. Reconcile directly onto an already-existing hold policy:
 ./deploy/Resolve-TeamsGroupHoldLocations.ps1 `
     -DefinitionPath ./deploy/config/teams-group-hold-resolution.sample.json `

@@ -97,7 +97,7 @@ name.
 
 ```mermaid
 flowchart TD
-    A["-ConfigPath: vendorProductDevices[]<br/>(label, vendorId, productId)"] --> B["Get-DeterministicSubGroupId<br/>RFC 4122 §4.3 UUIDv5(namespace, vendorId:productId)"]
+    A["-ConfigPath: vendorProductDevices[]<br/>(label, vendorId, productId)"] --> B["Get-DeterministicSubGroupId<br/>RFC 4122 the architecture.3 UUIDv5(namespace, vendorId:productId)"]
     B --> C["Desired sub-group id set"]
     D["Live policy: groups named<br/>VendorProductMatch-*"] --> E["Existing owned id set"]
     C --> F{Diff}

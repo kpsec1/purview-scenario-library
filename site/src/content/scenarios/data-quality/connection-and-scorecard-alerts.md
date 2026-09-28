@@ -47,7 +47,7 @@ last time this dropped below threshold").
 
 ```mermaid
 flowchart TD
-    subgraph Prereqs["Already governed (built by other scenarios in this repo)"]
+    subgraph Prereqs["Already governed (built by other scenarios in this library)"]
         Domain["Governance domain:<br/>Customer Experience"]
         Product["Data product:<br/>Customer 360"]
         Asset[("Customer data asset<br/>customerdb.dbo.Customers")]
@@ -60,7 +60,7 @@ flowchart TD
         Alerts["Score-threshold alerts<br/>(score_threshold / score_variance)"]
     end
 
-    subgraph Sibling["scenarios/data-quality/rules-and-scorecards/"]
+    subgraph Sibling["Configure Rules and Review Scorecards for a Governed Data Asset"]
         Rules["Data Quality rules"]
         Sched["RunOnce schedule"]
         Spark["Managed Spark scan engine"]

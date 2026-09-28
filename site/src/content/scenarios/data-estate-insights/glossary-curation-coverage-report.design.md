@@ -135,7 +135,7 @@ sequenceDiagram
                 Report->>Report: tally with-assets/without-assets per status
             end
         else
-            Report->>Report: AssetLinkage fields reported as "Skipped" (README.md Section 11)
+            Report->>Report: AssetLinkage fields reported as "Skipped" (this page Section 11)
         end
     end
     Report->>Report: write/replace this RunId's row(s) in the trend-log CSV - <br/>write a per-run breakdown JSON

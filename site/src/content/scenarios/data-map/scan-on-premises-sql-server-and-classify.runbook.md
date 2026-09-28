@@ -49,7 +49,7 @@ parent: "data-map/scan-on-premises-sql-server-and-classify"
     -WhatIf
 
 # 2. Deploy for real - creates the integration runtime resource (prints its auth key ONCE),
-#    registers the source and the scan. Does not run it yet.
+# registers the source and the scan. Does not run it yet.
 ./deploy/New-OnPremisesSqlServerDataMapScan.ps1 `
     -PurviewAccountName 'contoso-purview' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `
@@ -58,15 +58,15 @@ parent: "data-map/scan-on-premises-sql-server-and-classify"
     -CollectionReferenceName 'a1b2c' -CredentialReferenceName 'onprem-sql-svc-account'
 
 # --- Manual, out-of-band, between steps 2 and 3 ---
-#   a. Install the SHIR software on a Windows host with network access to sql01.contoso.local,
-#      pasting in the auth key step 2 printed. Confirm the node shows "Running" in the portal.
-#   b. Create the SQL/Windows login + db_datareader grant, store its password in Key Vault, and
-#      create the 'onprem-sql-svc-account' credential object in Purview (README.md Section 5,
-#      steps 2-4). None of this is scriptable from this repo's automation identity - see Section 11.
+# a. Install the SHIR software on a Windows host with network access to sql01.contoso.local,
+# pasting in the auth key step 2 printed. Confirm the node shows "Running" in the portal.
+# b. Create the SQL/Windows login + db_datareader grant, store its password in Key Vault, and
+# create the 'onprem-sql-svc-account' credential object in Purview (this page Section 5,
+# steps 2-4). None of this is scriptable from this library's automation identity - see Section 11.
 
 # 3. Once (a) and (b) above are confirmed done, add a weekly recurring trigger and kick off an
-#    immediate full scan. -SkipIntegrationRuntimeAuthKey avoids rotating the key the SHIR node
-#    already registered with.
+# immediate full scan. -SkipIntegrationRuntimeAuthKey avoids rotating the key the SHIR node
+# already registered with.
 ./deploy/New-OnPremisesSqlServerDataMapScan.ps1 `
     -PurviewAccountName 'contoso-purview' `
     -TenantId $TenantId -AppId $AppId -ClientSecret $ClientSecret `

@@ -5,7 +5,7 @@ categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "data-leaks-by-risky-users"
 teaser: "Deploys Microsoft Purview Insider Risk Management's Data leaks by risky users policy template - the \"risky users\" member of the Data leaks… template family (base Data leaks, …by priority users, …by risky users), sharing its bring-into-scope mechanism with…"
-readingMinutes: 12
+readingMinutes: 13
 whoFor: "A tenant that wants employment-stressor-triggered exfiltration detection **without** a Microsoft Defender for Endpoint dependency - the single biggest practical difference from this library's *Security Policy Violations by Risky Users* sibling, which scores the same trigger mechanism but requires an active Defender for Endpoint subscription and its Purview alert-sharing integration. A tenant with Microsoft 365 E5 but no Defender for Endpoint deployed can still run this scenario end to end."
 frameworks: ["SOC 2","ISO 27001"]
 licensing: ["Microsoft 365 E5","Defender for Endpoint P2"]
@@ -85,7 +85,7 @@ flowchart TD
     CloudApps["Defender for Cloud Apps\n(optional: Box/Dropbox/Google Drive,\nAmazon S3/Azure) - PAYG billing"] -.->|"optional cloud indicators"| Policy
     Policy -->|"scores in-scope user's\nexfiltration activity"| Alert["IRM Alert\n(pseudonymized by default)\ndetectionSource = microsoftInsiderRiskManagement"]
     Alert --> Dashboard["Purview portal:\nInsider Risk Management ▸ Alerts"]
-    Alert -->|"Graph Security API\n/security/alerts_v2"| Export["../departing-employee-data-theft/\ndeploy/Export-InsiderRiskAlerts.ps1\n(reused, not duplicated - see §5 Step 7;\nNO Defender-for-Endpoint join needed here)"]
+    Alert -->|"Graph Security API\n/security/alerts_v2"| Export["../departing-employee-data-theft/\ndeploy/Export-InsiderRiskAlerts.ps1\n(reused, not duplicated - see step 7 of the implementation steps;\nNO Defender-for-Endpoint join needed here)"]
     Export --> SIEM["SIEM / ticketing\n(Sentinel, ServiceNow, Splunk, ...)"]
 ```
 

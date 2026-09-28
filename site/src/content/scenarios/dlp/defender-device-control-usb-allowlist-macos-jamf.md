@@ -27,7 +27,7 @@ Graph, for organizations whose Mac fleet is managed by JAMF rather than Intune.
 
 ## Why this matters
 
-Identical regulatory framing to both siblings - GDPR Article 32, HIPAA's 45 CFR §164.312 media
+Identical regulatory framing to both siblings - GDPR Article 32, HIPAA's 45 CFR 164.312 media
 controls, PCI DSS Requirement 3, and SOC 2 CC6 all reference media/physical safeguards broadly
 enough to expect device-identity coverage regardless of which MDM manages a given endpoint. A
 tenant that deploys *Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist* (Intune) but has any
