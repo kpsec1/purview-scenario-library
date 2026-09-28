@@ -3170,12 +3170,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   **entity type definition** via `Type - Bulk Create` - **closed** (see DONE below): a 2026-09-27
   Microsoft Learn fetch of "Manage assets with metamodel" confirms collection-level Data Curator is
   sufficient for "Create and modify asset types", no broader/root-level grant required.
-- [ ] VERIFY (pilot tenant): the exact REST path and in-use-type deletion behavior of `Type -
-  Delete` - confirmed to exist only via the .NET SDK's `TypeDefinition.Delete(name)` method
-  signature, not an independently fetched canonical REST reference page. Blocks
-  `custom-process-lineage/rollback.md` from scripting deletion of the custom Process type
-  definition it creates; that file documents the deliberate decision to leave the type in place by
-  default and describes the manual, reviewed alternative.
+- [x] VERIFY (pilot tenant): the exact REST path and in-use-type deletion behavior of `Type -
+  Delete` - **REST path half closed 2026-09-28** (see DONE below): the canonical REST reference
+  page confirms `DELETE {endpoint}/datamap/api/atlas/v2/types/typedef/name/{name}`, `204 No
+  Content` on success. The **in-use-type deletion behavior half remains an open VERIFY** - the
+  page's only documented error shape is a generic `AtlasErrorResponse`, with no statement of
+  whether deleting a type that has (or ever had) entity instances succeeds, no-ops, or errors.
+  Still blocks `custom-process-lineage/rollback.md` from scripting deletion of the custom Process
+  type definition it creates; that file documents the deliberate decision to leave the type in
+  place by default and describes the manual, reviewed alternative.
 - [ ] VERIFY (pilot tenant): the not-found HTTP status code for `Type - Get Entity Def By Name` -
   its reference page documents only a 200 OK success shape, so `custom-process-lineage`'s
   existence-check treats any non-success response as "does not exist yet" rather than assuming 404
@@ -8654,6 +8657,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   default behavior (omitting `resourceTypes`) is unchanged — this was a documentation-only grounding
   fix, not a code change. Both `PROGRESS.md` tracking entries for this item (the original follow-up
   and the later re-grounding correction) marked closed in place rather than duplicated.
+- [x] **Maintenance pass — closed the REST-path half of `custom-process-lineage`'s `Type - Delete`
+  VERIFY** — commit PENDING — 2026-09-28. The Microsoft Learn MCP tool was reachable this run;
+  a direct fetch of the canonical `Type - Delete` REST reference page (API version 2023-09-01,
+  `https://learn.microsoft.com/rest/api/purview/datamapdataplane/type/delete`) confirms
+  `DELETE {endpoint}/datamap/api/atlas/v2/types/typedef/name/{name}`, returning `204 No Content`
+  on success — independent of, and matching, the .NET SDK's `TypeDefinition.Delete(name)` method
+  signature this build's original grounding pass had relied on alone. The reference page's only
+  documented non-success shape is a generic `AtlasErrorResponse` ("an unexpected error response"),
+  so the **in-use-type deletion behavior half of this VERIFY stays open** — no statement either way
+  on whether deleting a type with existing (or previously-existing) entity instances succeeds,
+  no-ops, or errors. Updated `scenarios/data-lineage/custom-process-lineage/README.md` (§11 bullet,
+  reference 18) and `rollback.md` (the type-definition-retention rationale and the manual-decommission
+  paragraph) to cite the confirmed path while keeping the in-use-behavior question explicitly open;
+  this file's own tracking bullet above marked `[x]` with both halves called out separately rather
+  than closed wholesale. Doc-only correction — no code change, no new four-lens review round.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,

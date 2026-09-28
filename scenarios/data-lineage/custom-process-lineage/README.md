@@ -267,7 +267,12 @@ entity; the upstream/downstream assets and the custom Process type definition ar
 - **This scenario does not validate that `runbookUrl` points at a live, current document** - see
   §8. A stale link is not detected by `validate/Test-ProcessLineage.ps1`.
 - **Rollback does not delete the custom Process type definition** - see `rollback.md` "What
-  rollback does not undo" for why, and the open VERIFY on the Type - Delete operation itself.
+  rollback does not undo" for why. The `Type - Delete` REST path is now confirmed (2026-09-28
+  Microsoft Learn maintenance pass: `DELETE {endpoint}/datamap/api/atlas/v2/types/typedef/name/{name}`,
+  204 No Content on success - reference 18), but its behavior against a type that has - or ever
+  had - entity instances remains an open VERIFY: the reference page's error shape
+  (`AtlasErrorResponse`, "an unexpected error response") is generic and does not document
+  whether an in-use type succeeds, no-ops, or errors on delete.
 - **This is the Data Map / Atlas REST surface, not the retiring classic Data Catalog UI** - same
   clarification as the sibling scenario (`end-to-end-lineage-validation/README.md` §11); nothing
   here depends on the classic Data Catalog UI or is at risk from its retirement.
@@ -291,7 +296,7 @@ entity; the upstream/downstream assets and the custom Process type definition ar
 15. Relationship - Delete REST reference (API version 2023-09-01) - <https://learn.microsoft.com/rest/api/purview/datamapdataplane/relationship/delete>
 16. Lineage - Get By Unique Attribute REST reference (API version 2023-09-01) - <https://learn.microsoft.com/rest/api/purview/datamapdataplane/lineage/get-by-unique-attribute>
 17. Entity.DeleteByUniqueAttribute method (.NET SDK; confirms `DELETE /datamap/api/atlas/v2/entity/uniqueAttribute/type/{typeName}?attr:qualifiedName={qn}` - this build's grounding pass did not independently fetch a canonical REST-reference page at the same depth as the other operations cited here - see `rollback.md` and the removal script's `.NOTES`) - <https://learn.microsoft.com/dotnet/api/azure.analytics.purview.datamap.entity.deletebyuniqueattribute>
-18. TypeDefinition.Delete method (.NET SDK; confirms a Type - Delete operation exists, but this build did not independently confirm its REST path or in-use-type deletion behavior - `rollback.md`) - <https://learn.microsoft.com/dotnet/api/azure.analytics.purview.datamap.typedefinition.delete>
+18. Type - Delete REST reference (API version 2023-09-01; confirms `DELETE {endpoint}/datamap/api/atlas/v2/types/typedef/name/{name}` and 204 No Content on success - closed 2026-09-28 via direct Microsoft Learn MCP fetch; in-use-type deletion behavior still not documented, see `rollback.md`) - <https://learn.microsoft.com/rest/api/purview/datamapdataplane/type/delete>
 19. Manage assets with metamodel - prerequisites confirm "Data Curator role on the collection where the data asset is housed" is sufficient for "Create and modify asset types" (no broader/root-level grant required) - <https://learn.microsoft.com/purview/legacy/how-to-metamodel#prerequisites>
 
 > Re-verify all links and the VERIFY items in §11 against current Microsoft Learn before a

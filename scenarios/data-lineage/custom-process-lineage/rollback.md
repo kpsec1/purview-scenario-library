@@ -37,13 +37,15 @@ Add `-WhatIf` first to see what would be deleted without deleting it.
      scenario's own `design.md` §8 anticipates), deleting the type on every single-job rollback
      would break every other entity of that type.
   2. **Microsoft's own reference for `Type - Delete` does not document its behavior when the type
-     has - or ever had - entity instances.** This build's grounding pass confirmed the operation
-     exists (via the .NET SDK's `TypeDefinition.Delete(name)` method - `README.md` reference 18)
-     but did not independently confirm its exact REST path or whether it succeeds, no-ops, or
-     errors against a type with existing (or previously-deleted-but-once-existing) instances.
-     Scripting a delete-type action on an unconfirmed behavior risks either a confusing failure or,
-     worse, silently succeeding in a way that surprises an organization that still has other entities of
-     that type.
+     has - or ever had - entity instances.** The exact REST path is now confirmed (2026-09-28
+     maintenance pass, direct Microsoft Learn fetch - `README.md` reference 18):
+     `DELETE {endpoint}/datamap/api/atlas/v2/types/typedef/name/{name}`, returning `204 No Content`
+     on success. But the reference page's only documented failure shape is a generic
+     `AtlasErrorResponse` ("an unexpected error response") - it still does not say whether the call
+     succeeds, no-ops, or errors against a type with existing (or previously-deleted-but-once-existing)
+     instances. Scripting a delete-type action on that unconfirmed behavior risks either a confusing
+     failure or, worse, silently succeeding in a way that surprises an organization that still has
+     other entities of that type.
   3. **This mirrors the sibling scenario's own "never touch what you didn't create for this one
      purpose" discipline** - just applied to a type definition, a shared account-level object,
      rather than an asset.
@@ -52,9 +54,11 @@ Add `-WhatIf` first to see what would be deleted without deleting it.
   entirely, with no other entities of this type anywhere in the tenant), that's a manual,
   reviewed action: confirm zero remaining entities of the type first (there's no confirmed
   "count entities by type" REST call in this repo's grounding - the safest manual check is
-  Data Map's own search/browse UI filtered by type), then call `Type - Delete` directly against
-  the confirmed .NET SDK method's REST equivalent, verifying the exact path and response
-  behavior against a pilot tenant first.
+  Data Map's own search/browse UI filtered by type), then call
+  `DELETE {endpoint}/datamap/api/atlas/v2/types/typedef/name/PurviewScenarioLibraryEtlProcess`
+  directly (`README.md` reference 18), verifying against a pilot tenant first that the call
+  behaves as expected when zero entities of the type remain - its in-use behavior is still
+  unconfirmed either way (see above).
 
 ## Manual portal alternative
 
