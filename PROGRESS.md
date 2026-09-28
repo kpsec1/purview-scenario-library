@@ -3405,7 +3405,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   availability by cloud environment. This build's own date (2026-09-09) is after the cited
   2026-08-24 Worldwide multi-tenant public-preview rollout start, but GCC/GCC High/DoD timing is
   not stated on the official Learn page this scenario cites - `README.md` §11 flags this rather
-  than assuming parity with Worldwide multi-tenant.
+  than assuming parity with Worldwide multi-tenant. **Re-grounded 2026-09-28** (Microsoft Learn
+  MCP): fetched the GCC High deployment guide's Step 4 capability-difference table (the
+  authoritative source for Purview features unavailable/delayed/in-development for GCC High) -
+  no row exists for Priority Cleanup at all, base feature or permanent-deletion sub-feature. Also
+  checked the Microsoft Purview service description's licensing table, which lists Priority
+  Cleanup's required licenses (including Microsoft Purview Suite/EDU/**GOV**/FLW and Office 365
+  E5/A5/G5) with no cloud-environment qualifier. Neither is an affirmative parity statement - an
+  absent table row is equally consistent with the table not yet covering a feature this new -
+  so this remains genuinely unconfirmed rather than guessed either way. `README.md` §3/§11 and
+  §12 (references 10-11 added) updated in place with the full grounding trail; re-open only once
+  either page states GCC/GCC High/DoD timing explicitly or a pilot-tenant check confirms/denies
+  presence directly.
 - [ ] Once Microsoft publishes a PowerShell/Graph parameter or worked example for selecting
   "Delete data permanently" (closing this scenario's central disclosed gap - `design.md` §4), script
   it directly in `New-PriorityCleanupPermanentDeletionPolicy.ps1` instead of the current

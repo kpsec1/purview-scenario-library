@@ -42,7 +42,7 @@ day in advance). This table covers only what's **additional or different** for p
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Tenant availability | Confirm the option is present before use | **Public preview rollout begins 2026-08-24** [[1]](#references) - Worldwide multi-tenant only is confirmed by this Learn page; **VERIFY (pilot tenant)** current availability and any GCC/GCC High/DoD timing difference before a customer-facing commitment (§11) |
+| Tenant availability | Confirm the option is present before use | **Public preview rollout begins 2026-08-24** [[1]](#references) - Worldwide multi-tenant only is confirmed by this Learn page; **VERIFY (pilot tenant)** current availability before a customer-facing commitment - see §11 for the 2026-09-28 GCC/GCC High/DoD grounding pass (still not a confirmed statement of parity) |
 | Content-disposition selection | Portal only | Selecting **"Delete data permanently"** on the policy wizard's "Choose what to do with the content" page has **no confirmed PowerShell/Graph parameter** - see §5 and `design.md` §4 |
 | Review-set exception | Always applies, restated specifically on this feature's own page | Items **already copied to an eDiscovery review set** are **not** deleted by Priority Cleanup, permanent-deletion mode included [[1]](#references) - do not assume a "permanent" policy is exhaustive if a review set copy exists |
 | Records exception | Same as base feature | Content marked as a **record or regulatory record** cannot be targeted by priority cleanup at all [[2]](#references) |
@@ -209,7 +209,19 @@ from being identified and disposed of.
   tenant)** actual availability before relying on this scenario; do not assume GCC/GCC High/DoD
   timing matches Worldwide multi-tenant (unconfirmed by this Learn page - community reporting
   suggests a later, separate timeline for those environments, not independently verified by this
-  build against an official Microsoft source).
+  build against an official Microsoft source). **Re-grounded 2026-09-28** (Microsoft Learn MCP):
+  the GCC High deployment guide's Step 4 capability-difference table - the authoritative source
+  for Purview features that are unavailable, delayed, or "in development" for GCC High - has **no
+  row at all for Priority Cleanup**, base feature or permanent-deletion sub-feature, as of this
+  pass [[10]](#references); the Microsoft Purview service description's Data Lifecycle & Records
+  Management licensing section also lists Priority Cleanup's required licenses (Microsoft 365
+  E5/A5/G5, Microsoft Purview Suite/EDU/**GOV**/FLW, Office 365 E5/A5/G5) with no cloud-environment
+  qualifier [[11]](#references). Neither is an affirmative statement that permanent deletion is
+  live in GCC/GCC High/DoD today - an absent table row can equally mean the table simply hasn't
+  been updated for a feature this new, which is common for recently-preview capabilities - so this
+  does **not** resolve the VERIFY. Remains open; re-open for a fresh pass only once either page is
+  updated to state GCC/GCC High/DoD timing explicitly, or a pilot-tenant check confirms/denies
+  presence directly.
 - **No confirmed CLI/Graph parameter selects "Delete data permanently."** This is this scenario's
   central, disclosed gap - see `design.md` §4. `New-ComplianceTag -RetentionAction` was directly
   confirmed to accept only `Delete`/`Keep`/`KeepAndDelete` during this build's grounding pass.
@@ -245,6 +257,8 @@ from being identified and disposed of.
 7. New-RetentionComplianceRule (`-PriorityCleanup`, `-ApplyComplianceTag`, `-ContentMatchQuery`) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-retentioncompliancerule>
 8. Set-RetentionCompliancePolicy (`-StartSimulation`, `-EnforceSimulationPolicy`) - <https://learn.microsoft.com/powershell/module/exchangepowershell/set-retentioncompliancepolicy>
 9. Get-ComplianceTag / Get-RetentionCompliancePolicy / Get-RetentionComplianceRule (`-PriorityCleanup` filter switch) - <https://learn.microsoft.com/powershell/module/exchangepowershell/get-compliancetag>
+10. Plan for Microsoft Purview compliance and risk management solutions - GCC High deployments (Step 4 capability-difference table; re-fetched 2026-09-28 to check for a Priority Cleanup row - none exists, for the base feature or permanent deletion specifically) - <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/plan-for-microsoft-purview-gcc-high-deployments>
+11. Microsoft Purview service description - Data Lifecycle & Records Management licensing table (lists Microsoft 365 E5/A5/G5, Microsoft Purview Suite/EDU/**GOV**/FLW, and Office 365 E5/A5/G5 as valid Priority Cleanup license paths, with no cloud-environment carve-out stated) - <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-data-lifecycle-&-records-management>
 
 > Re-verify all links, cmdlet parameters, licensing, tenant-availability timing, and - especially -
 > whether a confirmed CLI/Graph path for "Delete data permanently" has since been published, before
