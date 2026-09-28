@@ -172,10 +172,14 @@ selected, because `-PurgeType Recoverable` is genuinely reversible there (Outloo
 Items). For Teams, §2/§3 established that **no** `-PurgeType` value is reversible for the
 user-visible message. `Invoke-TeamsMessagePurge.ps1` therefore requires `-ConfirmPermanentDelete`
 unconditionally, for both `-PurgeType Recoverable` and `-PurgeType PermanentlyDelete` - the switch
-still exists (it's a required Graph request property, and it plausibly still affects the compliance
-copy's own retention/hold-interaction timeline, which this build found no page confirming either
-way - a second, narrower VERIFY carried into `README.md` §11), but it is no longer, by itself, a
-safety gate the way it is for the mailbox sibling.
+still exists (it's a required Graph request property), but it is no longer, by itself, a safety
+gate the way it is for the mailbox sibling. **Grounded 2026-09-28** (Microsoft Learn MCP): the
+`ediscoverySearch: purgeData` Graph reference states that for `purgeAreas: teamsMessages`, either
+`purgeType` value results in permanent deletion - the two values are documented to behave
+identically for Teams, with no separate compliance-copy retention/hold-interaction branch
+described per value. This closes the narrower VERIFY previously carried into `README.md` §11:
+`-PurgeType` does not meaningfully differentiate Teams behavior for either the user copy or the
+compliance copy.
 
 ## 8. Key decisions
 

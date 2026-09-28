@@ -39,9 +39,10 @@
 .PARAMETER PurgeType
     'Recoverable' or 'PermanentlyDelete'. For Teams messages, BOTH values permanently delete the
     user-visible message on success -- neither is a safe default the way -PurgeType Recoverable is
-    for the mailbox sibling. Kept because it's a required Graph request property and may still
-    affect the compliance copy's own retention/hold-interaction timeline (unconfirmed -- see
-    README.md Section 11 VERIFY).
+    for the mailbox sibling. Kept because it's a required Graph request property; Microsoft's own
+    ediscoverySearch: purgeData reference confirms both values behave identically for
+    teamsMessages, with no separate compliance-copy timing per value either (grounded 2026-09-28 --
+    see README.md Section 11 and design.md Section 7).
 
 .PARAMETER ConfirmPermanentDelete
     REQUIRED for every purge this script runs, regardless of -PurgeType. A deliberate deviation from
@@ -89,9 +90,10 @@
     Microsoft documents it as assigned to the Data Investigator and Organization Management role
     groups by default -- README.md Section 3.
 
-    VERIFY: whether -PurgeType still meaningfully affects the compliance copy's own retention or
-    hold-interaction timeline for Teams, even though it no longer gates the user-copy outcome -- no
-    Microsoft Learn page found during this build confirms either way. README.md Section 11.
+    Grounded 2026-09-28 (Microsoft Learn MCP), not a VERIFY: -PurgeType does not meaningfully affect
+    the compliance copy's retention or hold-interaction timeline for Teams -- Microsoft's own
+    ediscoverySearch: purgeData reference confirms both values behave identically for
+    teamsMessages. README.md Section 11.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
 param(

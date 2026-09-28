@@ -229,9 +229,17 @@ case, and the holds you removed and must reapply.
   populated for a mailbox (`userSource`) - this scenario's idempotency check matches on `DisplayName`
   as a best-effort heuristic; `validate/Test-TeamsMessagePurgeSearchAndPurge.ps1` reports this as
   `[WARN]`, not `[PASS]`. `design.md` §6.
-- **VERIFY:** whether `-PurgeType` still meaningfully affects the **compliance copy's** retention or
-  hold-interaction timeline for Teams, even though it no longer gates the user-copy outcome - no
-  Microsoft Learn page found during this build confirms either way. `design.md` §7.
+- **Grounded 2026-09-28 (Microsoft Learn MCP), not a VERIFY:** `-PurgeType` does **not** meaningfully
+  affect the compliance copy's retention or hold-interaction timeline for Teams. The `ediscoverySearch:
+  purgeData` Graph reference - the authoritative source for the `purgeType` parameter itself - states
+  plainly that "when `purgeType` is set to either `recoverable` or `permanentlyDelete` and `purgeAreas`
+  is set to `teamsMessages`, the Teams messages are permanently deleted" [[2]](#references): both
+  values are documented to produce the identical outcome. The compliance-copy retention mechanics
+  Step 6 of [[1]](#references) describes (retained >=24h, background-deleted typically within 1-7
+  days, preserved if a hold is reapplied within that 24h window) are stated once, with no
+  `purgeType`-conditioned branch - unlike the mailbox sibling, where `recoverable`/`permanentlyDelete`
+  map to genuinely different soft-delete/hard-delete mechanics, Teams has no such split. `design.md`
+  §7 updated in place.
 - **This scenario purges Teams messages only** (`purgeAreas: teamsMessages`) - it never touches
   Exchange mailbox content; use the `search-and-purge-data-spillage` sibling for that.
 - **This build corrected a factual error in the `search-and-purge-data-spillage` sibling's own

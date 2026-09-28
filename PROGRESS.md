@@ -897,11 +897,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   populated for a `userSource` (mailbox) - only a `siteSource` worked example was found. The deploy
   script's find-or-create idempotency check matches on `DisplayName` as a best-effort heuristic.
   `search-and-purge-teams-messages/design.md` §6.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether `-PurgeType` still meaningfully
-  affects the Teams **compliance copy's** own retention/hold-interaction timing, even though it no
-  longer gates the user-copy outcome (both values delete the user copy immediately). No Microsoft
-  Learn page found during this build confirms either way. `search-and-purge-teams-messages/README.md`
-  §11.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, `ediscoverySearch: purgeData` Graph reference):
+  `-PurgeType` does **not** meaningfully affect the Teams **compliance copy's** retention/
+  hold-interaction timing. The reference states plainly that for `purgeAreas: teamsMessages`,
+  either `purgeType` value results in permanent deletion - both values are documented to behave
+  identically, with no separate compliance-copy timing per value.
+  `search-and-purge-teams-messages/README.md` §11, `design.md` §7,
+  `deploy/Invoke-TeamsMessagePurge.ps1` (`.PARAMETER PurgeType`/`.NOTES`), and `reviews.md`
+  (correction addendum) updated in place.
 - [x] Consider a cross-cutting follow-up scripting the Teams-purge hold-removal/reapplication
   sequence (identify holds on target mailboxes via Top Locations, remove, purge, reapply) that
   `search-and-purge-teams-messages` deliberately left manual (`design.md` §3 goal 5) - a genuinely
@@ -3621,6 +3624,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `search-and-purge-teams-messages` `-PurgeType` compliance-copy-timing VERIFY** -
+  commit `PENDING` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether `-PurgeType`
+  still meaningfully affects the Teams **compliance copy's** retention/hold-interaction timing, even
+  though it no longer gates the user-copy outcome. Grounded via the Microsoft Learn MCP: the
+  `ediscoverySearch: purgeData` Graph reference - the authoritative source for the `purgeType`
+  parameter itself - states that for `purgeAreas: teamsMessages`, either `purgeType` value results
+  in permanent deletion; both values are documented to behave identically, with no separate
+  compliance-copy retention/hold-interaction branch described per value (unlike the mailbox sibling,
+  where `recoverable`/`permanentlyDelete` map to genuinely different soft-delete/hard-delete
+  mechanics). Updated `search-and-purge-teams-messages/README.md` §11 (VERIFY reworded to grounded
+  finding), `design.md` §7, `deploy/Invoke-TeamsMessagePurge.ps1` (`.PARAMETER PurgeType`/`.NOTES`),
+  and `reviews.md` (correction addendum, matching the existing private-channel-VERIFY addendum
+  pattern) in place. Doc/comment-only correction - no script behavior change (the script already
+  required `-ConfirmPermanentDelete` unconditionally for both values), no new four-lens review round
+  needed per `AGENTS.md` §6.
 - [x] **Closed the `streaming-to-sentinel-or-management-api` data-connector naming-contract VERIFY**
   - commit `fe2a09c` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether a
   `Microsoft.SecurityInsights/dataConnectors` resource's `name` must be a GUID or accepts an
