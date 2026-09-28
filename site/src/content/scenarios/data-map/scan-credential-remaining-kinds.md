@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-credential-remaining-kinds"
-teaser: "Extends Key Vault-Backed Scan Credential (SQL Auth / Service Principal) to the five Microsoft Purview Scanning-data-plane CredentialType kinds that scenario deliberately left out - AccountKey, AmazonARN…"
+teaser: "Extends Key Vault-Backed Scan Credential (SQL Auth / Service Principal) to the five Microsoft Purview Scanning-data-plane CredentialType kinds that scenario deliberately left out - AccountKey, AmazonARN, ConsumerKeyAuth, DelegatedAuth, and ManagedIdentity…"
 readingMinutes: 10
 whoFor: "A data governance team onboarding source types the parent scenario's three kinds (`SqlAuth`, `BasicAuth`, `ServicePrincipal`) don't reach - Azure Storage/Cosmos DB (`AccountKey`), Amazon S3 (`AmazonARN`), Salesforce (`ConsumerKeyAuth`), Microsoft Fabric/Power BI cross-tenant (`DelegatedAuth`), or any of the six source types that support a **user-assigned managed identity** (`ManagedIdentity`) as an alternative to Purview's own system-assigned identity."
 frameworks: []

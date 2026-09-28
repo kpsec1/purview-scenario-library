@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-azure-sql-managed-instance-and-classify-managed-identity-credential"
-teaser: "Extends Scan Azure SQL Managed Instance and Classify Sensitive Columns: reconciles that scenario's already-registered scan from the Purview account's shared system-assigned managed identity (SAMI) onto a…"
+teaser: "Extends Scan Azure SQL Managed Instance and Classify Sensitive Columns: reconciles that scenario's already-registered scan from the Purview account's shared system-assigned managed identity (SAMI) onto a user-assigned managed identity (UAMI) - a…"
 readingMinutes: 7
 whoFor: "A data governance or security team that has already run the base Azure SQL Managed Instance scanning scenario, and whose governance model wants **per-source identity separation** instead of relying on the Purview account's one shared SAMI for every source it scans - the same driver as the Database sibling, applied to a common lift-and-shift landing zone for on-premises SQL Server estates."
 frameworks: ["SOC 2","ISO 27001"]

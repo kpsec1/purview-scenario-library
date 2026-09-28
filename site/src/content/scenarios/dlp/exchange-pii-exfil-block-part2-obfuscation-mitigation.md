@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "exchange-pii-exfil-block-part2-obfuscation-mitigation"
-teaser: "Extends Exchange PII Exfiltration Block (Block or Encrypt) with a behavioral compensating control for the gap that scenario's own the known limitations and the review notes deliberately left open: a sender who…"
+teaser: "Extends Exchange PII Exfiltration Block (Block or Encrypt) with a behavioral compensating control for the gap that scenario's own the known limitations and the review notes deliberately left open: a sender who splits a Social Security Number (SSN) or…"
 readingMinutes: 10
 whoFor: "An organization that has already deployed *Exchange PII Exfiltration Block (Block or Encrypt)* and wants the documented residual risk in its review notes addressed with a real, working control rather than left as a permanent gap - while understanding plainly what this control can and cannot do. This fragment is the Exchange-workload sibling of *PCI Teams Exfiltration Block, Part 2: Split/Obfuscated PAN Compensating Control*, reusing the same Adaptive-Protection compensating-control pattern with a materially simpler feeder-policy design - see the architecture and the design notes."
 frameworks: ["GDPR","ISO 27001","CCPA"]

@@ -4,7 +4,7 @@ category: "Adaptive Protection"
 categorySlug: "adaptive-protection"
 theme: "watch-the-insider"
 slug: "exchange-legacy-auth-block"
-teaser: "Deploys Exchange Online's own, workload-level legacy-authentication controls - an Authentication Policy (New-/Set-AuthenticationPolicy) assigned tenant-wide as the default and to explicit users, plus the…"
+teaser: "Deploys Exchange Online's own, workload-level legacy-authentication controls - an Authentication Policy (New-/Set-AuthenticationPolicy) assigned tenant-wide as the default and to explicit users, plus the tenant-wide Authenticated SMTP (SMTP AUTH) toggle…"
 readingMinutes: 9
 whoFor: "Any Exchange Online tenant that wants legacy-authentication coverage that doesn't depend on Conditional Access licensing or evaluation order - including an organization deploying this library's own *Block Legacy Authentication*, whose own design notes and the Red Team review flagged this exact companion control as a documented, more-effective mitigation for credential-stuffing/password-spray lockout attempts specifically, and deferred it to this dedicated fragment. Especially relevant for any tenant that still has **Authenticated SMTP (SMTP AUTH)** enabled - the one legacy-authentication protocol Microsoft has **not yet** force-disabled tenant-wide."
 frameworks: ["PCI DSS","SOC 2","ISO 27001"]

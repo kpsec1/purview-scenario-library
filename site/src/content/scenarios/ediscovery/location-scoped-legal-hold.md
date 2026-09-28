@@ -4,7 +4,7 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 theme: "investigate-and-respond"
 slug: "location-scoped-legal-hold"
-teaser: "Builds a Microsoft Purview eDiscovery (Premium) location-scoped legal hold - a microsoft.graph.security.ediscoveryHoldPolicy covering one or more mailboxes, distribution lists, and SharePoint sites - via…"
+teaser: "Builds a Microsoft Purview eDiscovery (Premium) location-scoped legal hold - a microsoft.graph.security.ediscoveryHoldPolicy covering one or more mailboxes, distribution lists, and SharePoint sites."
 readingMinutes: 7
 whoFor: "A legal/compliance team (or an MSSP acting on their behalf) responding to a regulatory inquiry or internal sweep that names a shared departmental mailbox, a compliance distribution list, or a team site rather than a specific individual - the companion scenario to *Legal Hold, Collection, Review, and Export*, which covers the named-custodian path. Run both against the same case when a matter needs both kinds of preservation."
 frameworks: []

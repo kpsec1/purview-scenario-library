@@ -4,7 +4,7 @@ category: "Unified Catalog"
 categorySlug: "unified-catalog"
 theme: "know-your-data"
 slug: "manage-okrs"
-teaser: "Creates an objective and key results (OKR) in Microsoft Purview Unified Catalog - a governance-domain-scoped business goal (\"increase trust in customer master data\") with measurable key results - and links it…"
+teaser: "Creates an objective and key results (OKR) in Microsoft Purview Unified Catalog - a governance-domain-scoped business goal (\"increase trust in customer master data\") with measurable key results - and links it to one or more already-existing data products, so…"
 readingMinutes: 10
 whoFor: "A governance-domain owner or data steward who has already run *Curate a Business Glossary* (to create the governance domain) and *Manage a Data Product* (to create a data product), and now wants to express a board-legible business objective and wire it, as code, to the data product that backs it - reviewed and versioned via a pull request, not clicked together once in the portal."
 frameworks: []

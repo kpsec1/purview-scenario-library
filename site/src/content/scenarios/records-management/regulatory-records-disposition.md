@@ -4,7 +4,7 @@ category: "Records Management"
 categorySlug: "records-management"
 theme: "prove-compliance"
 slug: "regulatory-records-disposition"
-teaser: "Builds the full records-management disposition lifecycle as code: an event type (e.g. \"Contract Expiration\"), an event-based record label whose retention clock starts on that event and ends in a disposition…"
+teaser: "Builds the full records-management disposition lifecycle as code: an event type (e.g. \"Contract Expiration\"), an event-based record label whose retention clock starts on that event and ends in a disposition review rather than an automatic delete, a policy…"
 readingMinutes: 7
 whoFor: "A records-management / compliance team at a regulated organization that must retain records for a fixed period **after a business event** (a contract expiring, an employee leaving, a product reaching end-of-life) and then dispose of them through a **reviewed, evidenced** process - with the whole lifecycle defined as reproducible, auditable code."
 frameworks: ["GDPR","CCPA","FINRA"]

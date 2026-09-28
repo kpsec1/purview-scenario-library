@@ -4,7 +4,7 @@ category: "Compliance Manager"
 categorySlug: "compliance-manager"
 theme: "prove-compliance"
 slug: "soc2-assessment"
-teaser: "Stands up a dedicated Microsoft Purview Compliance Manager assessment against the System and Organization Controls (SOC) 2 premium regulatory template, places it correctly relative to this library's other…"
+teaser: "Stands up a dedicated Microsoft Purview Compliance Manager assessment against the System and Organization Controls (SOC) 2 premium regulatory template, places it correctly relative to this library's other Compliance Manager assessments, and cross-references…"
 readingMinutes: 10
 whoFor: "A Microsoft 365-based SaaS provider, ISV, or MSP (or an enterprise IT/security team supporting one) that needs to demonstrate to **its own customers** - usually through a vendor security-review or procurement questionnaire - that its service is built on well-governed technical and organizational controls. Critically, this is also for a team that already understands (or needs this scenario to make explicit) that a Compliance Manager assessment is **not** itself a SOC 2 report: only an independent, AICPA-accredited CPA firm performing an actual SSAE 18 attestation engagement can issue one."
 frameworks: ["HIPAA","PCI DSS","SOC 2","ISO 27001"]

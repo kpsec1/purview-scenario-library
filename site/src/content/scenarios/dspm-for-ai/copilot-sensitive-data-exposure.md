@@ -4,7 +4,7 @@ category: "DSPM for AI"
 categorySlug: "dspm-for-ai"
 theme: "stop-the-leak"
 slug: "copilot-sensitive-data-exposure"
-teaser: "Reduces the risk that Microsoft 365 Copilot and Copilot Chat surface sensitivity-labeled confidential content, or leak prompt-embedded sensitive data to external web search, during and after a Copilot rollout."
+teaser: "Reduces the risk that Microsoft 365 Copilot and Copilot Chat surface sensitivity-labeled confidential content, or leak prompt-embedded sensitive data to external web search, during and after a Copilot…"
 readingMinutes: 10
 whoFor: "An organization that already has (or is about to deploy) Microsoft 365 Copilot licenses and needs a documented, evidenced control against Copilot inadvertently summarizing confidential content a user can technically reach through an overshared SharePoint/OneDrive permission, plus visibility into how much of that oversharing exposure exists before/during rollout - a common pre-Copilot-rollout security review requirement and a GDPR/data-minimization control point."
 frameworks: ["GDPR"]

@@ -4,7 +4,7 @@ category: "Adaptive Protection"
 categorySlug: "adaptive-protection"
 theme: "watch-the-insider"
 slug: "direct-send-anonymous-relay-hardening"
-teaser: "Closes a bypass path this library's own Exchange-Side Legacy Authentication Block Red Team review named explicitly (the review notes finding 3 there): blocking authenticated legacy protocols (SMTP AUTH) does…"
+teaser: "Closes a bypass path this library's own Exchange-Side Legacy Authentication Block Red Team review named explicitly (the review notes finding 3 there): blocking authenticated legacy protocols (SMTP AUTH) does nothing to stop Direct Send - Exchange Online's…"
 readingMinutes: 9
 whoFor: "Any Exchange Online tenant that has deployed (or is evaluating) *Exchange-Side Legacy Authentication Block*, *Block Legacy Authentication*, or any DLP/insider-risk exfiltration control that assumes outbound authenticated channels are the only channels - Direct Send and anonymous relay are **inbound-looking, unauthenticated** paths that those controls don't touch, and that an attacker who has learned a tenant's accepted domain and MX endpoint can use to spoof internal senders without ever presenting a credential."
 frameworks: ["PCI DSS","SOC 2","ISO 27001"]

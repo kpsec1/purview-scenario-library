@@ -4,7 +4,7 @@ category: "Adaptive Protection"
 categorySlug: "adaptive-protection"
 theme: "watch-the-insider"
 slug: "conditional-access-insider-risk-block"
-teaser: "Deploys a Microsoft Entra Conditional Access policy that blocks (or, in its default posture, reports on) sign-in to Microsoft 365 applications for users Microsoft Purview Adaptive Protection has assigned an…"
+teaser: "Deploys a Microsoft Entra Conditional Access policy that blocks (or, in its default posture, reports on) sign-in to Microsoft 365 applications for users Microsoft Purview Adaptive Protection has assigned an Elevated insider risk level, using Conditional…"
 readingMinutes: 10
 whoFor: "Any Microsoft 365 E5 (or Purview Suite) tenant with **Microsoft Entra ID P2** that already has an Insider Risk Management policy generating risk signal - this library's own *Departing Employee Data Theft*, or Microsoft's built-in **Data leaks** template - and wants the broadest possible automated response (stop the user signing in at all) available alongside, or instead of, this library's narrower *Dynamic Risk-Based DLP Enforcement* (which blocks only a specific Exchange/Teams external share). See the design notes for exactly how the two differ and when to use which."
 frameworks: ["SOC 2","ISO 27001"]

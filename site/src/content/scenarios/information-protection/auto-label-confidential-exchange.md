@@ -4,7 +4,7 @@ category: "Information Protection"
 categorySlug: "information-protection"
 theme: "stop-the-leak"
 slug: "auto-label-confidential-exchange"
-teaser: "Automatically applies an existing \"Confidential\" sensitivity label to Exchange Online email (subject, body, and Office/PDF attachments) that contains personal data (U.S. Social Security Numbers and credit card…"
+teaser: "Automatically applies an existing \"Confidential\" sensitivity label to Exchange Online email (subject, body, and Office/PDF attachments) that contains personal data…"
 readingMinutes: 11
 whoFor: "The exact organization of *Auto-Label Confidential PII in SharePoint & OneDrive* - any enterprise that needs systematic, evidenced classification coverage for regulated personal data - extended to close the email channel that scenario explicitly leaves open. Deploy this **alongside**, not instead of, the SharePoint/OneDrive scenario; they share a label and a design philosophy but are otherwise independent policies with materially different evaluation models."
 frameworks: ["GDPR","ISO 27001","CCPA"]

@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "defender-device-control-usb-allowlist-macos-vendor-product-matching"
-teaser: "Extends Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist's serialNumber-only approved backup-drive allowlist with a second, independent matching mechanism - vendorId+productId compound…"
+teaser: "Extends Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist's serialNumber-only approved backup-drive allowlist with a second, independent matching mechanism - vendorId+productId compound matching - for approved removable-storage devices…"
 readingMinutes: 6
 whoFor: "An organization already running the parent macOS device-control scenario whose approved backup/imaging drives include hardware that reports an empty or non-unique `serialNumber` field - a real, common gap for bulk-imaged imaging docks and some third-party USB enclosures - and who would otherwise have to leave that hardware permanently denied or disable device control for it entirely."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

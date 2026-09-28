@@ -4,7 +4,7 @@ category: "Unified Catalog"
 categorySlug: "unified-catalog"
 theme: "know-your-data"
 slug: "manage-critical-data-elements-related-terms"
-teaser: "Links an existing Microsoft Purview Unified Catalog critical data element (CDE) to one or more existing glossary terms - the \"Manage related terms\" portal action - so a technical governance object (the CDE…"
+teaser: "Links an existing Microsoft Purview Unified Catalog critical data element (CDE) to one or more existing glossary terms - the \"Manage related terms\" portal action."
 readingMinutes: 9
 whoFor: "A data governance team that has already run *Curate a Business Glossary* (to create the terms) and *Manage a Critical Data Element* (to create the CDE), and now wants the CDE's details page to show its business definition inline - and, per why this matters below, wants any access policy configured on that term to automatically extend to the CDE's associated data products - rather than clicking **+ Add term** by hand in the portal every time a new source is mapped."
 frameworks: ["GDPR","HIPAA"]

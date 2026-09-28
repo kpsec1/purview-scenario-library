@@ -4,7 +4,7 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "data-leaks-exfiltration-activity-trigger"
-teaser: "Deploys Microsoft Purview Insider Risk Management's base Data leaks policy template - the same template Data Leaks (base template) builds - using its second documented triggering-event option: \"User performs…"
+teaser: "Deploys Microsoft Purview Insider Risk Management's base Data leaks policy template - the same template Data Leaks (base template) builds."
 readingMinutes: 11
 whoFor: "A tenant that wants the base `Data leaks` template's unconditional, general- population exfiltration detection but has **no qualifying DLP policy yet** (or doesn't want to provision one solely to feed this trigger) - the sibling scenario's own design notes names this exact use case as its documented, un-worked-example'd alternative. Also useful for a tenant that wants trigger-level threshold control over specific built-in exfiltration activities (e.g., \"bring a user into scope only once they exceed 20 SharePoint downloads in a day,\" not just \"any DLP High- severity match\") rather than delegating that judgment to a separately-tuned DLP policy."
 frameworks: ["SOC 2","ISO 27001"]

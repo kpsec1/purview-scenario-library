@@ -4,7 +4,7 @@ category: "Data Quality"
 categorySlug: "data-quality"
 theme: "know-your-data"
 slug: "rules-and-scorecards"
-teaser: "Public Preview."
+teaser: "Public Preview. The Data Quality REST API for Unified Catalog this scenario automates is a Microsoft Public Preview surface as of this build (December 2025 GA-only API coverage - see the known limitations) - the portal experience is GA, but this scenario's…"
 readingMinutes: 10
 whoFor: "A data governance team or data product owner who has a data asset already onboarded to Unified Catalog and needs a repeatable, code-reviewable way to define its data quality rules and scoring cadence, instead of hand-clicking through the **Health management > Data quality** portal UI per asset."
 frameworks: ["GDPR","SOX"]

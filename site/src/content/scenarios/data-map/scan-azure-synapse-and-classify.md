@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-azure-synapse-and-classify"
-teaser: "Registers an Azure Synapse Analytics workspace as a Microsoft Purview Data Map source, configures a scan that authenticates as the Purview account's own system-assigned managed identity (SAMI…"
+teaser: "Registers an Azure Synapse Analytics workspace as a Microsoft Purview Data Map source, configures a scan that authenticates as the Purview account's own system-assigned managed identity (SAMI - credential-free, no Key Vault link to manage), and runs that scan…"
 readingMinutes: 11
 whoFor: "A data governance or security team that has already deployed (or is deploying alongside) either or both sibling scenarios and also runs Azure Synapse Analytics - a common landing zone for enterprise data warehousing and large-scale analytics - and needs the same discovery-and- classification coverage for its dedicated and/or serverless SQL pools, without treating a Synapse workspace as if it were just another Azure SQL Database."
 frameworks: ["GDPR","HIPAA","PCI DSS","CCPA"]

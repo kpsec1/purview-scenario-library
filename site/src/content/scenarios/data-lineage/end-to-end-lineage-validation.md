@@ -4,7 +4,7 @@ category: "Data Lineage"
 categorySlug: "data-lineage"
 theme: "know-your-data"
 slug: "end-to-end-lineage-validation"
-teaser: "Closes a common data-lineage gap - a custom data-processing job that isn't one of Microsoft Purview's automatically-integrated systems (Azure Data Factory, Synapse, Power BI, Databricks, Airflow/OpenLineage…"
+teaser: "Closes a common data-lineage gap - a custom data-processing job that isn't one of Microsoft Purview's automatically-integrated systems (Azure Data Factory, Synapse, Power BI, Databricks, Airflow/OpenLineage, and a handful of others) - by asserting the missing…"
 readingMinutes: 9
 whoFor: "A data governance or platform engineering team that has custom ETL/ELT jobs (internal scripts, legacy batch processes, anything outside Purview's supported auto-lineage connector list) sitting between Purview-scanned assets, and needs those hops to show up in lineage - plus a repeatable way to prove the resulting graph stays connected over time, not just on the day it was built."
 frameworks: ["GDPR","PCI DSS"]

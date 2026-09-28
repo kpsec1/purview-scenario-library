@@ -4,7 +4,7 @@ category: "Adaptive Protection"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "endpoint-dlp-usb-block-adaptive-protection"
-teaser: "Deploys the Devices half of Adaptive Protection: a Microsoft Purview Endpoint DLP policy that automatically blocks clipboard copy, USB removable-media copy, network-share copy, and printing for users Insider…"
+teaser: "Deploys the Devices half of Adaptive Protection: a Microsoft Purview Endpoint DLP policy that automatically blocks clipboard copy, USB removable-media copy, network-share copy, and printing for users Insider Risk Management currently assigns Elevated risk…"
 readingMinutes: 9
 whoFor: "Any tenant that has already deployed (or is deploying via this library) *Dynamic Risk-Based DLP Enforcement* - the Exchange/Teams half of the same control - and wants to close the device-channel bypass that scenario's own page explicitly names as an open gap: an Elevated-risk user blocked from emailing a file externally could, with only the Exchange/Teams policy deployed, still walk out with the identical file via a USB copy, a clipboard paste, a network-share copy, or a print job."
 frameworks: ["SOC 2","ISO 27001"]

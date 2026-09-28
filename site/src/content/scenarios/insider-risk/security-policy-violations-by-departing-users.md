@@ -4,7 +4,7 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "security-policy-violations-by-departing-users"
-teaser: "Deploys Microsoft Purview Insider Risk Management's Security policy violations by departing users policy template - a sibling of Departing Employee Data Theft that scores the same resignation/termination (or…"
+teaser: "Deploys Microsoft Purview Insider Risk Management's Security policy violations by departing users policy template - a sibling of Departing Employee Data Theft that scores the same resignation/termination (or Entra account-deletion) triggering event against a…"
 readingMinutes: 9
 whoFor: "A tenant that has already deployed (or plans to deploy) *Departing Employee Data Theft* and also runs Microsoft Defender for Endpoint, and wants a second, parallel detection lens on the same departing-employee population - one that catches device tampering and unapproved-software installs, which the exfiltration-focused sibling template cannot see at all."
 frameworks: ["SOC 2","ISO 27001"]

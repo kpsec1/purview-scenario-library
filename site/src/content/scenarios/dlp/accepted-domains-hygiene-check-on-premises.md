@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "accepted-domains-hygiene-check-on-premises"
-teaser: "A read-only, scheduled control that runs Accepted-Domains Hygiene Check's same detection model against an on-premises Exchange Management Shell session instead of Exchange Online PowerShell - closing that…"
+teaser: "A read-only, scheduled control that runs Accepted-Domains Hygiene Check's same detection model against an on-premises Exchange Management Shell session instead of Exchange Online PowerShell."
 readingMinutes: 11
 whoFor: "Any organization already running (or planning to run) the parent *Accepted-Domains Hygiene Check* scenario **and** operating a hybrid Exchange deployment (on-premises Exchange Server coexisting with Exchange Online via the Hybrid Configuration Wizard). Not applicable to a pure Exchange Online tenant - run the parent scenario alone in that case."
 frameworks: []

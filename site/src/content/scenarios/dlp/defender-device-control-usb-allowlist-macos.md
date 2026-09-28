@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "defender-device-control-usb-allowlist-macos"
-teaser: "Denies all removable USB storage devices on onboarded macOS endpoints by default, allowing only a short, named allowlist of IT-issued, identity-verified backup/imaging drives (matched by serial number) to read…"
+teaser: "Denies all removable USB storage devices on onboarded macOS endpoints by default."
 readingMinutes: 8
 whoFor: "Any organization already deploying the Windows sibling scenario across a mixed Windows/Mac fleet that would otherwise have **zero** device-identity USB control on every Mac in it - a real, common gap once an organization has macOS-using engineering, design, or executive staff alongside a Windows-majority estate."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

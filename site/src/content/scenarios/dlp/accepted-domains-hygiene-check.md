@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "accepted-domains-hygiene-check"
-teaser: "A read-only, scheduled control that cross-references the tenant's live Exchange accepted domains configuration (Get-AcceptedDomain) against a organization-curated allowlist of known/reviewed domains and the…"
+teaser: "A read-only, scheduled control that cross-references the tenant's live Exchange accepted domains configuration (Get-AcceptedDomain) against a organization-curated allowlist of known/reviewed domains and the previous run's recorded…"
 readingMinutes: 10
 whoFor: "Any organization running one or more DLP rules (Exchange, Teams, or Microsoft 365 Copilot location) that condition on sender/user **internal-vs-external** scope - `FromScope`/ `ExceptIfFromScope` in Microsoft's cmdlet model - and wants ongoing assurance that the accepted-domains configuration those rules silently depend on hasn't drifted out from under them."
 frameworks: ["GDPR","PCI DSS","SOC 2"]

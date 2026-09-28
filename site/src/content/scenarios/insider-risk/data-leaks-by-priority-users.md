@@ -4,7 +4,7 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "data-leaks-by-priority-users"
-teaser: "Deploys Microsoft Purview Insider Risk Management's Data leaks by priority users policy template - the third and last member of the Data leaks… template family (base Data leaks, …by risky users, …by priority…"
+teaser: "Deploys Microsoft Purview Insider Risk Management's Data leaks by priority users policy template - the third and last member of the Data leaks… template family (base Data leaks, …by risky users, …by priority users) to be built in this…"
 readingMinutes: 11
 whoFor: "A tenant that wants the base `Data leaks` template's unconditional, DLP-policy-triggered exfiltration detection, but scoped to a formally-designated, higher-scrutiny population - executives, privileged administrators, staff on an active investigation - with both a stronger scoring response and reviewer-access restrictions the base template's plain-group mechanism cannot provide. Like both of its already-built siblings in this family, this is **not** a \"monitor everyone more closely\" control: Microsoft caps this template at **1,000** actively-scored users tenant-wide, a materially smaller ceiling than the base template's own 15,000."
 frameworks: ["SOC 2","ISO 27001"]

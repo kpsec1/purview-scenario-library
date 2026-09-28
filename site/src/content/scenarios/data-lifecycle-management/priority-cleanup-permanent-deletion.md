@@ -4,7 +4,7 @@ category: "Data Lifecycle Management"
 categorySlug: "data-lifecycle-management"
 theme: "prove-compliance"
 slug: "priority-cleanup-permanent-deletion"
-teaser: "Provisions the Microsoft Purview Priority cleanup label/policy/rule (Security & Compliance PowerShell) that underlies the permanent deletion sub-feature for SharePoint and OneDrive - which bypasses both…"
+teaser: "Provisions the Microsoft Purview Priority cleanup label/policy/rule (Security & Compliance PowerShell) that underlies the permanent deletion sub-feature for SharePoint and OneDrive."
 readingMinutes: 7
 whoFor: "A compliance/security team that has a **confirmed data-exposure incident** - typically a file identified by a DSPM for AI oversharing assessment (*Copilot Sensitive Data Exposure Protection*) as broadly shared and already summarizable by Copilot, or a DLP alert on a specific SharePoint/OneDrive location - and needs guaranteed, non-recoverable removal, not a time-bounded Recycle Bin window."
 frameworks: ["GDPR"]

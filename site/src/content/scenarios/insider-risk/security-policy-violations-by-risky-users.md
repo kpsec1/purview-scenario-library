@@ -4,7 +4,7 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "security-policy-violations-by-risky-users"
-teaser: "Deploys Microsoft Purview Insider Risk Management's Security policy violations by risky users policy template - the fourth and final member of the \"Security policy violations…\" template family alongside the…"
+teaser: "Deploys Microsoft Purview Insider Risk Management's Security policy violations by risky users policy template - the fourth and final member of the \"Security policy violations…\" template family alongside the already-built base, …by departing users, and …by…"
 readingMinutes: 12
 whoFor: "A tenant that already runs (or is deploying) the base \"Security policy violations\" template and Microsoft Defender for Endpoint, and wants a materially different detection lens: not \"did this user's device show a security violation\" alone, but \"did this user's device show a security violation **after** an employment stressor or a risky-message signal\" - a narrower, evidence-weighted population than the base template's plain-group scope, sized against Microsoft's larger **7,500**-user template cap."
 frameworks: ["SOC 2","ISO 27001"]

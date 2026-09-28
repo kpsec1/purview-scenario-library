@@ -4,7 +4,7 @@ category: "Compliance Manager"
 categorySlug: "compliance-manager"
 theme: "prove-compliance"
 slug: "entra-privileged-role-monitoring"
-teaser: "Closes a specific, disclosed blind spot in Assess Against ISO/IEC 27001:2022: its audit-trail script can only see an explicit Compliance Manager role grant, not the implicit Compliance Manager…"
+teaser: "Closes a specific, disclosed blind spot in Assess Against ISO/IEC 27001:2022: its audit-trail script can only see an explicit Compliance Manager role grant, not the implicit Compliance Manager Administration-equivalent access that Global Administrator…"
 readingMinutes: 12
 whoFor: "A security/compliance team that has already deployed *Assess Against ISO/IEC 27001:2022* (or any other scenario whose technical control assumes \"only people with an explicit Purview role grant can touch this\") and wants real visibility into a population of accounts that can bypass that assumption entirely, without generating a single Purview-specific audit event."
 frameworks: ["SOC 2","ISO 27001"]

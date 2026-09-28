@@ -4,7 +4,7 @@ category: "Audit (Premium)"
 categorySlug: "audit"
 theme: "investigate-and-respond"
 slug: "premium-audit-investigation"
-teaser: "Runs a read-only forensic investigation of a potentially compromised (or insider-risk) account using the Microsoft Purview Audit Search Graph API (v1.0 security namespace): it creates an async audit-log query…"
+teaser: "Runs a read-only forensic investigation of a potentially compromised (or insider-risk) account using the Microsoft Purview Audit Search Graph API (v1.0 security namespace): it creates an async audit-log query scoped to a target user, a time window, and a…"
 readingMinutes: 5
 whoFor: "A SOC / incident-response / insider-risk / compliance investigator who needs to reconstruct \"what did this account do\" quickly and defensibly, and wants the audit-search-and-export mechanics automated (and re-runnable) rather than hand-clicked in the portal under time pressure."
 frameworks: ["GDPR"]

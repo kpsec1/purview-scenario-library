@@ -4,7 +4,7 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 theme: "investigate-and-respond"
 slug: "roster-to-hold-locations"
-teaser: "Merges a human-selected subset of a Microsoft Teams / Microsoft 365 Group member roster - produced by Microsoft Teams / Microsoft 365 Group Hold-Location Resolution's -ResolveMembers roster CSV - into…"
+teaser: "Merges a human-selected subset of a Microsoft Teams / Microsoft 365 Group member roster - produced by Microsoft Teams / Microsoft 365 Group Hold-Location Resolution's -ResolveMembers roster CSV - into Location-Scoped Legal Hold…"
 readingMinutes: 5
 whoFor: "The same legal/compliance operator running the other two eDiscovery scenarios in this library, at the specific moment a matter's counsel decides that placing a Team/group's own mailbox and site on hold isn't enough - one or more *named individuals* within that group also need their own mailbox preserved. This scenario is the last-mile translation step between \"counsel named these two people\" and \"here are the exact `userSources[]` entries to add,\" closing the hand-off *Microsoft Teams / Microsoft 365 Group Hold-Location Resolution* (the validation steps) explicitly deferred rather than folded into either sibling scenario."
 frameworks: []

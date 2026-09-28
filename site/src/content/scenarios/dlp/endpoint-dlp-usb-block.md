@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "endpoint-dlp-usb-block"
-teaser: "Blocks copying of files containing U.S. Social Security Numbers or credit card numbers from onboarded Windows/macOS endpoints to USB removable storage, using Microsoft Purview Endpoint Data Loss Prevention…"
+teaser: "Blocks copying of files containing U.S. Social Security Numbers or credit card numbers from onboarded Windows/macOS endpoints to USB removable storage."
 readingMinutes: 11
 whoFor: "Any organization with Windows or macOS laptops/desktops in scope for data-loss prevention that needs a real-time, content-aware control against regulated data being copied to a USB flash drive or external disk - a channel that email-, SharePoint-, or Teams-scoped DLP cannot see because the file has already left the cloud-inspectable path."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

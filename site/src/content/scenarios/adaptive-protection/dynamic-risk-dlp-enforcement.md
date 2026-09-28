@@ -4,7 +4,7 @@ category: "Adaptive Protection"
 categorySlug: "adaptive-protection"
 theme: "watch-the-insider"
 slug: "dynamic-risk-dlp-enforcement"
-teaser: "Deploys a Microsoft Purview DLP policy whose enforcement action depends on a user's live Insider Risk Management insider risk level, using Adaptive Protection's SharedByIRMUserRisk condition: users assigned…"
+teaser: "Deploys a Microsoft Purview DLP policy whose enforcement action depends on a user's live Insider Risk Management insider risk level."
 readingMinutes: 9
 whoFor: "Any Microsoft 365 E5 (or Purview Suite) tenant that already has an Insider Risk Management policy generating risk signal - this library's own *Departing Employee Data Theft*, or Microsoft's built-in **Data leaks** template - and wants the *first* technical response to a risk-level change to be automatic and immediate, rather than waiting on an analyst to triage the alert and hand-build a DLP exception."
 frameworks: ["PCI DSS","SOC 2","ISO 27001"]

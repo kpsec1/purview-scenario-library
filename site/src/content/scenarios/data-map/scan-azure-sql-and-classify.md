@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-azure-sql-and-classify"
-teaser: "Registers an Azure SQL Database as a Microsoft Purview Data Map source, configures a scan that authenticates with the Purview account's own system-assigned managed identity (SAMI - Microsoft's recommended…"
+teaser: "Registers an Azure SQL Database as a Microsoft Purview Data Map source, configures a scan that authenticates with the Purview account's own system-assigned managed identity (SAMI - Microsoft's recommended, credential-free option), and runs that scan with…"
 readingMinutes: 10
 whoFor: "A data governance or security team standing up Microsoft Purview Data Map against an existing Azure SQL estate - greenfield discovery of \"what sensitive data do we have, and where\" before layering DLP, labeling, or access-policy controls on top."
 frameworks: ["GDPR","HIPAA","PCI DSS","CCPA"]

@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "defender-device-control-usb-allowlist-macos-bluetooth-allowlist"
-teaser: "Adds one or more vendor+product-matched approved-device exceptions to the unconditional Bluetooth deny rule that Defender for Endpoint Device Control (macOS): Apple/Portable/Bluetooth Device Coverage ships…"
+teaser: "Adds one or more vendor+product-matched approved-device exceptions to the unconditional Bluetooth deny rule that Defender for Endpoint Device Control (macOS): Apple/Portable/Bluetooth Device Coverage ships - closing that fragment's deliberately deferred…"
 readingMinutes: 8
 whoFor: "Any organization that has deployed the macOS USB allowlist scenario and its Apple/Portable/Bluetooth coverage extension, and has one or more specific, IT-approved Bluetooth peripherals (a barcode scanner, an approved audio/file-transfer accessory) that need a documented, audited exception instead of an informal \"just disable the policy for that team\" workaround."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

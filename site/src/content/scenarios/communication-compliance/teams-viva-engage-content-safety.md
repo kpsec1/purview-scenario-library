@@ -4,7 +4,7 @@ category: "Communication Compliance"
 categorySlug: "communication-compliance"
 theme: "watch-the-insider"
 slug: "teams-viva-engage-content-safety"
-teaser: "Deploys Microsoft Purview Communication Compliance's built-in Detect inappropriate content policy template, which applies four Azure AI Content Safety large-language-model classifiers - Hate, Sexual, Violence…"
+teaser: "Deploys Microsoft Purview Communication Compliance's built-in Detect inappropriate content policy template."
 readingMinutes: 12
 whoFor: "An enterprise that has deployed *Workplace Harassment & Code of Conduct* (or wants a Teams/Viva-Engage-specific, severity-ranked complement to it) and additionally needs a documented control for two risks that scenario's trainable-classifier set does not itself detect: **sexual content** exchanged over internal chat, and - the differentiator this scenario is built around - **employee self-harm risk signals** surfaced through workplace messaging, which carry a distinct duty-of-care obligation and response process, not just a standard conduct-violation remediation."
 frameworks: []

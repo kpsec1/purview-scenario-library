@@ -4,7 +4,7 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "security-policy-violations-by-priority-users"
-teaser: "Deploys Microsoft Purview Insider Risk Management's Security policy violations by priority users policy template - a sibling of Security Policy Violations (base template) (the base template) that scores the…"
+teaser: "Deploys Microsoft Purview Insider Risk Management's Security policy violations by priority users policy template - a sibling of Security Policy Violations (base template) (the base template) that scores the identical triggering event, Microsoft Defender for…"
 readingMinutes: 11
 whoFor: "A tenant that runs Microsoft Defender for Endpoint and has (or wants) a formally designated, higher-scrutiny population - executives, privileged administrators, employees on an active internal investigation, or any group whose security-control tampering would carry outsized consequences - and wants both a stronger scoring response and reviewer-access restrictions that a plain group cannot provide. **This is not a \"monitor everyone more closely\" control**: like the base template, Microsoft caps this template at **1,000** actively-scored users tenant-wide, and a priority user group has its own, separately-documented 10,000-member ceiling - the prerequisites and the design notes explain why the interaction between those two numbers is a genuinely open question, not a settled detail this scenario glosses over."
 frameworks: ["SOC 2","ISO 27001"]

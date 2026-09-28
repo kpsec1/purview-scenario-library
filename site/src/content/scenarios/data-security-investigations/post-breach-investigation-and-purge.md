@@ -4,7 +4,7 @@ category: "Data Security Investigations"
 categorySlug: "data-security-investigations"
 theme: "investigate-and-respond"
 slug: "post-breach-investigation-and-purge"
-teaser: "Stands up Microsoft Purview Data Security Investigations (DSI) - an AI-enabled investigation workspace that triages a data breach or insider-leak incident down to the specific sensitive items exposed, then…"
+teaser: "Stands up Microsoft Purview Data Security Investigations (DSI) - an AI-enabled investigation workspace that triages a data breach or insider-leak incident down to the specific sensitive items exposed."
 readingMinutes: 7
 whoFor: "A SOC/incident-response team that already runs Defender XDR and/or Insider Risk Management and needs to answer \"what did this actually expose?\" across a large, unknown set of files/ emails/messages faster than manual review allows - and a compliance/security admin who needs that capability rolled out with proper separation of duties and an audit trail from day one, not discovered ad hoc during a live incident."
 frameworks: ["GDPR"]

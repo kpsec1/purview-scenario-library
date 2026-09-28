@@ -4,7 +4,7 @@ category: "Unified Catalog"
 categorySlug: "unified-catalog"
 theme: "know-your-data"
 slug: "governance-domain-hierarchy"
-teaser: "Stands up a multi-level Microsoft Purview Unified Catalog governance domain hierarchy - a parent domain with nested child (and grandchild) domains, each carrying its own admin-defined business-concept…"
+teaser: "Stands up a multi-level Microsoft Purview Unified Catalog governance domain hierarchy - a parent domain with nested child (and grandchild) domains, each carrying its own admin-defined business-concept attribute values and an optional recommended Data Map…"
 readingMinutes: 8
 whoFor: "A data governance team past the single-domain pilot stage, federating governance across business units (Corporate → Sales → Sales-EMEA is this scenario's own worked example, mirroring Microsoft's own sample data-governance walkthrough the known limitations) who wants the domain tree defined and reviewed as a pull request, not built one portal click at a time by whoever remembers the intended shape."
 frameworks: ["GDPR","SOC 2","ISO 27001"]

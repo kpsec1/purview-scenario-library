@@ -4,7 +4,7 @@ category: "Records Management"
 categorySlug: "records-management"
 theme: "prove-compliance"
 slug: "graph-event-automation"
-teaser: "Wires a business system (HR, contract management, ERP) into Microsoft Purview event-based retention using the Microsoft Graph records-management APIs: it ensures a retention event type exists, and - gated…"
+teaser: "Wires a business system (HR, contract management, ERP) into Microsoft Purview event-based retention using the Microsoft Graph records-management APIs: it ensures a retention event type exists, and - gated behind an explicit switch and sign-off - fires a…"
 readingMinutes: 6
 whoFor: "A records-management / platform-integration team that already has event-based retention labels published (via the PowerShell scenario or the portal) and wants a durable, app-only integration point for a line-of-business system to fire retention events through Microsoft Graph."
 frameworks: ["GDPR","CCPA","FINRA"]

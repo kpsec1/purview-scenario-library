@@ -4,7 +4,7 @@ category: "Data Lineage"
 categorySlug: "data-lineage"
 theme: "know-your-data"
 slug: "custom-process-lineage"
-teaser: "Extends Close Gaps and Validate End-to-End Customer Data Lineage from a single unattributed DataSet-to-DataSet edge into the richer DataSet -> Process -> DataSet lineage shape: the nightly custom transform job…"
+teaser: "Extends Close Gaps and Validate End-to-End Customer Data Lineage from a single unattributed DataSet-to-DataSet edge into the richer DataSet -> Process -> DataSet lineage shape: the nightly custom transform job itself becomes a queryable, Process-typed entity…"
 readingMinutes: 9
 whoFor: "The same audience as the sibling scenario - a data governance or platform engineering team with custom ETL/ELT jobs outside Purview's auto-lineage connector list - who additionally wants the transform job itself represented and searchable in the lineage graph (who owns it, where the runbook lives, when it runs), not just an edge between two tables."
 frameworks: ["GDPR","PCI DSS"]

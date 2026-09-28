@@ -4,7 +4,7 @@ category: "Communication Compliance"
 categorySlug: "communication-compliance"
 theme: "watch-the-insider"
 slug: "copilot-interaction-detection"
-teaser: "Deploys Microsoft Purview Communication Compliance's built-in Detect Microsoft 365 Copilot and Microsoft 365 Copilot Chat interactions policy template, which reviews every Copilot prompt for…"
+teaser: "Deploys Microsoft Purview Communication Compliance's built-in Detect Microsoft 365 Copilot and Microsoft 365 Copilot Chat interactions policy template."
 readingMinutes: 12
 whoFor: "An enterprise that has deployed or is deploying Microsoft 365 Copilot and needs a documented, reviewable control proving it monitors Copilot usage for AI-safety abuse attempts and intellectual-property exposure - not just Microsoft's own built-in runtime protections, but an organization-controlled, auditable review layer on top of them."
 frameworks: ["NIST"]

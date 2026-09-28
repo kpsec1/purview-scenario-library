@@ -4,7 +4,7 @@ category: "Compliance Manager"
 categorySlug: "compliance-manager"
 theme: "prove-compliance"
 slug: "hipaa-hitech-assessment"
-teaser: "Stands up a dedicated Microsoft Purview Compliance Manager assessment against the HIPAA/HITECH premium regulatory template, places it correctly relative to this library's other Compliance Manager assessments…"
+teaser: "Stands up a dedicated Microsoft Purview Compliance Manager assessment against the HIPAA/HITECH premium regulatory template, places it correctly relative to this library's other Compliance Manager assessments, and cross-references it against the…"
 readingMinutes: 12
 whoFor: "A HIPAA **covered entity** (a health care provider, health plan, or health care clearinghouse) or a **business associate** - a health-tech ISV, MSP, or any Microsoft 365-based service provider that creates, receives, maintains, or transmits protected health information (PHI) on a covered entity's behalf - that needs an internal, evidenced readiness view of how its Microsoft 365 estate maps to HIPAA's Privacy Rule, Security Rule, and Breach Notification Rule. Critically, this is also for a team that already understands (or needs this scenario to make explicit) that **no HHS-approved HIPAA certification exists at all** - for anyone, covered entity or business associate - and this assessment does not create one."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2","ISO 27001","NIST","FedRAMP"]

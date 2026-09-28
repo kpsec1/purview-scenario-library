@@ -4,7 +4,7 @@ category: "Unified Catalog"
 categorySlug: "unified-catalog"
 theme: "know-your-data"
 slug: "curate-business-glossary"
-teaser: "Stands up a governance domain and its business glossary - a hierarchy of defined terms with owners, experts, acronyms, resources, and term-to-term relationships - in Microsoft Purview Unified Catalog, driven…"
+teaser: "Stands up a governance domain and its business glossary - a hierarchy of defined terms with owners, experts, acronyms, resources, and term-to-term relationships - in Microsoft Purview Unified Catalog, driven by a single declarative JSON file checked into…"
 readingMinutes: 9
 whoFor: "A data governance or platform team standing up Unified Catalog for the first time (or extending an existing one), who wants their glossary defined, reviewed, and versioned the same way the rest of their infrastructure is - via a pull request - rather than as tribal portal-click knowledge held by whoever happened to create each term."
 frameworks: ["GDPR","SOC 2","ISO 27001","CCPA"]

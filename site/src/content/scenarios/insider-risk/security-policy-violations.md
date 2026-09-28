@@ -4,7 +4,7 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "security-policy-violations"
-teaser: "Deploys Microsoft Purview Insider Risk Management's Security policy violations policy template - the base member of the same template family as Security Policy Violations by Departing Users, but with a…"
+teaser: "Deploys Microsoft Purview Insider Risk Management's Security policy violations policy template - the base member of the same template family as Security Policy Violations by Departing Users."
 readingMinutes: 9
 whoFor: "A tenant that runs Microsoft Defender for Endpoint and wants continuous security-violation risk scoring for a bounded, deliberately chosen population - privileged/IT users, engineers with local admin rights, contractors on managed devices - where neither the departing-users template's HR/Entra-deletion trigger nor the priority-users template's formal priority-user-group requirement fits the population being watched. **This is not a \"monitor everyone\" control**: Microsoft caps this specific template at **1,000** actively-scored users tenant-wide - smaller than either the departing-users (15,000) or risky-users (7,500) siblings, and identical to the priority-users sibling's own cap despite this template requiring no priority-group object. the design notes explains why \"scores every onboarded user continuously\" is not an accurate description of what this template can do at any but a very small tenant's scale, correcting that framing before it reaches an organization."
 frameworks: ["SOC 2","ISO 27001"]

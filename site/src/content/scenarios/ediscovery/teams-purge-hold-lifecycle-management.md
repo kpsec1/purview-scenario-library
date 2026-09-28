@@ -4,7 +4,7 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 theme: "investigate-and-respond"
 slug: "teams-purge-hold-lifecycle-management"
-teaser: "Scripts the hold-identification, hold-removal, and hold-reapplication sequence that Search-and-Purge for Microsoft Teams Messages deliberately left manual: before a Teams message purge can remove anything…"
+teaser: "Scripts the hold-identification, hold-removal, and hold-reapplication sequence that Search-and-Purge for Microsoft Teams Messages deliberately left manual."
 readingMinutes: 8
 whoFor: "The same security/compliance responder running the Teams-purge sibling scenario, who needs the hold-removal step to be a repeatable, auditable script rather than an ad hoc portal walk- through performed under incident time pressure."
 frameworks: []

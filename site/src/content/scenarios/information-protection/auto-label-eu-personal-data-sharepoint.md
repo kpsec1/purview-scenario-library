@@ -4,7 +4,7 @@ category: "Information Protection"
 categorySlug: "information-protection"
 theme: "stop-the-leak"
 slug: "auto-label-eu-personal-data-sharepoint"
-teaser: "Automatically applies an existing \"Confidential\" sensitivity label to SharePoint and OneDrive files that contain EU/UK personal identifiers - national ID numbers, the EU Social-Security-or-equivalent family…"
+teaser: "Automatically applies an existing \"Confidential\" sensitivity label to SharePoint and OneDrive files that contain EU/UK personal identifiers - national ID numbers, the EU Social-Security-or-equivalent family, and EU-format debit card numbers - without waiting…"
 readingMinutes: 12
 whoFor: "Any enterprise whose regulated population is EU/UK-only (or includes a significant EU/UK segment) and needs classification coverage built on the jurisdiction-appropriate identifiers Microsoft actually ships for that region - not the U.S. Social Security Number condition this library's sibling scenario defaults to. This is the direct EU/UK counterpart of *Auto-Label Confidential PII in SharePoint & OneDrive*, built specifically because that sibling scenario's own Red Team review flagged its U.S.-centric default as materially weaker coverage for a non-U.S. organization."
 frameworks: ["GDPR","ISO 27001"]

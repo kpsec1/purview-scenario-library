@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "exchange-pii-exfil-block-encrypt-mode-audit-companion"
-teaser: "A single, additive DLP rule that closes a specific, previously-documented gap in Exchange PII Exfiltration Block (Block or Encrypt): when that scenario is deployed with -Action Encrypt and a business-exception…"
+teaser: "A single, additive DLP rule that closes a specific, previously-documented gap in Exchange PII Exfiltration Block (Block or Encrypt)."
 readingMinutes: 7
 whoFor: "Any organization that has deployed (or is deploying) *Exchange PII Exfiltration Block (Block or Encrypt)* with `-Action Encrypt` and an `-ExceptionGroupEmail`, and wants the documented silent-exception residual risk in that scenario's the known limitations turned into at least a detected-and-reported one. Not applicable to Block-mode deployments - that mode already has a logged override rule (`PII-Exchange-Override-External`) and does not need this companion."
 frameworks: ["GDPR","ISO 27001","CCPA"]

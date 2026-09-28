@@ -4,7 +4,7 @@ category: "Unified Catalog"
 categorySlug: "unified-catalog"
 theme: "know-your-data"
 slug: "manage-critical-data-elements"
-teaser: "Creates a critical data element (CDE) in Microsoft Purview Unified Catalog - a governance-domain-scoped logical concept (\"Customer ID\") that maps one or more physical columns from one or more data assets into…"
+teaser: "Creates a critical data element (CDE) in Microsoft Purview Unified Catalog - a governance-domain-scoped logical concept (\"Customer ID\") that maps one or more physical columns from one or more data assets into a single thing a data quality rule, an access…"
 readingMinutes: 9
 whoFor: "A data governance or platform team that has already run *Scan Azure SQL Database and Classify Sensitive Columns* (to scan a source) and *Curate a Business Glossary* (to create the governance domain), and now wants a single governed concept for a column that shows up, differently spelled, in more than one system - defined, reviewed, and versioned via a pull request, not clicked together one column at a time in the portal."
 frameworks: ["GDPR","HIPAA","PCI DSS"]

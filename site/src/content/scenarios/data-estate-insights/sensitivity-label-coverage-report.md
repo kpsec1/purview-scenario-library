@@ -4,7 +4,7 @@ category: "Data Estate Insights"
 categorySlug: "data-estate-insights"
 theme: "know-your-data"
 slug: "sensitivity-label-coverage-report"
-teaser: "Microsoft Purview's native Data Estate Insights classification report family includes a Classic sensitivity labels report - a real, automatically-generated dashboard - but, like its sibling Classic…"
+teaser: "Microsoft Purview's native Data Estate Insights classification report family includes a Classic sensitivity labels report - a real, automatically-generated dashboard."
 readingMinutes: 13
 whoFor: "A security-administrator or data-governance reporting function that needs sensitivity-label coverage numbers *outside* the portal - a board deck, a GRC tool, a SIEM, or an audit-evidence trail with real point-in-time history - without granting the automation identity more privilege than the native report's own export feature would require. (Role terminology below follows Microsoft's own Data Reader/Data Curator/Data Estate Insights glossary definitions.)"
 frameworks: ["GDPR","SOC 2","ISO 27001"]

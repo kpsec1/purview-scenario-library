@@ -4,7 +4,7 @@ category: "Adaptive Protection"
 categorySlug: "adaptive-protection"
 theme: "watch-the-insider"
 slug: "block-legacy-authentication"
-teaser: "Checks whether Microsoft has already auto-deployed its own Microsoft-managed \"Block legacy authentication\" Conditional Access policy to the tenant, then - only if one isn't already covering it, or the operator…"
+teaser: "Checks whether Microsoft has already auto-deployed its own Microsoft-managed \"Block legacy authentication\" Conditional Access policy to the tenant."
 readingMinutes: 7
 whoFor: "Any Microsoft 365 tenant with **Microsoft Entra ID P1 or higher** that has not already confirmed legacy authentication is blocked - including an organization deploying this library's own *Conditional Access Insider Risk Block*, whose own four-lens review flagged this exact gap as a Red Team finding (the review notes there, Finding 2: legacy-auth clients may not fully honor that scenario's Insider Risk condition). This scenario is a general Conditional Access hardening prerequisite, not specific to Adaptive Protection or Insider Risk - housed alongside this library's other Conditional-Access-based scenarios for discoverability."
 frameworks: ["PCI DSS","SOC 2","ISO 27001"]

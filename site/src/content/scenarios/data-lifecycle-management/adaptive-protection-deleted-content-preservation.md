@@ -4,7 +4,7 @@ category: "Data Lifecycle Management"
 categorySlug: "data-lifecycle-management"
 theme: "prove-compliance"
 slug: "adaptive-protection-deleted-content-preservation"
-teaser: "Documents and instruments Adaptive Protection's built-in Data Lifecycle Management control: when Insider Risk Management assigns a user the Elevated risk level, any content that user deletes from SharePoint…"
+teaser: "Documents and instruments Adaptive Protection's built-in Data Lifecycle Management control."
 readingMinutes: 9
 whoFor: "An insider risk / records-management / compliance team that has already deployed (or is evaluating) *Dynamic Risk-Based DLP Enforcement* and wants the matching \"don't lose the evidence if the risky user tries to delete it\" control, plus a way to prove it's working and to prepare for the one recovery path Microsoft supports."
 frameworks: []

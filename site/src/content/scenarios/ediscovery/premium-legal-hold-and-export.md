@@ -4,7 +4,7 @@ category: "eDiscovery (Premium)"
 categorySlug: "ediscovery"
 theme: "investigate-and-respond"
 slug: "premium-legal-hold-and-export"
-teaser: "Builds a Microsoft Purview eDiscovery (Premium) case end to end: create the case, add custodians and place a legal hold on their Exchange mailboxes and OneDrive sites, run a scoped search, commit the results…"
+teaser: "Builds a Microsoft Purview eDiscovery (Premium) case end to end: create the case, add custodians and place a legal hold on their Exchange mailboxes and OneDrive sites, run a scoped search, commit the results to a review set, and export a production package…"
 readingMinutes: 10
 whoFor: "A legal/compliance team (or an MSSP acting on their behalf) that needs a repeatable, auditable way to stand up litigation holds and productions across many matters, instead of hand-clicking through the Purview portal for every new case - while keeping every irreversible action (releasing a hold, closing or deleting a case) as a deliberate, separately gated step."
 frameworks: []

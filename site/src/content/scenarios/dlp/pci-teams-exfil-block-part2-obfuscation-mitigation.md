@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "pci-teams-exfil-block-part2-obfuscation-mitigation"
-teaser: "Extends PCI Teams Card-Data Exfiltration Block with a behavioral compensating control for the one gap that scenario's own Red Team review flagged and deliberately left open: a sender who splits a credit-card…"
+teaser: "Extends PCI Teams Card-Data Exfiltration Block with a behavioral compensating control for the one gap that scenario's own Red Team review flagged and deliberately left open: a sender who splits a credit-card number (PAN) across multiple Teams messages, or…"
 readingMinutes: 8
 whoFor: "An organization that has already deployed *PCI Teams Card-Data Exfiltration Block* and wants the documented residual risk in its review notes addressed with a real, working control rather than left as a permanent gap - while understanding plainly what this control can and cannot do."
 frameworks: ["PCI DSS"]

@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "defender-device-control-usb-allowlist-macos-apple-portable-vendor-product-matching"
-teaser: "Extends Defender for Endpoint Device Control (macOS): Apple/Portable/Bluetooth Device Coverage's serialNumber-only Apple and Portable device allowlists with a second, independent matching mechanism…"
+teaser: "Extends Defender for Endpoint Device Control (macOS): Apple/Portable/Bluetooth Device Coverage's serialNumber-only Apple and Portable device allowlists with a second, independent matching mechanism - vendorId+productId compound matching - for approved…"
 readingMinutes: 7
 whoFor: "An organization already running the portable-device-coverage scenario with at least one `serialNumber`-approved device configured for the Apple and/or Portable family, whose fleet also includes hardware of that family that reports an empty or non-unique `serialNumber` - a real gap for some bulk-provisioned iPads/iPhones and industrial barcode scanners/cameras - and who would otherwise have to leave that hardware permanently denied."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

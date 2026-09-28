@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-on-premises-sql-server-and-classify"
-teaser: "Provisions a self-hosted integration runtime (SHIR) resource in Microsoft Purview and retrieves its registration key, registers an on-premises SQL Server instance as a Data Map source, and configures a…"
+teaser: "Provisions a self-hosted integration runtime (SHIR) resource in Microsoft Purview and retrieves its registration key, registers an on-premises SQL Server instance as a Data Map source, and configures a credential-authenticated scan against it using…"
 readingMinutes: 10
 whoFor: "A data governance or security team that has already deployed one or more of the three Azure SQL sibling scenarios and also has on-premises SQL Server instances - a lift-and-shift source, not (yet) a target - and needs the same discovery-and-classification coverage for them without silently reusing a script built for a directly-reachable PaaS data source."
 frameworks: ["GDPR","HIPAA","PCI DSS","CCPA"]

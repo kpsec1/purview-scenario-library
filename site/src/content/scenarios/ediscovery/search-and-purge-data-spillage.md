@@ -4,7 +4,7 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 theme: "investigate-and-respond"
 slug: "search-and-purge-data-spillage"
-teaser: "Scripts Microsoft Purview eDiscovery's search-and-purge capability - create a search, validate what it found, then remove matching items from Exchange mailboxes - as code, via Microsoft Graph's…"
+teaser: "Scripts Microsoft Purview eDiscovery's search-and-purge capability - create a search, validate what it found, then remove matching items from Exchange mailboxes - as code."
 readingMinutes: 7
 whoFor: "A security/compliance responder who needs a confidential message out of recipients' visible mailboxes **right now** - the common, fast-turnaround data-spillage case - with a full audit trail of what was searched, estimated, and removed."
 frameworks: []

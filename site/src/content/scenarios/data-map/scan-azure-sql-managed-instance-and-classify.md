@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-azure-sql-managed-instance-and-classify"
-teaser: "Registers an Azure SQL Managed Instance database as a Microsoft Purview Data Map source, configures a scan that authenticates with the Purview account's own system-assigned managed identity (SAMI…"
+teaser: "Registers an Azure SQL Managed Instance database as a Microsoft Purview Data Map source, configures a scan that authenticates with the Purview account's own system-assigned managed identity (SAMI - credential-free, no Key Vault link to manage), and runs that…"
 readingMinutes: 10
 whoFor: "A data governance or security team that has already deployed (or is deploying alongside) *Scan Azure SQL Database and Classify Sensitive Columns* and also runs Azure SQL Managed Instance - a common lift-and-shift target for on-premises SQL Server estates - and needs the same discovery-and- classification coverage for it, without silently reusing a script built for a different data source `kind`."
 frameworks: ["GDPR","HIPAA","PCI DSS","CCPA"]

@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "exchange-pii-exfil-block"
-teaser: "A content-based Microsoft Purview DLP policy that inspects outbound Exchange Online email for U.S. Social Security Numbers and credit card numbers, and - for mail addressed to at least one external recipient…"
+teaser: "A content-based Microsoft Purview DLP policy that inspects outbound Exchange Online email for U.S. Social Security Numbers and credit card numbers, and - for mail addressed to at least one external recipient - either hard-blocks delivery or forces Microsoft…"
 readingMinutes: 9
 whoFor: "Any enterprise that has deployed *Auto-Label Confidential PII in Exchange Email* (or plans to) and needs the movement control that labeling alone cannot provide - a real-time check against the recipient's domain, not just a classification tag. Also stands alone for an organization that wants Exchange PII exfiltration control without an auto-labeling program at all."
 frameworks: ["GDPR","ISO 27001","CCPA"]

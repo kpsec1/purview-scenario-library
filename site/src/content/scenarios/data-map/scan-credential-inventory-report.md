@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-credential-inventory-report"
-teaser: "Scripts an estate-wide, historical inventory of every Microsoft Purview Data Map scan credential (GET /scan/credentials, all eight documented CredentialType kinds) and diffs each one against a checked-in…"
+teaser: "Scripts an estate-wide, historical inventory of every Microsoft Purview Data Map scan credential (GET /scan/credentials, all eight documented CredentialType kinds) and diffs each one against a checked-in expected-state file, flagging any credential whose…"
 readingMinutes: 10
 whoFor: "The same data governance/platform team that owns *Key Vault-Backed Scan Credential (SQL Auth / Service Principal)*, once it has more than a small handful of credentials to keep track of - a security/compliance reviewer who needs to answer \"has our scan-authentication configuration changed since we last checked\" without hand-inspecting every credential one at a time."
 frameworks: ["SOC 2","ISO 27001"]

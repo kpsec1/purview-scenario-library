@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-credential-key-vault-backed"
-teaser: "Creates the two Microsoft Purview objects that let a Data Map scan authenticate to a data source with a stored credential instead of the Purview account's own managed identity: an Azure Key Vault connection…"
+teaser: "Creates the two Microsoft Purview objects that let a Data Map scan authenticate to a data source with a stored credential instead of the Purview account's own managed identity: an Azure Key Vault connection (PUT /scan/azureKeyVaults/{name}) and a credential…"
 readingMinutes: 13
 whoFor: "A data governance or platform team automating Purview Data Map onboarding end to end, whose target sources **cannot** use the Purview system-assigned managed identity (SAMI) - most commonly because the scan runs over a **self-hosted integration runtime**, which does not support managed-identity authentication, or because the source is an on-premises SQL Server that only accepts a SQL login."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2","ISO 27001"]

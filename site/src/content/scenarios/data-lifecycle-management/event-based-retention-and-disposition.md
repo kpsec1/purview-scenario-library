@@ -4,7 +4,7 @@ category: "Data Lifecycle Management"
 categorySlug: "data-lifecycle-management"
 theme: "prove-compliance"
 slug: "event-based-retention-and-disposition"
-teaser: "Creates a retention event type, an event-based retention label (KeepAndDelete, retention clock starts on an event rather than content creation/modification date, with a two-stage disposition review), and a…"
+teaser: "Creates a retention event type, an event-based retention label."
 readingMinutes: 8
 whoFor: "An HR / records-management / compliance team that must retain a departed employee's personnel, hiring, performance, and termination records for a fixed period **measured from the date they leave** - not from when each document was created - and requires human sign-off (HR, then Legal) before those records are ever permanently deleted."
 frameworks: []

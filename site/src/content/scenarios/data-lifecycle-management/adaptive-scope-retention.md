@@ -4,7 +4,7 @@ category: "Data Lifecycle Management"
 categorySlug: "data-lifecycle-management"
 theme: "prove-compliance"
 slug: "adaptive-scope-retention"
-teaser: "Retains executives' Exchange email and OneDrive content for a fixed period using an adaptive scope - a daily-refreshed query against the Entra Title attribute - instead of a static distribution list or…"
+teaser: "Retains executives' Exchange email and OneDrive content for a fixed period using an adaptive scope - a daily-refreshed query against the Entra Title attribute."
 readingMinutes: 7
 whoFor: "A records-management / compliance / IT team at a large or fast-changing organization that needs different retention settings for a population defined by an attribute (job title, department, country/region) rather than a fixed list - the follow-up pattern flagged in the sibling *Retention Labels for Financial Records* scenario for \"large/dynamic estates.\""
 frameworks: []

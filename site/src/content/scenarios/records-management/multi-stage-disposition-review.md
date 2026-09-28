@@ -4,7 +4,7 @@ category: "Records Management"
 categorySlug: "records-management"
 theme: "prove-compliance"
 slug: "multi-stage-disposition-review"
-teaser: "Extends the event-based records-disposition pattern (Event-Based Records Disposition with Disposition Review) with a multi-stage disposition review panel: a record label whose disposal requires sequential…"
+teaser: "Extends the event-based records-disposition pattern (Event-Based Records Disposition with Disposition Review) with a multi-stage disposition review panel: a record label whose disposal requires sequential sign-off from up to 5 reviewer stages…"
 readingMinutes: 9
 whoFor: "A records-management team (working with HR and Legal) at an organization that needs a genuine **sign-off chain**, not a single reviewer, before permanently deleting a legally sensitive record class - and wants that chain, plus its operational risks, defined as reproducible, auditable code."
 frameworks: []

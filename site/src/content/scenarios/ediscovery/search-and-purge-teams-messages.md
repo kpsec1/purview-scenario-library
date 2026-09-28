@@ -4,7 +4,7 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 theme: "investigate-and-respond"
 slug: "search-and-purge-teams-messages"
-teaser: "Scripts Microsoft Purview eDiscovery's search-and-purge capability for Microsoft Teams chat messages - the Teams-specific half of Microsoft Graph's purgeData action (purgeAreas: teamsMessages) that this…"
+teaser: "Scripts Microsoft Purview eDiscovery's search-and-purge capability for Microsoft Teams chat messages - the Teams-specific half of Microsoft Graph's purgeData action (purgeAreas: teamsMessages) that this library's Search-and-Purge for Data Spillage sibling…"
 readingMinutes: 7
 whoFor: "A security/compliance responder who needs an inappropriate, confidential, or malicious Teams chat message removed from view **right now**, who understands (and whose approval workflow reflects) that this action cannot be undone once it succeeds."
 frameworks: []

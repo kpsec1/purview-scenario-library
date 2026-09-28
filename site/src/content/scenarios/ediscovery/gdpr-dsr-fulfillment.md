@@ -4,7 +4,7 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 theme: "investigate-and-respond"
 slug: "gdpr-dsr-fulfillment"
-teaser: "Adds a request-tracking and SLA layer on top of this library's existing eDiscovery capability for GDPR Data Subject Requests: intake a request, create a custodian-scoped eDiscovery case/search covering exactly…"
+teaser: "Adds a request-tracking and SLA layer on top of this library's existing eDiscovery capability for GDPR Data Subject Requests: intake a request, create a custodian-scoped eDiscovery case/search covering exactly the named person's own mailbox and…"
 readingMinutes: 9
 whoFor: "A privacy/compliance team or Data Protection Officer that already has (or is about to build) *EU GDPR Assessment*'s regulatory posture assessment, and needs the operational counterpart - a repeatable way to log a real DSR, know when it's due, and run the actual Microsoft 365 discovery/export/erasure work without reinventing this library's already-reviewed eDiscovery scripts."
 frameworks: ["GDPR","CCPA"]

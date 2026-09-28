@@ -4,7 +4,7 @@ category: "DSPM for AI"
 categorySlug: "dspm-for-ai"
 theme: "stop-the-leak"
 slug: "copilot-prompt-full-block"
-teaser: "Adds a third, stronger DLP rule to the Microsoft 365 Copilot and Copilot Chat DLP policy: when a user's prompt itself contains a configured sensitive information type (SIT), Copilot refuses to respond at all…"
+teaser: "Adds a third, stronger DLP rule to the Microsoft 365 Copilot and Copilot Chat DLP policy."
 readingMinutes: 9
 whoFor: "An organization that already deployed *Copilot Sensitive Data Exposure Protection* and has determined, through its own risk assessment, that a specific set of SIT categories (e.g. national ID numbers, bank account numbers, a jurisdiction-specific regulated identifier) are severe enough that no Copilot response should be generated at all when a prompt contains them - not even one grounded purely in internal, already-accessible Microsoft 365 content."
 frameworks: []

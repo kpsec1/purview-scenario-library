@@ -4,7 +4,7 @@ category: "Data Lifecycle Management"
 categorySlug: "data-lifecycle-management"
 theme: "prove-compliance"
 slug: "publish-labels-for-manual-application"
-teaser: "Publishes an existing retention label to Exchange, SharePoint, and OneDrive so admins and end users can manually apply it - in Outlook, SharePoint, OneDrive, and Teams group-connected sites - as code, via…"
+teaser: "Publishes an existing retention label to Exchange, SharePoint, and OneDrive so admins and end users can manually apply it - in Outlook, SharePoint, OneDrive, and Teams group-connected sites - as code."
 readingMinutes: 6
 whoFor: "A records-management / compliance / IT team that has already created a retention label (e.g. via the sibling *Retention Labels for Financial Records* scenario) and now needs people to be able to apply it to specific emails or documents - either because the label marks items as a **regulatory record** (for which publishing is the *only* supported distribution mechanism), or as a precise, immediate complement to a slower, query-based auto-apply policy."
 frameworks: ["SOX","FINRA"]

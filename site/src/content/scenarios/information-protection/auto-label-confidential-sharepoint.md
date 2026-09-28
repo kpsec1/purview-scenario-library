@@ -4,7 +4,7 @@ category: "Information Protection"
 categorySlug: "information-protection"
 theme: "stop-the-leak"
 slug: "auto-label-confidential-sharepoint"
-teaser: "Automatically applies an existing \"Confidential\" sensitivity label to SharePoint and OneDrive files that contain personal data (U.S. Social Security Numbers and credit card numbers, as the representative…"
+teaser: "Automatically applies an existing \"Confidential\" sensitivity label to SharePoint and OneDrive files that contain personal data."
 readingMinutes: 11
 whoFor: "Any enterprise that stores regulated personal data in SharePoint/OneDrive and needs systematic, evidenced classification coverage - not \"we told users to label their files\" - as the foundation that later DLP, retention, and Insider Risk Management controls in this library key off of (those controls condition on the label being present)."
 frameworks: ["GDPR","ISO 27001","CCPA"]

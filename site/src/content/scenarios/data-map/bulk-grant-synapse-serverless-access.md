@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "bulk-grant-synapse-serverless-access"
-teaser: "Automates the per-serverless-database CREATE LOGIN/CREATE USER/dbdatareader grants Scan Azure Synapse Analytics Workspace and Classify Sensitive Columns's serverless-SQL-pool scanning path depends on, across…"
+teaser: "Automates the per-serverless-database CREATE LOGIN/CREATE USER/dbdatareader grants Scan Azure Synapse Analytics Workspace and Classify Sensitive Columns's serverless-SQL-pool scanning path depends on, across every serverless database in an Azure Synapse…"
 readingMinutes: 7
 whoFor: "The same data governance/security team deploying `scan-azure-synapse-and-classify/` against a Synapse workspace that has more than a handful of serverless databases - a common shape for a workspace supporting several teams' own external-table databases over a shared data lake."
 frameworks: []

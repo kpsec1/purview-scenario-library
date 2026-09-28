@@ -4,7 +4,7 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "irm-case-escalation-to-ediscovery"
-teaser: "Wires Insider Risk Management's manual \"Escalate for investigation\" case action - which opens a new Microsoft Purview eDiscovery (Premium) case for the flagged user - into this library's existing eDiscovery…"
+teaser: "Wires Insider Risk Management's manual \"Escalate for investigation\" case action."
 readingMinutes: 7
 whoFor: "An Insider Risk Management Investigator (or a legal/compliance team acting on their referral) who has already decided a case needs \"extra legal review\" and clicked **Escalate for investigation**, and needs the resulting eDiscovery case reliably provisioned and traceable back to the alert evidence that justified it - instead of a fresh, disconnected eDiscovery case that a legal team has to hand-populate and a compliance auditor can't later tie back to the IRM finding that triggered it."
 frameworks: []

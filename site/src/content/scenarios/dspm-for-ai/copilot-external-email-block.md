@@ -4,7 +4,7 @@ category: "DSPM for AI"
 categorySlug: "dspm-for-ai"
 theme: "stop-the-leak"
 slug: "copilot-external-email-block"
-teaser: "Adds a fourth rule to the Microsoft 365 Copilot and Copilot Chat DLP policy: when an email a user received was sent from a sender outside the organization's accepted domains, Copilot excludes that email from…"
+teaser: "Adds a fourth rule to the Microsoft 365 Copilot and Copilot Chat DLP policy."
 readingMinutes: 8
 whoFor: "An organization already running the parent Copilot DLP policy that wants to reduce the risk of Copilot reasoning over - and potentially acting on - untrusted instructions embedded in external email, without giving up Copilot's ability to summarize a user's internal mail and other permitted Microsoft 365 content."
 frameworks: []

@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-azure-sql-managed-instance-and-classify-pii-ruleset"
-teaser: "Extends Scan Azure SQL Managed Instance and Classify Sensitive Columns: creates a custom, PII-only Data Map scan rule set for Azure SQL Managed Instance - every system classification excluded except the ones…"
+teaser: "Extends Scan Azure SQL Managed Instance and Classify Sensitive Columns: creates a custom, PII-only Data Map scan rule set for Azure SQL Managed Instance - every system classification excluded except the ones you name to keep…"
 readingMinutes: 7
 whoFor: "A data governance or security team that has already run the base Azure SQL Managed Instance scanning scenario - commonly a lift-and-shift landing zone for on-premises SQL Server estates - knows their compliance driver is narrow (PCI cardholder data, or a PII-only privacy program), and wants a faster, quieter scan and a less cluttered catalog than the System default scan rule set produces."
 frameworks: ["GDPR","PCI DSS","CCPA"]

@@ -4,7 +4,7 @@ category: "Compliance Manager"
 categorySlug: "compliance-manager"
 theme: "prove-compliance"
 slug: "pci-dss-assessment"
-teaser: "Stands up a dedicated Microsoft Purview Compliance Manager assessment against the PCI DSS v4.0 premium regulatory template, places it correctly relative to this library's other Compliance Manager assessment…"
+teaser: "Stands up a dedicated Microsoft Purview Compliance Manager assessment against the PCI DSS v4.0 premium regulatory template, places it correctly relative to this library's other Compliance Manager assessment, and cross-references it against the PCI-relevant…"
 readingMinutes: 8
 whoFor: "A security/compliance team responsible for an in-scope PCI cardholder data environment (CDE) that wants a single, scored, audit-ready internal view of how its Microsoft 365 controls map to PCI DSS v4.0 - and, critically, a team that already understands (or needs this scenario to make explicit) that this internal view is **not** the same instrument as a PCI DSS Self-Assessment Questionnaire (SAQ) or a QSA's Report on Compliance (RoC)."
 frameworks: ["PCI DSS","ISO 27001"]

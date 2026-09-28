@@ -4,7 +4,7 @@ category: "Communication Compliance"
 categorySlug: "communication-compliance"
 theme: "watch-the-insider"
 slug: "financial-regulatory-supervision"
-teaser: "Deploys a Microsoft Purview Communication Compliance policy that detects signs of stock manipulation, money laundering, undisclosed gifts/entertainment, collusion, unauthorized disclosure, corporate sabotage…"
+teaser: "Deploys a Microsoft Purview Communication Compliance policy that detects signs of stock manipulation, money laundering, undisclosed gifts/entertainment, collusion, unauthorized disclosure, corporate sabotage, and unresolved customer complaints across the…"
 readingMinutes: 9
 whoFor: "A broker-dealer, investment adviser, or bank's Compliance/Legal function that must supervise its registered representatives' electronic business communications under FINRA Rule 3110 and produce documented review evidence for an examiner - using its existing Microsoft 365 tenant rather than standing up a separate archiving/surveillance platform."
 frameworks: ["FINRA"]

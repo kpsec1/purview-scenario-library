@@ -4,7 +4,7 @@ category: "Compliance Manager"
 categorySlug: "compliance-manager"
 theme: "prove-compliance"
 slug: "assess-against-iso27001"
-teaser: "Stands up a dedicated Microsoft Purview Compliance Manager assessment against the ISO/IEC 27001:2022 premium regulatory template, gives it a deliberate grouping and role structure, and layers one genuinely…"
+teaser: "Stands up a dedicated Microsoft Purview Compliance Manager assessment against the ISO/IEC 27001:2022 premium regulatory template, gives it a deliberate grouping and role structure, and layers one genuinely scriptable piece of monitoring on top: a rolling…"
 readingMinutes: 10
 whoFor: "A security/compliance team pursuing ISO/IEC 27001:2022 certification (or maintaining an existing ISMS) that wants a single, scored, audit-ready view of how Microsoft 365 controls map to Annex A - and, ideally, a team that has already deployed some of this library's DLP/Information Protection/Insider Risk Management scenarios and wants Compliance Manager's built-in automation to give them credit for that work."
 frameworks: ["GDPR","ISO 27001","NIST","FedRAMP"]

@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "defender-device-control-usb-allowlist-wpd-coverage"
-teaser: "Extends Defender for Endpoint Device Control: USB Default-Deny Allowlist's default-deny USB allowlist to also cover Windows Portable Devices (WPD) - phones, tablets, and cameras connected in MTP/PTP mode…"
+teaser: "Extends Defender for Endpoint Device Control: USB Default-Deny Allowlist's default-deny USB allowlist to also cover Windows Portable Devices (WPD) - phones, tablets, and cameras connected in MTP/PTP mode - which that scenario's own Red Team review confirmed…"
 readingMinutes: 8
 whoFor: "Any organization that has already deployed (or is deploying) the parent USB allowlist scenario and wants the same \"no unapproved removable device, period\" posture to also close the phone-in-MTP-mode gap - typically after a Red Team finding, a DLP audit, or an incident where data left over a device that never created a drive letter and so was never subject to the parent policy at all."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

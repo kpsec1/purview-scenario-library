@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "defender-device-control-usb-allowlist-macos-portable-device-coverage"
-teaser: "Extends Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist's default-deny USB allowlist to also cover Apple (iOS/iPadOS) devices, Portable devices (cameras, Android phones in…"
+teaser: "Extends Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist's default-deny USB allowlist to also cover Apple (iOS/iPadOS) devices, Portable devices (cameras, Android phones in PTP-analogous modes), and Bluetooth media - three device…"
 readingMinutes: 9
 whoFor: "Any organization that has already deployed (or is deploying) the macOS USB allowlist scenario and wants the same \"no unapproved device, period\" posture to also close the iPhone-in-sync-mode, camera-in-PTP-mode, and Bluetooth-file-transfer gaps - typically after a Red Team finding, a DLP audit, or an incident where data left over a device that never enumerated as removable media and so was never subject to the parent policy at all. This is the **direct macOS analog** of *Defender for Endpoint Device Control: Windows Portable Device (WPD) Coverage* (the Windows WPD sibling), translated to macOS's own `primaryId` family model."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-azure-synapse-and-classify-managed-identity-credential"
-teaser: "Extends Scan Azure Synapse Analytics Workspace and Classify Sensitive Columns: reconciles that scenario's already-registered scan from the Purview account's shared system-assigned managed identity (SAMI) onto…"
+teaser: "Extends Scan Azure Synapse Analytics Workspace and Classify Sensitive Columns: reconciles that scenario's already-registered scan from the Purview account's shared system-assigned managed identity (SAMI) onto a user-assigned managed identity (UAMI) - a…"
 readingMinutes: 8
 whoFor: "A data governance or security team that has already run the base Azure Synapse scanning scenario, and whose governance model wants **per-source identity separation** instead of relying on the Purview account's one shared SAMI - particularly relevant for Synapse, which *Scan Azure Synapse Analytics Workspace and Classify Sensitive Columns* (why this matters) already frames as a common aggregation point for sensitive data copied in from many upstream systems."
 frameworks: ["SOC 2","ISO 27001"]

@@ -4,7 +4,7 @@ category: "Information Protection"
 categorySlug: "information-protection"
 theme: "stop-the-leak"
 slug: "auto-label-eu-personal-data-exchange"
-teaser: "Automatically applies an existing \"Confidential\" sensitivity label to Exchange Online email (subject, body, and Office/PDF attachments) that contains EU/UK personal identifiers - national ID numbers, the EU…"
+teaser: "Automatically applies an existing \"Confidential\" sensitivity label to Exchange Online email (subject, body, and Office/PDF attachments) that contains EU/UK personal identifiers - national ID numbers, the EU Social-Security-or-equivalent family, and EU-format…"
 readingMinutes: 14
 whoFor: "An enterprise whose regulated population is EU/UK-only (or includes a significant EU/UK segment) that has already deployed, or is evaluating, *Auto-Label EU/UK Personal Data in SharePoint & OneDrive* (EU/UK coverage for files at rest) and/or *Auto-Label Confidential PII in Exchange Email* (email coverage with U.S.-format SITs) - and needs the one combination neither of those two ships: EU/UK-format personal data, classified in email. This is the direct email-channel counterpart of the SharePoint/OneDrive EU/UK scenario, and the direct EU/UK-SIT counterpart of the U.S.-SIT Exchange scenario. Deploy this **alongside**, not instead of, either sibling - all three are independent policies sharing a label and a design philosophy."
 frameworks: ["GDPR","ISO 27001","CCPA"]

@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "verify-purview-entra-graph-prerequisites"
-teaser: "A read-only Microsoft Graph checker that confirms every Azure SQL Managed Instance backing a Microsoft Purview Data Map source (Scan Azure SQL Managed Instance and Classify Sensitive Columns) still has its…"
+teaser: "A read-only Microsoft Graph checker that confirms every Azure SQL Managed Instance backing a Microsoft Purview Data Map source (Scan Azure SQL Managed Instance and Classify Sensitive Columns) still has its system-assigned managed identity as a current member…"
 readingMinutes: 8
 whoFor: "A data governance or security team already running *Scan Azure SQL Managed Instance and Classify Sensitive Columns* for one or more instances, who wants a scheduled, unattended way to know - before a scan silently starts failing - that the Entra prerequisite it depends on is still in place."
 frameworks: ["GDPR","HIPAA","PCI DSS"]

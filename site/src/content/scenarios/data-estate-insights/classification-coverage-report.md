@@ -4,7 +4,7 @@ category: "Data Estate Insights"
 categorySlug: "data-estate-insights"
 theme: "know-your-data"
 slug: "classification-coverage-report"
-teaser: "Microsoft Purview's native Data Estate Insights classification report is a real, automatically-generated dashboard - but it lives only in the portal, has no REST API, gates its own \"Export to CSV\" button…"
+teaser: "Microsoft Purview's native Data Estate Insights classification report is a real, automatically-generated dashboard."
 readingMinutes: 10
 whoFor: "A Chief Data Officer's or data-governance team's reporting/ops function that needs classification-coverage numbers *outside* the portal - a board deck, a GRC tool, a SIEM, or an audit-evidence trail with real point-in-time history - without granting the automation identity more privilege than the native report's own export feature would require. (Role terminology below follows Microsoft's own Data Reader/Data Curator/Data Estate Insights glossary definitions.)"
 frameworks: ["GDPR","PCI DSS","SOC 2","ISO 27001"]

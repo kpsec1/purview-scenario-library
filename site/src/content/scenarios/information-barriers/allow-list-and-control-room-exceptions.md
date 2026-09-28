@@ -4,7 +4,7 @@ category: "Information Barriers"
 categorySlug: "information-barriers"
 theme: "watch-the-insider"
 slug: "allow-list-and-control-room-exceptions"
-teaser: "A companion to Segregate Trading and Research (Ethical Wall): models Allow-type (-SegmentsAllowed) information-barrier topologies that give a compliance/control-room function visibility into both sides of an…"
+teaser: "A companion to Segregate Trading and Research (Ethical Wall): models Allow-type (-SegmentsAllowed) information-barrier topologies that give a compliance/control-room function visibility into both sides of an existing Trading/Research wall, plus a narrower…"
 readingMinutes: 7
 whoFor: "A compliance/IT team that already runs (or is deploying) an ethical wall and needs to script the real-world exception every such wall eventually needs - someone who must legitimately see across it - as a reviewable, auditable object instead of an ad-hoc bypass."
 frameworks: ["FINRA"]

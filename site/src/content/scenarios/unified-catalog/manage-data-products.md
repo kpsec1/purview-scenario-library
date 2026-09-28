@@ -4,7 +4,7 @@ category: "Unified Catalog"
 categorySlug: "unified-catalog"
 theme: "know-your-data"
 slug: "manage-data-products"
-teaser: "Creates a data product in Microsoft Purview Unified Catalog - a named, ownable, requestable grouping of data assets with a business use case attached - wraps an already-scanned Azure SQL table as a Unified…"
+teaser: "Creates a data product in Microsoft Purview Unified Catalog - a named, ownable, requestable grouping of data assets with a business use case attached - wraps an already-scanned Azure SQL table as a Unified Catalog data asset, and links both that asset and its…"
 readingMinutes: 8
 whoFor: "A data governance or platform team that has already run *Scan Azure SQL Database and Classify Sensitive Columns* (to scan and classify a source) and *Curate a Business Glossary* (to define the `Customer` / `Customer ID` terms), and now wants to package that governed table as a self-service-discoverable product - defined, reviewed, and versioned via a pull request, not assembled one portal click at a time."
 frameworks: ["SOC 2","ISO 27001"]

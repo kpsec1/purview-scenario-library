@@ -4,7 +4,7 @@ category: "Records Management"
 categorySlug: "records-management"
 theme: "prove-compliance"
 slug: "file-plan-bulk-import"
-teaser: "Builds a whole file plan - many retention-label record classes spanning multiple departments, categories, and legal citations - from a single versioned CSV schedule, instead of creating labels one at a time in…"
+teaser: "Builds a whole file plan - many retention-label record classes spanning multiple departments, categories, and legal citations - from a single versioned CSV schedule."
 readingMinutes: 8
 whoFor: "A records-management or compliance team standing up (or migrating in) a real records schedule - dozens of record classes across HR, Finance, Legal, IT, Sales, and Compliance - who need it defined once, versioned, validated before it ever touches the tenant, and reproducible across environments (pilot → production, or across MSSP client tenants)."
 frameworks: ["SOX"]

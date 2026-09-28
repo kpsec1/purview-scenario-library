@@ -4,7 +4,7 @@ category: "Data Lifecycle Management"
 categorySlug: "data-lifecycle-management"
 theme: "prove-compliance"
 slug: "retention-labels-financial-records"
-teaser: "Creates a record retention label for financial books-and-records (SEC 17a-4-style immutability) and an auto-apply retention label policy that stamps it onto finance content - as code, via Security & Compliance…"
+teaser: "Creates a record retention label for financial books-and-records (SEC 17a-4-style immutability) and an auto-apply retention label policy that stamps it onto finance content - as code."
 readingMinutes: 8
 whoFor: "A records-management / compliance / IT team at a regulated organization (broker- dealer, bank, insurer) that must retain financial records for a fixed period - either as a lockable record (auto-applied, this scenario end-to-end) or as a full WORM regulatory record (created here, distributed by the sibling scenario) - and wants it defined, reviewed, and deployed as reproducible code."
 frameworks: ["SOX","FINRA"]

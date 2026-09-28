@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "defender-device-control-usb-allowlist-macos-jamf-vendor-product-matching"
-teaser: "Extends Defender for Endpoint Device Control (macOS, JAMF-managed): USB Default-Deny Allowlist's default-deny USB allowlist for JAMF-managed macOS endpoints with a second, independent device-matching…"
+teaser: "Extends Defender for Endpoint Device Control (macOS, JAMF-managed): USB Default-Deny Allowlist's default-deny USB allowlist for JAMF-managed macOS endpoints with a second, independent device-matching mechanism: vendorId+productId compound matching, for…"
 readingMinutes: 7
 whoFor: "Any organization already running (or planning to run) *Defender for Endpoint Device Control (macOS, JAMF-managed): USB Default-Deny Allowlist* on a JAMF-managed macOS fleet, whose approved backup/imaging drives include at least one unit with no readable serial number."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

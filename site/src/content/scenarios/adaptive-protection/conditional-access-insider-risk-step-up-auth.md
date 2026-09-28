@@ -4,7 +4,7 @@ category: "Adaptive Protection"
 categorySlug: "adaptive-protection"
 theme: "watch-the-insider"
 slug: "conditional-access-insider-risk-step-up-auth"
-teaser: "Deploys the two Microsoft Entra Conditional Access policies Microsoft's own Adaptive Protection configuration guide documents for Moderate and Minor insider risk levels: a Terms of Use acceptance requirement…"
+teaser: "Deploys the two Microsoft Entra Conditional Access policies Microsoft's own Adaptive Protection configuration guide documents for Moderate and Minor insider risk levels: a Terms of Use acceptance requirement scoped to Microsoft Admin Portals (Moderate), and a…"
 readingMinutes: 11
 whoFor: "Any Microsoft 365 E5 (or Purview Suite) tenant with **Microsoft Entra ID P2** that has already deployed (or is deploying via this library) the Elevated-risk block sibling scenario and wants the full, Microsoft-documented three-tier Conditional Access response - block (Elevated), require Terms of Use acknowledgment (Moderate), and visibility only (Minor) - instead of leaving Moderate/Minor risk unaddressed on the identity layer. See the design notes for why this scenario reproduces Microsoft's own documented pairing rather than a \"require MFA / require compliant device\" alternative that was considered and rejected."
 frameworks: ["SOC 2","ISO 27001"]

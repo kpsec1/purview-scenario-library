@@ -69,7 +69,8 @@ const posts = flagship.posts as Record<string, any>;
 const draft = posts[entry.id];
 const showDrafts = process.env.SHOW_FLAGSHIP_DRAFTS === '1';
 const flagshipLive = Boolean(draft) && (showDrafts || (draft.published ?? flagship.published));
-const dek = flagshipLive && draft.dek ? draft.dek : data.teaser;
+const complete = data.teaser && !data.teaser.endsWith('\u2026') ? data.teaser : undefined;
+const dek = flagshipLive && draft.dek ? draft.dek : complete;
 
 const toc = [...(data.toc ?? [])];
 if (data.hasRunbook || scripts.deploy.length || DesignContent || RollbackContent) {

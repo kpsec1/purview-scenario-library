@@ -4,7 +4,7 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "data-leaks-by-risky-users"
-teaser: "Deploys Microsoft Purview Insider Risk Management's Data leaks by risky users policy template - the \"risky users\" member of the Data leaks… template family (base Data leaks, …by priority users, …by risky…"
+teaser: "Deploys Microsoft Purview Insider Risk Management's Data leaks by risky users policy template - the \"risky users\" member of the Data leaks… template family (base Data leaks, …by priority users, …by risky users), sharing its bring-into-scope mechanism with…"
 readingMinutes: 12
 whoFor: "A tenant that wants employment-stressor-triggered exfiltration detection **without** a Microsoft Defender for Endpoint dependency - the single biggest practical difference from this library's *Security Policy Violations by Risky Users* sibling, which scores the same trigger mechanism but requires an active Defender for Endpoint subscription and its Purview alert-sharing integration. A tenant with Microsoft 365 E5 but no Defender for Endpoint deployed can still run this scenario end to end."
 frameworks: ["SOC 2","ISO 27001"]

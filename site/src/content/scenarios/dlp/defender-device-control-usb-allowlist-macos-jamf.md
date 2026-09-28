@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "defender-device-control-usb-allowlist-macos-jamf"
-teaser: "Denies all removable USB storage devices on JAMF-managed macOS endpoints by default, allowing only a short, named allowlist of IT-issued, identity-verified backup/imaging drives (matched by serial number) to…"
+teaser: "Denies all removable USB storage devices on JAMF-managed macOS endpoints by default."
 readingMinutes: 8
 whoFor: "Any organization whose macOS fleet is managed through JAMF Pro (rather than Intune) that wants the same default-deny USB allowlist posture this library's Windows and Intune-managed-macOS scenarios already provide - a common split in enterprises where JAMF is the long-standing Apple-device MDM and Intune is Windows-only, or where JAMF and Intune are run side-by-side across a mixed macOS fleet."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

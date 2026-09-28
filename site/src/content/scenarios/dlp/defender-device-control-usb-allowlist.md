@@ -4,7 +4,7 @@ category: "DLP"
 categorySlug: "dlp"
 theme: "stop-the-leak"
 slug: "defender-device-control-usb-allowlist"
-teaser: "Denies all removable USB storage devices on onboarded Windows endpoints by default, allowing only a short, named allowlist of IT-issued, identity-verified backup/imaging drives (matched by serial number or USB…"
+teaser: "Denies all removable USB storage devices on onboarded Windows endpoints by default."
 readingMinutes: 10
 whoFor: "Any organization that has concluded \"audit and block by content\" isn't enough - an organization that wants \"no unapproved USB storage device, period,\" typically after a security incident involving an unmanaged drive, a compliance requirement to enumerate every device with physical write access to regulated systems, or a Red Team finding that a non-sensitive-looking file (or a drive used for something other than a text-pattern-matchable file) bypassed a content-only control."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

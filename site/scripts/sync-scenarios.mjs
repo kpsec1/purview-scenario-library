@@ -542,21 +542,61 @@ function stripMd(text) {
     .trim();
 }
 
-function firstSentence(text, max = 210) {
-  let t = stripMd(text);
+// Words that open a trailing modifier: the text before a break followed by one
+// of these is a complete thought ("Blocks X on Y, using Z" -> "Blocks X on Y.").
+const TRAILING = new Set(
+  ('using via with without so which that while as for by through from because where when ' +
+    'after before instead rather then but to').split(' ')
+);
+const DANGLING = /\b(?:a|an|the|of|and|or|to|for|with|by|in|on|as|from|its|their|custom)$/i;
+
+function firstSentence(text, max = 200) {
+  const t = stripMd(text);
+  // Take whole sentences until the teaser has some substance (skips fragments
+  // such as "Public Preview.").
+  const parts = [];
   const re = /([.!?])\s+(?=[A-Z"'(])/g;
+  let last = 0;
   let m;
   while ((m = re.exec(t))) {
     const before = t.slice(0, m.index + 1);
     if (/(?:\bU\.S|\be\.g|\bi\.e|\bvs|\betc|\bInc|\bNo|\bSt)\.$/i.test(before)) continue;
-    t = before;
-    break;
+    parts.push(t.slice(last, m.index + 1));
+    last = m.index + m[0].length;
+    if (parts.join(' ').length >= 45) break;
   }
-  if (t.length > max) {
-    t = t.slice(0, max);
-    t = t.slice(0, t.lastIndexOf(' ')).replace(/[,;:(\-\s]+$/, '') + '…';
+  let out = parts.length && parts.join(' ').length >= 45 ? parts.join(' ') : t;
+  if (out.length <= max) return out;
+
+  // Too long for a card: cut before the last trailing modifier that fits, keep
+  // brackets and quotes balanced, and end on a full stop.
+  const breaker = /(?:, |; |: | - )/g;
+  let best = -1;
+  let b;
+  while ((b = breaker.exec(out))) {
+    if (b.index < 60 || b.index > max) continue;
+    const next = (out.slice(b.index + b[0].length).match(/^([A-Za-z]+)/) || [])[1];
+    // A participle ('allowing', 'closing') also opens a trailing phrase.
+    const restText = out.slice(b.index + b[0].length);
+    const participle = /^[A-Za-z]{4,}ing\s+(?:a|an|the|only|each|every|all|any|both|no|its|their|this|that|these|those|it|them|one|two|three|more|less|fewer|up|out|off|over)\b/i.test(restText);
+    if (next && (TRAILING.has(next.toLowerCase()) || participle)) best = b.index;
   }
-  return t;
+  if (best >= 0) {
+    let piece = out.slice(0, best);
+    while (piece.split('(').length !== piece.split(')').length && piece.includes('(')) {
+      piece = piece.slice(0, piece.lastIndexOf('(')).replace(/[,;:\s-]+$/, '');
+    }
+    if ((piece.match(/"/g) || []).length % 2 === 1) piece = piece.slice(0, piece.lastIndexOf('"')).replace(/[,;:\s-]+$/, '');
+    piece = piece.replace(/[,;:\s-]+$/, '');
+    if (piece.length >= 60 && !DANGLING.test(piece)) return piece + '.';
+  }
+  // Honest fallback: a word-boundary cut with an ellipsis, never inside a bracket.
+  let head = out.slice(0, 260);
+  head = head.slice(0, head.lastIndexOf(' '));
+  while (head.split('(').length !== head.split(')').length && head.includes('(')) {
+    head = head.slice(0, head.lastIndexOf('(')).replace(/[,;:\s-]+$/, '');
+  }
+  return head.replace(/[,;:(\-\s]+$/, '') + '\u2026';
 }
 
 // Table of contents for the story, matching the ids rehype-slug will assign.

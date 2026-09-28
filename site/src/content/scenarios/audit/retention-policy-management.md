@@ -4,7 +4,7 @@ category: "Audit"
 categorySlug: "audit"
 theme: "investigate-and-respond"
 slug: "retention-policy-management"
-teaser: "Creates and manages custom Microsoft Purview audit log retention policies - extending retention beyond the tenant's automatic one-year Entra/Exchange/OneDrive/SharePoint default (e.g. to Microsoft Teams, or to…"
+teaser: "Creates and manages custom Microsoft Purview audit log retention policies - extending retention beyond the tenant's automatic one-year Entra/Exchange/OneDrive/SharePoint default (e.g. to Microsoft Teams, or to a specific regulated user group) and shortening…"
 readingMinutes: 8
 whoFor: "An org that has run *Forensic Investigation of a Compromised Account* (or plans to) and needs the data that investigation searches to actually still be *retained* when it's needed - plus any compliance/records team that wants an as-code, reviewable definition of \"how long do we keep which audit activity\" instead of a set of hand-clicked portal policies nobody has a change log for."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2"]

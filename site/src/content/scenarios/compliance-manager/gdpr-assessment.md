@@ -4,7 +4,7 @@ category: "Compliance Manager"
 categorySlug: "compliance-manager"
 theme: "prove-compliance"
 slug: "gdpr-assessment"
-teaser: "Stands up a dedicated Microsoft Purview Compliance Manager assessment against the EU GDPR (General Data Protection Regulation) premium template, places it correctly relative to this library's other Compliance…"
+teaser: "Stands up a dedicated Microsoft Purview Compliance Manager assessment against the EU GDPR (General Data Protection Regulation) premium template, places it correctly relative to this library's other Compliance Manager assessments, and cross-references it…"
 readingMinutes: 13
 whoFor: "Any organization - regardless of where it is headquartered - that offers goods or services to people in the EU/EEA, or monitors the behavior of EU/EEA residents, and needs an internal, evidenced readiness view of how its Microsoft 365 estate maps to GDPR's Data Subject Request, Breach Notification, and Data Protection Impact Assessment obligations, its Article 5 processing principles, and its Article 30/37 accountability and governance requirements. This is also for a team that understands (or needs this scenario to make explicit) that a Compliance Manager score is **not** a GDPR certification, is **not** a substitute for the organization's own required Article 30 Records of Processing Activities or Article 35 DPIAs, and does not by itself establish a lawful basis for any processing activity."
 frameworks: ["GDPR","HIPAA","PCI DSS","SOC 2","ISO 27001","NIST","CCPA","FedRAMP"]

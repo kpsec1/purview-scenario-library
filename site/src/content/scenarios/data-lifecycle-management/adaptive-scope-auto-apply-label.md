@@ -4,7 +4,7 @@ category: "Data Lifecycle Management"
 categorySlug: "data-lifecycle-management"
 theme: "prove-compliance"
 slug: "adaptive-scope-auto-apply-label"
-teaser: "Locks executives' Exchange email and OneDrive content as a formal record using an adaptive scope - the same daily-refreshed query against the Entra Title attribute used by the sibling Adaptive-Scope Retention…"
+teaser: "Locks executives' Exchange email and OneDrive content as a formal record using an adaptive scope - the same daily-refreshed query against the Entra Title attribute used by the sibling Adaptive-Scope Retention scenario - instead of a Keep-only retention action…"
 readingMinutes: 8
 whoFor: "A records-management / compliance / IT team that needs a **record**-strength control (not just retention) for a population defined by an attribute rather than a fixed list - the auto-apply-label variant explicitly flagged as a follow-up in both sibling scenarios: `adaptive- scope-retention/the design notes (\"An adaptive-scope *auto-apply retention label* policy... the identical `-AdaptiveScopeLocation` parameter set... supports it directly\") and `retention-labels- financial-records/the known limitations (\"Adaptive scopes out of scope... large/dynamic estates should use adaptive scopes\")."
 frameworks: []

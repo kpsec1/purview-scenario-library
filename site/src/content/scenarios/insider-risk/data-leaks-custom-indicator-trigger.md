@@ -4,7 +4,7 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "data-leaks-custom-indicator-trigger"
-teaser: "Deploys Microsoft Purview Insider Risk Management's Insider Risk Indicators (preview) connector to import pre-aggregated, non-Microsoft-workload detections - Microsoft's own worked example: Salesforce and…"
+teaser: "Deploys Microsoft Purview Insider Risk Management's Insider Risk Indicators (preview) connector to import pre-aggregated, non-Microsoft-workload detections - Microsoft's own worked example: Salesforce and Dropbox activity aggregated by a SIEM such as…"
 readingMinutes: 11
 whoFor: "A tenant that already runs a third-party CASB, DLP tool, or SIEM correlation pipeline producing per-user risk detections for SaaS apps Insider Risk Management doesn't natively see (anything beyond the fixed Box/Dropbox/Google Drive/Amazon S3/Azure cloud-indicator list, and beyond Exchange/SharePoint/OneDrive) and wants that existing investment to feed the same Insider Risk Management alerting and case-management workflow - one alerts dashboard and one investigation process, not a second, disconnected one for third-party-sourced risk."
 frameworks: ["SOC 2","ISO 27001"]

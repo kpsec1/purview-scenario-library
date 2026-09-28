@@ -4,7 +4,7 @@ category: "Insider Risk Management"
 categorySlug: "insider-risk"
 theme: "watch-the-insider"
 slug: "departing-employee-data-theft"
-teaser: "Deploys Microsoft Purview Insider Risk Management's Data theft by departing users policy template, fed by an automated daily HR resignation-date data upload, to detect and alert on exfiltration-pattern…"
+teaser: "Deploys Microsoft Purview Insider Risk Management's Data theft by departing users policy template, fed by an automated daily HR resignation-date data upload."
 readingMinutes: 10
 whoFor: "Any Microsoft 365 E5 (or equivalent add-on) tenant with an HR system that can export resignation/termination dates, that wants a *behavioral, cross-event* detection control for departing-employee data theft - complementing, not replacing, point controls like DLP (*PCI Teams Card-Data Exfiltration Block*) that can only evaluate one message or upload at a time."
 frameworks: ["GDPR","PCI DSS","SOC 2","ISO 27001"]

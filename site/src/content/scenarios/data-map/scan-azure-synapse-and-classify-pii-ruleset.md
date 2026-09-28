@@ -4,7 +4,7 @@ category: "Data Map"
 categorySlug: "data-map"
 theme: "know-your-data"
 slug: "scan-azure-synapse-and-classify-pii-ruleset"
-teaser: "Extends Scan Azure Synapse Analytics Workspace and Classify Sensitive Columns: creates a custom, PII-only Data Map scan rule set for Azure Synapse Analytics (dedicated and/or serverless SQL pools) - every…"
+teaser: "Extends Scan Azure Synapse Analytics Workspace and Classify Sensitive Columns: creates a custom, PII-only Data Map scan rule set for Azure Synapse Analytics (dedicated and/or serverless SQL pools) - every system classification excluded except the ones you…"
 readingMinutes: 7
 whoFor: "A data governance or security team that has already run the base Azure Synapse Analytics scanning scenario, knows their compliance driver is narrow (PCI cardholder data, or a PII-only privacy program), and wants a faster, quieter scan and a less cluttered catalog than the System default scan rule set produces across a Synapse workspace's dedicated and serverless pools."
 frameworks: ["GDPR","PCI DSS","CCPA"]

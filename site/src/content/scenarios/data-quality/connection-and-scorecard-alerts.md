@@ -4,7 +4,7 @@ category: "Data Quality"
 categorySlug: "data-quality"
 theme: "know-your-data"
 slug: "connection-and-scorecard-alerts"
-teaser: "Public Preview."
+teaser: "Public Preview. The Data Quality REST API for Unified Catalog this scenario automates is a Microsoft Public Preview surface as of this build - the portal experience is GA."
 readingMinutes: 13
 whoFor: "A data governance team that has already deployed *Configure Rules and Review Scorecards for a Governed Data Asset* (or is deploying it alongside this scenario) and needs the connection and alerting halves scripted and code-reviewable, instead of the portal-only \"Connections\" and \"Alerts\" wizards under **Health management > Data quality > Manage**."
 frameworks: ["GDPR","SOX"]

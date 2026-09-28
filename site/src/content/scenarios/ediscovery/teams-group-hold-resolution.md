@@ -4,7 +4,7 @@ category: "eDiscovery"
 categorySlug: "ediscovery"
 theme: "investigate-and-respond"
 slug: "teams-group-hold-resolution"
-teaser: "Resolves a Microsoft Teams team or Microsoft 365 Group's own preservable content locations - its group mailbox and its SharePoint site - into the userSource/siteSource pair that Location-Scoped Legal Hold…"
+teaser: "Resolves a Microsoft Teams team or Microsoft 365 Group's own preservable content locations - its group mailbox and its SharePoint site - into the userSource/siteSource pair that Location-Scoped Legal Hold (Regulatory Sweep / Shared Mailbox)'s hold scripts…"
 readingMinutes: 6
 whoFor: "The same legal/compliance operator running *Location-Scoped Legal Hold (Regulatory Sweep / Shared Mailbox)*, at the specific moment a matter names a Team or Microsoft 365 Group by its display name (\"preserve the *Payments Team* Teams channel\") rather than by the group's own mailbox address or SharePoint site URL. This scenario is the lookup step between \"a Team was named in scope\" and \"here is the userSource/siteSource pair to add to the hold\" - a distinct, separately scoped concern the sibling scenario's the design notes explicitly deferred rather than folded in."
 frameworks: []

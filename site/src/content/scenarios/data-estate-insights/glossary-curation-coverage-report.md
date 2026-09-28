@@ -4,7 +4,7 @@ category: "Data Estate Insights"
 categorySlug: "data-estate-insights"
 theme: "know-your-data"
 slug: "glossary-curation-coverage-report"
-teaser: "Microsoft Purview's native Data Estate Insights application ships a Classic glossary report with genuinely useful KPIs - total terms, approved terms without assets, expired terms with assets, a…"
+teaser: "Microsoft Purview's native Data Estate Insights application ships a Classic glossary report with genuinely useful KPIs - total terms, approved terms without assets, expired terms with assets, a status/asset-attachment snapshot, and an incomplete-terms…"
 readingMinutes: 10
 whoFor: "A Chief Data Officer's or data-governance team's reporting/ops function that wants glossary-health numbers (curation completeness, asset-attachment rate, status distribution) outside the portal, trended over time, computed from the same term model their glossary-as-code pipeline (*Curate a Business Glossary*) already writes to - not the legacy classic-glossary model the native report was built for."
 frameworks: ["GDPR","SOC 2","ISO 27001","CCPA"]

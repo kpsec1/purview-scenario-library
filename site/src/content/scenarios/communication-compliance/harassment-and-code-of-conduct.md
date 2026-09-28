@@ -4,7 +4,7 @@ category: "Communication Compliance"
 categorySlug: "communication-compliance"
 theme: "watch-the-insider"
 slug: "harassment-and-code-of-conduct"
-teaser: "Deploys a Microsoft Purview Communication Compliance policy that detects potentially harassing, discriminatory, threatening, or profane language across Exchange Online email, Microsoft Teams chat/channel…"
+teaser: "Deploys a Microsoft Purview Communication Compliance policy that detects potentially harassing, discriminatory, threatening, or profane language across Exchange Online email, Microsoft Teams chat/channel messages, and Viva Engage conversations, routes matches…"
 readingMinutes: 10
 whoFor: "An enterprise HR/Legal/Compliance function that wants to move from a purely reactive (complaint-driven) posture on workplace harassment and code-of-conduct violations to proactive detection across its Microsoft 365 communication channels, with a review process that is itself privacy-respecting, role-separated, and defensible."
 frameworks: []

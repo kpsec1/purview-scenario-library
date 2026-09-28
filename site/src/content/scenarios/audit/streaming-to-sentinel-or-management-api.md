@@ -4,7 +4,7 @@ category: "Audit"
 categorySlug: "audit"
 theme: "investigate-and-respond"
 slug: "streaming-to-sentinel-or-management-api"
-teaser: "Turns the on-demand investigation in audit/premium-audit-investigation into continuous audit streaming, via two independently deployable paths: (A) the native Microsoft Sentinel data connector for…"
+teaser: "Turns the on-demand investigation in audit/premium-audit-investigation into continuous audit streaming."
 readingMinutes: 6
 whoFor: "A SOC engineer standing up (or extending) continuous Microsoft 365 log ingestion - already running Sentinel and just wants Exchange/SharePoint/Teams flowing in for free (Path A); running a non-Sentinel SIEM, or needing DLP/Entra-audit events specifically (Path B); or both."
 frameworks: ["PCI DSS","SOC 2","ISO 27001"]

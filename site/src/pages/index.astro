@@ -390,6 +390,15 @@ const trackList = tracks.map((t) => ({
       color: var(--body);
       font-size: 15.5px;
       line-height: 1.6;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 5;
+      line-clamp: 5;
+      overflow: hidden;
+    }
+    .card.lead .card-text {
+      -webkit-line-clamp: 6;
+      line-clamp: 6;
     }
     .card.lead .card-text {
       color: #d5dcec;
