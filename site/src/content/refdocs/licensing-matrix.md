@@ -27,9 +27,9 @@ deployments touch both.
 **Key dates & facts**
 - PAYG took effect for Microsoft Purview on **January 6, 2025**.
 - Some solutions are per-user only; some require the per-user license to be *enabled first*, then
- bill PAYG for out-of-scope sources; some (e.g. Data Governance Unified Catalog) are PAYG-only.
+  bill PAYG for out-of-scope sources; some (e.g. Data Governance Unified Catalog) are PAYG-only.
 - **"Microsoft Purview Suite"** is the current name for the former **Microsoft 365 E5 Compliance**
- add-on.
+  add-on.
 
 ### Who needs a per-user license?
 > Rule of thumb: **any user who benefits from the service.** That includes users with a Purview
@@ -74,10 +74,10 @@ equivalents unless noted - always confirm against Product Terms for GCC/GCC-High
 | **Audit (Premium)** | Long retention, high-value events, Audit API | **E5**, Suite, or **E5 eDiscovery & Audit** add-on | |
 | **Data Lifecycle Management** | Basic org/location retention | **E3 / Business Premium / Office 365 E3+** | Broadest license coverage of any module |
 | Data Lifecycle Management | Adaptive scopes, auto-apply, trainable-classifier retention | **E5** (or IP&G add-on) | |
-| Data Lifecycle Management | **Priority cleanup** (delete content, overriding retention/holds/Preservation Lock - Exchange: permanent; SharePoint/OneDrive: to the second-stage Recycle Bin by default, or permanently with the separate permanent-deletion sub-option) | **E5** (or IP&G add-on) | Preview; confirmed on its own line in the service description, same tier as Records Management; one shared tenant-wide toggle covers both workloads - `scenarios/data-lifecycle-management/priority-cleanup-exchange-data-spillage/`, `scenarios/data-lifecycle-management/priority-cleanup-sharepoint-onedrive/`. SharePoint/OneDrive **permanent deletion** is a separately-gated public preview (rollout begins 2026-08-24), same licensing tier, no separate meter - `scenarios/data-lifecycle-management/priority-cleanup-permanent-deletion/` |
+| Data Lifecycle Management | **Priority cleanup** (delete content, overriding retention/holds/Preservation Lock - Exchange: permanent; SharePoint/OneDrive: to the second-stage Recycle Bin by default, or permanently with the separate permanent-deletion sub-option) | **E5** (or IP&G add-on) | Preview; confirmed on its own line in the service description, same tier as Records Management; one shared tenant-wide toggle covers both workloads - *Priority Cleanup for Exchange Data Spillage*, *Priority Cleanup for SharePoint & OneDrive*. SharePoint/OneDrive **permanent deletion** is a separately-gated public preview (rollout begins 2026-08-24), same licensing tier, no separate meter - *Priority Cleanup Permanent Deletion (SharePoint & OneDrive)* |
 | **Records Management** | Records declaration, disposition, file plan | **E5** (or IP&G add-on) | |
 | **Information Barriers** | Segment communication between groups | **E5**, Suite, or E5 add-on | Requires supported workloads (Teams, SPO, OneDrive, Exchange) |
-| **Data Security Investigations** | AI-assisted post-breach/insider-leak investigation, triage, and purge | **PAYG only** - no dedicated per-user license | Metered: **data storage** (GB/month across all investigations) **+ Data Security Investigations compute units** (AI processing); **not pausable** in the Usage center, unlike several other PAYG capabilities above. A Defender XDR/Insider Risk Management/DSPM license unlocks those specific investigation-creation entry points, not DSI itself - `scenarios/data-security-investigations/post-breach-investigation-and-purge/README.md` §3/§10 |
+| **Data Security Investigations** | AI-assisted post-breach/insider-leak investigation, triage, and purge | **PAYG only** - no dedicated per-user license | Metered: **data storage** (GB/month across all investigations) **+ Data Security Investigations compute units** (AI processing); **not pausable** in the Usage center, unlike several other PAYG capabilities above. A Defender XDR/Insider Risk Management/DSPM license unlocks those specific investigation-creation entry points, not DSI itself - *Post-Breach Investigation and AI-Triaged Purge* (the prerequisites and the cost and licensing notes) |
 
 > **Underlying-workload licenses also grant rights.** For retention specifically, the *location*
 > matters: Exchange mailbox retention is also covered by Exchange Plan 2 / Exchange Online
@@ -97,56 +97,46 @@ Organizations on E3 frequently license Purview via targeted add-ons rather than 
 - **Microsoft Defender + Purview Suite (FLW)** - frontline-worker combined bundle.
 
 > When a scenario says "requires E5," it almost always means **"E5 *or* the matching add-on above."**
-> Each scenario README states the cheapest qualifying SKU.
+> Each scenario page states the cheapest qualifying SKU.
 
 ---
 
 ## 4. Common cross-module prerequisites
 
 - **Microsoft Entra ID P1/P2** - required for **administrative units** (delegated RBAC scoping) in
- Purview, on top of an E5-tier Purview license.
+  Purview, on top of an E5-tier Purview license.
 - **Azure subscription + resource group** in the *same tenant* - required for **any PAYG**
- capability (data governance, non-M365 data security).
+  capability (data governance, non-M365 data security).
 - **Microsoft Purview portal** access (`purview.microsoft.com`) - the modern portal; some classic
- data-governance flows still live in the classic governance portal.
+  data-governance flows still live in the classic governance portal.
 - **Data residency / CMK** - Purview metadata is encrypted at rest; customer-managed keys
- (Customer Key) are a separate opt-in.
+  (Customer Key) are a separate opt-in.
 - **Exchange Online Authentication Policies, the `SmtpClientAuthenticationDisabled` transport
- setting, and per-mailbox `CASMailbox` overrides** - core Exchange Online administration
- surfaces, included in any plan that includes Exchange Online. **No incremental license** -
- unlike this library's Conditional-Access-based scenarios (§8-§9), which need Entra ID P1/P2. See
- `scenarios/adaptive-protection/exchange-legacy-auth-block/README.md` §3.
+  setting, and per-mailbox `CASMailbox` overrides** - core Exchange Online administration
+  surfaces, included in any plan that includes Exchange Online. **No incremental license** -
+  unlike this library's Conditional-Access-based scenarios, which need Entra ID P1/P2. See
+  *Exchange-Side Legacy Authentication Block* (the prerequisites).
 
 ---
 
 ## 5. Trials (for POCs and vendor demos)
 
 - **Microsoft Purview Suite trial** - 90 days, self-serve from the Purview portal; provisions
- **25 Purview Suite licenses** automatically. Eligibility: tenants with **M365 E3**, *or*
- **Office 365 E3 + EMS E3**, that don't already have an E5 package. **Not** available to M365
- Government tenants.
+  **25 Purview Suite licenses** automatically. Eligibility: tenants with **M365 E3**, *or*
+  **Office 365 E3 + EMS E3**, that don't already have an E5 package. **Not** available to M365
+  Government tenants.
 - **Microsoft 365 E5 trial** - for Information Protection / non-M365 labeling POCs.
-
----
-
-## 6. How scenarios should cite licensing
-
-Each scenario README's **Prerequisites** section must state:
-1. The **cheapest qualifying entitlement** (e.g. "E5, or the E5 Insider Risk Management add-on").
-2. Whether **PAYG** applies, and the **unit of measure** (e.g. "governed assets/day", "DGPU/run").
-3. Any **cross-prerequisite** (Entra P1/P2, Azure subscription, supported workload).
-4. A one-line **"verify as of <date>"** pointer back to this matrix.
 
 ---
 
 ## 7. Adjacent product family: Microsoft Defender for Endpoint + Intune (device-control scenarios)
 
-Two scenarios in this library - `scenarios/dlp/defender-device-control-usb-allowlist/` and its
+Two scenarios in this library - *Defender for Endpoint Device Control: USB Default-Deny Allowlist* and its
 `-wpd-coverage/` sibling - are **not** built on a Purview policy object. They close a gap Endpoint
 DLP (content-aware only) can't: device-*identity* control on removable storage and Windows
 Portable Devices. That means their licensing sits outside the rest of this matrix, on **Microsoft
 Defender for Endpoint** + **Microsoft Intune** instead. Documented here rather than folded into
-the table in §2, which is scoped to Purview modules.
+the table in section 2, which is scoped to Purview modules.
 
 | Requirement | Minimum entitlement | Notes |
 |---|---|---|
@@ -159,26 +149,26 @@ the table in §2, which is scoped to Purview modules.
 **Cost note for a CISO conversation:** because Microsoft 365 E3 now includes Defender for
 Endpoint Plan 1 outright, a customer already on plain E3 - with **no** Purview E5 add-on - can
 deploy both device-control scenarios today. That's a materially cheaper entry point than nearly
-every other DLP/IRM scenario in this library, which needs E5 or a matching add-on (§2). It's a
+every other DLP/IRM scenario in this library, which needs E5 or a matching add-on. It's a
 useful low-cost first step to recommend before a customer commits to the E5-gated content-aware
 controls.
 
 > Intune RBAC (the **Policy and Profile manager** built-in role for human/portal access, and the
 > Microsoft Graph application permission `DeviceManagementConfiguration.ReadWrite.All` for this
 > library's app-only automation) is not yet cross-referenced in [RBAC model](/docs/rbac-model/) - tracked as
-> a separate follow-up in `PROGRESS.md`.
+> a separate follow-up in the project backlog.
 
 ---
 
 ## 8. Adjacent product family: Microsoft Entra ID P2 (Conditional Access risk-based conditions)
 
-Two scenarios in this library - `scenarios/adaptive-protection/conditional-access-insider-risk-block/`
-(Elevated risk) and `scenarios/adaptive-protection/conditional-access-insider-risk-step-up-auth/`
+Two scenarios in this library - *Conditional Access Insider Risk Block*
+(Elevated risk) and *Conditional Access Step-Up for Moderate/Minor Insider Risk*
 (Moderate/Minor risk) - are **not** built on a Purview policy object or an Intune profile. Both
 author **Microsoft Entra Conditional Access** policies using the Insider Risk condition, which
 requires **Microsoft Entra ID P2** specifically - a materially narrower and more specific
-requirement than the general "Entra ID P1/P2 for administrative units" prerequisite already in §4,
-which P1 alone also satisfies. Documented here rather than folded into §2, which is scoped to
+requirement than the general "Entra ID P1/P2 for administrative units" prerequisite already in section 4,
+which P1 alone also satisfies. Documented here rather than folded into section 2, which is scoped to
 Purview modules.
 
 > The second scenario's Moderate-risk policy additionally uses Conditional Access's **Terms of
@@ -190,8 +180,8 @@ Purview modules.
 
 | Requirement | Minimum entitlement | Notes |
 |---|---|---|
-| Conditional Access Insider Risk condition | **Microsoft Entra ID P2** - standalone, or bundled in **Microsoft 365 E5** / **Microsoft 365 E5 Security** | Confirmed on Microsoft's own Conditional Access Insider Risk recommendation page. **Entra ID P1 alone is not sufficient** for this specific condition, even though P1 covers Conditional Access generally and administrative units (§4) - an organization that licensed P1 only for administrative-unit scoping is **not** automatically covered for this scenario. |
-| Feeder Adaptive Protection signal | Same as the Adaptive Protection row in §2 (E5/Suite, built on IRM + DLP) | Not a new requirement - this scenario consumes the same insider risk level Adaptive Protection already computes for the DLP-based `dynamic-risk-dlp-enforcement` sibling scenario. |
+| Conditional Access Insider Risk condition | **Microsoft Entra ID P2** - standalone, or bundled in **Microsoft 365 E5** / **Microsoft 365 E5 Security** | Confirmed on Microsoft's own Conditional Access Insider Risk recommendation page. **Entra ID P1 alone is not sufficient** for this specific condition, even though P1 covers Conditional Access generally and administrative units - an organization that licensed P1 only for administrative-unit scoping is **not** automatically covered for this scenario. |
+| Feeder Adaptive Protection signal | Same as the Adaptive Protection row in section 2 (E5/Suite, built on IRM + DLP) | Not a new requirement - this scenario consumes the same insider risk level Adaptive Protection already computes for the DLP-based *Dynamic Risk-Based DLP Enforcement* sibling scenario. |
 | Population sizing | Every user in the Conditional Access policy's **Users** scope needs Entra ID P2 | Not just admins/security staff - if the policy's `includeUsers` is `All` (this scenario's default, matching Microsoft's own documented procedure), P2 coverage must extend tenant-wide before enabling enforcement. Confirm actual P2 seat count against the policy's real scope before a sales commitment - this is a common licensing-compliance trap when an organization already has *some* P2 seats (e.g. for Entra ID Protection risk policies) but not full coverage. |
 
 > **VERIFY (pilot tenant or a future Microsoft Learn licensing-enforcement pass):** exactly what
@@ -200,26 +190,45 @@ Purview modules.
 > condition (a silent under-coverage gap), blocks their sign-in outright for lacking the required
 > license, or something else. Not independently confirmed during this build; do not assume either
 > behavior when sizing a partial-P2-coverage rollout.
+>
+> **Re-grounded 2026-09-28** (Microsoft Learn MCP): still genuinely undocumented for an
+> admin-authored policy. The Insider Risk recommendation page states only the feature-gate -
+> "Using this feature requires Microsoft Entra ID P2 licenses"
+> - and the Conditional Access overview's
+> license-requirements section states the same for risk-based conditions generally, with neither
+> page describing sign-in-time behavior for an in-scope user who lacks the license
+>. The overview page does cover an
+> adjacent but distinct case - *tenant-wide* license expiry ("When the licenses required for
+> Conditional Access expire, policies aren't automatically disabled or deleted... you can't update
+> them") - which is not the same question as a single unlicensed user caught in an active policy's
+> scope. The closest documented precedent is Microsoft's own **managed** "Risky sign-in MFA" policy,
+> which explicitly caps its auto-assigned security group to users who hold a P2 license rather than
+> evaluating the condition tenant-wide
+> - suggestive that Microsoft's own
+> tooling treats P2 as a scoping gate, not a block condition, but this is documented only for that
+> specific Microsoft-managed policy and is never generalized to admin-authored policies using the
+> Insider Risk condition. Continue to disclose this as an open, undocumented behavior rather than
+> assuming either (a) or (b) above.
 
-**Cost note for a CISO conversation:** unlike the Defender for Endpoint + Intune adjacency in §7
+**Cost note for a CISO conversation:** unlike the Defender for Endpoint + Intune adjacency in section 7
 (which can be a materially *cheaper* entry point than E5-gated Purview controls), this adjacency
 is typically an **incremental cost** - a tenant already at Microsoft 365 E5 for Adaptive
 Protection does not automatically hold Entra ID P2 for every user (E5 licensing bundles vary by
 program and vintage; always confirm the specific SKU's inclusions rather than assuming). Budget
-this explicitly rather than treating it as already covered by the Purview E5/Suite spend in §2.
+this explicitly rather than treating it as already covered by the Purview E5/Suite spend in section 2.
 
 ---
 
 ## 9. Adjacent product family: Microsoft Entra ID P1 (baseline Conditional Access - block legacy authentication)
 
-`scenarios/adaptive-protection/block-legacy-authentication/` is the third scenario in this
+*Block Legacy Authentication* is the third scenario in this
 library built on **Microsoft Entra Conditional Access** rather than a Purview policy object, but
-the **first that needs only Microsoft Entra ID P1**, not the P2 both §8 scenarios require. Its
+the **first that needs only Microsoft Entra ID P1**, not the P2 both section 8 scenarios require. Its
 `clientAppTypes` condition and `block` grant control use no risk-based or premium-only condition,
 so Microsoft's own Conditional Access licensing reference confirms the P1 floor applies
  - an organization already at Microsoft 365 E3
 (which bundles Entra ID P1) needs **no incremental identity license** for this specific scenario,
-unlike either §8 scenario.
+unlike either section 8 scenario.
 
 | Requirement | Minimum entitlement | Notes |
 |---|---|---|
@@ -232,8 +241,7 @@ this library - for an organization already licensed at Microsoft 365 E3 or highe
 majority of this library's other Purview scenarios already assume for E5/Suite features, or which
 bundles P1 even below E5), this scenario typically adds **zero incremental license cost**, and if
 the tenant already holds Entra ID P2 or Microsoft 365 Business Premium, the underlying control may
-already be auto-deployed by Microsoft for free (`scenarios/adaptive-protection/
-block-legacy-authentication/design.md` §3) - confirm with that scenario's own detection check
+already be auto-deployed by Microsoft for free (*Block Legacy Authentication* (the prerequisites)) - confirm with that scenario's own detection check
 before budgeting anything at all.
 
 ---
@@ -248,9 +256,9 @@ before budgeting anything at all.
 - Sensitivity labels in Data Map (licensing FAQ) - <https://learn.microsoft.com/purview/data-map-sensitivity-labels-faq>
 - Purview pricing calculators - <https://azure.microsoft.com/pricing/details/purview/>
 - [8] Protect your tenant with Insider Risk in Conditional Access (Entra ID P2 licensing
- requirement for the Conditional Access Insider Risk condition) - <https://learn.microsoft.com/entra/identity/monitoring-health/recommendation-insider-risk-condition>
+  requirement for the Conditional Access Insider Risk condition) - <https://learn.microsoft.com/entra/identity/monitoring-health/recommendation-insider-risk-condition>
 - [9] Set up Microsoft Entra terms of use with Conditional Access (Entra ID P1 licensing floor for
- the Terms of Use feature itself) - <https://learn.microsoft.com/entra/identity/conditional-access/terms-of-use>
+  the Terms of Use feature itself) - <https://learn.microsoft.com/entra/identity/conditional-access/terms-of-use>
 - Microsoft Product Terms (authoritative) - <https://www.microsoft.com/licensing/terms/product/ForOnlineServices/EAEAS>
 - Microsoft Defender service description (Defender for Endpoint P1/P2 plan contents & bundling) - <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-defender-service-description>
 - Device control in Microsoft Defender for Endpoint (prerequisites, anti-malware client versions) - <https://learn.microsoft.com/defender-endpoint/device-control-overview>
@@ -258,17 +266,17 @@ before budgeting anything at all.
 - Manage endpoint security policies in Microsoft Defender for Endpoint (Intune-enrollment-only footnote for device control) - <https://learn.microsoft.com/defender-endpoint/endpoint-security-policies-configure>
 - Microsoft Intune licensing (Plan 1/Plan 2/Suite) - <https://learn.microsoft.com/intune/fundamentals/licensing>
 - [10] What is Conditional Access? (License requirements - Microsoft Entra ID P1 floor for
- Conditional Access generally, distinct from the P2 floor risk-based conditions need) - <https://learn.microsoft.com/entra/identity/conditional-access/overview>
+  Conditional Access generally, distinct from the P2 floor risk-based conditions need) - <https://learn.microsoft.com/entra/identity/conditional-access/overview>
 - [11] Microsoft Entra licensing (Conditional Access requires Entra ID P1) - <https://learn.microsoft.com/entra/fundamentals/licensing>
 - [12] Microsoft-managed Conditional Access policies (P2/Microsoft 365 Business Premium
- eligibility gate for the auto-deployed policy) - <https://learn.microsoft.com/entra/identity/conditional-access/managed-policies>
+  eligibility gate for the auto-deployed policy) - <https://learn.microsoft.com/entra/identity/conditional-access/managed-policies>
 - [13] Security defaults in Microsoft Entra ID (zero-cost alternative for tenants without Entra ID
- P1/P2) - <https://learn.microsoft.com/entra/fundamentals/security-defaults>
+  P1/P2) - <https://learn.microsoft.com/entra/fundamentals/security-defaults>
 - [14] Microsoft Purview service description - Data Loss Prevention (DLP) for Microsoft Copilot
- licensing table (the "files and emails" vs. "prompts" tier split) - <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-data-loss-prevention-dlp-for-microsoft-copilot>
+  licensing table (the "files and emails" vs. "prompts" tier split) - <https://learn.microsoft.com/office365/servicedescriptions/microsoft-365-service-descriptions/microsoft-365-tenantlevel-services-licensing-guidance/microsoft-purview-service-description#microsoft-purview-data-loss-prevention-dlp-for-microsoft-copilot>
 - [15] Manage pay-as-you-go and per-user licensing usage (Usage center pausable-features table -
- Data Security Investigations listed as not pausable, unlike Communication Compliance/Audit/
- Information Protection/Data Lifecycle Management) - <https://learn.microsoft.com/purview/purview-billing-usage>
+  Data Security Investigations listed as not pausable, unlike Communication Compliance/Audit/
+  Information Protection/Data Lifecycle Management) - <https://learn.microsoft.com/purview/purview-billing-usage>
 
 > **Disclaimer:** SKU names, tiers, and PAYG meters change. Nothing here is a licensing guarantee.
 > Validate every entitlement against Product Terms and the service description for the customer's

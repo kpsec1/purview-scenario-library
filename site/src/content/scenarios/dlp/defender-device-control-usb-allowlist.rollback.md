@@ -32,7 +32,7 @@ If a full unassign is too blunt (you still want the control enforcing for most d
 the ones affected by an incident), remove only the affected devices from the pilot Entra ID group
 referenced by `assignment.groupId` rather than deleting the assignment entirely - this scenario's
 scripts do not manage that group's membership directly (it is a dependency, not a deployed
-artifact - `design.md` §8), so this is a directory-side change, not a script re-run.
+artifact - the design notes), so this is a directory-side change, not a script re-run.
 
 ### Stage 3 - Permanent removal (not reversible)
 
@@ -49,20 +49,20 @@ or replaced by a successor policy with a different name.
 ## What rollback does **not** undo
 
 - **Advanced Hunting / `DeviceEvents` history.** Allow and deny audit events already generated are
- retained per their own retention window regardless of policy state (`README.md` §8).
+  retained per their own retention window regardless of policy state.
 - **Access already denied or allowed.** A copy that was denied while the policy was enforcing was
- not written to the removable device; unassigning or deleting the policy afterward does not
- retroactively complete it. A copy to an approved drive that already completed is unaffected by a
- later rollback.
+  not written to the removable device; unassigning or deleting the policy afterward does not
+  retroactively complete it. A copy to an approved drive that already completed is unaffected by a
+  later rollback.
 - **Device onboarding/Intune enrollment.** This scenario does not onboard devices to Defender for
- Endpoint or enroll them in Intune - rollback here has no effect on either.
+  Endpoint or enroll them in Intune - rollback here has no effect on either.
 - **The pilot/target Entra ID group, or the physical approved drives.** This scenario does not
- create or manage the assignment group or the approved-drive inventory - they are dependencies,
- not deployed artifacts. Removing this policy has no effect on either.
+  create or manage the assignment group or the approved-drive inventory - they are dependencies,
+  not deployed artifacts. Removing this policy has no effect on either.
 - **Group Policy-based device control, if one also exists on the same devices.** Microsoft's own
- guidance is that Group Policy takes precedence over Intune when both target the same machine
- (`README.md` §11, reference 8) - removing this scenario's Intune-based policy does not touch any
- separate GPO-based device control configuration.
+  guidance is that Group Policy takes precedence over Intune when both target the same machine
+  (the known limitations, reference 8) - removing this scenario's Intune-based policy does not touch any
+  separate GPO-based device control configuration.
 
 ## Verification after rollback
 

@@ -7,15 +7,15 @@ parent: "information-barriers/sharepoint-onedrive-enablement-and-site-associatio
 This scenario has two independent things to roll back, at very different blast radii:
 
 - **Site associations** (this scenario's own additions) - narrow, reversible, no impact beyond
- the specific sites you configured.
+  the specific sites you configured.
 - **Tenant-wide enablement** - broad: suspending it drops IB enforcement for **every** SharePoint
- site and **every** OneDrive account tenant-wide, including the Teams-connected (Implicit mode)
- sites that `../segregate-trading-and-research/`'s wall already protects automatically.
+  site and **every** OneDrive account tenant-wide, including the Teams-connected (Implicit mode)
+  sites that `../segregate-trading-and-research/`'s wall already protects automatically.
 
 **Default to removing only this scenario's site associations.** Only suspend the tenant-wide
 switch if you are decommissioning SharePoint/OneDrive IB coverage entirely - e.g. the whole
 ethical wall (Teams included) is being retired - and confirm that decision with Compliance/Legal
-first, the same way you would before lifting `segregate-trading-and-research` itself.
+first, the same way you would before lifting *Segregate Trading and Research (Ethical Wall)* itself.
 
 ## Recommended sequence
 
@@ -30,8 +30,7 @@ Connect-SPOService -Url https://contoso-admin.sharepoint.com -ClientId $AppId -C
 ```
 
 Removes exactly the segments this config associated. A site reverts to **Open** mode if that was
-its last remaining segment; a site with other segments this config didn't add keeps them. Teams-
-connected sites and OneDrive are untouched (they were never managed by this scenario's site-segment
+its last remaining segment; a site with other segments this config didn't add keeps them. Teams-connected sites and OneDrive are untouched (they were never managed by this scenario's site-segment
 script in the first place).
 
 This is the right stopping point if you're only decommissioning this scenario's specific site
@@ -47,7 +46,7 @@ coverage while keeping the tenant-wide switch and the parent Teams wall intact.
 Sets `InformationBarriersSuspension = $true` tenant-wide. This **also lifts IB enforcement on
 Teams-connected sites and all OneDrive accounts** - not just what Stage 1 touched. Use this only
 when SharePoint/OneDrive IB coverage is being retired entirely, with the same Compliance/Legal
-confirmation `segregate-trading-and-research/rollback.md` requires before lifting the underlying
+confirmation *Segregate Trading and Research (Ethical Wall)* requires before lifting the underlying
 wall.
 
 Re-enabling later (`./deploy/Set-SharePointOneDriveIBEnablement.ps1`, no `-Suspend`) restores
@@ -58,13 +57,13 @@ be undone by simply re-enabling rather than re-running Stage 1's site associatio
 ## What rollback does **not** undo
 
 - **The underlying IB segments and block policies** - those belong to
- `../segregate-trading-and-research/`; roll that scenario back separately if the whole wall is
- being retired.
+  `../segregate-trading-and-research/`; roll that scenario back separately if the whole wall is
+  being retired.
 - **Anything that happened while a site was Explicit-mode.** Sharing/access that was blocked stays
- blocked in the past; rollback restores future access, it doesn't retroactively recreate declined
- shares.
+  blocked in the past; rollback restores future access, it doesn't retroactively recreate declined
+  shares.
 - **Audit records** of the enablement, association, and removal actions - retained per their own
- policy; see `README.md` §8.
+  policy; see operations and tuning.
 
 ## Verification after rollback
 

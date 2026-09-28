@@ -6,103 +6,117 @@ const docs = await getCollection('refdocs');
 
 const BLURBS: Record<string, string> = {
   'licensing-matrix':
-    'Billing models, the capability to license matrix, add-on SKUs, and how scenarios cite licensing.',
+    'Which subscription unlocks which capability: billing models, the capability to license matrix, and add-on SKUs.',
   'rbac-model':
-    'The distinct RBAC systems across Purview, Entra, Exchange, Intune, and Defender, and the roles each scenario needs.',
+    'Who needs which role: the separate permission systems across Purview, Entra, Exchange, Intune and Defender.',
   'automation-surface':
-    'The PowerShell and Graph automation surfaces, authentication patterns, and which surface each task uses.',
-  glossary: 'Shared terminology used across the scenario library.',
+    'How the automation is wired: PowerShell and Graph surfaces, authentication patterns, and which one each task uses.',
+  glossary: 'The shared vocabulary behind the field notes, in plain terms.',
 };
 
 const order = ['licensing-matrix', 'rbac-model', 'automation-surface', 'glossary'];
 const sorted = [...docs].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
 ---
 
-<Base title="Reference docs" description="Shared reference material for the Purview scenario library.">
-  <section class="wrap head">
-    <p class="eyebrow">Reference</p>
-    <h1>Shared reference docs</h1>
-    <p class="lead">
-      The supporting material the scenarios cite: licensing, roles and permissions, automation
-      surfaces, and terminology. Each scenario links to the exact section it depends on.
-    </p>
+<Base title="Field Guide" description="The shared background behind the field notes: licensing, roles, automation and terminology.">
+  <section class="head">
+    <div class="wrap">
+      <p class="eyebrow">Field guide</p>
+      <h1>The background every note leans on.</h1>
+      <p class="lead">
+        Licensing, roles and permissions, automation, and vocabulary. Read them once and every field note
+        gets easier to follow. The notes link straight to the section they depend on.
+      </p>
+    </div>
   </section>
 
-  <section class="wrap">
-    <div class="grid">
-      {
-        sorted.map((d) => (
-          <a class="card" href={`/docs/${d.id}/`}>
-            <span class="card-title">{d.data.title}</span>
-            {BLURBS[d.id] && <span class="card-blurb">{BLURBS[d.id]}</span>}
-            <span class="card-go" aria-hidden="true">Read →</span>
-          </a>
-        ))
-      }
-    </div>
+  <section class="wrap grid">
+    {
+      sorted.map((d, i) => (
+        <a class="card" href={`/docs/${d.id}/`}>
+          <span class="num">{String(i + 1).padStart(2, '0')}</span>
+          <span class="title">{d.data.title}</span>
+          {BLURBS[d.id] && <span class="text">{BLURBS[d.id]}</span>}
+          <span class="go">Read the guide</span>
+        </a>
+      ))
+    }
   </section>
 
   <style>
     .head {
-      padding-top: 48px;
+      padding: 64px 0 40px;
+      border-bottom: 1px solid var(--rule);
+      background:
+        radial-gradient(50% 100% at 100% 0%, var(--accent-soft) 0%, transparent 60%),
+        var(--paper);
     }
-    .eyebrow {
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      font-size: 12.5px;
-      font-weight: 700;
-      color: var(--accent);
-      margin: 0 0 10px;
-    }
-    h1 {
-      font-size: clamp(2rem, 5vw, 2.6rem);
-      font-weight: 900;
-      margin: 0 0 12px;
+    .head h1 {
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin: 0 0 16px;
+      max-width: 16ch;
     }
     .lead {
-      max-width: 66ch;
-      color: var(--body);
-      font-size: 1.08rem;
+      max-width: 60ch;
+      font-size: 1.15rem;
+      line-height: 1.6;
+      margin: 0;
     }
     .grid {
-      margin-top: 28px;
+      margin-top: 44px;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
     }
     .card {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      padding: 22px;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      gap: 10px;
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
       color: var(--ink);
       transition:
-        border-color 0.15s ease,
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
     }
     .card:hover {
       text-decoration: none;
-      border-color: var(--accent);
-      transform: translateY(-2px);
+      transform: translateY(-3px);
       box-shadow: var(--shadow);
     }
-    .card-title {
-      font-weight: 800;
-      font-size: 1.1rem;
-    }
-    .card-blurb {
-      color: var(--muted);
-      font-size: 14.5px;
-      line-height: 1.5;
-    }
-    .card-go {
-      color: var(--accent);
+    .num {
+      font-family: var(--serif);
+      font-size: 2.4rem;
       font-weight: 700;
-      margin-top: 4px;
+      line-height: 1;
+      color: var(--accent);
+    }
+    .title {
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .text {
+      color: var(--body);
+      font-size: 15.5px;
+      line-height: 1.6;
+    }
+    .go {
+      margin-top: auto;
+      padding-top: 6px;
+      color: var(--accent-deep);
+      font-weight: 700;
+      font-size: 14.5px;
+    }
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </Base>

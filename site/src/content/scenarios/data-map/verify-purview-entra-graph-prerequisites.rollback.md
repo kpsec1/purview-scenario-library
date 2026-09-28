@@ -9,7 +9,7 @@ things.
 
 ## 1. Stop the schedule
 
-If the deploy script was wired into a scheduled task/pipeline (`README.md` §8, recommended
+If the deploy script was wired into a scheduled task/pipeline (operations and tuning, recommended
 daily/weekly), disable or delete that schedule. The script itself has no persistent server-side
 state to disable.
 
@@ -18,7 +18,7 @@ state to disable.
 Each `-ReportPath` output is a point-in-time compliance-relevant artifact - a record of which
 Managed-Instance-backed Purview sources had their Entra prerequisite intact (and which didn't) on
 the date it was generated. It is also, by design, a full membership list of a tenant-wide,
-security-sensitive Entra role (`README.md` §11) - treat retained report files with the same access
+security-sensitive Entra role - treat retained report files with the same access
 restriction and retention discipline you'd apply to any other privileged-role membership export, not
 just generic audit evidence. If this scenario was run to support the sibling scenario's own audit
 trail, retain both together, in the same access-restricted location.
@@ -28,26 +28,25 @@ trail, retain both together, in the same access-restricted location.
 Remove the `RoleManagement.Read.Directory` Microsoft Graph application permission grant from the app
 registration used to run this script (Entra admin center → **App registrations** → the app → **API
 permissions** → remove, then re-confirm admin consent is also revoked). If the app registration also
-holds `User.Read.All`/`Group.Read.All` solely for this scenario's best-effort drift-name resolution
-(`README.md` §3), remove those too. If the app registration was created solely for this scenario and
+holds `User.Read.All`/`Group.Read.All` solely for this scenario's best-effort drift-name resolution, remove those too. If the app registration was created solely for this scenario and
 isn't used elsewhere, consider deleting the app registration and its certificate/secret entirely -
-check [Automation surface §3](/docs/automation-surface/#3-authentication-patterns---interactive-vs-unattended) first in case the same app registration is shared with another
-scenario's script (e.g. the sibling `scan-azure-sql-managed-instance-and-classify` scenario's own
+check [Automation surface, section 3](/docs/automation-surface/#3-authentication-patterns---interactive-vs-unattended) first in case the same app registration is shared with another
+scenario's script (e.g. the sibling *Scan Azure SQL Managed Instance and Classify Sensitive Columns* scenario's own
 automation identity, which is a *different* app registration with *Purview* roles, not Graph
 permissions - the two are never the same identity in this scenario's default design).
 
 ## What rollback does **not** undo
 
 - **Any Directory Readers grant or revocation this scenario's findings led a human to make.** This
- scenario never performs the grant/revoke itself (`design.md` §10) - only reports on current state.
- Removing this scenario does not touch Directory Readers membership in any way.
-- **The sibling scenario's own deployment.** `scan-azure-sql-managed-instance-and-classify`'s
- rollback is entirely independent (its own `rollback.md`) - removing this scenario only removes the
- *monitoring* of its Entra prerequisite, not the scan/data-source objects themselves, and re-opens
- the blind spot this scenario's `design.md` §1 describes if that sibling scenario stays deployed
- without this one.
+  scenario never performs the grant/revoke itself - only reports on current state.
+  Removing this scenario does not touch Directory Readers membership in any way.
+- **The sibling scenario's own deployment.** *Scan Azure SQL Managed Instance and Classify Sensitive Columns*'s
+  rollback is entirely independent (its own rollback runbook) - removing this scenario only removes the
+  *monitoring* of its Entra prerequisite, not the scan/data-source objects themselves, and re-opens
+  the blind spot this scenario's the design notes describes if that sibling scenario stays deployed
+  without this one.
 - **Report files already generated.** Same as any other point-in-time evidence - deleting this
- scenario's schedule does not retroactively delete or invalidate reports already written to disk.
+  scenario's schedule does not retroactively delete or invalidate reports already written to disk.
 
 ## Verification after rollback
 

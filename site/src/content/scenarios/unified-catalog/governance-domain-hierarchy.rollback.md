@@ -45,8 +45,7 @@ before it's shown tenant-wide again, or a temporary pause during a larger reorga
 
 This deletes every domain in the tree (`DELETE /businessdomains/{id}`), **children before parents**
 - Microsoft's own portal guidance for deleting a governance domain requires first unpublishing it
-and removing all business concepts within it, **including any subdomains**
-, and this script's deepest-first ordering exists specifically to
+and removing all business concepts within it, **including any subdomains**, and this script's deepest-first ordering exists specifically to
 satisfy that documented requirement without a manual pre-step. There is no "undo" - re-establishing
 the hierarchy means re-running `deploy/New-GovernanceDomainHierarchy.ps1` from scratch, which
 generates **new** domain IDs (any external system that recorded the old IDs - e.g. a data product
@@ -54,8 +53,8 @@ or glossary term's `domain` reference - must be re-pointed at the new ones).
 
 **Prerequisite the script does not check for you:** if a domain in this tree has glossary terms,
 data products, OKRs, or critical data elements this scenario didn't create (via
-`curate-business-glossary`, `manage-data-products`, `manage-okrs`, or
-`manage-critical-data-elements` pointed at one of these domains, per `design.md` §7's non-goal
+*Curate a Business Glossary*, *Manage a Data Product*, *Manage OKRs (Objectives and Key Results)*, or
+*Manage a Critical Data Element* pointed at one of these domains, per the design notes's non-goal
 list), the domain `Delete` call may fail server-side until those business concepts are also
 removed - check each domain's **Details** tab in the portal for other business concepts before
 purging, especially `Corporate` and `Sales`, which this scenario's own worked example expects other
@@ -63,17 +62,17 @@ scenarios to build on top of.
 
 ## What rollback does **not** undo
 
-- **Domain history.** Same as `curate-business-glossary/rollback.md` - Microsoft Learn does not
- document a separate audit trail for Unified Catalog object changes distinct from the general
- Microsoft Purview audit log.
+- **Domain history.** Same as *Curate a Business Glossary* - Microsoft Learn does not
+  document a separate audit trail for Unified Catalog object changes distinct from the general
+  Microsoft Purview audit log.
 - **The attribute *definitions* themselves.** This scenario's scripts only ever set/clear values on
- the domain object's `managedAttributes` array; they never touch the tenant's
- **Custom metadata (preview)** attribute-group/attribute definitions (`design.md` §7).
+  the domain object's `managedAttributes` array; they never touch the tenant's
+  **Custom metadata (preview)** attribute-group/attribute definitions.
 - **The target Data Map collection(s)** a data estate mapping referenced. This scenario never
- creates or deletes Data Map collections - only the Unified Catalog-side mapping record.
+  creates or deletes Data Map collections - only the Unified Catalog-side mapping record.
 - **Links from data products, glossary terms, or critical data elements in other scenarios that
- point at one of these domains.** A deleted domain leaves those objects' `domain`/`domainIds`
- reference dangling; check the portal before purging a domain other scenarios build on.
+  point at one of these domains.** A deleted domain leaves those objects' `domain`/`domainIds`
+  reference dangling; check the portal before purging a domain other scenarios build on.
 
 ## Verification after rollback
 

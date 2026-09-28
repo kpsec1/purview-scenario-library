@@ -18,22 +18,22 @@ disposition review before anything is deleted.
 ## 2. Design goals
 
 1. **Model the real trigger, not a proxy.** Use `-EventType`/`RetentionType EventAgeInDays` so the
- retention clock genuinely starts from the departure date, not from a workaround like a long
- creation-age duration that hopes to outlast tenure.
+   retention clock genuinely starts from the departure date, not from a workaround like a long
+   creation-age duration that hopes to outlast tenure.
 2. **Defensible disposition, not silent deletion.** `KeepAndDelete` + a **two-stage**
- `MultiStageReviewProperty` (HR Records, then Legal) so no single reviewer can unilaterally
- dispose of employee records - modeling a realistic sign-off chain, not this module's simpler
- single-`ReviewerEmail` sibling.
+   `MultiStageReviewProperty` (HR Records, then Legal) so no single reviewer can unilaterally
+   dispose of employee records - modeling a realistic sign-off chain, not this module's simpler
+   single-`ReviewerEmail` sibling.
 3. **Separate the one-time policy from the recurring operational action.** Deploying the event
- type/label/policy is a one-time (or rare) change; firing an event is something that happens
- *every time an employee leaves*. Two scripts, two different safety postures.
+   type/label/policy is a one-time (or rare) change; firing an event is something that happens
+   *every time an employee leaves*. Two scripts, two different safety postures.
 4. **Guard the dangerous default.** An event fired with no Asset ID scope retains **everything**
- under that event type, tenant-wide - the trigger script refuses this unless
- the caller explicitly opts in with `-Force`.
+   under that event type, tenant-wide - the trigger script refuses this unless
+   the caller explicitly opts in with `-Force`.
 5. **Honest about undocumented edges.** `-AutoApprovalPeriod`, the `MultiStageReviewProperty`
- read-back shape, and whether `-ReviewerEmail`/`-MultiStageReviewProperty` can coexist are all
- genuinely undocumented on Microsoft's own reference pages (stub descriptions) - flagged inline
- rather than guessed, per `AGENTS.md` §4.
+   read-back shape, and whether `-ReviewerEmail`/`-MultiStageReviewProperty` can coexist are all
+   genuinely undocumented on Microsoft's own reference pages (stub descriptions) - flagged inline
+   rather than guessed.
 
 ## 3. Object model
 
@@ -68,11 +68,11 @@ sequenceDiagram
 Four durable objects (event type, label, policy, rule) created once by the deploy script, plus one
 recurring, append-only object (the event) created per employee by the trigger script. Labeling
 individual content and setting its Asset ID is a manual, human step in between - deliberately not
-scripted (see §7).
+scripted.
 
 ## 4. Why publish, not auto-apply
 
-The sibling `retention-labels-financial-records` scenario **auto-applies** its label from a content
+The sibling *Retention Labels for Financial Records* scenario **auto-applies** its label from a content
 signal (a KQL match) because the label there targets an entire content *category* (financial
 records) that a query can reliably identify. This scenario's label targets **one specific
 employee's** records at a time - there's no reliable content signal that says "this document belongs
@@ -84,18 +84,18 @@ event-based examples, which all describe records managers manually applying the 
 an Asset ID.
 
 Publish-then-manually-apply has a consequence worth naming: content isn't a locked record until
-someone actually applies the label. The recommended operating model (README §5) is to apply the
+someone actually applies the label. The recommended operating model is to apply the
 label during onboarding, so the only action required at departure is firing the event - otherwise
 the window between "employee leaves" and "someone gets around to labeling their folder" is a window
 where those records are as editable/deletable as anything else. This is a real, disclosed limitation
-of a publish-based design, not a defect (`reviews.md` Red Team).
+of a publish-based design, not a defect.
 
 ## 5. Two scripts, two safety postures
 
 | | `New-EventBasedRetentionAndDisposition.ps1` | `New-RetentionTriggerEvent.ps1` |
 |---|---|---|
 | Cadence | Once (or rarely, for policy changes) | Every employee departure |
-| Idempotency model | Create-or-report by name (standard for this repo's retention objects) | Create-or-report by event `-Name`, but **cannot** detect a differently-named duplicate for the same employee (no documented query-by-Asset-ID cmdlet) |
+| Idempotency model | Create-or-report by name (standard for this library's retention objects) | Create-or-report by event `-Name`, but **cannot** detect a differently-named duplicate for the same employee (no documented query-by-Asset-ID cmdlet) |
 | Dominant risk | Over-scoping the publish policy's locations | Firing an unscoped event (retains **everything** of that event type) |
 | Guardrail | `-DryRun`; create-or-report | `-DryRun`; **requires** `-EmployeeId` unless `-Force`; refuses to re-fire an identically-named event |
 
@@ -118,19 +118,19 @@ integration without also granting it the ability to redefine the retention polic
 
 ## 7. Non-goals
 
-- **Auto-apply for this label.** See §4 - no reliable per-employee content signal exists; publish is
- the correct mechanism here, not a limitation to fix later.
+- **Auto-apply for this label.** See section 4 - no reliable per-employee content signal exists; publish is
+  the correct mechanism here, not a limitation to fix later.
 - **An HR-system connector or "missing events" reconciliation report.** `New-RetentionTriggerEvent.ps1`
- is the integration point an HR system (or a scheduled script reading an HR export) would call -
- building that connector, and a report of departed employees with no matching fired event, is a
- distinct, documented follow-up (`PROGRESS.md`).
-- **Publishing this repo's *financial-records* label for manual application.** A tracked, separate
- follow-up (`publish-labels-for-manual-application`) - different label, different scenario.
+  is the integration point an HR system (or a scheduled script reading an HR export) would call -
+  building that connector, and a report of departed employees with no matching fired event, is a
+  distinct, documented follow-up.
+- **Publishing this library's *financial-records* label for manual application.** A tracked, separate
+  follow-up (*Publish Retention Labels for Manual Application*) - different label, different scenario.
 - **File plan descriptors, adaptive scopes, and bulk multi-class file plans.** Same non-goals as the
- sibling starter; candidate follow-ups shared across the module.
+  sibling starter; candidate follow-ups shared across the module.
 - **Editing an existing label/policy/rule.** The deploy reports and does not mutate; changes are a
- deliberate, reviewed action given the event type's permanent binding (§6, README §8).
+  deliberate, reviewed action given the event type's permanent binding.
 
 ## 8. References
 
-Same source set as `README.md` §12; not duplicated here.
+Same source set as the references; not duplicated here.

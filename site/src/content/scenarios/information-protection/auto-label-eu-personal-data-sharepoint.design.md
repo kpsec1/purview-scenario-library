@@ -4,13 +4,13 @@ parent: "information-protection/auto-label-eu-personal-data-sharepoint"
 ---
 ## 1. Problem statement
 
-`scenarios/information-protection/auto-label-confidential-sharepoint/` ships a working
+*Auto-Label Confidential PII in SharePoint & OneDrive* ships a working
 auto-labeling pattern, but its default condition set - U.S. Social Security Number (SSN) and
-Credit Card Number - is a U.S.-centric starter kit. Its own `reviews.md` (Red Team finding 4) and
-`README.md` §2 already flag this explicitly: a tenant whose regulated population is EU/UK-only
+Credit Card Number - is a U.S.-centric starter kit. Its own Red Team review (finding 4) and
+why this matters already flag this explicitly: a tenant whose regulated population is EU/UK-only
 gets materially weaker real-world coverage from that default than its GDPR framing implies, since
 SSN simply does not appear in EU/UK personal data. That sibling scenario deferred the fix to a
-follow-up (`PROGRESS.md`, "Follow-ups discovered while building the Information Protection
+follow-up (the project backlog, "Follow-ups discovered while building the Information Protection
 auto-labeling scenario") rather than guessing at EU-appropriate sensitive information types (SITs)
 without grounding them first. This scenario is that follow-up: the same auto-labeling mechanism,
 re-pointed at Microsoft's built-in EU/UK-region SITs, with the SIT list itself parameterized so a
@@ -19,37 +19,37 @@ organization can localize further to only the member states they actually operat
 ## 2. Design goals
 
 1. Apply the **Confidential** label (parameterizable, same dependency pattern as the sibling
- scenario) automatically to SharePoint/OneDrive content containing EU/UK personal identifiers -
- national ID numbers, the EU Social-Security-or-equivalent family, and EU-format debit card
- numbers - going forward and across the existing backlog, without requiring any user action.
+   scenario) automatically to SharePoint/OneDrive content containing EU/UK personal identifiers -
+   national ID numbers, the EU Social-Security-or-equivalent family, and EU-format debit card
+   numbers - going forward and across the existing backlog, without requiring any user action.
 2. Do not hard-code a single country's identifier the way the sibling scenario hard-codes U.S.
- SSN. Default to Microsoft's built-in **EU-wide bundle SITs** (which internally OR-match across
- every EU member state's own national ID/SSN/passport/driver's-license entity - see §4), but
- make the exact SIT name list a script parameter so an organization whose regulated population is, say,
- Germany-and-France-only can swap in just `'Germany Identity Card Number'` and `'France Social
- Security Number'` instead of matching all 26 countries' formats - directly resolving the
- "localizing sensitive information type selection by data-residency/jurisdiction" follow-up this
- scenario was scoped from.
+   SSN. Default to Microsoft's built-in **EU-wide bundle SITs** (which internally OR-match across
+   every EU member state's own national ID/SSN/passport/driver's-license entity - see the architecture), but
+   make the exact SIT name list a script parameter so an organization whose regulated population is, say,
+   Germany-and-France-only can swap in just `'Germany Identity Card Number'` and `'France Social
+   Security Number'` instead of matching all 26 countries' formats - directly resolving the
+   "localizing sensitive information type selection by data-residency/jurisdiction" follow-up this
+   scenario was scoped from.
 3. Preserve every override-safety and staged-rollout guarantee the sibling scenario already
- established (never override a manual label; only override a lower-priority auto-applied/default
- label; simulation-mode-first): this scenario changes *which* SITs the rule matches, not the
- label-priority or rollout model, which are already correct.
+   established (never override a manual label; only override a lower-priority auto-applied/default
+   label; simulation-mode-first): this scenario changes *which* SITs the rule matches, not the
+   label-priority or rollout model, which are already correct.
 4. Idempotent and re-runnable: running the deploy script twice must not create duplicate policies
- or rules.
-5. Ship "off" by default: simulation mode first, matching `AGENTS.md` §4.
+   or rules.
+5. Ship "off" by default: simulation mode first, matching this library's standards.
 
 ## 3. Why a second scenario, not a parameter on the sibling scenario
 
-The sibling scenario's policy and rule names, `README.md` prose, and `reviews.md` findings are all
+The sibling scenario's policy and rule names, this page prose, and the review notes findings are all
 written specifically around the U.S. SSN + Credit Card Number condition set. Retrofitting it to be
 region-generic in place would mean either (a) silently changing what an already-reviewed,
 already-shipped scenario matches - breaking any organization that deployed it expecting U.S. coverage - or
-(b) adding enough conditional prose/parameters to cover both regions that the README stops reading
-as the clean, niche format `AGENTS.md` §4 requires. A second, sibling scenario folder - same
+(b) adding enough conditional prose/parameters to cover both regions that this page stops reading
+as the clean, niche format this library's standards requires. A second, sibling scenario folder - same
 policy family, same architecture, different (and parameterized) SIT list and policy/rule names -
 keeps both scenarios independently deployable, independently rollback-able, and independently
 readable, matching the precedent already set by
-`scenarios/information-protection/auto-label-confidential-exchange/` (a sibling by *location*,
+*Auto-Label Confidential PII in Exchange Email* (a sibling by *location*,
 not by *SIT set*, but the same "don't overload one scenario with two purposes" principle).
 
 ## 4. Sensitive information type selection - grounding
@@ -63,7 +63,7 @@ names them individually alongside ordinary built-in SITs:
 
 | EU-wide SIT (as titled in Microsoft's canonical entity-definitions index) | Matches (per that SIT's own definition page) |
 |---|---|
-| **EU national identification number** | The OR of 26 per-country national ID entities (Austria Identity Card, Belgium National Number,... U.K. National Insurance Number) |
+| **EU national identification number** | The OR of 26 per-country national ID entities (Austria Identity Card, Belgium National Number, ... U.K. National Insurance Number) |
 | **EU Social Security Number (SSN) or Equivalent ID** | The OR of 12 per-country SSN-equivalent entities (Austria, Belgium, Croatia, Czech, Denmark, Finland, France, Germany, Greece, Hungary, Spain, Sweden) |
 | **EU debit card number** | A single, region-wide 16-19-digit pattern with checksum + card/expiry keyword corroboration - not a per-country bundle, the direct EU-format analog of the sibling scenario's "Credit Card Number" SIT |
 
@@ -71,15 +71,24 @@ This scenario's default condition set is these three, OR-combined, `mincount = 1
 direct EU/UK analog of the sibling scenario's SSN + Credit Card Number pair (one identity SIT
 family, one financial SIT), not an attempt at exhaustive EU personal-data coverage (name, address,
 and health-data SITs exist separately and are out of scope here, same "starter set, not
-jurisdiction-complete" framing the sibling scenario's `README.md` §2 already uses).
+jurisdiction-complete" framing the sibling scenario's why this matters already uses).
 
 **Deliberately not defaulted to, but now available as an opt-in bundle:** "EU passport number" and
 "EU driver's license number" (also real, confirmed EU-wide bundle SITs
-) - omitted from the *default* set because passport/driver's-
-license numbers are lower-frequency in day-to-day SharePoint/OneDrive business content than
+) - omitted from the *default* set because passport/driver's-license numbers are lower-frequency in day-to-day SharePoint/OneDrive business content than
 national-ID and payment-card numbers, not because they're any less real. An organization whose estate is
-travel-document- or HR-record-heavy can add both with `-IncludeTravelDocumentSits` (§5) instead of
+travel-document- or HR-record-heavy can add both with `-IncludeTravelDocumentSits` instead of
 retyping the full `-SensitiveInfoTypeName` list by hand.
+
+**Grounded (2026-09-27): the apostrophe in "EU driver's license number" is real, not a typo to
+reconcile against the no-apostrophe page title above.** Microsoft's "Create custom sensitive
+information types" page names this SIT `"EU driver's license number"` (apostrophe, lowercase)
+in its list of non-copyable EU-wide SITs - a portal-display-name context, not a URL slug. The bundle-index page's own title strips the apostrophe purely because
+Learn page titles are derived from the URL slug (every per-country page under it does the same,
+e.g. "France drivers license number" as a title vs. "the EU Driver's License Number sensitive
+information type" in that same page's body). This closes the apostrophe-specific sub-question of
+the known limitations's byte-exact-casing VERIFY for this one SIT; the broader question of exact
+word-casing across the other bundle names remains an open, pilot-tenant-only VERIFY.
 
 **Bundle-membership grounding (fetched directly, 2026-09-09) - and why the three EU-wide bundles
 this scenario can reference are not interchangeable in coverage:**
@@ -96,7 +105,7 @@ an inseparable side effect - there is no way to select one without the other via
 An organization that needs U.K.-only passport detection without U.S. false positives would need to build a
 custom SIT or accept the combined entity's broader match surface; this scenario does not attempt
 that narrower control (`-SensitiveInfoTypeName` still accepts a fully custom list if an organization builds
-one). Flagged as a Red Team-relevant finding in `reviews.md` round 2 and `README.md` §11, not
+one). Flagged as a Red Team-relevant finding in the review notes round 2 and the known limitations, not
 silently absorbed into the "just enable the bundle" framing.
 
 **Per-country checksum/confidence detail for both opt-in bundles is now tabled below**, to the same
@@ -105,7 +114,7 @@ depth as the default national-ID bundle - closing the follow-up this scenario or
 grounding per bundle, fetched directly on 2026-09-09).
 
 **Per-country checksum-strength reference - all 26 members of the "EU national identification
-number" bundle.** `reviews.md` (Red Team finding 1) flagged that the bundle's per-country entities
+number" bundle.** the Red Team review (finding 1) flagged that the bundle's per-country entities
 don't carry equal detection confidence, but the original build only grounded two representative
 examples (France: no checksum; Belgium: yes). This table closes that gap with all 26, each fetched
 directly from its own Microsoft Learn entity-definition page rather than inferred from the two
@@ -145,8 +154,8 @@ France, Greece, Malta, U.K.). Two of the 19 (Germany, and to a lesser extent the
 countries noted above) only guarantee the checksum on a subset of the formats they match - treat
 Germany's pre-2010 10-digit path as effectively pattern-only for false-positive planning purposes.
 The 7 pattern-only countries carry the bundle's highest false-positive risk and are the first
-candidates to exclude via the `-SensitiveInfoTypeName` localization mechanism (§5) for a tenant that
-doesn't operate in those markets - see `README.md` §8's KPI guidance and §11.
+candidates to exclude via the `-SensitiveInfoTypeName` localization mechanism for a tenant that
+doesn't operate in those markets - see operations and tuning's KPI guidance and the known limitations.
 
 **Per-country checksum-strength reference - all 26 members of the opt-in "EU passport number"
 bundle**, each fetched directly from its own Microsoft Learn entity-definition page (2026-09-09):
@@ -163,7 +172,7 @@ bundle**, each fetched directly from its own Microsoft Learn entity-definition p
 | Estonia | 1 letter + 7 digits | No | High (85) | - |
 | Finland | 2 letters + 7 digits | No | High (85) | - |
 | France | 2 digits + 2 letters + 5 digits | No | High (85) | Matched via a function (`Func_fr_passport`), not a plain regex, but still not checksum-validated |
-| Germany | 9-11 chars, letter-set-restricted | **Yes** | High (85) | Checksum path requires DLP engine ≥ 15.20.4570.0; below that version the entity falls back to a 75-confidence, non-checksum pattern match - see `README.md` §11 |
+| Germany | 9-11 chars, letter-set-restricted | **Yes** | High (85) | Checksum path requires DLP engine ≥ 15.20.4570.0; below that version the entity falls back to a 75-confidence, non-checksum pattern match - see the known limitations |
 | Greece | 2 letters + 7 digits | No | High (85) | - |
 | Hungary | 2 letters + 6-7 digits | No | High (85) | - |
 | Ireland | 2 alphanumeric + 7 digits | No | High (85) | - |
@@ -178,14 +187,14 @@ bundle**, each fetched directly from its own Microsoft Learn entity-definition p
 | Slovenia | "P" + 1 letter + 7 digits | No | High (85) | - |
 | Spain | 8-9 alphanumeric | No (`Not applicable`) | High (85) | - |
 | Sweden | 8 digits | No | High (85) | - |
-| U.S./U.K. passport number | 1 alphanumeric + 8 digits | No | High (85) | Combined entity - see §4 above; matches both U.S. and U.K. formats |
+| U.S./U.K. passport number | 1 alphanumeric + 8 digits | No | High (85) | Combined entity - see the architecture above; matches both U.S. and U.K. formats |
 
 **Only 2 of 26 members (8%) are checksum-validated** (Germany, Poland) - a materially weaker
 validation profile than the default national-ID bundle's 73%. Every entity in this bundle reaches
 the same 85-confidence ceiling regardless of checksum status (the non-checksum entities earn High
 confidence from pattern + keyword + a nearby issue/expiry date, not from a weaker structural match),
 so an organization cannot distinguish "checksum-backed, high-confidence passport match" from "9-digit
-pattern near the word 'passport'" by confidence level alone - see `README.md` §11 for the
+pattern near the word 'passport'" by confidence level alone - see the known limitations for the
 false-positive-planning consequence.
 
 **Per-country checksum-strength reference - all 28 members of the opt-in "EU driver's license
@@ -230,11 +239,11 @@ for the non-checksum countries, only a single medium-confidence pattern-plus-key
 the U.K. are the only two members that can reach a stronger evidentiary combination (checksum +
 keyword), and only Spain reaches 85.
 
-**Cross-bundle takeaway (Red Team-relevant, see `reviews.md` round 3):** the three EU-wide bundles
+**Cross-bundle takeaway (Red Team-relevant, see the review notes round 3):** the three EU-wide bundles
 this scenario can reference carry sharply different validation strength - 73% checksum-validated for
 the *default* national-ID bundle, but only 8% (passport) and 11% (driver's license) for the two
 *opt-in* bundles. An organization that enables `-IncludeTravelDocumentSits` should not assume the same
-false-positive profile as the default condition set; §5's per-country `-SensitiveInfoTypeName`
+false-positive profile as the default condition set; the implementation steps's per-country `-SensitiveInfoTypeName`
 narrowing is proportionally more valuable for these two bundles than for the default one.
 
 **VERIFY (pilot tenant, before production reliance):** the exact, byte-precise capitalization of
@@ -244,38 +253,38 @@ across pages (the bundle index page titles it lowercase, "EU national identifica
 canonical numbered entity-definitions list titles it the same way; other pages sentence-case only
 the leading word) - this build could not find a single authoritative, byte-exact string to cite
 with certainty, the same class of gap already flagged for the sibling scenario's own SIT names
-(`auto-label-confidential-sharepoint/README.md` did not need this VERIFY because "U.S. Social
+(*Auto-Label Confidential PII in SharePoint & OneDrive* did not need this VERIFY because "U.S. Social
 Security Number (SSN)" and "Credit Card Number" both matched their citation exactly, but this
 scenario's EU SIT names carry that risk and it would be dishonest to imply otherwise). The deploy
 script (`deploy/New-EuPersonalDataAutoLabelPolicy.ps1`) resolves each configured name via
 `Get-DlpSensitiveInformationType` before referencing it in a rule and fails clearly, listing the
 closest available matches, rather than silently creating a rule with zero real matches if a name is
-off by case or punctuation - see `README.md` §11.
+off by case or punctuation - see the known limitations.
 
 ## 5. Localization parameter - `-SensitiveInfoTypeName`
 
 `deploy/New-EuPersonalDataAutoLabelPolicy.ps1` accepts `-SensitiveInfoTypeName` as a `string[]`,
-defaulting to the three EU-wide SITs in §4. An organization that wants to localize further passes their own
+defaulting to the three EU-wide SITs in the architecture. An organization that wants to localize further passes their own
 list - either a subset of per-country entities (e.g. only the member states they operate in, for
 tighter false-positive control and a clearer per-jurisdiction legal-basis mapping than "matches
 somewhere in the EU"), or a superset including passport/driver's-license SITs, or entirely
 different SITs for a non-EU region this scenario's name doesn't target (the parameter itself is
 region-agnostic; only the *default value* is EU/UK-specific). This is the concrete mechanism that
 resolves the sibling scenario's own deferred localization follow-up, and its existence is
-cross-referenced back into `auto-label-confidential-sharepoint/README.md` §11 so a reader of either
+cross-referenced back into *Auto-Label Confidential PII in SharePoint & OneDrive* (the known limitations) so a reader of either
 scenario finds the other.
 
 **`-IncludeTravelDocumentSits` is a separate, additive mechanism, not a replacement for
 `-SensitiveInfoTypeName`.** Where `-SensitiveInfoTypeName` replaces the entire condition list
-(for narrowing to specific member states, per §4/§5), `-IncludeTravelDocumentSits` appends the two
-opt-in bundle SITs (§4) to whatever list is already in effect - the default three-SIT set, or a
+(for narrowing to specific member states, per the architecture and the implementation steps), `-IncludeTravelDocumentSits` appends the two
+opt-in bundle SITs to whatever list is already in effect - the default three-SIT set, or a
 caller's own narrowed override - so an organization localizing to Germany + France can still opt into
 travel-document coverage for those same two countries' passport/driver's-license formats without
 having to spell out the bundle names by hand.
 
 ## 6. Policy architecture
 
-Identical shape to the sibling scenario (`auto-label-confidential-sharepoint/design.md` §4): one
+Identical shape to the sibling scenario (*Auto-Label Confidential PII in SharePoint & OneDrive* (the architecture)): one
 auto-labeling policy, two rules (one per workload - `New-AutoSensitivityLabelRule -Workload` is
 single-valued per call), both rules sharing the same SIT condition set and
 target label.
@@ -300,52 +309,52 @@ flowchart TD
 
 Policy-level settings, override semantics, exclusion mechanism, and rollout staging are all
 inherited unchanged from the sibling scenario's design (`auto-label-confidential-sharepoint/
-design.md` §4-§6) - this scenario changes the SIT condition set and adds the localization
+the design notes) - this scenario changes the SIT condition set and adds the localization
 parameter; it does not re-derive any of the already-reviewed rollout/override design.
 
 ## 7. Key decisions
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Default SITs | EU national identification number, EU Social Security Number (SSN) or Equivalent ID, EU debit card number | §4 - direct EU/UK analog of the sibling's identity+financial pair, grounded against Microsoft's canonical entity-definitions index |
-| Localization mechanism | `-SensitiveInfoTypeName string[]` parameter, resolved via `Get-DlpSensitiveInformationType` at deploy time | §5 - turns "swap the SIT list for your jurisdiction" from README prose (the sibling's approach) into an actual script parameter |
-| Name validation | Deploy script resolves every configured SIT name against `Get-DlpSensitiveInformationType` and fails clearly (listing near-matches) rather than silently deploying a zero-match rule | Directly mitigates the casing-uncertainty VERIFY in §4 rather than shipping a rule that might silently match nothing |
-| Passport/driver's-license SITs | Available via `-SensitiveInfoTypeName` directly, or additively via the `-IncludeTravelDocumentSits` opt-in switch | §4 - lower day-to-day frequency in business documents than ID/payment identifiers; an organization's own data inventory should drive adding them, not this scenario's default. The switch exists so opting in doesn't require retyping the full SIT list, and so the U.S./U.K. passport-merge gotcha (§4) is surfaced at the call site, not just in prose |
-| Label, override behavior, exclusion mechanism, rollout mode | Unchanged from the sibling scenario | §6 - already reviewed and correct; this scenario's scope is the SIT set, not the rollout/override model |
+| Default SITs | EU national identification number, EU Social Security Number (SSN) or Equivalent ID, EU debit card number | the architecture - direct EU/UK analog of the sibling's identity+financial pair, grounded against Microsoft's canonical entity-definitions index |
+| Localization mechanism | `-SensitiveInfoTypeName string[]` parameter, resolved via `Get-DlpSensitiveInformationType` at deploy time | the implementation steps - turns "swap the SIT list for your jurisdiction" from page prose (the sibling's approach) into an actual script parameter |
+| Name validation | Deploy script resolves every configured SIT name against `Get-DlpSensitiveInformationType` and fails clearly (listing near-matches) rather than silently deploying a zero-match rule | Directly mitigates the casing-uncertainty VERIFY in the architecture rather than shipping a rule that might silently match nothing |
+| Passport/driver's-license SITs | Available via `-SensitiveInfoTypeName` directly, or additively via the `-IncludeTravelDocumentSits` opt-in switch | the architecture - lower day-to-day frequency in business documents than ID/payment identifiers; an organization's own data inventory should drive adding them, not this scenario's default. The switch exists so opting in doesn't require retyping the full SIT list, and so the U.S./U.K. passport-merge gotcha is surfaced at the call site, not just in prose |
+| Label, override behavior, exclusion mechanism, rollout mode | Unchanged from the sibling scenario | the configuration reference - already reviewed and correct; this scenario's scope is the SIT set, not the rollout/override model |
 
 ## 8. Non-goals
 
 - This scenario does not author or publish the `Confidential` sensitivity label - same
- prerequisite-dependency pattern as the sibling scenario (`README.md` §3).
+  prerequisite-dependency pattern as the sibling scenario.
 - This scenario does not cover Exchange (email) - scoped to SharePoint/OneDrive at-rest content,
- matching the sibling scenario's own scope split with
- `auto-label-confidential-exchange/`. The EU-personal-data Exchange variant is now built as
- `scenarios/information-protection/auto-label-eu-personal-data-exchange/` - see that scenario's
- `design.md` for why it is a third, sibling scenario rather than a parameter on this one.
+  matching the sibling scenario's own scope split with
+  `auto-label-confidential-exchange/`. The EU-personal-data Exchange variant is now built as
+  *Auto-Label EU/UK Personal Data in Exchange Email* - see that scenario's
+  the design notes for why it is a third, sibling scenario rather than a parameter on this one.
 - This scenario does not attempt EU personal-data-category completeness (names, physical
- addresses, health data, biometric data are all "personal data" under GDPR Article 4(1) but are
- covered by entirely separate SIT/named-entity families) - see §4's explicit starter-set framing.
+  addresses, health data, biometric data are all "personal data" under GDPR Article 4(1) but are
+  covered by entirely separate SIT/named-entity families) - see the architecture's explicit starter-set framing.
 - This scenario does not implement per-country legal-basis or retention-period differentiation
- (GDPR is a single regulation, but a France-only vs. Germany-only deployment might have different
- internal data-handling procedures downstream of the label) - that is a policy/process decision
- for the deploying organization's compliance team, out of scope for a labeling-mechanism scenario.
+  (GDPR is a single regulation, but a France-only vs. Germany-only deployment might have different
+  internal data-handling procedures downstream of the label) - that is a policy/process decision
+  for the deploying organization's compliance team, out of scope for a labeling-mechanism scenario.
 
 ## References
 
 1. Create custom sensitive information types - "These SITs can't be copied" (lists the EU-wide
- bundle SITs individually, confirming each is a real, selectable, standalone SIT object) -
- <https://learn.microsoft.com/purview/sit-create-a-custom-sensitive-information-type#before-you-begin>
+   bundle SITs individually, confirming each is a real, selectable, standalone SIT object) -
+   <https://learn.microsoft.com/purview/sit-create-a-custom-sensitive-information-type#before-you-begin>
 2. EU national identification number entity definition (26-country membership list) -
- <https://learn.microsoft.com/purview/sit-defn-eu-national-identification-number>
+   <https://learn.microsoft.com/purview/sit-defn-eu-national-identification-number>
 3. EU Social Security Number (SSN) or Equivalent ID entity definition (12-country membership
- list) - <https://learn.microsoft.com/purview/sit-defn-eu-social-security-number-equivalent-identification>
+   list) - <https://learn.microsoft.com/purview/sit-defn-eu-social-security-number-equivalent-identification>
 4. EU debit card number entity definition (single region-wide pattern, checksum, keyword
- corroboration, Entity id `0e9b3178-9678-47dd-a509-37222ca96b42`) -
- <https://learn.microsoft.com/purview/sit-defn-eu-debit-card-number>
+   corroboration, Entity id `0e9b3178-9678-47dd-a509-37222ca96b42`) -
+   <https://learn.microsoft.com/purview/sit-defn-eu-debit-card-number>
 5. EU passport number entity definition - <https://learn.microsoft.com/purview/sit-defn-eu-passport-number>
 6. EU drivers license number entity definition - <https://learn.microsoft.com/purview/sit-defn-eu-drivers-license-number>
 7. New-AutoSensitivityLabelRule reference (`-Workload` single-valued) -
- <https://learn.microsoft.com/powershell/module/exchangepowershell/new-autosensitivitylabelrule>
+   <https://learn.microsoft.com/powershell/module/exchangepowershell/new-autosensitivitylabelrule>
 8. Austria identity card entity definition - <https://learn.microsoft.com/purview/sit-defn-austria-identity-card>
 9. Belgium national number entity definition - <https://learn.microsoft.com/purview/sit-defn-belgium-national-number>
 10. Bulgaria uniform civil number entity definition - <https://learn.microsoft.com/purview/sit-defn-bulgaria-uniform-civil-number>

@@ -1,224 +1,290 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
+import themes from '../../data/themes.json';
+import areaLabels from '../../data/areas.json';
 
-const scenarios = (await getCollection('scenarios')).filter(
-  (e) => !e.id.split('/').pop()!.includes('.')
-);
+const labelFor = (slug: string, fallback: string) => (areaLabels as Record<string, string>)[slug] ?? fallback;
 
-// Short descriptions per solution area (keyed by folder slug).
-const AREA_BLURBS: Record<string, string> = {
-  'adaptive-protection': 'Risk-based controls that tighten enforcement automatically as user risk rises.',
-  audit: 'Audit log search, retention, and streaming to Sentinel for investigations.',
-  'communication-compliance': 'Detect risky or non-compliant messages across Teams, email, and Copilot.',
-  'compliance-manager': 'Assess and evidence control posture against ISO, SOC 2, HIPAA, PCI, GDPR.',
-  'data-estate-insights': 'Coverage reporting across classification, labels, and glossary curation.',
-  'data-lifecycle-management': 'Retention, disposition, and adaptive-scope cleanup of aging data.',
-  'data-lineage': 'Trace how data moves and transforms across the estate.',
-  'data-map': 'Scan, classify, and catalog sources across cloud and on-premises.',
-  'data-quality': 'Rules and scorecards that measure and enforce data quality.',
-  'data-security-investigations': 'Investigate data-security incidents involving priority and risky users.',
-  dlp: 'Prevent regulated-data exfiltration across endpoint, email, Teams, and SharePoint.',
-  'dspm-for-ai': 'Data security posture management for AI and Copilot interactions.',
-  ediscovery: 'Legal hold, collection, review, and defensible search-and-purge.',
-  'information-barriers': 'Enforce ethical walls between conflicting groups.',
-  'information-protection': 'Sensitivity labels and auto-labeling to classify and protect content.',
-  'insider-risk': 'Detect and manage risky insider activity with graduated response.',
-  'records-management': 'Declare, retain, and dispose of regulatory records.',
-  'unified-catalog': 'Govern data products, critical data elements, and OKRs.',
-};
+const notes = (await getCollection('scenarios')).filter((e) => !e.id.split('/').pop()!.includes('.'));
+const areaCount = new Set(notes.map((n) => n.data.categorySlug)).size;
 
-// Group scenarios by category, sorted alphabetically by label.
-const groups = new Map<string, { category: string; items: typeof scenarios }>();
-for (const entry of scenarios) {
-  const key = entry.data.categorySlug;
-  if (!groups.has(key)) groups.set(key, { category: entry.data.category, items: [] as typeof scenarios });
-  groups.get(key)!.items.push(entry);
+const sortNotes = (list: typeof notes) => [...list].sort((a, b) => a.data.title!.localeCompare(b.data.title!));
+
+// Group notes: theme -> area -> notes. Any area not yet mapped to a theme lands
+// in a final catch-all section so nothing is ever hidden.
+const knownAreas = new Set(themes.flatMap((t) => t.areas));
+const themeBlocks = themes.map((t) => ({
+  slug: t.slug,
+  title: t.title,
+  hook: t.hook,
+  areas: t.areas
+    .map((a) => {
+      const inArea = notes.filter((n) => n.data.categorySlug === a);
+      return { slug: a, label: labelFor(a, inArea[0]?.data.category ?? a), notes: sortNotes(inArea) };
+    })
+    .filter((a) => a.notes.length > 0),
+}));
+const orphanAreas = [...new Set(notes.map((n) => n.data.categorySlug!))].filter((a) => !knownAreas.has(a));
+if (orphanAreas.length) {
+  themeBlocks.push({
+    slug: 'more',
+    title: 'More field notes',
+    hook: 'Newer notes that have not been placed in a story yet.',
+    areas: orphanAreas.map((a) => {
+      const inArea = notes.filter((n) => n.data.categorySlug === a);
+      return { slug: a, label: labelFor(a, inArea[0]?.data.category ?? a), notes: sortNotes(inArea) };
+    }),
+  });
 }
-const sortedGroups = [...groups.entries()]
-  .sort((a, b) => a[1].category.localeCompare(b[1].category))
-  .map(([slug, g]) => ({
-    slug,
-    category: g.category,
-    blurb: AREA_BLURBS[slug],
-    items: g.items.sort((a, b) => a.data.title.localeCompare(b.data.title)),
-  }));
 ---
 
 <Base
-  title="Purview Scenario Library"
-  description={`${scenarios.length} production-ready Microsoft Purview scenarios across ${sortedGroups.length} solution areas.`}
+  title="Field Notes"
+  description={`${notes.length} field notes on Microsoft Purview and security, grouped by the question they answer.`}
 >
-  <section class="wrap page-head">
-    <p class="eyebrow">Microsoft Purview</p>
-    <h1>Scenario Library</h1>
-    <p class="lead">
-      {scenarios.length} production-ready scenarios across {sortedGroups.length} solution areas. Every
-      scenario is documented from start to finish, covering the business driver, architecture with a
-      flow diagram, deployment scripts, validation, and rollback, all on this site.
-    </p>
-
-    <nav class="toc" aria-label="Solution areas">
-      {sortedGroups.map((g) => <a href={`#${g.slug}`}>{g.category} <span>{g.items.length}</span></a>)}
-    </nav>
+  <section class="head">
+    <div class="wrap">
+      <p class="eyebrow">Field notes</p>
+      <h1>Every control, told end to end.</h1>
+      <p class="lead">
+        {notes.length} notes across {areaCount} solution areas. Each one starts with the risk, explains the
+        control with a diagram, and finishes with the proof and a runbook for the people doing the work.
+      </p>
+      <label class="search">
+        <span class="sr">Search the field notes</span>
+        <input id="q" type="search" placeholder="Search notes: USB, Teams, retention, PCI, Copilot..." autocomplete="off" />
+      </label>
+      <nav class="theme-nav" aria-label="Stories">
+        {themeBlocks.map((t) => <a href={`#${t.slug}`}>{t.title}</a>)}
+      </nav>
+    </div>
   </section>
 
-  <section class="wrap">
+  <div class="wrap">
+    <p id="none" class="none" hidden>No notes match that search. Try a broader word.</p>
     {
-      sortedGroups.map((g) => (
-        <section class="group" id={g.slug}>
-          <div class="group-head">
+      themeBlocks.map((t, i) => (
+        <section class="theme" id={t.slug} data-theme>
+          <header class="theme-head">
+            <span class="theme-num">{String(i + 1).padStart(2, '0')}</span>
             <div>
-              <h2>{g.category}</h2>
-              {g.blurb && <p class="blurb">{g.blurb}</p>}
+              <h2>{t.title}</h2>
+              <p>{t.hook}</p>
             </div>
-            <span class="pill">{g.items.length}</span>
-          </div>
-          <ul class="cards">
-            {g.items.map((entry) => (
-              <li>
-                <a href={`/scenarios/${entry.id}/`}>
-                  <span class="card-title">{entry.data.title}</span>
-                  <span class="card-go" aria-hidden="true">→</span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          </header>
+          {t.areas.map((a) => (
+            <div class="area" data-area>
+              <h3>
+                {a.label} <span>{a.notes.length}</span>
+              </h3>
+              <ul class="notes">
+                {a.notes.map((n) => (
+                  <li data-note data-search={`${n.data.title} ${n.data.teaser ?? ''} ${a.label}`.toLowerCase()}>
+                    <a href={`/scenarios/${n.id}/`}>
+                      <span class="note-title">{n.data.title}</span>
+                      <span class="note-teaser">{n.data.teaser}</span>
+                      <span class="note-meta">{n.data.readingMinutes} min read</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </section>
       ))
     }
-  </section>
+  </div>
+
+  <script>
+    const q = document.getElementById('q') as HTMLInputElement | null;
+    const none = document.getElementById('none');
+    if (q) {
+      const notes = Array.from(document.querySelectorAll<HTMLElement>('[data-note]'));
+      const areas = Array.from(document.querySelectorAll<HTMLElement>('[data-area]'));
+      const themes = Array.from(document.querySelectorAll<HTMLElement>('[data-theme]'));
+      const run = () => {
+        const terms = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+        let shown = 0;
+        for (const n of notes) {
+          const hay = n.dataset.search ?? '';
+          const ok = terms.every((t) => hay.includes(t));
+          n.hidden = !ok;
+          if (ok) shown++;
+        }
+        for (const a of areas) a.hidden = !a.querySelector('[data-note]:not([hidden])');
+        for (const t of themes) t.hidden = !t.querySelector('[data-area]:not([hidden])');
+        if (none) none.hidden = shown !== 0;
+      };
+      q.addEventListener('input', run);
+    }
+  </script>
 
   <style>
-    .page-head {
-      padding-top: 48px;
+    .head {
+      padding: 64px 0 34px;
+      border-bottom: 1px solid var(--rule);
+      background:
+        radial-gradient(50% 90% at 100% 0%, var(--accent-soft) 0%, transparent 60%),
+        var(--paper);
     }
-    .eyebrow {
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      font-size: 12.5px;
-      font-weight: 700;
-      color: var(--accent);
-      margin: 0 0 10px;
-    }
-    h1 {
-      font-size: clamp(2rem, 5vw, 2.8rem);
-      font-weight: 900;
-      margin: 0 0 14px;
+    .head h1 {
+      font-size: clamp(2.3rem, 5.4vw, 3.8rem);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin: 0 0 16px;
+      max-width: 16ch;
     }
     .lead {
-      max-width: 68ch;
+      max-width: 62ch;
+      font-size: 1.15rem;
+      line-height: 1.6;
       color: var(--body);
-      font-size: 1.08rem;
+      margin: 0 0 26px;
     }
-    .toc {
+    .sr {
+      position: absolute;
+      left: -9999px;
+    }
+    .search input {
+      width: 100%;
+      max-width: 560px;
+      font: inherit;
+      font-size: 16px;
+      padding: 13px 16px;
+      border: 1px solid var(--rule-strong);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--ink);
+    }
+    .search input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+      border-color: transparent;
+    }
+    .theme-nav {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 26px;
-      padding-top: 24px;
-      border-top: 1px solid var(--border);
+      margin-top: 20px;
     }
-    .toc a {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: var(--bg-soft);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 6px 8px 6px 13px;
+    .theme-nav a {
       font-size: 13.5px;
-      font-weight: 600;
-      color: var(--body);
-    }
-    .toc a:hover {
-      text-decoration: none;
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    .toc a span {
-      background: #fff;
-      border: 1px solid var(--border);
+      font-weight: 700;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--rule-strong);
       border-radius: 999px;
-      padding: 0 8px;
-      font-size: 12px;
-      color: var(--muted);
+      padding: 6px 14px;
+    }
+    .theme-nav a:hover {
+      text-decoration: none;
+      border-color: var(--ink);
     }
 
-    .group {
-      margin-top: 52px;
+    .none {
+      margin: 40px 0;
+      font-size: 1.1rem;
+      color: var(--muted);
+    }
+    .theme {
+      margin-top: 64px;
       scroll-margin-top: 84px;
     }
-    .group-head {
+    .theme-head {
       display: flex;
+      gap: 20px;
       align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      padding-bottom: 14px;
+      padding-bottom: 18px;
       border-bottom: 2px solid var(--ink);
-      margin-bottom: 18px;
     }
-    .group-head h2 {
-      font-size: 1.45rem;
-      margin: 0;
-    }
-    .blurb {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 14.5px;
-      max-width: 70ch;
-    }
-    .pill {
-      flex: none;
-      background: var(--accent-ink);
-      color: #fff;
-      border-radius: 999px;
-      padding: 3px 12px;
+    .theme-num {
+      font-family: var(--serif);
+      font-size: 3rem;
+      line-height: 0.95;
       font-weight: 700;
-      font-size: 14px;
+      color: var(--accent);
     }
-    .cards {
-      list-style: none;
-      padding: 0;
+    .theme-head h2 {
+      font-size: clamp(1.7rem, 3.4vw, 2.3rem);
+      margin: 0 0 4px;
+    }
+    .theme-head p {
       margin: 0;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 12px;
+      color: var(--muted);
+      max-width: 62ch;
     }
-    .cards a {
+    .area {
+      margin-top: 30px;
+    }
+    .area h3 {
+      font-family: var(--sans);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin: 0 0 12px;
+    }
+    .area h3 span {
+      margin-left: 6px;
+      color: var(--accent);
+    }
+    .notes {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .notes a {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      flex-direction: column;
+      gap: 6px;
       height: 100%;
-      padding: 15px 17px;
-      background: #fff;
-      border: 1px solid var(--border);
+      padding: 20px 22px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
       border-radius: 12px;
       color: var(--ink);
-      font-weight: 600;
       transition:
-        border-color 0.15s ease,
-        box-shadow 0.15s ease,
-        transform 0.15s ease;
+        transform 0.16s ease,
+        box-shadow 0.16s ease,
+        border-color 0.16s ease;
     }
-    .cards a:hover {
+    .notes a:hover {
       text-decoration: none;
-      border-color: var(--accent);
-      box-shadow: var(--shadow);
       transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      border-color: var(--rule-strong);
     }
-    .card-title {
-      line-height: 1.35;
+    .note-title {
+      font-family: var(--serif);
+      font-size: 1.18rem;
+      font-weight: 700;
+      line-height: 1.25;
     }
-    .card-go {
-      color: var(--accent);
-      font-weight: 800;
+    .note-teaser {
+      color: var(--body);
+      font-size: 14.5px;
+      line-height: 1.55;
     }
-
-    @media (max-width: 640px) {
-      .cards {
+    .note-meta {
+      margin-top: auto;
+      padding-top: 4px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    [hidden] {
+      display: none !important;
+    }
+    @media (max-width: 760px) {
+      .notes {
         grid-template-columns: 1fr;
+      }
+      .theme-num {
+        font-size: 2.2rem;
       }
     }
   </style>

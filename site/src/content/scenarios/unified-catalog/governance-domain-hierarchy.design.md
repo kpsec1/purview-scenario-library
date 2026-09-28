@@ -4,14 +4,13 @@ parent: "unified-catalog/governance-domain-hierarchy"
 ---
 ## 1. Problem statement
 
-`scenarios/unified-catalog/curate-business-glossary/` deliberately scoped itself to **one**
-standalone governance domain (`design.md` Section 6 there), leaving "multi-domain governance
+*Curate a Business Glossary* deliberately scoped itself to **one**
+standalone governance domain (the design notes Section 6 there), leaving "multi-domain governance
 hierarchies, custom attribute groups, and data estate mappings to Data Map collections" as an
-explicit follow-up (`PROGRESS.md`). A single flat domain does not survive contact with a real
+explicit follow-up. A single flat domain does not survive contact with a real
 enterprise: Microsoft's own sample data-governance walkthrough models exactly this next step - a
 **Corporate** parent domain with **Sales** as a child, because "these domains are key points of
-federation for collaboration and governance in your organization"
-. This scenario builds that parent/child domain tree, applies
+federation for collaboration and governance in your organization". This scenario builds that parent/child domain tree, applies
 admin-defined business-concept attribute values to each domain, and (optionally) records a
 recommended Data Map collection for each domain via the **Data estate mappings** relationship -
 all from one declarative JSON file, idempotently.
@@ -19,44 +18,44 @@ all from one declarative JSON file, idempotently.
 ## 2. Design goals
 
 1. Author a **domain tree** (a root domain plus nested child domains, up to Microsoft's documented
- five-level depth ceiling) from a single JSON file, in one script run - not one domain per portal
- session.
+   five-level depth ceiling) from a single JSON file, in one script run - not one domain per portal
+   session.
 2. Set **business concept attribute values** (`managedAttributes`) on each domain from the same
- file. This scenario does **not** create the attribute *definitions* themselves - see Section 7.
+   file. This scenario does **not** create the attribute *definitions* themselves - see Section 7.
 3. Optionally record a **data estate mapping** - the recommended Data Map collection for a domain -
- using the Business Domain object's own `domains[].relatedCollections[]` structure, with the
- ambiguity that construction carries (Section 5) disclosed rather than guessed past.
+   using the Business Domain object's own `domains[].relatedCollections[]` structure, with the
+   ambiguity that construction carries (Section 5) disclosed rather than guessed past.
 4. Idempotent: re-running with an unchanged file makes no mutating calls; re-running after editing
- a domain's description, attributes, or mapping reconciles it in place; re-running after adding a
- new child domain creates only that domain, leaving its siblings untouched.
+   a domain's description, attributes, or mapping reconciles it in place; re-running after adding a
+   new child domain creates only that domain, leaving its siblings untouched.
 5. Deletion must go **child-before-parent** - Microsoft's own portal guidance states a domain can
- only be deleted after "you unpublish it and delete all business concepts within it, **including
- any subdomains**" - so `Remove-GovernanceDomainHierarchy.ps1`
- walks the tree in the reverse order this scenario's deploy script uses.
-6. `-WhatIf` dry-run and DRAFT-by-default publish gating, matching this repo's code standard
- (`AGENTS.md` Section 4) and `curate-business-glossary`'s own precedent.
+   only be deleted after "you unpublish it and delete all business concepts within it, **including
+   any subdomains**" - so `Remove-GovernanceDomainHierarchy.ps1`
+   walks the tree in the reverse order this scenario's deploy script uses.
+6. `-WhatIf` dry-run and DRAFT-by-default publish gating, matching this library's code standard
+   (this library's standards Section 4) and *Curate a Business Glossary*'s own precedent.
 
 ## 3. Why a full `Enumerate` pass, not a per-node lookup
 
 The Business Domain operation group has no `Query`/name-filter operation - only `Enumerate`
 (list all, paginated by `$skipToken`), unlike Terms' dedicated
-`Query` operation `curate-business-glossary` uses. This scenario's deploy script therefore performs
+`Query` operation *Curate a Business Glossary* uses. This scenario's deploy script therefore performs
 **one** full, paginated `Enumerate` pass at the start of a run (identical pagination pattern to
-`curate-business-glossary`'s own `Find-BusinessDomainByName`, generalized to page through every
+*Curate a Business Glossary*'s own `Find-BusinessDomainByName`, generalized to page through every
 domain instead of stopping at the first name match) and builds an in-memory `(name, parentId)`
 lookup table before touching the tree. This is deliberate for two reasons this scenario adds beyond
 the glossary scenario's single-domain lookup:
 
 - **Name reuse across different parents is expected, not a bug.** The portal does not enforce
- unique domain names tenant-wide (mirroring the same non-uniqueness Terms already has,
- `curate-business-glossary/design.md` Section 4) - a hierarchy with a `Sales` child under
- `Corporate` and an unrelated `Sales` child under a `Personal Health` domain elsewhere in the
- tenant is a realistic shape this scenario must not confuse. Matching on the **pair**
- `(name, parentId)` - not name alone - avoids reconciling the wrong domain.
+  unique domain names tenant-wide (mirroring the same non-uniqueness Terms already has,
+  *Curate a Business Glossary* Section 4) - a hierarchy with a `Sales` child under
+  `Corporate` and an unrelated `Sales` child under a `Personal Health` domain elsewhere in the
+  tenant is a realistic shape this scenario must not confuse. Matching on the **pair**
+  `(name, parentId)` - not name alone - avoids reconciling the wrong domain.
 - **A single pass amortizes the cost.** `Enumerate`'s 500-request/20-second rate limit is generous,
- but a tree of `N` domains looked up one-by-one with per-node pagination would cost `O(N × pages)`
- calls; one shared pass costs `O(pages)` regardless of tree size, then every node lookup is an
- in-memory hash lookup.
+  but a tree of `N` domains looked up one-by-one with per-node pagination would cost `O(N × pages)`
+  calls; one shared pass costs `O(pages)` regardless of tree size, then every node lookup is an
+  in-memory hash lookup.
 
 **VERIFY** (pilot tenant, before relying on this at a scale approaching the 200-domain ceiling):
 `Enumerate`'s own reference documents no `$top`/page-size parameter - the page size and thus the
@@ -65,7 +64,7 @@ confirm from the reference alone.
 
 ## 4. Idempotency and update semantics - reusing, not repeating, a known lesson
 
-`curate-business-glossary/README.md` Section 11 already discloses that **Update Term is a
+*Curate a Business Glossary* Section 11 already discloses that **Update Term is a
 full-replace `PUT`, not a merge `PATCH`** - every field the caller's body omits is implicitly
 cleared. That scenario's own `Publish-BusinessDomain` helper is a live example of *not* fully
 following that discipline: it rebuilds the domain's update body from only
@@ -96,8 +95,7 @@ domain immediately before each `Update` rather than relying on the batch-start `
 The Business Domain object's request/response schema nests a `domains` array
 (`CatalogModelPlatformDomain[]`) inside every Business Domain, each element carrying its own
 `name`/`friendlyName` and a `relatedCollections[]` array (`CatalogModelRelatedCollection[]`, each
-with `name`/`friendlyName`/`parentCollection.refName`/`parentCollection.type`)
-. The portal-facing feature this almost certainly backs is
+with `name`/`friendlyName`/`parentCollection.refName`/`parentCollection.type`). The portal-facing feature this almost certainly backs is
 **Data estate mappings** - mapping a governance domain to "a specific Data Map collection," found
 on the domain's own **Data estate mappings** tab, described as "recommended guidance" for stewards
 and product owners rather than an access-control mechanism.
@@ -122,11 +120,11 @@ part of every domain, with:
 - `collectionReferenceName` → sent as `domains[].relatedCollections[].name`.
 - `collectionFriendlyName` → sent as `domains[].relatedCollections[].friendlyName`.
 - `parentCollectionReferenceName` (defaults to `collectionReferenceName` if omitted) → sent as
- `domains[].relatedCollections[].parentCollection.refName`, with `.type` hardcoded to
- `CollectionReference` (the only enum value documented).
+  `domains[].relatedCollections[].parentCollection.refName`, with `.type` hardcoded to
+  `CollectionReference` (the only enum value documented).
 
 **VERIFY (pilot tenant) before relying on this in production**, flagged inline in the deploy
-script's `.NOTES`, `README.md` Section 11, and here: whether `refName` must reference a *different*,
+script's `.NOTES`, this page Section 11, and here: whether `refName` must reference a *different*,
 already-registered Data Map collection reference (e.g. a parent collection's technical name in
 Data Map's own collection hierarchy) rather than the same collection's own name; whether the
 mapping this script writes actually surfaces on the portal's **Data estate mappings** tab and
@@ -135,7 +133,7 @@ enforces that the named Data Map collection already exists (a dangling reference
 not-yet-created collection is a plausible, undocumented failure mode). Until confirmed, treat this
 script's `-SkipDataEstateMapping` switch (default: mapping is attempted; pass the switch to omit it
 entirely) as the safer default for a first pilot-tenant run, and confirm the resulting state in the
-portal (README.md Section 7) before trusting a scripted mapping unattended.
+portal (this page Section 7) before trusting a scripted mapping unattended.
 
 ## 6. Custom attribute values - definitions are portal-only, values are not
 
@@ -161,20 +159,20 @@ it as a read-only reflection of the admin-side definition, not a lever this auto
 ## 7. Non-goals
 
 - **Creating business concept attribute *definitions*, attribute groups, or their scope.**
- Portal-only, admin-role work (Section 6) - this scenario assumes the attributes named in its
- definition file already exist and are scoped to Governance Domains.
+  Portal-only, admin-role work (Section 6) - this scenario assumes the attributes named in its
+  definition file already exist and are scoped to Governance Domains.
 - **Creating the target Data Map collection** a data estate mapping references. This scenario
- assumes the collection already exists in Data Map (see this repo's Data Map scenarios for
- collection/source provisioning); it only records the mapping on the Unified Catalog side.
+  assumes the collection already exists in Data Map (see this library's Data Map scenarios for
+  collection/source provisioning); it only records the mapping on the Unified Catalog side.
 - **Domain-level access policies** (the portal's **Configure access** / **Manage domain policies**
- action) - a distinct Unified Catalog capability with its own review surface, same non-goal
- `curate-business-glossary/design.md` Section 7 already carves out for Term policies.
+  action) - a distinct Unified Catalog capability with its own review surface, same non-goal
+  *Curate a Business Glossary* Section 7 already carves out for Term policies.
 - **Glossary terms, data products, critical data elements, or OKRs within each domain** - this
- scenario stops at the domain tree itself; those are `curate-business-glossary`'s,
- `manage-data-products`'s, `manage-critical-data-elements`'s, and `manage-okrs`'s jobs
- respectively, each of which takes a `-DomainName` and can be pointed at any domain this scenario
- creates.
+  scenario stops at the domain tree itself; those are *Curate a Business Glossary*'s,
+  *Manage a Data Product*'s, *Manage a Critical Data Element*'s, and *Manage OKRs (Objectives and Key Results)*'s jobs
+  respectively, each of which takes a `-DomainName` and can be pointed at any domain this scenario
+  creates.
 - **The portal's role assignment step** (adding Data Stewards/Data Product Owners on each domain's
- **Roles** tab) - no REST operation for role assignment was found in this build's grounding pass;
- treated as a manual, per-domain follow-up step, same conclusion `curate-business-glossary`
- reached for its own single domain.
+  **Roles** tab) - no REST operation for role assignment was found in this build's grounding pass;
+  treated as a manual, per-domain follow-up step, same conclusion *Curate a Business Glossary*
+  reached for its own single domain.

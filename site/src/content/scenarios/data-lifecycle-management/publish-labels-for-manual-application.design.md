@@ -14,23 +14,22 @@ and never touches the label itself.
 
 ## 2. Design goals
 
-1. **Close the regulatory-record distribution gap.** Give this repo a scripted, grounded way to
- make a regulatory record label actually usable - the sibling `retention-labels-financial-
- records` scenario creates the label, but (per the correction below) can no longer wire a
- regulatory label into an auto-apply rule.
+1. **Close the regulatory-record distribution gap.** Give this library a scripted, grounded way to
+   make a regulatory record label actually usable - the sibling *Retention Labels for Financial Records* scenario creates the label, but (per the correction below) can no longer wire a
+   regulatory label into an auto-apply rule.
 2. **Never create or edit the label.** This scenario only publishes an *existing* label
- (`Get-ComplianceTag` read-only check) - label creation stays the sibling's job.
+   (`Get-ComplianceTag` read-only check) - label creation stays the sibling's job.
 3. **Reproducible as code, safe to re-run.** Same create-or-report idempotency posture as the
- sibling: locate the policy/rule by name, report if present, never silently mutate.
+   sibling: locate the policy/rule by name, report if present, never silently mutate.
 4. **Honest about what publishing does and doesn't do.** Publishing makes a label *selectable*; it
- depends on a person actually choosing it. That's a different (and, for coverage, weaker)
- guarantee than auto-apply, and the docs/reviews say so plainly.
+   depends on a person actually choosing it. That's a different (and, for coverage, weaker)
+   guarantee than auto-apply, and the docs/reviews say so plainly.
 
 ## 3. Correction: auto-apply does not support regulatory records
 
 While grounding this scenario, a fresh Microsoft Learn pass found a page-level note on "Automatically
-apply a retention label to retain or delete content" that this repo's existing
-`retention-labels-financial-records` scenario had not accounted for:
+apply a retention label to retain or delete content" that this library's existing
+*Retention Labels for Financial Records* scenario had not accounted for:
 
 > "This scenario isn't supported for regulatory records or default labels for an organizing
 > structure... These scenarios require a published retention label policy."
@@ -40,19 +39,19 @@ items as records (**but not regulatory records**), auto-apply those labels..." -
 label be overridden?" table in `retention`, whose **Applied with auto-apply retention label policy**
 row is **"Not applicable"** for labels that mark items as regulatory records.
 
-`retention-labels-financial-records` (built before this scenario, and before this specific note was
+*Retention Labels for Financial Records* (built before this scenario, and before this specific note was
 independently re-checked) auto-applies its label with `regulatory: true` by default - a combination
 Microsoft's own documentation says isn't supported. This scenario's build backports a targeted
-correction into that sibling (not a new four-lens round - see its `reviews.md` correction addendum):
+correction into that sibling (not a new four-lens round - see its review notes correction addendum):
 
 - The sibling's sample config now defaults to `regulatory: false` / `isRecordLabel: true` (a plain
- **record** label), which auto-apply *does* support.
+  **record** label), which auto-apply *does* support.
 - The sibling's deploy script now detects `label.regulatory: true` and **skips** policy/rule
- creation with a clear message pointing here, instead of silently building an unsupported
- configuration. Label creation itself is unaffected - `New-ComplianceTag -Regulatory $true` is a
- perfectly valid, standalone call; it just can't feed an auto-apply rule.
+  creation with a clear message pointing here, instead of silently building an unsupported
+  configuration. Label creation itself is unaffected - `New-ComplianceTag -Regulatory $true` is a
+  perfectly valid, standalone call; it just can't feed an auto-apply rule.
 - This scenario becomes the sibling's documented completion for the regulatory case: create the
- label there, publish it here.
+  label there, publish it here.
 
 ## 4. Object model
 
@@ -101,12 +100,12 @@ label (no `-TryRemoveLabel`-equivalent flag exists in this scenario at all, unli
 
 - **Creating or editing the retention label.** Entirely the sibling scenario's job.
 - **Default labels for SharePoint/Outlook** (library/folder-level auto-inheritance) - a related,
- portal-only capability layered on top of a published label; no PowerShell/Graph cmdlet was found
- for setting it during this build's grounding pass (`README.md` §11).
+  portal-only capability layered on top of a published label; no PowerShell/Graph cmdlet was found
+  for setting it during this build's grounding pass.
 - **Auto-apply for the same label.** A *different*, non-regulatory label could legitimately be both
- auto-applied and published (Microsoft: "a single retention label can be included in multiple
- retention label policies") - but that's a second, standalone deployment of the sibling scenario
- against a plain record label, not something this scenario builds.
+  auto-applied and published (Microsoft: "a single retention label can be included in multiple
+  retention label policies") - but that's a second, standalone deployment of the sibling scenario
+  against a plain record label, not something this scenario builds.
 - **Outlook rules / Power Automate relabeling** - other documented ways a label becomes applied;
- out of scope for this fragment's PowerShell-first automation focus.
+  out of scope for this fragment's PowerShell-first automation focus.
 - **Adaptive scopes** - static locations only, consistent with the sibling.

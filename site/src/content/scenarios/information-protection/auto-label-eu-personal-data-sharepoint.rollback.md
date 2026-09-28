@@ -6,7 +6,7 @@ parent: "information-protection/auto-label-eu-personal-data-sharepoint"
 
 Auto-labeling changes affect live content classification, so roll back in stages rather than
 deleting outright. Identical staged model to the sibling scenario
-(`scenarios/information-protection/auto-label-confidential-sharepoint/rollback.md`) - only the
+(*Auto-Label Confidential PII in SharePoint & OneDrive*) - only the
 policy name differs.
 
 ### Stage 1 - Disable (reversible, seconds)
@@ -27,7 +27,7 @@ Set-AutoSensitivityLabelPolicy -Identity "Confidentiality - Auto-Label EU Person
 
 Use this stage for: a false-positive wave that needs immediate relief while you tune the SIT
 conditions (e.g. narrowing from the full EU-wide bundle down to specific member states - see
-`README.md` §6), a change freeze, or a temporary business exception that doesn't warrant deleting
+the configuration reference), a change freeze, or a temporary business exception that doesn't warrant deleting
 the control.
 
 ### Stage 2 - Simulation (partial rollback, keeps visibility)
@@ -57,20 +57,20 @@ per-country-scoped replacement).
 ## What rollback does **not** undo
 
 - **Labels already applied to files.** This scenario's controls (disable, simulation, or purge)
- stop the policy from applying *new* labels going forward. They do **not** retroactively remove
- the `Confidential` label from files the policy already labeled.
+  stop the policy from applying *new* labels going forward. They do **not** retroactively remove
+  the `Confidential` label from files the policy already labeled.
 - **Encryption, if the label applies it.** Same as the sibling scenario - encryption is a property
- of the label assignment on the file, not of this policy.
+  of the label assignment on the file, not of this policy.
 - **The `Confidential` label itself.** This scenario never created the label - it's a prerequisite
- dependency (see `design.md` §8). Removing this policy has no effect on the label's existence,
- definition, or publication to users.
+  dependency. Removing this policy has no effect on the label's existence,
+  definition, or publication to users.
 - **The `Set-SPOTenant -EnableAIPIntegration` tenant toggle.** A separate, tenant-wide setting
- outside this policy's lifecycle (see `README.md` §3, §11) - shared with, and not re-toggled
- independently for, the sibling U.S.-SIT scenario if both are deployed in the same tenant.
+  outside this policy's lifecycle - shared with, and not re-toggled
+  independently for, the sibling U.S.-SIT scenario if both are deployed in the same tenant.
 
 ## Interaction with the sibling scenario
 
-If both this scenario and `auto-label-confidential-sharepoint` are deployed in the same tenant,
+If both this scenario and *Auto-Label Confidential PII in SharePoint & OneDrive* are deployed in the same tenant,
 they are **independent policies** with independent Mode/lifecycle - rolling back one has no effect
 on the other. A file matching both policies' SIT conditions (e.g. it contains both a U.S. SSN and
 an EU national ID number) is evaluated by both; the `Confidential` label is applied once regardless

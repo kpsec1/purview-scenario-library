@@ -1,29 +1,31 @@
-// Sync the Purview scenario library into the Astro content collection.
+// Sync the Purview scenario library into the Astro content collections.
 //
-// Per scenario:
-//   src/content/scenarios/<cat>/<slug>.md            overview (README, cleaned)
-//   src/content/scenarios/<cat>/<slug>.design.md     design notes (cleaned)
-//   src/content/scenarios/<cat>/<slug>.rollback.md   rollback runbook (cleaned)
-//   src/data/scenario-scripts/<cat>/<slug>.json      deploy/validate scripts
+// Each scenario becomes a "field note" (blog post) made of:
+//   <cat>/<slug>.md           the story: short version, why it matters, how the
+//                             control works, what it takes, proof, limits
+//   <cat>/<slug>.runbook.md   the technical runbook: steps, config, operations,
+//                             rollback plan, references
+//   <cat>/<slug>.design.md    design notes
+//   <cat>/<slug>.rollback.md  rollback runbook
+//   src/data/scenario-scripts/<cat>/<slug>.json   deploy + validate scripts
 //
-// Shared reference docs (licensing matrix, RBAC model, automation surface,
-// glossary) are published to src/content/refdocs/<name>.md and served at
-// /docs/<name>/. Scenario prose is cleaned so that:
-//   - every em/en dash is removed (never inside real scripts),
-//   - inline citation markers like [[1]](#references) are removed,
-//   - `docs/<name>.md §N` mentions become links to the published doc section.
+// The source READMEs were written for engineers browsing a repository, so they
+// point at other files ("see design.md section 4", "scenarios/x/y/"). For the
+// site those pointers are turned into plain wording. Rules are deterministic and
+// never touch code blocks, so technical facts are preserved.
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import GithubSlugger from 'github-slugger';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(scriptDir, '..', '..');
+const siteRoot = path.join(scriptDir, '..');
+const repoRoot = path.resolve(siteRoot, '..');
 const scenariosRoot = path.join(repoRoot, 'scenarios');
 const docsRoot = path.join(repoRoot, 'docs');
-const outRoot = path.join(scriptDir, '..', 'src', 'content', 'scenarios');
-const refdocsOut = path.join(scriptDir, '..', 'src', 'content', 'refdocs');
-const dataRoot = path.join(scriptDir, '..', 'src', 'data', 'scenario-scripts');
+const outRoot = path.join(siteRoot, 'src', 'content', 'scenarios');
+const refdocsOut = path.join(siteRoot, 'src', 'content', 'refdocs');
+const dataRoot = path.join(siteRoot, 'src', 'data', 'scenario-scripts');
 
 const REF_DOCS = {
   'licensing-matrix': 'Licensing matrix',
@@ -31,9 +33,23 @@ const REF_DOCS = {
   'automation-surface': 'Automation surface',
   glossary: 'Glossary',
 };
+const DOC_NAMES = Object.keys(REF_DOCS).join('|');
 
-// name -> { sectionNumber: headingSlug }, filled in main().
-const docSectionMaps = {};
+// Plain wording for references to a scenario's own README sections.
+const SECTION_NOUN = {
+  1: 'the short version',
+  2: 'why this matters',
+  3: 'the prerequisites',
+  4: 'the architecture',
+  5: 'the implementation steps',
+  6: 'the configuration reference',
+  7: 'the validation steps',
+  8: 'operations and tuning',
+  9: 'the rollback plan',
+  10: 'the cost and licensing notes',
+  11: 'the known limitations',
+  12: 'the references',
+};
 
 const LANG_BY_EXT = {
   '.ps1': 'powershell',
@@ -74,6 +90,8 @@ const LICENSES = [
   ['Pay-as-you-go', /\bpay[-\s]?as[-\s]?you[-\s]?go\b|\bconsumption[-\s]?based\b/],
 ];
 
+// ---------------------------------------------------------------- utilities
+
 async function isDir(p) {
   try {
     return (await fs.stat(p)).isDirectory();
@@ -112,10 +130,52 @@ function cleanDashes(text) {
     .replace(/\s*[–—]\s*/g, ', ');
 }
 
-// Quote flowchart node labels that contain characters Mermaid treats as
-// reserved (parentheses, braces, commas, @, #), so labels like B[Foo (Bar)]
-// parse. Only runs on text OUTSIDE existing quoted strings, so already-quoted
-// labels (which may legitimately contain [] , etc.) are left untouched.
+const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+const humanizeSlug = (slug) => cap(slug.replace(/-/g, ' '));
+
+// Run proseFn over the non-code chunks of a markdown document and fenceFn over
+// each line inside a fenced code block. Chunks (not single lines) are passed to
+// proseFn so references wrapped across lines are still matched.
+function mapProse(markdown, proseFn, fenceFn) {
+  const lines = markdown.split('\n');
+  const out = [];
+  let buf = [];
+  let inFence = false;
+  let fenceChar = '';
+  let fenceLang = '';
+  const flush = () => {
+    if (buf.length) {
+      out.push(proseFn(buf.join('\n')));
+      buf = [];
+    }
+  };
+  for (const line of lines) {
+    const m = line.match(/^\s*(```+|~~~+)\s*([A-Za-z0-9-]*)/);
+    if (m) {
+      if (!inFence) {
+        flush();
+        inFence = true;
+        fenceChar = m[1][0];
+        fenceLang = m[2].toLowerCase();
+        out.push(line);
+        continue;
+      }
+      if (line.trim().startsWith(fenceChar)) {
+        inFence = false;
+        fenceLang = '';
+        out.push(line);
+        continue;
+      }
+    }
+    if (inFence) out.push(fenceFn(line, fenceLang));
+    else buf.push(line);
+  }
+  flush();
+  return out.join('\n');
+}
+
+// ------------------------------------------------------ mermaid sanitizing
+
 function quoteMermaidLabels(seg) {
   const needQuote = (i) => i && !i.trim().startsWith('"') && /[(){},@#]/.test(i);
   const q = (i) => '"' + i.replace(/"/g, '&quot;') + '"';
@@ -129,31 +189,20 @@ function quoteMermaidLabels(seg) {
   return s;
 }
 
-// Make a Mermaid diagram line render-safe without changing its meaning.
-// Long dashes and dash entities become hyphens (comma is reserved in Mermaid);
-// the invalid dotted arrow is repaired; the statement-separator ';' is
-// neutralized in the parts Mermaid parses (it breaks Note/message text);
-// flowchart labels with reserved characters are quoted. All of this runs only
-// OUTSIDE existing quoted strings, and HTML entities (which contain ';') are
-// protected first so they are never corrupted.
 function sanitizeMermaid(line) {
   let s = line.replace(/&mdash;|&ndash;/g, '-');
-  // Protect HTML entities (e.g. &lt; &gt; &amp; &#39;) from the ';' handling.
   const ents = [];
   s = s.replace(/&#?[a-zA-Z0-9]+;/g, (m) => {
     ents.push(m);
     return `\u0000${ents.length - 1}\u0000`;
   });
-  // Split into quoted / unquoted spans; only transform structure outside quotes.
   const parts = s.split(/("(?:[^"\\]|\\.)*")/g);
   s = parts
     .map((seg) => {
       const isQuoted = seg.length >= 2 && seg.startsWith('"') && seg.endsWith('"');
-      // Long dashes to hyphen everywhere (safe, and satisfies the no-dash rule).
       let t = seg.replace(/\s*[–—]\s*/g, ' - ');
       if (isQuoted) return t;
       t = t.replace(/-\.-\.->/g, '-.->');
-      // Repair a dotted edge label written as `-.-label.->` (should be `-.label.->`).
       t = t.replace(/-\.-(?=[A-Za-z])/g, '-.');
       t = t.replace(/;/g, ' - ');
       return quoteMermaidLabels(t);
@@ -162,69 +211,238 @@ function sanitizeMermaid(line) {
   return s.replace(/\u0000(\d+)\u0000/g, (m, i) => ents[Number(i)]);
 }
 
-// Remove citation markers and turn `docs/<name>.md §N` into links to the
-// published reference pages. Operates on a single prose line.
-function cleanReferences(line) {
-  let s = line;
-  // Inline citation links like [[1]](#references), and any bare [[1]].
-  s = s.replace(/\[\[[^[\]]{1,15}\]\]\([^)]*\)/g, '');
-  s = s.replace(/\[\[[^[\]]{1,15}\]\]/g, '');
+// ------------------------------------------------ reference normalization
 
-  const toLink = (name, sec) => {
-    const friendly = REF_DOCS[name];
-    if (!friendly) return null;
-    const secText = sec ? sec.replace(/\s+/g, '') : '';
-    let anchor = '';
-    const first = secText.match(/§(\d+)/);
-    if (first && docSectionMaps[name] && docSectionMaps[name][first[1]]) {
-      anchor = `#${docSectionMaps[name][first[1]]}`;
+// Filled in by main() before any content is generated.
+const ctxData = {
+  titleById: {}, // "cat/slug" -> short title
+  idBySlug: {}, // "slug" -> "cat/slug" (unique slugs only)
+  docSections: {}, // doc name -> { "9": "heading-id" }
+  areaLabel: {}, // "dlp" -> "DLP"
+};
+
+// A section mark, optionally a list ("§3/§7", "§3, §7") or a range ("§4-6").
+const SEC = '§\\s?\\d+(?:\\s*(?:[\\/,]|[-\\u2013\\u2014])\\s*§?\\s?\\d+)*';
+
+// Section numbers in a mark; a hyphen or dash between two numbers is a range.
+function nums(str) {
+  const out = [];
+  for (const m of String(str || '').matchAll(/(\d+)(?:\s*[-–—]\s*(\d+))?/g)) {
+    const a = Number(m[1]);
+    const b = m[2] ? Number(m[2]) : a;
+    if (b > a && b - a <= 8) for (let i = a; i <= b; i++) out.push(String(i));
+    else {
+      out.push(String(a));
+      if (m[2]) out.push(String(b));
     }
-    const label = secText ? `${friendly} ${secText}` : friendly;
-    return `[${label}](/docs/${name}/${anchor})`;
-  };
-
-  // Backticked form: `docs/name.md` §N  (optionally §N/§M)
-  s = s.replace(
-    /`docs\/([a-z0-9-]+)\.md`(\s*§\d+(?:\s*\/\s*§\d+)*)?/g,
-    (m, name, sec) => toLink(name, sec) ?? m
-  );
-  // Bare form: docs/name.md §N
-  s = s.replace(
-    /\bdocs\/([a-z0-9-]+)\.md\b(\s*§\d+(?:\s*\/\s*§\d+)*)?/g,
-    (m, name, sec) => toLink(name, sec) ?? m
-  );
-
-  // Tidy whitespace left behind by removed markers.
-  return s.replace(/[ \t]{2,}/g, ' ').replace(/ ([.,;:)])/g, '$1');
+  }
+  return out;
 }
 
-// Clean an entire markdown document: references on prose lines, dashes
-// everywhere visible, never rewriting inside real code blocks (only dashes,
-// which never occur in the actual scripts, are touched there).
-function cleanContent(markdown) {
-  const lines = markdown.split('\n');
-  let inFence = false;
-  let fenceChar = '';
-  let isMermaid = false;
-  return lines
-    .map((line) => {
-      const m = line.match(/^(\s*)(```+|~~~+)\s*([A-Za-z0-9-]*)/);
-      if (m) {
-        if (!inFence) {
-          inFence = true;
-          fenceChar = m[2][0];
-          isMermaid = m[3].toLowerCase() === 'mermaid';
-        } else if (line.trim().startsWith(fenceChar)) {
-          inFence = false;
-          isMermaid = false;
-        }
-        return cleanDashes(line);
+function scenarioRef(id, slug, secs, selfId, followedByParen) {
+  if (id === selfId) return 'this page';
+  const title = ctxData.titleById[id] ?? humanizeSlug(slug);
+  const nouns = nums(secs).map((n) => SECTION_NOUN[n]).filter(Boolean);
+  // Skip the section name when a parenthetical already follows: avoids "(a) (b)".
+  return nouns.length && !followedByParen ? `*${title}* (${nouns.join(' and ')})` : `*${title}*`;
+}
+
+const startsWithParen = (str, end) => /^[ \t]*\(/.test(str.slice(end));
+
+function docLink(name, secs) {
+  const n = nums(secs);
+  const first = n[0];
+  const anchor = first && ctxData.docSections[name]?.[first] ? `#${ctxData.docSections[name][first]}` : '';
+  const label =
+    REF_DOCS[name] + (n.length ? `, section${n.length > 1 ? 's' : ''} ${n.join(' and ')}` : '');
+  return `[${label}](/docs/${name}/${anchor})`;
+}
+
+// A parenthetical that holds nothing but file or section pointers is deleted.
+function isPureRefs(inner) {
+  if (!/(?:§|\.md)/.test(inner)) return false;
+  const rest = inner
+    .replace(/`?\b(?:README|design|rollback|reviews|PROGRESS|AGENTS|CONTRIBUTING)\.md`?/g, '')
+    .replace(new RegExp(SEC, 'g'), '')
+    .replace(
+      /\b(?:see|per|also|and|in|cf\.?|of|this|the|README|design notes|Red Team|Blue Team|CISO|Microsoft Product Owner|Product Owner|lens|lenses|round|rounds|review|Step|steps?)\b/gi,
+      ''
+    )
+    .replace(/[\s,;:/\-&.\d]+/g, '');
+  return rest.length === 0;
+}
+
+function normalizeProse(text, mode, selfId) {
+  let s = text;
+
+  // A. Inline citation markers such as [[1]](#references).
+  s = s.replace(/[ \t]?\[\[[^[\]]{1,15}\]\]\([^)]*\)/g, '').replace(/[ \t]?\[\[[^[\]]{1,15}\]\]/g, '');
+
+  // A2. Words hard-wrapped at a hyphen ("compliance-\ncopy-only") would render
+  // with a stray space; rejoin them. Covers file names ("automation-\nsurface.md").
+  s = s.replace(/([A-Za-z])-[ \t]*\n[ \t]*([a-z])/g, '$1-$2');
+  s = s.replace(/\b(licensing|rbac|automation)-[ \t]*\n?[ \t]*(matrix|model|surface)(?=\.md)/g, '$1-$2');
+  s = s.replace(/(scenarios\/[a-z0-9-]+\/)[ \t]*\n[ \t]*(?=[a-z0-9])/g, '$1');
+
+  // B. Shared reference docs: `docs/licensing-matrix.md` §9 -> link.
+  s = s.replace(
+    new RegExp('`?(?:docs\\/)?\\b(' + DOC_NAMES + ')\\.md`?((?:\\s*' + SEC + ')?)', 'g'),
+    (m, name, secs) => docLink(name, secs)
+  );
+
+  // C. Other scenarios, by full path, short path or bare slug.
+  s = s.replace(
+    new RegExp(
+      '`?\\bscenarios\\/([a-z0-9-]+)\\/([a-z0-9-]+)\\/?(?:(?:README|design|rollback|reviews)\\.md|(?:deploy|validate)\\/[^\\s`)]*)?`?((?:\\s*' +
+        SEC +
+        ')?)',
+      'g'
+    ),
+    (m, cat, slug, secs, offset, str) =>
+      scenarioRef(`${cat}/${slug}`, slug, secs, selfId, startsWithParen(str, offset + m.length))
+  );
+  // Area folders: `scenarios/dlp/` or `scenarios/dlp/*` -> the area's name.
+  s = s.replace(/`?\bscenarios\/([a-z0-9-]+)\/(?:\*+)?`?(?![a-z0-9])/g, (m, cat) => `*${ctxData.areaLabel[cat] ?? humanizeSlug(cat)}*`);
+  s = s.replace(
+    new RegExp('`([a-z0-9][a-z0-9-]*)\\/(?:README|design|rollback|reviews)\\.md`((?:\\s*' + SEC + ')?)', 'g'),
+    (m, slug, secs, offset, str) =>
+      ctxData.idBySlug[slug]
+        ? scenarioRef(ctxData.idBySlug[slug], slug, secs, selfId, startsWithParen(str, offset + m.length))
+        : m
+  );
+  s = s.replace(/`([a-z0-9]+(?:-[a-z0-9]+)+)`/g, (m, slug) =>
+    ctxData.idBySlug[slug] ? scenarioRef(ctxData.idBySlug[slug], slug, '', selfId) : m
+  );
+
+  // D. Parentheticals that are only pointers to other files or sections. After
+  // a possessive ("the parent scenario's (README.md section 10)") keep the
+  // section name instead, so the sentence stays grammatical.
+  s = s.replace(new RegExp('[ \\t]*\\(([^()]*)\\)', 'g'), (m, inner, offset, str) => {
+    if (!isPureRefs(inner)) return m;
+    if (str.slice(Math.max(0, offset - 2), offset) === "'s") {
+      const n = nums((inner.match(new RegExp(SEC)) || [''])[0]);
+      const noun = n.map((x) => SECTION_NOUN[x]).filter(Boolean).join(' and ').replace(/^the /, '');
+      if (noun) return ` ${noun}`;
+    }
+    return '';
+  });
+
+  // E. Remaining pointers to this scenario's own files and the contributor guides.
+  s = s.replace(
+    new RegExp('[ \\t]*\\((?:see |per )?`?(?:AGENTS|CONTRIBUTING)\\.md`?(?:\\s*' + SEC + ')?\\)', 'g'),
+    ''
+  );
+  s = s.replace(
+    new RegExp(',?\\s*\\b(?:see|per)\\s+`?(?:AGENTS|CONTRIBUTING)\\.md`?(?:\\s*' + SEC + ')?', 'g'),
+    ''
+  );
+  s = s.replace(
+    new RegExp('`?(?:AGENTS|CONTRIBUTING)\\.md`?(?:\\s*' + SEC + ')?', 'g'),
+    "this library's standards"
+  );
+  s = s.replace(/,?\s*\b(?:see|per)\s+`?PROGRESS\.md`?/gi, '');
+  s = s.replace(/`?PROGRESS\.md`?\s+follow-ups?/g, 'project follow-up');
+  s = s.replace(/`?PROGRESS\.md`?/g, 'the project backlog');
+  // The four-lens review notes are not published, but the finding is still worth
+  // stating: "reviews.md (Red Team finding 1)" -> "the Red Team review (finding 1)".
+  const LENS = '(Red Team|Blue Team|CISO|Microsoft Product Owner|Product Owner)';
+  s = s.replace(
+    new RegExp('`?reviews\\.md`?\\s*\\(' + LENS + '(?:\\s+(finding \\d+|round \\d+))?\\)', 'g'),
+    (m, lens, extra) => `the ${lens} review` + (extra ? ` (${extra})` : '')
+  );
+  s = s.replace(
+    new RegExp('`?reviews\\.md`?,?\\s*' + LENS + '(?:\\s+lens)?(?:,?\\s+(finding \\d+))?', 'g'),
+    (m, lens, f) => `the ${lens} review` + (f ? `, ${f}` : '')
+  );
+  s = s.replace(/`?reviews\.md`?'s\b/g, "the review notes'");
+  s = s.replace(/`?reviews\.md`?/g, 'the review notes');
+  s = s.replace(
+    new RegExp('\\b(sibling|parent)(?:\\s+scenario)?(?:\'s)?\\s+`?README\\.md`?\\s*(' + SEC + ')', 'g'),
+    (m, who, secs) => {
+      const noun = nums(secs).map((n) => SECTION_NOUN[n]).filter(Boolean).join(' and ').replace(/^the /, '');
+      return noun ? `the ${who} scenario's ${noun}` : m;
+    }
+  );
+  s = s.replace(
+    new RegExp('\\b(the|this|its)\\s+`?design\\.md`?(?:\\s*' + SEC + ')?', 'gi'),
+    (m, w) => (w.toLowerCase() === 'the' ? 'the design notes' : `${w} design notes`)
+  );
+  s = s.replace(new RegExp('`?design\\.md`?(?:\\s*' + SEC + ')?', 'g'), 'the design notes');
+  s = s.replace(/\b(the|this)\s+`?rollback\.md`?/gi, 'the rollback runbook');
+  s = s.replace(/`?rollback\.md`?/g, 'the rollback runbook');
+  s = s.replace(new RegExp('(' + SEC + ')\\s+of\\s+this\\s+README', 'g'), (m, secs) => {
+    const nouns = nums(secs).map((n) => SECTION_NOUN[n]).filter(Boolean);
+    return nouns.length ? nouns.join(' and ') : 'this page';
+  });
+  s = s.replace(new RegExp('`?README\\.md`?\\s*(' + SEC + ')', 'g'), (m, secs) => {
+    const nouns = nums(secs).map((n) => SECTION_NOUN[n]).filter(Boolean);
+    return nouns.length ? nouns.join(' and ') : 'this page';
+  });
+  s = s.replace(/\bthis README\b|\bthe README\b|`?README\.md`?/g, 'this page');
+  s = s.replace(/\bREADME\b/g, 'page');
+
+  // F. Bare section marks. Docs keep numbered headings, so "section N" is
+  // accurate there. In scenarios, a mark maps to its section's plain name only
+  // when nothing nearby points at another document; otherwise it becomes a
+  // neutral "section N", which is never wrong.
+  s = s.replace(/§\s?5\s+Step\s+(\d+)/g, mode === 'scenario' ? 'step $1 of the implementation steps' : 'section 5, step $1');
+  s = s.replace(new RegExp(SEC, 'g'), (m, ...rest) => {
+    const str = rest[rest.length - 1];
+    const offset = rest[rest.length - 2];
+    const n = nums(m);
+    const neutral = `section${n.length > 1 ? 's' : ''} ${n.join(' and ')}`;
+    if (mode === 'doc') return neutral;
+    const before = str.slice(Math.max(0, offset - 70), offset);
+    const stop = Math.max(before.lastIndexOf('. '), before.lastIndexOf('\n\n'));
+    const nearby = stop >= 0 ? before.slice(stop) : before;
+    if (/\]\(\/docs\/|\*[^*\n]+\*|the design notes|the rollback runbook/.test(nearby)) return neutral;
+    const nouns = n.map((x) => SECTION_NOUN[x]).filter(Boolean);
+    if (nouns.length) return nouns.join(' and ');
+    // Not a README section (13 to 99): neutral wording. Legal citations such as
+    // "45 CFR §164.312" have three digits and are left exactly as written.
+    return n.every((x) => Number(x) < 100) ? neutral : m;
+  });
+
+  // G. Wording and tidy-up.
+  s = s.replace(
+    /\b(own|its|their)\s+the (design notes|rollback runbook|review notes|(?:Red Team|Blue Team|CISO|Microsoft Product Owner|Product Owner) review)\b/g,
+    '$1 $2'
+  );
+  s = s.replace(/\bthis repo(?:sitory)?\b/g, 'this library');
+  s = s.replace(/\bthe (the|this) /gi, (m, w) => `${w.toLowerCase()} `);
+  s = s.replace(/\bthe the\b/gi, 'the');
+  s = s.replace(/(\S)[ \t]{2,}(?=\S)/g, '$1 ');
+  s = s.replace(/[ \t]*\n[ \t]*([.,;])(?=\s|$)/g, '$1'); // a removed citation left punctuation on its own line
+  s = s.replace(/[ \t]+([.,;])(?=\s|$)/g, '$1');
+  s = s.replace(/([^\s(])[ \t]+\)/g, '$1)');
+  s = s.replace(/\(\s*\)/g, '');
+  return s;
+}
+
+// Set DEBUG_SAMPLES=1 to print before/after windows for a random sample of edits.
+const debugPairs = [];
+
+function cleanContent(markdown, mode, selfId) {
+  return mapProse(
+    markdown,
+    (chunk) => {
+      const after = cleanDashes(normalizeProse(chunk, mode, selfId));
+      if (process.env.DEBUG_SAMPLES && after !== chunk) {
+        let i = 0;
+        while (i < chunk.length && chunk[i] === after[i]) i++;
+        debugPairs.push({
+          id: selfId,
+          before: chunk.slice(Math.max(0, i - 70), i + 110).replace(/\s+/g, ' '),
+          after: after.slice(Math.max(0, i - 70), i + 110).replace(/\s+/g, ' '),
+        });
       }
-      if (inFence) return isMermaid ? sanitizeMermaid(line) : cleanDashes(line);
-      return cleanDashes(cleanReferences(line));
-    })
-    .join('\n');
+      return after;
+    },
+    (line, lang) => (lang === 'mermaid' ? sanitizeMermaid(line) : cleanDashes(line))
+  );
 }
+
+// -------------------------------------------------------- README structure
 
 function extractTitle(markdown, fallback) {
   for (const line of markdown.split('\n')) {
@@ -244,9 +462,11 @@ function stripFirstH1(markdown) {
 }
 
 function splitCategory(title, fallbackCategory) {
-  const parts = title.split(' — ');
-  if (parts.length >= 2) {
-    return { category: parts[0].trim(), short: parts.slice(1).join(' — ').trim() };
+  // "DLP - Endpoint DLP: Block USB ..." (hyphen) or "DLP \u2014 Endpoint DLP ..." (em dash):
+  // the first separator splits area from title, if the area part is short like a name.
+  const m = title.match(/^(.{2,60}?)\s+(?:\u2014|\u2013|-)\s+(.+)$/);
+  if (m && m[1].trim().split(/\s+/).length <= 5) {
+    return { category: m[1].trim(), short: m[2].trim() };
   }
   return { category: fallbackCategory, short: title };
 }
@@ -258,58 +478,116 @@ function prettyCategory(slug) {
     .join(' ');
 }
 
-function extractWhoFor(readme) {
-  const m = readme.match(/\*\*Who it'?s for:\*\*\s*(.+)/);
-  return m ? cleanReferences(cleanDashes(m[1].replace(/\s+/g, ' ').trim())) : undefined;
-}
-
-function detectFromList(text, list) {
-  const found = [];
-  for (const [label, re] of list) if (re.test(text)) found.push(label);
-  return found;
-}
-
-function sectionText(readme, headingRe) {
-  const lines = readme.split('\n');
-  const start = lines.findIndex((l) => headingRe.test(l));
-  if (start === -1) return '';
-  let end = lines.length;
-  for (let i = start + 1; i < lines.length; i++) {
-    if (/^## /.test(lines[i])) {
-      end = i;
-      break;
+// Split a README (without its H1) into a preamble and H2 sections, ignoring
+// anything inside code fences.
+function splitSections(body) {
+  const lines = body.split('\n');
+  const sections = [];
+  let preamble = [];
+  let current = null;
+  let inFence = false;
+  let fenceChar = '';
+  for (const line of lines) {
+    const f = line.match(/^\s*(```+|~~~+)/);
+    if (f) {
+      if (!inFence) {
+        inFence = true;
+        fenceChar = f[1][0];
+      } else if (line.trim().startsWith(fenceChar)) {
+        inFence = false;
+      }
     }
+    const h = !inFence && line.match(/^##\s+(?:(\d+)\.\s*)?(.+?)\s*$/);
+    if (h) {
+      current = { num: h[1] ? Number(h[1]) : null, title: h[2], lines: [] };
+      sections.push(current);
+      continue;
+    }
+    (current ? current.lines : preamble).push(line);
   }
-  return lines.slice(start + 1, end).join('\n');
+  return {
+    preamble: preamble.join('\n').trim(),
+    sections: sections.map((s) => ({ ...s, body: s.lines.join('\n').trim() })),
+  };
 }
 
-// Contents list from the H2 headings, matching rehype-slug ids.
+function demoteHeadings(body) {
+  return mapProse(
+    body,
+    (chunk) => chunk.replace(/^(#{3,5})(\s)/gm, '#$1$2'),
+    (line) => line
+  );
+}
+
+function extractWhoFor(body) {
+  // No "m" flag: "$" must mean end of the whole text so a wrapped paragraph is
+  // captured in full, up to the next blank line.
+  const re = /(?:^|\n)\*\*Who it['’]?s for:\*\*\s*([\s\S]*?)(?=\n[ \t]*\n|$)/;
+  const m = body.match(re);
+  if (!m) return { whoFor: undefined, rest: body };
+  return {
+    whoFor: m[1].replace(/\s+/g, ' ').trim(),
+    rest: body.replace(re, '').replace(/\n{3,}/g, '\n\n').trim(),
+  };
+}
+
+function stripMd(text) {
+  return text
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[*_`]+/g, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/^\s*[>#|-]+\s*/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function firstSentence(text, max = 210) {
+  let t = stripMd(text);
+  const re = /([.!?])\s+(?=[A-Z"'(])/g;
+  let m;
+  while ((m = re.exec(t))) {
+    const before = t.slice(0, m.index + 1);
+    if (/(?:\bU\.S|\be\.g|\bi\.e|\bvs|\betc|\bInc|\bNo|\bSt)\.$/i.test(before)) continue;
+    t = before;
+    break;
+  }
+  if (t.length > max) {
+    t = t.slice(0, max);
+    t = t.slice(0, t.lastIndexOf(' ')).replace(/[,;:(\-\s]+$/, '') + '…';
+  }
+  return t;
+}
+
+// Table of contents for the story, matching the ids rehype-slug will assign.
 function buildToc(markdown) {
   const slugger = new GithubSlugger();
   const toc = [];
+  let inFence = false;
+  let fenceChar = '';
   for (const line of markdown.split('\n')) {
+    const f = line.match(/^\s*(```+|~~~+)/);
+    if (f) {
+      if (!inFence) {
+        inFence = true;
+        fenceChar = f[1][0];
+      } else if (line.trim().startsWith(fenceChar)) {
+        inFence = false;
+      }
+      continue;
+    }
+    if (inFence) continue;
     const m = line.match(/^(#{2,6})\s+(.*\S)\s*$/);
     if (!m) continue;
-    const text = cleanDashes(m[2].trim());
+    const text = m[2].trim();
     const id = slugger.slug(text);
     if (m[1].length === 2) toc.push({ id, text });
   }
   return toc;
 }
 
-// Map "## N. Heading" to its rehype-slug id, for §N anchor links.
-function buildDocSectionMap(rawWithoutH1) {
-  const slugger = new GithubSlugger();
-  const map = {};
-  for (const line of rawWithoutH1.split('\n')) {
-    const m = line.match(/^(#{2,6})\s+(.*\S)\s*$/);
-    if (!m) continue;
-    const text = cleanDashes(m[2].trim());
-    const id = slugger.slug(text);
-    const num = text.match(/^(\d+)\./);
-    if (m[1].length === 2 && num) map[num[1]] = id;
-  }
-  return map;
+function detectFromList(text, list) {
+  return list.filter(([, re]) => re.test(text)).map(([label]) => label);
 }
 
 function frontmatter(obj) {
@@ -327,41 +605,110 @@ async function collectScripts(dir) {
   const scripts = [];
   for (const file of files) {
     const rel = path.relative(dir, file).split(path.sep).join('/');
-    const ext = path.extname(file).toLowerCase();
-    const lang = LANG_BY_EXT[ext] ?? 'text';
+    const lang = LANG_BY_EXT[path.extname(file).toLowerCase()] ?? 'text';
     const code = (await readMaybe(file)) ?? '';
     scripts.push({ path: rel, lang, code: code.replace(/\s+$/, '') });
   }
   return scripts;
 }
 
+// ------------------------------------------------------------- story layout
+
+function buildStory(byNum, preamble) {
+  const parts = [];
+  let whoFor;
+
+  if (byNum[1]) {
+    const r = extractWhoFor(byNum[1].body);
+    whoFor = r.whoFor;
+    parts.push(`## The short version\n\n${preamble ? preamble + '\n\n' : ''}${r.rest}`);
+  }
+  if (byNum[2]) parts.push(`## Why this matters\n\n${byNum[2].body}`);
+  if (byNum[4]) parts.push(`## How the control works\n\n${byNum[4].body}`);
+  if (byNum[3] || byNum[10]) {
+    const inner = [];
+    if (byNum[3]) inner.push(`### Prerequisites\n\n${demoteHeadings(byNum[3].body)}`);
+    if (byNum[10]) inner.push(`### Cost and licensing\n\n${demoteHeadings(byNum[10].body)}`);
+    parts.push(`## What it takes\n\n${inner.join('\n\n')}`);
+  }
+  if (byNum[7]) parts.push(`## Proof it works\n\n${byNum[7].body}`);
+  if (byNum[11]) parts.push(`## Where it stops\n\n${byNum[11].body}`);
+  return { markdown: parts.join('\n\n'), whoFor };
+}
+
+const RUNBOOK_TITLES = {
+  5: 'Implementation steps',
+  6: 'Configuration reference',
+  8: 'Operations and tuning',
+  9: 'Rollback and decommission',
+  12: 'References',
+};
+
+function buildRunbook(byNum, extras) {
+  const parts = [];
+  for (const n of [5, 6, 8, 9, 12]) {
+    if (byNum[n]) parts.push(`## ${RUNBOOK_TITLES[n]}\n\n${byNum[n].body}`);
+  }
+  for (const e of extras) parts.push(`## ${e.title}\n\n${e.body}`);
+  return parts.join('\n\n');
+}
+
+const STORY_NUMS = new Set([1, 2, 3, 4, 7, 10, 11]);
+const RUNBOOK_NUMS = new Set([5, 6, 8, 9, 12]);
+
+// ---------------------------------------------------------------- reference docs
+
+function dropSections(markdown, titleRe) {
+  const lines = markdown.split('\n');
+  const out = [];
+  let skipping = false;
+  for (const line of lines) {
+    const h = line.match(/^##\s+(.*?)\s*$/);
+    if (h) skipping = titleRe.test(h[1]);
+    if (!skipping) out.push(line);
+  }
+  return out.join('\n');
+}
+
 async function buildRefDocs() {
   await fs.rm(refdocsOut, { recursive: true, force: true });
   await fs.mkdir(refdocsOut, { recursive: true });
 
-  // Pass 1: section maps (needed before cleaning any content that links to docs).
-  const raws = {};
+  const prepared = {};
   for (const name of Object.keys(REF_DOCS)) {
     const raw = await readMaybe(path.join(docsRoot, `${name}.md`));
     if (raw === null) continue;
-    raws[name] = raw;
-    docSectionMaps[name] = buildDocSectionMap(stripFirstH1(raw));
+    // Contributor instructions ("how scenarios should cite ...") are not reader content.
+    const body = dropSections(stripFirstH1(raw), /^(?:\d+\.\s*)?How scenarios should cite/i);
+    prepared[name] = { raw, body };
+    const slugger = new GithubSlugger();
+    const map = {};
+    for (const line of body.split('\n')) {
+      const m = line.match(/^(#{2,6})\s+(.*\S)\s*$/);
+      if (!m) continue;
+      const text = cleanDashes(m[2].trim());
+      const id = slugger.slug(text);
+      const num = text.match(/^(\d+)\./);
+      if (m[1].length === 2 && num) map[num[1]] = id;
+    }
+    ctxData.docSections[name] = map;
   }
 
-  // Pass 2: write cleaned doc pages (they can reference each other).
   const written = [];
   for (const [name, friendly] of Object.entries(REF_DOCS)) {
-    if (!raws[name]) continue;
-    const title = cleanDashes(extractTitle(raws[name], friendly));
+    if (!prepared[name]) continue;
+    const title = cleanDashes(extractTitle(prepared[name].raw, friendly));
     await fs.writeFile(
       path.join(refdocsOut, `${name}.md`),
-      frontmatter({ title, name: friendly }) + cleanContent(stripFirstH1(raws[name])),
+      frontmatter({ title, name: friendly }) + cleanContent(prepared[name].body, 'doc', `doc:${name}`),
       'utf8'
     );
     written.push(name);
   }
   return written;
 }
+
+// ------------------------------------------------------------------- main
 
 async function main() {
   if (!(await isDir(scenariosRoot))) {
@@ -371,6 +718,32 @@ async function main() {
     return;
   }
 
+  const themes = JSON.parse(await fs.readFile(path.join(siteRoot, 'src', 'data', 'themes.json'), 'utf8'));
+  const themeByArea = {};
+  for (const t of themes) for (const a of t.areas) themeByArea[a] = t.slug;
+
+  const categories = (await fs.readdir(scenariosRoot, { withFileTypes: true }))
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name)
+    .sort();
+
+  // Pass 1: titles and slugs for cross-references.
+  const slugCount = {};
+  for (const category of categories) {
+    const catDir = path.join(scenariosRoot, category);
+    const slugs = (await fs.readdir(catDir, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
+    for (const slug of slugs) {
+      const readme = await readMaybe(path.join(catDir, slug, 'README.md'));
+      if (readme === null) continue;
+      const { short } = splitCategory(extractTitle(readme, humanizeSlug(slug)), prettyCategory(category));
+      ctxData.titleById[`${category}/${slug}`] = cleanDashes(short);
+      ctxData.areaLabel[category] = ctxData.areaLabel[category] ?? splitCategory(extractTitle(readme, ''), prettyCategory(category)).category;
+      slugCount[slug] = (slugCount[slug] || 0) + 1;
+      ctxData.idBySlug[slug] = `${category}/${slug}`;
+    }
+  }
+  for (const [slug, n] of Object.entries(slugCount)) if (n > 1) delete ctxData.idBySlug[slug];
+
   const refDocsWritten = await buildRefDocs();
 
   await fs.rm(outRoot, { recursive: true, force: true });
@@ -378,12 +751,8 @@ async function main() {
   await fs.rm(dataRoot, { recursive: true, force: true });
   await fs.mkdir(dataRoot, { recursive: true });
 
-  const categories = (await fs.readdir(scenariosRoot, { withFileTypes: true }))
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name)
-    .sort();
-
   let count = 0;
+  const problems = [];
   for (const category of categories) {
     const catDir = path.join(scenariosRoot, category);
     const slugs = (await fs.readdir(catDir, { withFileTypes: true }))
@@ -395,14 +764,35 @@ async function main() {
       const dir = path.join(catDir, slug);
       const readme = await readMaybe(path.join(dir, 'README.md'));
       if (readme === null) continue;
+      const id = `${category}/${slug}`;
 
-      const rawTitle = extractTitle(readme, prettyCategory(slug));
+      const rawTitle = extractTitle(readme, humanizeSlug(slug));
       const { category: catLabel, short } = splitCategory(rawTitle, prettyCategory(category));
 
-      const whoFor = extractWhoFor(readme);
+      const { preamble, sections } = splitSections(stripFirstH1(readme));
+      const byNum = {};
+      const extras = [];
+      for (const s of sections) {
+        if (s.num && !byNum[s.num]) byNum[s.num] = s;
+        else extras.push(s);
+      }
+      // Every section must land in exactly one place; nothing may be dropped.
+      const known = sections.filter((s) => s.num && (STORY_NUMS.has(s.num) || RUNBOOK_NUMS.has(s.num)));
+      const unknownNumbered = sections.filter((s) => s.num && !STORY_NUMS.has(s.num) && !RUNBOOK_NUMS.has(s.num));
+      const runbookExtras = [...extras, ...unknownNumbered];
+      if (known.length + runbookExtras.length !== sections.length) problems.push(`${id}: section accounting mismatch`);
+
+      const story = buildStory(byNum, preamble);
+      const runbook = buildRunbook(byNum, runbookExtras);
+
+      const storyMd = cleanContent(story.markdown, 'scenario', id);
+      const runbookMd = cleanContent(runbook, 'scenario', id);
+      const whoFor = story.whoFor ? cap(cleanDashes(normalizeProse(story.whoFor, 'scenario', id))) : undefined;
+      const teaser = firstSentence(cleanDashes(normalizeProse(stripFirstParagraph(byNum[1]?.body ?? ''), 'scenario', id)));
+      const words = storyMd.split(/\s+/).length;
+
       const frameworks = detectFromList(readme, FRAMEWORKS);
-      const licensing = detectFromList(sectionText(readme, /^##\s+\d+\.\s+Cost/) || readme, LICENSES);
-      const toc = buildToc(readme);
+      const licensing = detectFromList(byNum[10]?.body || readme, LICENSES);
 
       const deploy = await collectScripts(path.join(dir, 'deploy'));
       const validate = await collectScripts(path.join(dir, 'validate'));
@@ -415,28 +805,28 @@ async function main() {
       if (designRaw) {
         await fs.writeFile(
           path.join(outDir, `${slug}.design.md`),
-          frontmatter({ part: 'design', parent: `${category}/${slug}` }) +
-            cleanContent(stripFirstH1(designRaw)),
+          frontmatter({ part: 'design', parent: id }) + cleanContent(stripFirstH1(designRaw), 'scenario', id),
           'utf8'
         );
       }
       if (rollbackRaw) {
         await fs.writeFile(
           path.join(outDir, `${slug}.rollback.md`),
-          frontmatter({ part: 'rollback', parent: `${category}/${slug}` }) +
-            cleanContent(stripFirstH1(rollbackRaw)),
+          frontmatter({ part: 'rollback', parent: id }) + cleanContent(stripFirstH1(rollbackRaw), 'scenario', id),
           'utf8'
         );
       }
-
+      if (runbookMd.trim()) {
+        await fs.writeFile(
+          path.join(outDir, `${slug}.runbook.md`),
+          frontmatter({ part: 'runbook', parent: id }) + runbookMd,
+          'utf8'
+        );
+      }
       if (deploy.length || validate.length) {
         const dataDir = path.join(dataRoot, category);
         await fs.mkdir(dataDir, { recursive: true });
-        await fs.writeFile(
-          path.join(dataDir, `${slug}.json`),
-          JSON.stringify({ deploy, validate }),
-          'utf8'
-        );
+        await fs.writeFile(path.join(dataDir, `${slug}.json`), JSON.stringify({ deploy, validate }), 'utf8');
       }
 
       await fs.writeFile(
@@ -445,7 +835,10 @@ async function main() {
           title: cleanDashes(short),
           category: catLabel,
           categorySlug: category,
+          theme: themeByArea[category] ?? 'more',
           slug,
+          teaser,
+          readingMinutes: Math.max(1, Math.round(words / 210)),
           whoFor,
           frameworks,
           licensing,
@@ -453,17 +846,32 @@ async function main() {
           validateCount: validate.length,
           hasDesign: Boolean(designRaw),
           hasRollback: Boolean(rollbackRaw),
-          toc,
-        }) + cleanContent(stripFirstH1(readme)),
+          hasRunbook: Boolean(runbookMd.trim()),
+          toc: buildToc(storyMd),
+        }) + storyMd,
         'utf8'
       );
       count += 1;
     }
   }
 
-  console.log(
-    `sync-scenarios: wrote ${count} scenarios and ${refDocsWritten.length} reference docs`
-  );
+  console.log(`sync-scenarios: wrote ${count} field notes and ${refDocsWritten.length} reference docs`);
+  if (process.env.DEBUG_SAMPLES) {
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+    const picks = [...debugPairs].sort(() => rnd() - 0.5).slice(0, Number(process.env.DEBUG_SAMPLES));
+    for (const p of picks) console.log(`\n[${p.id}]\n  BEFORE: ${p.before}\n  AFTER : ${p.after}`);
+  }
+  if (problems.length) {
+    console.error('sync-scenarios: PROBLEMS\n' + problems.join('\n'));
+    process.exit(2);
+  }
+}
+
+// The teaser comes from the first paragraph of the summary, before "Who it's for".
+function stripFirstParagraph(body) {
+  const first = body.split(/\n[ \t]*\n/)[0] || '';
+  return first;
 }
 
 main().catch((err) => {

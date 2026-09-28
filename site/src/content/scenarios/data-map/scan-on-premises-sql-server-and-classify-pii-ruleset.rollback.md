@@ -4,7 +4,7 @@ parent: "data-map/scan-on-premises-sql-server-and-classify-pii-ruleset"
 ---
 ## Recommended sequence
 
-Like the base `scan-on-premises-sql-server-and-classify` scenario, rolling this back never touches
+Like the base *Scan On-Premises SQL Server and Classify Sensitive Columns* scenario, rolling this back never touches
 the SQL Server instance's data, the self-hosted integration runtime, the stored credential, or live
 network traffic - it only changes which classifications a future scan run compares columns against.
 Rollback is staged so you can revert the scan without deleting the ruleset object (e.g. you plan to
@@ -27,7 +27,7 @@ this same scan again later) can reference it without recreating it.
 **This build independently confirmed the custom ruleset's `kind` is `SqlServerDatabase` - the
 identical string used as the revert target's name above - but the System ruleset's own literal
 resource `name` remains an inherited `VERIFY` from the base scenario, not fully closed by this
-build** (see `design.md` §2 goal 6 and `README.md` §11: three converging Microsoft sources confirm
+build** (see the design notes goal 6 and the known limitations: three converging Microsoft sources confirm
 the `kind`, but no worked example was found pairing that literal string with `scanRulesetType:
 "System"`). Confirm the real System ruleset name in the portal (**Management Center → Scan rule
 sets → System** tab, filtered to SQL Server) before relying on `-RevertToRulesetName`'s default in an
@@ -49,7 +49,7 @@ re-apply afterward.
 
 Performs Stage 1's scan revert first, then deletes the `SqlServerDatabase-PiiOnly` scan rule set
 object itself. **Confirm no other scan in the account still references this ruleset name before
-running with `-DeleteRuleset`** - scan rule sets are account-wide objects (design.md §2), so a
+running with `-DeleteRuleset`** - scan rule sets are account-wide objects, so a
 ruleset created for one instance's scan may already be reused by another (e.g. a second on-premises
 SQL Server instance registered under a different data source name but scanned for the same narrow
 compliance driver).
@@ -57,20 +57,20 @@ compliance driver).
 ## What rollback does **not** undo
 
 - **Classifications already applied by prior scan runs.** Removing or narrowing the ruleset only
- changes what a *future* scan run compares columns against. Classification tags already recorded
- on catalog assets from runs made under the PII-only ruleset (or the System ruleset, before this
- scenario was applied) are not retroactively changed or removed.
+  changes what a *future* scan run compares columns against. Classification tags already recorded
+  on catalog assets from runs made under the PII-only ruleset (or the System ruleset, before this
+  scenario was applied) are not retroactively changed or removed.
 - **The base scenario's self-hosted integration runtime, data source registration, stored
- credential, or SQL/Windows login.** This scenario only ever modifies the scan's
- `scanRulesetName`/`scanRulesetType` properties. Removing the scan or data source entirely,
- deleting the integration runtime resource, uninstalling the SHIR software from its host, revoking
- the SQL/Windows login's `db_datareader` grant, or deleting the Key Vault secret and Purview
- credential object is `scan-on-premises-sql-server-and-classify`'s own rollback - see that
- scenario's `rollback.md`.
+  credential, or SQL/Windows login.** This scenario only ever modifies the scan's
+  `scanRulesetName`/`scanRulesetType` properties. Removing the scan or data source entirely,
+  deleting the integration runtime resource, uninstalling the SHIR software from its host, revoking
+  the SQL/Windows login's `db_datareader` grant, or deleting the Key Vault secret and Purview
+  credential object is *Scan On-Premises SQL Server and Classify Sensitive Columns*'s own rollback - see that
+  scenario's the rollback runbook.
 - **Any other scan still referencing this ruleset.** Stage 2's delete only proceeds after this
- scenario's own scan has been detached; it does nothing to detect or detach a *different* scan
- that references the same ruleset name. Check manually (or via
- `validate/Test-PiiOnlyScanRuleset.ps1` against each candidate data source/scan pair) first.
+  scenario's own scan has been detached; it does nothing to detect or detach a *different* scan
+  that references the same ruleset name. Check manually (or via
+  `validate/Test-PiiOnlyScanRuleset.ps1` against each candidate data source/scan pair) first.
 
 ## Verification after rollback
 

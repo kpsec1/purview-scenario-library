@@ -5,7 +5,7 @@ parent: "dlp/defender-device-control-usb-allowlist-macos-portable-device-coverag
 ## Recommended sequence
 
 This fragment shares one `macOSCustomConfiguration` object with its parent scenario
-(`scenarios/dlp/defender-device-control-usb-allowlist-macos/`). Rolling back means removing
+(*Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist*). Rolling back means removing
 **only** this fragment's delta (three feature flags, up to five groups, five rules), not the
 parent's own `removableMedia` coverage.
 
@@ -44,7 +44,7 @@ coverage for that family should otherwise remain in force, edit the `approvedApp
 `deploy/Add-MacPortableDeviceCoverage.ps1 -Force` - this reconciles the affected approved-device
 group (and, if the list becomes empty, removes the allow rule entirely, reverting that family to
 pure default-deny) without touching the other two families or the parent's own coverage. Bluetooth
-has no allowlist to narrow (§11, `design.md` §5) - it is already unconditional deny in this
+has no allowlist to narrow - it is already unconditional deny in this
 fragment.
 
 ### Stage 3 - Remove the entire device control policy (not this fragment's rollback)
@@ -62,11 +62,11 @@ scenario where the parent is purged but Apple/Portable/Bluetooth coverage surviv
 ## What rollback does **not** undo
 
 - **Advanced Hunting / `DeviceEvents` history** for events these families already generated -
- retained per its own retention window regardless of policy state, same as the parent scenario.
+  retained per its own retention window regardless of policy state, same as the parent scenario.
 - **The parent policy's `removableMedia` coverage, assignment, or object identity** - Stage 1 of
- this rollback is scoped exclusively to this fragment's own delta.
+  this rollback is scoped exclusively to this fragment's own delta.
 - **Device onboarding/Full Disk Access grant, or the approved-devices' physical inventory** - this
- scenario does not manage either; they are dependencies, not deployed artifacts.
+  scenario does not manage either; they are dependencies, not deployed artifacts.
 
 ## Verification after rollback
 
@@ -89,5 +89,5 @@ $json.rules.name
 ## References
 
 1. Device Control for macOS (per-family `settings.features.<name>.disable` enable model - "if you
- don't configure this value, it doesn't apply") -
- <https://learn.microsoft.com/defender-endpoint/mac-device-control-overview>
+   don't configure this value, it doesn't apply") -
+   <https://learn.microsoft.com/defender-endpoint/mac-device-control-overview>

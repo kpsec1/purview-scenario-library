@@ -3,7 +3,7 @@ title: "Microsoft Purview - Glossary of Canonical Terms"
 name: "Glossary"
 ---
 > **Cross-cutting reference.** Every scenario in this library uses the terms defined here with
-> **exactly this meaning** - do not redefine a term locally in a scenario README. If a scenario
+> **exactly this meaning** - do not redefine a term locally in a scenario page. If a scenario
 > needs a term not listed here, add it to this file in the same fragment rather than inventing a
 > one-off definition.
 >
@@ -20,7 +20,7 @@ name: "Glossary"
 Each entry is tagged with the module(s) it belongs to, using the legend below. A term used
 identically across modules (e.g. **sensitivity label**) is defined once under its primary module
 and cross-referenced elsewhere. Terms that are really about **licensing** or **RBAC** are kept
-short here and point to `licensing-matrix.md` / `rbac-model.md` for the full treatment - this file
+short here and point to [Licensing matrix](/docs/licensing-matrix/) / [RBAC model](/docs/rbac-model/) for the full treatment - this file
 is the dictionary, those are the reference manuals.
 
 **Module legend**
@@ -53,13 +53,13 @@ is the dictionary, those are the reference manuals.
 | **Activation window** | IRM | The rolling period (30 days by default, configurable) after a *triggering event* during which a user's risk score continues to be calculated. Risk calculation itself is retrospective and can look back up to 90 days of prior activity from the triggering event. |
 | **Adaptive Protection** | AP | The Purview solution that dynamically raises or lowers DLP/label enforcement for a specific user based on their live Insider Risk Management risk level (e.g. auto-creating a DLP rule that blocks external sharing only for users at "elevated" risk). Inherits IRM + DLP prerequisites; no separate license SKU. |
 | **Adaptive scope** | DLM, CC | A dynamic, query-based membership definition for a retention policy, retention label auto-apply policy, or Communication Compliance policy. The query re-runs daily against Microsoft Entra attributes/properties, so membership updates automatically as users join, leave, or change department - no manual list maintenance. Contrast with a **static scope** (fixed list of locations/users, "org-wide" or explicit include/exclude). Not supported for Skype for Business or Exchange public folders. |
-| **Administrative unit (AU)** | XC | An Entra ID container that scopes a Purview role-group assignment to a subset of users, policies, and alert data, turning an unrestricted admin into a restricted one. Requires Entra ID P1/P2 on top of E5-tier Purview licensing. Full treatment: `rbac-model.md` §7. |
+| **Administrative unit (AU)** | XC | An Entra ID container that scopes a Purview role-group assignment to a subset of users, policies, and alert data, turning an unrestricted admin into a restricted one. Requires Entra ID P1/P2 on top of E5-tier Purview licensing. Full treatment: [RBAC model, section 7](/docs/rbac-model/#7-administrative-units---scoping-purview-rbac-to-a-regiondepartment). |
 | **Advanced indexing** | eDisc | The reprocessing step that runs when custodial or non-custodial data sources are added to an eDiscovery (Premium) case, ensuring any partially indexed content becomes fully searchable before collection. |
 | **Advanced resource sets** | DG | An opt-in Purview-instance-level feature that enriches resource-set assets with extra computed aggregations (partition counts, total size, schema counts) and resource-set pattern rules. Not offered in the current Unified Catalog billing model (the meter is zeroed out). |
 | **Annotation** | DG | Metadata - glossary terms, classifications - associated with a Data Map asset. Annotations feed search relevance and aid discovery once applied. |
-| **App-only authentication** | XC | The unattended-automation auth pattern (Entra app registration + certificate or managed identity, `-AppId`/`-CertificateThumbprint`) used by every `deploy/`/`validate/` script in this library to connect to Exchange Online / Security & Compliance PowerShell or Graph, instead of an interactive admin credential. Full treatment: `automation-surface.md`. |
+| **App-only authentication** | XC | The unattended-automation auth pattern (Entra app registration + certificate or managed identity, `-AppId`/`-CertificateThumbprint`) used by every `deploy/`/`validate/` script in this library to connect to Exchange Online / Security & Compliance PowerShell or Graph, instead of an interactive admin credential. Full treatment: [Automation surface](/docs/automation-surface/). |
 | **Asset** | DG | Any single object stored in the Data Map or Unified Catalog (a table, file, Power BI report, or a **resource set** representing many partition files as one asset). For PAYG billing, a **governed asset** is an asset that has been explicitly linked to a business concept (data product, critical data element) - an asset merely sitting in Data Map, unlinked, isn't billed. |
-| **Audit (Standard / Premium)** | Audit | Standard = baseline unified audit log search (`Search-UnifiedAuditLog`), 180-day default retention. Premium = longer/configurable retention, high-value crucial events (mailbox access, search, etc.), and faster Office 365 Management Activity API access for forensic investigations. Requires an **Exchange Online RBAC role in addition to** a Purview Audit role group - see `rbac-model.md` §6. |
+| **Audit (Standard / Premium)** | Audit | Standard = baseline unified audit log search (`Search-UnifiedAuditLog`), 180-day default retention. Premium = longer/configurable retention, high-value crucial events (mailbox access, search, etc.), and faster Office 365 Management Activity API access for forensic investigations. Requires an **Exchange Online RBAC role in addition to** a Purview Audit role group - see [RBAC model, section 6](/docs/rbac-model/#6-exchange-online-dependency-the-most-common-permissions-gap). |
 | **Auto-labeling** | IP | Policy-based automatic application of a sensitivity label (or a retention label - see **auto-apply retention label** under RM) when content matches defined conditions (SIT, trainable classifier, keyword). Can run in **simulation mode** (a `-WhatIf`-equivalent) before enforcement. Requires E5 (or IP&G add-on); PAYG applies for non-M365 sources. |
 
 ### B
@@ -89,7 +89,7 @@ is the dictionary, those are the reference manuals.
 | Term | Module | Definition |
 |---|---|---|
 | **Data curator** | DG | The classic Data Map RBAC role granting create/read/modify/move/delete on assets and the ability to apply annotations and set up glossary terms. Unified Catalog's nearer equivalent is **Data Steward** (domain-scoped). |
-| **Data governance processing unit (DGPU)** | XC | The PAYG compute meter for Unified Catalog **data quality** and **data health management** actions. One DGPU = 60 minutes of compute (Basic/Standard/Advanced performance tiers); consumption varies by rule complexity, data volume, and source type. See `licensing-matrix.md` §1-2. |
+| **Data governance processing unit (DGPU)** | XC | The PAYG compute meter for Unified Catalog **data quality** and **data health management** actions. One DGPU = 60 minutes of compute (Basic/Standard/Advanced performance tiers); consumption varies by rule complexity, data volume, and source type. See [Licensing matrix, sections 1 and 2](/docs/licensing-matrix/#1-the-two-billing-models-read-this-first). |
 | **Data Map** | DG | The metadata repository/graph - populated via **scans** - that is the foundation of Purview data governance: asset descriptions, lineage, classifications, and technical/semantic relationships. Exposed via the Purview portal or Apache Atlas 2.2 APIs. |
 | **Data product** | DG | A curated grouping of data assets (tables, files, Power BI reports) packaged with a defined business use case, ownership, and governance context, for discovery and controlled access. Lives inside a **governance domain**; the governed-asset PAYG meter is driven by assets linked into data products. |
 | **Data reader** | DG | The classic Data Map RBAC role granting read-only access to assets, classifications, classification rules, collections, and glossary terms. |
@@ -155,9 +155,9 @@ is the dictionary, those are the reference manuals.
 
 | Term | Module | Definition |
 |---|---|---|
-| **Pay-as-you-go (PAYG)** | XC | The Azure-consumption-metered billing model that extends Purview data security/governance capabilities beyond Microsoft 365 to non-M365 sources (AWS, Azure SQL, Box, Dropbox, Google Drive, Fabric) and to data-governance compute (DGPU). Took effect January 6, 2025. Full treatment: `licensing-matrix.md`. |
+| **Pay-as-you-go (PAYG)** | XC | The Azure-consumption-metered billing model that extends Purview data security/governance capabilities beyond Microsoft 365 to non-M365 sources (AWS, Azure SQL, Box, Dropbox, Google Drive, Fabric) and to data-governance compute (DGPU). Took effect January 6, 2025. Full treatment: [Licensing matrix](/docs/licensing-matrix/). |
 | **Priority content / priority user group** | IRM | **Risk factors** used by IRM policies: content explicitly designated as high-value/sensitive (priority content) and users explicitly designated as elevated-scrutiny (e.g. departing employees, executives) via a priority user group. Both increase a triggering event's contribution to risk score. |
-| **Purview role group** | XC | A bundle of Purview RBAC roles assigned together for a job function (e.g. *Insider Risk Management Investigators*). The unit you assign membership to - you almost never assign individual roles directly. Full treatment: `rbac-model.md` §2-4. |
+| **Purview role group** | XC | A bundle of Purview RBAC roles assigned together for a job function (e.g. *Insider Risk Management Investigators*). The unit you assign membership to - you almost never assign individual roles directly. Full treatment: [RBAC model, sections 2 and 3 and 4](/docs/rbac-model/#2-purview-rbac-building-blocks-members--roles--role-groups). |
 
 ### R
 
@@ -188,20 +188,8 @@ is the dictionary, those are the reference manuals.
 
 | Term | Module | Definition |
 |---|---|---|
-| **Unified audit log** | Audit | The central Microsoft 365 activity log searched via the Purview Audit UI or `Search-UnifiedAuditLog`; the data source behind DLP reports, IRM signals, and most compliance investigations. Requires an Exchange Online RBAC role in addition to a Purview Audit role - see `rbac-model.md` §6. |
+| **Unified audit log** | Audit | The central Microsoft 365 activity log searched via the Purview Audit UI or `Search-UnifiedAuditLog`; the data source behind DLP reports, IRM signals, and most compliance investigations. Requires an Exchange Online RBAC role in addition to a Purview Audit role - see [RBAC model, section 6](/docs/rbac-model/#6-exchange-online-dependency-the-most-common-permissions-gap). |
 | **Unified Catalog** | DG | The current Purview data governance experience: a searchable inventory of assets plus a business glossary, organized by governance domains and data products, superseding the classic Data Catalog/Business Glossary experience for new deployments. |
-
----
-
-## 3. How scenarios should cite this glossary
-
-- Use these terms **verbatim** in every scenario `README.md`/`design.md` - do not introduce a
- synonym (e.g. always "retention label," never "retention tag").
-- The first use of a term in a scenario document may link back to the relevant anchor in this
- file (`[Glossary](/docs/glossary/)#<letter>`) instead of re-explaining it inline.
-- If a scenario needs a term specific to a single Microsoft Learn page and not yet covered here,
- add it to this file (grounded, with a source) in the same fragment as the scenario, rather than
- defining it locally and risking drift.
 
 ---
 

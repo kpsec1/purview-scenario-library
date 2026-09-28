@@ -9,8 +9,8 @@ stages - disabling SMTP AUTH tenant-wide or clearing the org default has real, i
 live mail flow, the same reasoning this library's other policy-based scenarios' rollback docs
 apply.
 
-**This procedure never touches** `block-legacy-authentication`'s own Conditional Access policy or
-any Microsoft-managed Conditional Access policy - fully independent controls (`design.md` §6).
+**This procedure never touches** *Block Legacy Authentication*'s own Conditional Access policy or
+any Microsoft-managed Conditional Access policy - fully independent controls.
 
 ## Recommended sequence
 
@@ -25,7 +25,7 @@ Sets `Set-OrganizationConfig -DefaultAuthenticationPolicy $null`. Every user
 without an explicit per-user `AuthenticationPolicy` assignment reverts to no assigned policy
 (legacy-protocol behavior for them then follows whatever tenant-wide platform defaults and
 `SmtpClientAuthenticationDisabled` settings remain in place - most legacy protocols stay
-permanently blocked at the platform level regardless, per `design.md` §3). Re-enable instantly with
+permanently blocked at the platform level regardless, per the design notes). Re-enable instantly with
 `deploy/New-ExchangeLegacyAuthBlock.ps1 -SetAsOrgDefault`.
 
 Use this stage for: a legitimate tenant-wide impact discovered after enforcement, a change freeze,
@@ -37,8 +37,7 @@ or investigating whether this policy assignment is the cause of a reported issue
 ./deploy/Remove-ExchangeLegacyAuthBlock.ps1 -ReenableSmtpAuthTenantWide
 ```
 
-Sets `Set-TransportConfig -SmtpClientAuthenticationDisabled $false` tenant-wide
-. Independent of Stage 1 - can be run alone if only the SMTP transport gate is
+Sets `Set-TransportConfig -SmtpClientAuthenticationDisabled $false` tenant-wide. Independent of Stage 1 - can be run alone if only the SMTP transport gate is
 the concern. Per-mailbox `CASMailbox` overrides (exception mailboxes) are **not** touched by this
 stage. Re-enable the block with `deploy/New-ExchangeLegacyAuthBlock.ps1
 -DisableSmtpAuthTenantWide`.
@@ -61,20 +60,19 @@ Only do this when the control is being permanently retired.
 
 ## What rollback does **not** undo
 
-- **The eight legacy-authentication protocols Microsoft has already permanently disabled tenant-
- wide** (Exchange ActiveSync, POP, IMAP, Remote PowerShell, Exchange Web Services, Offline Address
- Book, Autodiscover, Outlook for Windows/Mac) - those are platform-level
- changes with no re-enable path, completely independent of this scenario's own policy objects.
- Rolling back this scenario has **zero** effect on them.
+- **The eight legacy-authentication protocols Microsoft has already permanently disabled tenant-wide** (Exchange ActiveSync, POP, IMAP, Remote PowerShell, Exchange Web Services, Offline Address
+  Book, Autodiscover, Outlook for Windows/Mac) - those are platform-level
+  changes with no re-enable path, completely independent of this scenario's own policy objects.
+  Rolling back this scenario has **zero** effect on them.
 - **The Conditional Access sibling scenario's own custom policy, or a Microsoft-managed Conditional
- Access policy** - different system entirely (`design.md` §6).
+  Access policy** - different system entirely.
 - **Per-mailbox `CASMailbox.SmtpClientAuthenticationDisabled` overrides** set for exception
- mailboxes - Stage 2 only changes the tenant-wide transport setting, not individual mailbox
- overrides. Clear those individually with `Set-CASMailbox -Identity <mailbox>
- -SmtpClientAuthenticationDisabled $null` if a full reset to "follow the org setting" is intended.
+  mailboxes - Stage 2 only changes the tenant-wide transport setting, not individual mailbox
+  overrides. Clear those individually with `Set-CASMailbox -Identity <mailbox>
+  -SmtpClientAuthenticationDisabled $null` if a full reset to "follow the org setting" is intended.
 - **A rejected authentication attempt.** An authentication that was rejected while the block was in
- effect was not granted; rolling back afterward does not retroactively grant it. The client must
- retry.
+  effect was not granted; rolling back afterward does not retroactively grant it. The client must
+  retry.
 
 ## Verification after rollback
 

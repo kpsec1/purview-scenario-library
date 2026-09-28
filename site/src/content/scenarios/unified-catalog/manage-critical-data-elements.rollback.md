@@ -6,7 +6,7 @@ parent: "unified-catalog/manage-critical-data-elements"
 
 A published critical data element may already be relied on by a data quality rule, an access
 policy, or a downstream data product's "associated" rollup - roll back in stages rather than
-deleting outright, the same discipline `manage-data-products/rollback.md` uses.
+deleting outright, the same discipline *Manage a Data Product* uses.
 
 ### Stage 1 - Unpublish (reversible, seconds)
 
@@ -42,19 +42,19 @@ temporary pause while a mapped column's quality is under review.
     -DefinitionPath './deploy/config/customer-id-cde.sample.json' -RemoveLinks
 ```
 
-Deletes every `entityType=DATACOLUMN` relationship the critical data element has
-(`DELETE.../criticalDataElements/{id}/relationships`) - enumerated directly from the element's
+Deletes every `entityType=CRITICALDATACOLUMN` relationship the critical data element has
+(`DELETE .../criticalDataElements/{id}/relationships`) - enumerated directly from the element's
 own current relationships, not re-derived from the definition file, so this also cleans up any
 column mapped outside this scenario's scripts (e.g. via the portal's own **+ Add column** button).
 
 **The underlying Unified Catalog data column wrapper object(s) are left in place.** As of API
 version `2026-03-20-preview`, the **Data Columns** operation group has no `Delete` operation at
 all - `Get`, `Ingest`, `Query`, `Add Related Entity`, `Delete Related`, and `List Related
-Entities` are the only operations Microsoft documents (design.md §7). This is a real capability
+Entities` are the only operations Microsoft documents. This is a real capability
 gap in the current API surface, not a safety choice this scenario made - an unmapped data column
 wrapper simply has no way to be permanently removed via REST today. It costs nothing to leave in
 place: per Microsoft's own billing FAQ, only an asset actually *attached* to a governance concept
-is a billed governed asset (§10 of `README.md`), and an unlinked wrapper has no relationships.
+is a billed governed asset, and an unlinked wrapper has no relationships.
 
 A critical data element with no mapped columns still exists but is no longer a meaningful
 concept; re-run `New-CriticalDataElement.ps1` to re-establish the mappings (idempotent - it
@@ -76,25 +76,23 @@ re-running `deploy/New-CriticalDataElement.ps1` from scratch, which generates a 
 data element ID. Microsoft's own portal procedure for manual deletion requires unpublishing,
 removing all columns, and removing all term links first - this
 script's `-Purge` (preceded by `-RemoveLinks`) reproduces the column-removal and status
-requirements; it does not need to remove term links because this scenario never creates any
-(design.md §7).
+requirements; it does not need to remove term links because this scenario never creates any.
 
 ## What rollback does **not** undo
 
-- **The underlying Data Map asset or its columns.** `scenarios/data-map/scan-azure-sql-and-classify/`
- owns that asset's lifecycle; this scenario's rollback never touches it.
-- **The governance domain.** `scenarios/unified-catalog/curate-business-glossary/` owns its
- lifecycle; this scenario only looks it up by name.
+- **The underlying Data Map asset or its columns.** *Scan Azure SQL Database and Classify Sensitive Columns*
+  owns that asset's lifecycle; this scenario's rollback never touches it.
+- **The governance domain.** *Curate a Business Glossary* owns its
+  lifecycle; this scenario only looks it up by name.
 - **The Unified Catalog data column wrapper object(s)** - see Stage 2 above; there is currently no
- REST operation to delete one.
+  REST operation to delete one.
 - **Any data product's own relationships or its "associated data products" computation.** That
- rollup is entirely computed by Microsoft's platform from the shared underlying Data Map asset
- (design.md §5); nothing this scenario's rollback does can or needs to touch it directly - it
- will simply stop showing this critical data element once the mapped column(s) are removed
- (subject to the refresh-lag caveat in `README.md` §8).
-- **Critical data element/column history.** Same limitation `curate-business-glossary/rollback.md`
- and `manage-data-products/rollback.md` record - no separate audit trail for Unified Catalog
- object changes was found distinct from the general Microsoft Purview audit log.
+  rollup is entirely computed by Microsoft's platform from the shared underlying Data Map asset; nothing this scenario's rollback does can or needs to touch it directly - it
+  will simply stop showing this critical data element once the mapped column(s) are removed
+  (subject to the refresh-lag caveat in operations and tuning).
+- **Critical data element/column history.** Same limitation *Curate a Business Glossary*
+  and *Manage a Data Product* record - no separate audit trail for Unified Catalog
+  object changes was found distinct from the general Microsoft Purview audit log.
 
 ## Verification after rollback
 

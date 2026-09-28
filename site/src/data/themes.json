@@ -1,0 +1,32 @@
+[
+  {
+    "slug": "stop-the-leak",
+    "title": "Stop the leak",
+    "hook": "Keep sensitive data from walking out the door, whether it leaves by USB, email, Teams or an AI prompt.",
+    "areas": ["dlp", "information-protection", "dspm-for-ai"]
+  },
+  {
+    "slug": "watch-the-insider",
+    "title": "Watch the insider",
+    "hook": "Spot risky behavior early and tighten the controls before the damage is done.",
+    "areas": ["insider-risk", "adaptive-protection", "communication-compliance", "information-barriers"]
+  },
+  {
+    "slug": "investigate-and-respond",
+    "title": "Investigate and respond",
+    "hook": "When something goes wrong: find it, prove it, contain it, and clean it up with a record to show for it.",
+    "areas": ["ediscovery", "audit", "data-security-investigations"]
+  },
+  {
+    "slug": "prove-compliance",
+    "title": "Prove compliance",
+    "hook": "Turn regulation into evidence: assessments, retention and records that stand up in front of an auditor.",
+    "areas": ["compliance-manager", "data-lifecycle-management", "records-management"]
+  },
+  {
+    "slug": "know-your-data",
+    "title": "Know your data",
+    "hook": "You cannot protect what you cannot see. Map it, classify it, catalog it, and learn to trust it.",
+    "areas": ["data-map", "unified-catalog", "data-estate-insights", "data-quality", "data-lineage"]
+  }
+]

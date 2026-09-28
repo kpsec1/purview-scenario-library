@@ -55,19 +55,19 @@ is being permanently retired.
 ## What rollback does **not** undo
 
 - **Adaptive Protection itself, insider risk level definitions, or the feeder IRM policy.**
- Identical to the Exchange/Teams sibling scenario's own rollback - see that scenario's
- `rollback.md` for the full portal-based procedure to fully disable Adaptive Protection, not
- repeated here.
+  Identical to the Exchange/Teams sibling scenario's own rollback - see that scenario's
+  the rollback runbook for the full portal-based procedure to fully disable Adaptive Protection, not
+  repeated here.
 - **The Exchange/Teams sibling scenario's own DLP policy.** Rolling back this scenario has no
- effect on `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement`'s policy - each rolls
- back independently via its own script.
-- **`scenarios/dlp/endpoint-dlp-usb-block`'s own DLP policy**, if also deployed. A separate,
- always-on Devices policy with its own lifecycle.
+  effect on *Dynamic Risk-Based DLP Enforcement*'s policy - each rolls
+  back independently via its own script.
+- ***Endpoint DLP: Block USB Removable Media Exfiltration*'s own DLP policy**, if also deployed. A separate,
+  always-on Devices policy with its own lifecycle.
 - **Device onboarding or Advanced classification scanning and protection.** Both remain as
- configured after this scenario's policy is disabled or removed - they are shared,
- Devices-location-wide settings this scenario consumes but does not own.
+  configured after this scenario's policy is disabled or removed - they are shared,
+  Devices-location-wide settings this scenario consumes but does not own.
 - **A user's current insider risk level.** Computed entirely by the Adaptive
- Protection/Insider Risk Management service, independent of this policy's state.
+  Protection/Insider Risk Management service, independent of this policy's state.
 - **Alert and incident-report history**, or content already blocked before rollback.
 
 ## Verification after rollback
@@ -82,6 +82,6 @@ Confirm `Mode` reports `Disable` (Stage 1/2 outcome) or that the command returns
 ## References
 
 1. Remove-DlpCompliancePolicy reference - <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancepolicy>
-2. `scenarios/adaptive-protection/dynamic-risk-dlp-enforcement/rollback.md` - the Exchange/Teams
- sibling's own rollback procedure, including the full Adaptive Protection portal-disable steps
- this document doesn't repeat.
+2. *Dynamic Risk-Based DLP Enforcement* - the Exchange/Teams
+   sibling's own rollback procedure, including the full Adaptive Protection portal-disable steps
+   this document doesn't repeat.

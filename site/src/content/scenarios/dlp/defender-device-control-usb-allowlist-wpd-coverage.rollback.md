@@ -5,7 +5,7 @@ parent: "dlp/defender-device-control-usb-allowlist-wpd-coverage"
 ## Recommended sequence
 
 This fragment shares one Intune device configuration object with its parent scenario
-(`scenarios/dlp/defender-device-control-usb-allowlist/`). Rolling back means removing **only** the
+(*Defender for Endpoint Device Control: USB Default-Deny Allowlist*). Rolling back means removing **only** the
 WPD-specific delta, not the parent's own `RemovableMediaDevices` coverage.
 
 ### Stage 1 - Remove WPD coverage only (reversible, minutes)
@@ -59,11 +59,11 @@ scenario where the parent is purged but WPD coverage survives.
 ## What rollback does **not** undo
 
 - **Advanced Hunting / `DeviceEvents` history** for WPD-triggered events already generated -
- retained per its own retention window regardless of policy state, same as the parent scenario.
+  retained per its own retention window regardless of policy state, same as the parent scenario.
 - **The parent policy's `RemovableMediaDevices` coverage, assignment, or object identity** - Stage
- 1 of this rollback is scoped exclusively to the WPD delta.
+  1 of this rollback is scoped exclusively to the WPD delta.
 - **Device onboarding/Intune enrollment, or the approved-WPD-devices' physical inventory** - this
- scenario does not manage either; they are dependencies, not deployed artifacts.
+  scenario does not manage either; they are dependencies, not deployed artifacts.
 
 ## Verification after rollback
 

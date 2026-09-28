@@ -58,12 +58,12 @@ Attempts `Remove-ComplianceTag`. Reports rather than forces if the service refus
 ## What rollback does **not** undo
 
 - **Any item already permanently deleted by a completed approval.** No admin action, and no action by
- Microsoft, can restore it.
+  Microsoft, can restore it.
 - **An in-flight approval that completes after you disable/delete the policy.** Use Stage 0 first if
- anything must not be deleted.
+  anything must not be deleted.
 - **The audit trail.** `PriorityCleanupTagApplied`/`PriorityCleanupDelete` events remain in the audit
- log regardless of policy state - this is a feature (evidentiary record of what happened and when),
- not something to try to undo.
+  log regardless of policy state - this is a feature (evidentiary record of what happened and when),
+  not something to try to undo.
 
 ## Verification after rollback
 

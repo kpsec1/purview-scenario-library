@@ -4,12 +4,12 @@ parent: "data-lifecycle-management/priority-cleanup-permanent-deletion"
 ---
 ## 1. Problem statement
 
-The `priority-cleanup-sharepoint-onedrive` sibling scenario's deletion mechanism moves matching
+The *Priority Cleanup for SharePoint & OneDrive* sibling scenario's deletion mechanism moves matching
 items to the **second-stage Recycle Bin** - real remediation, but not final: an item is still
 technically recoverable within the Recycle Bin's retention window, still occupies storage until
 that window lapses, and (until it lapses) is not guaranteed absent from every downstream index. For
 a genuine data-exposure incident - most concretely, a file identified by a **DSPM for AI oversharing
-assessment** (`scenarios/dspm-for-ai/copilot-sensitive-data-exposure`) as broadly shared and already
+assessment** (*Copilot Sensitive Data Exposure Protection*) as broadly shared and already
 summarizable by Microsoft 365 Copilot - "recoverable for up to N days" is not an acceptable answer;
 the requirement is content that is immediately no longer discoverable in SharePoint search, Copilot,
 or eDiscovery, with no recovery path at all. Microsoft's **permanent deletion**
@@ -26,22 +26,21 @@ sibling: **do not overstate what this scenario's code can configure.** The featu
 Microsoft Learn procedure page describes the one property that actually matters - selecting
 **"Delete data permanently"** instead of the default Recycle-Bin outcome - as a portal-wizard-only
 step, and this design grounds why that limitation is treated as load-bearing rather than glossed
-over (§4).
+over.
 
 ## 3. Why this is a separate fragment, not a flag on the sibling scenario
 
-| | `priority-cleanup-sharepoint-onedrive` (sibling) | This fragment |
+| | *Priority Cleanup for SharePoint & OneDrive* (sibling) | This fragment |
 |---|---|---|
 | Terminal state | Second-stage Recycle Bin | **Permanently deleted - bypasses both Recycle Bins** |
 | Recoverability | Yes, within the Recycle Bin's retention window | **None** |
 | Typical driver | Storage reclamation (stale Teams recordings), post-departure OneDrive cleanup | **Confirmed data-exposure/privacy incident** requiring guaranteed non-recoverable removal - e.g. a DSPM for AI oversharing finding |
 | Audit operation on disposal | `PriorityCleanupFileRecycled` | **`PriorityCleanupFileDeleted`** - a different operation name, not a renamed duplicate |
-| Content-disposition selection | N/A (recycle-bin is the only outcome) | **"Delete data permanently" - a portal-wizard-only choice** with no confirmed PowerShell/Graph parameter (§4) |
+| Content-disposition selection | N/A (recycle-bin is the only outcome) | **"Delete data permanently" - a portal-wizard-only choice** with no confirmed PowerShell/Graph parameter |
 | Preview rollout | Already generally available under the base priority-cleanup preview | **Public preview rollout begins 2026-08-24** - separately gated, re-verify tenant availability before use |
 
 The two scenarios also share nearly everything else (roles, approver model, mandatory simulation,
-the underlying `-PriorityCleanup` cmdlet family) - this fragment cross-links the sibling's `README.md`
-§3 for that shared material rather than repeating it, and focuses on what's actually different.
+the underlying `-PriorityCleanup` cmdlet family) - this fragment cross-links the sibling scenario's prerequisites for that shared material rather than repeating it, and focuses on what's actually different.
 
 ## 4. The central construction gap: "Delete data permanently" has no confirmed CLI parameter
 
@@ -60,22 +59,22 @@ plausibly encodes "bypass the Recycle Bin" either.
 Two readings are both consistent with what Microsoft publishes, and neither is confirmed:
 
 - **(a)** A policy provisioned via this scenario's `-PriorityCleanup` cmdlets (identical shape to
- the sibling's) can later be switched to permanent-deletion mode by an operator completing the
- portal wizard's content-disposition page against that same policy.
+  the sibling's) can later be switched to permanent-deletion mode by an operator completing the
+  portal wizard's content-disposition page against that same policy.
 - **(b)** Permanent-deletion policies must be created **end-to-end through the portal wizard**, and
- a policy provisioned first via PowerShell is not a valid starting point for that wizard at all.
+  a policy provisioned first via PowerShell is not a valid starting point for that wizard at all.
 
-This scenario's script (§5) provisions the same underlying label/policy/rule as the sibling - that
+This scenario's script provisions the same underlying label/policy/rule as the sibling - that
 part is confirmed, reusable machinery - and then **stops and prints a mandatory manual step**
-rather than guessing which of (a) or (b) is true. `README.md` §11 and the deploy script's `.NOTES`
+rather than guessing which of (a) or (b) is true. the known limitations and the deploy script's `.NOTES`
 carry this as an explicit VERIFY (pilot tenant): attempt the portal wizard's permanent-deletion
 option against a PowerShell-provisioned policy and record which reading holds.
 
 A second, equally real gap follows from the first: because no PowerShell property is confirmed to
-*set* permanent-deletion mode, none is confirmed to **read it back** either. `validate/` (§6) cannot
+*set* permanent-deletion mode, none is confirmed to **read it back** either. `validate/` cannot
 confirm a policy is actually configured for permanent deletion - only that the shared underlying
 objects exist. Post-hoc confirmation that permanent deletion is actually happening relies entirely
-on auditing the `PriorityCleanupFileDeleted` operation (§6), which is scriptable and reliable.
+on auditing the `PriorityCleanupFileDeleted` operation, which is scriptable and reliable.
 
 ## 5. Object model - what's confirmed vs. manual
 
@@ -103,7 +102,7 @@ sequenceDiagram
     Note over Portal: Approval (Pending cleanups > Approve disposal) is PORTAL-ONLY,<br/>same gap as the sibling - outcome here is PERMANENT deletion,<br/>not a Recycle Bin move.
 ```
 
-This is the same three-object shape as both priority-cleanup scenarios in this repo, because that
+This is the same three-object shape as both priority-cleanup scenarios in this library, because that
 part of the mechanism genuinely is shared ("under the covers, priority cleanup uses retention
 labels with auto-apply policies") - the difference this fragment scripts
 honestly is that its own defining step is not confirmed to be scriptable at all.
@@ -115,15 +114,15 @@ located via the official `-PriorityCleanup` filter switch and, if present, repor
 mutated. Safety posture is **stricter than both siblings** in two respects:
 
 1. Like the SharePoint/OneDrive sibling (and unlike the Exchange sibling), there is no
- `-Enabled`-at-creation path - simulation is mandatory for this workload regardless of
- content-disposition mode.
+   `-Enabled`-at-creation path - simulation is mandatory for this workload regardless of
+   content-disposition mode.
 2. Unique to this fragment: the deploy script refuses to claim success at the point most operators
- would expect it - it explicitly prints that the permanent-deletion selection is unconfirmed and
- unautomated, rather than silently completing and letting an operator assume the policy is fully
- configured for irreversible deletion when it may still default to a Recycle Bin move.
+   would expect it - it explicitly prints that the permanent-deletion selection is unconfirmed and
+   unautomated, rather than silently completing and letting an operator assume the policy is fully
+   configured for irreversible deletion when it may still default to a Recycle Bin move.
 
 `validate/` reports the shared object state and explicitly flags that it **cannot** confirm
-permanent-deletion mode is active (§4) - the only reliable confirmation is post-hoc, via the
+permanent-deletion mode is active - the only reliable confirmation is post-hoc, via the
 `PriorityCleanupFileDeleted` audit operation once at least one item has actually been disposed.
 
 ## 7. Key decisions
@@ -131,7 +130,7 @@ permanent-deletion mode is active (§4) - the only reliable confirmation is post
 | Decision | Choice | Rationale |
 |---|---|---|
 | Reuse vs. new object shape | Reuse the sibling's confirmed `-PriorityCleanup` label/policy/rule cmdlets | That part of the mechanism is shared and already grounded; re-deriving it would add risk with no benefit |
-| Content-disposition selection | **Not scripted** - printed as a mandatory manual portal step | No confirmed CLI/Graph parameter exists (§4); AGENTS.md §4 requires disclosure over invention |
+| Content-disposition selection | **Not scripted** - printed as a mandatory manual portal step | No confirmed CLI/Graph parameter exists; this library's standards requires disclosure over invention |
 | Driving use case | Confirmed data-exposure/privacy incident (e.g. DSPM for AI oversharing finding), not routine storage reclamation | Matches Microsoft's own stated rationale ("reduce data exposure risk from rapidly growing Copilot-related content") and justifies why irreversibility, not Recycle-Bin softness, is the correct tool |
 | Approver model | Same as the SharePoint/OneDrive sibling (eDiscovery admin, conditional on a hold) | Both pages point to the same base prerequisites article; no additional approver role is documented specifically for permanent deletion |
 | Audit verification | `PriorityCleanupFileDeleted`, not the sibling's `PriorityCleanupFileRecycled` | Confirmed distinct operation name - the only scriptable way to confirm permanent-deletion mode actually fired |
@@ -141,14 +140,14 @@ permanent-deletion mode is active (§4) - the only reliable confirmation is post
 ## 8. Non-goals
 
 - **Scripting the "Delete data permanently" selection itself** - no confirmed parameter exists;
- re-open once Microsoft publishes one (§4).
+  re-open once Microsoft publishes one.
 - **Scripting the approval workflow** - portal-only, same gap as both sibling scenarios.
 - **A companion scenario chaining eDiscovery search-and-purge with this feature** - a related but
- distinct control (purging mailbox/site content found via an eDiscovery content search, not a
- standing priority-cleanup policy); out of scope here.
+  distinct control (purging mailbox/site content found via an eDiscovery content search, not a
+  standing priority-cleanup policy); out of scope here.
 - **GCC/GCC High/DoD availability timing** - this fragment targets Worldwide multi-tenant; separate,
- later government-cloud rollout timing is not modeled (§ README.md §11).
+  later government-cloud rollout timing is not modeled (§ the known limitations).
 
 ## References
 
-See `README.md` §12 for the full, numbered source list shared with this file.
+See the references for the full, numbered source list shared with this file.

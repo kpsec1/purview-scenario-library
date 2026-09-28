@@ -21,7 +21,7 @@ Reverts the scan's `kind` from `AzureSynapseWorkspaceCredential` back to `AzureS
 
 **Before running Stage 1**, confirm the Purview account's own SAMI still holds the workspace Reader,
 (serverless-only) Storage Blob Data Reader, and per-database grants this scan depended on before the
-UAMI was adopted (`scan-azure-synapse-and-classify/README.md` §3/§5). If any were removed, re-establish
+UAMI was adopted (*Scan Azure Synapse Analytics Workspace and Classify Sensitive Columns* (the prerequisites and the implementation steps)). If any were removed, re-establish
 them first - otherwise the reverted scan will register successfully but fail on its next run. This
 scenario's rollback does **not** need to re-verify the workspace firewall setting - orthogonal to
 which Purview identity authenticates.
@@ -37,13 +37,13 @@ which Purview identity authenticates.
 ```
 
 Deleting the UAMI resource itself is an Azure-side action via the Purview account's **Managed
-identities** blade - outside this repo's Scanning data-plane scripts entirely. **Confirm no other
+identities** blade - outside this library's Scanning data-plane scripts entirely. **Confirm no other
 scan or credential object still references this UAMI before deleting it.**
 
 ## What rollback does **not** undo
 
 Identical scope boundary to both siblings: classifications already applied by prior scan runs; the
-base scenario's data source and scan registration (delete via that scenario's own `rollback.md`); the
+base scenario's data source and scan registration (delete via that scenario's own rollback runbook); the
 UAMI's Azure IAM/SQL grants; any other scan or credential object still referencing the same UAMI.
 Additionally: the workspace firewall setting is never touched by either stage.
 

@@ -8,8 +8,8 @@ Roll back in stages - disabling `RejectDirectSend` or removing a still-used rela
 immediate effect on live mail flow, the same reasoning this library's other policy-based scenarios'
 rollback docs apply.
 
-**This procedure never touches** `exchange-legacy-auth-block`'s or `block-legacy-authentication`'s
-own policy objects - fully independent controls (`design.md` §8).
+**This procedure never touches** *Exchange-Side Legacy Authentication Block*'s or *Block Legacy Authentication*'s
+own policy objects - fully independent controls.
 
 ## Recommended sequence
 
@@ -53,14 +53,14 @@ rollback docs apply). Re-create with
 
 ## What rollback does **not** undo
 
-- **`exchange-legacy-auth-block`'s or `block-legacy-authentication`'s own policy objects** -
- different, independent controls (`design.md` §8).
+- ***Exchange-Side Legacy Authentication Block*'s or *Block Legacy Authentication*'s own policy objects** -
+  different, independent controls.
 - **A message that was rejected while `RejectDirectSend` was `$true`.** A rejected Direct Send
- attempt was not delivered; rolling back afterward does not retroactively deliver it. The sender
- must retry.
+  attempt was not delivered; rolling back afterward does not retroactively deliver it. The sender
+  must retry.
 - **Messages already tagged by the audit rule before it was removed.** The
- `X-DirectSendHardening-Detected` header on already-delivered messages is part of those messages'
- history; removing the rule only stops future tagging.
+  `X-DirectSendHardening-Detected` header on already-delivered messages is part of those messages'
+  history; removing the rule only stops future tagging.
 
 ## Verification after rollback
 

@@ -9,10 +9,10 @@ record or regulatory record label. Per Microsoft's own documented behavior for
 `Remove-RetentionComplianceRule`: removing the rule "causes the release of all Exchange mailbox and
 SharePoint site retentions that are associated with the rule" - i.e. there is
 **no permanently locked content to force-release** the way there is for
-`scenarios/data-lifecycle-management/retention-labels-financial-records/`. Rollback here is
+*Retention Labels for Financial Records*. Rollback here is
 materially lower-risk. The residual risk is different: an **over-broad adaptive scope query**
 retains (or under a mis-scoped rollback, stops retaining) more or fewer mailboxes than intended -
-see `reviews.md` Red Team finding 1.
+see the Red Team review, finding 1.
 
 ## Recommended sequence
 
@@ -53,11 +53,11 @@ confirming that in the portal (**Settings** > **Roles and scopes** > **Adaptive 
 ## What rollback does **not** undo
 
 - **Content that was deleted under a `KeepAndDelete`/`Delete` variant of this policy** (this
- scenario's sample config is `Keep`-only, but the same object model supports the stronger
- actions) - deletion, once it happens, is not reversible by this or any rollback.
+  scenario's sample config is `Keep`-only, but the same object model supports the stronger
+  actions) - deletion, once it happens, is not reversible by this or any rollback.
 - **The distribution/population delay on the way back in.** Re-enabling the policy or re-creating
- the scope restarts the same up-to-5-day (scope) / multi-day (policy distribution) delays
- documented in `README.md` Section 7/8 - rollback is not instant to reverse either.
+  the scope restarts the same up-to-5-day (scope) / multi-day (policy distribution) delays
+  documented in this page Section 7/8 - rollback is not instant to reverse either.
 
 ## Verification after rollback
 

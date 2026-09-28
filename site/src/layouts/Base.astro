@@ -23,7 +23,7 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <title>{title}</title>
@@ -41,8 +41,8 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
         </a>
         <nav class="links" aria-label="Primary">
           <a href="/" class={isHome ? 'active' : ''}>Home</a>
-          <a href="/scenarios/" class={path.startsWith('/scenarios') ? 'active' : ''}>Library</a>
-          <a href="/docs/" class={path.startsWith('/docs') ? 'active' : ''}>Reference</a>
+          <a href="/scenarios/" class={path.startsWith('/scenarios') ? 'active' : ''}>Field Notes</a>
+          <a href="/docs/" class={path.startsWith('/docs') ? 'active' : ''}>Field Guide</a>
         </nav>
       </div>
     </header>
@@ -57,7 +57,7 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
           <strong>Krunal</strong> · Cyber Security Consultant · Regina, Saskatchewan
         </div>
         <div class="foot-meta">
-          A growing library of Microsoft Purview &amp; security scenarios
+          Field notes on Microsoft Purview and security
           <br />
           <span class="foot-updated">Last updated {buildDate}</span>
         </div>
@@ -73,7 +73,6 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
         try {
           ({ default: mermaid } = await import('mermaid'));
         } catch (err) {
-          // Runtime could not load: reveal the diagram source so nothing is lost.
           document.querySelectorAll('pre.mermaid').forEach((el) => el.classList.add('mermaid-failed'));
           console.error('Mermaid failed to load; showing diagram source.', err);
           return;
@@ -84,22 +83,21 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
           theme: 'base',
           fontFamily: 'Inter, system-ui, sans-serif',
           themeVariables: {
-            primaryColor: '#eef4ff',
-            primaryBorderColor: '#1e3a8a',
-            primaryTextColor: '#0f172a',
-            secondaryColor: '#f1f5f9',
-            tertiaryColor: '#f8fafc',
-            lineColor: '#64748b',
+            primaryColor: '#fff4ea',
+            primaryBorderColor: '#0f1b33',
+            primaryTextColor: '#14171f',
+            secondaryColor: '#f4f1ea',
+            tertiaryColor: '#faf8f3',
+            lineColor: '#6b7180',
             fontSize: '15px',
-            clusterBkg: '#f8fafc',
-            clusterBorder: '#cbd5e1',
+            clusterBkg: '#faf8f3',
+            clusterBorder: '#cfc8b8',
           },
         });
 
         // Render each diagram in isolation so one bad diagram cannot blank the
-        // rest, and only render nodes that currently have layout (Mermaid needs
-        // real dimensions, so diagrams inside a collapsed <details> are skipped
-        // until the section is opened).
+        // rest, and only nodes that currently have layout (Mermaid needs real
+        // dimensions, so diagrams inside a closed <details> wait until opened).
         const renderIn = async (root) => {
           const nodes = Array.from(root.querySelectorAll('pre.mermaid:not([data-processed])')).filter(
             (el) => el.getClientRects().length > 0
@@ -115,7 +113,6 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
         };
 
         await renderIn(document);
-        // Render diagrams the first time their collapsible section is expanded.
         document.querySelectorAll('details').forEach((d) => {
           d.addEventListener('toggle', () => {
             if (d.open) renderIn(d);
@@ -127,17 +124,23 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
 
     <style is:global>
       :root {
-        --bg: #ffffff;
-        --bg-soft: #f6f8fc;
-        --bg-tint: #eef3fb;
-        --ink: #0f172a;
-        --body: #334155;
-        --muted: #64748b;
-        --accent: #1d4ed8;
-        --accent-ink: #1e3a8a;
-        --border: #e2e8f0;
-        --border-strong: #cbd5e1;
-        --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+        --paper: #faf8f3;
+        --surface: #ffffff;
+        --tint: #f4f1ea;
+        --ink: #14171f;
+        --body: #2c313b;
+        --muted: #6b7180;
+        --rule: #e6e1d6;
+        --rule-strong: #cfc8b8;
+        --accent: #c2410c;
+        --accent-deep: #9a3412;
+        --accent-soft: #fdeee2;
+        --navy: #0f1b33;
+        --navy-2: #182a4d;
+        --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+        --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+        --shadow: 0 1px 2px rgba(20, 23, 31, 0.05), 0 10px 30px rgba(20, 23, 31, 0.07);
         --radius: 14px;
         color-scheme: light;
       }
@@ -150,21 +153,27 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
       }
       body {
         margin: 0;
-        background: var(--bg);
+        background: var(--paper);
         color: var(--body);
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: var(--sans);
         font-size: 17px;
         line-height: 1.7;
         -webkit-font-smoothing: antialiased;
       }
       .wrap {
         width: 100%;
-        max-width: 960px;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .narrow {
+        width: 100%;
+        max-width: 800px;
         margin: 0 auto;
         padding: 0 24px;
       }
       a {
-        color: var(--accent);
+        color: var(--accent-deep);
         text-decoration: none;
       }
       a:hover {
@@ -175,9 +184,21 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
       h3,
       h4 {
         color: var(--ink);
-        line-height: 1.2;
-        letter-spacing: -0.02em;
-        font-weight: 800;
+        font-family: var(--serif);
+        line-height: 1.15;
+        letter-spacing: -0.015em;
+        font-weight: 700;
+      }
+      .eyebrow,
+      .kicker {
+        display: inline-block;
+        font-family: var(--sans);
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--accent);
+        margin: 0 0 14px;
       }
       .skip-link {
         position: absolute;
@@ -198,17 +219,17 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
         position: sticky;
         top: 0;
         z-index: 10;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(250, 248, 243, 0.88);
         backdrop-filter: saturate(180%) blur(10px);
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--rule);
       }
       .bar {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding-top: 14px;
-        padding-bottom: 14px;
+        padding-top: 13px;
+        padding-bottom: 13px;
         flex-wrap: wrap;
       }
       .brand {
@@ -226,10 +247,12 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
         width: 38px;
         height: 38px;
         border-radius: 10px;
-        background: linear-gradient(135deg, var(--accent), var(--accent-ink));
+        background: var(--navy);
         color: #fff;
-        font-weight: 900;
-        font-size: 20px;
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 21px;
+        box-shadow: inset 0 -3px 0 var(--accent);
       }
       .brand-text {
         display: flex;
@@ -247,15 +270,22 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
       }
       .links {
         display: flex;
-        gap: 22px;
+        gap: 24px;
         font-weight: 600;
         font-size: 15px;
       }
       .links a {
         color: var(--body);
+        padding: 4px 0;
+        border-bottom: 2px solid transparent;
+      }
+      .links a:hover {
+        text-decoration: none;
+        color: var(--ink);
       }
       .links a.active {
-        color: var(--accent);
+        color: var(--ink);
+        border-bottom-color: var(--accent);
       }
 
       main {
@@ -264,10 +294,10 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
 
       /* Footer */
       .site-footer {
-        margin-top: 80px;
-        border-top: 1px solid var(--border);
-        background: var(--bg-soft);
-        padding: 32px 0;
+        margin-top: 96px;
+        border-top: 1px solid var(--rule);
+        background: var(--tint);
+        padding: 34px 0;
         font-size: 14.5px;
         color: var(--muted);
       }
@@ -281,65 +311,97 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
         color: var(--ink);
       }
 
-      /* Long-form article (scenario pages) */
+      /* Long-form reading */
       .prose {
-        font-size: 17px;
+        font-size: 17.5px;
+        line-height: 1.75;
+        overflow-wrap: break-word; /* plain-text URLs in source lists must wrap on phones */
+      }
+      .prose > :first-child {
+        margin-top: 0;
       }
       .prose h2 {
-        font-size: 1.5rem;
-        margin-top: 2.2em;
-        padding-bottom: 0.35em;
-        border-bottom: 1px solid var(--border);
+        font-size: clamp(1.65rem, 3.2vw, 2.1rem);
+        margin: 2.6em 0 0.7em;
+        scroll-margin-top: 90px;
+      }
+      .prose h2::before {
+        content: '';
+        display: block;
+        width: 46px;
+        height: 4px;
+        background: var(--accent);
+        border-radius: 2px;
+        margin-bottom: 16px;
       }
       .prose h3 {
-        font-size: 1.18rem;
-        margin-top: 1.8em;
+        font-size: 1.32rem;
+        margin: 2em 0 0.5em;
+        scroll-margin-top: 90px;
+      }
+      .prose h4 {
+        font-family: var(--sans);
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 1.6em 0 0.4em;
+        color: var(--muted);
       }
       .prose p,
       .prose li {
         color: var(--body);
       }
+      .prose li {
+        margin: 0.35em 0;
+      }
       .prose a {
         text-decoration: underline;
-        text-underline-offset: 2px;
+        text-decoration-color: rgba(154, 52, 18, 0.35);
+        text-underline-offset: 3px;
+        overflow-wrap: anywhere; /* long bare URLs must wrap on phones */
+      }
+      .prose a:hover {
+        text-decoration-color: var(--accent-deep);
       }
       .prose hr {
         border: none;
-        border-top: 1px solid var(--border);
+        border-top: 1px solid var(--rule);
         margin: 2.5em 0;
       }
       .prose img {
         max-width: 100%;
       }
       .prose blockquote {
-        margin: 1.5em 0;
-        padding: 4px 20px;
+        margin: 1.6em 0;
+        padding: 6px 22px;
         border-left: 4px solid var(--accent);
-        background: var(--bg-tint);
-        border-radius: 0 8px 8px 0;
+        background: var(--accent-soft);
+        border-radius: 0 10px 10px 0;
         color: var(--ink);
       }
       pre {
-        background: var(--bg-soft);
-        border: 1px solid var(--border);
+        background: #fbf9f4;
+        border: 1px solid var(--rule);
         border-radius: 12px;
         padding: 16px 18px;
         overflow: auto;
-        font-size: 14px;
+        font-size: 13.5px;
+        line-height: 1.6;
       }
       pre.astro-code {
-        background: #f8fafc !important;
+        background: #fbf9f4 !important;
       }
       code {
-        font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-family: var(--mono);
         font-size: 0.88em;
       }
       :not(pre) > code {
-        background: var(--bg-tint);
-        color: var(--accent-ink);
+        background: var(--tint);
+        color: var(--accent-deep);
         padding: 2px 6px;
         border-radius: 6px;
         font-size: 0.85em;
+        overflow-wrap: anywhere;
       }
       table {
         border-collapse: collapse;
@@ -347,31 +409,32 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
         display: block;
         overflow-x: auto;
         font-size: 15px;
-        margin: 1.2em 0;
+        line-height: 1.55;
+        margin: 1.4em 0;
       }
       th,
       td {
-        border: 1px solid var(--border);
+        border: 1px solid var(--rule);
         padding: 9px 12px;
         text-align: left;
+        vertical-align: top;
       }
       th {
-        background: var(--bg-soft);
+        background: var(--tint);
         color: var(--ink);
         font-weight: 700;
       }
 
-      /* Mermaid diagrams */
+      /* Diagrams */
       pre.mermaid {
-        background: var(--bg-soft);
-        border: 1px solid var(--border);
+        background: var(--surface);
+        border: 1px solid var(--rule);
         border-radius: var(--radius);
-        padding: 22px;
-        margin: 1.6em 0;
+        padding: 24px;
+        margin: 1.8em 0;
         text-align: center;
         overflow-x: auto;
         box-shadow: var(--shadow);
-        /* Hide the raw source until Mermaid replaces it with an SVG. */
         color: transparent;
         font-size: 0;
         min-height: 60px;
@@ -384,7 +447,7 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
         font-size: 13px;
         text-align: left;
         white-space: pre;
-        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-family: var(--mono);
         color: var(--body);
       }
       pre.mermaid svg {
@@ -396,8 +459,15 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
         body {
           font-size: 16px;
         }
-        .wrap {
+        .prose {
+          font-size: 16.5px;
+        }
+        .wrap,
+        .narrow {
           padding: 0 18px;
+        }
+        .links {
+          gap: 16px;
         }
       }
     </style>

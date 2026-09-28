@@ -28,7 +28,7 @@ intended outcome (e.g. the device is lost, decommissioned, or its approval is be
 reviewed) before treating this as routine cleanup.
 
 Re-add it instantly by restoring its config entry and re-running the same command - the deterministic
-id derivation (`design.md` §4) means the restored device gets the identical sub-group id it had
+id derivation means the restored device gets the identical sub-group id it had
 before, not a fresh one.
 
 ### Stage 2 - Remove every vendorId/productId device exception (full fragment rollback)
@@ -56,13 +56,13 @@ rollback:
 ## What rollback does **not** undo
 
 - **Advanced Hunting / `DeviceEvents` history** for events an approved vendorId/productId device
- already generated - retained per its own retention window regardless of policy state.
+  already generated - retained per its own retention window regardless of policy state.
 - **The parent's `serialNumber`-based approvals, or the Apple/Portable/Bluetooth sibling fragments'
- own coverage** - both stages of this rollback are scoped exclusively to this fragment's own
- vendorId/productId additions.
+  own coverage** - both stages of this rollback are scoped exclusively to this fragment's own
+  vendorId/productId additions.
 - **A device also matched by a still-present `serialNumber` clause** - Stage 1 and Stage 2 both only
- remove this fragment's `groupId`-referenced OR-branch; a device independently approved by serial
- number remains approved through that separate mechanism.
+  remove this fragment's `groupId`-referenced OR-branch; a device independently approved by serial
+  number remains approved through that separate mechanism.
 
 ## Verification after rollback
 
@@ -85,8 +85,8 @@ $json.groups.name | Where-Object { $_ -like 'VendorProductMatch-*' }   # expect 
 
 ## References
 
-1. `scenarios/dlp/defender-device-control-usb-allowlist-macos/rollback.md` - full policy removal
- (Stage 3), and the parent scenario's own rollback for its `serialNumber`-based approvals.
-2. `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/rollback.md` - the
- sibling fragment's equivalent single-device rollback, for the same "revocation, not
- unrestriction" caution.
+1. *Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist* - full policy removal
+   (Stage 3), and the parent scenario's own rollback for its `serialNumber`-based approvals.
+2. *Defender for Endpoint Device Control (macOS): Bluetooth Approved-Device Allowlist* - the
+   sibling fragment's equivalent single-device rollback, for the same "revocation, not
+   unrestriction" caution.

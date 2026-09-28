@@ -4,7 +4,7 @@ parent: "data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset"
 ---
 ## Recommended sequence
 
-Like the base `scan-azure-sql-managed-instance-and-classify` scenario, rolling this back never
+Like the base *Scan Azure SQL Managed Instance and Classify Sensitive Columns* scenario, rolling this back never
 touches the managed instance's data or live Microsoft 365 traffic - it only changes which
 classifications a future scan run compares columns against. Rollback is staged so you can revert
 the scan without deleting the ruleset object (e.g. you plan to reuse it on another scan later).
@@ -26,7 +26,7 @@ scan (or this same scan again later) can reference it without recreating it.
 **This source type has no naming trap** - the revert target's ruleset **name**
 (`AzureSqlDatabaseManagedInstance`) is the identical string to the ruleset `kind` used when
 creating the custom object, confirmed independently for this source type rather than assumed from
-either sibling scenario - see `design.md` §2 goal 6 and `README.md` §11. (Contrast with the Azure
+either sibling scenario - see the design notes goal 6 and the known limitations. (Contrast with the Azure
 Synapse Analytics sibling, where the revert-target name and the custom ruleset `kind` are two
 different strings - do not carry that scenario's `-RevertToRulesetName` value over here, or vice
 versa.)
@@ -45,25 +45,24 @@ re-apply afterward.
 
 Performs Stage 1's scan revert first, then deletes the `AzureSqlDatabaseManagedInstance-PiiOnly`
 scan rule set object itself. **Confirm no other scan in the account still references this ruleset
-name before running with `-DeleteRuleset`** - scan rule sets are account-wide objects (design.md
-§2), so a ruleset created for one instance's scan may already be reused by another.
+name before running with `-DeleteRuleset`** - scan rule sets are account-wide objects, so a ruleset created for one instance's scan may already be reused by another.
 
 ## What rollback does **not** undo
 
 - **Classifications already applied by prior scan runs.** Removing or narrowing the ruleset only
- changes what a *future* scan run compares columns against. Classification tags already recorded
- on catalog assets from runs made under the PII-only ruleset (or the System ruleset, before this
- scenario was applied) are not retroactively changed or removed.
+  changes what a *future* scan run compares columns against. Classification tags already recorded
+  on catalog assets from runs made under the PII-only ruleset (or the System ruleset, before this
+  scenario was applied) are not retroactively changed or removed.
 - **The base scenario's data source and scan registration, or the out-of-band ARM/Entra/SQL
- prerequisites.** This scenario only ever modifies the scan's `scanRulesetName`/`scanRulesetType`
- properties. Removing the scan or data source entirely, un-granting the Azure IAM Reader role and
- the `db_datareader` SQL grant, disabling the public endpoint, or removing the Directory Readers
- Microsoft Entra role assignment is `scan-azure-sql-managed-instance-and-classify`'s own rollback
- - see that scenario's `rollback.md`.
+  prerequisites.** This scenario only ever modifies the scan's `scanRulesetName`/`scanRulesetType`
+  properties. Removing the scan or data source entirely, un-granting the Azure IAM Reader role and
+  the `db_datareader` SQL grant, disabling the public endpoint, or removing the Directory Readers
+  Microsoft Entra role assignment is *Scan Azure SQL Managed Instance and Classify Sensitive Columns*'s own rollback
+  - see that scenario's the rollback runbook.
 - **Any other scan still referencing this ruleset.** Stage 2's delete only proceeds after this
- scenario's own scan has been detached; it does nothing to detect or detach a *different* scan
- that references the same ruleset name. Check manually (or via
- `validate/Test-PiiOnlyScanRuleset.ps1` against each candidate data source/scan pair) first.
+  scenario's own scan has been detached; it does nothing to detect or detach a *different* scan
+  that references the same ruleset name. Check manually (or via
+  `validate/Test-PiiOnlyScanRuleset.ps1` against each candidate data source/scan pair) first.
 
 ## Verification after rollback
 

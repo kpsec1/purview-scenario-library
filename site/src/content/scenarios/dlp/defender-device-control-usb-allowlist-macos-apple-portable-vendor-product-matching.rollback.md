@@ -29,7 +29,7 @@ also separately matched by a `serialNumber` clause), not left unrestricted. Conf
 intended outcome before treating this as routine cleanup.
 
 Re-add it instantly by restoring its config entry and re-running the same command - the deterministic
-id derivation (`design.md` §4) means the restored device gets the identical sub-group id it had
+id derivation means the restored device gets the identical sub-group id it had
 before, not a fresh one.
 
 ### Stage 2 - Remove every Apple/Portable vendorId/productId device exception (full fragment rollback)
@@ -44,7 +44,7 @@ This strips every `AppleVendorProductMatch-*`/`PortableVendorProductMatch-*` gro
 serialNumber-only matching - the prerequisite fragment's original, pre-this-fragment state. Either
 family's catch-all group, every Allow/Deny rule, the object's identity, and its assignment are all
 untouched. If a family's Approved group is already absent (e.g. removed by the ordering hazard -
-§11 in `README.md`), that family is reported as "nothing to remove" and skipped; the other family is
+the known limitations in this page), that family is reported as "nothing to remove" and skipped; the other family is
 still processed.
 
 ### Stage 3 - Remove the entire device control policy (not this fragment's rollback)
@@ -60,13 +60,13 @@ rollback:
 ## What rollback does **not** undo
 
 - **Advanced Hunting / `DeviceEvents` history** for events an approved vendorId/productId device
- already generated - retained per its own retention window regardless of policy state.
+  already generated - retained per its own retention window regardless of policy state.
 - **Either family's `serialNumber`-based approvals, or the removable-media/Bluetooth sibling
- fragments' own coverage** - both stages of this rollback are scoped exclusively to this fragment's
- own Apple/Portable vendorId/productId additions.
+  fragments' own coverage** - both stages of this rollback are scoped exclusively to this fragment's
+  own Apple/Portable vendorId/productId additions.
 - **A device also matched by a still-present `serialNumber` clause** - Stage 1 and Stage 2 both only
- remove this fragment's `groupId`-referenced OR-branch; a device independently approved by serial
- number remains approved through that separate mechanism.
+  remove this fragment's `groupId`-referenced OR-branch; a device independently approved by serial
+  number remains approved through that separate mechanism.
 
 ## Verification after rollback
 
@@ -90,10 +90,10 @@ $json.groups.name | Where-Object { $_ -like 'AppleVendorProductMatch-*' -or $_ -
 
 ## References
 
-1. `scenarios/dlp/defender-device-control-usb-allowlist-macos/rollback.md` - full policy removal
- (Stage 3).
-2. `scenarios/dlp/defender-device-control-usb-allowlist-macos-vendor-product-matching/rollback.md` -
- the removable-media sibling's equivalent single-device rollback and verification pattern, which
- this fragment's own rollback directly mirrors, per family.
-3. `scenarios/dlp/defender-device-control-usb-allowlist-macos-bluetooth-allowlist/rollback.md` - the
- Bluetooth sibling's equivalent rollback, for the same "revocation, not unrestriction" caution.
+1. *Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist* - full policy removal
+   (Stage 3).
+2. *Defender for Endpoint Device Control (macOS): vendorId/productId Compound-Matched Device Allowlist* -
+   the removable-media sibling's equivalent single-device rollback and verification pattern, which
+   this fragment's own rollback directly mirrors, per family.
+3. *Defender for Endpoint Device Control (macOS): Bluetooth Approved-Device Allowlist* - the
+   Bluetooth sibling's equivalent rollback, for the same "revocation, not unrestriction" caution.

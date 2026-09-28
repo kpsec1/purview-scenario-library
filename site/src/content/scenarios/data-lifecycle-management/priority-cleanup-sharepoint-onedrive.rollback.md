@@ -5,8 +5,7 @@ parent: "data-lifecycle-management/priority-cleanup-sharepoint-onedrive"
 ## A softer rollback story than the Exchange sibling - but not a free one
 
 Unlike the Exchange sibling scenario, this workload's deletion mechanism moves matching items to
-the **second-stage Recycle Bin** rather than deleting them instantly and permanently
-. That means an item disposed of by a completed approval **can** still be
+the **second-stage Recycle Bin** rather than deleting them instantly and permanently. That means an item disposed of by a completed approval **can** still be
 recovered from the Recycle Bin within its own retention window - this is real, meaningful recourse
 the Exchange sibling does not have. It is not, however, a reason to be careless: Microsoft still
 states that disabling or deleting the policy does **not** reliably stop an **in-flight** approval
@@ -35,7 +34,7 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization 'contoso.onmi
 Sets the policy `-Enabled $false` - no *new* items are identified. The label, rule, and any items
 already fully approved and moved to the Recycle Bin are unaffected by this step alone. Reversible:
 re-run the deploy script to re-enable (subject to the same mandatory-simulation requirement as
-initial setup - see `README.md` §5/§11, since re-enabling after a meaningful change may itself
+initial setup - see the implementation steps and the known limitations, since re-enabling after a meaningful change may itself
 require a fresh simulation run).
 
 ### Stage 2 - Delete the policy and rule
@@ -68,12 +67,12 @@ Data Lifecycle Management.
 ## What rollback does **not** undo
 
 - **An item whose Recycle Bin retention window has already expired.** At that point it follows the
- same permanent-deletion path as any other expired Recycle Bin item.
+  same permanent-deletion path as any other expired Recycle Bin item.
 - **An in-flight approval that completes after you disable/delete the policy.** Use Stage 0 first
- if anything must not move to the Recycle Bin.
+  if anything must not move to the Recycle Bin.
 - **The audit trail.** `PriorityCleanupTagApplied`/`PriorityCleanupFileRecycled` events remain in
- the audit log regardless of policy state - this is a feature (evidentiary record of what
- happened and when), not something to try to undo.
+  the audit log regardless of policy state - this is a feature (evidentiary record of what
+  happened and when), not something to try to undo.
 
 ## Verification after rollback
 

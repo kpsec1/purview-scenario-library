@@ -7,7 +7,7 @@ parent: "data-lifecycle-management/retention-labels-financial-records"
 By default this scenario auto-applies a plain **record** label: once applied, content is locked (can't
 be edited/deleted) but a **records manager** can still unlock or remove the label. If you instead
 configured a **regulatory record** (`regulatory: true` - which this scenario's deploy script only ever
-*creates*, never auto-applies; see `README.md` §2), that label is **irreversible**: it can't be
+*creates*, never auto-applies; see why this matters), that label is **irreversible**: it can't be
 removed, relabeled, or unlocked, its retention can't be shortened, and the content can't be edited or
 deleted - by anyone - until the retention period expires. **Rollback here can only stop FUTURE
 auto-labeling (record label only); it cannot release content already labeled, and it cannot touch a
@@ -53,11 +53,11 @@ immutable records depend on.
 ## What rollback does **not** undo
 
 - **Any content already labeled as a record** - locked for its full retention term; only a records
- manager can unlock/remove the label early. **As a regulatory record**, no one can - ever.
+  manager can unlock/remove the label early. **As a regulatory record**, no one can - ever.
 - **Retention already in force** - a regulatory record's retention can't be shortened; a record
- label's can only be changed by a records manager, deliberately.
+  label's can only be changed by a records manager, deliberately.
 - **The label object**, once records exist under it - it can't be deleted (regulatory: never
- deletable once applied, regardless).
+  deletable once applied, regardless).
 - **Storage consumed** by retained content - it can't be deleted early.
 
 ## Verification after rollback
@@ -73,6 +73,6 @@ the label check `[FAIL]`s only if the label was actually removable; otherwise it
 confirming the record (or regulatory record) label correctly could not be deleted.
 
 If the deployed label is a **regulatory record**, `validate/Test-FinancialRecordsRetention.ps1` skips
-the policy/rule checks entirely (they were never created - see `README.md` §2/§11) and only the label
+the policy/rule checks entirely (they were never created - see why this matters and the known limitations) and only the label
 existence check is meaningful; roll back its distribution instead via the sibling
-`scenarios/data-lifecycle-management/publish-labels-for-manual-application/rollback.md`.
+*Publish Retention Labels for Manual Application*.

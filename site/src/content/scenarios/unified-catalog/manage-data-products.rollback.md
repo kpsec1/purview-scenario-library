@@ -20,7 +20,7 @@ Sets the data product back to `DRAFT` via `PUT`, reusing its own currently-store
 via `GET`) rather than the local definition file - a portal-made edit this script doesn't know
 about survives an unpublish. Nothing is deleted or unlinked; the product remains visible to Data
 Product Owners, Data Stewards, and Governance Domain Owners. Re-publish instantly (once the access
-policy prerequisite still holds - README.md §3):
+policy prerequisite still holds - the prerequisites):
 
 ```powershell
 ./deploy/New-DataProduct.ps1 `
@@ -41,7 +41,7 @@ while the underlying asset or its data quality is under review.
     -DefinitionPath './deploy/config/customer-master-data-product.sample.json' -RemoveLinks
 ```
 
-Deletes the data-asset and both term relationships (`DELETE.../relationships`). The Unified
+Deletes the data-asset and both term relationships (`DELETE .../relationships`). The Unified
 Catalog data asset **wrapper** and the glossary terms themselves are left untouched - they may be
 referenced by other data products this scenario doesn't know about. A data product with no linked
 assets still exists but is no longer a meaningful grouping; re-run `New-DataProduct.ps1` to
@@ -67,26 +67,26 @@ manual `Data Assets - Query` call) that no *other* data product still references
 Catalog data asset wrapper. `Remove-DataProduct.ps1` has no reverse lookup to check this for you -
 deleting a wrapper another product still links to would silently orphan that product's asset count
 and classification rollup. When in doubt, leave the wrapper in place; it costs nothing extra to
-leave orphaned (§10 of `README.md` - billing is per governed asset actually linked to *something*,
+leave orphaned (the cost and licensing notes of this page - billing is per governed asset actually linked to *something*,
 and an unlinked wrapper with no relationships is effectively inert).
 
 ## What rollback does **not** undo
 
-- **The underlying Data Map asset.** `scenarios/data-map/scan-azure-sql-and-classify/` owns that
- asset's lifecycle; this scenario's rollback never touches it.
-- **The governance domain or glossary terms.** `scenarios/unified-catalog/curate-business-glossary/`
- owns their lifecycle; this scenario only looks them up by name.
+- **The underlying Data Map asset.** *Scan Azure SQL Database and Classify Sensitive Columns* owns that
+  asset's lifecycle; this scenario's rollback never touches it.
+- **The governance domain or glossary terms.** *Curate a Business Glossary*
+  owns their lifecycle; this scenario only looks them up by name.
 - **Data product/asset history.** Microsoft Learn does not document a separate audit trail for
- Unified Catalog object changes distinct from the general Microsoft Purview audit log; this
- scenario does not script audit-log retrieval for these changes (same limitation
- `curate-business-glossary/rollback.md` records).
+  Unified Catalog object changes distinct from the general Microsoft Purview audit log; this
+  scenario does not script audit-log retrieval for these changes (same limitation
+  *Curate a Business Glossary* records).
 - **In-flight or completed access requests.** If consumers already requested and were granted
- access to this data product before rollback, `Remove-DataProduct.ps1` does not revoke that
- access - per Microsoft's own documented process, the request approver must separately remove the
- underlying data-asset provisioning *and* delete the access request in the portal
- (README.md reference 4) before an unpublish/purge fully closes the loop.
+  access to this data product before rollback, `Remove-DataProduct.ps1` does not revoke that
+  access - per Microsoft's own documented process, the request approver must separately remove the
+  underlying data-asset provisioning *and* delete the access request in the portal
+  (this page reference 4) before an unpublish/purge fully closes the loop.
 - **The data product access policy configuration itself** - portal-only, not scripted by this
- scenario in either direction (`design.md` §5).
+  scenario in either direction.
 
 ## Verification after rollback
 

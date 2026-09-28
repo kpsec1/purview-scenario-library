@@ -8,7 +8,7 @@ The `ComplianceControlRoom`/`Legal` allow policies exist because a supervisory o
 needs bounded, examinable access across the `Trading`/`Research` wall. **Removing that access may
 interrupt an active supervisory function or legal matter.** Confirm with Compliance/Legal before
 running any stage of this rollback. This rollback **never touches** the `Trading`/`Research` wall
-itself - that's owned by `segregate-trading-and-research`'s own rollback.
+itself - that's owned by *Segregate Trading and Research (Ethical Wall)*'s own rollback.
 
 ## Recommended sequence
 
@@ -60,16 +60,16 @@ script (not the rollback script):
 ```
 
 This reconciles the policy's `SegmentsAllowed` down to the new (smaller) list - the standard
-membership-change path documented in `README.md` §5, not a rollback.
+membership-change path documented in the implementation steps, not a rollback.
 
 ## What rollback does **not** undo
 
 - **The `Trading`/`Research` wall.** Untouched by this scenario's rollback in every stage - roll that
- back via `segregate-trading-and-research/deploy/Remove-TradingResearchBarrier.ps1` separately.
+  back via `segregate-trading-and-research/deploy/Remove-TradingResearchBarrier.ps1` separately.
 - **Anything that happened while the exception was active.** Cross-wall conversations/access that
- occurred are not retroactively undone.
+  occurred are not retroactively undone.
 - **The source directory attribute** used for exception-segment membership - untouched; managed
- independently.
+  independently.
 - **Audit records** of the IB configuration and application runs - retained per their own policy.
 
 ## Verification after rollback

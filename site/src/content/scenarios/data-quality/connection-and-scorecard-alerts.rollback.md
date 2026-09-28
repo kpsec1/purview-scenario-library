@@ -4,7 +4,7 @@ parent: "data-quality/connection-and-scorecard-alerts"
 ---
 ## Recommended sequence
 
-Like the sibling `rules-and-scorecards` scenario, this scenario's objects don't act on live M365
+Like the sibling *Configure Rules and Review Scorecards for a Governed Data Asset* scenario, this scenario's objects don't act on live M365
 traffic - removing them stops future scans (removing the connection) or future notifications
 (removing an alert), but never touches the source data or any Microsoft 365 control. Rollback is
 staged so you can stop alerting without losing a comparatively expensive-to-reprovision connection.
@@ -19,7 +19,7 @@ staged so you can stop alerting without losing a comparatively expensive-to-repr
 ```
 
 Deletes every alert named in the definition file. The connection stays in place - scans scheduled
-by `rules-and-scorecards` continue to run and score the asset, but no notification fires on a
+by *Configure Rules and Review Scorecards for a Governed Data Asset* continue to run and score the asset, but no notification fires on a
 regression.
 
 Use this stage for: pausing alerting (e.g. during a known data-migration change freeze where score
@@ -28,7 +28,7 @@ For a shorter pause where you intend to resume with the same alert definitions, 
 `New-DataQualityAlert.ps1 -SetStatus Disabled` instead (see below) - it's non-destructive and
 faster to reverse than a delete/recreate cycle.
 
-If the product-level companion example (`customer-360-product-score-alert.json`, README.md §11)
+If the product-level companion example (`customer-360-product-score-alert.json`, the known limitations)
 was also deployed, run this same command a second time with
 `-AlertDefinitionPath './deploy/alerts/customer-360-product-score-alert.json'` - each definition
 file is removed independently, matching how each was deployed.
@@ -45,7 +45,7 @@ file is removed independently, matching how each was deployed.
 ```
 
 Deletes both the alerts (Stage 1) and the data-source connection. **Any scan scheduled by
-`rules-and-scorecards` against this connection will start failing** the next time it fires -
+*Configure Rules and Review Scorecards for a Governed Data Asset* against this connection will start failing** the next time it fires -
 remove or repoint that schedule first if a hard stop of scanning (not just alerting) isn't the
 intent.
 
@@ -74,22 +74,22 @@ full re-create, and it preserves `createdAt`/`createdBy` history on the alert ob
 ## What rollback does **not** undo
 
 - **The managed-VNet compute location or private endpoint**, if `-EnableManagedVNet` was used.
- Deleting the connection object does not de-provision either - both are shared, per-region,
- per-Purview-account resources (`design.md` §3) that other connections in other governance
- domains may also depend on. De-provision the region explicitly under **Settings > Unified
- Catalog > Virtual network** only after confirming no other connection still needs it - deleting a
- region cascades to remove *every* connection linked to it, not just this scenario's
- (`README.md` reference 5).
+  Deleting the connection object does not de-provision either - both are shared, per-region,
+  per-Purview-account resources that other connections in other governance
+  domains may also depend on. De-provision the region explicitly under **Settings > Unified
+  Catalog > Virtual network** only after confirming no other connection still needs it - deleting a
+  region cascades to remove *every* connection linked to it, not just this scenario's
+  (this page reference 5).
 - **The source database's read grant** (e.g. `db_datareader`) - a source-side action this scenario
- never created; remove it separately if the intent is a full teardown.
+  never created; remove it separately if the intent is a full teardown.
 - **The governance domain, data product, or data asset.** None of these were created by this
- scenario - see `design.md` §6/§7 - so none are removed by rollback.
-- **The Data Quality rules or scan schedule** from `scenarios/data-quality/rules-and-scorecards/` -
- a separate scenario with its own rollback procedure. Removing this scenario's connection without
- also addressing that schedule leaves it pointing at a now-deleted connection (it will fail, not
- silently no-op).
+  scenario - see the design notes - so none are removed by rollback.
+- **The Data Quality rules or scan schedule** from *Configure Rules and Review Scorecards for a Governed Data Asset* -
+  a separate scenario with its own rollback procedure. Removing this scenario's connection without
+  also addressing that schedule leaves it pointing at a now-deleted connection (it will fail, not
+  silently no-op).
 - **Prior alert-fire history** (past notification emails already sent) - nothing to undo; email
- delivery isn't a Purview-managed record.
+  delivery isn't a Purview-managed record.
 
 ## Verification after rollback
 

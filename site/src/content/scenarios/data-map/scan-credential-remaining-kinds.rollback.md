@@ -4,11 +4,11 @@ parent: "data-map/scan-credential-remaining-kinds"
 ---
 ## This scenario reuses the parent scenario's delete script, unmodified
 
-`scenarios/data-map/scan-credential-key-vault-backed/deploy/Remove-PurviewScanCredential.ps1` issues
+*Key Vault-Backed Scan Credential (SQL Auth / Service Principal)* issues
 a plain `DELETE {endpoint}/scan/credentials/{credentialName}` - it never inspects `typeProperties`,
 so it deletes a credential created by this scenario exactly the way it deletes the parent's own
 three kinds. No second delete script exists in this folder; write one would duplicate working code
-for no functional gain (`design.md` §6).
+for no functional gain.
 
 ```powershell
 ../scan-credential-key-vault-backed/deploy/Remove-PurviewScanCredential.ps1 `
@@ -19,17 +19,16 @@ for no functional gain (`design.md` §6).
 
 ## Before you start - the same consumer-inventory caveat as the parent scenario
 
-No scenario in this library currently scans Amazon S3, Salesforce, Microsoft Fabric, or Power BI
-(`README.md` §11), so for `AmazonARN`/`ConsumerKeyAuth`/`DelegatedAuth` credentials built from this
-scenario alone, **Stage 0 in the parent scenario's `rollback.md` will most likely find zero
-consumers** - there is nothing in this repo pointing at them yet. That changes the moment you wire
-one into a scan built outside this library (or a future fragment here - `design.md` §7): run that
+No scenario in this library currently scans Amazon S3, Salesforce, Microsoft Fabric, or Power BI, so for `AmazonARN`/`ConsumerKeyAuth`/`DelegatedAuth` credentials built from this
+scenario alone, **Stage 0 in the parent scenario's the rollback runbook will most likely find zero
+consumers** - there is nothing in this library pointing at them yet. That changes the moment you wire
+one into a scan built outside this library (or a future fragment here - the design notes): run that
 same Stage 0 inventory query before deleting a credential once any scan references it by name.
 
-`ManagedIdentity` credentials are the one kind here that **does** overlap this repo's existing scan
-scenarios in principle (`scan-azure-sql-and-classify` and siblings support UAMI authentication per
-`README.md` §6) - if you wire one in, treat it as a real consumer for Stage 0 purposes even though
-that wiring isn't built by any fragment in this repo today.
+`ManagedIdentity` credentials are the one kind here that **does** overlap this library's existing scan
+scenarios in principle (*Scan Azure SQL Database and Classify Sensitive Columns* and siblings support UAMI authentication per
+the configuration reference) - if you wire one in, treat it as a real consumer for Stage 0 purposes even though
+that wiring isn't built by any fragment in this library today.
 
 ## Removing the Key Vault connection (AccountKey / ConsumerKeyAuth / DelegatedAuth only)
 
@@ -55,18 +54,18 @@ kinds.
 
 ## What rollback does **not** undo
 
-Identical to the parent scenario's `rollback.md`, plus two kind-specific notes:
+Identical to the parent scenario's the rollback runbook, plus two kind-specific notes:
 
 - **`AmazonARN`:** deleting the Purview credential does **not** delete or modify the AWS IAM role,
- or its trust policy naming Microsoft's account ID and external ID. That is AWS-side state, entirely
- outside this scenario and the Purview API. Remove it in the AWS console if this is a full teardown.
+  or its trust policy naming Microsoft's account ID and external ID. That is AWS-side state, entirely
+  outside this scenario and the Purview API. Remove it in the AWS console if this is a full teardown.
 - **`ManagedIdentity`:** deleting the Purview credential does **not** delete the user-assigned managed
- identity, or remove whatever access grant it holds at the target source. Both are Azure-side
- resources this scenario never created - remove them separately (the Purview account's **Managed
- identities** blade, and the source's own IAM/RBAC surface) if this is a full teardown.
+  identity, or remove whatever access grant it holds at the target source. Both are Azure-side
+  resources this scenario never created - remove them separately (the Purview account's **Managed
+  identities** blade, and the source's own IAM/RBAC surface) if this is a full teardown.
 - Everything else - catalog assets, scan run history, the Key Vault secret's value (for the three
- secret-bearing kinds here), and any scan object referencing the credential - behaves exactly as
- documented in the parent scenario's `rollback.md`.
+  secret-bearing kinds here), and any scan object referencing the credential - behaves exactly as
+  documented in the parent scenario's the rollback runbook.
 
 ## Verification after rollback
 

@@ -5,7 +5,7 @@ parent: "dspm-for-ai/copilot-sensitive-data-exposure"
 ## Recommended sequence
 
 This scenario's DLP policy affects live Copilot traffic, so roll back in stages rather than
-deleting outright. The DSPM for AI oversharing data risk assessment (README.md §5, §8) is not
+deleting outright. The DSPM for AI oversharing data risk assessment is not
 deployed by this scenario (it is automatic and portal-only) and has nothing to roll back.
 
 ### Stage 1 - Disable (reversible, seconds)
@@ -45,22 +45,22 @@ This runs `Remove-DlpCompliancePolicy`, which deletes the policy **and its two r
 There is no undo - re-establishing the control means re-running
 `deploy/New-CopilotSensitiveDataProtectionPolicy.ps1` from scratch. Only do this when the control
 is being permanently retired (e.g., replaced by a successor policy, or by activating DSPM for AI's
-one-click equivalent instead - see `design.md` §3a for why this scenario avoided that path in the
+one-click equivalent instead - see the design notesa for why this scenario avoided that path in the
 first place before choosing to switch to it).
 
 ## What rollback does **not** undo
 
 - **Audit log / alert history.** Alerts already generated are retained per their own retention
- windows regardless of policy state.
+  windows regardless of policy state.
 - **Responses already blocked from web grounding or content processing.** A Copilot response that
- was already restricted while the policy was enforcing is not retroactively regenerated;
- disabling or removing the policy afterward only affects future prompts.
+  was already restricted while the policy was enforcing is not retroactively regenerated;
+  disabling or removing the policy afterward only affects future prompts.
 - **Sensitivity labels.** This scenario does not create or manage the `Confidential`/`Highly
- Confidential` labels it references - they are a dependency (see
- `scenarios/information-protection/auto-label-confidential-sharepoint/`), not a deployed artifact.
- Removing this policy has no effect on the labels or their own auto-labeling policies.
+  Confidential` labels it references - they are a dependency (see
+  *Auto-Label Confidential PII in SharePoint & OneDrive*), not a deployed artifact.
+  Removing this policy has no effect on the labels or their own auto-labeling policies.
 - **DSPM for AI oversharing assessment.** It is not created or scoped by this scenario at all; it
- keeps running automatically regardless of this policy's state.
+  keeps running automatically regardless of this policy's state.
 
 ## Verification after rollback
 

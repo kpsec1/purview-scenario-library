@@ -1,0 +1,54 @@
+{
+  "published": false,
+  "note": "DRAFT for author review. Set \"published\" to true (or set it per post) to show these openings on the live site. Every sentence restates facts already in the scenario's own summary and business driver; nothing here is invented.",
+  "posts": {
+    "dlp/endpoint-dlp-usb-block": {
+      "dek": "A file can leave the building on a USB stick with no email, no chat and no cloud sharing trail. This note closes that gap without breaking the people who legitimately need removable media.",
+      "opening": [
+        "Removable media is one of the oldest and least monitored exfiltration channels there is. A departing employee, a malicious insider, or simply someone being careless can move gigabytes of regulated data off a managed laptop in seconds, and nothing shows up in email, chat or a cloud sharing log.",
+        "The control in this note is deliberately narrow. It blocks copying files that contain U.S. Social Security Numbers or credit card numbers to USB storage on onboarded Windows and macOS devices, and it carves out one audited exception for the IT Data Custodians, who do legitimate offline backup and imaging work that a hard block would break."
+      ],
+      "pull": "If regulated data walked out on a USB stick tomorrow, would you have any record of it?"
+    },
+    "dlp/pci-teams-exfil-block": {
+      "dek": "Teams chat is exactly the kind of messaging channel that PCI DSS says must never carry an unprotected card number. This note is the control an assessor expects to see.",
+      "opening": [
+        "PCI DSS Requirement 4.2 is blunt: never send unprotected card numbers over end-user messaging technologies, and it names chat explicitly. In a tenant where Teams is in scope for the cardholder data environment, an assessor will sample outbound transmissions and look for card numbers that are blocked or rendered unreadable.",
+        "This note blocks full card numbers from leaving the tenant through Teams chat and channel messages. It also carves out one exception for the Card Operations and Finance team, who occasionally need to confirm card details with the acquiring bank over a guest-enabled channel, and that exception requires a logged business justification."
+      ],
+      "pull": "When the assessor asks how you stop card numbers in chat, what do you show them?"
+    },
+    "insider-risk/departing-employee-data-theft": {
+      "dek": "The riskiest days of an employee's tenure are the notice period, when access is still fully active. This note is about spotting exfiltration patterns during exactly that window.",
+      "opening": [
+        "Departing employees are one of the highest-frequency, highest-impact insider risk scenarios in practice. Their access usually stays active until the last working day, and the activity that amounts to theft, such as downloading a client list or a source code repository, often looks like ordinary work unless it is correlated with employment status, volume and pattern.",
+        "This note deploys the Insider Risk Management policy for data theft by departing users, fed by a daily upload of resignation dates from HR. It watches for patterns such as mass SharePoint and OneDrive downloads, printing, USB copying and uploads to personal cloud storage, and alerts can flow to your SIEM through the Microsoft Graph security API."
+      ],
+      "pull": "Who is leaving this month, and what have they touched this week?"
+    },
+    "adaptive-protection/dynamic-risk-dlp-enforcement": {
+      "dek": "Detection and enforcement usually live in two separate systems, with a human in between. This note closes the loop so a user's risk level changes what DLP does to them, automatically.",
+      "opening": [
+        "In many mature security programs, detection (Insider Risk Management) and enforcement (DLP) are two separate systems, and closing the loop between them has depended on a person noticing an alert and manually tightening a policy. A user in the middle of exfiltrating data is not waiting for an analyst's shift to start.",
+        "This note builds a DLP policy that reads the user's live insider risk level. Users at the Elevated level are blocked from sharing content externally over Exchange or Teams, while users at Moderate or Minor are audited only. As Insider Risk Management raises or resets a level, the treatment of that user changes on the next matching activity, with no analyst building or lifting an exception."
+      ],
+      "pull": "How long does it take your organization to go from 'this user looks risky' to 'this user can no longer send data out'?"
+    },
+    "information-protection/auto-label-confidential-sharepoint": {
+      "dek": "Regulators and auditors want proof that you know where personal data lives and that it is marked and protected. Hoping people label their own files does not scale.",
+      "opening": [
+        "GDPR Article 32, CCPA and CPRA, and the ISO 27001 information classification controls all converge on one practical requirement: show where regulated personal data lives, and show that it is marked and protected accordingly. Relying on staff to remember to classify files by hand does not get you there, and manual-only labeling programs consistently under-cover.",
+        "This note applies an existing Confidential label automatically to SharePoint and OneDrive files that contain U.S. Social Security Numbers or credit card numbers. It runs as one auto-labeling policy, staged simulation first, and it excludes a nominated legal hold site so a matter in progress is not relabeled. It is also the foundation that the later DLP, retention and Insider Risk controls in this library depend on."
+      ],
+      "pull": "If an auditor asked where your personal data lives, could you answer without asking your users?"
+    },
+    "ediscovery/search-and-purge-data-spillage": {
+      "dek": "Someone sent a confidential email to the wrong people. This is the fast, auditable way to get it out of their mailboxes, and the one trap that catches teams who assume purge always means gone.",
+      "opening": [
+        "Data spillage, meaning sensitive content emailed to the wrong recipients, is the case Microsoft documents eDiscovery search and purge for: assess the size and locations of the spillage quickly, then purge it. Most incidents like this involve no litigation hold, and they need immediate containment with an auditable record.",
+        "This note scripts that workflow through Microsoft Graph: create a search, validate what it found, then remove matching items from Exchange mailboxes. It soft-deletes by default, and hard delete is an explicit, separately confirmed choice. One caution before you rely on it: on a mailbox under litigation hold, a purge removes items from the user's view only, and they are not permanently deleted."
+      ],
+      "pull": "Do you know what your purge actually does when a mailbox is on hold?"
+    }
+  }
+}

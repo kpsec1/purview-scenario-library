@@ -4,11 +4,11 @@ parent: "data-lifecycle-management/priority-cleanup-permanent-deletion"
 ---
 ## No recovery once deleted - the opposite posture from the sibling scenario
 
-Unlike `priority-cleanup-sharepoint-onedrive`, this scenario's terminal state (once fully configured
+Unlike *Priority Cleanup for SharePoint & OneDrive*, this scenario's terminal state (once fully configured
 via the portal's "Delete data permanently" step and an approval completes) bypasses **both**
 SharePoint/OneDrive Recycle Bins. Microsoft states the deleted content is "no longer discoverable in
 SharePoint search, Microsoft 365 Copilot, or eDiscovery" - there is no Recycle Bin
-recovery step for rollback.md to document here, because none exists. Everything below is about
+recovery step for the rollback runbook to document here, because none exists. Everything below is about
 **stopping further items from being identified and disposed of** - it is not, and cannot be, an undo
 for anything already deleted.
 
@@ -53,7 +53,7 @@ Attempts `Remove-ComplianceTag`. Reports rather than forces if the service refus
 
 ### Stage 4 - There is no Stage 4
 
-The `priority-cleanup-sharepoint-onedrive` sibling's rollback has a Stage 4 (Recycle Bin recovery).
+The *Priority Cleanup for SharePoint & OneDrive* sibling's rollback has a Stage 4 (Recycle Bin recovery).
 This scenario does not, by design: once `PriorityCleanupFileDeleted` has fired for an item, it is
 gone. If content was deleted that should not have been, treat it as a **data-loss incident**, not a
 rollback exercise - engage your organization's backup/restore process (e.g. a third-party SharePoint/
@@ -63,11 +63,11 @@ Purview-native recovery path, because none is documented.
 ## What rollback does **not** undo
 
 - **Anything for which `PriorityCleanupFileDeleted` has already fired.** No recovery path exists -
- this is this scenario's defining, disclosed risk (README.md §2/§11).
+  this is this scenario's defining, disclosed risk.
 - **An in-flight approval that completes after you disable/delete the policy.** Use Stage 0 first.
 - **The audit trail.** `PriorityCleanupFileDeleted` events remain in the audit log regardless of
- policy state - this is the evidentiary record of what happened and when, and should be preserved,
- not treated as something to undo.
+  policy state - this is the evidentiary record of what happened and when, and should be preserved,
+  not treated as something to undo.
 
 ## Before you ever reach Stage 1 - the real safeguard is upstream
 

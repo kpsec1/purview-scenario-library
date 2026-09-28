@@ -62,14 +62,14 @@ scenario's own rollback:
 ## What rollback does **not** undo
 
 - **Advanced Hunting / `DeviceEvents` history** for events this exception already generated -
- retained per its own retention window regardless of policy state.
+  retained per its own retention window regardless of policy state.
 - **The prerequisite fragment's Bluetooth catch-all coverage, or the parent's/Apple/Portable
- coverage** - Stage 1 of this rollback is scoped exclusively to this fragment's own delta.
-- **The known ordering hazard** (`README.md` §11) - rolling back this fragment does not change the
- fact that re-running the portable-device-coverage fragment's own `-Force` reconcile at any point
- in the future would have no additional effect once this fragment's exception is already removed
- (there is nothing left for it to strip), but if this fragment is later re-deployed, the hazard
- applies again from that point forward.
+  coverage** - Stage 1 of this rollback is scoped exclusively to this fragment's own delta.
+- **The known ordering hazard** - rolling back this fragment does not change the
+  fact that re-running the portable-device-coverage fragment's own `-Force` reconcile at any point
+  in the future would have no additional effect once this fragment's exception is already removed
+  (there is nothing left for it to strip), but if this fragment is later re-deployed, the hazard
+  applies again from that point forward.
 
 ## Verification after rollback
 
@@ -91,6 +91,6 @@ $json.rules | Where-Object { $_.name -like '*Bluetooth*' } | Select-Object name,
 
 ## References
 
-1. `scenarios/dlp/defender-device-control-usb-allowlist-macos-portable-device-coverage/rollback.md`
- - the prerequisite fragment's own rollback, for removing the shared Bluetooth coverage entirely.
-2. `scenarios/dlp/defender-device-control-usb-allowlist-macos/rollback.md` - full policy removal.
+1. *Defender for Endpoint Device Control (macOS): Apple/Portable/Bluetooth Device Coverage*
+   - the prerequisite fragment's own rollback, for removing the shared Bluetooth coverage entirely.
+2. *Defender for Endpoint Device Control (macOS): USB Default-Deny Allowlist* - full policy removal.

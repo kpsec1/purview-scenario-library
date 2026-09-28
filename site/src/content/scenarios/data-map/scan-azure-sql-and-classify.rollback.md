@@ -39,7 +39,7 @@ Removes the scan object and its trigger (if any). The data source stays register
 collection, so a new scan (potentially with a different scan rule set or authentication method)
 can be added later without re-registering the source. Catalog assets already ingested from prior
 scan runs are **not** deleted (Microsoft's own documentation: "Deleting your scan does not delete
-catalog assets created from previous scans" - `README.md` reference 1).
+catalog assets created from previous scans" - this page reference 1).
 
 ### Stage 3 - Full removal (data source too)
 
@@ -57,15 +57,15 @@ place.
 ## What rollback does **not** undo
 
 - **Catalog assets and classifications already ingested.** Existing schema, lineage, and
- classification tags from prior successful scan runs remain in the Data Map/Unified Catalog after
- the scan or data source is removed. There is no cascading delete.
+  classification tags from prior successful scan runs remain in the Data Map/Unified Catalog after
+  the scan or data source is removed. There is no cascading delete.
 - **The two out-of-band grants.** This scenario's deploy script does not create the Azure IAM
- `Reader` role assignment or the SQL `db_datareader` grant for the Purview SAMI - removing the
- scan does not remove them either. Clean those up separately (Azure portal IAM removal; a T-SQL
- `DROP USER` for the SAMI's database user) if the intent is a full teardown rather than a
- scan-configuration rollback.
+  `Reader` role assignment or the SQL `db_datareader` grant for the Purview SAMI - removing the
+  scan does not remove them either. Clean those up separately (Azure portal IAM removal; a T-SQL
+  `DROP USER` for the SAMI's database user) if the intent is a full teardown rather than a
+  scan-configuration rollback.
 - **Scan run history.** Prior run records remain visible in the Purview portal's Monitoring view
- for their standard 90-day retention window regardless of whether the scan object still exists.
+  for their standard 90-day retention window regardless of whether the scan object still exists.
 
 ## Verification after rollback
 

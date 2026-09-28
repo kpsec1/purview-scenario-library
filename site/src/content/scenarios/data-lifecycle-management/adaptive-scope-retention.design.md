@@ -10,35 +10,32 @@ promoted, hired, or leave; users whose country or department changes - a static 
 someone has to notice the org-chart change and edit the policy. Microsoft's own worked example is
 exactly this case: "Emails and OneDrive documents for executives require a longer retention period
 than standard users... For new executives, there's no need to reconfigure the retention policy
-because these new users with their corresponding values... are automatically picked up"
-. This scenario builds that pattern as code: a query-driven **adaptive scope**
+because these new users with their corresponding values... are automatically picked up". This scenario builds that pattern as code: a query-driven **adaptive scope**
 plus a retention policy/rule that targets it, instead of a location list that needs maintenance.
 
 ## 2. Design goals
 
 1. **Membership by attribute, not by list.** Target executives via the Entra `Title` attribute
- (an adaptive scope), not a static distribution group someone has to keep current.
+   (an adaptive scope), not a static distribution group someone has to keep current.
 2. **Reproducible as code.** One config → scope + policy + rule; re-running is safe and reports
- rather than silently mutates existing objects.
+   rather than silently mutates existing objects.
 3. **Honest about the object model's actual parameter surface.** The `AdaptiveScopeLocation`
- parameter set of `New-RetentionCompliancePolicy` is genuinely thinner than the static
- (`Default`) parameter set - no separate location toggles - and this design says so rather than
- inventing a narrower scope than what's documented (§4).
+   parameter set of `New-RetentionCompliancePolicy` is genuinely thinner than the static
+   (`Default`) parameter set - no separate location toggles - and this design says so rather than
+   inventing a narrower scope than what's documented.
 4. **Lower-irreversibility default.** Uses a **Keep-only** action, not a record or regulatory
- record label - this scenario is about *who* gets targeted (adaptively), not about
- immutability, which the sibling `retention-labels-financial-records` scenario already covers.
-5. **Companion to the static-scope sibling, not a replacement.** `retention-labels-financial-
- records/README.md` Section 11 flags adaptive scopes as an explicit follow-up for large/dynamic
- estates; this scenario is that follow-up, generalized as its own reusable pattern (an
- auto-apply retention **label** policy can use the identical `-AdaptiveScopeLocation` parameter
- set with `New-RetentionComplianceRule -ApplyComplianceTag` instead of
- `-RetentionComplianceAction` - see §7).
+   record label - this scenario is about *who* gets targeted (adaptively), not about
+   immutability, which the sibling *Retention Labels for Financial Records* scenario already covers.
+5. **Companion to the static-scope sibling, not a replacement.** *Retention Labels for Financial Records* Section 11 flags adaptive scopes as an explicit follow-up for large/dynamic
+   estates; this scenario is that follow-up, generalized as its own reusable pattern (an
+   auto-apply retention **label** policy can use the identical `-AdaptiveScopeLocation` parameter
+   set with `New-RetentionComplianceRule -ApplyComplianceTag` instead of
+   `-RetentionComplianceAction` - see the validation steps).
 
 ## 3. Why an adaptive scope, and why `Title` as the attribute
 
 Purview offers two ways to scope a policy for retention: **static** (explicit locations/lists) and
-**adaptive** (a daily-refreshed query against Entra attributes or SharePoint site properties)
-. Adaptive scopes exist specifically to remove the maintenance burden static
+**adaptive** (a daily-refreshed query against Entra attributes or SharePoint site properties). Adaptive scopes exist specifically to remove the maintenance burden static
 scopes carry for populations that change - the documented advantages include no per-policy item
 limits, resilience to org changes that don't get reflected in group membership, and support for
 Entra administrative units. `Title` (Job title) is a documented **Users**-type
@@ -78,14 +75,12 @@ New-RetentionCompliancePolicy [-Name] <String> -AdaptiveScopeLocation <MultiValu
 ```
 
 - no `-ExchangeLocation`/`-OneDriveLocation`/`-SharePointLocation`/`-TeamsChatLocation` parameters
-appear in this parameter set the way they do in the `Default` (static) parameter set
-. The portal's own documented flow implies granular control ("select one or more
-locations. The locations that you can select depend on the scope types added")
-, but no corresponding PowerShell parameter for restricting *which* of the
+appear in this parameter set the way they do in the `Default` (static) parameter set. The portal's own documented flow implies granular control ("select one or more
+locations. The locations that you can select depend on the scope types added"), but no corresponding PowerShell parameter for restricting *which* of the
 scope's covered locations (for a `User`-type scope: Exchange mailboxes, OneDrive accounts, Teams
 chats/private-channel messages, Viva Engage user messages, Teams call logs, Copilot experiences,
 Enterprise/Other AI apps) a given policy actually applies to was found in this
-cmdlet's reference. **This build does not guess an answer.** `README.md` Section 11 and the deploy
+cmdlet's reference. **This build does not guess an answer.** this page Section 11 and the deploy
 script's `.NOTES` carry the same disclosure, tagged `VERIFY (pilot tenant)`: confirm in a lab
 tenant whether an adaptive-scope policy created via PowerShell applies to all `User`-type locations
 by default, or whether the portal's per-policy location selection is enforced some other way (e.g.
@@ -94,7 +89,7 @@ before assuming "Exchange + OneDrive only" in a customer deployment.
 
 ## 5. Idempotency and safety posture
 
-Create-or-report, matching this repo's established retention-object convention: the deploy script
+Create-or-report, matching this library's established retention-object convention: the deploy script
 locates the scope, policy, and rule by name and, if present, reports and moves on rather than
 silently mutating them (a query or retention-duration change is a deliberate, reviewed action, not
 an automatic reconciliation). `-DryRun` substitutes for the non-functional S&C `-WhatIf`. Because
@@ -108,32 +103,32 @@ operator doesn't mistake "just deployed" for "already enforced."
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Scope type | `User` (`-LocationType User`), attribute `Title` | Matches Microsoft's own documented "executives" example directly (§3) |
+| Scope type | `User` (`-LocationType User`), attribute `Title` | Matches Microsoft's own documented "executives" example directly |
 | Query shape | Simple `-FilterConditions` hashtable (`Conditions`/`Conjunction`) | Matches the one fully-worked example in Microsoft's own `New-AdaptiveScope` reference; `-RawQuery` (OPATH) is the advanced-query alternative, noted but not used by default |
 | Retention action | `Keep` (not a record/regulatory record label) | This scenario's contribution is *adaptive targeting*, not immutability - record-strength retention is the sibling scenario's job |
-| Location-scope granularity | Not restricted beyond the adaptive scope's own `LocationType` | No documented parameter for narrower control was found - disclosed as a genuine gap (§4) rather than a fabricated parameter |
-| Idempotency | Create-or-report (no silent update) | Consistent with this repo's established retention-object convention |
-| Rollback | Disable → delete policy+rule (releases retention, not a record) → optionally remove the scope only if unreferenced | Lower-irreversibility control; still respects that adaptive scopes are shared, reusable objects (`rollback.md`) |
+| Location-scope granularity | Not restricted beyond the adaptive scope's own `LocationType` | No documented parameter for narrower control was found - disclosed as a genuine gap rather than a fabricated parameter |
+| Idempotency | Create-or-report (no silent update) | Consistent with this library's established retention-object convention |
+| Rollback | Disable → delete policy+rule (releases retention, not a record) → optionally remove the scope only if unreferenced | Lower-irreversibility control; still respects that adaptive scopes are shared, reusable objects |
 
 ## 7. Non-goals
 
 - **An adaptive-scope *auto-apply retention label* policy** (`New-RetentionComplianceRule
- -ApplyComplianceTag` instead of `-RetentionComplianceAction`) - the identical
- `-AdaptiveScopeLocation` parameter set on `New-RetentionCompliancePolicy` supports it directly;
- this scenario builds the plain retention-policy variant as the clearer worked example and leaves
- the label variant as a companion follow-up (`PROGRESS.md`).
+  -ApplyComplianceTag` instead of `-RetentionComplianceAction`) - the identical
+  `-AdaptiveScopeLocation` parameter set on `New-RetentionCompliancePolicy` supports it directly;
+  this scenario builds the plain retention-policy variant as the clearer worked example and leaves
+  the label variant as a companion follow-up.
 - **SharePoint-site or Microsoft 365 Group adaptive scopes** (`-LocationType Site` / `Group`) - the
- `User`-type scope is the one Microsoft's own worked example uses; the other two scope types
- follow the same object model with different attributes (§3) and are a natural extension, not
- built here.
+  `User`-type scope is the one Microsoft's own worked example uses; the other two scope types
+  follow the same object model with different attributes and are a natural extension, not
+  built here.
 - **Administrative-unit-restricted scopes** (`-AdministrativeUnit`) - supported by the config
- schema (left blank by default) but not exercised in the sample; relevant for MSSP/delegated-admin
- deployments.
+  schema (left blank by default) but not exercised in the sample; relevant for MSSP/delegated-admin
+  deployments.
 - **Advanced query builder (`-RawQuery`, OPATH/KeyQL)** - noted as the alternative to the simple
- `-FilterConditions` builder for queries the simple builder can't express; not used by default.
+  `-FilterConditions` builder for queries the simple builder can't express; not used by default.
 - **Editing an existing scope's query or an existing policy's retention settings** - the deploy
- script reports and does not mutate; changes are a deliberate, reviewed action (`Set-AdaptiveScope`
- / `Set-RetentionCompliancePolicy`, out of scope here).
+  script reports and does not mutate; changes are a deliberate, reviewed action (`Set-AdaptiveScope`
+  / `Set-RetentionCompliancePolicy`, out of scope here).
 
 ## References
 

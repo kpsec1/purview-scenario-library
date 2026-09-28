@@ -1,44 +1,52 @@
 # kpsec1.github.io
 
-Personal site for **Krunal** — Cyber Security Consultant (Regina, Saskatchewan).
-Built with [Astro](https://astro.build/) and deployed to GitHub Pages.
+Field notes on Microsoft Purview and security by **Krunal**, Cyber Security Consultant
+(Regina, Saskatchewan). Built with [Astro](https://astro.build/) and deployed to GitHub Pages.
 
-The only content published here is the **Purview Scenario Library**: 108 end-to-end
-Microsoft Purview scenarios, sourced from
-[`kpsec1/purview-scenario-library`](https://github.com/kpsec1/purview-scenario-library).
+Each scenario in the source library is published as a **field note**: a short story
+(what the risk is, why it matters, how the control works, what it takes, proof it works,
+where it stops) followed by a collapsed **Runbook** for engineers (steps, configuration,
+scripts, design notes, rollback).
 
 ## Structure
 
-- `src/pages/index.astro` — bio landing page (name, role, location, focus areas).
-- `src/pages/scenarios/` — library index and per-scenario pages.
-- `src/content/scenarios/` — generated scenario content (one Markdown file per
-  scenario, committed so the site builds without the source repo present).
-- `scripts/sync-scenarios.mjs` — regenerates `src/content/scenarios/` from a local
-  checkout of `purview-scenario-library` sitting next to this repo.
+- `src/pages/index.astro`: the home page (hero, featured stories, reading paths, themes, bio).
+- `src/pages/scenarios/`: the Field Notes library and the field note page.
+- `src/pages/docs/`: the Field Guide (licensing, roles, automation, glossary).
+- `src/content/`: generated Markdown (committed, so the site builds without the source repo).
+- `src/data/`: `themes.json` (story groupings), `areas.json` (area names), `tracks.json`
+  (reading paths), `flagship.json` (hand-written openings), and generated `scenario-scripts/`.
+- `scripts/sync-scenarios.mjs`: regenerates `src/content` and `src/data/scenario-scripts`
+  from a local checkout of `purview-scenario-library` placed next to this repo.
 
 ## Develop
 
 ```sh
 npm install
 npm run dev      # http://localhost:4321
-npm run build    # runs the content sync (if source is available) then astro build
+npm run build    # syncs content when the source repo is present, then builds
 ```
 
-## Updating scenario content
-
-Regenerate the committed content from the source repo, then commit the result:
+## Refreshing content
 
 ```sh
 # with purview-scenario-library checked out as a sibling of this repo
 npm run sync-content
-git add src/content/scenarios && git commit -m "Refresh scenario content"
+git add src && git commit -m "Refresh field notes"
 ```
 
-If the source repo is not present, the sync step is skipped and the committed
-content is used as-is.
+The sync turns repository-style pointers in the source ("see design.md section 4",
+`scenarios/x/y/`) into plain wording, removes long dashes, repairs Mermaid diagram syntax,
+and splits each README into the story and the runbook. `DEBUG_SAMPLES=20 npm run sync-content`
+prints a random sample of before and after edits for review.
+
+## Flagship openings
+
+`src/data/flagship.json` holds hand-written openings for six featured notes. They are drafts:
+nothing shows on the live site until `published` is set to `true` (globally, or per post).
+`SHOW_FLAGSHIP_DRAFTS=1 npm run build` previews them locally.
 
 ## Deploy
 
-Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds with
-`withastro/action` and publishes via `actions/deploy-pages`. Pages must be
-configured with the **GitHub Actions** source (Settings → Pages).
+Pushing to `main` runs `.github/workflows/deploy.yml`, which builds with `withastro/action`
+and publishes with `actions/deploy-pages`. Pages must use the **GitHub Actions** source.

@@ -4,7 +4,7 @@ parent: "data-map/scan-azure-sql-managed-instance-and-classify"
 ---
 ## Recommended sequence
 
-Structurally identical to the sibling `scan-azure-sql-and-classify` scenario's rollback: a Data Map
+Structurally identical to the sibling *Scan Azure SQL Database and Classify Sensitive Columns* scenario's rollback: a Data Map
 scan does not act on live traffic, so removing it stops future discovery/classification but never
 affects the managed instance or any Microsoft 365 control. Rollback is staged so you can pause at
 "stop the recurring schedule" without losing the registration.
@@ -35,7 +35,7 @@ scan and data source registered for a later on-demand run via `-RunNow`.
 Removes the scan object and its trigger (if any). The data source stays registered under its
 collection. Catalog assets already ingested from prior scan runs are **not** deleted (Microsoft's
 own documentation: "Deleting your scan does not delete catalog assets created from previous scans"
-- `README.md` reference 2).
+- this page reference 2).
 
 ### Stage 3 - Full removal (data source too)
 
@@ -46,9 +46,11 @@ own documentation: "Deleting your scan does not delete catalog assets created fr
 ```
 
 Also deletes the data source registration. Re-establishing the control means re-running
-`deploy/New-AzureSqlManagedInstanceDataMapScan.ps1` from scratch, including re-verifying all five
+`deploy/New-AzureSqlManagedInstanceDataMapScan.ps1` from scratch, including re-verifying all four
 out-of-band prerequisites (Microsoft Entra admin on the instance, Directory Readers role,
-`db_datareader`, Azure IAM Reader, public endpoint/NSG) are still in place.
+`db_datareader`, public endpoint/NSG) are still in place. (An earlier revision of this list also named
+an Azure IAM Reader grant on the instance resource - removed 2026-09-27, see the known limitations: no such
+grant is part of Microsoft's documented SAMI/UAMI scan-authentication mechanism for this source.)
 
 ### Stage 4 (optional, Managed-Instance-specific) - Revoke the Directory Readers role
 
@@ -57,29 +59,29 @@ Microsoft Entra role grant (Directory Readers) on the managed instance's own man
 just Purview/Azure IAM roles. If a full teardown should also revert that grant:
 
 1. Confirm no other workload on this managed instance depends on Microsoft Entra authentication -
- revoking Directory Readers breaks Entra authentication for **all** logins on the instance, not
- just this scenario's scan.
+   revoking Directory Readers breaks Entra authentication for **all** logins on the instance, not
+   just this scenario's scan.
 2. A **Privileged Role Administrator** removes the instance's managed identity from the Directory
- Readers role (Azure portal → Microsoft Entra ID → Roles and administrators → Directory Readers →
- remove the member; or the PowerShell equivalent of the grant script in `README.md` reference 3).
+   Readers role (Azure portal → Microsoft Entra ID → Roles and administrators → Directory Readers →
+   remove the member; or the PowerShell equivalent of the grant script in this page reference 3).
 
 This step is deliberately **not** part of `Remove-AzureSqlManagedInstanceDataMapScan.ps1` - it is a
 tenant-wide-flavored change outside this scenario's automation identity's own role scope, and
 revoking it can silently break unrelated Entra-authenticated logins on the same instance. Treat it
-as a manually-confirmed, out-of-band step, same posture this repo takes toward the sibling
+as a manually-confirmed, out-of-band step, same posture this library takes toward the sibling
 scenario's Azure IAM Reader grant.
 
 ## What rollback does **not** undo
 
 - **Catalog assets and classifications already ingested.** Same as the sibling scenario - no
- cascading delete.
+  cascading delete.
 - **The four out-of-band grants and settings.** This scenario's deploy script does not create the
- Microsoft Entra admin assignment, the Directory Readers role grant, the `db_datareader` grant, the
- Azure IAM `Reader` role assignment, or the public-endpoint/NSG configuration - removing the scan
- does not remove any of them either. Clean up separately if the intent is a full teardown; see
- Stage 4 above for Directory Readers specifically.
+  Microsoft Entra admin assignment, the Directory Readers role grant, the `db_datareader` grant, or
+  the public-endpoint/NSG configuration - removing the scan does not remove any of them either. Clean
+  up separately if the intent is a full teardown; see Stage 4 above for Directory Readers
+  specifically.
 - **Scan run history.** Prior run records remain visible in the Purview portal's Monitoring view for
- their standard 90-day retention window regardless of whether the scan object still exists.
+  their standard 90-day retention window regardless of whether the scan object still exists.
 
 ## Verification after rollback
 
