@@ -3574,7 +3574,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `streaming-to-sentinel-or-management-api` data-connector naming-contract VERIFY**
-  - commit `PENDING` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether a
+  - commit `fe2a09c` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether a
   `Microsoft.SecurityInsights/dataConnectors` resource's `name` must be a GUID or accepts an
   arbitrary string. Grounded via the Microsoft Learn MCP: the resource-format reference documents
   `name` as plain `string (required)` with no format constraint, and its own worked Bicep/ARM/
