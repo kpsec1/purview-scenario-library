@@ -8536,7 +8536,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   valid future fragment, now unblocked rather than gated on an unresolved grounding question. No
   code changed; maintenance-only, per this run's scope.
 - [x] **Closed the `accepted-domains-hygiene-check` `Set-AcceptedDomain` audit-attribution VERIFY** —
-  commit TBD — 2026-09-28. Maintenance pass: closed the open VERIFY asking whether
+  commit `872ece8` — 2026-09-28. Maintenance pass: closed the open VERIFY asking whether
   `Set-AcceptedDomain` is independently confirmed to appear under `Search-UnifiedAuditLog -RecordType
   ExchangeAdmin -Operations 'Set-AcceptedDomain'`. Grounded via the Microsoft Learn MCP: a direct
   fetch of `purview/audit-log-activities`'s "Exchange admin activities" section states the full
