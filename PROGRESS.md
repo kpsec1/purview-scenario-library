@@ -3635,7 +3635,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `scan-azure-sql-and-classify` Data Sources/Triggers REST body-shape VERIFY** -
-  commit `PENDING` - 2026-09-28. Maintenance pass: the canonical **Data Sources - Create Or Replace**
+  commit `be8d36d` - 2026-09-28. Maintenance pass: the canonical **Data Sources - Create Or Replace**
   and **Triggers - Create Or Replace** REST reference pages, which returned fetch errors in the
   original build's environment, were successfully direct-fetched via the Microsoft Learn MCP tool.
   Both confirm the shapes `deploy/New-AzureSqlDataMapScan.ps1` already used - `kind:
