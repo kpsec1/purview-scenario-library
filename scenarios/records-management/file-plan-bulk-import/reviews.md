@@ -59,6 +59,12 @@ No remaining Fix/Fail after resolution.
    - **Resolution:** Rather than guess a `RecordType`, this is flagged as an open VERIFY in
      `README.md` §11 with the exact distinction (creation vs. application) spelled out, so a future
      fragment grounds it deliberately instead of this one inventing a value.
+   - **Correction addendum (2026-09-28, maintenance pass):** the VERIFY is now closed. Microsoft's
+     own **Audit log activities** and **Office 365 Management Activity API schema** reference pages,
+     fetched directly via the Microsoft Learn MCP tool, confirm `RecordType DataGovernance` (38) /
+     `Operations NewComplianceTag` ("Created retention label") for the label-creation event -
+     `README.md` §11/§12 updated in place. The audit-trail export script itself remains a tracked,
+     unbuilt follow-up (out of scope for this maintenance-only pass).
 3. **File-plan-descriptor read-back isn't asserted by validate.** `Get-ComplianceTag`'s exposed
    property names for descriptors weren't confirmed against Learn.
    - **Resolution:** `validate/Test-FilePlanBulkImport.ps1` reports descriptors informationally

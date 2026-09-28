@@ -2729,11 +2729,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   create-or-report only by this repo's records-object convention (`design.md` §7).
 
 ### Follow-ups discovered while building the Records Management file-plan-bulk-import scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): the exact `Search-UnifiedAuditLog`
-  `RecordType`/`Operations` values for a retention-label **definition/creation** event (as distinct
-  from the already-documented label **application** events, `Changed retention label for a file` /
-  `Labeled message as a record`). Not found during this build; an `Export-*` audit-trail companion
-  for bulk-creation events is a genuine follow-up once grounded, not guessed.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, maintenance pass): the exact
+  `Search-UnifiedAuditLog` `RecordType`/`Operations` values for a retention-label
+  **definition/creation** event (as distinct from the already-documented label **application**
+  events, `Changed retention label for a file` / `Labeled message as a record`) are
+  `RecordType DataGovernance` (38) / `Operations NewComplianceTag` ("Created retention label") -
+  confirmed directly from Microsoft's "Audit log activities" and "Office 365 Management Activity API
+  schema" reference pages. `file-plan-bulk-import/README.md` §11/§12 and `reviews.md` (Blue Team
+  correction addendum) updated in place. An `Export-*` audit-trail companion for bulk-creation events,
+  now buildable against this confirmed `RecordType DataGovernance`/`Operations NewComplianceTag`
+  pair, remains the same pre-existing follow-up noted in this item's own original text - not built in
+  this maintenance-only pass (new coverage is out of scope for a maintenance fragment).
 - [ ] VERIFY (pilot tenant): the property name(s) `Get-ComplianceTag` exposes for file-plan-descriptor
   read-back (Department/Category/SubCategory/Citation/ReferenceId/Authority) - undocumented;
   `file-plan-bulk-import/validate/Test-FilePlanBulkImport.ps1` reports them informationally rather
