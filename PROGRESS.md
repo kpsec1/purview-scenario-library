@@ -3625,7 +3625,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `search-and-purge-teams-messages` `-PurgeType` compliance-copy-timing VERIFY** -
-  commit `PENDING` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether `-PurgeType`
+  commit `85d6764` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether `-PurgeType`
   still meaningfully affects the Teams **compliance copy's** retention/hold-interaction timing, even
   though it no longer gates the user-copy outcome. Grounded via the Microsoft Learn MCP: the
   `ediscoverySearch: purgeData` Graph reference - the authoritative source for the `purgeType`
