@@ -984,7 +984,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   parameters, but no Microsoft Learn page states what, if anything, shows up in `InPlaceHolds` for this
   specific case (as opposed to the org-wide `grp<guid>:n` notation, which Microsoft's own
   `Get-OrganizationConfig` reference does confirm). `teams-purge-hold-lifecycle-management/design.md`
-  §8.1, `README.md` §11.
+  §8.1, `README.md` §11. **Re-grounded 2026-09-28** (Microsoft Learn MCP, full fetch of
+  `purview/edisc-hold-types-mailboxes`): still genuinely undocumented. That page's `Get-Mailbox`
+  ("specific location retention policy") table states explicitly "you can identify retention
+  policies because the GUID starts with the `mbx` or the `skp` prefix" - `grp` is never mentioned in
+  that table. The `grp` prefix appears only in the page's separate `Get-OrganizationConfig`
+  (organization-wide) table, confirming the premise that `grp` is documented solely for the
+  org-wide case, never for a mailbox-scoped, non-org-wide Group-location policy. No other Microsoft
+  Learn page found in this pass (searched `Set-RetentionCompliancePolicy`/
+  `Set-AppRetentionCompliancePolicy` reference pages, `edisc-hold-manage`,
+  `edisc-hold-delete-recoverable-items`) states or contradicts this. Re-open only once a page
+  explicitly documents the mailbox-scoped Group-location `InPlaceHolds` notation or a pilot-tenant
+  check confirms it directly.
 - [ ] If a Microsoft Learn source or pilot-tenant test ever surfaces a real, confirmed case of a `grp`-
   prefixed, non-org-wide `InPlaceHolds` entry on a mailbox that is genuinely NOT a group/team mailbox
   (the `UnrecognizedPolicyGuids`/`unrecognizedPolicyGuidsNotRemoved` bucket
