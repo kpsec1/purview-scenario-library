@@ -711,7 +711,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   declares an app (not an action), and no Setting name for the cloud/browser restriction is
   documented anywhere this build found - see that scenario's `README.md` §11 and `design.md`
   §2/§6/§7. If either is resolved, extend `deploy/New-AdaptiveProtectionDevicesDlpPolicy.ps1`'s
-  two rules to the full 6-action Quick Setup shape.
+  two rules to the full 6-action Quick Setup shape. **Re-grounded 2026-09-28** (Microsoft Learn
+  MCP): still genuinely undocumented. `New-DlpComplianceRule`'s full parameter reference page was
+  re-fetched in full; its `-EndpointDlpRestrictions` example list remains exactly `Print`,
+  `CopyPaste`, `ScreenCapture`, `RemovableMedia`, `NetworkShare`, and `UnallowedApps` (app
+  declaration only) - no `Setting` name for either missing action appears there or on the DLP
+  policy reference / Configure endpoint DLP settings pages. One adjacent lead checked and ruled
+  out rather than left implicit: the new macOS 27 Endpoint DLP page documents an
+  `unallowedBrowserMode` configuration key, but that key belongs to a different feature (the
+  device-profile permission-notification settings for cloud egress when browser context is
+  unavailable), not to a `-EndpointDlpRestrictions` rule-level `Setting`, so it doesn't resolve
+  this gap and README.md §11 was not changed on that basis. The cmdlet reference does newly
+  confirm `-EndpointDlpRestrictions` requires Compliance Administrator or Compliance Data
+  Administrator role membership and points to `Get-PolicyConfig`/`Set-PolicyConfig` for viewing
+  the organization's configured restrictions - both added to `README.md` §11 as a documented,
+  non-fabricated way for a pilot-tenant operator to inspect available settings directly. Re-open
+  only once a page states a `Setting` name for either missing action, or a pilot-tenant
+  `Get-PolicyConfig` check confirms one.
 - [ ] VERIFY (pilot tenant): `-ContentFileTypeMatches`'s value syntax and valid strings - both
   `New-DlpComplianceRule` and `Set-DlpComplianceRule`'s official reference pages carry unpublished
   placeholder text for this parameter as of this writing. `endpoint-dlp-usb-block-adaptive-

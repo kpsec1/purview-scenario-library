@@ -229,7 +229,20 @@ classification scanning and protection - each is independently owned.
   scenario's policy is therefore a **4-of-6-action subset** of Microsoft's full Quick Setup
   reference configuration - real, useful, and independently grounded for what it does cover, but
   not a complete substitute for Quick Setup's own output. §5 Step 6 documents the manual portal
-  completion step for an organization that wants full parity.
+  completion step for an organization that wants full parity. **Re-grounded 2026-09-28** (Microsoft
+  Learn MCP): still undocumented - the full `New-DlpComplianceRule` reference page was re-fetched
+  and its `-EndpointDlpRestrictions` example list is unchanged (`Print`, `CopyPaste`,
+  `ScreenCapture`, `RemovableMedia`, `NetworkShare`, `UnallowedApps` only). Two things worth
+  recording for an operator who wants to check this directly rather than wait on documentation:
+  (1) `-EndpointDlpRestrictions` requires Compliance Administrator or Compliance Data Administrator
+  role membership in Microsoft Entra ID; (2) Microsoft's own reference points to
+  `Get-PolicyConfig`/`Set-PolicyConfig` as the supported way to view and configure an
+  organization's endpoint restrictions - a pilot-tenant `Get-PolicyConfig` call is the fastest
+  path to confirming whether either missing `Setting` name actually exists, without guessing at
+  one. (A superficially similar `unallowedBrowserMode` key documented on Microsoft's newer macOS 27
+  Endpoint DLP page was checked and ruled out: it configures a different feature - the device
+  profile's permission-notification behavior for cloud egress when browser context is unavailable -
+  not a `-EndpointDlpRestrictions` rule-level `Setting`.)
 - **`NotifyUser`/Block tension, disclosed not resolved.** Microsoft's cmdlet reference states
   Block or Warn values require the `NotifyUser` parameter to be supplied, yet the same documented
   Quick Setup rule table shows "User Notification: Off" for this exact Devices Block rule. This
