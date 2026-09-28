@@ -115,19 +115,21 @@ a built-in template - see §8):
 | Stock manipulation | Recommendations to buy/sell/hold stock in order to manipulate price - the core classifier for FINRA/SEC market-manipulation supervision |
 | Unauthorized disclosure | Sharing of information explicitly designated confidential/internal-only - the classifier most directly relevant to insider-trading and material-non-public-information (MNPI) leakage supervision |
 
-**Why not the built-in "Detect financial regulatory compliance" policy template directly:** this
-build's WebSearch-only grounding (§12) consistently confirms that template's *existence* and general
-purpose ("quickly create a policy to check communications for references to standard financial terms
-associated with regulatory standards"), and that a related "Detect conflict of interest" template
-also exists - but could not confirm, without a direct Microsoft Learn fetch or a pilot tenant, the
-**exact classifier set each of the two templates bundles by default** (e.g., whether Corporate
-sabotage ships under one, the other, both, or neither). Rather than guess a bundling and risk
-silently omitting a classifier this scenario needs, this scenario follows the harassment sibling's
-own precedent: build a **custom policy** that explicitly selects all seven classifiers above by name,
-which is correct regardless of how Microsoft's two templates happen to bundle them. A future revision
-that can directly confirm each template's exact classifier list may simplify §5's portal runbook to
-start from the built-in template and add only the missing classifiers, without changing the
-resulting policy's actual classifier set.
+**Why not the built-in "Detect financial regulatory compliance" policy template directly - closed
+2026-09-28 (Microsoft Learn MCP, direct fetch of `communication-compliance-policies#choose-a-policy-
+template`):** the built-in **"Detect financial regulatory compliance"** template ("Regulatory
+compliance" area) bundles exactly six of this scenario's seven classifiers - **Customer complaints,
+Gifts & entertainment, Money laundering, Regulatory collusion, Stock manipulation, and Unauthorized
+disclosure** - scoped to Exchange Online/Teams/Viva Engage, Inbound+Outbound direction, 10% review
+percentage, and **omits Corporate sabotage entirely**. The separate **"Detect conflict of interest"**
+template (Exchange Online/Teams/Viva Engage, Internal direction, 100% review percentage) carries
+**no classifier conditions at all** - it detects communications between two scoped groups/users, not
+by content classifier, so it contributes nothing to this scenario's classifier set regardless. Neither
+template can produce this scenario's required seven-classifier, 100%-review-percentage, Rule-3110(b)(4)
+posture as shipped: starting from "Detect financial regulatory compliance" would still require adding
+Corporate sabotage and raising the review percentage from 10% to 100% via **Customize policy**. This
+confirms, rather than merely defers, the original decision to build a **custom policy** that explicitly
+selects all seven classifiers above by name (§8) - not a guess, and not superseded by this closure.
 
 **Why a custom keyword dictionary, and why it is evasion-phrase-only, not a ticker/term list:** the
 seven classifiers above already cover explicit stock-manipulation, money-laundering, and collusion
@@ -189,8 +191,10 @@ own written supervisory procedures) Rule 3110(b)(4) requires, separately from co
   `scenarios/information-barriers/segregate-trading-and-research/` is the preventive control for
   segregating trading/research communication entirely; a DLP policy matching specific restricted-list
   tickers in real time is a plausible companion fragment this scenario does not build (`PROGRESS.md`).
-- **The "Detect conflict of interest" built-in policy template**, as its own standalone scenario - a
-  candidate follow-up once its exact classifier bundling can be confirmed (§5).
+- **The "Detect conflict of interest" built-in policy template**, as its own standalone scenario - now
+  confirmed (§5) to carry no classifier conditions at all (it detects communications between two scoped
+  groups/users only), so a standalone scenario for it would be a genuinely different control (conflict-
+  of-interest pairing, not content classification) rather than a classifier-bundling variant of this one.
 - **Trade-surveillance/market-abuse analytics** (correlating message content against actual trade
   blotters, FINRA CAT reporting, or similar) - a fundamentally different product category outside
   Microsoft Purview entirely.
@@ -248,6 +252,7 @@ inline as **VERIFY** rather than asserted as certain, per `AGENTS.md` §4. The c
 naming VERIFY (this section, §5) has since been closed by a direct Microsoft Learn MCP fetch of
 `learn.microsoft.com/purview/trainable-classifiers-definitions#regulatory-collusion` and
 `learn.microsoft.com/purview/communication-compliance-policies#policy-settings`, both of which use
-only "Regulatory collusion" - "Workplace collusion" appears on neither canonical page. The remaining
-VERIFY items in §5/§11 (built-in template classifier bundling, the `AuditData` action-property name)
-are unaffected and still require a direct Learn fetch or pilot tenant.
+only "Regulatory collusion" - "Workplace collusion" appears on neither canonical page. The built-in
+template classifier-bundling VERIFY in §5/§11 was closed 2026-09-28 by a direct Microsoft Learn MCP
+fetch of `communication-compliance-policies#choose-a-policy-template`. The remaining VERIFY item in
+§11 (the `AuditData` action-property name) is unaffected and still requires a pilot tenant.

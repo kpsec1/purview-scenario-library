@@ -3443,18 +3443,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   departing-employee-data-theft/`'s own HR-connector follow-up tracks for a different population.
 - [ ] The built-in **"Detect conflict of interest"** Communication Compliance policy template, as its
   own standalone scenario - deferred as a non-goal in `financial-regulatory-supervision/design.md` §5/
-  §7 pending confirmation of its exact classifier bundling (see the VERIFY item below).
+  §7. Now confirmed (2026-09-28, see DONE below) to carry no classifier conditions at all - it matches
+  communications between two scoped groups/users, not content - so a standalone scenario would be a
+  distinct conflict-of-interest-pairing control, not a classifier-bundling variant of this one.
 - [ ] A preventive DLP companion scoped to a firm's actual restricted-list/watch-list tickers (real-time
   blocking, not just detective review) - deferred as a non-goal in `financial-regulatory-supervision/
   design.md` §7; natural complement to `scenarios/information-barriers/segregate-trading-and-research/`.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether Microsoft's built-in "Detect
-  financial regulatory compliance" and "Detect conflict of interest" policy templates bundle Corporate
-  sabotage, Customer complaints, Gifts & entertainment, Money laundering, [Workplace/Regulatory]
-  collusion, Stock manipulation, and Unauthorized disclosure identically to how
-  `financial-regulatory-supervision`'s custom policy selects all seven explicitly - this build's
-  WebSearch-only grounding (no direct `learn.microsoft.com` fetch available) could not confirm the
-  per-template classifier split. `financial-regulatory-supervision/design.md` §5/§8 and `README.md`
-  §11 flag this rather than guessing.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, direct fetch of `communication-compliance-
+  policies#choose-a-policy-template`): whether Microsoft's built-in "Detect financial regulatory
+  compliance" and "Detect conflict of interest" policy templates bundle the same seven classifiers as
+  `financial-regulatory-supervision`'s custom policy. **Confirmed they do not.** "Detect financial
+  regulatory compliance" bundles six of the seven (Customer complaints, Gifts & entertainment, Money
+  laundering, Regulatory collusion, Stock manipulation, Unauthorized disclosure) at a 10% review
+  percentage and omits Corporate sabotage entirely; "Detect conflict of interest" carries no classifier
+  conditions at all (it matches on communications between two scoped groups/users, not content).
+  Neither template can produce this scenario's seven-classifier, 100%-review-percentage posture as
+  shipped - confirms, rather than merely defers, the original custom-policy decision. Updated
+  `financial-regulatory-supervision/design.md` §5/§7/§10, `README.md` §11/§12, and `reviews.md`
+  (Microsoft Product Owner finding 2).
 - [ ] VERIFY (pilot tenant): the exact `AuditData` JSON property name Microsoft populates with the
   remediation action taken on a `SupervisoryReviewTag` event. `financial-regulatory-supervision/
   deploy/Export-FinraSupervisionEvidence.ps1` tries a short list of plausible candidate property names
@@ -3493,6 +3499,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `financial-regulatory-supervision` built-in-template classifier-bundling VERIFY**
+  - commit `PENDING` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether the
+  built-in "Detect financial regulatory compliance" and "Detect conflict of interest" Communication
+  Compliance policy templates bundle the same seven classifiers as this scenario's custom policy.
+  Grounded via the Microsoft Learn MCP: a direct fetch of `communication-compliance-policies#choose-
+  a-policy-template` confirms "Detect financial regulatory compliance" bundles six of the seven
+  classifiers (Customer complaints, Gifts & entertainment, Money laundering, Regulatory collusion,
+  Stock manipulation, Unauthorized disclosure) at a 10% review percentage and omits Corporate
+  sabotage entirely, while "Detect conflict of interest" carries no classifier conditions at all (it
+  matches communications between two scoped groups/users, not content). Neither built-in template can
+  produce this scenario's seven-classifier, 100%-review-percentage Rule-3110(b)(4) posture as
+  shipped, which confirms - rather than merely defers - the scenario's existing custom-policy
+  decision. Updated `financial-regulatory-supervision/design.md` (§5, §7, §10), `README.md` (§11,
+  §12 reference 2), and `reviews.md` (Microsoft Product Owner finding 2) in place. No cmdlet, script,
+  or policy manifest changed - this was a documentation-accuracy closure, not a behavior change; no
+  new four-lens review round required, no new VERIFY items opened.
 - [x] **Closed the `curate-business-glossary` Business Domain Create/Update "required" fields
   VERIFY** - commit `bf82c94` - 2026-09-27. Maintenance pass: closed the open VERIFY asking
   whether the Business Domain `Create`/`Update` REST reference's `systemData`/`thumbnail`/

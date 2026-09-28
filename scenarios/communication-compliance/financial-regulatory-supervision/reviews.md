@@ -129,7 +129,11 @@ No remaining Fail after resolution.
    building a custom policy that names all seven classifiers explicitly (`design.md` §5) - a
    materially better answer than either guessing a bundling or omitting classifiers because their
    template mapping was unclear. This is the same "don't guess, build around the gap" discipline
-   `AGENTS.md` §4 requires.
+   `AGENTS.md` §4 requires. **Maintenance update (2026-09-28):** a direct Microsoft Learn MCP fetch
+   closed this VERIFY - "Detect financial regulatory compliance" bundles six of the seven classifiers
+   (all but Corporate sabotage) at a 10% review percentage, and "Detect conflict of interest" carries no
+   classifier conditions at all. The custom-policy decision is confirmed correct, not merely undecided;
+   `README.md`, `design.md`, and this file have been updated accordingly.
 3. **No-write-API claim correctly reused from the sibling scenario's own double-sourced grounding**
    rather than re-asserting it from a single source - `design.md` §2 cites the identical two-page
    verbatim quote the harassment sibling already established, consistent with this repo's existing

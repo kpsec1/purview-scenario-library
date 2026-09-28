@@ -310,13 +310,14 @@ removes all captured messages, attachments, and alerts**.
   and [Create and manage Communication Compliance policies](https://learn.microsoft.com/purview/communication-compliance-policies#policy-settings).
   "Workplace collusion" does not appear on either canonical page and was an artifact of this
   scenario's original WebSearch-only grounding pass (`design.md` §10).
-- **This build's classifier-to-template mapping is inferred, not confirmed.** Microsoft documents a
-  built-in "Detect financial regulatory compliance" template (and a related "Detect conflict of
-  interest" template) but this build could not confirm, without a direct Learn fetch or pilot tenant,
-  exactly which of the seven classifiers each template bundles by default. This scenario sidesteps the
-  question by building a custom policy naming all seven explicitly (`design.md` §5) - this does not
-  depend on resolving the template question, but a future revision should still confirm it for anyone
-  choosing to start from a template instead.
+- **Classifier-to-template mapping - resolved 2026-09-28.** The built-in "Detect financial regulatory
+  compliance" template bundles six of this scenario's seven classifiers (Customer complaints, Gifts &
+  entertainment, Money laundering, Regulatory collusion, Stock manipulation, Unauthorized disclosure) at
+  a 10% review percentage, and omits **Corporate sabotage** entirely. The separate "Detect conflict of
+  interest" template carries **no classifier conditions** - it matches on communications between two
+  scoped groups/users, not content. Neither template can produce this scenario's seven-classifier,
+  100%-review-percentage posture as shipped, confirming (not just deferring) the decision to build a
+  custom policy naming all seven classifiers explicitly (`design.md` §5).
 - **The evidence-of-review CSV's "action taken" field is best-effort, not guaranteed-complete.** This
   build could not confirm the exact `AuditData` JSON property name Microsoft populates for the
   specific remediation action (Resolve/Tag/Escalate/etc.) on a `SupervisoryReviewTag` event, beyond
@@ -348,8 +349,10 @@ removes all captured messages, attachments, and alerts**.
    <https://learn.microsoft.com/purview/trainable-classifiers-definitions#regulatory-collusion>
    (`design.md` §10).
 2. "Detect financial regulatory compliance" and "Detect conflict of interest" built-in policy
-   templates - corroborated via WebSearch summarizing the same Communication Compliance policies page;
-   exact per-template classifier bundling not independently confirmed - `design.md` §5.
+   templates, including each template's exact classifier bundling, location, direction, and review
+   percentage - confirmed directly via
+   <https://learn.microsoft.com/purview/communication-compliance-policies#choose-a-policy-template>
+   (`design.md` §5).
 3. Create and manage Communication Compliance policies (policy templates, PowerShell-not-supported
    statement, storage limits, pause/copy) - <https://learn.microsoft.com/purview/communication-compliance-policies>
 4. Get started with Communication Compliance (step-by-step policy workflow, notice templates/
