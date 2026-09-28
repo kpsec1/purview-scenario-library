@@ -3645,7 +3645,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Re-grounded the `glossary-curation-coverage-report` `Terms - List` `top`-maximum VERIFY** -
-  commit `PENDING` - 2026-09-28. Maintenance pass: re-fetched the `Terms - List` REST reference via
+  commit `782651d` - 2026-09-28. Maintenance pass: re-fetched the `Terms - List` REST reference via
   the Microsoft Learn MCP tool against both the `2025-09-15-preview` and the pinned
   `2026-03-20-preview` API version. `top` is still documented only as "the number of result items to
   return" on both versions, with no maximum ever stated - the VERIFY remains genuinely open, not
