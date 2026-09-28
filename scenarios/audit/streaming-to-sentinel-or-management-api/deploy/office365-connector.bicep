@@ -23,11 +23,17 @@
 // - ARM/Bicep what-if:
 //   https://learn.microsoft.com/azure/azure-resource-manager/bicep/deploy-what-if
 //
-// VERIFY (pilot tenant): whether the data-connector resource `name` must be a GUID (several
-// Microsoft samples for other connector kinds use one) or accepts an arbitrary string for the
-// Office365 kind specifically - this template defaults to a deterministic GUID (guid()) so re-runs
-// target the same resource, but Microsoft's Office365-kind reference page does not state the name
-// constraint explicitly.
+// Naming contract - grounded 2026-09-28 (Microsoft Learn MCP): the data-connector resource `name`
+// is not required to be a GUID. The resource-format reference documents `name` as plain
+// `string (required)` (no format constraint), and its own worked Bicep/ARM/Terraform example sets
+// it to an arbitrary string ('acctest0001') for a different connector kind on this same resource
+// type. The REST/Codeless-Connector-Framework URI-parameter reference confirms the only real
+// constraint: `dataConnectorId` "must be a unique name that's the same as the name parameter in
+// the request body" - uniqueness, not a GUID format. (`New-AzSentinelDataConnector`'s `-Id`
+// parameter defaults to `(New-Guid).Guid`, but that's a convenience default, not a documented
+// requirement.) This template's deterministic guid()-derived name below remains unchanged - still
+// a valid, idempotent choice - now a design choice rather than a workaround for an unstated
+// constraint. See README.md Section 11 and references 9/16.
 
 @description('Name of the existing Log Analytics workspace that has Microsoft Sentinel enabled.')
 param workspaceName string
@@ -52,7 +58,8 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existin
 }
 
 // Deterministic name so repeat deployments target the same connector resource instead of
-// creating duplicates (see the VERIFY note above re: the exact naming contract for this kind).
+// creating duplicates (a GUID isn't required per the naming-contract note above - this is a
+// deliberate idempotency choice, not a format requirement).
 var connectorName = guid(workspace.id, 'office365-data-connector')
 
 resource office365Connector 'Microsoft.SecurityInsights/dataConnectors@2024-03-01' = {

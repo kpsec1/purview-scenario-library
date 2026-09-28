@@ -3549,13 +3549,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   and `README.md` §11 (a different connector, different destination table
   `MicrosoftPurviewInformationProtection`, label/protection-event-specific, with documented
   duplication against `OfficeActivity` and unpopulated label names) - not built here.
-- [ ] VERIFY (pilot tenant): the exact naming contract for a `Microsoft.SecurityInsights/
-  dataConnectors` resource of `kind: Office365` - Microsoft's ARM/Bicep reference page for this kind
-  doesn't state whether `name` must be a GUID (as several other connector kinds' samples use) or
-  accepts an arbitrary string. `streaming-to-sentinel-or-management-api/deploy/
-  office365-connector.bicep` defaults to a deterministic `guid()`-derived name so re-deployments
-  target the same resource regardless of the answer, flagged inline in the template's header comment
-  and `README.md` §11.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP): the exact naming contract for a
+  `Microsoft.SecurityInsights/dataConnectors` resource `name` - **confirmed not required to be a
+  GUID.** The resource-format reference documents `name` as plain `string (required)` with no
+  format constraint, and its own worked Bicep/ARM/Terraform example sets it to an arbitrary string
+  (`'acctest0001'`) for a data connector on this same resource type. The REST/Codeless-Connector-
+  Framework URI-parameter reference confirms the only real constraint: `dataConnectorId` "must be a
+  unique name that's the same as the `name` parameter in the request body" - uniqueness, not a GUID
+  format. (`New-AzSentinelDataConnector`'s `-Id` parameter defaults to `(New-Guid).Guid`, but that's
+  a convenience default, not a documented requirement.) `streaming-to-sentinel-or-management-api/
+  deploy/office365-connector.bicep`'s deterministic `guid()`-derived name is unchanged (still a
+  valid, idempotent choice) but is now framed as a design choice rather than a workaround for an
+  unstated constraint - header comment, `README.md` §11, and reference 16 updated in place.
 - [ ] VERIFY (pilot tenant): the exact wall-clock enforcement of the Office 365 Management Activity
   API's 15-minute cooldown between `/subscriptions/start` calls for the same content type - whether
   it's measured from the previous call regardless of outcome, or only from a successful one.
@@ -3568,6 +3573,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `streaming-to-sentinel-or-management-api` data-connector naming-contract VERIFY**
+  - commit `PENDING` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether a
+  `Microsoft.SecurityInsights/dataConnectors` resource's `name` must be a GUID or accepts an
+  arbitrary string. Grounded via the Microsoft Learn MCP: the resource-format reference documents
+  `name` as plain `string (required)` with no format constraint, and its own worked Bicep/ARM/
+  Terraform example sets it to an arbitrary string (`'acctest0001'`) for a data connector on this
+  same resource type; the REST/Codeless-Connector-Framework URI-parameter reference confirms the
+  only real constraint is uniqueness ("must be a unique name that's the same as the `name`
+  parameter in the request body"), not a GUID format. Updated
+  `streaming-to-sentinel-or-management-api/deploy/office365-connector.bicep` (header comment and
+  the `connectorName` inline comment) and `README.md` (§11 bullet reworded from open VERIFY to
+  grounded finding, reference 16 added) - the template's deterministic `guid()`-derived name is
+  unchanged, now framed as a design choice rather than a workaround. Doc/comment-only correction -
+  no code behavior change, no new four-lens review round needed.
 - [x] **Closed the `compromised-account-incident-response` Exchange Online RBAC-role VERIFY** -
   commit `08edfbc` - 2026-09-28. Maintenance pass: closed the open VERIFY asking which Exchange
   Online role covers `Remove-InboxRule`/`Set-Mailbox`/`Remove-MailboxPermission`/
