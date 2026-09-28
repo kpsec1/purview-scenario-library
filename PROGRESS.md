@@ -3631,7 +3631,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Narrowed the `scan-credential-remaining-kinds` `AmazonARN` account-ID/external-ID VERIFY** -
-  commit `PENDING` - 2026-09-28. Maintenance pass: re-grounded the open VERIFY asking whether any
+  commit `acaca4a` - 2026-09-28. Maintenance pass: re-grounded the open VERIFY asking whether any
   documented REST endpoint returns the Microsoft account ID/external ID pair a Role ARN credential's
   AWS-side IAM role must trust. Grounded via the Microsoft Learn MCP: the **external ID** half is
   exposed after all - not by the Scanning data-plane `RoleARNCredentialTypeProperties` (still only
