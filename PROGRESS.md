@@ -1008,8 +1008,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 - [ ] VERIFY (pilot tenant or a future Microsoft Learn licensing-enforcement pass): what actually
   happens at sign-in for a user in a Conditional Access policy's scope who lacks the required
   Entra ID P2 license for the Insider Risk condition specifically - silently exempted, blocked
-  outright, or another behavior. Flagged inline as VERIFY in `docs/licensing-matrix.md` §8 and
-  `conditional-access-insider-risk-block/README.md` §11 rather than assumed.
+  outright, or another behavior. Flagged inline as VERIFY in `docs/licensing-matrix.md` §8 (the
+  scenario's `README.md` §3 only links to that matrix entry rather than duplicating the VERIFY
+  box, so no separate README edit was needed). **Re-grounded 2026-09-28** (Microsoft Learn MCP):
+  still genuinely undocumented. The Insider Risk recommendation page and the Conditional Access
+  overview's license-requirements section both state the P2 *feature-gate* only, never sign-in-time
+  behavior for an in-scope-but-unlicensed user; the overview's license-expiry passage covers a
+  different case (tenant-wide expiry, not a per-user mismatch). The closest documented precedent -
+  Microsoft's own managed "Risky sign-in MFA" policy, which caps its auto-assigned group to
+  P2-licensed users rather than evaluating tenant-wide - is suggestive but documented only for that
+  specific Microsoft-managed policy, not generalized to admin-authored policies. Full citation
+  trail and quotes added to `docs/licensing-matrix.md` §8 in place; re-open only once a page states
+  the sign-in-time behavior explicitly or a pilot-tenant check confirms it directly.
 - [x] Script Graph's `conditions.users.excludeGuestsOrExternalUsers` nested condition (the
   "exclude B2B direct connect / service providers / other external" categories Microsoft's own
   documented procedure also recommends) - **built** (see DONE below): the resource shape
