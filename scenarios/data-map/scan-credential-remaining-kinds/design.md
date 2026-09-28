@@ -70,13 +70,22 @@ role's trust policy) before the role can be created at all. Only once that AWS r
 Role ARN go back into Purview as this credential's one field.
 
 That means a fully scripted Amazon S3 onboarding needs the Microsoft account ID and external ID
-*before* the AWS role can be created, and this fragment's grounding pass found no REST endpoint that
-returns them - they appear to be generated per-account (not per-credential) and surfaced only in the
-portal pane. Two honest choices were available: guess that they're derivable from the tenant/account
-ID Purview is already configured with (unconfirmed, and getting it wrong would produce an AWS trust
-policy that silently never grants access), or state plainly that at least one portal visit is
-required upstream of this script for `AmazonARN` specifically. This fragment takes the second
-choice - README.md §3/§11 - consistent with `AGENTS.md` §4 rather than inventing a derivation.
+*before* the AWS role can be created. This fragment's original grounding pass found no REST endpoint
+that returns either value; a 2026-09-28 maintenance re-grounding pass narrowed that gap to just one
+value. The **external ID** is exposed - not by the Scanning data-plane Credential API this fragment
+otherwise scripts, but as a read-only property on the Purview account's own control-plane resource,
+`Microsoft.Purview/accounts` `properties.cloudConnectors.awsExternalId` (confirmed across the
+`Az.Purview` PowerShell module and three other independent SDK surfaces - `README.md` §11,
+§12 reference 12). The **Microsoft account ID** has no sibling property anywhere in that same
+schema and remains confirmed portal-only. Two honest choices were available for the account ID:
+guess that it's derivable from the tenant/account ID Purview is already configured with
+(unconfirmed, and getting it wrong would produce an AWS trust policy that silently never grants
+access), or state plainly that at least one portal visit is required upstream of this script for
+that one value specifically. This fragment takes the second choice - README.md §3/§11 - consistent
+with `AGENTS.md` §4 rather than inventing a derivation. Wiring the now-confirmed external-ID lookup
+into `New-PurviewScanCredentialExtended.ps1` itself is a genuinely new capability (a second,
+control-plane API call this script doesn't otherwise make) and is left as a future fragment rather
+than folded into this maintenance-only re-grounding.
 
 ## 5. Object model and REST call sequence
 
@@ -116,7 +125,7 @@ unit for an organization that takes only one folder.
 | One script vs. five | One script, `-CredentialType`-dispatched | Matches the parent scenario's own precedent; five near-identical scripts would multiply maintenance for no reader benefit |
 | Key Vault parameters | Kind-conditional, rejected (not ignored) when inapplicable | §3 |
 | `ConsumerKeyAuth`'s two secrets | Two independent parameter pairs (`-SecretName`/`-SecretVersion` for password, `-ConsumerSecretName`/`-ConsumerSecretVersion` for consumer secret) | Mirrors the schema; a single shared parameter would force both secrets into the same name, which Salesforce's own model doesn't require |
-| `AmazonARN`'s missing account ID/external ID | Documented as a disclosed gap, not derived | §4 |
+| `AmazonARN`'s missing account ID/external ID | External ID confirmed scriptable via a different (control-plane) API, not wired into this script; Microsoft account ID documented as a disclosed gap, not derived | §4 |
 | `ManagedIdentity` preview status | Surfaced in README §3/§10/§11 and the script's own `.NOTES`/`Write-Warning` at run time | An organization should see this before deploying, not only in a document they may not open |
 | Deletion | Reuse the parent's `Remove-PurviewScanCredential.ps1` unmodified | It is already kind-agnostic (deletes by name, never inspects `typeProperties`) - writing a second delete script would duplicate working code for no reason |
 | Validation severity | Same `[WARN]`-not-`[FAIL]` pattern for the two discriminator literals; new `[INFO]`-only preview reminder for `ManagedIdentity` | Consistency with the parent scenario's established severity model |
@@ -138,8 +147,9 @@ unit for an organization that takes only one folder.
   - `AccountKey`-based scan scenarios for Azure Blob Storage / ADLS Gen1 / ADLS Gen2 / Azure Files /
     Azure Cosmos DB - none of these source types has a scan scenario in this library yet at all,
     with any credential kind
-- **Confirming the `AmazonARN` account ID/external ID's source.** §4 - tracked as a `PROGRESS.md`
-  VERIFY rather than resolved by inference.
+- **Confirming the `AmazonARN` account ID/external ID's source.** §4 - the external ID's source is
+  now confirmed (a control-plane property this script doesn't call); the Microsoft account ID's
+  remains an open `PROGRESS.md` VERIFY rather than resolved by inference.
 - **Re-litigating the parent scenario's open VERIFYs.** The two `KeyVaultSecret` discriminator
   literals, omitted-`secretVersion` semantics, and the credential re-point detection gap are
   inherited, not rediscovered - see parent `design.md` §5 and `reviews.md`.

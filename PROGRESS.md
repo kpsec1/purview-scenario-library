@@ -1301,14 +1301,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   VERIFYs recorded below rather than guessed at.
 
 ### Follow-ups discovered while building the scan-credential-remaining-kinds scenario
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether any documented REST endpoint
-  returns the Microsoft account ID / external ID pair a Role ARN credential's AWS-side IAM role must
-  trust. Microsoft's Amazon S3 connector walkthrough shows both values surfacing only in the
-  **portal's** "New credential" pane; `RoleARNCredentialTypeProperties` itself contains only
-  `roleARN` (confirmed directly from the Scanning-data-plane reference). Until this is resolved, a
-  fully scripted Amazon S3 onboarding still requires at least one portal visit upstream of
-  `scenarios/data-map/scan-credential-remaining-kinds/deploy/New-PurviewScanCredentialExtended.ps1`
-  - flagged inline in that scenario's `README.md` §3/§11 and `design.md` §4 rather than guessed at.
+- [ ] VERIFY narrowed 2026-09-28 (Microsoft Learn MCP) - now covers only the **Microsoft account ID**
+  half, not both values: the **external ID** half of the Role ARN trust pair IS exposed by a
+  documented REST-backed property after all - not `RoleARNCredentialTypeProperties` (Scanning
+  data-plane, still only `roleARN`), but `Microsoft.Purview/accounts`' own control-plane
+  `properties.cloudConnectors.awsExternalId` (read-only), confirmed consistently across the
+  `Az.Purview` PowerShell module (`Get-AzPurviewAccount`'s `CloudConnectorAwsExternalId`) and three
+  other independent SDK surfaces. No sibling property for the **Microsoft account ID** exists in that
+  same schema, or anywhere else this pass checked - it remains confirmed portal-only. A fully
+  scripted Amazon S3 onboarding can now script the external-ID half (via a second, control-plane API
+  call `New-PurviewScanCredentialExtended.ps1` does not currently make) but still requires a portal
+  visit for the Microsoft account ID.
+  `scenarios/data-map/scan-credential-remaining-kinds/README.md` §11/§12, `design.md` §4/§6/§8,
+  `deploy/New-PurviewScanCredentialExtended.ps1` comment-based help, and `reviews.md` (correction
+  addendum) updated in place. No script behavior change.
 - [ ] Periodically re-check the GA/preview status of the `ManagedIdentity` (user-assigned) credential
   kind. Microsoft's "Credentials for source authentication" page currently labels it "(preview)";
   the Scanning-data-plane REST reference carries no preview annotation of its own for the same kind.
@@ -3624,6 +3630,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Narrowed the `scan-credential-remaining-kinds` `AmazonARN` account-ID/external-ID VERIFY** -
+  commit `PENDING` - 2026-09-28. Maintenance pass: re-grounded the open VERIFY asking whether any
+  documented REST endpoint returns the Microsoft account ID/external ID pair a Role ARN credential's
+  AWS-side IAM role must trust. Grounded via the Microsoft Learn MCP: the **external ID** half is
+  exposed after all - not by the Scanning data-plane `RoleARNCredentialTypeProperties` (still only
+  `roleARN`), but by a read-only property on the Purview account's own control-plane resource,
+  `Microsoft.Purview/accounts` `properties.cloudConnectors.awsExternalId`, confirmed consistently
+  across the `Az.Purview` PowerShell module (`Get-AzPurviewAccount`'s `CloudConnectorAwsExternalId`,
+  explicitly `ReadOnly`), the legacy `Microsoft.Azure.Management.Purview` .NET SDK, the current
+  `Azure.ResourceManager.Purview` .NET SDK, and the `@azure-rest/purview-administration` JS SDK. The
+  **Microsoft account ID** half has no sibling property in that same `cloudConnectors` schema, or
+  anywhere else this pass checked, and remains confirmed portal-only - so this narrows the VERIFY
+  rather than closing it. Updated `scan-credential-remaining-kinds/README.md` §11/§12, `design.md`
+  §4/§6/§8, `deploy/New-PurviewScanCredentialExtended.ps1` (comment-based help only), and
+  `reviews.md` (correction addendum) in place. Doc/comment-only correction - the newly-confirmed
+  control-plane lookup was deliberately not wired into the script itself (that would be new
+  functionality, not a correction); no new four-lens review round needed per `AGENTS.md` §6.
 - [x] **Closed the `search-and-purge-teams-messages` `-PurgeType` compliance-copy-timing VERIFY** -
   commit `85d6764` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether `-PurgeType`
   still meaningfully affects the Teams **compliance copy's** retention/hold-interaction timing, even
