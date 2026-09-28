@@ -3654,7 +3654,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Narrowed the `teams-purge-hold-lifecycle-management` Group-location-exclusion `InPlaceHolds`
-  VERIFY and fixed a citation-numbering bug it surfaced** - commit `PENDING` - 2026-09-28. Maintenance
+  VERIFY and fixed a citation-numbering bug it surfaced** - commit `8a719aa` - 2026-09-28. Maintenance
   pass: re-fetched the `Set-RetentionCompliancePolicy` PowerShell reference and the "Identify Exchange
   mailbox hold types in eDiscovery" reference via the Microsoft Learn MCP tool. Confirmed
   `-AddModernGroupLocationException`/`-RemoveModernGroupLocationException` are real, documented
