@@ -3321,11 +3321,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   ties this parameter to priority cleanup for SharePoint/OneDrive specifically. Flagged inline in
   `priority-cleanup-sharepoint-onedrive/design.md` §4, `README.md` §6/§11, and the config's
   `_labelNote` rather than guessed.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether the Exchange-specific KeyQL
-  exclusions (`SenderAuthor`, `SubjectTitle`, `(c:c)`, `(c:s)` unsupported in a priority cleanup
-  `ContentMatchQuery`) also apply to SharePoint/OneDrive priority cleanup queries - Microsoft's
-  SharePoint/OneDrive-specific page neither repeats nor contradicts that Exchange-page-only list.
-  `priority-cleanup-sharepoint-onedrive/README.md` §11.
+- [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, `edisc-condition-builder` reference): whether
+  the Exchange-specific KeyQL exclusions (`SenderAuthor`, `SubjectTitle`, `(c:c)`, `(c:s)`
+  unsupported in a priority cleanup `ContentMatchQuery`) also apply to SharePoint/OneDrive priority
+  cleanup queries. Fetched both `priority-cleanup-exchange` and `priority-cleanup-onedrive-
+  sharepoint` in full: the SharePoint/OneDrive page's own "Limitations of priority cleanup" section
+  genuinely omits this bullet, so no page states the answer directly either way. Resolved the
+  underlying nature of the four items instead: Microsoft's eDiscovery condition-builder reference
+  confirms `(c:c)`/`c:s` are condition-builder-generated KeyQL notation, not query operators -
+  "Don't use `(c:c)` in manually entered queries" and `c:s` insertion "doesn't require manual
+  entry" - so the exclusion is a hand-typing caution intrinsic to the shared KeyQL editor, not an
+  Exchange-only rule. `SenderAuthor`/`SubjectTitle` map to the **Sender/Author** and **Subject/
+  Title** eDiscovery common properties, documented as applying to *both* mail and documents (the
+  Author/Title Office-metadata fields), not Exchange-only properties. Conclusion: treat all four as
+  unsupported for this workload too (matching the Exchange sibling) rather than assume the
+  SharePoint/OneDrive page's silence means broader support - documented as a reasoned, cited
+  closure, not a guess. `priority-cleanup-sharepoint-onedrive/README.md` §11 (bullet expanded in
+  place) and §12 (reference 13 added).
 - [ ] Consider a small scheduled-task helper script that periodically reviews/re-simulates a
   continual priority-cleanup rule's query - the KeyQL surface this scenario grounds has no
   confirmed relative-date ("older than N days") operator, so a "stale content" query as documented
@@ -3522,6 +3534,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `priority-cleanup-sharepoint-onedrive` KeyQL-exclusion-parity VERIFY** -
+  commit `TBD` - 2026-09-28. Maintenance pass: closed the open
+  VERIFY asking whether the Exchange-specific priority cleanup KeyQL exclusions (`SenderAuthor`,
+  `SubjectTitle`, `(c:c)`, `(c:s)` unsupported in a `ContentMatchQuery`) also apply to SharePoint/
+  OneDrive priority cleanup. Grounded via the Microsoft Learn MCP: full fetches of both
+  `priority-cleanup-exchange` and `priority-cleanup-onedrive-sharepoint` confirmed the SharePoint/
+  OneDrive page's own Limitations section genuinely omits this bullet (no direct statement either
+  way), then a fetch of `edisc-condition-builder` established what the four items actually are -
+  `(c:c)`/`c:s` are condition-builder-generated KeyQL notation Microsoft's own text says not to
+  type manually (an editor-wide caution, not Exchange-specific), and `SenderAuthor`/`SubjectTitle`
+  map to the **Sender/Author**/**Subject/Title** common properties documented as applying to both
+  mail and documents. Concluded (reasoned, cited closure, not a guess) that this scenario should
+  keep treating all four as unsupported for SharePoint/OneDrive too, matching the Exchange sibling.
+  Updated `priority-cleanup-sharepoint-onedrive/README.md` §11 (bullet expanded in place) and §12
+  (reference 13 added). No script or policy manifest changed - documentation-accuracy closure only;
+  no new VERIFY items opened.
 - [x] **Closed the `financial-regulatory-supervision` built-in-template classifier-bundling VERIFY**
   - commit `83f1267` - 2026-09-28. Maintenance pass: closed the open VERIFY asking whether the
   built-in "Detect financial regulatory compliance" and "Detect conflict of interest" Communication
