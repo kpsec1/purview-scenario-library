@@ -3664,7 +3664,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Narrowed the `scan-on-premises-sql-server-and-classify` Windows Authentication `CredentialType`
-  VERIFY** - commit `PENDING` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
+  VERIFY** - commit `8088e8e` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
   Replace** REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace`)
   directly via the Microsoft Learn MCP tool - a more authoritative, dedicated source than the Data
   Sources reference this scenario had previously drawn the `CredentialType` enum's member list from.
