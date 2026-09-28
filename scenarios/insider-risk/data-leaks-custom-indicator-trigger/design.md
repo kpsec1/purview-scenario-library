@@ -85,17 +85,23 @@ for the same base `Data leaks` template.
    fragment reuses that script and its matching validation script
    (`departing-employee-data-theft/validate/Test-HrConnectorAppRegistration.ps1`) unmodified, called
    with a new `-DisplayName`, instead of writing a near-duplicate.
-7. **Ground which policy templates actually support custom indicators, without overstating Microsoft's
-   own imprecise wording.** The custom-indicators section states plainly: "add the custom indicator to
-   an insider risk policy in any *Data theft* or *Data leaks* policies." This is looser than the named
-   policy-template list elsewhere in the same documentation set (`Data theft by departing users`,
-   `Data leaks`, `Data leaks by priority users`, `Data leaks by risky users`) - it is not clear from this
-   wording alone whether "Data theft" here means only `Data theft by departing users` or is shorthand for
-   a template family, nor whether "Data leaks" covers all three named Data-leaks templates or only the
-   base one. This fragment scopes itself to the base `Data leaks` template only - the scope
-   `PROGRESS.md`'s own follow-up item named - and states the broader-template-applicability question as
-   an open, unresolved reading of Microsoft's own wording rather than guessing either direction
-   (`README.md` §11).
+7. **Ground which policy templates actually support custom indicators — resolved by a more precise
+   statement elsewhere on the same page, not guessed from the looser one.** The custom-indicators
+   section states plainly: "add the custom indicator to an insider risk policy in any *Data theft* or
+   *Data leaks* policies." This is looser than the named policy-template list elsewhere in the same
+   documentation set (`Data theft by departing users`, `Data leaks`, `Data leaks by priority users`,
+   `Data leaks by risky users`) — it alone did not make clear whether "Data theft" meant only
+   `Data theft by departing users` or a template family, nor whether "Data leaks" covered all three
+   named Data-leaks templates or only the base one. A **2026-09-28 maintenance-pass re-fetch of the
+   same "Configure policy indicators in Insider Risk Management" page found a second, precise
+   statement** in its "Built-in indicators vs. custom indicators" section: "You can only modify
+   triggering events for policies created from the *Data leaks* or *Data leaks by priority users*
+   templates. Policies created from all other templates don't have customizable triggering indicators
+   or events." This confirms `Data leaks by priority users` **does** support a custom indicator as its
+   triggering event, and `Data leaks by risky users` (and `Data theft by departing users`) **does not**
+   — neither is `Data leaks` nor `Data leaks by priority users`. This fragment's own scope stays the
+   base `Data leaks` template only (§7 below still applies as a scoping decision, not a grounding gap);
+   `README.md` §11 now states the confirmed template list instead of an open VERIFY.
 8. **Do not fabricate a threshold-recommendation mechanism for custom indicators.** Microsoft states
    plainly elsewhere in the same settings article: "Insider Risk Management doesn't provide recommended
    thresholds for custom indicators." Real-time analytics (preview) explicitly does not cover them
@@ -163,7 +169,7 @@ provides no default/recommended threshold for a custom indicator (§2 goal 8).
 | Source-column value validation | Hard error if any row's source-column value isn't in the caller-supplied `-RelatedValues` list, before any upload attempt | Microsoft documents a hard connector-side failure ("The connector fails if the column values don't match") for this exact mismatch - failing the same way client-side, before spending an upload attempt, is strictly better than discovering it in the connector's log after the fact |
 | Chunk size default | 5,000 records per call | Confirmed via a direct GitHub fetch of the actual `sample_script.ps1` this Microsoft Learn article references - not copied from the HR-connector sibling's own different, page-documented 500-row limit (§2 goal 5) |
 | App registration | Reuse `Register-HrConnectorApp.ps1`/`Test-HrConnectorAppRegistration.ps1` unmodified, new `-DisplayName` | Confirmed generic (no connector-specific logic) and confirmed the underlying OAuth resource is identical across both connectors (§2 goals 5-6) |
-| Template scope | Base `Data leaks` template only | The exact scope `PROGRESS.md`'s follow-up item named; Microsoft's own "Data theft or Data leaks policies" wording for which templates support custom indicators is not precise enough to safely extend further in this fragment (§2 goal 7) |
+| Template scope | Base `Data leaks` template only | The exact scope `PROGRESS.md`'s follow-up item named. Confirmed (§2 goal 7, 2026-09-28) that `Data leaks by priority users` also supports a custom indicator as its triggering event and `Data leaks by risky users` does not — extending this pattern to `Data leaks by priority users` is a valid future fragment, not attempted here to keep this fragment's scope to one template |
 | Threshold policy | Custom thresholds only, both in this scenario's own docs and enforced as a checklist item in `validate/` | Microsoft provides no default/recommended threshold for a custom indicator, and disallows setting any trigger threshold at all if "Use only as a triggering event without any thresholds" is selected (§2 goal 8) |
 | Max-users cap | 15,000, shared cumulatively across every `Data leaks`-template policy in the tenant - now a **three-way** shared pool if every sibling in this library is deployed | Same Microsoft Learn "Limits in Insider Risk Management" table already cited by both sibling scenarios (§2 goal 4) |
 

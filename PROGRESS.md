@@ -2142,12 +2142,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   mechanics are identical. New follow-ups from this build are filed immediately below.
 
 ### Follow-ups discovered while building the Data leaks custom-indicator (third-party-connector) trigger scenario
-- [ ] VERIFY (portal): whether custom indicators can actually be added to `Data leaks by priority
+- [x] VERIFY (portal): whether custom indicators can actually be added to `Data leaks by priority
   users` and/or `Data leaks by risky users` (not just the base `Data leaks` template this fragment
   scoped itself to) - Microsoft's own wording ("any *Data theft* or *Data leaks* policies") is not
   precise enough to confirm either direction. `data-leaks-custom-indicator-trigger/design.md` §2
   goal 7/`README.md` §11 flag this rather than guessing. If confirmed, extend this scenario's
-  pattern to those sibling templates as a new fragment rather than editing this one.
+  pattern to those sibling templates as a new fragment rather than editing this one. — **closed**
+  (see DONE below): a direct Microsoft Learn fetch of "Configure policy indicators in Insider Risk
+  Management" §Built-in indicators vs. custom indicators found a second, precise statement beyond
+  the imprecise one this fragment originally grounded against: "You can only modify triggering
+  events for policies created from the *Data leaks* or *Data leaks by priority users* templates.
+  Policies created from all other templates don't have customizable triggering indicators or
+  events." Confirms `Data leaks by priority users` **does** support a custom indicator as its
+  trigger; `Data leaks by risky users` (and `Data theft by departing users`) **does not**.
 - [ ] VERIFY (portal): whether Source-column value matching for the Insider Risk Indicators
   connector is case-sensitive - `data-leaks-custom-indicator-trigger/deploy/
   Send-InsiderRiskIndicatorRecord.ps1` assumes case-sensitive matching (the stricter, fail-safer
@@ -8497,6 +8504,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the live-reconciliation check's scope confirmed intentional, not a gap) - CISO and Product Owner
   both Pass with no findings. No cmdlet, endpoint, or field shape was invented; the numeric
   string-format VERIFY above is the only new open item this fragment adds.
+- [x] **Maintenance: close the `data-leaks-custom-indicator-trigger` template-scope VERIFY** —
+  commit `PENDING` — 2026-09-28. Grounded via a direct Microsoft Learn fetch (Microsoft Learn MCP)
+  of "Configure policy indicators in Insider Risk Management" §Built-in indicators vs. custom
+  indicators, which states: "You can only modify triggering events for policies created from the
+  *Data leaks* or *Data leaks by priority users* templates. Policies created from all other
+  templates don't have customizable triggering indicators or events." This is more precise than
+  the same page's earlier, looser "any *Data theft* or *Data leaks* policies" wording this
+  scenario originally grounded against, and settles the open question: `Data leaks by priority
+  users` does support a custom indicator as its triggering event; `Data leaks by risky users` (and
+  `Data theft by departing users`) does not. Updated in place:
+  `data-leaks-custom-indicator-trigger/design.md` §2 goal 7/§6 and `README.md` §6/§11 now state the
+  confirmed template list instead of an open VERIFY. This fragment's own scope (base `Data leaks`
+  template only) is unchanged — extending the pattern to `Data leaks by priority users` remains a
+  valid future fragment, now unblocked rather than gated on an unresolved grounding question. No
+  code changed; maintenance-only, per this run's scope.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,

@@ -44,7 +44,7 @@
   "policy": {
     "policyName": "Data Leaks - Custom Indicator (Third-Party Connector) Trigger",
     "policyTemplate": "Data leaks",
-    "templateScopeCaveat": "Microsoft's own wording for which templates support custom indicators ('any Data theft or Data leaks policies') is not precise enough to confirm this extends beyond the base Data leaks template - design.md §2 goal 7/README.md §11. This manifest and scenario are scoped to the base Data leaks template only.",
+    "templateScopeCaveat": "Confirmed (design.md §2 goal 7/README.md §11, 2026-09-28) that 'Data leaks by priority users' also supports a custom indicator as its triggering event and 'Data leaks by risky users' does not. This manifest and scenario remain scoped to the base Data leaks template only.",
     "scope": {
       "users": "A plain Entra security group (or groups), resolved via ../../security-policy-violations/deploy/Get-SecurityPolicyViolationsScopeCandidates.ps1 (reused unmodified) - identical population mechanism to both sibling Data-leaks-template scenarios in this library.",
       "maxUsersInScope": 15000,
