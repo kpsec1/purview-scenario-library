@@ -3569,7 +3569,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `compromised-account-incident-response` Exchange Online RBAC-role VERIFY** -
-  commit `PENDING` - 2026-09-28. Maintenance pass: closed the open VERIFY asking which Exchange
+  commit `08edfbc` - 2026-09-28. Maintenance pass: closed the open VERIFY asking which Exchange
   Online role covers `Remove-InboxRule`/`Set-Mailbox`/`Remove-MailboxPermission`/
   `Remove-RecipientPermission`, none of which name a role on their own Microsoft Learn reference
   pages. Grounded via the Microsoft Learn MCP's fetch of "Feature permissions in Exchange Online"
