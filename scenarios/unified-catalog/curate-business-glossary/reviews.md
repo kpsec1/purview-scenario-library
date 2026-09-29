@@ -162,3 +162,19 @@ required - a documentation-generation artifact, not a real API constraint. Micro
 Disaster recovery for Unified Catalog article independently corroborates the minimal body this
 scenario already sends. No code or behavior change; `README.md` §11/§12 and the deploy script's
 `.NOTES` updated to record the closure and cite the exact evidence.
+
+## Maintenance addendum - 2026-09-29
+
+Fixed a citation-numbering error in `README.md` §12: references 16 and 17 (Business Domain -
+Create, and the Business Domain operation group) were both printed as "16.", which silently
+shifted every reference after them out of step with its own list position (though the two inline
+citations that used printed numbers `[16]`/`[17]` still happened to resolve to their intended
+entries). Renumbered references 17-21 sequentially and updated the one inline citation
+(`README.md` §12's closing note) that pointed at the now-renumbered entry, from `[17]` to `[18]`.
+No content, fact, or URL changed - numbering only. While re-verifying, also re-fetched the
+`Terms - Query` REST reference (`Terms - Count`'s description and request/response shapes too)
+directly via the Microsoft Learn MCP tool: both still expose `nameKeyword` only as an untyped-
+semantics `string` filter ("Filter by name keyword" / "The keyword to search for duplicate
+elements by name"), with no substring/prefix/tokenized statement - the open `nameKeyword` match-
+semantics VERIFY (`README.md` §11, `design.md` §4) remains genuinely undocumented as of this
+re-check, not narrowed further.

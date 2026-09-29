@@ -274,7 +274,13 @@ See `rollback.md` for the full staged procedure (unpublish → purge). Quick ref
   alone (`design.md` §4) - safe against a false-positive match, but a domain with more
   name-matching terms than fit in one page (`top`, capped at 50 by this script) could in principle
   miss an existing term past that page. This scenario's four-term glossary never approaches that
-  limit; a much larger rollout should confirm pagination behavior first.
+  limit; a much larger rollout should confirm pagination behavior first. **Re-grounded 2026-09-29**
+  (Microsoft Learn MCP, maintenance pass): directly re-fetched both the `Terms - Query` and
+  `Terms - Count` REST reference pages - `nameKeyword` is still documented only as an untyped
+  `string` filter ("Filter by name keyword" / "The keyword to search for duplicate elements by
+  name") on both operations, with no substring/prefix/tokenized statement anywhere on either page.
+  Remains genuinely open; re-open for a fresh pass only if Microsoft publishes match-semantics
+  detail for this parameter.
 - **CLOSED 2026-09-27 (Microsoft Learn MCP, re-grounded) - Business Domain Create/Update
   "required" fields.** The formal REST reference's auto-generated Request Body table marks
   `id`, `parentId`, `systemData`, `thumbnail`, `domains`, and `managedAttributes` as
@@ -319,13 +325,13 @@ See `rollback.md` for the full staged procedure (unpublish → purge). Quick ref
 14. Migrate governance private endpoints from classic portal to Microsoft Purview portal - the two API endpoint hosts - <https://learn.microsoft.com/purview/data-governance-private-endpoints-migrate>
 15. Purview Unified Catalog REST API - Terms operation group (Create/Update/Delete/Get/List/Query/AddRelatedEntity/ListRelatedEntities/Count) - <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/terms?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
 16. Purview Unified Catalog REST API - Business Domain - Create (Request Body table, auto-generated schema shared with the response `Domain` type) - <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/business-domain/create?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
-16. Purview Unified Catalog REST API - Business Domain operation group (Create/Update/Delete/Get/Enumerate) - <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/business-domain?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
-17. Unified Catalog API (Public Preview) overview - scope, GA-only coverage, preview API versions - <https://learn.microsoft.com/rest/api/purview/unified-catalog-api-overview>
-18. Tutorial: Authenticate for APIs - service principal setup, Unified Catalog role assignment, client-credentials token flow - <https://learn.microsoft.com/purview/data-gov-api-rest-data-plane>
-19. Data governance roles and permissions in Microsoft Purview - Data Steward, Governance Domain Creator/Owner, Catalog Reader - <https://learn.microsoft.com/purview/data-governance-roles-permissions>
-20. Microsoft identity platform and the OAuth 2.0 client credentials flow - v2.0 token endpoint, `scope=.default` - <https://learn.microsoft.com/entra/identity-platform/v2-oauth2-client-creds-grant-flow>
+17. Purview Unified Catalog REST API - Business Domain operation group (Create/Update/Delete/Get/Enumerate) - <https://learn.microsoft.com/rest/api/purview/purview-unified-catalog/business-domain?view=rest-purview-purview-unified-catalog-2026-03-20-preview>
+18. Unified Catalog API (Public Preview) overview - scope, GA-only coverage, preview API versions - <https://learn.microsoft.com/rest/api/purview/unified-catalog-api-overview>
+19. Tutorial: Authenticate for APIs - service principal setup, Unified Catalog role assignment, client-credentials token flow - <https://learn.microsoft.com/purview/data-gov-api-rest-data-plane>
+20. Data governance roles and permissions in Microsoft Purview - Data Steward, Governance Domain Creator/Owner, Catalog Reader - <https://learn.microsoft.com/purview/data-governance-roles-permissions>
+21. Microsoft identity platform and the OAuth 2.0 client credentials flow - v2.0 token endpoint, `scope=.default` - <https://learn.microsoft.com/entra/identity-platform/v2-oauth2-client-creds-grant-flow>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing engagement - this
 > scenario targets Unified Catalog's **preview** REST API surface (`2026-03-20-preview`), which
 > Microsoft explicitly documents as covering only GA Unified Catalog features and subject to
-> change before general availability [[17]](#12-references).
+> change before general availability [[18]](#12-references).

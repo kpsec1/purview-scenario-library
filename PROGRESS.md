@@ -1635,7 +1635,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `curate-business-glossary`'s idempotency design always re-checks for an exact client-side name
   match rather than trusting the filter, but a domain with more than one page of name-matching
   terms could in principle need pagination the deploy script doesn't yet implement - flagged
-  inline in `README.md` §11 and the deploy script's `.NOTES`.
+  inline in `README.md` §11 and the deploy script's `.NOTES`. **Re-grounded 2026-09-29**
+  (Microsoft Learn MCP, maintenance pass): directly re-fetched the `Terms - Query` and
+  `Terms - Count` REST reference pages in full - `nameKeyword` is documented only as an untyped
+  `string` filter on both operations, with no substring/prefix/tokenized statement found anywhere.
+  Confirmed still genuinely undocumented, not narrowed further. While re-verifying this scenario's
+  citations, also found and fixed a duplicate reference number in `README.md` §12 (two entries both
+  printed as "16.", silently shifting every following entry's printed number out of step with its
+  list position) - renumbered references 17-21 sequentially and corrected the one inline citation
+  that pointed at the shifted entry (`[17]` → `[18]`); no fact, URL, or code changed.
+  `scenarios/unified-catalog/curate-business-glossary/README.md` §11/§12 and `reviews.md`
+  (maintenance addendum) updated in place.
 - [x] VERIFY closed 2026-09-27 (Microsoft Learn MCP, maintenance pass): the Unified Catalog
   `Business Domain - Create`/`Update` REST reference marks `id`/`parentId`/`systemData`/
   `thumbnail`/`domains`/`managedAttributes` as required request-body fields in a way that
@@ -8905,6 +8915,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   paragraph) to cite the confirmed path while keeping the in-use-behavior question explicitly open;
   this file's own tracking bullet above marked `[x]` with both halves called out separately rather
   than closed wholesale. Doc-only correction — no code change, no new four-lens review round.
+- [x] **Maintenance pass — re-grounded `curate-business-glossary`'s `nameKeyword` match-semantics
+  VERIFY and fixed a citation-numbering bug** — commit PENDING — 2026-09-29. Directly re-fetched
+  the Unified Catalog `Terms - Query` and `Terms - Count` REST reference pages via the Microsoft
+  Learn MCP tool: `nameKeyword` is still documented only as an untyped `string` filter on both
+  operations ("Filter by name keyword" / "The keyword to search for duplicate elements by name"),
+  with no substring/prefix/tokenized statement found anywhere — the VERIFY remains genuinely open,
+  reconfirmed rather than narrowed. While re-verifying this scenario's citations, found `README.md`
+  §12 printed two different references (Business Domain - Create, and the Business Domain
+  operation group) both as "16.", silently shifting every following reference's printed number out
+  of step with its list position — renumbered references 17-21 sequentially and corrected the one
+  inline citation that pointed at the shifted entry (`[17]` → `[18]`); no fact, URL, or code
+  changed. Updated `scenarios/unified-catalog/curate-business-glossary/README.md` §11/§12 and
+  `reviews.md` (maintenance addendum) in place. Doc-only correction — no script behavior change,
+  no new four-lens review round needed per `AGENTS.md` §6.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,
