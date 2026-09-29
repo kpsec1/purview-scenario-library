@@ -8916,7 +8916,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this file's own tracking bullet above marked `[x]` with both halves called out separately rather
   than closed wholesale. Doc-only correction — no code change, no new four-lens review round.
 - [x] **Maintenance pass — re-grounded `curate-business-glossary`'s `nameKeyword` match-semantics
-  VERIFY and fixed a citation-numbering bug** — commit PENDING — 2026-09-29. Directly re-fetched
+  VERIFY and fixed a citation-numbering bug** — commit `f81d131` — 2026-09-29. Directly re-fetched
   the Unified Catalog `Terms - Query` and `Terms - Count` REST reference pages via the Microsoft
   Learn MCP tool: `nameKeyword` is still documented only as an untyped `string` filter on both
   operations ("Filter by name keyword" / "The keyword to search for duplicate elements by name"),
