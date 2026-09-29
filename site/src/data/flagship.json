@@ -1,6 +1,6 @@
 {
-  "published": false,
-  "note": "DRAFT for author review. Set \"published\" to true (or set it per post) to show these openings on the live site. Every sentence restates facts already in the scenario's own summary and business driver; nothing here is invented.",
+  "published": true,
+  "note": "Hand-written openings for six featured field notes, approved by the author. Every sentence restates facts already in the scenario's own summary and business driver. Set \"published\" to false (or override it per post) to hide them.",
   "posts": {
     "dlp/endpoint-dlp-usb-block": {
       "dek": "A file can leave the building on a USB stick with no email, no chat and no cloud sharing trail. This note closes that gap without breaking the people who legitimately need removable media.",

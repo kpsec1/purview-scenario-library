@@ -42,9 +42,10 @@ prints a random sample of before and after edits for review.
 
 ## Flagship openings
 
-`src/data/flagship.json` holds hand-written openings for six featured notes. They are drafts:
-nothing shows on the live site until `published` is set to `true` (globally, or per post).
-`SHOW_FLAGSHIP_DRAFTS=1 npm run build` previews them locally.
+`src/data/flagship.json` holds the hand-written openings (deck, two paragraphs and a pull quote)
+for six featured notes. They are published. To hide them, set `published` to `false` (globally,
+or per post with `"published"` inside a post). New openings should be reviewed by the author
+before they go live.
 
 ## Deploy
 
