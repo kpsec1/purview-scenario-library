@@ -60,9 +60,14 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
           Field notes on Microsoft Purview and security
           <br />
           <span class="foot-updated">Last updated {buildDate}</span>
+          <br />
+          <span class="foot-privacy">Visits are counted with Cloudflare Web Analytics, which does not use cookies.</span>
         </div>
       </div>
     </footer>
+
+    <!-- Visit counts: Cloudflare Web Analytics (no cookies). is:inline keeps Astro from bundling it. -->
+    <script is:inline type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "8eec1ff1c083417d918d726ccb3b0f01"}'></script>
 
     <!-- Render Mermaid flowcharts client-side, themed to match the site.
          If the runtime can't load, reveal the diagram source instead of hiding it. -->
@@ -309,6 +314,10 @@ const buildDate = new Date().toLocaleDateString('en-CA', {
       }
       .foot strong {
         color: var(--ink);
+      }
+      .foot-privacy {
+        font-size: 12.5px;
+        opacity: 0.85;
       }
 
       /* Long-form reading */
