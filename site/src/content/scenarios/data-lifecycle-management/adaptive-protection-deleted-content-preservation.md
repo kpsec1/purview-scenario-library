@@ -1,0 +1,176 @@
+---
+title: "Adaptive Protection Deleted-Content Preservation"
+category: "Data Lifecycle Management"
+categorySlug: "data-lifecycle-management"
+theme: "prove-compliance"
+slug: "adaptive-protection-deleted-content-preservation"
+teaser: "Documents and instruments Adaptive Protection's built-in Data Lifecycle Management control."
+readingMinutes: 9
+whoFor: "An insider risk / records-management / compliance team that has already deployed (or is evaluating) *Dynamic Risk-Based DLP Enforcement* and wants the matching \"don't lose the evidence if the risky user tries to delete it\" control, plus a way to prove it's working and to prepare for the one recovery path Microsoft supports."
+frameworks: []
+licensing: ["Microsoft 365 E5"]
+deployCount: 1
+validateCount: 1
+hasDesign: true
+hasRollback: true
+hasRunbook: true
+toc: [{"id":"the-short-version","text":"The short version"},{"id":"why-this-matters","text":"Why this matters"},{"id":"how-the-control-works","text":"How the control works"},{"id":"what-it-takes","text":"What it takes"},{"id":"proof-it-works","text":"Proof it works"},{"id":"where-it-stops","text":"Where it stops"}]
+---
+## The short version
+
+Documents and instruments Adaptive Protection's built-in Data Lifecycle Management control: when
+Insider Risk Management assigns a user the **Elevated** risk level, any content that user deletes
+from SharePoint, OneDrive, or Exchange Online is **automatically preserved for 120 days** -
+without an admin having to react in time to place a hold. The control itself is
+a single tenant-wide portal toggle with **no PowerShell or Graph API** - this scenario documents
+the exact enablement path precisely (no invented cmdlet) and ships the code that genuinely is
+scriptable around it: a rolling audit-trail export that proves the control fired and builds the
+evidence bundle a Microsoft Support restore request needs, since self-service restore doesn't
+exist.
+
+## Why this matters
+
+Insider risk investigations and litigation both depend on evidence surviving long enough to be
+reviewed - an employee who is exfiltrating data or destroying evidence of misconduct has an
+obvious incentive to delete the content first. A human analyst reacting after the fact (placing a
+hold once a case is escalated) is too slow for the exact window this control exists to close:
+Microsoft's own framing is that this proactively preserves content **the moment** a user is
+already flagged Elevated-risk, not after an investigator has caught up. This
+complements - and does not replace - *Departing Employee Data Theft* (the
+detection) and *Dynamic Risk-Based DLP Enforcement* (the outbound-sharing
+enforcement): together the three form detect → block-sharing → preserve-deletions.
+
+## How the control works
+
+```mermaid
+flowchart TD
+    IRM["Insider Risk Management policy\n[not built by this scenario]"] -->|alerts| APEngine["Adaptive Protection engine\n[portal-only]"]
+    APEngine -->|Elevated risk level| RiskLevel[("User's insider\nrisk level")]
+    Toggle["Portal toggle: 'Adaptive protection\nin Data Lifecycle Management'\n[this page Section 5 -- portal-only]"] -->|creates| DLMPolicy["Auto-created retention label\n+ policy [invisible; no API]"]
+    RiskLevel -->|Elevated user deletes content| DLMPolicy
+    DLMPolicy -->|preserve 120 days| Preserved[("Deleted item,\nsearchable via eDiscovery")]
+    DLMPolicy -->|emits| AuditEvt["Audit: Retained file/email\nitem proactively"]
+    AuditEvt -->|Search-UnifiedAuditLog| Scripts[["deploy/Export-AdaptiveProtectionPreservationEvidence.ps1\nvalidate/Test-AdaptiveProtectionDlmPreservation.ps1"]]
+    Preserved -.->|restore: Microsoft Support only| Support(("Microsoft Support"))
+```
+
+Full rationale, the component-scriptability table, and the timing model: the design notes.
+
+## What it takes
+
+### Prerequisites
+
+Full licensing detail: [Licensing matrix](/docs/licensing-matrix/). RBAC: [RBAC model](/docs/rbac-model/). Automation surface:
+[Automation surface](/docs/automation-surface/) (surface 1 - Exchange Online PowerShell, for the audit-evidence
+scripts only). Summary:
+
+| Requirement | Minimum | Notes |
+|---|---|---|
+| Licensing | **Microsoft 365 E5** or **Suite** (Adaptive Protection - built on Insider Risk Management + Data Lifecycle Management) | Same entitlement row as *Dynamic Risk-Based DLP Enforcement* - [Licensing matrix, section 2](/docs/licensing-matrix/#2-master-capability--license-matrix), "Adaptive Protection" row. Not a new license requirement if that scenario is already deployed. |
+| Feature status | **Preview** as of this writing | Directly re-confirmed via `microsoft_docs_fetch` against the live page during this build: *"In preview, you can use this solution with Insider Risk Management..."*. Unlike the Conditional Access insider-risk integration (re-verified GA elsewhere in this library), this one has **not** graduated - see section 11. |
+| Pre-existing dependency | Adaptive Protection already turned on, with Elevated risk level defined and at least one IRM policy in scope | This scenario does not enable Adaptive Protection or configure IRM - see *Dynamic Risk-Based DLP Enforcement* (the prerequisites and the implementation steps). |
+| Role to enable/disable the toggle | **Insider Risk Management** or **Insider Risk Management Admins** Purview role group | Re-grounded directly against the retention documentation's own "Dynamically mitigate the risk of accidental or malicious deletes" procedure, which states for this exact toggle: *"If your account has the [required permissions], you'll see an option to take you to the insider risk management solution where you can turn on and configure Adaptive Protection"* - linking, by name, to the same Adaptive Protection permissions table's "Configure Adaptive Protection and update settings" row - [RBAC model, section 4](/docs/rbac-model/#4-purview-role-groups-by-module-representative-not-exhaustive). No Data Lifecycle Management/Records Management role group is named anywhere in that procedure despite the toggle's UI location under the Data Lifecycle Management solution settings - see the known limitations. |
+| Role for the audit-evidence scripts | **View-Only Audit Logs** or **Audit Logs** Exchange Online role | `Search-UnifiedAuditLog` is an Exchange Online cmdlet, not a Purview role group - [RBAC model, section 6](/docs/rbac-model/#6-exchange-online-dependency-the-most-common-permissions-gap). |
+| Auth (scripts only) | `Connect-ExchangeOnline` (certificate app-only preferred) | [Automation surface, section 3](/docs/automation-surface/#3-authentication-patterns---interactive-vs-unattended) |
+
+> Verify current entitlement names against [Licensing matrix](/docs/licensing-matrix/) (dated 2026-09-02) before a
+> sales commitment - SKU names change, and preview features can change terms or be withdrawn.
+
+### Cost and licensing
+
+- **No incremental license** beyond what *Dynamic Risk-Based DLP Enforcement* already requires (Adaptive Protection = M365 E5/Suite, built on
+  Insider Risk Management + Data Lifecycle Management - [Licensing matrix, section 2](/docs/licensing-matrix/#2-master-capability--license-matrix)).
+- **No Azure consumption meter, no per-item cost.** Storage impact is bounded (120-day preservation
+  of only what Elevated-risk users actually delete - typically a small fraction of total content,
+  unlike an org-wide retention policy).
+- **The real cost is the missing self-service restore.** Any recovery requires a Microsoft Support
+  engagement - budget the operational lead time for that path, not a self-service SLA.
+
+## Proof it works
+
+1. **Automated** - `./validate/Test-AdaptiveProtectionDlmPreservation.ps1` searches for the two
+   documented audit Operations in a lookback window and reports `[PASS]` if evidence is found.
+   **A `[INCONCLUSIVE]` result on zero rows is expected and does not mean the control is off** -
+   no status cmdlet exists to check that directly (the design notes, item 4). Confirm the portal
+   toggle state directly if you need a definitive answer.
+2. **Portal confirmation** - the Adaptive Protection dashboard's banner message is
+   the only in-portal signal; there is no dedicated metrics widget.
+3. **End-to-end proof (lab tenant only)** - as a test user assigned the Elevated risk level,
+   delete a test file from SharePoint/OneDrive or a test email from Exchange. Wait, then confirm
+   (a) an audit event appears via `validate/Test-AdaptiveProtectionDlmPreservation.ps1`, and (b)
+   the item is still discoverable via Content Search/eDiscovery from that location, despite being
+   user-deleted. **Do not run this against a real user's content or a
+   production tenant** - see the known limitations on the irreversible consequence of the underlying label.
+4. **Evidence export idempotency** - re-run `deploy/Export-AdaptiveProtectionPreservationEvidence.ps1`
+   with the same window twice; the CSV row count is unchanged on the second run (de-duplicated by
+   composite key), matching this library's other audit-trail export scripts.
+
+## Where it stops
+
+- **Still in preview.** Directly re-confirmed via `microsoft_docs_fetch` against the live page
+  during this build - see the prerequisites and the design notes. Preview features can change behavior or terms
+  before GA; do not present this as a fully committed, long-term-supported control in a
+  customer-facing SOW without a re-check at deployment time.
+- **No enablement API, by Microsoft's own design - not a research gap.** `New-`/`Set-` cmdlets and
+  Graph resources were searched for and not found during this build; the underlying label/policy
+  are explicitly documented as invisible in the portal and not meant to be created/managed
+  directly.
+- **A zero-row evidence check does not mean the control is off.** See section 7 - this is the single most
+  important caveat in this scenario; do not let an automated `[INCONCLUSIVE]` result be silently
+  read as `[PASS]` for "definitely on" or `[FAIL]` for "definitely off" in a dashboard downstream
+  of this script's output.
+- **No self-service restore.** Recovering preserved content requires contacting Microsoft Support
+  - plan the operational lead time for an active investigation accordingly.
+- **Disabling the toggle is not a pause - it releases everything immediately.** See the rollback runbook.
+  This is the opposite behavior from every other retention-policy disable in this library
+  (compare *Retention Labels for Financial Records*
+  Stage 1, which explicitly preserves already-labeled content).
+- **This control preserves deleted content - it does not stop exfiltration, and it does not cover
+  every location.** An Elevated-risk user who copies/uploads content elsewhere *before* deleting
+  the local copy has already exfiltrated it; this control only ensures the deletion itself doesn't
+  destroy the evidence. It also only covers SharePoint, OneDrive, and Exchange Online - Teams
+  chat messages, Viva Engage, and other workloads are not in scope. Pair this with
+  *Dynamic Risk-Based DLP Enforcement* (blocks/audits the outbound share
+  itself) rather than treating either scenario as sufficient alone.
+- **A privileged user who is also the risky user can destroy the evidence by turning the control
+  off.** Disabling the toggle releases everything currently preserved, immediately and tenant-wide
+ - an Elevated-risk user who also holds the **Insider Risk Management** or
+  **Insider Risk Management Admins** role group could disable proactive preservation to cover
+  their own tracks. Keep membership in those role groups minimal and separate from the population
+  Adaptive Protection monitors - standard least-privilege practice ([RBAC model, section 2](/docs/rbac-model/#2-purview-rbac-building-blocks-members--roles--role-groups)), but
+  worth stating explicitly here given the direct consequence. Whether this specific configuration
+  change is captured in Insider Risk Management's own internal audit log (viewable by the
+  **Insider Risk Management Auditors** role) is not confirmed - that log has no
+  documented Graph/REST query API this library has found (a known, tracked gap -), so it cannot be folded into this scenario's own audit-evidence script even if it
+  does capture the event.
+- **No real-time alert fires when this control preserves an item.** Unlike a DLP incident report,
+  there is no push notification - an analyst only learns about it by querying the audit log
+  or reviewing the evidence CSV. For anything beyond periodic review, forward
+  `SharePointDataProactivelyPreserved`/`ExchangeDataProactivelyPreserved` unified-audit-log events
+  to your SIEM (Microsoft Sentinel or equivalent - [Automation surface](/docs/automation-surface/)'s general
+  SIEM-integration guidance) for near-real-time alerting, rather than relying solely on the daily
+  scheduled export.
+- **Do not treat this as a substitute for an eDiscovery hold on a known, active matter.** This
+  control is a tenant-wide safety net that catches deletions *before* anyone has reacted - once an
+  investigation is actually opened (e.g. via *Case Escalation to eDiscovery (Premium)*), place a real hold on the specific custodian immediately.
+  A preview feature with a fixed 120-day window and no self-service restore is not an adequate
+  sole preservation mechanism for content with real litigation exposure.
+- **`Search-UnifiedAuditLog`'s `-RecordType`** was deliberately **not** set for the two Operations
+  this scenario queries - Microsoft's own "Audit log activities" reference does not document one
+  specifically for them. If a future grounding pass finds one, adding it would
+  only narrow (not change) the result set.
+- **RESOLVED (re-grounded 2026-09-27, closing the prior VERIFY):** whether the Data Lifecycle
+  Management/Records Management Purview role group is *also* accepted for the toggle itself, since
+  the control surfaces under the Data Lifecycle Management solution settings UI rather than the
+  Insider Risk Management app. A direct re-fetch of the retention documentation's own procedure for
+  this exact toggle names the Adaptive Protection permissions table's "Configure Adaptive
+  Protection and update settings" row (**Insider Risk Management** or **Insider Risk Management
+  Admins**) as the "required permissions" gating it - no
+  Data Lifecycle Management/Records Management role group is mentioned anywhere in that procedure.
+  Treat the two Insider Risk Management role groups as the sole documented path unless a future
+  pilot-tenant test finds an undocumented DLM-role exception.
+- **VERIFY (pilot tenant):** the exact `AuditData` field names (`Workload`, `ObjectId`,
+  `SourceFileName`) `deploy/Export-AdaptiveProtectionPreservationEvidence.ps1` extracts are
+  populated best-effort from the general Search-UnifiedAuditLog schema, not confirmed by a worked
+  Microsoft example for these two specific Operations - the raw `AuditData` JSON column is always
+  preserved as the ground truth regardless.

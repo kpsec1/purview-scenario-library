@@ -1,0 +1,54 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('refdocs');
+  return docs.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Base title={`${entry.data.title} · Field Guide`} description={entry.data.title}>
+  <header class="doc-head">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/docs/">Field Guide</a>
+      </nav>
+      <p class="kicker">Field guide</p>
+      <h1>{entry.data.title}</h1>
+    </div>
+  </header>
+
+  <article class="narrow prose doc">
+    <Content />
+  </article>
+
+  <style>
+    .doc-head {
+      border-bottom: 1px solid var(--rule);
+      padding: 48px 0 36px;
+      margin-bottom: 40px;
+      background:
+        radial-gradient(50% 100% at 100% 0%, var(--accent-soft) 0%, transparent 60%),
+        var(--paper);
+    }
+    .crumbs {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .doc-head h1 {
+      font-size: clamp(2rem, 4.6vw, 3.2rem);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      margin: 0;
+      max-width: 22ch;
+    }
+    .doc :global(h1:first-of-type) {
+      display: none;
+    }
+  </style>
+</Base>

@@ -1,0 +1,20 @@
+{
+  "adaptive-protection": "Adaptive Protection",
+  "audit": "Audit",
+  "communication-compliance": "Communication Compliance",
+  "compliance-manager": "Compliance Manager",
+  "data-estate-insights": "Data Estate Insights",
+  "data-lifecycle-management": "Data Lifecycle Management",
+  "data-lineage": "Data Lineage",
+  "data-map": "Data Map",
+  "data-quality": "Data Quality",
+  "data-security-investigations": "Data Security Investigations",
+  "dlp": "Data Loss Prevention",
+  "dspm-for-ai": "DSPM for AI",
+  "ediscovery": "eDiscovery",
+  "information-barriers": "Information Barriers",
+  "information-protection": "Information Protection",
+  "insider-risk": "Insider Risk Management",
+  "records-management": "Records Management",
+  "unified-catalog": "Unified Catalog"
+}
