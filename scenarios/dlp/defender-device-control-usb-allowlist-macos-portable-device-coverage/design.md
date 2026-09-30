@@ -128,7 +128,11 @@ a `portable_devices`-scoped group specifically. Per `AGENTS.md` §4, this fragme
 `serialNumber` for Portable devices (consistent with the flat, unscoped clause table and with this
 scenario's own Apple-device precedent) but flags it as an open `VERIFY` in `README.md` §11 and
 checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather than asserting it as
-confirmed.
+confirmed. **Re-grounded 2026-09-30:** a maintenance pass re-fetched the Clause reference table and
+individually checked every sample policy currently published in
+`microsoft/mdatp-devicecontrol/macOS/policy/samples` (ten files); the table is still flat and
+family-unscoped, and still no sample pairs `serialNumber` with a `portable_devices`-scoped group -
+see `README.md` §11 for the full trail. The VERIFY remains open, narrowed rather than closed.
 
 ## 7. Key decisions
 

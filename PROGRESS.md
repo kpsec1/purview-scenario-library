@@ -279,7 +279,10 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Microsoft's Clause reference table is unscoped by device family (a stronger starting position than
   the Windows WPD-coverage sibling's own equivalent VERIFY), but this is not the same as a worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks this as `[WARN]`, not `[PASS]`,
-  pending confirmation - see that scenario's `README.md` §11.
+  pending confirmation - see that scenario's `README.md` §11. **Re-grounded 2026-09-30** (Microsoft
+  Learn MCP + direct fetch of all ten current files in the GitHub samples directory): still
+  genuinely unconfirmed - see the DONE entry below for the full trail. Remains open, narrowed not
+  closed.
 - [x] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
   just Bluetooth, above) once the per-device, dynamic-sub-group `groupId`-clause-nesting idempotency
   model is independently verified against a pilot tenant - same deferred complexity already tracked
@@ -3674,6 +3677,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Re-grounded the `defender-device-control-usb-allowlist-macos-portable-device-coverage`
+  `serialNumber`-for-`portable_devices` VERIFY** - commit `<pending>` - 2026-09-30. Maintenance pass:
+  re-fetched `mac-device-control-overview` in full via the Microsoft Learn MCP tool and re-confirmed
+  its Clause reference table still presents `serialNumber` as one flat, family-unscoped clause with
+  no per-family restriction stated. Then individually checked every one of the ten sample policy
+  files currently published in `microsoft/mdatp-devicecontrol/macOS/policy/samples` (fetched the
+  directory listing plus the raw JSON of both `portable_devices`-touching samples,
+  `deny_mobile_devices.json` and `deny_debug_on_android.json`, and the directory's own `README.md`/
+  `scenarios.json` index): neither portable-device sample - nor any other sample in the set - pairs a
+  `serialNumber` clause with a `portable_devices`-scoped group; both build their `portable_devices`
+  groups from a bare `primaryId` clause only. This confirms the VERIFY was checked against the
+  *complete* current sample set (not a partial one) and found genuinely unresolved either way -
+  narrowed, not closed. Updated `defender-device-control-usb-allowlist-macos-portable-device-coverage/README.md`
+  (§11) and `design.md` (§6) with the dated re-grounding trail, and `PROGRESS.md`'s own carried-forward
+  item above. No script or config behavior change (`validate/Test-MacPortableDeviceCoverage.ps1`
+  continues to check `approvedPortableDevices` as `[WARN]`) and no new four-lens review round needed
+  per `AGENTS.md` §6 - doc/citation-only correction. Re-open only once Microsoft publishes a worked
+  example either way or a pilot-tenant test confirms/denies it directly.
 - [x] **Narrowed the `scan-on-premises-sql-server-and-classify` Windows Authentication `CredentialType`
   VERIFY** - commit `8088e8e` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
   Replace** REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace`)
