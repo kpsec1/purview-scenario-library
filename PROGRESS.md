@@ -3678,7 +3678,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Re-grounded the `defender-device-control-usb-allowlist-macos-portable-device-coverage`
-  `serialNumber`-for-`portable_devices` VERIFY** - commit `<pending>` - 2026-09-30. Maintenance pass:
+  `serialNumber`-for-`portable_devices` VERIFY** - commit `b9cee81` - 2026-09-30. Maintenance pass:
   re-fetched `mac-device-control-overview` in full via the Microsoft Learn MCP tool and re-confirmed
   its Clause reference table still presents `serialNumber` as one flat, family-unscoped clause with
   no per-family restriction stated. Then individually checked every one of the ten sample policy
