@@ -235,3 +235,15 @@ retired by Microsoft on August 31, 2025** and isn't available in the current eDi
 
 No Fix/Fail from this round. `PROGRESS.md`'s legal-hold-notifications follow-up is closed as
 "investigated, not built" rather than carried forward or silently dropped.
+
+---
+
+**Maintenance addendum (2026-10-01):** the Microsoft Product Owner finding's one flagged exception
+(§4 above, the beta-namespace `includedSources` combined-string analogy) is now resolved. A fresh
+Microsoft Learn pass on the v1.0 "Create custodian userSource" REST reference found its own worked
+example POSTs `includedSources: "mailbox"` alone, with the response for that exact request showing
+`includedSources: "mailbox,site"` - direct v1.0 evidence (not beta-namespace analogy) that the
+site is included automatically and that `"mailbox"` is the correct, documented request value.
+`README.md` §11/§12 and `deploy/New-EdiscoveryPremiumLegalHold.ps1` updated in place to send
+`-IncludedSources 'mailbox'`; the v1.0-vs-beta discipline finding in §4 above no longer has an
+open exception. `PROGRESS.md`'s corresponding VERIFY item is closed.

@@ -175,7 +175,7 @@ design [[8]](#references).
 |---|---|---|
 | Case | `New-MgSecurityCaseEdiscoveryCase` | `displayName`, `description`, `externalId` |
 | Custodian | `New-MgSecurityCaseEdiscoveryCaseCustodian` | `email` |
-| Custodian userSource | `New-MgSecurityCaseEdiscoveryCaseCustodianUserSource` | `email`, `includedSources = 'mailbox, site'` |
+| Custodian userSource | `New-MgSecurityCaseEdiscoveryCaseCustodianUserSource` | `email`, `includedSources = 'mailbox'` (API response includes `site` automatically) |
 | Hold | `Add-MgSecurityCaseEdiscoveryCaseCustodianHold` | (no body - targets one custodian per call) |
 | Search | `New-MgSecurityCaseEdiscoveryCaseSearch` | `displayName`, `contentQuery` (KQL), `dataSourceScopes = 'allCaseCustodians'` |
 | Review set | `New-MgSecurityCaseEdiscoveryCaseReviewSet` | `displayName` |
@@ -317,14 +317,14 @@ destructive stages, each requiring an explicit switch.
   exact per-search/per-review-set key** - Microsoft's API doesn't expose a documented "does an
   equivalent operation already exist" filter. Keep definition-file display names stable across
   re-runs of the same matter's collection; see the script's own `.NOTES`.
-- **VERIFY (pilot tenant, before production reliance):** whether a custodian's `userSource`
-  `includedSources` value must be the exact string `"mailbox, site"` (as shown in Microsoft's own
-  worked beta example) or whether the v1.0 endpoint expects a JSON array / different delimiter -
-  the v1.0 REST reference for this specific endpoint documents the *possible values* (`mailbox`,
-  `site`) but its own worked example for `POST .../custodians/{id}/userSources` only shows a
-  single value (`"mailbox"`), not the combined form. `New-EdiscoveryPremiumLegalHold.ps1` uses the
-  combined-string form by analogy with the (deprecated, beta-namespace) sibling endpoint's worked
-  example rather than fabricating a JSON-array shape neither reference confirms.
+- **Closed 2026-10-01** (Microsoft Learn): the v1.0 "Create custodian userSource" REST reference's
+  own worked example POSTs `includedSources: "mailbox"` alone, and its response for that exact
+  request shows the resulting userSource with `includedSources: "mailbox,site"` - confirming the
+  v1.0 endpoint includes the custodian's OneDrive/SharePoint site automatically and that the
+  single documented value `"mailbox"` is sufficient; no combined-string request value is needed.
+  This supersedes the scenario's original analogy to the deprecated, beta-namespace sibling
+  endpoint's `"mailbox, site"` (with a space) worked example, which was never confirmed for this
+  v1.0 endpoint. `New-EdiscoveryPremiumLegalHold.ps1` now sends `-IncludedSources 'mailbox'`.
 - **A custodian's `userSource` (mailbox + OneDrive) does not automatically cover Microsoft Teams
   *channel* messages.** Teams 1:1/group chat is stored in the custodian's own mailbox and is
   covered by the mailbox `userSource`, but channel messages live in the team's own mailbox/site,

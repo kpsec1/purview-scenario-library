@@ -71,12 +71,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   eDiscovery experience - not merely unautomatable. `premium-legal-hold-and-export/README.md` §11
   and `design.md` §7 corrected in place instead of a companion scenario being built on the original
   (now-superseded) assumption.
-- [ ] VERIFY (pilot tenant, before production reliance): whether the custodian `userSource`
-  `includedSources` property accepts the combined string `"mailbox, site"` (Microsoft's own worked
-  *beta*-namespace example) on the current *v1.0* `POST .../custodians/{id}/userSources` endpoint,
-  whose own v1.0 worked example shows only a single value (`"mailbox"`) - flagged inline in
-  `premium-legal-hold-and-export/README.md` §11 and `deploy/New-EdiscoveryPremiumLegalHold.ps1`'s
-  `.NOTES` rather than resolved by guessing a JSON-array shape neither reference confirms.
+- [x] VERIFY (custodian `userSource` `includedSources` combined-string question) - **closed
+  2026-10-01** (Microsoft Learn MCP): re-fetched the v1.0 "Create custodian userSource" REST
+  reference in full. Its own worked example POSTs `includedSources: "mailbox"` alone, and the
+  response shown for that exact request returns the resulting userSource with
+  `includedSources: "mailbox,site"` - direct v1.0 evidence (not the beta-namespace analogy this
+  item previously relied on) that the API includes the custodian's OneDrive/SharePoint site
+  automatically and that the single documented value `"mailbox"` is the correct, sufficient
+  request value; no combined-string or JSON-array input is needed.
+  `premium-legal-hold-and-export/README.md` §11/§12 (configuration-reference table and known
+  limitations), `deploy/New-EdiscoveryPremiumLegalHold.ps1` (now sends `-IncludedSources
+  'mailbox'`), and `reviews.md` (maintenance addendum) updated in place.
 - [x] Once `scenarios/insider-risk/` has a scenario producing an escalatable Insider Risk
   Management case, wire the documented IRM-case → eDiscovery (Premium) case escalation integration
   - **built** as `scenarios/insider-risk/irm-case-escalation-to-ediscovery/` (see DONE below).
@@ -3674,6 +3679,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `premium-legal-hold-and-export` custodian `userSource` `includedSources`
+  combined-string VERIFY** - commit `53e48c8` - 2026-10-01. Maintenance pass: re-fetched the v1.0
+  "Create custodian userSource" REST reference (`https://learn.microsoft.com/graph/api/security-ediscoverycustodian-post-usersources?view=graph-rest-1.0`)
+  directly via the Microsoft Learn MCP tool. Its own worked example POSTs `includedSources:
+  "mailbox"` alone, and the response shown for that exact request returns the resulting userSource
+  with `includedSources: "mailbox,site"` - direct v1.0 evidence (superseding the scenario's prior
+  analogy to a deprecated beta-namespace sibling endpoint's `"mailbox, site"` example) that the API
+  includes the custodian's OneDrive/SharePoint site automatically and that the single documented
+  value `"mailbox"` is the correct, sufficient request value. Updated
+  `premium-legal-hold-and-export/README.md` (§11 known-limitations entry, §12 configuration-reference
+  table), `deploy/New-EdiscoveryPremiumLegalHold.ps1` (now sends `-IncludedSources 'mailbox'` instead
+  of the unconfirmed `'mailbox, site'`), and `reviews.md` (new maintenance addendum closing the
+  Microsoft Product Owner lens's one flagged exception). No new four-lens review round needed per
+  `AGENTS.md` §6 - a grounding correction that also fixes the deploy script to match the confirmed,
+  documented v1.0 request value.
 - [x] **Narrowed the `scan-on-premises-sql-server-and-classify` Windows Authentication `CredentialType`
   VERIFY** - commit `8088e8e` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
   Replace** REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace`)
