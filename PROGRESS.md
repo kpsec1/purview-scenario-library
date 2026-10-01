@@ -3680,7 +3680,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `premium-legal-hold-and-export` custodian `userSource` `includedSources`
-  combined-string VERIFY** - commit `PENDING` - 2026-10-01. Maintenance pass: re-fetched the v1.0
+  combined-string VERIFY** - commit `53e48c8` - 2026-10-01. Maintenance pass: re-fetched the v1.0
   "Create custodian userSource" REST reference (`https://learn.microsoft.com/graph/api/security-ediscoverycustodian-post-usersources?view=graph-rest-1.0`)
   directly via the Microsoft Learn MCP tool. Its own worked example POSTs `includedSources:
   "mailbox"` alone, and the response shown for that exact request returns the resulting userSource
