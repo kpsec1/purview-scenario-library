@@ -2892,13 +2892,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   outside the automation identity's own Purview/Azure IAM role scope (see `design.md` §8).
 
 ### Follow-ups discovered while building the verify-purview-entra-graph-prerequisites scenario
-- [ ] VERIFY (pilot tenant): whether `Get-MgDirectoryRoleMember` returns users and groups (not just
-  service principals) as current members of the Directory Readers role in practice - this build's
-  grounding pass found only the generic, multi-type `directoryObject` schema for the cmdlet, no
-  worked example specific to *this* role confirming all three principal types actually coexist as
-  members. The drift-resolution logic in `verify-purview-entra-graph-prerequisites/deploy/
-  Confirm-DirectoryReadersMembership.ps1` handles all three regardless - flagged inline in
-  `README.md` §11 as a documentation/expectation gap, not a functional one.
+- [x] VERIFY closed 2026-10-02 (Microsoft Learn MCP, maintenance pass): whether `Get-MgDirectoryRoleMember`
+  returns service principals (not just users/groups) as current members of the Directory Readers role
+  in practice - **closed with a confirmed negative finding, not the documentation-gap framing the
+  original item assumed.** `Get-MgDirectoryRoleMemberObject`'s reference page states plainly: "Only
+  users and role-enabled groups can be members of directory roles." Microsoft's own Azure SQL
+  Directory Readers tutorial (already cited in this scenario's README.md §12) confirms the real-world
+  pattern: a Managed Instance's service principal is always wrapped in an intermediary role-assignable
+  group rather than added to the role directly, and direct service-principal role grants documented
+  elsewhere go through the separate unified-RBAC `roleManagement/directory/roleAssignments` API, not
+  the classic `directoryRoles/{id}/members` collection `Get-MgDirectoryRoleMember` reads. This makes
+  the original "documentation/expectation gap, not a functional one" framing wrong: a tenant using
+  Microsoft's own tutorial pattern will see this scenario's checker hard-`FAIL` a correctly-provisioned
+  instance, since the service principal's own ID never appears as a direct member - only the wrapper
+  group's ID does. `README.md` §11 rewritten in place with the full grounding trail and the practical
+  workaround; `reviews.md` Blue Team section carries a correction addendum. No code change - a
+  transitive group-membership resolver would be new coverage, out of scope for a maintenance fragment
+  (`AGENTS.md` §6).
 - [ ] Once `scenarios/data-map/verify-synapse-serverless-enumeration-grants/` (tracked below under
   the Azure Synapse Analytics follow-ups) is built, decide whether to fold it into
   `verify-purview-entra-graph-prerequisites` as a second check mode or keep it a fully separate
@@ -3674,6 +3684,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `verify-purview-entra-graph-prerequisites` service-principal member-type VERIFY -
+  with a confirmed functional-limitation finding, not the documentation-gap the item assumed** -
+  commit `d60130f` - 2026-10-02. Maintenance pass: re-grounded whether `Get-MgDirectoryRoleMember`
+  returns service principals as direct Directory Readers members. `Get-MgDirectoryRoleMemberObject`'s
+  Microsoft Learn reference states "Only users and role-enabled groups can be members of directory
+  roles"; Microsoft's own Azure SQL Directory Readers tutorial always wraps a Managed Instance's
+  service principal in an intermediary role-assignable group rather than adding it to the role
+  directly; direct service-principal role grants documented elsewhere go through the separate
+  unified-RBAC `roleManagement/directory/roleAssignments` API, not the classic
+  `directoryRoles/{id}/members` collection this scenario's checker reads. Net effect: a tenant using
+  Microsoft's own tutorial pattern gets a false `FAIL` from this checker for a correctly-provisioned
+  instance. Updated `verify-purview-entra-graph-prerequisites/README.md` §11/§12 and `reviews.md`
+  (Blue Team correction addendum) with the full grounding trail and practical workaround; no code
+  change (fixing it would add new transitive-membership-resolution coverage, out of scope for a
+  maintenance fragment per `AGENTS.md` §6).
 - [x] **Narrowed the `scan-on-premises-sql-server-and-classify` Windows Authentication `CredentialType`
   VERIFY** - commit `8088e8e` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
   Replace** REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace`)

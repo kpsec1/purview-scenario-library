@@ -278,13 +278,32 @@ Graph API call in this scenario is separately metered.
   rather than a real display name - see the deploy script's `.NOTES`.
 - **This scenario reports, it does not remediate.** See `design.md` §10 - consistent with this
   repo's established convention for high-privilege, one-time directory grants.
-- **VERIFY (pilot tenant): `Get-MgDirectoryRoleMember`'s member-type coverage for this specific
-  role.** Microsoft's reference documents the cmdlet as returning users, service principals, or
-  groups generically; this scenario's own grounding pass found no worked example specific to
-  Directory Readers confirming all three types can simultaneously appear as members of *this* role
-  in practice (as opposed to being merely permitted by the general schema). The drift-resolution
-  logic handles all three regardless, so this is a documentation/expectation gap, not a functional
-  one.
+- **CLOSED 2026-10-02 (Microsoft Learn MCP, maintenance pass): `Get-MgDirectoryRoleMember`'s
+  member-type coverage is narrower than the original draft assumed - this is now a confirmed
+  functional limitation, not merely a documentation gap.** The companion
+  `Get-MgDirectoryRoleMemberObject` reference page states plainly: "This function is transitive.
+  Only users and role-enabled groups can be members of directory roles." Both cmdlets read the same
+  classic `directoryRoles/{id}/members` collection. Two independent, directly on-point Microsoft
+  Learn sources corroborate that a service principal is *not* expected to appear there directly:
+  (1) reference 8 below - Microsoft's own Azure SQL "Directory Readers role tutorial," cited
+  elsewhere in this README - never adds a Managed Instance's service principal to the role
+  directly; it always wraps it in an intermediary role-assignable **group** and assigns the role to
+  that group instead; (2) the "Assign Microsoft Entra roles" guide's "Assign roles to service
+  principals" procedure (`New-EntraDirectoryRoleAssignment`/`New-MgRoleManagementDirectoryRoleAssignment
+  -PrincipalId <service principal id>`) grants the role through the separate, newer unified-RBAC
+  `roleManagement/directory/roleAssignments` API, not through the classic `directoryRoles/{id}/members`
+  collection this script's `Get-MgDirectoryRoleMember` call reads.
+  **Practical effect:** if a tenant provisioned a Managed Instance's Directory Readers access by
+  following Microsoft's own tutorial pattern (service principal added to a role-assignable group,
+  group assigned the role), that service principal's object ID never appears as a direct member -
+  only the wrapper group's ID does - so this script reports a hard `FAIL` for that inventory row
+  even though access is correctly provisioned and working. This script does not resolve group
+  membership transitively (`design.md` §10 Non-goals: Graph-only, Directory-Readers-scoped, not a
+  general transitive-membership resolver) - a `FAIL` for a row using the group-wrapped pattern is a
+  known false positive, not a real gap. Operators using that pattern must manually confirm the
+  service principal's group membership before treating a `FAIL` as actionable, or re-provision the
+  grant as a direct role assignment to the service principal's own object ID so this checker can see
+  it. Recorded as a correction addendum in `reviews.md` (Blue Team).
 - **Inherits the sibling scenario's own open VERIFY items** where relevant (e.g. the exact Case ID/
   object-ID format conventions Microsoft uses) - this scenario does not re-state them; see
   `scan-azure-sql-managed-instance-and-classify/README.md` §11.
@@ -302,6 +321,8 @@ Graph API call in this scenario is separately metered.
 7. Directory Readers role in Microsoft Entra ID for Azure SQL (why Managed Instance needs it) - <https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-directory-readers-role>
 8. Assign Directory Readers role to a Microsoft Entra group and manage role assignments (the Managed-Instance-specific grant tutorial, same page the sibling scenario's own README.md §12 reference 3 cites) - <https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-directory-readers-role-tutorial>
 9. Managed Identity in Microsoft Entra for Azure SQL (`Get-AzSqlInstance`/`Identity.PrincipalId` pattern this scenario's inventory-building step uses) - <https://learn.microsoft.com/azure/azure-sql/database/authentication-azure-ad-user-assigned-managed-identity>
+10. Get-MgDirectoryRoleMemberObject (Microsoft.Graph.Identity.DirectoryManagement module - states "Only users and role-enabled groups can be members of directory roles," the source for §11's closed VERIFY on service-principal member-type coverage) - <https://learn.microsoft.com/powershell/module/microsoft.graph.identity.directorymanagement/get-mgdirectoryrolememberobject>
+11. Assign Microsoft Entra roles - "Assign roles to service principals" (confirms direct service-principal role grants go through the separate unified-RBAC `roleManagement/directory/roleAssignments` API, not the classic `directoryRoles/{id}/members` collection) - <https://learn.microsoft.com/entra/identity/role-based-access-control/manage-roles-portal>
 10. Microsoft Graph PowerShell SDK authentication and throttling guidance - `docs/automation-surface.md` §3/§5.
 11. Check Azure data sources to register and scan in Microsoft Purview - Microsoft's own broader, one-time readiness checklist for the Purview account's managed identity (Reader/`db_datareader`/network/firewall/Entra-authentication-enabled checks); complementary to, not overlapping with, this scenario's Directory Readers-specific, ongoing check - see the §3 callout above - <https://learn.microsoft.com/purview/data-map-data-sources-check-azure-readiness>
 
