@@ -69,6 +69,27 @@ No remaining Fail after resolution.
 
 No remaining Fail after resolution.
 
+### Correction addendum (maintenance pass, 2026-10-02)
+
+4. **`Get-MgDirectoryRoleMember` will false-positive `FAIL` for a service principal provisioned via
+   Microsoft's own recommended group-wrapped pattern.** This repo's original README.md §11 carried
+   this as an open, speculative VERIFY ("documentation/expectation gap, not a functional one"). A
+   maintenance-pass re-grounding against Microsoft Learn found the opposite is true and directly
+   documented: `Get-MgDirectoryRoleMemberObject`'s reference page states "Only users and role-enabled
+   groups can be members of directory roles," and Microsoft's own Azure SQL Directory Readers
+   tutorial (README.md §12 reference 8) never adds a Managed Instance's service principal to the role
+   directly - it always wraps it in an intermediary role-assignable group. A tenant that followed
+   that official tutorial will have its service principal appear only as a transitive (group) member,
+   never a direct one, so this script's direct-membership check reports `FAIL` for a correctly
+   provisioned instance. This is a confirmed blind spot, not a false alarm about a documentation gap.
+   - **Resolution:** `README.md` §11 rewritten in place with the full grounding trail and the
+     practical workaround (manually confirm group membership, or re-provision as a direct role
+     assignment to the service principal's own object ID). No code change made - resolving it in
+     script would require a transitive-membership resolver, which `design.md` §10 Non-goals
+     deliberately keeps out of this fragment's Graph-only, Directory-Readers-scoped surface; adding
+     that capability is new coverage, out of scope for a maintenance fragment per `AGENTS.md` §6, and
+     is left as a follow-up in `PROGRESS.md` instead.
+
 ---
 
 ## 🎩 CISO
@@ -156,3 +177,9 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Confirm-DirectoryReadersMembership.ps1`, and
 `validate/Test-DirectoryReadersMembershipInputs.ps1`. No Fail items were raised. This fragment meets
 the definition of done in `AGENTS.md` §9.
+
+**2026-10-02 maintenance addendum:** Blue Team finding 4 (above) documents a confirmed,
+Microsoft-Learn-grounded functional blind spot that the original review's own VERIFY item had
+under-stated as a documentation gap. Resolved by rewriting `README.md` §11 with the full grounding
+trail; no code change, since fixing it would add new transitive-membership-resolution coverage
+outside a maintenance fragment's scope.
