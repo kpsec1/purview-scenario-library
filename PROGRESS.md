@@ -3686,7 +3686,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## DONE
 - [x] **Closed the `verify-purview-entra-graph-prerequisites` service-principal member-type VERIFY -
   with a confirmed functional-limitation finding, not the documentation-gap the item assumed** -
-  commit `<pending>` - 2026-10-02. Maintenance pass: re-grounded whether `Get-MgDirectoryRoleMember`
+  commit `d60130f` - 2026-10-02. Maintenance pass: re-grounded whether `Get-MgDirectoryRoleMember`
   returns service principals as direct Directory Readers members. `Get-MgDirectoryRoleMemberObject`'s
   Microsoft Learn reference states "Only users and role-enabled groups can be members of directory
   roles"; Microsoft's own Azure SQL Directory Readers tutorial always wraps a Managed Instance's
