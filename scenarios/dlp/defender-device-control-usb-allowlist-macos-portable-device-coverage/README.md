@@ -282,7 +282,19 @@ is operational: reviewing and maintaining up to two additional approved-device l
   list (a materially stronger starting position than the ambiguity the Windows WPD-coverage
   sibling had to flag for `SerialNumberId`/`VID_PID`), but this is not the same as a direct worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks `approvedPortableDevices` entries
-  as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation.
+  as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation. **Re-grounded 2026-10-03** (Microsoft
+  Learn MCP + direct fetch of every sample file in the GitHub samples repo, not just the two
+  already cited): the gap is confirmed genuine, not just unchecked. All 13 policy samples in
+  `microsoft/mdatp-devicecontrol`'s `macOS/policy/samples` directory were individually fetched and
+  read. Two samples use `primaryId: portable_devices` (`deny_mobile_devices.json`,
+  `audit_mobile_devices.json`, both `portable_devices`-OR-`apple_devices`) and one uses
+  `portableDevice`-typed entries scoped to `portable_devices` (`deny_debug_on_android.json`), but
+  none of the three adds a `serialNumber` clause to that group - only the bare `primaryId` clause.
+  The only sample anywhere in the directory combining `serialNumber` with a `primaryId`-scoped
+  group remains `audit_all_apple_devices_except_serial_numbers.json`, scoped to `apple_devices`.
+  The official Clause reference table (`mac-device-control-overview`) is still family-unscoped text
+  only, not a worked example. No new source closes this; re-open only once Microsoft publishes a
+  `portable_devices`+`serialNumber` worked sample or a pilot-tenant test confirms the behavior.
 - **A device without a readable serial number cannot be allowlisted for the Apple or Portable
   families** - same scope boundary the parent scenario already carries for removable media
   (`README.md` §11 there), and the same reason this fragment doesn't attempt `vendorId`/`productId`
@@ -340,6 +352,11 @@ is operational: reviewing and maintaining up to two additional approved-device l
    <https://github.com/microsoft/mdatp-devicecontrol/tree/main/macOS/policy/samples>
    - `audit_all_apple_devices.json`, `audit_all_apple_devices_except_serial_numbers.json`,
      `deny_mobile_devices.json`, `deny_all_bluetooth_devices_except_samsung.json`
+   - **2026-10-03 re-grounding pass:** all 13 samples in this directory fetched and read
+     individually (not just the four above) specifically to search for a `portable_devices`+
+     `serialNumber` worked example for the §11 VERIFY; none exists as of this date -
+     `deny_mobile_devices.json`, `audit_mobile_devices.json`, and `deny_debug_on_android.json` are
+     the only other samples touching `portable_devices`, and none adds a `serialNumber` clause.
 3. Device control policies in Microsoft Defender for Endpoint (shared Groups/Rules/Entries concepts
    across Windows and macOS) - <https://learn.microsoft.com/defender-endpoint/device-control-policies>
 4. Device control in Microsoft Defender for Endpoint (Windows-side worked Advanced Hunting example
