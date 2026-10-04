@@ -130,6 +130,14 @@ scenario's own Apple-device precedent) but flags it as an open `VERIFY` in `READ
 checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather than asserting it as
 confirmed.
 
+**Re-grounded 2026-10-04** (Microsoft Learn MCP + direct fetch of the official
+`microsoft/mdatp-devicecontrol` GitHub samples repository): still genuinely undocumented. Both
+`portable_devices` samples in that repository (`deny_debug_on_android.json`,
+`deny_mobile_devices.json`) match on group `primaryId` alone, with no `serialNumber` clause. This
+strengthens the negative finding (two independently-reviewed samples, zero counter-examples) but
+doesn't resolve it - absence of a worked example isn't a documented restriction, so the `VERIFY`
+and the `[WARN]` check both stay in place.
+
 ## 7. Key decisions
 
 | Decision | Choice | Rationale |
