@@ -3684,7 +3684,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Re-grounded the `defender-device-control-usb-allowlist-macos-portable-device-coverage`
-  `portable_devices`-`serialNumber` VERIFY** - commit (pending, see next entry) - 2026-10-04.
+  `portable_devices`-`serialNumber` VERIFY** - commit `674654e` - 2026-10-04.
   Maintenance pass: searched Microsoft Learn for a `portable_devices`+`serialNumber` worked example,
   then directly fetched the official `microsoft/mdatp-devicecontrol` GitHub samples repository
   (the same source this scenario's original grounding pass cited) and reviewed both
