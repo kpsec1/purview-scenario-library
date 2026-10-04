@@ -173,3 +173,17 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Add-MacPortableDeviceCoverage.ps1` - including a genuine fabricated-field grounding defect
 (Blue Team finding 1) caught and fixed during this review, not merely documented. No Fail items
 were raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Maintenance addendum - 2026-10-04
+
+Re-grounded the §11 `portable_devices`-`serialNumber` VERIFY (Microsoft Learn MCP + a direct fetch
+of the official `microsoft/mdatp-devicecontrol` GitHub samples repository). Reviewed both
+`primaryId: "portable_devices"` samples in that repository (`deny_debug_on_android.json`,
+`deny_mobile_devices.json`); neither pairs a `serialNumber` clause with the `portable_devices`
+family. This narrows the open question - two independently-reviewed, Microsoft-published
+`portable_devices` samples checked, zero counter-examples - without resolving it, since the absence
+of a worked example is not a documented restriction. `README.md` §11/§12 and `design.md` §6 updated
+in place with the dated finding; the VERIFY and the validate script's `[WARN]` both remain open, per
+`AGENTS.md` §4's no-guessing standard. No code changes required.

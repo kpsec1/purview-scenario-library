@@ -279,7 +279,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Microsoft's Clause reference table is unscoped by device family (a stronger starting position than
   the Windows WPD-coverage sibling's own equivalent VERIFY), but this is not the same as a worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks this as `[WARN]`, not `[PASS]`,
-  pending confirmation - see that scenario's `README.md` §11.
+  pending confirmation - see that scenario's `README.md` §11. **Re-grounded 2026-10-04** (Microsoft
+  Learn MCP + direct fetch of the official `microsoft/mdatp-devicecontrol` GitHub samples
+  repository): still genuinely undocumented. Both `primaryId: "portable_devices"` samples in that
+  repository (`deny_debug_on_android.json`, `deny_mobile_devices.json`) match by group `primaryId`
+  alone with no `serialNumber` clause - no sample in the repository pairs the two. Narrows the
+  question (two independently-reviewed `portable_devices` samples checked, zero counter-examples)
+  without resolving it, since an absent worked example isn't a documented restriction. See
+  `README.md` §11/§12, `design.md` §6, and `reviews.md`'s new maintenance addendum in that scenario
+  for the full citation trail. Remains open; re-open for a fresh pass only if Microsoft publishes a
+  `portable_devices`+`serialNumber` sample or states the pairing is unsupported.
 - [x] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
   just Bluetooth, above) once the per-device, dynamic-sub-group `groupId`-clause-nesting idempotency
   model is independently verified against a pilot tenant - same deferred complexity already tracked
@@ -3674,6 +3683,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Re-grounded the `defender-device-control-usb-allowlist-macos-portable-device-coverage`
+  `portable_devices`-`serialNumber` VERIFY** - commit (pending, see next entry) - 2026-10-04.
+  Maintenance pass: searched Microsoft Learn for a `portable_devices`+`serialNumber` worked example,
+  then directly fetched the official `microsoft/mdatp-devicecontrol` GitHub samples repository
+  (the same source this scenario's original grounding pass cited) and reviewed both
+  `primaryId: "portable_devices"` samples in it (`deny_debug_on_android.json`,
+  `deny_mobile_devices.json`). Neither pairs a `serialNumber` clause with the `portable_devices`
+  family - confirming the negative finding with a second independently-reviewed sample rather than
+  just the one checked originally. Per `AGENTS.md` §4's no-guessing standard, an absent worked
+  example doesn't resolve the VERIFY (it isn't a documented restriction either), so the VERIFY and
+  the validate script's `[WARN]` both stay open - this pass narrows the evidence, it doesn't close
+  the item. Updated `README.md` (§11 dated note, §12 reference [2] expanded with the newly-checked
+  file), `design.md` (§6 dated note), and `reviews.md` (new maintenance addendum) in
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage/`; `PROGRESS.md`'s own open
+  VERIFY entry above updated in place. No code change, no new four-lens review round needed
+  (doc/citation-only correction per `AGENTS.md` §6).
 - [x] **Narrowed the `scan-on-premises-sql-server-and-classify` Windows Authentication `CredentialType`
   VERIFY** - commit `8088e8e` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
   Replace** REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace`)
