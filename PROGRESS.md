@@ -272,14 +272,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the exact shape Microsoft's own `deny_all_bluetooth_devices_except_samsung.json` sample
   demonstrates, fetched directly during this build), closing the "Bluetooth is always default-deny,
   no exceptions" scope boundary - **built** (see DONE below).
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples pass): a directly-confirmed
+- [ ] VERIFY narrowed 2026-10-05 (Microsoft Learn MCP + GitHub-samples pass): a directly-confirmed
   worked example pairing the `serialNumber` clause with a `portable_devices`-scoped group -
   `defender-device-control-usb-allowlist-macos-portable-device-coverage`'s grounding pass confirmed
   this pattern only for `apple_devices` (via `audit_all_apple_devices_except_serial_numbers.json`);
   Microsoft's Clause reference table is unscoped by device family (a stronger starting position than
   the Windows WPD-coverage sibling's own equivalent VERIFY), but this is not the same as a worked
-  example. `validate/Test-MacPortableDeviceCoverage.ps1` checks this as `[WARN]`, not `[PASS]`,
-  pending confirmation - see that scenario's `README.md` §11.
+  example. **Re-grounded 2026-10-05:** re-fetched the Device Control policy reference and the Mac
+  Device Control policy reference pages (both confirm `serialNumber` is listed once, generically,
+  not scoped per `primaryId` family), then fetched every one of the 14 JSON files in Microsoft's
+  public `mdatp-devicecontrol` macOS samples GitHub directory - the four `portable_devices`-involving
+  samples (`deny_debug_on_android.json`, `audit_mobile_devices.json`, `deny_mobile_devices.json`,
+  `scenarios.json`) all group exclusively by `primaryId`, with no `serialNumber` clause anywhere in
+  that family's published samples. This closes out the "or a future Microsoft Learn/GitHub-samples
+  pass" half of the item with a consistent, exhaustive negative result rather than leaving it an
+  unexplored lead - the gap is now a confirmed absence of a published worked example, not an
+  unchecked one. Narrowed to pilot-tenant confirmation only; `README.md` §11 and `design.md` §6
+  updated in place with the full grounding trail. `validate/Test-MacPortableDeviceCoverage.ps1`
+  still correctly checks this as `[WARN]`, not `[PASS]`, pending that pilot-tenant confirmation.
 - [x] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
   just Bluetooth, above) once the per-device, dynamic-sub-group `groupId`-clause-nesting idempotency
   model is independently verified against a pilot tenant - same deferred complexity already tracked
