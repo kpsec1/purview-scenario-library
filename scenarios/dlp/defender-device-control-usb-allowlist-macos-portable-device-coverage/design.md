@@ -124,11 +124,17 @@ also unscoped by device family but the *page's structure itself* left open wheth
 suggests `serialNumber` is *excluded* for `portable_devices`. However, this build's grounding pass
 found a directly-confirmed worked example only for `apple_devices`
 (`audit_all_apple_devices_except_serial_numbers.json`) - none was found pairing `serialNumber` with
-a `portable_devices`-scoped group specifically. Per `AGENTS.md` §4, this fragment uses
-`serialNumber` for Portable devices (consistent with the flat, unscoped clause table and with this
-scenario's own Apple-device precedent) but flags it as an open `VERIFY` in `README.md` §11 and
-checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather than asserting it as
-confirmed.
+a `portable_devices`-scoped group specifically. A **2026-10-05 maintenance pass** fetched every
+remaining JSON file in Microsoft's `mdatp-devicecontrol` macOS samples directory (14 files total)
+to close out the "or a future Microsoft Learn/GitHub-samples pass" half of this item - all four
+`portable_devices`-involving samples (`deny_debug_on_android.json`, `audit_mobile_devices.json`,
+`deny_mobile_devices.json`, `scenarios.json`) group solely by `primaryId`, with no `serialNumber`
+clause anywhere in that family's samples. The documentation/samples avenue is now exhausted with a
+consistent negative result. Per `AGENTS.md` §4, this fragment uses `serialNumber` for Portable
+devices (consistent with the flat, unscoped clause table and with this scenario's own Apple-device
+precedent) but flags it as an open `VERIFY` - narrowed to pilot-tenant confirmation only - in
+`README.md` §11 and checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather
+than asserting it as confirmed.
 
 ## 7. Key decisions
 
