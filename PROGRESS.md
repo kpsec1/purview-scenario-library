@@ -779,14 +779,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `SourceFileName` best-effort from the general Search-UnifiedAuditLog schema, not a worked
   Microsoft example for these two Operations specifically. The raw `AuditData` JSON column is
   always preserved regardless.
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn pass): whether disabling the "Adaptive
-  protection in Data Lifecycle Management" toggle (or any other admin action on it) is captured in
-  Insider Risk Management's own internal audit log (viewable by the Insider Risk Management
-  Auditors role) - not confirmed either way, and that log has no documented Graph/REST query API
-  this library has found (the same gap already tracked for a different scenario - see the
-  `irm-case-escalation-to-ediscovery` follow-ups near the top of this file). Resolving either half
-  would let `adaptive-protection-deleted-content-preservation/README.md` §11's self-sabotage
-  finding state a concrete detection mechanism instead of an open gap.
+- [x] VERIFY closed 2026-10-06 (Microsoft Learn MCP, full fetch of
+  `insider-risk-management-audit-log`): whether disabling the "Adaptive protection in Data
+  Lifecycle Management" toggle (or any other admin action on it) is captured in Insider Risk
+  Management's own internal audit log (viewable by the Insider Risk Management Auditors role) -
+  resolved by reasoned, cited closure rather than a direct statement, since no page addresses the
+  toggle by name. The Insider Risk Management audit log's documented scope is actions taken *on
+  Insider Risk Management features* by Insider Risk Management role-group members; this toggle
+  instead lives under the Data Lifecycle Management solution settings UI (already established by
+  the 2026-09-27 role-group VERIFY closure on this same scenario), and the retention documentation
+  for this exact toggle names only two auditing events it generates, neither of which is the
+  toggle action itself. Conclusion: not captured in the Insider Risk Management audit log. The
+  other half - that log having no documented Graph/REST query API - was already confirmed and is
+  unchanged. `adaptive-protection-deleted-content-preservation/README.md` §11/§12 and `reviews.md`
+  (new correction addendum) updated in place.
 - [x] Consider a Data Lifecycle Management follow-up scenario for **Priority Cleanup** - a
   different DLM feature that also applies retention labels internally and can override holds to
   reclaim disk space or permanently delete sensitive information - explicitly out of scope for
