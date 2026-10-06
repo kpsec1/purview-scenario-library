@@ -157,3 +157,20 @@ in that procedure, despite the toggle's UI location. `README.md` §3/§11 have b
 place to state this as the documented answer rather than an open question, while still flagging
 that documentation coverage of an admin UI permission gate is not the same as a live-tenant test -
 worth a pilot-tenant spot check before relying on it operationally.
+
+## Correction addendum (2026-10-06)
+
+Red Team finding 2 above (self-sabotage via disabling the toggle) left one half of its disclosure
+as an open `VERIFY (pilot tenant or a future Microsoft Learn pass)`: whether disabling the toggle
+is captured in Insider Risk Management's own internal audit log. A scheduled maintenance pass
+fetched `https://learn.microsoft.com/purview/insider-risk-management-audit-log` directly (not a
+search snippet) and found that log's documented scope is actions taken *on Insider Risk Management
+features* by users in Insider Risk Management role groups - while this toggle lives under the
+Data Lifecycle Management solution settings, not Insider Risk Management's own settings surface
+(the same surface-location fact the 2026-09-27 addendum above already used to resolve the
+role-group question). The retention documentation for this exact toggle also names only two
+auditing events it generates, neither of which covers the toggle action itself. `README.md` §11
+and §12 (reference 8 added) updated in place with the full grounding trail and a reasoned, cited
+conclusion (not captured in that log) rather than leaving the question open; the log's lack of a
+Graph/REST query API - the other half of the original VERIFY - was already confirmed and remains
+unchanged.

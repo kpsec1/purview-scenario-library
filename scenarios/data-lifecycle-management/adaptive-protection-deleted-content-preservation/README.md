@@ -208,12 +208,27 @@ relevant (independent hold or a Microsoft Support restore request) **before** di
   **Insider Risk Management Admins** role group could disable proactive preservation to cover
   their own tracks. Keep membership in those role groups minimal and separate from the population
   Adaptive Protection monitors - standard least-privilege practice (`docs/rbac-model.md` §2), but
-  worth stating explicitly here given the direct consequence. Whether this specific configuration
-  change is captured in Insider Risk Management's own internal audit log (viewable by the
-  **Insider Risk Management Auditors** role [[3]](#references)) is not confirmed - that log has no
-  documented Graph/REST query API this library has found (a known, tracked gap - see
-  `PROGRESS.md`), so it cannot be folded into this scenario's own audit-evidence script even if it
-  does capture the event.
+  worth stating explicitly here given the direct consequence. **Re-grounded 2026-10-06** (Microsoft
+  Learn MCP, full fetch): whether this specific configuration change is captured in Insider Risk
+  Management's own internal audit log (viewable by the **Insider Risk Management Auditors** role
+  [[3]](#references)) was an open VERIFY; it is now resolved by reasoned, cited closure rather than
+  a worked example, because no page states the answer directly. The "Review activities with the
+  Insider Risk Management audit log" page [[8]](#references) scopes that log explicitly to "actions
+  taken on Insider Risk Management features" by users assigned Insider Risk Management role groups
+  - but this toggle is surfaced and enabled/disabled under the **Data Lifecycle Management**
+  solution settings in the Purview portal (Solutions > Settings > Solution settings > Data
+  lifecycle management > Adaptive protection), not under Insider Risk Management's own settings
+  surface, per the retention documentation's own portal-path steps [[2]](#references) (the same
+  surface-location fact that already resolved the role-group VERIFY below). Reinforcing this: the
+  retention documentation for this exact toggle names only two auditing events this feature
+  generates - **Retained file proactively** (SharePoint/OneDrive) and **Retained email item
+  proactively** (Exchange) [[2]](#references) - and is silent on any audit event for the on/off
+  action itself. Taken together, there is no documented basis for this toggle action landing in the
+  Insider Risk Management audit log specifically, so this scenario treats the disable action as
+  **not confirmed to be captured there** - the safer assumption, not a guess either way. That log
+  also has no documented Graph/REST query API regardless [[8]](#references) (a known, tracked gap -
+  see `PROGRESS.md`), so it could not have been folded into this scenario's own audit-evidence
+  script even if it did capture the event.
 - **No real-time alert fires when this control preserves an item.** Unlike a DLP incident report,
   there is no push notification - an analyst only learns about it by querying the audit log (§7)
   or reviewing the evidence CSV. For anything beyond periodic review, forward
@@ -264,6 +279,8 @@ relevant (independent hold or a Microsoft Support restore request) **before** di
 6. `docs/licensing-matrix.md` §2 (Adaptive Protection licensing row)
 7. `docs/rbac-model.md` §4 (Insider Risk Management/Adaptive Protection role groups), §6 (Exchange
    Online audit-search role dependency)
+8. Review activities with the Insider Risk Management audit log (log scope statement, tracked
+   activity categories, Auditors export permission, no documented query API) - <https://learn.microsoft.com/purview/insider-risk-management-audit-log>
 
 > Re-verify all links and the preview status against current Microsoft Learn before a
 > customer-facing deployment. The role-group question is resolved against documentation (§3/§11)
