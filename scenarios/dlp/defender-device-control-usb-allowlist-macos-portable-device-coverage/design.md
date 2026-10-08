@@ -128,7 +128,12 @@ a `portable_devices`-scoped group specifically. Per `AGENTS.md` §4, this fragme
 `serialNumber` for Portable devices (consistent with the flat, unscoped clause table and with this
 scenario's own Apple-device precedent) but flags it as an open `VERIFY` in `README.md` §11 and
 checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather than asserting it as
-confirmed.
+confirmed. **Re-grounded 2026-10-08** (Microsoft Learn MCP + direct GitHub fetch): the Apple-device
+precedent itself was re-read in full - its `serialNumber` clauses live in a standalone exclude-group
+wired to the `apple_devices` group, not nested inside a `portable_devices`-scoped group - and the
+full sample directory was re-enumerated with no `portable`-named file found. Independent
+confirmation of the same open gap; the `VERIFY` stays open (`README.md` §11, re-grounding note added
+in place).
 
 ## 7. Key decisions
 
