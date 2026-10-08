@@ -282,7 +282,16 @@ is operational: reviewing and maintaining up to two additional approved-device l
   list (a materially stronger starting position than the ambiguity the Windows WPD-coverage
   sibling had to flag for `SerialNumberId`/`VID_PID`), but this is not the same as a direct worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks `approvedPortableDevices` entries
-  as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation.
+  as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation. **Re-grounded 2026-10-08** (Microsoft
+  Learn MCP + direct GitHub fetch): still genuinely undocumented. The full sample directory listing
+  at the reference [[2]](#references) URL was re-enumerated (15 files, no filename containing
+  "portable") and `audit_all_apple_devices_except_serial_numbers.json` was fetched and read in full
+  - its `serialNumber` clauses sit in a standalone "Allowed Serial Numbers" group (`or` query, three
+  `serialNumber` clauses) that is wired to the `apple_devices` group only via the rule's
+  `excludeGroups`, not nested inside a `portable_devices`-scoped group. This is independent
+  confirmation of the same negative result already recorded here, not new evidence either way for
+  `portable_devices` specifically. Re-open only once Microsoft publishes a sample or worked example
+  that pairs a `serialNumber` clause with a `portable_devices`-scoped group.
 - **A device without a readable serial number cannot be allowlisted for the Apple or Portable
   families** - same scope boundary the parent scenario already carries for removable media
   (`README.md` §11 there), and the same reason this fragment doesn't attempt `vendorId`/`productId`
