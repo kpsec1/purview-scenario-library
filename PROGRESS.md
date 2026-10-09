@@ -3679,7 +3679,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `location-scoped-legal-hold` `siteSource` URL-matching VERIFY** - commit
-  `PENDING` - 2026-10-09. Maintenance pass: re-fetched the **List siteSources** v1.0 REST
+  `92ca7bb` - 2026-10-09. Maintenance pass: re-fetched the **List siteSources** v1.0 REST
   reference (`https://learn.microsoft.com/graph/api/security-ediscoverycustodian-list-sitesources?view=graph-rest-1.0`)
   via the Microsoft Learn MCP tool and found its own worked example **response** body, not
   previously fetched in full by this build, embeds a nested `site` object - including `webUrl` -
