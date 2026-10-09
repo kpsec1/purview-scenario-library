@@ -162,14 +162,14 @@ foreach ($userSourceDef in $definition.userSources) {
     }
 }
 
-# 4. siteSources (matched by title, the closest available client-side key -- see
-# deploy/New-EdiscoveryLocationHold.ps1's Confirm-SiteSource comment and README.md section 11)
+# 4. siteSources (matched by the embedded site.webUrl -- Microsoft's own "List siteSources"
+# v1.0 worked example response shows this field on every returned siteSource by default; see
+# deploy/New-EdiscoveryLocationHold.ps1's Confirm-SiteSource comment and README.md section 12)
 $actualSiteSources = @((Invoke-MgGraphRequest -Method GET -Uri "$holdUri/siteSources").value)
 foreach ($siteSourceDef in $definition.siteSources) {
-    $siteTitle = ($siteSourceDef.site -split '/')[-1]
-    $source = $actualSiteSources | Where-Object { $_.displayName -eq $siteTitle } | Select-Object -First 1
+    $source = $actualSiteSources | Where-Object { $_.site.webUrl -eq $siteSourceDef.site } | Select-Object -First 1
     if (-not $source) {
-        Write-Check "siteSource for '$($siteSourceDef.site)' (matched by title '$siteTitle') not found on hold policy $HoldId." -Level FAIL
+        Write-Check "siteSource for '$($siteSourceDef.site)' not found on hold policy $HoldId." -Level FAIL
         continue
     }
     switch ($source.holdStatus) {

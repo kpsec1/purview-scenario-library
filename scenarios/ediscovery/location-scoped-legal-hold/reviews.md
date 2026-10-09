@@ -215,3 +215,28 @@ required no correction, only a re-verification timestamp and the two new support
 (`design.md` R9/R9b). No code changed - there is still no v1.0 path to a reversible pause. Re-open
 this item again only if a future grounding pass finds either action listed under
 `?view=graph-rest-1.0`.
+
+---
+
+## Follow-up round - 2026-10-09: closing the `siteSource` URL-matching VERIFY
+
+**Trigger:** a `PROGRESS.md` maintenance item to close one open VERIFY against Microsoft Learn.
+The open item asked whether the `siteSource` list/create v1.0 response ever exposes a stable,
+directly comparable URL, rather than only `displayName` (the site's title) - the weak point
+Red Team finding 3 (above) had already scoped to idempotency bookkeeping, not to holding the
+wrong content.
+
+**🔴 Red Team / 🔵 Blue Team / 🎩 CISO / 🟦 Microsoft Product Owner - all Pass, no Fix/Fail.**
+Re-fetching the **List siteSources** v1.0 reference page's own worked example **response** body
+in full (not previously fetched in full by this build) shows every returned `siteSource` embeds
+a nested `site` object - including `webUrl` - by default, with no `$expand` needed. The
+`siteSource` resource type's own `site` relationship (type `site`) and the `site` resource type's
+own `webUrl` property documentation corroborate the same fact independently. This closes the
+VERIFY with a direct Microsoft-published worked example, not an elimination argument: a stable,
+directly comparable URL **is** exposed. `deploy/New-EdiscoveryLocationHold.ps1`'s
+`Confirm-SiteSource` and `validate/Test-EdiscoveryLocationHold.ps1` were updated to match on
+`site.webUrl` directly, replacing the parsed-URL-slug-vs-title fallback. No lens found a new risk
+introduced by this change - it strictly tightens a previously-disclosed weak point into a correct,
+direct comparison; the underlying hold-content correctness (always using the real `webUrl` from
+the definition file on write) was unaffected either way. `README.md` §11/§12 and `design.md` §5/§6
+updated in place; `PROGRESS.md` VERIFY item closed.
