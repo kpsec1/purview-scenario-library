@@ -268,12 +268,13 @@ function Confirm-SiteSource {
     } catch {
         Write-Verbose "Could not list existing siteSources for hold $HoldId (expected under -WhatIf on a not-yet-created hold)."
     }
-    # siteSource list responses key off the SharePoint site's own id/displayName, not the URL --
-    # match on displayName (the site's title) as the closest available client-side key. Sites
-    # without a title cannot be held at all (README.md section 11), so this is not a new gap.
-    $siteTitle = ($SiteSourceDef.site -split '/')[-1]
-    if ($existingSources | Where-Object { $_.displayName -eq $siteTitle }) {
-        Write-Verbose "siteSource for '$($SiteSourceDef.site)' already appears present on hold $HoldId (matched by title '$siteTitle')."
+    # siteSource list responses embed the associated site object -- including its webUrl -- by
+    # default (Microsoft's own "List siteSources" v1.0 worked example response shows a
+    # `"site": {"webUrl": "https://...", ...}` property on every returned siteSource; see
+    # README.md section 12), so this matches directly on site.webUrl rather than the weaker
+    # title/URL-slug comparison this script used before that example was found.
+    if ($existingSources | Where-Object { $_.site.webUrl -eq $SiteSourceDef.site }) {
+        Write-Verbose "siteSource for '$($SiteSourceDef.site)' already exists on hold $HoldId (matched by site.webUrl)."
         return
     }
 

@@ -250,11 +250,12 @@ every mailbox it expands to at hold time needs the qualifying entitlement.
   collection as the one hard failure mode Microsoft documents by name. VERIFY against a pilot
   tenant, at both thresholds, which (if either) applies to this REST-driven path before relying
   on server-side DL expansion for a list near either size.
-- **`siteSource` find-or-create/validate matching is by parsed URL slug vs. returned site title,
-  not a direct URL comparison** - neither the `List siteSources` nor `Create siteSource` v1.0
-  reference exposes the source's `webUrl` on the response object. This is a real, disclosed weak
-  point (`design.md` §6), not a robust match; a site whose title diverges from its URL slug can
-  produce a false "not found."
+- **`siteSource` find-or-create/validate matching is by direct URL comparison** - **closed
+  2026-10-09** (Microsoft Learn MCP, maintenance pass): the `List siteSources` v1.0 reference's
+  own worked example response embeds the associated `site` object - including `webUrl` - on every
+  returned `siteSource` by default, no `$expand` required. `deploy/New-EdiscoveryLocationHold.ps1`
+  and `validate/Test-EdiscoveryLocationHold.ps1` now match on `site.webUrl` directly instead of
+  the previous parsed-URL-slug-vs-title fallback; see `design.md` §6 for the full citation trail.
 - **A SharePoint site without a title cannot be placed on hold at all** - Microsoft's own guidance
   states this as a hard requirement [[7]](#references).
 - **This scenario does not resolve Teams/Microsoft 365 Group membership into a hold.** Holding a
@@ -288,6 +289,8 @@ every mailbox it expands to at hold time needs the qualifying entitlement.
 14. ediscoveryHoldPolicy: retryPolicy (v1.0) - <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-retrypolicy?view=graph-rest-1.0>
 15. ediscoveryHoldPolicy: enablePolicy / disablePolicy (beta only; re-verified still beta-only 2026-09-04) - <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-enablepolicy?view=graph-rest-beta>, <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-disablepolicy?view=graph-rest-beta>
 16. Create legalHold userSource (beta, custodian/legalHold context - group-mailbox email support) - <https://learn.microsoft.com/graph/api/ediscovery-legalhold-post-usersources?view=graph-rest-beta>
+17. List siteSources (v1.0 - worked example response embeds `site.webUrl` by default; closes the siteSource-matching VERIFY above, 2026-10-09) - <https://learn.microsoft.com/graph/api/security-ediscoverycustodian-list-sitesources?view=graph-rest-1.0>
+18. site resource type (v1.0 - `webUrl`: "URL that displays the item in the browser. Read-only.") - <https://learn.microsoft.com/graph/api/resources/site?view=graph-rest-1.0#properties>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing deployment -
 > Purview's Graph eDiscovery surface has moved namespaces within the product's own history, and

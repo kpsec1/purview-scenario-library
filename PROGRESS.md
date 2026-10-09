@@ -90,11 +90,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   reference, but the v1.0, non-beta endpoint this scenario actually calls documents `email` only
   as "SMTP address of the user" - flagged inline in `location-scoped-legal-hold/README.md` §11,
   `design.md` §3, and `deploy/New-EdiscoveryLocationHold.ps1`'s `.NOTES`.
-- [ ] VERIFY (pilot tenant): whether the `siteSource` list/create v1.0 response ever exposes a
-  stable, directly comparable URL (rather than only `displayName`, the site's title) - if
-  Microsoft adds one, replace `location-scoped-legal-hold/deploy/New-EdiscoveryLocationHold.ps1`'s
-  and `validate/Test-EdiscoveryLocationHold.ps1`'s URL-slug-vs-title matching (the disclosed weak
-  point in `design.md` §6) with a direct comparison instead.
+- [x] VERIFY closed 2026-10-09 (Microsoft Learn MCP, maintenance pass): whether the `siteSource`
+  list/create v1.0 response ever exposes a stable, directly comparable URL (rather than only
+  `displayName`, the site's title). **Yes** - the `List siteSources` v1.0 reference's own worked
+  example response embeds the associated `site` object, including `webUrl`, on every returned
+  `siteSource` by default (no `$expand` needed), corroborated by the `siteSource` resource's
+  documented `site` relationship and the `site` resource type's own `webUrl` property. See DONE
+  below. `location-scoped-legal-hold/deploy/New-EdiscoveryLocationHold.ps1` and
+  `validate/Test-EdiscoveryLocationHold.ps1` now match on `site.webUrl` directly instead of the
+  former URL-slug-vs-title fallback.
 - [x] `scenarios/ediscovery/teams-group-hold-resolution/` - **built** (see DONE below): script
   resolving a Microsoft Teams/Microsoft 365 Group's own mailbox + SharePoint site
   (`Get-UnifiedGroup`/`Get-UnifiedGroupLinks` in Exchange Online PowerShell) into the userSource/
@@ -3674,6 +3678,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `location-scoped-legal-hold` `siteSource` URL-matching VERIFY** - commit
+  `PENDING` - 2026-10-09. Maintenance pass: re-fetched the **List siteSources** v1.0 REST
+  reference (`https://learn.microsoft.com/graph/api/security-ediscoverycustodian-list-sitesources?view=graph-rest-1.0`)
+  via the Microsoft Learn MCP tool and found its own worked example **response** body, not
+  previously fetched in full by this build, embeds a nested `site` object - including `webUrl` -
+  on every returned `siteSource`, by default, with no `$expand` required. Corroborated
+  independently by the `siteSource` resource type's documented `site` relationship (type `site`)
+  and the `site` resource type's own `webUrl` property ("URL that displays the item in the
+  browser. Read-only."). This directly answers the open VERIFY: a stable, directly comparable URL
+  **is** exposed on the v1.0 response. Updated `deploy/New-EdiscoveryLocationHold.ps1`'s
+  `Confirm-SiteSource` and `validate/Test-EdiscoveryLocationHold.ps1` to match on `site.webUrl`
+  directly, replacing the disclosed parsed-URL-slug-vs-title fallback; updated `design.md` §5/§6
+  (with two new citations, R13/R14) and `README.md` §11/§12 in place; `reviews.md` carries a new
+  maintenance-round addendum per `AGENTS.md` §5. No four-lens review round re-run needed per
+  `AGENTS.md` §6 - this is a correctness tightening of already-disclosed code, not new coverage or
+  a new risk surface.
 - [x] **Narrowed the `scan-on-premises-sql-server-and-classify` Windows Authentication `CredentialType`
   VERIFY** - commit `8088e8e` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
   Replace** REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace`)

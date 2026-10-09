@@ -135,25 +135,45 @@ reversible pause exists. This finding was already correctly disclosed before thi
 | Case | `displayName` (exact match, client-side) | Same rationale as `premium-legal-hold-and-export/design.md` §4 - no documented uniqueness-filter API |
 | Hold policy | `displayName` within the case's `legalHolds` list | No documented uniqueness filter for hold-policy names either; the v1.0 API exposes no `Get` by name, only `List` + `Get by id`, so this script always lists and filters client-side |
 | userSource | `email` within the hold's `userSources` list | The one identifying property the v1.0 resource exposes for this purpose |
-| siteSource | site title (parsed from the definition file's URL, matched against the returned `displayName`) | **Weakest link in this design** - see §6 below |
+| siteSource | the embedded `site.webUrl`, compared directly against the definition file's site URL | Resolved in a 2026-10 maintenance pass - see §6 below (previously the weakest link in this design, matched by title/URL-slug) |
 | retryPolicy | not idempotency-gated; only called with `-Retry`, and only when the policy's `errors` collection is non-empty or a source isn't `applied`/`applying` | Retrying a healthy policy is a documented no-op-shaped restamp, but this script still gates it to avoid generating unnecessary restamp operations on every re-run |
 
-## 6. `siteSource` matching is a known weak point
+## 6. `siteSource` matching - resolved via the embedded `site.webUrl`
 
-The `siteSource` resource's `id` is an opaque identifier and its `displayName` is the SharePoint
-site's **title**, not its URL [[R3]](#references-design) - but the only value this scenario's
-definition file (and the only value an organization naturally has on hand) is the site's `webUrl`. Neither
-the `List siteSources` nor the `Create siteSource` v1.0 reference documents a `webUrl` field on the
-*response* object, so there's no direct URL-to-URL comparison available for find-or-create
-matching. `deploy/New-EdiscoveryLocationHold.ps1` and `validate/Test-EdiscoveryLocationHold.ps1`
-both fall back to parsing the last path segment of the definition file's URL and comparing it
-against the returned `displayName`, on the assumption that a site's URL slug and its title are the
-same string - true for the common case (a site created with **Create site** using its intended
-name) but not guaranteed, and silently wrong if someone renames the site's title without changing
-its URL, or vice versa. This is disclosed here and in `README.md` §11 rather than presented as a
-robust match; a production deployment with sites whose titles and URL slugs diverge should treat a
-"siteSource not found" `FAIL` from the validate script as ambiguous (confirm in the portal) rather
-than conclusive.
+**Closed 2026-10-09 (Microsoft Learn MCP, maintenance pass).** This section previously disclosed
+`displayName` (the SharePoint site's **title**, not its URL) as the only client-side key the
+`List siteSources`/`Create siteSource` v1.0 references appeared to expose, forcing a fallback to
+parsing the definition file's URL slug and comparing it against the returned title - silently
+wrong whenever a site's title and URL slug diverge.
+
+Re-fetching the **List siteSources** v1.0 reference page in full
+(`https://learn.microsoft.com/graph/api/security-ediscoverycustodian-list-sitesources?view=graph-rest-1.0`)
+surfaced its worked example **response** body, which this build had not previously fetched in
+full: every returned `siteSource` embeds a nested `site` object - by default, with no `$expand`
+needed - that includes `webUrl`:
+
+```json
+{
+  "displayName": "U.S. Sales",
+  "holdStatus": "applied",
+  "id": "169718e3-a8df-449d-bef4-ee09fe1ddc5d",
+  "site": {
+    "webUrl": "https://m365x809305.sharepoint.com/sites/USSales",
+    "id": "169718e3-a8df-449d-bef4-ee09fe1ddc5d",
+    "createdDateTime": "2022-05-23T02:35:42.926309Z"
+  }
+}
+```
+
+This is corroborated by the `siteSource` resource type reference itself, which documents a `site`
+relationship of type [`site`](https://learn.microsoft.com/graph/api/resources/site?view=graph-rest-1.0#properties)
+- and the `site` resource type's own properties table documents `webUrl` ("URL that displays the
+item in the browser. Read-only.") directly. A stable, directly comparable URL **is** exposed on
+the v1.0 response after all, so this was a documentation-coverage gap in this build, not a genuine
+Microsoft Learn documentation gap. `deploy/New-EdiscoveryLocationHold.ps1`'s `Confirm-SiteSource`
+and `validate/Test-EdiscoveryLocationHold.ps1` now match on `site.webUrl` directly instead of the
+title/URL-slug fallback; both scripts' inline comments and `README.md` §11/§12 were updated in
+place. See `reviews.md` for the correction addendum.
 
 ## 7. Component summary
 
@@ -204,3 +224,5 @@ than conclusive.
 - R10. Manage holds in eDiscovery - "Place a hold on Microsoft Teams and Microsoft 365 groups" (`Get-UnifiedGroup`/`Get-UnifiedGroupLinks`) - <https://learn.microsoft.com/purview/edisc-hold-manage#place-a-hold-on-microsoft-teams-and-microsoft-365-groups>
 - R11. Manage holds in eDiscovery - "Edit a hold policy" (data sources, condition filters, KeyQL filters as separate, richer portal concepts) - <https://learn.microsoft.com/purview/edisc-hold-manage#edit-a-hold-policy>
 - R12. Create holds in eDiscovery - "Create a hold" (portal data-source picker: distribution list expansion "limited to a maximum of 100 members," applies to every supported group type; current page, re-fetched 2026-09-04) - <https://learn.microsoft.com/purview/edisc-hold-create#create-a-hold>
+- R13. List siteSources (v1.0 - worked example response embeds `site.webUrl` by default; closes §6's VERIFY; fetched 2026-10-09) - <https://learn.microsoft.com/graph/api/security-ediscoverycustodian-list-sitesources?view=graph-rest-1.0>
+- R14. site resource type (v1.0 - `webUrl`: "URL that displays the item in the browser. Read-only."; fetched 2026-10-09) - <https://learn.microsoft.com/graph/api/resources/site?view=graph-rest-1.0#properties>
