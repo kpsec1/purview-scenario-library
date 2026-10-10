@@ -3326,11 +3326,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   fragment's script for a coupling change (`design.md` §8 explains the trade-off considered).
 
 ### Follow-ups discovered while building the Data Map PII-only scan rule set (Azure SQL Database) scenario
-- [ ] VERIFY (pilot tenant): whether `GET .../types/typedefs?type=CLASSIFICATION` paginates once a
-  tenant has an unusually large number of custom classification rules layered on top of the ~200
-  system ones - no continuation-token field is documented on the response shape, and
-  `deploy/New-PiiOnlyScanRuleset.ps1` does not implement paging. Flagged inline in the script's
-  `.NOTES` and `README.md` §11.
+- [x] VERIFY closed 2026-10-10 (Microsoft Learn MCP, direct fetch of the `Type - List` REST
+  reference, api-version 2023-09-01): `GET .../types/typedefs` has no pagination parameter in its
+  URI Parameters table (only `api-version`/`includeTermTemplate`/`type`), and its `AtlasTypesDef`
+  response schema has no continuation-token or next-link field anywhere - the operation's own
+  description states it "list[s] all type definitions in bulk". Confirmed: the endpoint does not
+  paginate at all; it always returns every type definition (system and custom) in a single
+  response, so `deploy/New-PiiOnlyScanRuleset.ps1` not implementing a paging loop is correct, not a
+  gap. Applied to all four PII-only scan rule set siblings that carried this same open item (Azure
+  SQL Database, Azure Synapse Analytics, Azure SQL Managed Instance, on-premises SQL Server) -
+  each scenario's `README.md` §11 and deploy script `.NOTES` updated in place (see DONE below).
 - [x] `scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/` - **built** (see DONE
   below): the same PII-only custom scan rule set pattern applied to Azure Synapse Analytics. This
   build's own grounding pass (Az.Purview module GitHub source, `learn.microsoft.com` still
@@ -8905,6 +8910,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   paragraph) to cite the confirmed path while keeping the in-use-behavior question explicitly open;
   this file's own tracking bullet above marked `[x]` with both halves called out separately rather
   than closed wholesale. Doc-only correction — no code change, no new four-lens review round.
+- [x] **Maintenance pass — closed the Data Map Types API pagination VERIFY shared by all four
+  PII-only scan rule set siblings** — commit `PENDING` — 2026-10-10. The Microsoft Learn MCP tool
+  was reachable this run; a direct fetch of the canonical `Type - List` REST reference page (API
+  version 2023-09-01, `https://learn.microsoft.com/rest/api/purview/datamapdataplane/type/list`,
+  which the repo's existing `catalogdataplane/types/get-all-type-definitions` citation redirects to
+  unchanged) confirms `GET .../types/typedefs` takes only `api-version`/`includeTermTemplate`/`type`
+  as query parameters — no `$skip`/`$top`/continuation-token parameter exists — and its
+  `AtlasTypesDef` response schema (`enumDefs`/`structDefs`/`classificationDefs`/`entityDefs`/
+  `relationshipDefs`/`businessMetadataDefs`/`termTemplateDefs`) carries no next-link or
+  continuation-token field at all. The operation's own one-line description, "List all type
+  definitions in bulk," confirms this by design: the endpoint is not paginated and always returns
+  the complete set of type definitions in a single response. This resolves the question the
+  original build left open (not merely "still undocumented," but affirmatively "no pagination
+  mechanism exists") — a tenant with an unusually large number of custom classification rules gets
+  them all back in one potentially large response, never a silently truncated one, so each
+  scenario's `deploy/New-PiiOnlyScanRuleset.ps1` not implementing a paging loop was already
+  correct. Updated `README.md` §11 (+ closing re-verify note) and the deploy script's `.NOTES` in
+  `scenarios/data-map/scan-azure-sql-and-classify-pii-ruleset/`,
+  `scenarios/data-map/scan-azure-synapse-and-classify-pii-ruleset/`,
+  `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-pii-ruleset/`, and
+  `scenarios/data-map/scan-on-premises-sql-server-and-classify-pii-ruleset/` in place; this file's
+  own tracking bullet above marked `[x]`. Doc-only correction — no code change, no new four-lens
+  review round. The on-premises SQL Server sibling's own separate, unrelated open item (the System
+  default scan rule set's literal resource `name`) is untouched by this pass and remains open.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,

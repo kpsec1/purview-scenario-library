@@ -177,11 +177,15 @@ breakdown to quantify the exact savings.
   description only (grep for `MICROSOFT\.` against the fetched page returned zero matches). This
   is precisely why the deploy script queries the tenant's live Types API instead of shipping a
   hand-typed snapshot - see `design.md` §2 goal 1.
-- **VERIFY (pilot tenant): Types API pagination.** `GET .../types/typedefs?type=CLASSIFICATION`'s
-  documented response shape has no continuation-token field, and this build found no
-  documentation addressing pagination behavior for a tenant with an unusually large number of
-  custom classification rules layered on top of the ~200 system ones. `deploy/New-PiiOnlyScanRuleset.ps1`
-  does not implement paging; flagged inline in its `.NOTES`.
+- **CLOSED 2026-10-10 (Microsoft Learn MCP): Types API pagination.** `GET .../types/typedefs`'s
+  REST reference (reference 4, direct-fetched again this pass) documents no pagination parameter
+  in its URI Parameters table and no continuation-token/next-link field anywhere in its
+  `AtlasTypesDef` response schema - the operation's own description states it "list[s] all type
+  definitions in bulk". Confirmed: the endpoint does not paginate; it always returns every type
+  definition (system and custom) in a single response. `deploy/New-PiiOnlyScanRuleset.ps1` not
+  implementing a paging loop is therefore correct, not a gap - a tenant with an unusually large
+  number of custom classification rules gets them all back in one potentially large response,
+  never a silently truncated one.
 - **Custom classification rule authoring stays out of scope.** No documented REST endpoint for
   *creating* a custom classification rule was found - Microsoft's own community guidance states
   custom classification rules must be created manually in the portal. `-IncludedCustomClassificationRuleNames`
@@ -233,5 +237,5 @@ breakdown to quantify the exact savings.
     <https://learn.microsoft.com/graph/api/resources/security-microsoftpurviewdatamapoperationrecord>
 
 > Re-verify all links, API versions, and REST body shapes against current Microsoft Learn before a
-> customer-facing deployment. One VERIFY remains open in §11 (Types API pagination behavior at
-> scale) and should be closed against a pilot tenant first.
+> customer-facing deployment. The Types API pagination question in §11 was closed 2026-10-10
+> against the current REST reference; no VERIFY remains open in §11.

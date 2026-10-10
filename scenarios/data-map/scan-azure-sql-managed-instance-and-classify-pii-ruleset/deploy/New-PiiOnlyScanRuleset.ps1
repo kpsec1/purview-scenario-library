@@ -140,11 +140,14 @@
     (string[]), lastModifiedAt (read-only) - matching this script's $rulesetBody exactly. See
     README.md Section 11.
 
-    VERIFY (pilot tenant, before production use): whether `GET .../types/typedefs?type=CLASSIFICATION`
-    paginates once a tenant has a very large number of custom classification rules on top of the
-    ~200 system ones - no continuation-token field is documented on this response shape, and this
-    script does not implement paging. Re-open if a pilot tenant run returns a truncated
-    classificationDefs array. Same open item every sibling PII-ruleset scenario in this repo carries.
+    CLOSED 2026-10-10 (Microsoft Learn MCP, direct fetch of the Type - List REST reference,
+    api-version 2023-09-01): `GET .../types/typedefs` has no pagination parameter in its URI
+    Parameters table (only `api-version`/`includeTermTemplate`/`type`), and its `AtlasTypesDef`
+    response schema has no continuation-token or next-link field anywhere - the operation's own
+    description states it "list[s] all type definitions in bulk". Confirmed: this endpoint does
+    not paginate at all; it always returns the complete set in one response, so this script's lack
+    of a paging loop is correct, not a gap. Same resolution now applied to every sibling
+    PII-ruleset scenario in this repo.
 
     Sources (Microsoft Learn / Az.Purview module, verify before production use):
     1. New-AzPurviewAzureSqlDatabaseManagedInstanceScanRulesetObject (Az.Purview PowerShell module -
