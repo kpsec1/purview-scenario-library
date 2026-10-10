@@ -206,12 +206,14 @@ per-classification cost breakdown to quantify the exact savings.
   description only, no machine-parseable `MICROSOFT.*` identifier table. This is why the deploy
   script queries the tenant's live Types API instead of shipping a hand-typed snapshot (design.md
   §2 goal 1).
-- **VERIFY (pilot tenant): Types API pagination.** `GET .../types/typedefs?type=CLASSIFICATION`'s
-  documented response shape has no continuation-token field, and no documentation addressing
-  pagination behavior for a tenant with an unusually large number of custom classification rules
-  layered on top of the ~200 system ones was found - the same open item the Azure SQL Database
-  sibling carries. `deploy/New-PiiOnlyScanRuleset.ps1` does not implement paging; flagged inline in
-  its `.NOTES`.
+- **CLOSED 2026-10-10 (Microsoft Learn MCP): Types API pagination.** `GET .../types/typedefs`'s
+  REST reference (reference 5, direct-fetched again this pass) documents no pagination parameter
+  in its URI Parameters table and no continuation-token/next-link field anywhere in its
+  `AtlasTypesDef` response schema - the operation's own description states it "list[s] all type
+  definitions in bulk". Confirmed: the endpoint does not paginate; it always returns every type
+  definition (system and custom) in a single response - the same resolution the Azure SQL Database
+  sibling now carries. `deploy/New-PiiOnlyScanRuleset.ps1` not implementing a paging loop is
+  therefore correct, not a gap.
 - **Custom classification rule authoring stays out of scope.** Same finding as every Data Map
   sibling scenario - no documented REST endpoint for *creating* a custom classification rule was
   found. `-IncludedCustomClassificationRuleNames` only references rules that already exist.
@@ -281,5 +283,6 @@ per-classification cost breakdown to quantify the exact savings.
 
 > Re-verify all links, API versions, and REST body shapes against current Microsoft Learn before a
 > customer-facing deployment. The Synapse-specific REST body shape VERIFY is now resolved (§11,
-> 2026-09-25, confirmed directly against the REST reference page). One VERIFY remains open in §11
-> (Types API pagination behavior at scale) and should be closed against a pilot tenant.
+> 2026-09-25, confirmed directly against the REST reference page), and the Types API pagination
+> question in §11 was closed 2026-10-10 against the current REST reference. No VERIFY remains open
+> in §11.

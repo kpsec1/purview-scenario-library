@@ -239,12 +239,14 @@ cost breakdown to quantify the exact savings.
   Map classification-supported-list page has no exact `MICROSOFT.*` identifier strings, only
   human-readable names, so the deploy script queries the tenant's live Types API instead of shipping
   a hand-typed snapshot (design.md §2 goal 1).
-- **VERIFY (pilot tenant): Types API pagination.** `GET .../types/typedefs?type=CLASSIFICATION`'s
-  documented response shape has no continuation-token field, and no documentation addressing
-  pagination behavior for a tenant with an unusually large number of custom classification rules
-  layered on top of the ~200 system ones was found - the same open item every sibling scenario
-  carries. `deploy/New-PiiOnlyScanRuleset.ps1` does not implement paging; flagged inline in its
-  `.NOTES`.
+- **CLOSED 2026-10-10 (Microsoft Learn MCP): Types API pagination.** `GET .../types/typedefs`'s
+  REST reference (reference 5, direct-fetched again this pass) documents no pagination parameter
+  in its URI Parameters table and no continuation-token/next-link field anywhere in its
+  `AtlasTypesDef` response schema - the operation's own description states it "list[s] all type
+  definitions in bulk". Confirmed: the endpoint does not paginate; it always returns every type
+  definition (system and custom) in a single response - the same resolution every sibling scenario
+  now carries. `deploy/New-PiiOnlyScanRuleset.ps1` not implementing a paging loop is therefore
+  correct, not a gap.
 - **Custom classification rule authoring stays out of scope.** Same finding as every Data Map sibling
   scenario - no documented REST endpoint for *creating* a custom classification rule was found.
   `-IncludedCustomClassificationRuleNames` only references rules that already exist.

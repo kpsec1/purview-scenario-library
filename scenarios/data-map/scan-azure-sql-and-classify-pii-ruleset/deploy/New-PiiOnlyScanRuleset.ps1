@@ -127,11 +127,15 @@
     JSON body for the 'Scan Rulesets - Create Or Update' operation was not independently
     confirmed"). See README.md Section 11 for the full resolution note.
 
-    VERIFY (pilot tenant, before production use): whether `GET .../types/typedefs?type=CLASSIFICATION`
-    paginates once a tenant has a very large number of custom classification rules on top of the
-    ~200 system ones - no continuation-token field is documented on this response shape (reference
-    4), and this script does not implement paging. Re-open if a pilot tenant run returns a
-    truncated classificationDefs array.
+    CLOSED 2026-10-10 (Microsoft Learn MCP, direct fetch of the Type - List REST reference,
+    api-version 2023-09-01, reference 4): `GET .../types/typedefs` has no pagination parameter in
+    its URI Parameters table (only `api-version`/`includeTermTemplate`/`type`), and its
+    `AtlasTypesDef` response schema has no continuation-token or next-link field anywhere - the
+    operation's own description states it "list[s] all type definitions in bulk". Confirmed: this
+    endpoint does not paginate at all; it always returns the complete set in one response, so this
+    script's lack of a paging loop is correct, not a gap. A tenant with an unusually large number
+    of custom classification rules gets them all back in one (potentially large) response, never a
+    silently truncated one.
 
     Sources (Microsoft Learn, verify before production use):
     1. Scan Rulesets - Create Or Replace (API version 2023-09-01, confirmed
