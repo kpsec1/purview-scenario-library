@@ -8911,7 +8911,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this file's own tracking bullet above marked `[x]` with both halves called out separately rather
   than closed wholesale. Doc-only correction — no code change, no new four-lens review round.
 - [x] **Maintenance pass — closed the Data Map Types API pagination VERIFY shared by all four
-  PII-only scan rule set siblings** — commit `PENDING` — 2026-10-10. The Microsoft Learn MCP tool
+  PII-only scan rule set siblings** — commit `9853f1d` — 2026-10-10. The Microsoft Learn MCP tool
   was reachable this run; a direct fetch of the canonical `Type - List` REST reference page (API
   version 2023-09-01, `https://learn.microsoft.com/rest/api/purview/datamapdataplane/type/list`,
   which the repo's existing `catalogdataplane/types/get-all-type-definitions` citation redirects to
