@@ -28,8 +28,13 @@
     (ExcludeContentProcessing/Block) is confirmed by Microsoft's own reference for a DIFFERENT
     condition type (sensitivity label, not CCSI) on this same location. No published Microsoft
     worked example combines a CCSI condition with -RestrictAccess for this specific "Processing
-    prompts" action. See design.md Sec 5 for the full reasoning behind still scripting this, and
-    README.md Sec 5 for the recommended portal-vs-script comparison step before production use.
+    prompts" action on the Microsoft 365 Copilot location. Re-grounded 2026-10-11 (maintenance
+    pass): the New-DlpComplianceRule reference's Example 4 does now pair plain CCSI with
+    -RestrictAccess @(@{setting="UploadText";value="Block"}), but for the Entra-registered-
+    application location, not Copilot - confirming the mechanism pairs with CCSI elsewhere while
+    also showing the setting string is location-specific, which narrows but does not close this
+    VERIFY. See design.md Sec 5 for the full reasoning behind still scripting this, and README.md
+    Sec 5 for the recommended portal-vs-script comparison step before production use.
 
 .PARAMETER PolicyName
     Name of the existing Copilot-location DLP policy to add this rule to. Must already exist -
@@ -94,7 +99,8 @@
       use-case example, supported actions table):
       https://learn.microsoft.com/purview/dlp-microsoft365-copilot-location-learn-about#block-sensitive-information-types-in-prompts
     - New-DlpComplianceRule reference (-RestrictAccess, -ContentContainsSensitiveInformation
-      parameters and shape):
+      parameters and shape; Example 4 pairs CCSI with -RestrictAccess setting="UploadText" for the
+      Entra-application location, not Copilot - see the re-grounding note above):
       https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule
     - New-DlpCompliancePolicy reference, Example 4 (ExcludeContentProcessing/Block RestrictAccess
       pair, confirmed for a label condition on this same location):

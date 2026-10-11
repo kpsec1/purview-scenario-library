@@ -65,17 +65,19 @@ worked-example pair, **Canada physical addresses** and **EU debit card numbers**
 
 ## 5. The central open question: does `ExcludeContentProcessing`/`Block` apply to a CCSI-conditioned rule?
 
-Two individually-confirmed data points, neither of which is the exact combination this scenario
+Three individually-confirmed data points, none of which is the exact combination this scenario
 needs:
 
 | Confirmed example | Condition | Action |
 |---|---|---|
-| `New-DlpCompliancePolicy` reference, Example 4 | `AdvancedRule` (sensitivity label) | `RestrictAccess = @{setting='ExcludeContentProcessing'; value='Block'}` |
-| Parent scenario's own grounding (Rule 1) | `ContentContainsSensitiveInformation` (CCSI) | `RestrictWebGrounding = $true` (a distinct, separately-named parameter) |
+| `New-DlpCompliancePolicy` reference, Example 4 | `AdvancedRule` (sensitivity label), Microsoft 365 Copilot location | `RestrictAccess = @{setting='ExcludeContentProcessing'; value='Block'}` |
+| `New-DlpComplianceRule` reference, Example 4 | `ContentContainsSensitiveInformation` (CCSI), Entra-registered-application location (`-EnforcementPlanes @("Application")`) | `RestrictAccess = @{setting='UploadText'; value='Block'}` |
+| Parent scenario's own grounding (Rule 1) | `ContentContainsSensitiveInformation` (CCSI), Microsoft 365 Copilot location | `RestrictWebGrounding = $true` (a distinct, separately-named parameter) |
 
-The action this scenario needs is a *third* combination Microsoft has not published a worked example
-for: CCSI condition + `RestrictAccess`. The reasoning for still scripting it (rather than declining,
-as the parent scenario did for this exact action) is:
+The action this scenario needs is a combination Microsoft has still not published a worked example
+for: CCSI condition + `RestrictAccess` **on the Microsoft 365 Copilot location specifically**. The
+reasoning for still scripting it (rather than declining, as the parent scenario did for this exact
+action) is:
 
 1. **The portal's own supported-actions table lists "Processing prompts" and "Performing Web
    Searches" as two sibling sub-actions of the same parent action family
@@ -85,9 +87,18 @@ as the parent scenario did for this exact action) is:
    sibling action is the more natural candidate for the `-RestrictAccess` mechanism - the same
    mechanism used for the *other* full-block action (label exclusion) in this same location.
 2. **`-RestrictAccess`'s documented purpose across every Purview DLP location it appears in is "block
-   access to the matched content."** A full prompt-response block is conceptually the same class of
-   action as a full content-exclusion block; reusing the same setting/value pair for both is a
-   parsimonious, plausible design on Microsoft's part, not an arbitrary guess.
+   access to the matched content," but the literal `setting` string is confirmed to be
+   location-specific, not a universal constant - re-grounded 2026-10-11 (maintenance pass, Microsoft
+   Learn MCP fetch of the `New-DlpComplianceRule` reference).** The reference's own Example 4 pairs a
+   CCSI condition with `-RestrictAccess @(@{setting="UploadText";value="Block"})` for the
+   Entra-application location, a *different* `setting` string than the `ExcludeContentProcessing`
+   value the Copilot label-exclusion action uses. This is useful new evidence but it cuts against
+   reuse-by-default rather than for it: it proves at least two distinct `setting` strings exist for
+   the same parameter depending on location/action, so "the Copilot location's CCSI full-block action
+   must reuse the same string as the Copilot location's own label-exclusion action" is a narrower,
+   same-location analogy than "any `-RestrictAccess` full-block action uses `ExcludeContentProcessing`"
+   - still the best-grounded available guess (point 1 above), but confidence in it should not be
+   overstated on the strength of point 2 alone.
 3. **This is materially different from fabricating a cmdlet or parameter name.** The parameter
    (`-RestrictAccess`), its type (`Hashtable[]`), and the specific `setting`/`value` string pair
    (`ExcludeContentProcessing`/`Block`) are all independently confirmed to exist and to be valid for
@@ -99,7 +110,8 @@ This is still flagged as an explicit `VERIFY` everywhere it matters (`README.md`
 script's `.NOTES`, and `validate/Test-CopilotPromptFullBlockRule.ps1`'s `[WARN]`-level check) rather
 than presented as confirmed - per `AGENTS.md` §4, the responsible middle ground between fabricating
 an unconfirmed detail outright and declining to build anything at all when partial, reasoned grounding
-exists.
+exists. Re-open only once a pilot tenant check or a future Microsoft-published worked example confirms
+(or corrects) the `setting` string for this exact Copilot-location CCSI full-block action.
 
 ## 6. Key decisions
 
