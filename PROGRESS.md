@@ -1496,6 +1496,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   setting string specific to that condition/action combination. Flagged inline in
   `copilot-prompt-full-block/README.md` §5/§11, `design.md` §5, the deploy script's `.NOTES`, and
   checked as `[WARN]` (not `[FAIL]`) by `validate/Test-CopilotPromptFullBlockRule.ps1`.
+  **Narrowed 2026-10-11** (maintenance pass, Microsoft Learn MCP fetch of the `New-DlpComplianceRule`
+  reference - see DONE below): a genuine Microsoft worked example pairing plain CCSI with
+  `-RestrictAccess` now exists (that reference's own Example 4), the first one found anywhere in the
+  product - but for the Entra-registered-application location (`setting="UploadText"`), not Microsoft
+  365 Copilot. Confirms the CCSI+`-RestrictAccess` combination is genuinely used by Microsoft while
+  also showing the `setting` string is location-specific, not a universal constant - evidence that
+  cuts both ways and still does not confirm `ExcludeContentProcessing` for this exact scenario.
+  Remains genuinely open pending a pilot tenant check or a Copilot-location-specific worked example.
 - [x] `scenarios/dspm-for-ai/copilot-external-email-block/` - script the fourth documented
   Copilot-location action, "Block external email from being processed" (preview; `Email is received
   from > External users` condition), explicitly left out of scope by
@@ -3674,6 +3682,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Narrowed the `copilot-prompt-full-block` CCSI/`-RestrictAccess` setting-string VERIFY** -
+  commit `9e8e363` - 2026-10-11. Maintenance pass: the Microsoft Learn MCP search tool returned empty
+  results for every query this pass (including trivial ones), so grounding was done via WebSearch plus
+  a direct Microsoft Learn MCP `fetch` of the exact URL (fetch worked normally; only `search` was
+  affected). Re-fetched the `New-DlpComplianceRule` reference in full and found its Example 4 - new
+  since this scenario was last reviewed - pairs a plain `ContentContainsSensitiveInformation` (CCSI)
+  condition with `-RestrictAccess @(@{setting="UploadText";value="Block"})`, the first Microsoft
+  worked example found anywhere combining CCSI with `-RestrictAccess`. It's for the
+  Entra-registered-application location (`-EnforcementPlanes @("Application")`), not the Microsoft 365
+  Copilot location this scenario targets, so it does not confirm `ExcludeContentProcessing` is the
+  right `setting` string here - it instead proves the string is location-specific, narrowing the VERIFY
+  rather than closing it. Also re-fetched `dlp-microsoft365-copilot-location-learn-about` in full
+  (confirms the portal-level CCSI + "Processing prompts" pairing this scenario implements, already
+  cited) and `dlp-microsoft365-copilot-location-default-policy` (no new information for this VERIFY).
+  Updated `copilot-prompt-full-block/README.md` (§5, §11, §12 ref 3), `design.md` (§5, new table row
+  and reasoning caveat), the deploy script's `.DESCRIPTION`/`.NOTES`, and `reviews.md` (new maintenance
+  addendum) to record the new citation and reasoning. No script behavior change (the inference remains
+  `ExcludeContentProcessing`/`Block`; no stronger candidate value emerged) and no new four-lens review
+  round needed per `AGENTS.md` §6 - doc/citation-only correction.
 - [x] **Narrowed the `scan-on-premises-sql-server-and-classify` Windows Authentication `CredentialType`
   VERIFY** - commit `8088e8e` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
   Replace** REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace`)

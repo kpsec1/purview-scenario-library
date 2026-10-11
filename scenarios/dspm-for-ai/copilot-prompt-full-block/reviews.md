@@ -167,3 +167,20 @@ definition of done in `AGENTS.md` §9, with the single open technical caveat (th
 setting/value pair for this exact condition/action combination is a reasoned inference, not an
 independently confirmed Microsoft worked example) disclosed consistently everywhere it matters
 rather than hidden or resolved by guessing.
+
+## Correction addendum (2026-10-11, maintenance pass - no new four-lens round per `AGENTS.md` §6)
+
+The open VERIFY above **narrows, without fully closing**: a Microsoft Learn re-grounding pass (direct
+fetch of the `New-DlpComplianceRule` reference) found that Example 4 on that page now pairs a plain
+`-ContentContainsSensitiveInformation` (CCSI) condition with `-RestrictAccess` -
+`@(@{setting="UploadText";value="Block"})` - for an Entra-registered-application location
+(`-EnforcementPlanes @("Application")`), not the Microsoft 365 Copilot location this scenario targets.
+This is the first confirmed Microsoft worked example combining a plain CCSI condition with
+`-RestrictAccess` anywhere in the product; previously no such example existed at all. It cuts in two
+directions: it lends some support to the general pattern ("CCSI + `-RestrictAccess`" is a real,
+Microsoft-used combination, not an invented one), while also showing the literal `setting` string is
+location-specific (`UploadText` here vs. `ExcludeContentProcessing` for the Copilot label-exclusion
+action) - so it does not confirm `ExcludeContentProcessing` is the right string for this scenario's
+Copilot-location CCSI rule. This is a documentation correction only - the deploy script's inference
+was not changed, since no stronger candidate value emerged. `README.md` §5/§11/§12, `design.md` §5,
+and the deploy script's `.NOTES` updated in place to record the new citation and reasoning.

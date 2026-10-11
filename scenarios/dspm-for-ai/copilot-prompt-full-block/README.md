@@ -141,15 +141,24 @@ condition (the same, confirmed parameter the parent scenario's Rule 1 uses) and
 **VERIFY - read before relying on this script in production.** Microsoft's own `New-DlpComplianceRule`
 / `New-DlpCompliancePolicy` reference publishes a worked example combining the `ExcludeContentProcessing`/
 `Block` `-RestrictAccess` pair with a sensitivity-**label** condition (`-AdvancedRule`, the parent
-scenario's Rule 0) and a separate worked example combining a **CCSI** condition with
-`-RestrictWebGrounding $true` (the parent scenario's Rule 1). As of this build, Microsoft has **not**
-published a worked example combining a CCSI condition with the `-RestrictAccess`
-`ExcludeContentProcessing`/`Block` pair specifically for the "Processing prompts" full-block action -
-the exact literal `setting` value for this third action is not independently confirmed. This script's
-choice is a documented, reasoned inference (see `design.md` §5), not a fabricated parameter - the
-`-RestrictAccess` parameter itself, its hashtable shape, and the `ExcludeContentProcessing`/`Block`
-value pair are all individually confirmed in Microsoft's reference; what's unconfirmed is that the
-same value pair is what the portal emits when this specific condition/action combination is chosen.
+scenario's Rule 0, Microsoft 365 Copilot location) and a separate worked example combining a **CCSI**
+condition with `-RestrictWebGrounding $true` (the parent scenario's Rule 1, same location). As of this
+build, Microsoft has **not** published a worked example combining a CCSI condition with
+`-RestrictAccess` specifically for the Microsoft 365 Copilot location's "Processing prompts" full-block
+action - the exact literal `setting` value for this third action/location combination is not
+independently confirmed. **Re-grounded 2026-10-11** (maintenance pass, Microsoft Learn MCP fetch of
+the `New-DlpComplianceRule` reference): the reference's own Example 4 *does* now pair a plain CCSI
+condition with `-RestrictAccess`, but for a different location - `-RestrictAccess @(@{setting="UploadText";value="Block"})`
+on an Entra-registered-application location (`-EnforcementPlanes @("Application")`), not the Copilot
+location. This is useful new evidence that the `setting` string is location-specific rather than a
+universal constant (see `design.md` §5 point 2 for the full reasoning), which narrows but does not close
+this VERIFY: it confirms `-RestrictAccess` genuinely does pair with CCSI conditions elsewhere in the
+product, while also showing `ExcludeContentProcessing` is not demonstrably the right string for every
+such pairing. This script's choice remains a documented, reasoned inference (see `design.md` §5), not a
+fabricated parameter - the `-RestrictAccess` parameter itself, its hashtable shape, and the
+`ExcludeContentProcessing`/`Block` value pair are all individually confirmed in Microsoft's reference;
+what's unconfirmed is that the same value pair (rather than some other, undocumented string) is what
+the portal emits when this specific condition/action/location combination is chosen.
 **Before enforcing in production:** create the rule once through the portal (step 5 above), then run
 `Get-DlpComplianceRule -Identity 'Copilot-Block-SensitivePrompts-FullResponse' | Format-List RestrictAccess`
 and compare against this script's output - `validate/Test-CopilotPromptFullBlockRule.ps1` automates
@@ -256,9 +265,13 @@ policy intact.
 ## 11. Known limitations & gotchas
 
 - **The exact `-RestrictAccess` setting/value pair for this action is not independently confirmed**
-  by a Microsoft-published worked example - see the detailed VERIFY in §5. This is the single most
-  important caveat in this scenario; confirm via `Get-DlpComplianceRule` against a portal-created
-  rule before production reliance.
+  by a Microsoft-published worked example for the Copilot location specifically - see the detailed
+  VERIFY in §5. **Re-grounded 2026-10-11:** a genuine Microsoft worked example pairing CCSI with
+  `-RestrictAccess` now exists (`New-DlpComplianceRule` reference, Example 4), but for a different
+  location (Entra-registered application, `setting="UploadText"`) - confirming the mechanism pairs
+  with CCSI elsewhere while also showing the `setting` string isn't universal, which narrows rather
+  than closes the gap. This is the single most important caveat in this scenario; confirm via
+  `Get-DlpComplianceRule` against a portal-created rule before production reliance.
 - **Preview feature, tenant rollout not guaranteed on any fixed date.** Confirm the action is
   selectable in the portal for your tenant before assuming the script will succeed - if the feature
   hasn't rolled out yet, the underlying service will likely reject the `ExcludeContentProcessing`
@@ -304,8 +317,10 @@ policy intact.
 2. Same page - Supported conditions and actions table (three distinct Copilot-location actions:
    label exclusion, prompt full-block, web-grounding restriction) - <https://learn.microsoft.com/purview/dlp-microsoft365-copilot-location-learn-about#supported-conditions-and-actions>
 3. New-DlpComplianceRule reference - `-RestrictAccess`, `-ContentContainsSensitiveInformation`
-   parameters and syntax (confirms parameter existence and shape; does not publish a worked example
-   for this specific condition/action combination - see §5 VERIFY) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule>
+   parameters and syntax, and (re-checked 2026-10-11) Example 4: a genuine Microsoft worked example
+   pairing plain CCSI with `-RestrictAccess @(@{setting="UploadText";value="Block"})`, but for the
+   Entra-registered-application location, not Microsoft 365 Copilot - does not publish a worked
+   example for this scenario's exact condition/action/location combination - see §5 VERIFY - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule>
 4. New-DlpCompliancePolicy reference - Example 4 (the `ExcludeContentProcessing`/`Block`
    `-RestrictAccess` pair, worked for a label condition, reused by the parent scenario's Rule 0) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy>
 5. Set-DlpComplianceRule reference (`-Disabled` parameter, used by this scenario's rollback path) - <https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancerule>
