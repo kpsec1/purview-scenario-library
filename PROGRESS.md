@@ -3683,7 +3683,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Narrowed the `copilot-prompt-full-block` CCSI/`-RestrictAccess` setting-string VERIFY** -
-  commit `PENDING` - 2026-10-11. Maintenance pass: the Microsoft Learn MCP search tool returned empty
+  commit `9e8e363` - 2026-10-11. Maintenance pass: the Microsoft Learn MCP search tool returned empty
   results for every query this pass (including trivial ones), so grounding was done via WebSearch plus
   a direct Microsoft Learn MCP `fetch` of the exact URL (fetch worked normally; only `search` was
   affected). Re-fetched the `New-DlpComplianceRule` reference in full and found its Example 4 - new
