@@ -8917,7 +8917,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this file's own tracking bullet above marked `[x]` with both halves called out separately rather
   than closed wholesale. Doc-only correction — no code change, no new four-lens review round.
 - [x] **Maintenance pass — closed the `teams-viva-engage-content-safety` word-count-reconciliation
-  VERIFY** — commit `<pending>` — 2026-10-12. Re-grounded the open question of whether Microsoft's
+  VERIFY** — commit `0d562b7` — 2026-10-12. Re-grounded the open question of whether Microsoft's
   live `communication-compliance-policies` page had reconciled its "three or more words"/"five or
   more words" conflicting figures for the content-safety classifier family. A direct Microsoft
   Learn MCP re-fetch confirms it has not: both figures are still present verbatim, both inside the
