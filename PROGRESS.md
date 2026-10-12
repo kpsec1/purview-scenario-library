@@ -2349,11 +2349,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `teams-viva-engage-content-safety/deploy/Export-ContentSafetyAuditTrail.ps1`'s best-effort
   `ContentSafetyContext`/`SeverityHint` derived columns) - same disclosed-gap pattern as
   `copilot-interaction-detection/README.md` §11's unconfirmed `CopilotContext` parse.
-- [ ] VERIFY (portal, at deploy time): whether Microsoft's live `communication-compliance-policies`
-  page's two conflicting minimum-word-count figures for the content-safety classifier family
-  ("three or more words" vs. "five or more words," both present verbatim on the same current page as
-  of this build) have since been reconciled to a single figure -
-  `teams-viva-engage-content-safety/README.md` §6/§11 currently documents both rather than guessing.
+- [x] VERIFY closed 2026-10-12 (Microsoft Learn MCP, maintenance pass): whether Microsoft's live
+  `communication-compliance-policies` page's two conflicting minimum-word-count figures for the
+  content-safety classifier family ("three or more words" vs. "five or more words," both present
+  verbatim on the same current page as of the original build) have since been reconciled to a
+  single figure. **Confirmed: not reconciled.** A fresh re-fetch found both figures still present
+  verbatim today, both inside the same `#content-safety-classifiers-based-on-large-language-models`
+  H3 section - "three or more words" in that section's own body text, "five or more words" in its
+  nested "Considerations when using classifiers" subsection - for the identical
+  Hate/Sexual/Violence/Self-harm classifier family this scenario uses. This pins the conflict's
+  exact location more precisely than the original build (one section vs. a different section) and
+  rules out a stale-cache or two-different-classifier-families explanation: it is a single,
+  internally inconsistent Microsoft source. Closing this VERIFY confirms the inconsistency still
+  stands, not a resolved single figure - the scenario's existing guidance (document both, verify
+  actual behavior against a test message in the tenant at deploy time) is unchanged.
+  `teams-viva-engage-content-safety/README.md` §11 and `reviews.md` (correction addendum) updated
+  in place.
 - [ ] VERIFY (jurisdiction-specific, employment counsel): the applicable duty-of-care/psychosocial-
   hazard obligations for employer self-harm-risk-signal handling that
   `teams-viva-engage-content-safety/README.md` §2 flags as needing confirmation before a
@@ -8905,6 +8916,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   paragraph) to cite the confirmed path while keeping the in-use-behavior question explicitly open;
   this file's own tracking bullet above marked `[x]` with both halves called out separately rather
   than closed wholesale. Doc-only correction — no code change, no new four-lens review round.
+- [x] **Maintenance pass — closed the `teams-viva-engage-content-safety` word-count-reconciliation
+  VERIFY** — commit `0d562b7` — 2026-10-12. Re-grounded the open question of whether Microsoft's
+  live `communication-compliance-policies` page had reconciled its "three or more words"/"five or
+  more words" conflicting figures for the content-safety classifier family. A direct Microsoft
+  Learn MCP re-fetch confirms it has not: both figures are still present verbatim, both inside the
+  same `#content-safety-classifiers-based-on-large-language-models` H3 section ("three or more
+  words" in the section body, "five or more words" in its nested "Considerations when using
+  classifiers" subsection) — pinning the conflict's exact location more precisely than the original
+  build and ruling out a stale-cache or two-different-classifier-families explanation. Closing this
+  VERIFY confirms the inconsistency stands, not a resolved single figure; the scenario's existing
+  guidance (document both, verify actual behavior against a test message at deploy time) is
+  unchanged. Updated `scenarios/communication-compliance/teams-viva-engage-content-safety/README.md`
+  §11 and `reviews.md` (correction addendum) in place. Doc-only correction — no script or
+  policy-manifest change.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,

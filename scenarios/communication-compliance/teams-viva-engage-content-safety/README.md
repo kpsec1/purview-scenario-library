@@ -412,12 +412,15 @@ different risk calculus than a general conduct-monitoring policy's.
 - **This scenario cannot script policy creation, condition tuning, or reviewer assignment.** Same
   documented gap as both sibling scenarios - no such API exists as of this writing (`design.md` §3).
 - **Genuine, disclosed source inconsistency in Microsoft's own documentation: the minimum message
-  length these classifiers evaluate is stated as "three or more words" in one section of
-  `communication-compliance-policies` and "five or more words" in a different section of the
-  *same* live page** [[4]](#references). This build's grounding pass confirmed both figures appear
-  verbatim on the current page - not a stale-cache artifact from comparing two different page
-  versions. This scenario does not silently pick one; **VERIFY the actual behavior against a test
-  message in the tenant at deploy time** rather than relying on either published figure.
+  length these classifiers evaluate is stated as "three or more words" in the "Content safety
+  classifiers based on large language models" section's body text, and "five or more words" in
+  that same section's "Considerations when using classifiers" subsection, on the same live
+  `communication-compliance-policies` page** [[4]](#references). Re-confirmed 2026-10-12 (Microsoft
+  Learn MCP, maintenance pass): both figures are still present verbatim and unreconciled, for the
+  identical Hate/Sexual/Violence/Self-harm classifier family this scenario uses - not a stale-cache
+  artifact from comparing two page versions, and not two different classifier families. This
+  scenario does not silently pick one; **VERIFY the actual behavior against a test message in the
+  tenant at deploy time** rather than relying on either published figure.
 - **Preview status.** These are explicitly "content safety classifiers (preview)" - subject to
   change, and evaluated as a materially newer, less broadly production-hardened capability than the
   trainable-classifier family `harassment-and-code-of-conduct` uses [[3]](#references).

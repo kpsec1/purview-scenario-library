@@ -180,3 +180,23 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Export-ContentSafetyAuditTrail.ps1`, `validate/Test-ContentSafetyAuditTrail.ps1`, and
 `deploy/policy/content-safety-policy-manifest.json`. No Fail items were raised. This fragment meets
 the definition of done in `AGENTS.md` §9.
+
+## Correction addendum (2026-10-12, maintenance pass - no new four-lens round per `AGENTS.md` §6)
+
+The Microsoft Product Owner lens's finding 2 above, and the carried-forward `PROGRESS.md` VERIFY
+asking whether the live `communication-compliance-policies` page's "three or more words"/"five or
+more words" word-count conflict had since been reconciled, are **closed, not reopened**: a fresh
+Microsoft Learn re-fetch confirms both figures are still present verbatim today, for the identical
+Hate/Sexual/Violence/Self-harm classifier family this scenario uses. The re-fetch also pins the
+conflict's exact location more precisely than the original build did - both statements sit inside
+the same `#content-safety-classifiers-based-on-large-language-models` H3 section: "three or more
+words" in that section's own body text, "five or more words" in its nested "Considerations when
+using classifiers" subsection - confirming this is a single, internally inconsistent Microsoft
+source (not two different classifier families, and not a stale-cache artifact from comparing two
+page versions or two separate pages). Since the underlying fact is a live Microsoft documentation
+defect rather than something this build can resolve to one number, closing this VERIFY means
+confirming the inconsistency still stands, not picking a figure - the scenario's existing guidance
+(document both, verify the actual behavior against a test message in the tenant at deploy time)
+remains correct and unchanged. `README.md` §11 updated in place with the dated re-confirmation and
+the precise section/subsection anchors; no script or policy-manifest change, since no new
+information about actual runtime behavior was found.
