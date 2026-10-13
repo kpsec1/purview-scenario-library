@@ -283,6 +283,16 @@ is operational: reviewing and maintaining up to two additional approved-device l
   sibling had to flag for `SerialNumberId`/`VID_PID`), but this is not the same as a direct worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks `approvedPortableDevices` entries
   as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation.
+  **Re-grounded 2026-10-13** (Microsoft Learn MCP + direct fetch of every sample in the GitHub repo
+  Microsoft's own macOS device control doc cites as the worked-example reference): all 14 policy
+  JSON files currently in `microsoft/mdatp-devicecontrol`'s `macOS/policy/samples/` directory were
+  checked directly, not just the two previously spot-checked. Only one file names serial numbers
+  (`audit_all_apple_devices_except_serial_numbers.json`, `apple_devices` family); the two files that
+  do scope a group to `primaryId: portable_devices` (`audit_mobile_devices.json`,
+  `deny_debug_on_android.json`) both match that group purely by `primaryId`, with no `serialNumber`
+  clause anywhere in either file. Still genuinely undocumented by worked example - re-open for a
+  fresh pass only if Microsoft publishes a new sample pairing `serialNumber` with a
+  `portable_devices`-scoped group, or a pilot-tenant test confirms the behavior directly.
 - **A device without a readable serial number cannot be allowlisted for the Apple or Portable
   families** - same scope boundary the parent scenario already carries for removable media
   (`README.md` §11 there), and the same reason this fragment doesn't attempt `vendorId`/`productId`

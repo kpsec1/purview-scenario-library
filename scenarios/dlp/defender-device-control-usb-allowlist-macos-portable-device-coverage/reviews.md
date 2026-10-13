@@ -173,3 +173,11 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Add-MacPortableDeviceCoverage.ps1` - including a genuine fabricated-field grounding defect
 (Blue Team finding 1) caught and fixed during this review, not merely documented. No Fail items
 were raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+**Maintenance addendum (2026-10-13):** the `portable_devices`-`serialNumber` VERIFY (Red Team
+finding 3's open follow-up; `README.md` §11, `design.md` §6) was re-grounded, not closed. A direct
+fetch of all 14 policy JSON files in the GitHub samples directory Microsoft's own macOS device
+control doc cites confirmed the negative result exhaustively rather than from the two files
+previously spot-checked: of the two sample files that scope a group to `primaryId:
+portable_devices`, neither pairs it with a `serialNumber` clause. Still open; re-close only on a
+new Microsoft-published sample or a pilot-tenant test.

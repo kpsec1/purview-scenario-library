@@ -280,6 +280,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the Windows WPD-coverage sibling's own equivalent VERIFY), but this is not the same as a worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks this as `[WARN]`, not `[PASS]`,
   pending confirmation - see that scenario's `README.md` §11.
+  **Re-grounded 2026-10-13** (Microsoft Learn MCP, maintenance pass): directly fetched all 14 policy
+  JSON files currently in `microsoft/mdatp-devicecontrol`'s `macOS/policy/samples/` GitHub
+  directory (the full published sample set, not just the previously spot-checked
+  `apple_devices` file). Two files scope a group to `primaryId: portable_devices`
+  (`audit_mobile_devices.json`, `deny_debug_on_android.json`); neither pairs that with a
+  `serialNumber` clause. Remains genuinely undocumented by worked example - this is now an
+  exhaustive negative result across every published sample, not an absence-of-search. Re-open only
+  on a new Microsoft-published sample or a pilot-tenant test. `README.md` §11, `design.md` §6, and
+  `reviews.md` (maintenance addendum) updated in place; no script behavior change.
 - [x] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
   just Bluetooth, above) once the per-device, dynamic-sub-group `groupId`-clause-nesting idempotency
   model is independently verified against a pilot tenant - same deferred complexity already tracked
