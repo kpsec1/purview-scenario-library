@@ -130,6 +130,13 @@ scenario's own Apple-device precedent) but flags it as an open `VERIFY` in `READ
 checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather than asserting it as
 confirmed.
 
+**Re-grounded 2026-10-13** (Microsoft Learn MCP, maintenance pass): directly fetched all 14 policy
+JSON files in the GitHub samples directory Microsoft's own doc cites, not just the previously
+spot-checked `apple_devices` example. Two files scope a group to `primaryId: portable_devices`
+(`audit_mobile_devices.json`, `deny_debug_on_android.json`); neither combines that with a
+`serialNumber` clause. Still genuinely undocumented - this is now an exhaustive negative result
+across the full published sample set, not an absence-of-search. See `README.md` §11.
+
 ## 7. Key decisions
 
 | Decision | Choice | Rationale |
