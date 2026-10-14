@@ -8919,7 +8919,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   this file's own tracking bullet above marked `[x]` with both halves called out separately rather
   than closed wholesale. Doc-only correction — no code change, no new four-lens review round.
 - [x] **Maintenance pass — narrowed `premium-legal-hold-and-export`'s custodian `includedSources`
-  VERIFY** — commit `PENDING` — 2026-10-14. Re-fetched both the v1.0 `Create custodian userSource`
+  VERIFY** — commit `91e4e8b` — 2026-10-14. Re-fetched both the v1.0 `Create custodian userSource`
   REST reference and its deprecated beta-namespace sibling via the Microsoft Learn MCP tool. New
   evidence: the v1.0 reference's own worked response normalizes `includedSources` to
   `"mailbox,site"` (no space) even from a bare `"mailbox"` request, and the beta sibling's own
