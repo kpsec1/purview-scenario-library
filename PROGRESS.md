@@ -71,12 +71,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   eDiscovery experience - not merely unautomatable. `premium-legal-hold-and-export/README.md` §11
   and `design.md` §7 corrected in place instead of a companion scenario being built on the original
   (now-superseded) assumption.
-- [ ] VERIFY (pilot tenant, before production reliance): whether the custodian `userSource`
-  `includedSources` property accepts the combined string `"mailbox, site"` (Microsoft's own worked
-  *beta*-namespace example) on the current *v1.0* `POST .../custodians/{id}/userSources` endpoint,
-  whose own v1.0 worked example shows only a single value (`"mailbox"`) - flagged inline in
-  `premium-legal-hold-and-export/README.md` §11 and `deploy/New-EdiscoveryPremiumLegalHold.ps1`'s
-  `.NOTES` rather than resolved by guessing a JSON-array shape neither reference confirms.
+- [ ] VERIFY narrowed 2026-10-14 (Microsoft Learn MCP, maintenance pass): whether the custodian
+  `userSource` `includedSources` property accepts the combined string `"mailbox, site"` on the
+  current *v1.0* `POST .../custodians/{id}/userSources` endpoint - its own worked *request* example
+  still shows only a single value (`"mailbox"`), never the combined form as client input. Two new
+  facts recorded rather than guessed: (1) that same v1.0 example's worked *response* normalizes
+  `includedSources` to `"mailbox,site"` (no space) even though the request sent only `"mailbox"`,
+  consistent with `userSource` being documented as "the container for a user's mailbox and OneDrive
+  for Business site" - suggesting the v1.0 endpoint may already resolve to both regardless of what's
+  requested; (2) the deprecated beta `microsoft.graph.ediscovery` sibling endpoint's own worked
+  example - previously referenced in this scenario's README only as "Microsoft's own worked beta
+  example" with no citation - is now directly fetched and cited: its request body literally sends
+  `"includedSources": "mailbox, site"` (comma+space) and receives `201 Created`. So the combined
+  form is Microsoft-documented as accepted input on the beta custodian endpoint specifically, just
+  not yet on a v1.0 worked request example. Remains open - re-close only on a v1.0 worked request
+  example using the combined form, or a pilot-tenant check. `premium-legal-hold-and-export/
+  README.md` §11 (new reference 29) and `reviews.md` (maintenance addendum) updated in place; also
+  corrected a stale citation in `deploy/New-EdiscoveryPremiumLegalHold.ps1`'s
+  `Confirm-CustodianUserSource` comment, which pointed at reference 11 (an unrelated review-set
+  article) instead of reference 23 (Create custodian userSource, v1.0).
 - [x] Once `scenarios/insider-risk/` has a scenario producing an escalatable Insider Risk
   Management case, wire the documented IRM-case → eDiscovery (Premium) case escalation integration
   - **built** as `scenarios/insider-risk/irm-case-escalation-to-ediscovery/` (see DONE below).
@@ -8905,6 +8918,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   paragraph) to cite the confirmed path while keeping the in-use-behavior question explicitly open;
   this file's own tracking bullet above marked `[x]` with both halves called out separately rather
   than closed wholesale. Doc-only correction — no code change, no new four-lens review round.
+- [x] **Maintenance pass — narrowed `premium-legal-hold-and-export`'s custodian `includedSources`
+  VERIFY** — commit `PENDING` — 2026-10-14. Re-fetched both the v1.0 `Create custodian userSource`
+  REST reference and its deprecated beta-namespace sibling via the Microsoft Learn MCP tool. New
+  evidence: the v1.0 reference's own worked response normalizes `includedSources` to
+  `"mailbox,site"` (no space) even from a bare `"mailbox"` request, and the beta sibling's own
+  worked request literally sends `"mailbox, site"` (comma+space) and succeeds — a citation this
+  scenario had previously described only as "Microsoft's own worked beta example" with no URL, now
+  added as reference 29. The central question — whether the *v1.0* endpoint itself accepts/requires
+  the combined string as client input — has no v1.0 worked request example either way, so the item
+  is narrowed, not closed. Also fixed a stale citation in `deploy/New-EdiscoveryPremiumLegalHold.ps1`'s
+  `Confirm-CustodianUserSource` comment, which pointed at reference 11 (an unrelated review-set
+  article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
+  updated in place; no script behavior change.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,

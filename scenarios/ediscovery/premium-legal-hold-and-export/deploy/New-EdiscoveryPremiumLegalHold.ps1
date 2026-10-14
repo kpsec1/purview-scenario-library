@@ -183,7 +183,10 @@ function Confirm-CustodianUserSource {
 
     if ($PSCmdlet.ShouldProcess($Email, "Add mailbox + OneDrive userSource to custodian $CustodianId")) {
         # includedSources covers both the custodian's mailbox and OneDrive/SharePoint site --
-        # see README.md section 12 reference 11 (Create custodian userSource, v1.0).
+        # see README.md section 12 reference 23 (Create custodian userSource, v1.0) and reference
+        # 29 (the beta sibling endpoint's worked example, which uses this exact comma+space
+        # literal as request input). The v1.0 endpoint's own combined-form VERIFY is open -
+        # README.md section 11.
         New-MgSecurityCaseEdiscoveryCaseCustodianUserSource -EdiscoveryCaseId $CaseId `
             -EdiscoveryCustodianId $CustodianId -Email $Email -IncludedSources 'mailbox, site' | Out-Null
         Write-Host "Added userSource (mailbox, site) for '$Email'."

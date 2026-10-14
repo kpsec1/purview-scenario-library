@@ -318,13 +318,29 @@ destructive stages, each requiring an explicit switch.
   equivalent operation already exist" filter. Keep definition-file display names stable across
   re-runs of the same matter's collection; see the script's own `.NOTES`.
 - **VERIFY (pilot tenant, before production reliance):** whether a custodian's `userSource`
-  `includedSources` value must be the exact string `"mailbox, site"` (as shown in Microsoft's own
-  worked beta example) or whether the v1.0 endpoint expects a JSON array / different delimiter -
-  the v1.0 REST reference for this specific endpoint documents the *possible values* (`mailbox`,
-  `site`) but its own worked example for `POST .../custodians/{id}/userSources` only shows a
-  single value (`"mailbox"`), not the combined form. `New-EdiscoveryPremiumLegalHold.ps1` uses the
-  combined-string form by analogy with the (deprecated, beta-namespace) sibling endpoint's worked
-  example rather than fabricating a JSON-array shape neither reference confirms.
+  `includedSources` value must be the exact string `"mailbox, site"` on the *v1.0* endpoint, or
+  whether the v1.0 endpoint expects a JSON array / different delimiter - the v1.0 REST reference
+  for this specific endpoint documents the *possible values* (`mailbox`, `site`) as a single
+  `microsoft.graph.security.sourceType` property, but its own worked *request* example for
+  `POST .../custodians/{id}/userSources` only shows a single value (`"mailbox"`), never the
+  combined form as client input [[23]](#references). **Re-grounded 2026-10-14** (Microsoft Learn
+  MCP): re-fetched both the v1.0 reference and its deprecated beta-namespace sibling in full. Two
+  new facts narrow this rather than close it. First, the v1.0 reference's own worked *response* -
+  for that same `"mailbox"`-only request - comes back as `"includedSources": "mailbox,site"` (no
+  space), consistent with the `userSource` resource type's own description as "the container for
+  a user's mailbox and OneDrive for Business site"; this suggests the v1.0 endpoint may already
+  resolve to both sources regardless of what `includedSources` requests, which would make the
+  exact string this script sends largely moot in practice. Second, the deprecated beta
+  `microsoft.graph.ediscovery` sibling endpoint's own worked example - previously described here
+  only as "Microsoft's own worked beta example" with no citation - is now directly cited
+  [[29]](#references): its request body literally sends `"includedSources": "mailbox, site"`
+  (comma+space) and receives `201 Created`, with the response again normalizing to `"mailbox,site"`
+  (no space). So the comma+space form is Microsoft-documented as accepted *input* on the beta
+  custodian endpoint specifically - just not yet on a v1.0 worked request example.
+  `New-EdiscoveryPremiumLegalHold.ps1` continues to send the combined-string form by analogy with
+  that now-cited sibling endpoint rather than fabricating a JSON-array shape neither reference
+  confirms; re-open only once a v1.0 worked *request* example using the combined form appears, or a
+  pilot-tenant check confirms the v1.0 behavior directly.
 - **A custodian's `userSource` (mailbox + OneDrive) does not automatically cover Microsoft Teams
   *channel* messages.** Teams 1:1/group chat is stored in the custodian's own mailbox and is
   covered by the mailbox `userSource`, but channel messages live in the team's own mailbox/site,
@@ -400,6 +416,7 @@ destructive stages, each requiring an explicit switch.
 26. Manage holds in eDiscovery (Premium) - the "custodian hold policy" claim; carries Microsoft's classic-eDiscovery-experience/21Vianet-China-only caution banner - <https://learn.microsoft.com/purview/ediscovery-managing-holds>
 27. View custodian audit activity - the one per-custodian audit UI Microsoft documents; also carries the classic-experience/21Vianet-China-only caution banner - <https://learn.microsoft.com/purview/ediscovery-view-custodian-activity>
 28. Manage hold notifications (current, non-legacy page - the `Important` callout stating legal hold custodian communications were permanently retired August 31, 2025 and aren't available in the new eDiscovery experience) - <https://learn.microsoft.com/purview/ediscovery-manage-hold-notifications>
+29. Create custodian userSource (deprecated beta `microsoft.graph.ediscovery` namespace - worked example showing `"includedSources": "mailbox, site"` accepted as request input) - <https://learn.microsoft.com/graph/api/ediscovery-custodian-post-usersources?view=graph-rest-beta>
 
 > Re-verify all links against current Microsoft Learn before a customer-facing deployment -
 > Purview's Graph eDiscovery surface has moved from the `microsoft.graph.ediscovery` namespace to

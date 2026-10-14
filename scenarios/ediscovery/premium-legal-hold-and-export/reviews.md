@@ -235,3 +235,20 @@ retired by Microsoft on August 31, 2025** and isn't available in the current eDi
 
 No Fix/Fail from this round. `PROGRESS.md`'s legal-hold-notifications follow-up is closed as
 "investigated, not built" rather than carried forward or silently dropped.
+
+---
+
+## Maintenance addendum - 2026-10-14 - custodian `includedSources` VERIFY re-grounded
+
+Scheduled maintenance pass (`PROGRESS.md` VERIFY debt, not a new fragment). Re-fetched both the
+v1.0 `Create custodian userSource` reference and its deprecated beta-namespace sibling in full.
+The v1.0 endpoint's own worked response normalizes `includedSources` to `"mailbox,site"` even from
+a bare `"mailbox"` request, and the beta sibling's own worked request literally sends
+`"mailbox, site"` (comma+space) and succeeds - previously described in `README.md` §11 only as
+"Microsoft's own worked beta example" with no citation, now cited directly as reference 29. The
+central question (does the *v1.0* endpoint require/accept the literal combined string as client
+input) remains genuinely unconfirmed - no v1.0 worked request example uses the combined form - so
+the VERIFY stays open, narrowed rather than closed. Also corrected a stale citation number in
+`deploy/New-EdiscoveryPremiumLegalHold.ps1`'s `Confirm-CustodianUserSource` comment, which pointed
+at README.md section 12 reference 11 (a review-set article, unrelated) instead of reference 23
+(Create custodian userSource, v1.0). No Fix/Fail - grounding and citation correction only.
