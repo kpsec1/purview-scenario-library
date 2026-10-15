@@ -279,7 +279,18 @@ life of the incident, matching the sibling scenario's own guidance for its searc
   guidance states this delay explicitly for the org-wide exclusion path [[6]](#references) but this
   build found no equivalent explicit statement for either mailbox-scoped add/remove-location path.
   `Restore-TeamsPurgeMailboxHolds.ps1`'s pre-check may therefore observe a stale (not-yet-synchronized)
-  state shortly after a change.
+  state shortly after a change. **Re-grounded 2026-10-15** (Microsoft Learn MCP): re-fetched
+  `edisc-hold-delete-recoverable-items` [[6]](#references) in full - its "Remove organization-wide
+  retention policies" section still states the 24-hour figure only for excluding a mailbox from an
+  *organization-wide* policy; its separate "Remove retention policies applied to specific mailboxes"
+  section (the mailbox-scoped path this VERIFY is about) gives no timing figure at all, just the
+  portal steps. A second page, `create-retention-policies` ("How long it takes for retention policies
+  to take effect") [[11]](#references), states a different, larger figure - up to **seven days** - but
+  only for a newly created policy's initial distribution to its locations, not for editing an existing
+  policy's recipient list. Neither page contradicts the other (different operations), and neither
+  closes this VERIFY: still no Microsoft Learn page states a specific synchronization time for
+  adding/removing a single mailbox from an already-distributed, mailbox-scoped policy. Re-open only
+  once a page states this explicitly, one way or the other.
 - **Illustrative values.** The mailbox list, case name, and file paths in the sample config are
   placeholders - replace with the real, confirmed incident details before use.
 
@@ -305,6 +316,9 @@ life of the incident, matching the sibling scenario's own guidance for its searc
 10. Common settings for retention policies and retention label policies (confirms the Exchange-mailboxes
     location - org-wide or specific-location - never covers a Microsoft 365 Group mailbox, including
     the exact "RemoteGroupMailbox isn't a valid selection" save-time error) - <https://learn.microsoft.com/purview/retention-settings>
+11. Create and configure retention policies ("How long it takes for retention policies to take effect" -
+    the up-to-seven-day initial distribution figure, a different operation from the mailbox-scoped
+    add/remove-location timing this scenario's §11 VERIFY tracks) - <https://learn.microsoft.com/purview/create-retention-policies>
 
 > Re-verify all links and cmdlet parameter names against current Microsoft Learn before a
 > customer-facing deployment. This scenario treats a `-IncludeComplianceTagHold` clear as an
