@@ -969,7 +969,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `-AddExchangeLocation` (the mailbox-scoped-policy add/remove path) carries the same up-to-24-hour
   synchronization delay Microsoft documents explicitly for the org-wide `-AddExchangeLocationException`
   path - no equivalent explicit statement was found for the mailbox-scoped path during this build.
-  `teams-purge-hold-lifecycle-management/README.md` §11.
+  `teams-purge-hold-lifecycle-management/README.md` §11. **Re-grounded 2026-10-15** (Microsoft Learn
+  MCP, maintenance pass): re-fetched `edisc-hold-delete-recoverable-items` in full - its org-wide
+  24-hour figure stands only for the organization-wide exclusion path; its separate "Remove retention
+  policies applied to specific mailboxes" section (the mailbox-scoped path) still gives no timing
+  figure. A second page, `create-retention-policies` ("How long it takes for retention policies to
+  take effect"), documents a different, larger figure - up to seven days - but only for a newly
+  created policy's initial distribution, not for editing an existing policy's recipient list. Still
+  genuinely undocumented for the specific mailbox-scoped add/remove case - no guess made either way.
+  `README.md` §11/§12 updated with both findings and a new reference 11.
 - [ ] VERIFY narrowed 2026-09-28 (Microsoft Learn MCP): `-AddModernGroupLocationException`/
   `-RemoveModernGroupLocationException` are now confirmed real, documented `Set-RetentionCompliancePolicy`
   parameters (fetched in full: `set-retentioncompliancepolicy` PowerShell reference on
