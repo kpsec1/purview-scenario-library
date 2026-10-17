@@ -418,6 +418,10 @@ different risk calculus than a general conduct-monitoring policy's.
   verbatim on the current page - not a stale-cache artifact from comparing two different page
   versions. This scenario does not silently pick one; **VERIFY the actual behavior against a test
   message in the tenant at deploy time** rather than relying on either published figure.
+  **Re-grounded 2026-10-17** (Microsoft Learn MCP, maintenance pass): re-fetched the live page in
+  full - both figures are still present verbatim, unreconciled, in the same two sections of the
+  same classifier family. Remains an open, disclosed source conflict; re-open for a fresh check
+  only if Microsoft unifies the figure or a pilot tenant confirms the live enforcement threshold.
 - **Preview status.** These are explicitly "content safety classifiers (preview)" - subject to
   change, and evaluated as a materially newer, less broadly production-hardened capability than the
   trainable-classifier family `harassment-and-code-of-conduct` uses [[3]](#references).
