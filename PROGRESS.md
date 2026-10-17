@@ -2367,6 +2367,12 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   ("three or more words" vs. "five or more words," both present verbatim on the same current page as
   of this build) have since been reconciled to a single figure -
   `teams-viva-engage-content-safety/README.md` §6/§11 currently documents both rather than guessing.
+  **Re-grounded 2026-10-17** (Microsoft Learn MCP, maintenance pass): re-fetched the live page in
+  full - both figures are still present verbatim, unreconciled, in the same "Content safety
+  classifiers based on large language models" section (intro paragraph vs. "Considerations when
+  using classifiers" subsection), for the identical Hate/Sexual/Violence/Self-harm classifier
+  family. Remains open; re-open for a fresh pass only if Microsoft unifies the figure, or a pilot
+  tenant confirms the live enforcement threshold.
 - [ ] VERIFY (jurisdiction-specific, employment counsel): the applicable duty-of-care/psychosocial-
   hazard obligations for employer self-harm-risk-signal handling that
   `teams-viva-engage-content-safety/README.md` §2 flags as needing confirmation before a
@@ -3687,6 +3693,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Re-grounded the `teams-viva-engage-content-safety` word-count VERIFY** - commit `PENDING` -
+  2026-10-17. Maintenance pass: re-fetched the live `communication-compliance-policies` page in
+  full via the Microsoft Learn MCP tool to check whether the "three or more words"/"five or more
+  words" source conflict for the content-safety classifier family had been reconciled since this
+  scenario was built. It has not - both figures are still present verbatim, in the same "Content
+  safety classifiers based on large language models" section (intro paragraph says "three or more
+  words"; its own "Considerations when using classifiers" subsection says "five or more words"),
+  describing the identical Hate/Sexual/Violence/Self-harm classifier family scoped to the same
+  three workloads (Microsoft 365 Copilot, Teams, Viva Engage). Updated `README.md` §11 and
+  `reviews.md` (new maintenance addendum) with the dated re-confirmation; the VERIFY itself stays
+  open in the follow-ups list above, narrowed to "still unreconciled as of 2026-10-17" rather than
+  guessed closed. No script, policy, or architecture change.
 - [x] **Narrowed the `scan-on-premises-sql-server-and-classify` Windows Authentication `CredentialType`
   VERIFY** - commit `8088e8e` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
   Replace** REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace`)

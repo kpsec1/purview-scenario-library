@@ -180,3 +180,19 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Export-ContentSafetyAuditTrail.ps1`, `validate/Test-ContentSafetyAuditTrail.ps1`, and
 `deploy/policy/content-safety-policy-manifest.json`. No Fail items were raised. This fragment meets
 the definition of done in `AGENTS.md` §9.
+
+---
+
+## Maintenance addendum - 2026-10-17 - word-count VERIFY re-grounded
+
+Scheduled maintenance pass (`PROGRESS.md` VERIFY debt, not a new fragment). Re-fetched the live
+`communication-compliance-policies` page in full via the Microsoft Learn MCP tool to check whether
+the "three or more words" / "five or more words" conflict item 2 (Microsoft Product Owner, above)
+flagged had since been reconciled. It has not: the current page still states, in the "Content
+safety classifiers based on large language models" section, "They evaluate messages containing
+three or more words," and still states, in that same section's "Considerations when using
+classifiers" subsection, "The solution evaluates only messages containing five or more words" -
+both sentences verbatim, both describing the identical Hate/Sexual/Violence/Self-harm classifier
+family scoped to the same three workloads (Microsoft 365 Copilot, Teams, Viva Engage). No Fix/Fail
+- re-confirmation only. The VERIFY stays open exactly as documented in `README.md` §11; no script,
+policy, or architecture change required.
