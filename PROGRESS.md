@@ -3693,7 +3693,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
-- [x] **Re-grounded the `teams-viva-engage-content-safety` word-count VERIFY** - commit `PENDING` -
+- [x] **Re-grounded the `teams-viva-engage-content-safety` word-count VERIFY** - commit `3c6cf7d` -
   2026-10-17. Maintenance pass: re-fetched the live `communication-compliance-policies` page in
   full via the Microsoft Learn MCP tool to check whether the "three or more words"/"five or more
   words" source conflict for the content-safety classifier family had been reconciled since this
