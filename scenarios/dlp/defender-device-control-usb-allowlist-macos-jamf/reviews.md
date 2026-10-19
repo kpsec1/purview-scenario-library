@@ -160,3 +160,21 @@ No remaining Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`,
 `deploy/New-JamfDeviceControlPolicyJson.ps1`, and `validate/Test-JamfDeviceControlPolicyJson.ps1`.
 No Fail items were raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Maintenance addendum (2026-10-19)
+
+Closed the open VERIFY this fragment's Microsoft Product Owner finding 2 (above) tracked - whether
+a documented JAMF Pro API exists for setting a Custom-Schema-sourced Application & Custom Settings
+property's value. Direct access to `developer.jamf.com` remained blocked in this build's network
+environment (same as the original build - `ENOTFOUND`), but this pass found its Classic API
+`osxconfigurationprofiles` reference page is indexed and search-summarizable, and corroborated the
+resulting shape against an independent community-posted worked example and Jamf's own
+Administrator's Guide (two independent secondary sources, meeting this repo's established
+WebSearch-only grounding bar - see `PROGRESS.md`'s 2026-09-09 environment note). All three describe
+the same structure: a `general` block plus a single `payloads` field holding the **entire** profile
+as one opaque, pre-encoded plist document, with no discrete field for individual Custom-Schema
+key/value pairs. Conclusion: no such API exists - not merely unconfirmed. `README.md` §11 (VERIFY →
+closed, new reference 12) and `design.md` §3 updated in place; no code or four-lens-review-affecting
+change, since the scenario's design already assumed and built for this outcome.

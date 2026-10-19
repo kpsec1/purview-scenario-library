@@ -291,12 +291,24 @@ the Device Control Policy property, or unscope the profile).
 - **Device control has no content awareness at all** - pair with a future macOS-scoped Endpoint DLP
   control for content inspection on the approved path too, the same complementary-layers framing as
   both siblings.
-- **VERIFY (pilot tenant or a future grounding pass against `developer.jamf.com`):** whether a
-  documented JAMF Pro API request body exists for programmatically setting a Custom-Schema-sourced
-  Application & Custom Settings property's value (as opposed to uploading a plain `.plist` file, a
-  different and simpler mechanism JAMF also supports for other Defender for Endpoint preferences).
-  If one is found, Steps 2-4 of §5 could be automated end-to-end, closing this scenario's primary
-  disclosed gap above. `developer.jamf.com` was unreachable from this build's network environment.
+- **VERIFY closed 2026-10-19 (maintenance pass, WebSearch-indexed `developer.jamf.com` content,
+  corroborated by two independent secondary sources per this repo's established WebSearch-only
+  grounding bar):** confirmed no such API exists. Direct `WebFetch`/`curl` access to
+  `developer.jamf.com` was still blocked in this build's network environment (`ENOTFOUND`, same as
+  the original build), but the Classic API's `osxconfigurationprofiles` reference page is itself
+  indexed and search-summarizable: it documents the resource's request/response body as a single
+  `general` block (name/category/UUID/distribution method) plus one `payloads` field holding the
+  **entire** profile as one opaque, already-encoded plist document - not a set of discrete fields
+  for individual Custom-Schema-sourced key/value pairs. A community-posted working XML example of
+  the same resource independently shows the identical shape (`general` → `payloads` [encoded plist]
+  → `scope`), and Jamf's own Administrator's Guide independently describes configuration profiles as
+  XML/plist files end to end. Together these rule out a distinct, schema-aware endpoint: this
+  matches the plain-`.plist`-upload mechanism already known to exist [[4]](#references) rather than
+  a separate API, so JAMF Pro's Custom Schema UI must render the admin's pasted values into that same
+  plist blob client-side before upload, with no documented API path for the per-property values
+  themselves. Steps 3-4 of §5 remain correctly scoped as JAMF-console-only - re-open only if Jamf
+  publishes a distinct, schema-value-specific endpoint, or a pilot JAMF Pro tenant/direct
+  `developer.jamf.com` access shows otherwise.
 
 ## 12. References
 
@@ -330,7 +342,12 @@ the Device Control Policy property, or unscope the profile).
     schema).
 11. `scenarios/dlp/defender-device-control-usb-allowlist/` - the Windows sibling scenario (Intune
     OMA-URI/XML mechanism); see that scenario's own references for the Windows-side citations.
+12. Jamf Pro Classic API - `osxconfigurationprofiles` resource reference (request/response body
+    shape: a `general` block plus one `payloads` field holding the complete profile as a single
+    encoded plist document, with no discrete Custom-Schema key/value fields) - <https://developer.jamf.com/jamf-pro/reference/osxconfigurationprofiles>
+    (confirmed via WebSearch-indexed page content, not a direct fetch - `developer.jamf.com` itself
+    remains unreachable from this repo's build environment; see §11's closed VERIFY).
 
-> Re-verify all links, and especially §11's open VERIFY on the JAMF Pro API, against current
-> Microsoft Learn, JAMF's own developer documentation, and a pilot tenant before a customer-facing
-> assessment or sale.
+> Re-verify all links, including §11's WebSearch-grounded (not directly fetched) VERIFY closure on
+> the JAMF Pro API, against current Microsoft Learn, JAMF's own developer documentation (once
+> directly reachable), and a pilot tenant before a customer-facing assessment or sale.

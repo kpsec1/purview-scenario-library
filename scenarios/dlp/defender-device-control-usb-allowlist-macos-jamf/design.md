@@ -50,7 +50,15 @@ Application & Custom Settings property (as opposed to a plain uploaded `.plist` 
 simpler mechanism JAMF also supports for other Defender for Endpoint preferences [[4]](#references),
 but not the one Microsoft's own Device Control article documents). `developer.jamf.com` was
 unreachable from this build's network environment, so the exact JAMF Pro API shape for this
-specific property type could not be independently confirmed either way.
+specific property type could not be independently confirmed either way at the time.
+
+**Closed by a 2026-10-19 maintenance pass** (`README.md` §11, §12 ref [12]): `developer.jamf.com`
+remained directly unreachable, but its Classic API `osxconfigurationprofiles` reference page is
+indexed and search-summarizable, and corroborated by an independent community-posted worked example
+plus Jamf's own Administrator's Guide. All three describe the same shape - a `general` block plus
+one `payloads` field holding the **entire** profile as a single, already-encoded plist document,
+with no discrete field for individual Custom-Schema key/value pairs. No distinct, schema-aware
+endpoint exists: Steps 3-4 above correctly stay JAMF-console-only, not merely unconfirmed.
 
 Consistent with this repo's grounding standard (`AGENTS.md` §4 - do not invent cmdlet names, API
 bodies, or portal paths) and its own established precedent for exactly this situation (the

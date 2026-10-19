@@ -357,21 +357,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   below rather than guessed either way.
 
 ### Follow-ups discovered while building the Defender for Endpoint device control macOS USB allowlist (JAMF) scenario
-- [ ] VERIFY (`developer.jamf.com`, or a pilot JAMF Pro tenant): whether a documented JAMF Pro
-  REST/Classic API request body exists for programmatically setting a Custom-Schema-sourced
-  Application & Custom Settings property's value (the mechanism `mac-device-control-jamf` uses for
-  the Device Control Policy property) - as opposed to uploading a plain `.plist` file, a different,
-  simpler mechanism JAMF also supports for other Defender for Endpoint preferences. `developer.
-  jamf.com` was unreachable from this build's network environment, so this could not be checked
-  directly. If found, `defender-device-control-usb-allowlist-macos-jamf`'s Steps 2-4 (`README.md`
-  §5) could be automated end-to-end instead of staying JAMF-console-only - see that scenario's
-  `README.md` §11 and `design.md` §3.
-- [ ] Once the item above is resolved and a JAMF Pro API path is confirmed, revisit
-  `defender-device-control-usb-allowlist-macos-jamf/reviews.md`'s Red-Team/Blue-Team findings on
-  the undetectable-drift risk of a manual JAMF-console-only deployment (no way to confirm the
-  pasted JSON matches the intended artifact, or that a JAMF admin hasn't silently altered it) - an
-  API-based reconcile-and-verify script would close both findings the same way the Intune sibling's
-  own Graph-based script already does.
+- [x] VERIFY closed 2026-10-19 (maintenance pass, WebSearch-indexed `developer.jamf.com` content):
+  whether a documented JAMF Pro REST/Classic API request body exists for programmatically setting a
+  Custom-Schema-sourced Application & Custom Settings property's value - as opposed to uploading a
+  plain `.plist` file. **Confirmed no such API exists.** Direct `developer.jamf.com` access was
+  still blocked in this build's network environment, but its Classic API `osxconfigurationprofiles`
+  reference page is indexed and search-summarizable, and corroborated by an independent
+  community-posted worked example plus Jamf's own Administrator's Guide (two independent secondary
+  sources, meeting this repo's established WebSearch-only grounding bar). All three describe the
+  same shape: a `general` block plus one `payloads` field holding the **entire** profile as a
+  single, already-encoded plist document - no discrete field for individual Custom-Schema key/value
+  pairs. `defender-device-control-usb-allowlist-macos-jamf/README.md` §11 (new reference 12),
+  `design.md` §3, and `reviews.md` (maintenance addendum) updated in place; Steps 2-4 (`README.md`
+  §5) correctly remain JAMF-console-only, not merely unconfirmed.
+- [x] The follow-up this VERIFY gated ("once a JAMF Pro API path is confirmed, revisit
+  `defender-device-control-usb-allowlist-macos-jamf/reviews.md`'s Red-Team/Blue-Team findings on the
+  undetectable-drift risk of a manual JAMF-console-only deployment...") is now moot, not actionable:
+  the VERIFY above resolved to "no API path exists," the opposite of this item's precondition. The
+  manual-console-only deployment and its disclosed drift-detection gap remain this scenario's
+  permanent, correctly-scoped design, not a temporary state awaiting automation.
 - [x] `scenarios/dlp/defender-device-control-usb-allowlist-macos-jamf-vendor-product-matching/` -
   **built** (see DONE below): the JAMF-managed sibling of
   `defender-device-control-usb-allowlist-macos-vendor-product-matching/` (Intune). Unlike the Intune
@@ -3687,6 +3691,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
+  VERIFY** - commit (pending at write time, see this run's own final commit) - 2026-10-19.
+  Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
+  environment (`ENOTFOUND`, matching the original build), but this pass found its Classic API
+  `osxconfigurationprofiles` reference page is indexed and search-summarizable via `WebSearch`, and
+  corroborated the resulting request/response shape against an independent community-posted worked
+  XML example and Jamf's own Administrator's Guide - two independent secondary sources, meeting this
+  repo's own established WebSearch-only grounding bar (`PROGRESS.md`'s 2026-09-09 environment note).
+  All three sources describe the same shape: a `general` block plus a single `payloads` field
+  holding the **entire** configuration profile as one opaque, already-encoded plist document, with
+  no discrete field for individual Custom-Schema-sourced key/value pairs. Conclusion: no documented
+  JAMF Pro API exists for setting such a property's value directly - not merely unconfirmed, as the
+  original build had left it. Updated `defender-device-control-usb-allowlist-macos-jamf/README.md`
+  §11 (VERIFY → closed, new reference 12 citing the Classic API reference page) and §12's closing
+  re-verify note, `design.md` §3 (closure paragraph appended), and `reviews.md` (maintenance
+  addendum under Microsoft Product Owner finding 2). Also closed this file's own two tracking
+  bullets above (the original follow-up and the now-moot API-confirmed-contingent follow-up).
+  Doc-only correction - no code change, no new four-lens review round (the scenario's design already
+  assumed and built for a console-only outcome).
 - [x] **Narrowed the `scan-on-premises-sql-server-and-classify` Windows Authentication `CredentialType`
   VERIFY** - commit `8088e8e` - 2026-09-28. Maintenance pass: fetched the **Credential - Create Or
   Replace** REST reference (`https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace`)
