@@ -3692,7 +3692,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
-  VERIFY** - commit (pending at write time, see this run's own final commit) - 2026-10-19.
+  VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
   environment (`ENOTFOUND`, matching the original build), but this pass found its Classic API
   `osxconfigurationprofiles` reference page is indexed and search-summarizable via `WebSearch`, and
