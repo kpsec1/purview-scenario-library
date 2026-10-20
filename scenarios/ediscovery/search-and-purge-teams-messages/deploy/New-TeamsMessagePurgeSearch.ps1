@@ -85,10 +85,19 @@
     EdiscoveryCaseSearchNoncustodialSource noun lists only Get- cmdlets (list/count); there is no
     New-/Add- variant. See README.md Section 11 / design.md Section 6.
 
-    VERIFY (pilot tenant): a case-level ediscoveryNoncustodialDataSource's DisplayName for a
-    userSource (mailbox) is not shown in any worked example this build found (only a siteSource
-    example, where DisplayName is the SharePoint site title) -- Get-OrNewTargetSource below matches
-    on DisplayName as a best-effort heuristic. design.md Section 6.
+    CLOSED 2026-10-20 (Microsoft Learn MCP, maintenance pass): the userSource resource type
+    reference page states plainly that a userSource's displayName is "the display name associated
+    with the mailbox and site" -- i.e. a directory display name, not the SMTP address passed when
+    creating it. That disproves the previous DisplayName-equals-Email idempotency heuristic below,
+    which this fix replaces with a match on the expanded dataSource's own `email` property instead
+    (Get-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource's own reference page documents
+    `-ExpandProperty "dataSource"` as supported usage). design.md Section 6.
+
+    VERIFY (pilot tenant, narrower): the exact PowerShell property path the SDK deserializes the
+    expanded dataSource.email into (`.DataSource.AdditionalProperties['email']` below, inferred
+    from the shared IMicrosoftGraphSecurityDataSource type's documented model, not witnessed in a
+    published $expand worked example) -- confirm against a live object before production reliance.
+    design.md Section 6.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(
@@ -151,12 +160,14 @@ function Get-OrNewTeamsCase {
 }
 
 function Get-OrNewTargetSource {
-    # Find-or-create a case-level noncustodialDataSource for one target mailbox. Matches on
-    # DisplayName as a best-effort heuristic -- see this script's .NOTES VERIFY.
+    # Find-or-create a case-level noncustodialDataSource for one target mailbox. Matches on the
+    # expanded dataSource's `email` (a documented userSource property), not DisplayName, which
+    # Microsoft Learn confirms holds the mailbox's directory display name, not its SMTP address --
+    # see this script's .NOTES.
     param($CaseId, [string]$Email)
 
-    $existing = Get-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource -EdiscoveryCaseId $CaseId -All |
-        Where-Object { $_.DisplayName -eq $Email } | Select-Object -First 1
+    $existing = Get-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource -EdiscoveryCaseId $CaseId -ExpandProperty 'dataSource' -All |
+        Where-Object { $_.DataSource.AdditionalProperties['email'] -eq $Email } | Select-Object -First 1
     if ($existing) {
         Write-Verbose "Non-custodial source for '$Email' already exists (id=$($existing.Id))."
         return $existing

@@ -910,10 +910,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   stand-in for an as-yet-unconfirmed cmdlet. Updated `search-and-purge-teams-messages/README.md` §11
   (+ new reference 14), `design.md` §6, the deploy script's own `.NOTES`, and `reviews.md`
   (Blue Team finding 4).
-- [ ] VERIFY (pilot tenant): how a case-level `ediscoveryNoncustodialDataSource`'s `DisplayName` is
-  populated for a `userSource` (mailbox) - only a `siteSource` worked example was found. The deploy
-  script's find-or-create idempotency check matches on `DisplayName` as a best-effort heuristic.
-  `search-and-purge-teams-messages/design.md` §6.
+- [x] VERIFY closed 2026-10-20 (Microsoft Learn MCP, maintenance pass): how a case-level
+  `ediscoveryNoncustodialDataSource`'s `DisplayName` is populated for a `userSource` (mailbox). The
+  `userSource` resource type reference page states plainly that its `displayName` is "the display
+  name associated with the mailbox and site" - a directory display name, not an SMTP address -
+  which disproves (rather than merely leaves unconfirmed) the deploy/validate scripts' previous
+  `DisplayName -eq $Email` idempotency heuristic. Both
+  `search-and-purge-teams-messages/deploy/New-TeamsMessagePurgeSearch.ps1`'s `Get-OrNewTargetSource`
+  and `validate/Test-TeamsMessagePurgeSearchAndPurge.ps1`'s check 3 were fixed to call
+  `-ExpandProperty 'dataSource'` (documented, supported usage per
+  `Get-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`'s own reference page) and match on the
+  expanded `dataSource`'s `email` property instead. A narrower VERIFY (pilot tenant) is carried
+  forward, not guessed away: the exact PowerShell property path the SDK deserializes the expanded
+  value into (`.DataSource.AdditionalProperties['email']`, inferred from the shared
+  `IMicrosoftGraphSecurityDataSource` type's documented model, not witnessed in a published
+  `$expand` worked example for this specific relationship). `design.md` §6, `README.md` §11/§12
+  (refs 15-16 added), both scripts' `.NOTES`, and `reviews.md` (new correction addendum) updated in
+  place.
 - [x] VERIFY closed 2026-09-28 (Microsoft Learn MCP, `ediscoverySearch: purgeData` Graph reference):
   `-PurgeType` does **not** meaningfully affect the Teams **compliance copy's** retention/
   hold-interaction timing. The reference states plainly that for `purgeAreas: teamsMessages`,

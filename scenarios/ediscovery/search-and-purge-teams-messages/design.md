@@ -158,12 +158,29 @@ the raw HTTP shape via `Invoke-MgGraphRequest` for step 2 is therefore confirmed
 stand-in for a cmdlet that simply hasn't been found yet - flagged as resolved in that script's own
 `.NOTES`. [[14]](#references)
 
-**VERIFY (pilot tenant):** how a case-level `ediscoveryNoncustodialDataSource` object's `DisplayName`
-is populated for a `userSource` (a mailbox) - Microsoft's own worked example shows a `siteSource`'s
-`DisplayName` as the SharePoint site's title, but no example shows the equivalent for a mailbox
-`userSource`. `New-TeamsMessagePurgeSearch.ps1`'s find-or-create idempotency check for this object
-therefore matches on `DisplayName` as a best-effort heuristic and is flagged as `[WARN]`, not
-`[PASS]`, by the validation script until confirmed.
+**CLOSED 2026-10-20** (Microsoft Learn MCP, maintenance pass): how a case-level
+`ediscoveryNoncustodialDataSource` object's `DisplayName` is populated for a `userSource` (a
+mailbox). The previous open question assumed `DisplayName` might equal the mailbox's SMTP address,
+by (unconfirmed) analogy with the `siteSource` worked example, where `DisplayName` is the SharePoint
+site's title. The `userSource` resource type reference page states plainly that its `displayName`
+is "the display name associated with the mailbox and site" - a directory display name, not an SMTP
+address [[15]](#references). That disproves the `DisplayName -eq $Email` heuristic
+`New-TeamsMessagePurgeSearch.ps1` previously used for its find-or-create idempotency check.
+
+**Fixed in place:** both `New-TeamsMessagePurgeSearch.ps1`'s `Get-OrNewTargetSource` and
+`validate/Test-TeamsMessagePurgeSearchAndPurge.ps1`'s check 3 now call
+`Get-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource`/
+`Get-MgSecurityCaseEdiscoveryCaseSearchNoncustodialSource` with `-ExpandProperty 'dataSource'` -
+documented, supported usage per that cmdlet's own reference page [[16]](#references) - and match on
+the expanded `dataSource`'s `email` property (`$_.DataSource.AdditionalProperties['email']`),
+which Microsoft Learn documents as present on `userSource` [[15]](#references).
+
+**VERIFY (pilot tenant, narrower):** the exact PowerShell property path above
+(`.DataSource.AdditionalProperties['email']`) is inferred from the shared
+`IMicrosoftGraphSecurityDataSource` type's documented model (the same type used for the `-DataSource`
+body parameter on creation), not witnessed directly in a Microsoft-published `$expand` worked
+example for this specific relationship. Confirm against a live object before production reliance -
+a one-line `ConvertTo-Json -Depth 5` on one expanded result settles it permanently.
 
 ## 7. The always-double-confirmed purge
 

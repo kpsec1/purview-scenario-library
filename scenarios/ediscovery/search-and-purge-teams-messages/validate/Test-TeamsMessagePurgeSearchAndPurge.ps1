@@ -42,6 +42,13 @@
         -CaseId $caseId -AppId $AppId -TenantId $TenantId -CertificateThumbprint $Thumbprint
 
 .NOTES
+    CLOSED 2026-10-20 (Microsoft Learn MCP, maintenance pass): check 3 now matches bound sources on
+    the expanded dataSource's `email` property, not DisplayName -- Microsoft Learn's userSource
+    resource reference confirms DisplayName holds the mailbox's directory display name, not its
+    SMTP address, disproving the previous DisplayName-equals-Email heuristic. See
+    New-TeamsMessagePurgeSearch.ps1's own .NOTES and design.md Section 6 for the residual, narrower
+    pilot-tenant VERIFY (the exact SDK-deserialized property path for the expanded relationship).
+
     Manual verification checklist (no read API exists for these -- confirm directly):
       - Whether a target mailbox still has an active hold at purge time (this script cannot tell
         from the purgeData operation object alone) -- see README.md Section 5 steps 3/6.
@@ -127,14 +134,14 @@ if ($search) {
 # 3. Bound target-mailbox sources
 if ($search) {
     $boundSources = Get-MgSecurityCaseEdiscoveryCaseSearchNoncustodialSource -EdiscoveryCaseId $CaseId `
-        -EdiscoverySearchId $search.Id -All
+        -EdiscoverySearchId $search.Id -ExpandProperty 'dataSource' -All
     Write-Host "Search has $($boundSources.Count) bound non-custodial source(s)."
     foreach ($target in $definition.search.targetMailboxes) {
-        $match = $boundSources | Where-Object { $_.DisplayName -eq $target.email }
+        $match = $boundSources | Where-Object { $_.DataSource.AdditionalProperties['email'] -eq $target.email }
         if ($match) {
             Write-Check "Target mailbox '$($target.email)' ($($target.sourceType)) is bound to the search." -Level PASS
         } else {
-            Write-Check "Target mailbox '$($target.email)' ($($target.sourceType)) has no matching bound source (matched on DisplayName -- see this script's .NOTES and design.md Section 6 VERIFY)." -Level WARN
+            Write-Check "Target mailbox '$($target.email)' ($($target.sourceType)) has no matching bound source (matched on the expanded dataSource's email -- see this script's .NOTES and design.md Section 6 for the residual pilot-tenant VERIFY on the exact SDK property path)." -Level WARN
         }
     }
 }

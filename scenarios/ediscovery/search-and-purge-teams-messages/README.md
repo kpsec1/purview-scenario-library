@@ -225,10 +225,15 @@ case, and the holds you removed and must reapply.
   bind) [[14]](#references). `deploy/New-TeamsMessagePurgeSearch.ps1` correctly calls the confirmed
   raw HTTP shape via `Invoke-MgGraphRequest` for this step - not a workaround for an unconfirmed
   cmdlet, but the only way to perform this specific action. `design.md` §6.
-- **VERIFY (pilot tenant):** how a case-level `ediscoveryNoncustodialDataSource`'s `DisplayName` is
-  populated for a mailbox (`userSource`) - this scenario's idempotency check matches on `DisplayName`
-  as a best-effort heuristic; `validate/Test-TeamsMessagePurgeSearchAndPurge.ps1` reports this as
-  `[WARN]`, not `[PASS]`. `design.md` §6.
+- **Closed 2026-10-20 (Microsoft Learn MCP, maintenance pass):** how a case-level
+  `ediscoveryNoncustodialDataSource`'s `DisplayName` is populated for a mailbox (`userSource`) - the
+  `userSource` resource reference confirms `DisplayName` holds the mailbox's directory display
+  name, not its SMTP address [[15]](#references), disproving this scenario's previous
+  `DisplayName`-equals-email idempotency heuristic. Both `deploy/New-TeamsMessagePurgeSearch.ps1`
+  and `validate/Test-TeamsMessagePurgeSearchAndPurge.ps1` now match on the expanded `dataSource`'s
+  `email` property instead (`-ExpandProperty 'dataSource'`, a documented, supported cmdlet usage
+  [[16]](#references)). One narrower VERIFY carried forward rather than resolved by guessing: the
+  exact PowerShell property path for the expanded value. `design.md` §6.
 - **Grounded 2026-09-28 (Microsoft Learn MCP), not a VERIFY:** `-PurgeType` does **not** meaningfully
   affect the compliance copy's retention or hold-interaction timeline for Teams. The `ediscoverySearch:
   purgeData` Graph reference - the authoritative source for the `purgeType` parameter itself - states
@@ -279,6 +284,10 @@ case, and the holds you removed and must reapply.
 14. Microsoft.Graph.Security module reference (full `EdiscoveryCaseSearchNoncustodialSource` and
     `EdiscoveryCaseNoncustodialDataSource` cmdlet index, confirming no typed `New-`/`Add-` cmdlet
     binds an existing source onto a search via `$ref`) - <https://learn.microsoft.com/powershell/module/microsoft.graph.security/>
+15. userSource resource type (Graph v1.0; confirms `displayName` is "the display name associated
+    with the mailbox and site", not the SMTP address) - <https://learn.microsoft.com/graph/api/resources/security-usersource>
+16. Get-MgSecurityCaseEdiscoveryCaseNoncustodialDataSource (confirms `-ExpandProperty "dataSource"`
+    as supported, documented usage) - <https://learn.microsoft.com/powershell/module/microsoft.graph.security/get-mgsecuritycaseediscoverycasenoncustodialdatasource>
 
 > Re-verify all links and Graph SDK cmdlet names against current Microsoft Learn before a
 > customer-facing deployment, and confirm each target private channel's own migration status via
