@@ -72,6 +72,9 @@ No remaining Fix/Fail after resolution.
      `README.md` §11 as an open VERIFY; `validate/Test-TeamsMessagePurgeSearchAndPurge.ps1` reports a
      source-binding match as `[WARN]`, never `[PASS]`, pending confirmation - the same honest,
      not-silently-assumed pattern this repo already uses elsewhere for unconfirmed property shapes.
+     **Update 2026-10-20 (see Correction addendum below): the heuristic was confirmed wrong, not
+     merely unconfirmed, and both scripts were fixed to match on the expanded dataSource's `email`
+     property instead.**
 4. **This scenario calls an unconfirmed-by-typed-cmdlet raw HTTP request** (`Invoke-MgGraphRequest`
    for the `noncustodialSources/$ref` bind) rather than a typed SDK cmdlet, which is a smaller
    long-term maintenance surface than the rest of the script (no compile-time parameter validation).
@@ -198,3 +201,19 @@ question" finding from an unresolved gap to a resolved, cited fact. Two of the o
 in that finding remain open VERIFYs - the SDK cmdlet name and the `userSource` `DisplayName` shape
 (private-channel storage was separately reconciled above; `-PurgeType` timing is closed by this
 addendum).
+
+## Correction addendum (2026-10-20, maintenance pass - no new four-lens round per `AGENTS.md` §6)
+
+Blue Team finding 3 above (the `DisplayName`-matching idempotency heuristic) is **closed, not left
+open, and the underlying code was fixed**, which is a narrower exception to this repo's usual
+doc-only maintenance addendum: the `userSource` resource type reference page states plainly that
+`displayName` is "the display name associated with the mailbox and site" - a directory display
+name, not an SMTP address - which disproves the previous `DisplayName -eq $Email` match rather than
+merely leaving it unconfirmed. `deploy/New-TeamsMessagePurgeSearch.ps1`'s `Get-OrNewTargetSource`
+and `validate/Test-TeamsMessagePurgeSearchAndPurge.ps1`'s check 3 both now call their respective
+`Get-MgSecurityCase...` cmdlets with `-ExpandProperty 'dataSource'` (documented, supported usage
+per that cmdlet's own reference page) and match on the expanded `dataSource`'s `email` property.
+This doesn't reopen the Blue Team's "resolved" verdict above; it upgrades finding 3 from an
+honestly-disclosed unconfirmed heuristic to a confirmed-and-fixed one. A narrower VERIFY (pilot
+tenant) is carried forward for the exact PowerShell property path of the expanded value -
+`design.md` §6 and `README.md` §11.
