@@ -282,7 +282,16 @@ is operational: reviewing and maintaining up to two additional approved-device l
   list (a materially stronger starting position than the ambiguity the Windows WPD-coverage
   sibling had to flag for `SerialNumberId`/`VID_PID`), but this is not the same as a direct worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks `approvedPortableDevices` entries
-  as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation.
+  as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation. **Re-grounded 2026-10-21** (maintenance
+  pass): cloned the full `microsoft/mdatp-devicecontrol` GitHub repository (not just the files
+  already cited in reference [[2]](#references)) and inspected every macOS sample under
+  `macOS/policy/samples/` directly. The three samples that scope a group to `portable_devices`
+  (`audit_mobile_devices.json`, `deny_mobile_devices.json`, `deny_debug_on_android.json`) all match
+  on `primaryId` alone - none pairs a `portable_devices` group with a `serialNumber` clause. This is
+  a stronger negative result than the prior doc-only check (a direct inspection of every published
+  sample, not just a search of their contents), but it is still an absence of a confirming example,
+  not a denial that the pairing works - remains open; re-open only once Microsoft publishes such a
+  sample or a pilot-tenant check confirms it directly.
 - **A device without a readable serial number cannot be allowlisted for the Apple or Portable
   families** - same scope boundary the parent scenario already carries for removable media
   (`README.md` §11 there), and the same reason this fragment doesn't attempt `vendorId`/`productId`
