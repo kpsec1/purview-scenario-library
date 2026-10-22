@@ -130,6 +130,19 @@ scenario's own Apple-device precedent) but flags it as an open `VERIFY` in `READ
 checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather than asserting it as
 confirmed.
 
+**Re-checked 2026-10-22** (maintenance pass): every file in Microsoft's published macOS device
+control samples directory was individually fetched - not just the four files this scenario had
+previously cited - specifically looking for a `serialNumber`+`portable_devices` pairing. None
+exists: the three samples that do reference `portable_devices` (`audit_mobile_devices.json`,
+`deny_mobile_devices.json`, `deny_debug_on_android.json`) group it by `primaryId` alone, and the
+two samples that use a serial-number-shaped clause (`deny_removable_media_sc_cards.json`'s
+`mediaSerialNumber`, the already-cited `audit_all_apple_devices_except_serial_numbers.json`'s
+`serialNumber`) apply it to `removable_media_devices` or `apple_devices`, never
+`portable_devices`. `scenarios.json` (the samples directory's own index) confirms no further,
+unlisted sample file exists to check. This is now an exhaustively-grounded negative result, not an
+unexamined gap - the VERIFY stays open per `AGENTS.md` §4, resolvable only by a pilot-tenant check
+or a future Microsoft-published example.
+
 ## 7. Key decisions
 
 | Decision | Choice | Rationale |

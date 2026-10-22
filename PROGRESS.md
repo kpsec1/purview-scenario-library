@@ -292,7 +292,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Microsoft's Clause reference table is unscoped by device family (a stronger starting position than
   the Windows WPD-coverage sibling's own equivalent VERIFY), but this is not the same as a worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks this as `[WARN]`, not `[PASS]`,
-  pending confirmation - see that scenario's `README.md` §11.
+  pending confirmation - see that scenario's `README.md` §11. **Re-checked 2026-10-22** (maintenance
+  pass, GitHub-samples fetch): every file in Microsoft's published macOS device control samples
+  directory was individually fetched and inspected, not just the previously-cited four -
+  `audit_mobile_devices.json`, `deny_mobile_devices.json`, and `deny_debug_on_android.json` (the
+  only samples referencing `portable_devices`) group it by `primaryId` alone, with no
+  `serialNumber` clause anywhere; the samples that do use a serial-number-shaped clause
+  (`deny_removable_media_sc_cards.json`'s `mediaSerialNumber`, the already-cited
+  `audit_all_apple_devices_except_serial_numbers.json`'s `serialNumber`) apply only to
+  `removable_media_devices`/`apple_devices`; `scenarios.json` (the directory's own index) confirms
+  no further unlisted sample exists. Exhaustively confirmed absent from the current, complete
+  sample set - remains open; re-close only on a pilot-tenant check or a new Microsoft-published
+  example. `README.md` §11/§12, `design.md` §6, and `reviews.md` (maintenance addendum) updated in
+  place.
 - [x] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
   just Bluetooth, above) once the per-device, dynamic-sub-group `groupId`-clause-nesting idempotency
   model is independently verified against a pilot tenant - same deferred complexity already tracked
@@ -3691,6 +3703,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Exhaustively re-grounded the `defender-device-control-usb-allowlist-macos-portable-device-coverage`
+  `serialNumber`-for-`portable_devices` VERIFY** - commit `9ad00de` - 2026-10-22.
+  Maintenance pass: fetched and inspected every file in Microsoft's published macOS device control
+  samples directory (not just the four previously cited) looking for a worked example pairing the
+  `serialNumber` clause with a `portable_devices`-scoped group. None exists in the current,
+  complete sample set. VERIFY remains open (still resolvable only by a pilot-tenant check or a
+  future Microsoft-published example) but is now backed by an exhaustive negative result rather
+  than a partial one. `README.md` §11/§12, `design.md` §6, and `reviews.md` (maintenance addendum)
+  updated in place.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network

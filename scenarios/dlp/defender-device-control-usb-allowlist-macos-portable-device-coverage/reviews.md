@@ -173,3 +173,18 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Add-MacPortableDeviceCoverage.ps1` - including a genuine fabricated-field grounding defect
 (Blue Team finding 1) caught and fixed during this review, not merely documented. No Fail items
 were raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+---
+
+## Maintenance addendum - 2026-10-22
+
+Closed a scoped maintenance pass on the open `serialNumber`-for-`portable_devices` VERIFY (`README.md`
+§11, `design.md` §6). Every file in Microsoft's published macOS device control samples directory
+(`https://github.com/microsoft/mdatp-devicecontrol/tree/main/macOS/policy/samples`) was individually
+fetched and inspected for a `serialNumber`+`portable_devices` pairing - not just the four files this
+scenario had previously cited. None exists in the current, complete sample set. The VERIFY remains
+open (a pilot-tenant check or a future Microsoft-published example is still the only way to close it),
+but it is now backed by an exhaustive negative result instead of a partial one. `README.md` §11/§12
+and `design.md` §6 updated in place with the dated finding; no code change required since
+`deploy/Add-MacPortableDeviceCoverage.ps1` and `validate/Test-MacPortableDeviceCoverage.ps1` already
+treated this as unconfirmed (`[WARN]`, not `[PASS]`).
