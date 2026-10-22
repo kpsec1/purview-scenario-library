@@ -3703,6 +3703,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Exhaustively re-grounded the `defender-device-control-usb-allowlist-macos-portable-device-coverage`
+  `serialNumber`-for-`portable_devices` VERIFY** - commit `9ad00de` - 2026-10-22.
+  Maintenance pass: fetched and inspected every file in Microsoft's published macOS device control
+  samples directory (not just the four previously cited) looking for a worked example pairing the
+  `serialNumber` clause with a `portable_devices`-scoped group. None exists in the current,
+  complete sample set. VERIFY remains open (still resolvable only by a pilot-tenant check or a
+  future Microsoft-published example) but is now backed by an exhaustive negative result rather
+  than a partial one. `README.md` §11/§12, `design.md` §6, and `reviews.md` (maintenance addendum)
+  updated in place.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
