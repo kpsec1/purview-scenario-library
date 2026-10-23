@@ -151,6 +151,18 @@ every worked example. `README.md` §11 no longer carries this as an open VERIFY.
   action on a CDE, portal-only, with the same "two different 'Policies' concepts" trap
   `manage-data-products/design.md` §5 already documents for data products - no REST operation for
   this specific access-request-policy feature was found during this build's grounding pass either.
+  **VERIFY closed 2026-10-23** (maintenance pass, Microsoft Learn MCP): directly fetched the
+  Unified Catalog REST API's `Policies` operation group (`List`/`Update`, API version
+  `2026-03-20-preview`) rather than re-relying on the data-products scenario's own citation.
+  Confirmed it is the same RBAC/ABAC authorization-policy engine `manage-data-products/design.md`
+  §5 already identified, not a CDE-specific surface: its `List` worked example returns
+  `CatalogValue`/`CatalogProperties` objects keyed by `decisionRules`/`attributeRules` tied to
+  built-in governance roles (Business Domain Owner, Data Product Owner, Data Steward, Data
+  Governance Administrator, etc.) against entity types `BusinessDomainReference`,
+  `DataGovernanceAppReference`, `DGDataQualityScopeReference` - no `CriticalDataElement`-scoped
+  access-request/attestation shape anywhere in it. There is no REST surface distinct from this
+  RBAC engine for the CDE's own **Manage policies** (attestation/approval) feature - it stays a
+  portal-only non-goal, now on confirmed evidence rather than an open question.
 - **Bulk import (preview) of many critical data elements from CSV.** Same rationale
   `curate-business-glossary/design.md` §3 and `manage-data-products/design.md` §6 give for their
   own object types: a one-time seed tool, not an update-safe elements-as-code mechanism, since
