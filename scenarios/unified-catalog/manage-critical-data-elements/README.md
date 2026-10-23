@@ -312,7 +312,11 @@ operation as of the API version this scenario targets (design.md §7).
   scope choice.
 - **This scenario does not link the critical data element to glossary terms or configure its
   access policy** - both are portal-only or out of this build's grounding, per design.md §7's
-  non-goal list.
+  non-goal list. The access-policy half is now a confirmed capability gap rather than an open
+  VERIFY: a 2026-10-23 maintenance pass directly fetched the Unified Catalog REST API's `Policies`
+  operation group and confirmed it is the RBAC/ABAC authorization-policy engine (role-grant
+  decision rules), not a REST surface for the CDE's own **Manage policies**
+  attestation/approval feature (design.md §7).
 - **Deleting the Data Map entity used to resolve a column's GUID leaves the mapping stale**, the
   same "removed from Data Map, still shows in Unified Catalog until manually removed" behavior
   Microsoft documents for CDE columns generally [[1]](#12-references) - this scenario's validate

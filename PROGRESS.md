@@ -1752,13 +1752,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   action, given the source page's silence on this one procedure vs. its explicit dual-role
   requirement for CDE creation. Both flagged as VERIFY in the new scenario's `README.md` §11 and
   `design.md` §4-5 rather than resolved by guessing.
-- [ ] VERIFY (pilot tenant): whether Microsoft's critical-data-element **access policies** (the
-  portal's **Manage policies** action on a CDE's details page) have any REST surface distinct from
-  the RBAC-authorization-policy `Policies` operation group - `manage-data-products/design.md` §5
-  already confirmed the identical two-concepts trap for data products; this build's grounding pass
-  did not re-run that same check specifically for critical data elements (deferred as a non-goal,
-  `manage-critical-data-elements/design.md` §7) and should before this feature is presented as
-  fully API-manageable end to end.
+- [x] VERIFY closed 2026-10-23 (maintenance pass, Microsoft Learn MCP): whether Microsoft's
+  critical-data-element **access policies** (the portal's **Manage policies** action on a CDE's
+  details page) have any REST surface distinct from the RBAC-authorization-policy `Policies`
+  operation group. Directly fetched the Unified Catalog REST API's `Policies` operation group
+  (`List`/`Update`, API version `2026-03-20-preview`) rather than trusting
+  `manage-data-products/design.md` §5's own citation. Confirmed: it is the same RBAC/ABAC
+  authorization-policy engine - its `List` worked example returns `CatalogValue`/
+  `CatalogProperties` objects keyed by `decisionRules`/`attributeRules` tied to built-in
+  governance roles (Business Domain Owner, Data Product Owner, Data Steward, Data Governance
+  Administrator, etc.) against entity types `BusinessDomainReference`,
+  `DataGovernanceAppReference`, `DGDataQualityScopeReference` - with no `CriticalDataElement`-
+  scoped access-request/attestation shape anywhere in it. No REST surface exists for the CDE's own
+  **Manage policies** feature, distinct from this RBAC engine; it stays a portal-only non-goal on
+  confirmed evidence rather than an open question. `manage-critical-data-elements/design.md` §7
+  and `README.md` §11 updated in place.
 - [ ] VERIFY (pilot tenant): whether the Critical Data Elements `Query` `nameKeyword` filter's
   exact match semantics (substring/prefix/tokenized) match the same open question already tracked
   for `curate-business-glossary`'s Query Terms and `manage-data-products`' Query Data Products - no
@@ -8954,6 +8962,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `Confirm-CustodianUserSource` comment, which pointed at reference 11 (an unrelated review-set
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
+- [x] **Closed `manage-critical-data-elements`'s critical-data-element access-policy REST-surface
+  VERIFY** - commit (pending at write time, see this run's own final commit) - 2026-10-23.
+  Maintenance pass (Microsoft Learn MCP): directly fetched the Unified Catalog REST API's
+  `Policies` operation group (`List`/`Update`, API version `2026-03-20-preview`) instead of
+  trusting `manage-data-products/design.md` §5's own citation of it. Confirmed it is the same
+  RBAC/ABAC authorization-policy engine that scenario already identified for data products, not a
+  CDE-specific access-request surface: its `List` worked example returns `CatalogValue`/
+  `CatalogProperties` objects keyed by `decisionRules`/`attributeRules` tied to built-in
+  governance roles (Business Domain Owner, Data Product Owner, Data Steward, Data Governance
+  Administrator, etc.) against entity types `BusinessDomainReference`,
+  `DataGovernanceAppReference`, `DGDataQualityScopeReference` - no `CriticalDataElement`-scoped
+  attestation/approval shape anywhere in it. There is no REST surface for the CDE's own **Manage
+  policies** feature distinct from this RBAC engine; it stays a portal-only non-goal on confirmed
+  evidence. Updated `manage-critical-data-elements/design.md` §7 and `README.md` §11 in place; no
+  code change, no new four-lens review round.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,
