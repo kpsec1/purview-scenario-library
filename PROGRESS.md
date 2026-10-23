@@ -8963,7 +8963,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
 - [x] **Closed `manage-critical-data-elements`'s critical-data-element access-policy REST-surface
-  VERIFY** - commit (pending at write time, see this run's own final commit) - 2026-10-23.
+  VERIFY** - commit `30c3ad6` - 2026-10-23.
   Maintenance pass (Microsoft Learn MCP): directly fetched the Unified Catalog REST API's
   `Policies` operation group (`List`/`Update`, API version `2026-03-20-preview`) instead of
   trusting `manage-data-products/design.md` §5's own citation of it. Confirmed it is the same
