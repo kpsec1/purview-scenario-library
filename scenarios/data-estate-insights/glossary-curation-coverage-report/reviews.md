@@ -162,3 +162,13 @@ No remaining Fail after resolution.
 All Fix items from this round are resolved in the current state of `README.md`, `design.md`,
 `deploy/`, and `validate/`. No Fail items were raised. This fragment meets the definition of done in
 `AGENTS.md` §9.
+
+**Maintenance addendum (2026-10-24):** closed the open `PROGRESS.md` follow-up asking whether
+`Global Catalog Reader`/`Local Catalog Reader` can see `EXPIRED`-status terms. A re-fetch of the
+`unified-catalog-glossary-terms-create-manage` page's own "Expire glossary terms" section
+(`README.md` §12 reference 6) states plainly: "When you expire a glossary term, only Data Stewards
+and Governance Domain Owners can see it" - the identical restriction already documented for
+`DRAFT`. `README.md` §3 (role table) and `design.md` §2 goal 2 updated in place to state this as a
+Microsoft-confirmed fact rather than an open question. No script behavior change: `-PublishedOnly`
+mode already reported `ExpiredTerms`/`ExpiredWithAssets` as `N/A`, and that choice is now confirmed
+correct rather than merely conservative.
