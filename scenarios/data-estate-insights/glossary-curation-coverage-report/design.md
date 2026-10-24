@@ -51,7 +51,11 @@ history beyond the report's own refresh cadence - plus a **fourth, specific to t
    picture: it defaults to requiring **Data Steward** on every domain in scope (full status
    coverage), and offers an explicit `-PublishedOnly` mode that runs as **Global/Local Catalog
    Reader** instead, at the cost of reporting Draft/Expired-dependent KPIs as `N/A` rather than a
-   false zero. See §5.
+   false zero. See §5. **The same guide's "Expire glossary terms" section confirms `EXPIRED` gets
+   the identical treatment to `DRAFT`** - "only Data Stewards and Governance Domain Owners" can see
+   an expired term (`README.md` reference 6) - so `-PublishedOnly` mode's `N/A` for the
+   `ExpiredTerms`/`ExpiredWithAssets` KPIs is Microsoft-confirmed, not merely this scenario's own
+   conservative choice.
 3. **Compute term-to-asset attachment honestly, from the documented relationship primitive, not a
    guessed field.** The `Term` object itself (`README.md` reference 4) carries no
    `hasAssets`/`assetCount` field. The only documented way to determine whether a term is linked to

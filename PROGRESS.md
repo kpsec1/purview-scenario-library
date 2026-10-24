@@ -1925,12 +1925,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   validation`'s README.md §11/§12 and deploy script updated to close the VERIFY.
 
 ### Follow-ups discovered while building the Data Estate Insights glossary-curation-coverage-report scenario
-- [ ] VERIFY (pilot tenant): whether `Global Catalog Reader`/`Local Catalog Reader` can see
-  `EXPIRED`-status terms (documented only as "read published artifacts"), or whether `EXPIRED` is
-  treated as no-longer-published and hidden the same way `DRAFT` is. `-PublishedOnly` mode currently
-  treats both Draft and Expired counts as unmeasurable or unset for a reader-only credential;
-  confirming Expired visibility could let a future revision report it without Data Steward.
-  `glossary-curation-coverage-report/README.md` §11 and `design.md` §2 goal 2.
+- [x] VERIFY closed 2026-10-24 (Microsoft Learn MCP, maintenance pass): whether `Global Catalog
+  Reader`/`Local Catalog Reader` can see `EXPIRED`-status terms, or whether `EXPIRED` is hidden the
+  same way `DRAFT` is. Re-fetched `unified-catalog-glossary-terms-create-manage`'s own "Expire
+  glossary terms" section, which states plainly: "When you expire a glossary term, only Data
+  Stewards and Governance Domain Owners can see it" - the identical restriction already documented
+  for `DRAFT`. Neither Catalog Reader role can see `EXPIRED`-status terms; `-PublishedOnly` mode's
+  existing `N/A` for Expired-dependent KPIs is confirmed correct, not merely conservative. No script
+  behavior change. `glossary-curation-coverage-report/README.md` §3/§12 (reference 6 reworded,
+  anchored to the `#expire-glossary-terms` section) and `design.md` §2 goal 2 updated in place;
+  `reviews.md` carries a maintenance addendum.
 - [ ] VERIFY (pilot tenant): the actual server-side maximum for `Terms - List`'s `top` query
   parameter - Microsoft's reference documents the parameter but not a ceiling. This scenario
   defaults `-PageSize` to a conservative 100 and always follows `nextLink`, so an unconfirmed cap
@@ -3691,6 +3695,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `glossary-curation-coverage-report` EXPIRED-term Catalog-Reader-visibility
+  VERIFY** - commit `2d1a5aa` - 2026-10-24. Maintenance pass: re-fetched
+  `unified-catalog-glossary-terms-create-manage`'s "Expire glossary terms" section, which states
+  plainly that an expired term "is visible only to Data Stewards and Governance Domain Owners" -
+  the same restriction already documented for `DRAFT`. This confirms neither `Global Catalog
+  Reader` nor `Local Catalog Reader` can see `EXPIRED`-status terms, so `-PublishedOnly` mode's
+  existing `N/A` for `ExpiredTerms`/`ExpiredWithAssets` is Microsoft-confirmed, not merely this
+  scenario's own conservative choice. Updated `glossary-curation-coverage-report/README.md`
+  (§3 role table, §12 reference 6 reworded and re-anchored) and `design.md` §2 goal 2 in place;
+  `reviews.md` carries a maintenance addendum. No script behavior change.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
