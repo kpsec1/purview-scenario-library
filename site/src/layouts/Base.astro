@@ -1,0 +1,484 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+const path = Astro.url.pathname;
+const isHome = path === '/';
+const buildDate = new Date().toLocaleDateString('en-CA', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    {description && <meta name="description" content={description} />}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap bar">
+        <a class="brand" href="/">
+          <span class="brand-mark">K</span>
+          <span class="brand-text">
+            <strong>Krunal</strong>
+            <em>Cyber Security Consultant</em>
+          </span>
+        </a>
+        <nav class="links" aria-label="Primary">
+          <a href="/" class={isHome ? 'active' : ''}>Home</a>
+          <a href="/scenarios/" class={path.startsWith('/scenarios') ? 'active' : ''}>Field Notes</a>
+          <a href="/docs/" class={path.startsWith('/docs') ? 'active' : ''}>Field Guide</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap foot">
+        <div>
+          <strong>Krunal</strong> · Cyber Security Consultant · Regina, Saskatchewan
+        </div>
+        <div class="foot-meta">
+          Field notes on Microsoft Purview and security
+          <br />
+          <span class="foot-updated">Last updated {buildDate}</span>
+          <br />
+          <span class="foot-privacy">Visits are counted with Cloudflare Web Analytics, which does not use cookies.</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Visit counts: Cloudflare Web Analytics (no cookies). is:inline keeps Astro from bundling it. -->
+    <script is:inline type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "8eec1ff1c083417d918d726ccb3b0f01"}'></script>
+
+    <!-- Render Mermaid flowcharts client-side, themed to match the site.
+         If the runtime can't load, reveal the diagram source instead of hiding it. -->
+    <script>
+      async function renderDiagrams() {
+        if (!document.querySelector('pre.mermaid')) return;
+        let mermaid;
+        try {
+          ({ default: mermaid } = await import('mermaid'));
+        } catch (err) {
+          document.querySelectorAll('pre.mermaid').forEach((el) => el.classList.add('mermaid-failed'));
+          console.error('Mermaid failed to load; showing diagram source.', err);
+          return;
+        }
+        mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: 'strict',
+          theme: 'base',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          themeVariables: {
+            primaryColor: '#fff4ea',
+            primaryBorderColor: '#0f1b33',
+            primaryTextColor: '#14171f',
+            secondaryColor: '#f4f1ea',
+            tertiaryColor: '#faf8f3',
+            lineColor: '#6b7180',
+            fontSize: '15px',
+            clusterBkg: '#faf8f3',
+            clusterBorder: '#cfc8b8',
+          },
+        });
+
+        // Render each diagram in isolation so one bad diagram cannot blank the
+        // rest, and only nodes that currently have layout (Mermaid needs real
+        // dimensions, so diagrams inside a closed <details> wait until opened).
+        const renderIn = async (root) => {
+          const nodes = Array.from(root.querySelectorAll('pre.mermaid:not([data-processed])')).filter(
+            (el) => el.getClientRects().length > 0
+          );
+          for (const node of nodes) {
+            try {
+              await mermaid.run({ nodes: [node] });
+            } catch (err) {
+              node.classList.add('mermaid-failed');
+              console.error('Mermaid could not render a diagram:', err && err.message ? err.message : err);
+            }
+          }
+        };
+
+        await renderIn(document);
+        document.querySelectorAll('details').forEach((d) => {
+          d.addEventListener('toggle', () => {
+            if (d.open) renderIn(d);
+          });
+        });
+      }
+      renderDiagrams();
+    </script>
+
+    <style is:global>
+      :root {
+        --paper: #faf8f3;
+        --surface: #ffffff;
+        --tint: #f4f1ea;
+        --ink: #14171f;
+        --body: #2c313b;
+        --muted: #6b7180;
+        --rule: #e6e1d6;
+        --rule-strong: #cfc8b8;
+        --accent: #c2410c;
+        --accent-deep: #9a3412;
+        --accent-soft: #fdeee2;
+        --navy: #0f1b33;
+        --navy-2: #182a4d;
+        --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+        --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+        --shadow: 0 1px 2px rgba(20, 23, 31, 0.05), 0 10px 30px rgba(20, 23, 31, 0.07);
+        --radius: 14px;
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--body);
+        font-family: var(--sans);
+        font-size: 17px;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        width: 100%;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .narrow {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      a {
+        color: var(--accent-deep);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        color: var(--ink);
+        font-family: var(--serif);
+        line-height: 1.15;
+        letter-spacing: -0.015em;
+        font-weight: 700;
+      }
+      .eyebrow,
+      .kicker {
+        display: inline-block;
+        font-family: var(--sans);
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--accent);
+        margin: 0 0 14px;
+      }
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+      }
+      .skip-link:focus {
+        left: 16px;
+        top: 16px;
+        background: var(--ink);
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 8px;
+        z-index: 20;
+      }
+
+      /* Header */
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(250, 248, 243, 0.88);
+        backdrop-filter: saturate(180%) blur(10px);
+        border-bottom: 1px solid var(--rule);
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-top: 13px;
+        padding-bottom: 13px;
+        flex-wrap: wrap;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--ink);
+      }
+      .brand:hover {
+        text-decoration: none;
+      }
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: var(--navy);
+        color: #fff;
+        font-family: var(--serif);
+        font-weight: 700;
+        font-size: 21px;
+        box-shadow: inset 0 -3px 0 var(--accent);
+      }
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.15;
+      }
+      .brand-text strong {
+        font-size: 16px;
+        color: var(--ink);
+      }
+      .brand-text em {
+        font-style: normal;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .links {
+        display: flex;
+        gap: 24px;
+        font-weight: 600;
+        font-size: 15px;
+      }
+      .links a {
+        color: var(--body);
+        padding: 4px 0;
+        border-bottom: 2px solid transparent;
+      }
+      .links a:hover {
+        text-decoration: none;
+        color: var(--ink);
+      }
+      .links a.active {
+        color: var(--ink);
+        border-bottom-color: var(--accent);
+      }
+
+      main {
+        min-height: 60vh;
+      }
+
+      /* Footer */
+      .site-footer {
+        margin-top: 96px;
+        border-top: 1px solid var(--rule);
+        background: var(--tint);
+        padding: 34px 0;
+        font-size: 14.5px;
+        color: var(--muted);
+      }
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .foot strong {
+        color: var(--ink);
+      }
+      .foot-privacy {
+        font-size: 12.5px;
+        opacity: 0.85;
+      }
+
+      /* Long-form reading */
+      .prose {
+        font-size: 17.5px;
+        line-height: 1.75;
+        overflow-wrap: break-word; /* plain-text URLs in source lists must wrap on phones */
+      }
+      .prose > :first-child {
+        margin-top: 0;
+      }
+      .prose h2 {
+        font-size: clamp(1.65rem, 3.2vw, 2.1rem);
+        margin: 2.6em 0 0.7em;
+        scroll-margin-top: 90px;
+      }
+      .prose h2::before {
+        content: '';
+        display: block;
+        width: 46px;
+        height: 4px;
+        background: var(--accent);
+        border-radius: 2px;
+        margin-bottom: 16px;
+      }
+      .prose h3 {
+        font-size: 1.32rem;
+        margin: 2em 0 0.5em;
+        scroll-margin-top: 90px;
+      }
+      .prose h4 {
+        font-family: var(--sans);
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 1.6em 0 0.4em;
+        color: var(--muted);
+      }
+      .prose p,
+      .prose li {
+        color: var(--body);
+      }
+      .prose li {
+        margin: 0.35em 0;
+      }
+      .prose a {
+        text-decoration: underline;
+        text-decoration-color: rgba(154, 52, 18, 0.35);
+        text-underline-offset: 3px;
+        overflow-wrap: anywhere; /* long bare URLs must wrap on phones */
+      }
+      .prose a:hover {
+        text-decoration-color: var(--accent-deep);
+      }
+      .prose hr {
+        border: none;
+        border-top: 1px solid var(--rule);
+        margin: 2.5em 0;
+      }
+      .prose img {
+        max-width: 100%;
+      }
+      .prose blockquote {
+        margin: 1.6em 0;
+        padding: 6px 22px;
+        border-left: 4px solid var(--accent);
+        background: var(--accent-soft);
+        border-radius: 0 10px 10px 0;
+        color: var(--ink);
+      }
+      pre {
+        background: #fbf9f4;
+        border: 1px solid var(--rule);
+        border-radius: 12px;
+        padding: 16px 18px;
+        overflow: auto;
+        font-size: 13.5px;
+        line-height: 1.6;
+      }
+      pre.astro-code {
+        background: #fbf9f4 !important;
+      }
+      code {
+        font-family: var(--mono);
+        font-size: 0.88em;
+      }
+      :not(pre) > code {
+        background: var(--tint);
+        color: var(--accent-deep);
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.85em;
+        overflow-wrap: anywhere;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        display: block;
+        overflow-x: auto;
+        font-size: 15px;
+        line-height: 1.55;
+        margin: 1.4em 0;
+      }
+      th,
+      td {
+        border: 1px solid var(--rule);
+        padding: 9px 12px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: var(--tint);
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      /* Diagrams */
+      pre.mermaid {
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: var(--radius);
+        padding: 24px;
+        margin: 1.8em 0;
+        text-align: center;
+        overflow-x: auto;
+        box-shadow: var(--shadow);
+        color: transparent;
+        font-size: 0;
+        min-height: 60px;
+      }
+      pre.mermaid[data-processed='true'],
+      pre.mermaid.mermaid-failed {
+        color: inherit;
+      }
+      pre.mermaid.mermaid-failed {
+        font-size: 13px;
+        text-align: left;
+        white-space: pre;
+        font-family: var(--mono);
+        color: var(--body);
+      }
+      pre.mermaid svg {
+        max-width: 100%;
+        height: auto;
+      }
+
+      @media (max-width: 640px) {
+        body {
+          font-size: 16px;
+        }
+        .prose {
+          font-size: 16.5px;
+        }
+        .wrap,
+        .narrow {
+          padding: 0 18px;
+        }
+        .links {
+          gap: 16px;
+        }
+      }
+    </style>
+  </body>
+</html>

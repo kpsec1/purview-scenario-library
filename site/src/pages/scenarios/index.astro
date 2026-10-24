@@ -1,0 +1,296 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import themes from '../../data/themes.json';
+import areaLabels from '../../data/areas.json';
+
+const labelFor = (slug: string, fallback: string) => (areaLabels as Record<string, string>)[slug] ?? fallback;
+
+const notes = (await getCollection('scenarios')).filter((e) => !e.id.split('/').pop()!.includes('.'));
+const areaCount = new Set(notes.map((n) => n.data.categorySlug)).size;
+
+const sortNotes = (list: typeof notes) => [...list].sort((a, b) => a.data.title!.localeCompare(b.data.title!));
+
+// Group notes: theme -> area -> notes. Any area not yet mapped to a theme lands
+// in a final catch-all section so nothing is ever hidden.
+const knownAreas = new Set(themes.flatMap((t) => t.areas));
+const themeBlocks = themes.map((t) => ({
+  slug: t.slug,
+  title: t.title,
+  hook: t.hook,
+  areas: t.areas
+    .map((a) => {
+      const inArea = notes.filter((n) => n.data.categorySlug === a);
+      return { slug: a, label: labelFor(a, inArea[0]?.data.category ?? a), notes: sortNotes(inArea) };
+    })
+    .filter((a) => a.notes.length > 0),
+}));
+const orphanAreas = [...new Set(notes.map((n) => n.data.categorySlug!))].filter((a) => !knownAreas.has(a));
+if (orphanAreas.length) {
+  themeBlocks.push({
+    slug: 'more',
+    title: 'More field notes',
+    hook: 'Newer notes that have not been placed in a story yet.',
+    areas: orphanAreas.map((a) => {
+      const inArea = notes.filter((n) => n.data.categorySlug === a);
+      return { slug: a, label: labelFor(a, inArea[0]?.data.category ?? a), notes: sortNotes(inArea) };
+    }),
+  });
+}
+---
+
+<Base
+  title="Field Notes"
+  description={`${notes.length} field notes on Microsoft Purview and security, grouped by the question they answer.`}
+>
+  <section class="head">
+    <div class="wrap">
+      <p class="eyebrow">Field notes</p>
+      <h1>Every control, told end to end.</h1>
+      <p class="lead">
+        {notes.length} notes across {areaCount} solution areas. Each one starts with the risk, explains the
+        control with a diagram, and finishes with the proof and a runbook for the people doing the work.
+      </p>
+      <label class="search">
+        <span class="sr">Search the field notes</span>
+        <input id="q" type="search" placeholder="Search notes: USB, Teams, retention, PCI, Copilot..." autocomplete="off" />
+      </label>
+      <nav class="theme-nav" aria-label="Stories">
+        {themeBlocks.map((t) => <a href={`#${t.slug}`}>{t.title}</a>)}
+      </nav>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <p id="none" class="none" hidden>No notes match that search. Try a broader word.</p>
+    {
+      themeBlocks.map((t, i) => (
+        <section class="theme" id={t.slug} data-theme>
+          <header class="theme-head">
+            <span class="theme-num">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <h2>{t.title}</h2>
+              <p>{t.hook}</p>
+            </div>
+          </header>
+          {t.areas.map((a) => (
+            <div class="area" data-area>
+              <h3>
+                {a.label} <span>{a.notes.length}</span>
+              </h3>
+              <ul class="notes">
+                {a.notes.map((n) => (
+                  <li data-note data-search={`${n.data.title} ${n.data.teaser ?? ''} ${a.label}`.toLowerCase()}>
+                    <a href={`/scenarios/${n.id}/`}>
+                      <span class="note-title">{n.data.title}</span>
+                      <span class="note-teaser">{n.data.teaser}</span>
+                      <span class="note-meta">{n.data.readingMinutes} min read</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </section>
+      ))
+    }
+  </div>
+
+  <script>
+    const q = document.getElementById('q') as HTMLInputElement | null;
+    const none = document.getElementById('none');
+    if (q) {
+      const notes = Array.from(document.querySelectorAll<HTMLElement>('[data-note]'));
+      const areas = Array.from(document.querySelectorAll<HTMLElement>('[data-area]'));
+      const themes = Array.from(document.querySelectorAll<HTMLElement>('[data-theme]'));
+      const run = () => {
+        const terms = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+        let shown = 0;
+        for (const n of notes) {
+          const hay = n.dataset.search ?? '';
+          const ok = terms.every((t) => hay.includes(t));
+          n.hidden = !ok;
+          if (ok) shown++;
+        }
+        for (const a of areas) a.hidden = !a.querySelector('[data-note]:not([hidden])');
+        for (const t of themes) t.hidden = !t.querySelector('[data-area]:not([hidden])');
+        if (none) none.hidden = shown !== 0;
+      };
+      q.addEventListener('input', run);
+    }
+  </script>
+
+  <style>
+    .head {
+      padding: 64px 0 34px;
+      border-bottom: 1px solid var(--rule);
+      background:
+        radial-gradient(50% 90% at 100% 0%, var(--accent-soft) 0%, transparent 60%),
+        var(--paper);
+    }
+    .head h1 {
+      font-size: clamp(2.3rem, 5.4vw, 3.8rem);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin: 0 0 16px;
+      max-width: 16ch;
+    }
+    .lead {
+      max-width: 62ch;
+      font-size: 1.15rem;
+      line-height: 1.6;
+      color: var(--body);
+      margin: 0 0 26px;
+    }
+    .sr {
+      position: absolute;
+      left: -9999px;
+    }
+    .search input {
+      width: 100%;
+      max-width: 560px;
+      font: inherit;
+      font-size: 16px;
+      padding: 13px 16px;
+      border: 1px solid var(--rule-strong);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--ink);
+    }
+    .search input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+      border-color: transparent;
+    }
+    .theme-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .theme-nav a {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--rule-strong);
+      border-radius: 999px;
+      padding: 6px 14px;
+    }
+    .theme-nav a:hover {
+      text-decoration: none;
+      border-color: var(--ink);
+    }
+
+    .none {
+      margin: 40px 0;
+      font-size: 1.1rem;
+      color: var(--muted);
+    }
+    .theme {
+      margin-top: 64px;
+      scroll-margin-top: 84px;
+    }
+    .theme-head {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding-bottom: 18px;
+      border-bottom: 2px solid var(--ink);
+    }
+    .theme-num {
+      font-family: var(--serif);
+      font-size: 3rem;
+      line-height: 0.95;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .theme-head h2 {
+      font-size: clamp(1.7rem, 3.4vw, 2.3rem);
+      margin: 0 0 4px;
+    }
+    .theme-head p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 62ch;
+    }
+    .area {
+      margin-top: 30px;
+    }
+    .area h3 {
+      font-family: var(--sans);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin: 0 0 12px;
+    }
+    .area h3 span {
+      margin-left: 6px;
+      color: var(--accent);
+    }
+    .notes {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .notes a {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      height: 100%;
+      padding: 20px 22px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      color: var(--ink);
+      transition:
+        transform 0.16s ease,
+        box-shadow 0.16s ease,
+        border-color 0.16s ease;
+    }
+    .notes a:hover {
+      text-decoration: none;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      border-color: var(--rule-strong);
+    }
+    .note-title {
+      font-family: var(--serif);
+      font-size: 1.18rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .note-teaser {
+      color: var(--body);
+      font-size: 14.5px;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+      overflow: hidden;
+    }
+    .note-meta {
+      margin-top: auto;
+      padding-top: 4px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    [hidden] {
+      display: none !important;
+    }
+    @media (max-width: 760px) {
+      .notes {
+        grid-template-columns: 1fr;
+      }
+      .theme-num {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</Base>

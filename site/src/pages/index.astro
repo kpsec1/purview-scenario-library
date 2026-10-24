@@ -1,0 +1,622 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import themes from '../data/themes.json';
+import tracks from '../data/tracks.json';
+import flagship from '../data/flagship.json';
+
+// Personal details (defined here, rendered as HTML below).
+const name = 'Krunal';
+const role = 'Cyber Security Consultant';
+const location = 'Regina, Saskatchewan';
+const focusAreas = ['Microsoft Purview', 'Sentinel', 'Defender XDR', 'Entra ID'];
+const yearsExperience = '9+';
+
+// Professional bio, rendered in the About section below.
+const bioLead =
+  'Microsoft 365 security consultant with 9+ years of client delivery across government, utility, and regulated enterprise environments.';
+const bioBody =
+  'My hands-on work covers the full E5 security stack, including Purview information protection, DLP and insider risk, the Defender family, Sentinel, Entra ID with Conditional Access and PIM, plus Intune and SCCM. I stay with an engagement the whole way, from the first assessment through design, phased rollout, testing, and handover.';
+
+const all = await getCollection('scenarios');
+const notes = all.filter((e) => !e.id.split('/').pop()!.includes('.'));
+const byId = new Map(notes.map((n) => [n.id, n]));
+const areaCount = new Set(notes.map((n) => n.data.categorySlug)).size;
+
+const themeCards = themes.map((t) => ({ ...t, count: notes.filter((n) => n.data.theme === t.slug).length }));
+const themeTitle = Object.fromEntries(themes.map((t) => [t.slug, t.title]));
+
+// Flagship openings stay hidden until the author approves them.
+const posts = flagship.posts as Record<string, any>;
+const showDrafts = process.env.SHOW_FLAGSHIP_DRAFTS === '1';
+const isLive = (id: string) => showDrafts || (posts[id]?.published ?? flagship.published);
+const featured = Object.keys(posts)
+  .map((id) => byId.get(id))
+  .filter((n): n is NonNullable<typeof n> => Boolean(n));
+const trackList = tracks.map((t) => ({
+  ...t,
+  items: t.posts.map((id) => byId.get(id)).filter((n): n is NonNullable<typeof n> => Boolean(n)),
+}));
+---
+
+<Base
+  title={`${name} · ${role}`}
+  description={`${name}, ${role} in ${location}. Field notes on Microsoft Purview and security: the threat, the control, and the proof, end to end.`}
+>
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <p class="eyebrow">Field notes on Microsoft Purview and security</p>
+      <h1>Security you can follow from the <em>threat</em> to the <em>proof</em>.</h1>
+      <p class="hero-sub">
+        I am {name}, a {role} in {location}. Every note takes one real control and walks it from the
+        first risk to the last check, with the diagram, the reasoning and the runbook.
+      </p>
+      <ul class="chips" aria-label="Focus areas">
+        {focusAreas.map((area) => <li>{area}</li>)}
+      </ul>
+      <div class="cta">
+        <a class="btn btn-primary" href="/scenarios/">Read the field notes</a>
+        <a class="btn btn-ghost" href="#paths">Pick a reading path</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap stats-wrap" aria-label="At a glance">
+    <div class="stats">
+      <div class="stat">
+        <span class="num">{yearsExperience}</span>
+        <span class="lbl">Years of client delivery</span>
+      </div>
+      <div class="stat">
+        <span class="num">{notes.length}</span>
+        <span class="lbl">Field notes</span>
+      </div>
+      <div class="stat">
+        <span class="num">{areaCount}</span>
+        <span class="lbl">Purview solution areas</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section" aria-labelledby="featured-h">
+    <div class="section-head">
+      <div>
+        <p class="kicker">Featured</p>
+        <h2 id="featured-h">Six stories to start with</h2>
+      </div>
+      <a class="more" href="/scenarios/">All {notes.length} field notes</a>
+    </div>
+    <div class="featured">
+      {
+        featured.map((n, i) => (
+          <a class:list={['card', { lead: i === 0 }]} href={`/scenarios/${n.id}/`}>
+            <span class="card-kicker">{themeTitle[n.data.theme ?? ''] ?? n.data.category}</span>
+            <span class="card-title">{n.data.title}</span>
+            <span class="card-text">
+              {isLive(n.id) && posts[n.id]?.dek ? posts[n.id].dek : n.data.teaser}
+            </span>
+            <span class="card-meta">{n.data.readingMinutes} min read</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="paths" id="paths" aria-labelledby="paths-h">
+    <div class="wrap">
+      <p class="kicker light">Reading paths</p>
+      <h2 id="paths-h">Where you sit decides where to start</h2>
+      <div class="path-grid">
+        {
+          trackList.map((t) => (
+            <div class="path">
+              <h3>{t.title}</h3>
+              <p>{t.blurb}</p>
+              <ol>
+                {t.items.map((n) => (
+                  <li>
+                    <a href={`/scenarios/${n.id}/`}>{n.data.title}</a>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section" aria-labelledby="themes-h">
+    <div class="section-head">
+      <div>
+        <p class="kicker">Browse by story</p>
+        <h2 id="themes-h">Five questions every security team keeps asking</h2>
+      </div>
+    </div>
+    <div class="themes">
+      {
+        themeCards.map((t, i) => (
+          <a class="theme" href={`/scenarios/#${t.slug}`}>
+            <span class="theme-num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="theme-title">{t.title}</span>
+            <span class="theme-hook">{t.hook}</span>
+            <span class="theme-count">{t.count} field notes</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="wrap section about" aria-labelledby="about-h">
+    <div class="about-grid">
+      <div>
+        <p class="kicker">About the author</p>
+        <h2 id="about-h">{bioLead}</h2>
+      </div>
+      <div>
+        <p class="about-body">{bioBody}</p>
+        <ul class="tags" aria-label="Platforms">
+          <li>Microsoft E5 security</li>
+          <li>Purview</li>
+          <li>Defender XDR</li>
+          <li>Sentinel</li>
+          <li>Entra ID, CA and PIM</li>
+          <li>Intune and SCCM</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap growth">
+    <p>
+      <strong>New notes keep arriving.</strong> I add Microsoft Purview use cases regularly, along with
+      stories that reach into the wider Microsoft security and compliance stack.
+    </p>
+  </section>
+
+  <style>
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--rule);
+      padding: 84px 0 96px;
+      background:
+        radial-gradient(60% 80% at 92% 0%, var(--accent-soft) 0%, transparent 60%),
+        var(--paper);
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--rule) 1px, transparent 1px),
+        linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+      background-size: 56px 56px;
+      opacity: 0.55;
+      -webkit-mask-image: radial-gradient(70% 90% at 85% 10%, #000 0%, transparent 70%);
+      mask-image: radial-gradient(70% 90% at 85% 10%, #000 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(2.7rem, 6.4vw, 5rem);
+      line-height: 1.02;
+      letter-spacing: -0.028em;
+      font-weight: 700;
+      margin: 0 0 26px;
+      max-width: 17ch;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+      background-image: linear-gradient(var(--accent-soft), var(--accent-soft));
+      background-repeat: no-repeat;
+      background-size: 100% 0.32em;
+      background-position: 0 92%;
+    }
+    .hero-sub {
+      max-width: 56ch;
+      font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+      line-height: 1.6;
+      color: var(--body);
+      margin: 0 0 26px;
+    }
+    .chips {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 32px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .chips li {
+      background: var(--surface);
+      border: 1px solid var(--rule-strong);
+      border-radius: 999px;
+      padding: 6px 15px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--ink);
+    }
+    .cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 15.5px;
+    }
+    .btn:hover {
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: #fff;
+      box-shadow: inset 0 -3px 0 var(--accent);
+    }
+    .btn-primary:hover {
+      background: var(--navy-2);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--rule-strong);
+    }
+    .btn-ghost:hover {
+      border-color: var(--ink);
+    }
+
+    .stats-wrap {
+      margin-top: -34px;
+      position: relative;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .stat {
+      padding: 22px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stat + .stat {
+      border-left: 1px solid var(--rule);
+    }
+    .num {
+      font-family: var(--serif);
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .lbl {
+      font-size: 13.5px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .section {
+      margin-top: 88px;
+    }
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+    .section-head h2,
+    .paths h2 {
+      font-size: clamp(1.7rem, 3.6vw, 2.5rem);
+      margin: 0;
+      max-width: 22ch;
+    }
+    .more {
+      font-weight: 700;
+      font-size: 15px;
+      white-space: nowrap;
+    }
+
+    .featured {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 26px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      color: var(--ink);
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease;
+    }
+    .card:hover {
+      text-decoration: none;
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+      border-color: var(--rule-strong);
+    }
+    .card.lead {
+      grid-column: span 2;
+      grid-row: span 2;
+      justify-content: flex-end;
+      min-height: 340px;
+      padding: 34px;
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+    }
+    .card-kicker {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+    }
+    .card.lead .card-kicker {
+      color: #ffb98f;
+    }
+    .card-title {
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+    .card.lead .card-title {
+      font-size: clamp(1.7rem, 3vw, 2.3rem);
+      color: #fff;
+      max-width: 22ch;
+    }
+    .card-text {
+      color: var(--body);
+      font-size: 15.5px;
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 5;
+      line-clamp: 5;
+      overflow: hidden;
+    }
+    .card.lead .card-text {
+      -webkit-line-clamp: 6;
+      line-clamp: 6;
+    }
+    .card.lead .card-text {
+      color: #d5dcec;
+      max-width: 60ch;
+    }
+    .card-meta {
+      margin-top: auto;
+      padding-top: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .card.lead .card-meta {
+      color: #aeb9d1;
+    }
+    .card.lead .card-meta {
+      margin-top: 0;
+    }
+
+    .paths {
+      margin-top: 96px;
+      background: var(--navy);
+      color: #dbe2f1;
+      padding: 80px 0;
+    }
+    .paths h2 {
+      color: #fff;
+      margin-bottom: 36px;
+      max-width: 20ch;
+    }
+    .kicker.light {
+      color: #ffb98f;
+    }
+    .path-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+    .path {
+      background: var(--navy-2);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+    .path h3 {
+      color: #fff;
+      font-size: 1.4rem;
+      margin: 0 0 8px;
+    }
+    .path p {
+      margin: 0 0 18px;
+      color: #b9c4dc;
+      font-size: 15.5px;
+      line-height: 1.6;
+    }
+    .path ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+    .path li {
+      margin: 8px 0;
+      color: #8e9bbb;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .path a {
+      color: #ffd9bd;
+      font-weight: 600;
+    }
+
+    .themes {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 18px;
+    }
+    .themes .theme {
+      grid-column: span 2;
+    }
+    .themes .theme:nth-child(n + 4) {
+      grid-column: span 3;
+    }
+    .theme {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 26px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      color: var(--ink);
+      transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+    }
+    .theme:hover {
+      text-decoration: none;
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+    }
+    .theme-num {
+      font-family: var(--serif);
+      font-size: 2.6rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--accent);
+      opacity: 0.85;
+    }
+    .theme-title {
+      font-family: var(--serif);
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .theme-hook {
+      color: var(--body);
+      font-size: 15.5px;
+      line-height: 1.6;
+    }
+    .theme-count {
+      margin-top: auto;
+      padding-top: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 48px;
+      padding: 44px 0;
+      border-top: 1px solid var(--rule-strong);
+      border-bottom: 1px solid var(--rule-strong);
+    }
+    .about h2 {
+      font-size: clamp(1.5rem, 2.8vw, 2rem);
+      line-height: 1.25;
+      margin: 0;
+    }
+    .about-body {
+      margin: 0 0 20px;
+      font-size: 1.05rem;
+    }
+    .tags {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tags li {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-deep);
+      background: var(--accent-soft);
+      border-radius: 999px;
+      padding: 5px 13px;
+    }
+    .growth {
+      margin-top: 40px;
+      color: var(--muted);
+      font-size: 15.5px;
+    }
+    .growth strong {
+      color: var(--ink);
+    }
+
+    @media (max-width: 900px) {
+      .featured,
+      .path-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .themes {
+        grid-template-columns: 1fr 1fr;
+      }
+      .themes .theme,
+      .themes .theme:nth-child(n + 4) {
+        grid-column: auto;
+      }
+      .themes .theme:last-child {
+        grid-column: span 2;
+      }
+      .card.lead {
+        grid-column: span 2;
+        grid-row: auto;
+        min-height: 0;
+      }
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+    @media (max-width: 620px) {
+      .hero {
+        padding: 56px 0 72px;
+      }
+      .featured,
+      .themes,
+      .path-grid {
+        grid-template-columns: 1fr;
+      }
+      .themes .theme:last-child {
+        grid-column: auto;
+      }
+      .card.lead {
+        grid-column: auto;
+      }
+      .stats {
+        grid-template-columns: 1fr;
+      }
+      .stat + .stat {
+        border-left: none;
+        border-top: 1px solid var(--rule);
+      }
+      .section-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</Base>

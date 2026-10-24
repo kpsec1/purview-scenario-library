@@ -1,0 +1,32 @@
+[
+  {
+    "slug": "ciso",
+    "title": "If you sign the budget",
+    "blurb": "Three stories about risk, evidence and what you can defend in front of a board or an assessor.",
+    "posts": [
+      "dlp/pci-teams-exfil-block",
+      "insider-risk/departing-employee-data-theft",
+      "compliance-manager/gdpr-assessment"
+    ]
+  },
+  {
+    "slug": "architect",
+    "title": "If you design the controls",
+    "blurb": "Three stories about how controls fit together: classify, decide, then enforce.",
+    "posts": [
+      "information-protection/auto-label-confidential-sharepoint",
+      "adaptive-protection/dynamic-risk-dlp-enforcement",
+      "dlp/exchange-pii-exfil-block"
+    ]
+  },
+  {
+    "slug": "engineer",
+    "title": "If you run the tenant",
+    "blurb": "Three stories you can take straight to a pilot: what to deploy, how to prove it, how to back out.",
+    "posts": [
+      "dlp/endpoint-dlp-usb-block",
+      "ediscovery/search-and-purge-data-spillage",
+      "ediscovery/premium-legal-hold-and-export"
+    ]
+  }
+]
