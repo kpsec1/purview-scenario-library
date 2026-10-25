@@ -3700,7 +3700,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Narrowed and corrected the `copilot-prompt-full-block` `-RestrictAccess` CCSI VERIFY** -
-  commit `PENDING` - 2026-10-25.
+  commit `3e2872f` - 2026-10-25.
   Maintenance pass: re-grounded via the Microsoft Learn MCP tool (`microsoft_docs_search` on
   `New-DlpComplianceRule`'s `-EndpointDlpRestrictions`/`-RestrictAccess` parameters and the
   `New-DlpCompliancePolicy` reference's Example 4). Found this scenario's own prior VERIFY framing
