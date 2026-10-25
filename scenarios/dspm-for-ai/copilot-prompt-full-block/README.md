@@ -138,18 +138,24 @@ The deploy script uses `New-DlpComplianceRule` with a standard `-ContentContains
 condition (the same, confirmed parameter the parent scenario's Rule 1 uses) and
 `-RestrictAccess @(@{setting='ExcludeContentProcessing'; value='Block'})` as the action.
 
-**VERIFY - read before relying on this script in production.** Microsoft's own `New-DlpComplianceRule`
-/ `New-DlpCompliancePolicy` reference publishes a worked example combining the `ExcludeContentProcessing`/
-`Block` `-RestrictAccess` pair with a sensitivity-**label** condition (`-AdvancedRule`, the parent
-scenario's Rule 0) and a separate worked example combining a **CCSI** condition with
-`-RestrictWebGrounding $true` (the parent scenario's Rule 1). As of this build, Microsoft has **not**
-published a worked example combining a CCSI condition with the `-RestrictAccess`
-`ExcludeContentProcessing`/`Block` pair specifically for the "Processing prompts" full-block action -
-the exact literal `setting` value for this third action is not independently confirmed. This script's
-choice is a documented, reasoned inference (see `design.md` §5), not a fabricated parameter - the
-`-RestrictAccess` parameter itself, its hashtable shape, and the `ExcludeContentProcessing`/`Block`
-value pair are all individually confirmed in Microsoft's reference; what's unconfirmed is that the
-same value pair is what the portal emits when this specific condition/action combination is chosen.
+**VERIFY - read before relying on this script in production.** **Re-grounded 2026-10-25** (Microsoft
+Learn MCP, maintenance pass), narrowing an earlier, less precise framing of this gap: Microsoft's
+`New-DlpCompliancePolicy` reference Example 4 pairs the `ExcludeContentProcessing`/`Block`
+`-RestrictAccess` action with a condition whose `-AdvancedRule` JSON literally sets
+`"ConditionName": "ContentContainsSensitiveInformation"` - the **same CCSI condition type** this
+rule uses, not a different one as earlier wording here implied. The only difference is *how* that
+CCSI condition matches content: Example 4 filters on sensitivity-label membership via `-AdvancedRule`
+(the parent scenario's Rule 0 pattern), while this rule filters on a SIT name via the direct
+`-ContentContainsSensitiveInformation` parameter (the parent scenario's Rule 1 pattern, paired here
+with `-RestrictAccess` instead of Rule 1's `-RestrictWebGrounding`). As of this build, Microsoft has
+**not** published a worked example pairing `-RestrictAccess` with the *direct-parameter, SIT-name-
+filtered* form of CCSI specifically - a materially narrower, more defensible gap than "is this even
+a CCSI condition," which is now confirmed. This script's choice is a documented, reasoned inference
+(see `design.md` §5), not a fabricated parameter - the `-RestrictAccess` parameter itself, its
+hashtable shape, the `ExcludeContentProcessing`/`Block` value pair, and the CCSI condition type are
+all individually confirmed in Microsoft's reference; what's unconfirmed is only whether the same
+value pair is what the portal emits when CCSI matches via the direct SIT-name parameter rather than
+via `-AdvancedRule`'s label filter.
 **Before enforcing in production:** create the rule once through the portal (step 5 above), then run
 `Get-DlpComplianceRule -Identity 'Copilot-Block-SensitivePrompts-FullResponse' | Format-List RestrictAccess`
 and compare against this script's output - `validate/Test-CopilotPromptFullBlockRule.ps1` automates
@@ -255,10 +261,12 @@ policy intact.
 
 ## 11. Known limitations & gotchas
 
-- **The exact `-RestrictAccess` setting/value pair for this action is not independently confirmed**
-  by a Microsoft-published worked example - see the detailed VERIFY in §5. This is the single most
-  important caveat in this scenario; confirm via `Get-DlpComplianceRule` against a portal-created
-  rule before production reliance.
+- **The exact `-RestrictAccess` setting/value pair for this rule's specific CCSI match form (direct
+  SIT-name parameter, not `-AdvancedRule` label filter) is not independently confirmed** by a
+  Microsoft-published worked example - see the detailed VERIFY in §5 (narrowed 2026-10-25; the
+  condition type itself, CCSI, is confirmed). This is the single most important caveat in this
+  scenario; confirm via `Get-DlpComplianceRule` against a portal-created rule before production
+  reliance.
 - **Preview feature, tenant rollout not guaranteed on any fixed date.** Confirm the action is
   selectable in the portal for your tenant before assuming the script will succeed - if the feature
   hasn't rolled out yet, the underlying service will likely reject the `ExcludeContentProcessing`
@@ -307,7 +315,10 @@ policy intact.
    parameters and syntax (confirms parameter existence and shape; does not publish a worked example
    for this specific condition/action combination - see §5 VERIFY) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule>
 4. New-DlpCompliancePolicy reference - Example 4 (the `ExcludeContentProcessing`/`Block`
-   `-RestrictAccess` pair, worked for a label condition, reused by the parent scenario's Rule 0) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy>
+   `-RestrictAccess` pair, worked for a `ContentContainsSensitiveInformation` (CCSI) condition
+   filtered on a sensitivity label via `-AdvancedRule` - the same CCSI condition type this rule
+   uses, reused by the parent scenario's Rule 0; see §5 VERIFY for the narrower, still-open gap
+   around the SIT-name/direct-parameter match form this rule uses instead) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy>
 5. Set-DlpComplianceRule reference (`-Disabled` parameter, used by this scenario's rollback path) - <https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancerule>
 6. Remove-DlpComplianceRule reference (rule-level deletion, used by this scenario's `-Purge` path) - <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancerule>
 7. `scenarios/dspm-for-ai/copilot-sensitive-data-exposure/` - the parent scenario this fragment

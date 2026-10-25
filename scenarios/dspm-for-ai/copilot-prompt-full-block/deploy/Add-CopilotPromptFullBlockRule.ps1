@@ -24,12 +24,16 @@
     Author-only reference code. This script never establishes its own connection to a tenant. Run
     Connect-IPPSSession yourself first (see docs/automation-surface.md Sec 3), then call this script.
 
-    VERIFY before production reliance: the exact -RestrictAccess setting/value pair this script uses
-    (ExcludeContentProcessing/Block) is confirmed by Microsoft's own reference for a DIFFERENT
-    condition type (sensitivity label, not CCSI) on this same location. No published Microsoft
-    worked example combines a CCSI condition with -RestrictAccess for this specific "Processing
-    prompts" action. See design.md Sec 5 for the full reasoning behind still scripting this, and
-    README.md Sec 5 for the recommended portal-vs-script comparison step before production use.
+    VERIFY before production reliance (re-grounded 2026-10-25, Microsoft Learn MCP maintenance pass):
+    the exact -RestrictAccess setting/value pair this script uses (ExcludeContentProcessing/Block) is
+    confirmed by Microsoft's own reference for the SAME condition type this script uses - CCSI
+    (ContentContainsSensitiveInformation) - but matched there via -AdvancedRule on a sensitivity
+    label, not via this script's direct -ContentContainsSensitiveInformation parameter matching a SIT
+    name. No published Microsoft worked example combines that direct-parameter, SIT-name-filtered
+    form of CCSI with -RestrictAccess for this specific "Processing prompts" action - a narrower gap
+    than "is this even a CCSI condition," which is now confirmed. See design.md Sec 5 for the full
+    reasoning behind still scripting this, and README.md Sec 5 for the recommended portal-vs-script
+    comparison step before production use.
 
 .PARAMETER PolicyName
     Name of the existing Copilot-location DLP policy to add this rule to. Must already exist -
@@ -97,7 +101,8 @@
       parameters and shape):
       https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule
     - New-DlpCompliancePolicy reference, Example 4 (ExcludeContentProcessing/Block RestrictAccess
-      pair, confirmed for a label condition on this same location):
+      pair, confirmed for a CCSI condition - ConditionName "ContentContainsSensitiveInformation" in
+      its -AdvancedRule JSON - filtered on a sensitivity label, on this same location):
       https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]

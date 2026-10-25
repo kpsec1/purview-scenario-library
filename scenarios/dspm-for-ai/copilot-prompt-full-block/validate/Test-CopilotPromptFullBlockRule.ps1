@@ -10,8 +10,10 @@
       3. The rule's ContentContainsSensitiveInformation condition references the expected SITs.
       4. The rule's RestrictAccess setting/value pair matches this repo's deployed configuration
          (ExcludeContentProcessing/Block) - checked as [WARN], not [FAIL], because Microsoft has
-         not published a worked example confirming this exact setting for this exact
-         condition/action combination. See README.md Sec 5 and design.md Sec 5.
+         not published a worked example confirming this exact setting for a CCSI condition matched
+         via the direct SIT-name parameter specifically (as opposed to the -AdvancedRule/sensitivity-
+         label-filtered form of the same CCSI condition type that Microsoft's own reference does
+         confirm this setting for). See README.md Sec 5 and design.md Sec 5 (re-grounded 2026-10-25).
       5. The rule generates an alert (not silent).
     Exits with a non-zero code if any hard ([FAIL]) check fails. [WARN] checks never affect the
     exit code. Safe to re-run any number of times.
