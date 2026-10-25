@@ -20,10 +20,17 @@ A dedicated Microsoft Learn re-check (this build) found:
   history.
 - The feature is still explicitly labeled **preview**, "rolling out to all tenants" - not GA, and not
   guaranteed present in every tenant on a fixed date.
-- Microsoft's `New-DlpComplianceRule`/`New-DlpCompliancePolicy` reference still does **not** publish
-  a worked PowerShell example combining a `ContentContainsSensitiveInformation` (CCSI) condition with
-  the `RestrictAccess` action specifically for this behavior. Two adjacent, individually-confirmed
-  data points exist instead (§5 below).
+- **Re-grounded 2026-10-25** (Microsoft Learn MCP, maintenance pass): `New-DlpCompliancePolicy`
+  reference Example 4's `-AdvancedRule` JSON literally sets `"ConditionName": "ContentContainsSensitiveInformation"`
+  - it **is** a CCSI condition, just expressed through `-AdvancedRule` syntax and filtered on
+  sensitivity-label membership (a `"type":"Sensitivity"` label group) rather than through the direct
+  `-ContentContainsSensitiveInformation @{name=...;mincount=...}` parameter this scenario's script
+  uses to filter on a SIT name. §5's original framing - describing Example 4 as a "different
+  condition type (sensitivity label, not CCSI)" - was inaccurate and is corrected below. What
+  Microsoft's reference still does **not** publish is a worked example of `RestrictAccess` paired
+  with the *direct-parameter*, SIT-name-filtered form of CCSI (as opposed to the
+  `-AdvancedRule`/label-filtered form Example 4 confirms) - a narrower residual gap than originally
+  stated. See §5 below.
 
 **Conclusion:** enough changed to justify building this as its own scenario (extending the parent
 rather than leaving it as a portal-only callout), but not enough to fully close the original
@@ -63,19 +70,24 @@ worked-example pair, **Canada physical addresses** and **EU debit card numbers**
    documented conflict in doing so, since a full block simply makes a web-grounding restriction moot
    for that specific prompt - but this is a deliberate organization choice, not this script's default.
 
-## 5. The central open question: does `ExcludeContentProcessing`/`Block` apply to a CCSI-conditioned rule?
+## 5. The central open question: does `ExcludeContentProcessing`/`Block` apply to this rule's exact CCSI form?
 
-Two individually-confirmed data points, neither of which is the exact combination this scenario
-needs:
+**Re-grounded 2026-10-25** (Microsoft Learn MCP, maintenance pass), narrowing the original framing:
+Example 4's `-AdvancedRule` condition is itself `ConditionName: "ContentContainsSensitiveInformation"`
+- the same CCSI condition type this scenario's rule uses, not a different one. The variable that
+remains genuinely unconfirmed is narrower than originally stated: not "condition type" (CCSI vs.
+something else), but *which CCSI match target and PowerShell syntax* Microsoft's worked example
+used - sensitivity-label membership via `-AdvancedRule`, vs. this script's SIT-name/`mincount` match
+via the direct `-ContentContainsSensitiveInformation` parameter:
 
-| Confirmed example | Condition | Action |
+| Confirmed example | CCSI match target / syntax | Action |
 |---|---|---|
-| `New-DlpCompliancePolicy` reference, Example 4 | `AdvancedRule` (sensitivity label) | `RestrictAccess = @{setting='ExcludeContentProcessing'; value='Block'}` |
-| Parent scenario's own grounding (Rule 1) | `ContentContainsSensitiveInformation` (CCSI) | `RestrictWebGrounding = $true` (a distinct, separately-named parameter) |
+| `New-DlpCompliancePolicy` reference, Example 4 | Sensitivity label, via `-AdvancedRule` JSON (`"ConditionName":"ContentContainsSensitiveInformation"`) | `RestrictAccess = @{setting='ExcludeContentProcessing'; value='Block'}` |
+| Parent scenario's own grounding (Rule 1) | SIT name, via the direct `-ContentContainsSensitiveInformation` parameter | `RestrictWebGrounding = $true` (a distinct, separately-named parameter) |
 
-The action this scenario needs is a *third* combination Microsoft has not published a worked example
-for: CCSI condition + `RestrictAccess`. The reasoning for still scripting it (rather than declining,
-as the parent scenario did for this exact action) is:
+This scenario's rule needs a combination still not published as a single worked example: SIT-name/
+direct-parameter CCSI + `RestrictAccess`. The reasoning for still scripting it (rather than
+declining, as the parent scenario did for this exact action) is:
 
 1. **The portal's own supported-actions table lists "Processing prompts" and "Performing Web
    Searches" as two sibling sub-actions of the same parent action family
@@ -89,11 +101,13 @@ as the parent scenario did for this exact action) is:
    action as a full content-exclusion block; reusing the same setting/value pair for both is a
    parsimonious, plausible design on Microsoft's part, not an arbitrary guess.
 3. **This is materially different from fabricating a cmdlet or parameter name.** The parameter
-   (`-RestrictAccess`), its type (`Hashtable[]`), and the specific `setting`/`value` string pair
-   (`ExcludeContentProcessing`/`Block`) are all independently confirmed to exist and to be valid for
-   this exact DLP location. What's unconfirmed is only whether the *same* value pair is what the
-   portal emits for a *different* condition-and-sub-action combination within that same location -
-   a narrower, more defensible gap than an invented parameter would be.
+   (`-RestrictAccess`), its type (`Hashtable[]`), the specific `setting`/`value` string pair
+   (`ExcludeContentProcessing`/`Block`), and the condition type (CCSI) are all independently
+   confirmed to exist and to be valid for this exact DLP location. What's unconfirmed is only
+   whether the *same* value pair is what the portal emits when that same CCSI condition matches on
+   a SIT name via the direct parameter, rather than on a sensitivity label via `-AdvancedRule` as
+   Example 4 does - a narrower, more defensible gap than an invented parameter, or an unconfirmed
+   condition type, would be.
 
 This is still flagged as an explicit `VERIFY` everywhere it matters (`README.md` §5/§11, the deploy
 script's `.NOTES`, and `validate/Test-CopilotPromptFullBlockRule.ps1`'s `[WARN]`-level check) rather

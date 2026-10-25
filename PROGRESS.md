@@ -1497,22 +1497,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   grounding pass this item asked for found Microsoft has since published a fuller worked use case
   for the "Prevent Copilot from processing content > Processing prompts" action (Contoso / Canada
   physical addresses / EU debit card numbers example, and a clearer supported-conditions-and-actions
-  table), though the feature remains preview and Microsoft still has not published a worked
-  PowerShell example combining a CCSI condition with `-RestrictAccess` for this specific action. Built
-  as a rule added to the parent scenario's existing policy (`Add-CopilotPromptFullBlockRule.ps1`),
-  using the only confirmed `-RestrictAccess` setting/value pair for this location
-  (`ExcludeContentProcessing`/`Block`, otherwise documented only for the label-exclusion condition) as
-  a reasoned, explicitly-disclosed inference rather than an invented one - see that scenario's
-  `design.md` §5 for the full reasoning and `README.md` §5/§11 for the carried-forward VERIFY. Parent
-  scenario's `README.md`, `design.md`, and deploy script `.NOTES` cross-linked to the new scenario in
-  place of the old "not scripted" callouts.
-- [ ] VERIFY (pilot tenant, or a future Microsoft-published PowerShell worked example): whether
+  table), though the feature remains preview. Built as a rule added to the parent scenario's existing
+  policy (`Add-CopilotPromptFullBlockRule.ps1`), using the only confirmed `-RestrictAccess`
+  setting/value pair for this location (`ExcludeContentProcessing`/`Block`) as a reasoned,
+  explicitly-disclosed inference rather than an invented one - see that scenario's `design.md` §5 for
+  the full reasoning and `README.md` §5/§11 for the carried-forward VERIFY. Parent scenario's
+  `README.md`, `design.md`, and deploy script `.NOTES` cross-linked to the new scenario in place of
+  the old "not scripted" callouts.
+- [ ] VERIFY narrowed 2026-10-25 (Microsoft Learn MCP, maintenance pass): whether
   `-RestrictAccess @(@{setting='ExcludeContentProcessing';value='Block'})` is in fact what the portal
-  emits for a `ContentContainsSensitiveInformation`-conditioned rule using the "Processing prompts"
-  full-block action on the Microsoft 365 Copilot location, as opposed to a different, undocumented
-  setting string specific to that condition/action combination. Flagged inline in
-  `copilot-prompt-full-block/README.md` §5/§11, `design.md` §5, the deploy script's `.NOTES`, and
-  checked as `[WARN]` (not `[FAIL]`) by `validate/Test-CopilotPromptFullBlockRule.ps1`.
+  emits for a `ContentContainsSensitiveInformation` (CCSI)-conditioned rule using the "Processing
+  prompts" full-block action on the Microsoft 365 Copilot location. This build's own prior framing
+  of this item ("Microsoft has not published a worked example combining a CCSI condition with
+  `-RestrictAccess`") was itself inaccurate and is corrected in place: `New-DlpCompliancePolicy`
+  reference Example 4's `-AdvancedRule` JSON literally sets `"ConditionName":
+  "ContentContainsSensitiveInformation"` - it already **is** a confirmed CCSI condition paired with
+  this exact `-RestrictAccess` setting/value pair on this exact location, just matched via
+  `-AdvancedRule` on a sensitivity label rather than via the direct
+  `-ContentContainsSensitiveInformation` parameter matching a SIT name (the form this scenario's
+  script uses). What remains genuinely unconfirmed, narrower than before: whether the same setting/
+  value pair also applies when CCSI matches a SIT name through the direct parameter instead of
+  through `-AdvancedRule`'s label filter. Corrected in `copilot-prompt-full-block/README.md`
+  §5/§11/§12, `design.md` §2/§5, the deploy script's `.DESCRIPTION`/`.NOTES`, and
+  `validate/Test-CopilotPromptFullBlockRule.ps1`'s inline comment - still checked as `[WARN]`, not
+  `[FAIL]`, pending a pilot-tenant or future Microsoft-published confirmation of this narrower gap.
 - [x] `scenarios/dspm-for-ai/copilot-external-email-block/` - script the fourth documented
   Copilot-location action, "Block external email from being processed" (preview; `Email is received
   from > External users` condition), explicitly left out of scope by
@@ -3691,6 +3699,28 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Narrowed and corrected the `copilot-prompt-full-block` `-RestrictAccess` CCSI VERIFY** -
+  commit `PENDING` - 2026-10-25.
+  Maintenance pass: re-grounded via the Microsoft Learn MCP tool (`microsoft_docs_search` on
+  `New-DlpComplianceRule`'s `-EndpointDlpRestrictions`/`-RestrictAccess` parameters and the
+  `New-DlpCompliancePolicy` reference's Example 4). Found this scenario's own prior VERIFY framing
+  contained a factual error: it described Microsoft's confirmed worked example (Example 4,
+  `ExcludeContentProcessing`/`Block` paired with a sensitivity-label condition) as using "a
+  different condition type (sensitivity label, not CCSI)" from this scenario's rule. In fact
+  Example 4's `-AdvancedRule` JSON literally sets `"ConditionName":
+  "ContentContainsSensitiveInformation"` - it already is a confirmed CCSI condition on the same
+  Microsoft 365 Copilot location (`470f2276-e011-4e9d-a6ec-20768be3a4b0`) and enforcement plane
+  (`CopilotExperiences`) this repo's Copilot scenarios use, just matched via `-AdvancedRule` on a
+  sensitivity label rather than via the direct `-ContentContainsSensitiveInformation` parameter
+  matching a SIT name (this script's form). Corrected this mischaracterization and narrowed the
+  VERIFY to its real, smaller residual gap (direct-parameter SIT-name CCSI + `-RestrictAccess`,
+  specifically, remains unconfirmed) across `copilot-prompt-full-block/README.md` (§5, §11, §12 ref
+  4), `design.md` (§2, §5, including the key-decisions-adjacent reasoning), the deploy script
+  `Add-CopilotPromptFullBlockRule.ps1`'s `.DESCRIPTION`/`.NOTES`, and
+  `validate/Test-CopilotPromptFullBlockRule.ps1`'s inline comment. Still checked as `[WARN]`, not
+  `[FAIL]`; no script behavior change (same `-RestrictAccess` value already deployed, now more
+  accurately justified). PROGRESS.md's own carried-forward VERIFY text (two entries, build + this
+  narrowing) corrected in place.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
