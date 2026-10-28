@@ -8961,7 +8961,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
 - [x] **Closed the `scan-azure-sql-managed-instance-and-classify` default public-endpoint port
-  VERIFY** - commit (pending at write time, see this run's own final commit) - 2026-10-28.
+  VERIFY** - commit `6066494` - 2026-10-28.
   Maintenance pass: fetched Microsoft's "Connectivity architecture for Azure SQL Managed Instance"
   reference directly via the Microsoft Learn MCP tool. It states plainly that the public endpoint
   "accepts connections on port 3342" and "always uses the Proxy connection type regardless of the
