@@ -118,6 +118,14 @@ No remaining Fix/Fail after resolution.
      registration `-Port` parameter (confirm against the instance's actual public-endpoint
      configuration, flagged as an explicit VERIFY) versus the NSG/network-path port requirement
      (which does depend on Redirect-vs-Proxy, already correctly split out in §3's table).
+   - **Correction addendum (2026-10-28, maintenance pass, Microsoft Learn MCP):** the premise above
+     - that the NSG/network-path port depends on the instance's Redirect-vs-Proxy connection-type
+     setting - was itself wrong. Microsoft's Connectivity architecture reference for Azure SQL
+     Managed Instance states the public endpoint always forces the Proxy connection type and always
+     listens on port 3342, regardless of that setting; the Redirect-vs-Proxy choice governs only the
+     separate VNet-local endpoint (port 1433), not used by this scenario. `README.md` §3, §5 step 5,
+     §6, and §11 are corrected in place, and the former VERIFY in §11 is now resolved
+     (`README.md` reference 18).
 2. **SAMI as the default authentication method is correct, current best practice for this source
    type too** - confirmed against the same "System or user assigned managed identity" section of
    Microsoft's Managed Instance-specific documentation, not just carried over by assumption from the

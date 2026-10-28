@@ -2897,10 +2897,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scales to every instance in one run, plus drift detection (any *other* current Directory Readers
   member not in the inventory, reported as non-fatal `WARN`) - closing the Blue Team finding this
   item originally tracked, generalized beyond the single instance that finding was raised against.
-- [ ] VERIFY (pilot tenant): the exact TCP port a newly registered managed instance's public endpoint
-  listens on. This scenario defaults `-Port` to `3342` (Microsoft's own worked *registration*
-  example), but the actual port depends on the instance's connection-policy configuration
-  (Redirect vs. Proxy) - flagged inline in `README.md` §11 and the deploy script's parameter help.
+- [x] VERIFY closed 2026-10-28 (maintenance pass, Microsoft Learn MCP): the exact TCP port a newly
+  registered managed instance's public endpoint listens on. Microsoft's "Connectivity architecture
+  for Azure SQL Managed Instance" reference states the public endpoint always accepts connections
+  on port 3342 and always forces the Proxy connection type, regardless of the instance's own
+  connection-type setting (Redirect vs. Proxy governs only the separate VNet-local endpoint, port
+  1433). `-Port 3342` was therefore already correct and is not connection-policy-dependent as
+  previously flagged. `scan-azure-sql-managed-instance-and-classify/README.md` §3, §5 step 5, §6,
+  §11, and reference 18 (new); `design.md` §4 table; `deploy/
+  New-AzureSqlManagedInstanceDataMapScan.ps1` header comment and `-Port` parameter help; `reviews.md`
+  Microsoft Product Owner section (correction addendum) - all corrected in place.
 - [ ] Consider scripting `Set-AzSqlInstanceActiveDirectoryAdministrator` and the Directory Readers
   Microsoft Graph role-assignment step (the PowerShell pattern Microsoft publishes for it) instead
   of leaving both as manual portal/PowerShell prerequisites (`README.md` §5 steps 2-3) - deferred in
@@ -8954,6 +8960,24 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `Confirm-CustodianUserSource` comment, which pointed at reference 11 (an unrelated review-set
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
+- [x] **Closed the `scan-azure-sql-managed-instance-and-classify` default public-endpoint port
+  VERIFY** - commit `6066494` - 2026-10-28.
+  Maintenance pass: fetched Microsoft's "Connectivity architecture for Azure SQL Managed Instance"
+  reference directly via the Microsoft Learn MCP tool. It states plainly that the public endpoint
+  "accepts connections on port 3342" and "always uses the Proxy connection type regardless of the
+  connection type setting" - i.e. the port is a fixed property of the public endpoint itself, not
+  dependent on the instance's Redirect-vs-Proxy connection-type setting as this scenario (and its
+  own prior Microsoft Product Owner review) had assumed. That earlier assumption also mixed in an
+  11000-11999 port range that belongs to a different product (Azure SQL Database's redirect
+  policy), not Managed Instance. `-Port 3342` was therefore already a correct, connection-policy-
+  independent default. Corrected in place: `README.md` §3 (NSG prerequisite row), §5 step 5,
+  §6 (config reference table), §11 (VERIFY → resolved), new reference 18; `design.md` §4 (diff
+  table); `deploy/New-AzureSqlManagedInstanceDataMapScan.ps1` header comment and `-Port` parameter
+  help; `reviews.md` Microsoft Product Owner section (correction addendum dated 2026-10-28). Checked
+  the sibling `scan-azure-sql-managed-instance-and-classify-managed-identity-credential/` scenario
+  for the same claim - it doesn't repeat this content, so no change needed there. Doc-only
+  correction - no code behavior change (the script's own default was already correct), no new
+  four-lens review round.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,

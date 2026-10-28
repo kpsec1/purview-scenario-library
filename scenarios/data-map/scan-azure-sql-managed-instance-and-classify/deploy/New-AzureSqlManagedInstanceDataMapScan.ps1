@@ -38,7 +38,9 @@
       - db_datareader for the Purview account as a Microsoft Entra external-provider database user
         (CREATE USER [<PurviewAccountName>] FROM EXTERNAL PROVIDER;)
       - Public endpoint enabled on the managed instance, and the NSG inbound rule allowing the
-        AzureCloud service tag over the ports the instance's connection type requires
+        AzureCloud service tag over port 3342 (the public endpoint always forces the Proxy
+        connection type and always listens on 3342, independent of the instance's own
+        connection-type setting - README.md Section 11, reference 18)
     All are one-time, ARM/Entra/SQL-side prerequisites documented in README.md Sections 3 and 5 -
     grant them before running this script, or the scan will register successfully but fail on its
     first run.
@@ -93,9 +95,10 @@
     Name for the scan object. Defaults to "<DataSourceName>-scan".
 
 .PARAMETER Port
-    TCP port on the public endpoint. Defaults to 3342 (the managed instance public-endpoint port
-    Microsoft's own worked registration example uses). Confirm against the instance's actual
-    connection-policy configuration - see README.md Section 6.
+    TCP port on the public endpoint. Defaults to 3342 - the managed instance public endpoint always
+    listens on 3342 and always forces the Proxy connection type, regardless of the instance's own
+    connection-type setting (Redirect vs. Proxy, which governs only the separate VNet-local
+    endpoint). See README.md Section 6, reference 18.
 
 .PARAMETER ScanRulesetName
     Scan rule set to use. Defaults to 'AzureSqlDatabaseManagedInstance' (Microsoft's system default
