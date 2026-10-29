@@ -19,8 +19,8 @@
       2. Hold policy exists with the expected DisplayName/contentQuery.
       3. Every userSource in the definition file exists and has holdStatus 'applied' (or
          'applying', reported WARN not FAIL -- see README.md section 11 on propagation timing).
-      4. Every siteSource in the definition file exists (matched by title) and has holdStatus
-         'applied'/'applying'.
+      4. Every siteSource in the definition file exists (matched by site.webUrl) and has
+         holdStatus 'applied'/'applying'.
       5. The policy's own `errors` collection is empty; a non-empty collection is reported FAIL
          with the raw error text, since Microsoft's error taxonomy (README.md section 12) maps
          directly to a remediation step.
@@ -162,14 +162,19 @@ foreach ($userSourceDef in $definition.userSources) {
     }
 }
 
-# 4. siteSources (matched by title, the closest available client-side key -- see
-# deploy/New-EdiscoveryLocationHold.ps1's Confirm-SiteSource comment and README.md section 11)
+# 4. siteSources (matched by the nested site.webUrl Microsoft's own worked examples return
+# inline for every siteSource -- see deploy/New-EdiscoveryLocationHold.ps1's Confirm-SiteSource
+# comment and README.md section 11; falls back to title-matching only if site.webUrl is absent)
 $actualSiteSources = @((Invoke-MgGraphRequest -Method GET -Uri "$holdUri/siteSources").value)
 foreach ($siteSourceDef in $definition.siteSources) {
-    $siteTitle = ($siteSourceDef.site -split '/')[-1]
-    $source = $actualSiteSources | Where-Object { $_.displayName -eq $siteTitle } | Select-Object -First 1
+    $targetUrl = $siteSourceDef.site.TrimEnd('/')
+    $source = $actualSiteSources | Where-Object { $_.site.webUrl -and $_.site.webUrl.TrimEnd('/') -eq $targetUrl } | Select-Object -First 1
     if (-not $source) {
-        Write-Check "siteSource for '$($siteSourceDef.site)' (matched by title '$siteTitle') not found on hold policy $HoldId." -Level FAIL
+        $siteTitle = ($siteSourceDef.site -split '/')[-1]
+        $source = $actualSiteSources | Where-Object { -not $_.site.webUrl -and $_.displayName -eq $siteTitle } | Select-Object -First 1
+    }
+    if (-not $source) {
+        Write-Check "siteSource for '$($siteSourceDef.site)' not found on hold policy $HoldId." -Level FAIL
         continue
     }
     switch ($source.holdStatus) {

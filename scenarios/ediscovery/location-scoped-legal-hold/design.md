@@ -135,25 +135,47 @@ reversible pause exists. This finding was already correctly disclosed before thi
 | Case | `displayName` (exact match, client-side) | Same rationale as `premium-legal-hold-and-export/design.md` §4 - no documented uniqueness-filter API |
 | Hold policy | `displayName` within the case's `legalHolds` list | No documented uniqueness filter for hold-policy names either; the v1.0 API exposes no `Get` by name, only `List` + `Get by id`, so this script always lists and filters client-side |
 | userSource | `email` within the hold's `userSources` list | The one identifying property the v1.0 resource exposes for this purpose |
-| siteSource | site title (parsed from the definition file's URL, matched against the returned `displayName`) | **Weakest link in this design** - see §6 below |
+| siteSource | the nested `site.webUrl` the v1.0 response returns inline for every siteSource, compared directly against the definition file's URL | Resolved 2026-10-29 - see §6 below (title-matching retained only as a defensive fallback) |
 | retryPolicy | not idempotency-gated; only called with `-Retry`, and only when the policy's `errors` collection is non-empty or a source isn't `applied`/`applying` | Retrying a healthy policy is a documented no-op-shaped restamp, but this script still gates it to avoid generating unnecessary restamp operations on every re-run |
 
-## 6. `siteSource` matching is a known weak point
+## 6. `siteSource` matching - resolved 2026-10-29
 
-The `siteSource` resource's `id` is an opaque identifier and its `displayName` is the SharePoint
-site's **title**, not its URL [[R3]](#references-design) - but the only value this scenario's
-definition file (and the only value an organization naturally has on hand) is the site's `webUrl`. Neither
-the `List siteSources` nor the `Create siteSource` v1.0 reference documents a `webUrl` field on the
-*response* object, so there's no direct URL-to-URL comparison available for find-or-create
-matching. `deploy/New-EdiscoveryLocationHold.ps1` and `validate/Test-EdiscoveryLocationHold.ps1`
-both fall back to parsing the last path segment of the definition file's URL and comparing it
-against the returned `displayName`, on the assumption that a site's URL slug and its title are the
-same string - true for the common case (a site created with **Create site** using its intended
-name) but not guaranteed, and silently wrong if someone renames the site's title without changing
-its URL, or vice versa. This is disclosed here and in `README.md` §11 rather than presented as a
-robust match; a production deployment with sites whose titles and URL slugs diverge should treat a
-"siteSource not found" `FAIL` from the validate script as ambiguous (confirm in the portal) rather
-than conclusive.
+**Closed, maintenance pass (Microsoft Learn MCP), re-grounding the VERIFY this section
+previously recorded.** The formal `siteSource` resource-type reference documents `displayName`
+(the SharePoint site's **title**) as a flat property and `site` only as a navigation
+relationship, with no `webUrl` listed on the resource's own property table [[R3]](#references-design)
+- which is what originally motivated the title-parsing fallback below. But the worked request/
+response examples on the current **List siteSources** and **Create siteSource** v1.0 reference
+pages both show the `site` relationship returned **inline, without `$expand`**, and populated
+with `webUrl`:
+
+```json
+{
+  "id": "169718e3-a8df-449d-bef4-ee09fe1ddc5d",
+  "displayName": "U.S. Sales",
+  "site": {
+    "webUrl": "https://m365x809305.sharepoint.com/sites/USSales",
+    "id": "169718e3-a8df-449d-bef4-ee09fe1ddc5d",
+    "createdDateTime": "2022-05-23T02:35:42.926309Z"
+  }
+}
+```
+([List siteSources](https://learn.microsoft.com/graph/api/security-ediscoverycustodian-list-sitesources?view=graph-rest-1.0#response-example),
+[Create siteSource](https://learn.microsoft.com/graph/api/security-ediscoverycustodian-post-sitesources?view=graph-rest-1.0#response)
+- `security-ediscoveryholdpolicy-*-sitesources` share the same `siteSource` resource and the
+same worked-example shape). The `@odata.id`
+(`https://graph.microsoft.com/v1.0/sites/{id}`) on both responses also confirms `id` is
+directly the SharePoint site's own Graph ID, retrievable at `GET /sites/{id}` if `site.webUrl`
+were ever absent.
+
+`deploy/New-EdiscoveryLocationHold.ps1`'s `Confirm-SiteSource`, `deploy/
+Remove-EdiscoveryLocationHold.ps1`, and `validate/Test-EdiscoveryLocationHold.ps1` now match on
+`site.webUrl` (case-insensitive, trailing-slash-normalized) against the definition file's URL
+directly - a real URL-to-URL comparison, not a title-vs-slug heuristic. The previous
+title-parsing logic is kept only as a defensive fallback for the case where `site.webUrl` is
+unexpectedly absent on a given response; every worked example found populates it, so that path
+is not expected to be exercised in practice. `README.md` §11 updated to match; no portal-side
+ambiguity caveat is needed anymore.
 
 ## 7. Component summary
 
@@ -194,6 +216,8 @@ than conclusive.
 - R1. Manage holds in eDiscovery (hold policy dashboard, states, data source types) - <https://learn.microsoft.com/purview/edisc-hold-manage>
 - R2. Create userSource (v1.0, `ediscoveryHoldPolicy` context - `includedSources` "Only mailbox is applicable for user sources") - <https://learn.microsoft.com/graph/api/security-ediscoveryholdpolicy-post-usersources?view=graph-rest-1.0>
 - R3. siteSource resource type (v1.0 - `displayName` is the site's title; `site` relationship) - <https://learn.microsoft.com/graph/api/resources/security-sitesource?view=graph-rest-1.0>
+- R3a. List siteSources (v1.0, `ediscoveryCustodian` context - worked response example showing `site.webUrl` returned inline without `$expand`; re-grounded 2026-10-29, §6) - <https://learn.microsoft.com/graph/api/security-ediscoverycustodian-list-sitesources?view=graph-rest-1.0>
+- R3b. Create siteSource (v1.0, `ediscoveryCustodian` context - worked response example, same inline `site.webUrl` shape; re-grounded 2026-10-29, §6) - <https://learn.microsoft.com/graph/api/security-ediscoverycustodian-post-sitesources?view=graph-rest-1.0>
 - R4. Create legalHold userSource (beta, custodian/legalHold context - "SMTP address of the user or the SMTP address of the group mailbox") - <https://learn.microsoft.com/graph/api/ediscovery-legalhold-post-usersources?view=graph-rest-beta>
 - R5. Manage holds in eDiscovery - "Manage hold status errors" (Distribution group has too many members, >1,000 addresses; current page, re-fetched 2026-09-04) - <https://learn.microsoft.com/purview/edisc-hold-manage#manage-hold-status-errors>
 - R6. Manage holds in eDiscovery - "Turn off a hold policy" / "Turn on a hold policy" (portal actions, independent of delete) - <https://learn.microsoft.com/purview/edisc-hold-manage#turn-off-a-hold-policy>

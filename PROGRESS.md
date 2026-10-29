@@ -103,11 +103,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   reference, but the v1.0, non-beta endpoint this scenario actually calls documents `email` only
   as "SMTP address of the user" - flagged inline in `location-scoped-legal-hold/README.md` §11,
   `design.md` §3, and `deploy/New-EdiscoveryLocationHold.ps1`'s `.NOTES`.
-- [ ] VERIFY (pilot tenant): whether the `siteSource` list/create v1.0 response ever exposes a
-  stable, directly comparable URL (rather than only `displayName`, the site's title) - if
-  Microsoft adds one, replace `location-scoped-legal-hold/deploy/New-EdiscoveryLocationHold.ps1`'s
-  and `validate/Test-EdiscoveryLocationHold.ps1`'s URL-slug-vs-title matching (the disclosed weak
-  point in `design.md` §6) with a direct comparison instead.
+- [x] VERIFY closed 2026-10-29 (maintenance pass, Microsoft Learn MCP): whether the `siteSource`
+  list/create v1.0 response ever exposes a stable, directly comparable URL (rather than only
+  `displayName`, the site's title). **Confirmed yes:** the current **List siteSources** and
+  **Create siteSource** v1.0 reference pages' worked request/response examples both return the
+  `site` navigation relationship **inline, without `$expand`**, populated with `webUrl` - a direct
+  URL, not just the title - plus an `@odata.id` of `https://graph.microsoft.com/v1.0/sites/{id}`
+  confirming `id` is directly the SharePoint site's own Graph ID. The resource's own property
+  table still doesn't list `webUrl` as a flat property (only the worked examples show it), which
+  is why this wasn't found during the original build.
+  `location-scoped-legal-hold/deploy/New-EdiscoveryLocationHold.ps1`'s `Confirm-SiteSource`,
+  `deploy/Remove-EdiscoveryLocationHold.ps1`, and `validate/Test-EdiscoveryLocationHold.ps1` now
+  match on `site.webUrl` directly (case-insensitive, trailing-slash-normalized) instead of the
+  previous URL-slug-vs-title heuristic, which is kept only as a defensive fallback. `design.md`
+  §5/§6 (rewritten), `README.md` §11/§12 (references 17-18 added), and `reviews.md` (follow-up
+  round added) updated in place.
 - [x] `scenarios/ediscovery/teams-group-hold-resolution/` - **built** (see DONE below): script
   resolving a Microsoft Teams/Microsoft 365 Group's own mailbox + SharePoint site
   (`Get-UnifiedGroup`/`Get-UnifiedGroupLinks` in Exchange Online PowerShell) into the userSource/
@@ -3691,6 +3701,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `location-scoped-legal-hold` `siteSource` URL-matching VERIFY** - commit
+  `PENDING` - 2026-10-29. Maintenance pass: re-fetched the current **List siteSources** and
+  **Create siteSource** v1.0 Microsoft Graph reference pages (Microsoft Learn MCP) and found their
+  worked request/response examples return the `site` navigation relationship inline, without
+  `$expand`, populated with `webUrl` - a stable, directly comparable URL the original build
+  concluded (correctly, for the resource's own property table) did not exist on the response.
+  Updated `scenarios/ediscovery/location-scoped-legal-hold/deploy/New-EdiscoveryLocationHold.ps1`'s
+  `Confirm-SiteSource`, `deploy/Remove-EdiscoveryLocationHold.ps1`, and `validate/
+  Test-EdiscoveryLocationHold.ps1` to match on `site.webUrl` directly instead of the previous
+  URL-slug-vs-title heuristic (kept only as a defensive fallback); `design.md` §5/§6, `README.md`
+  §11/§12 (references 17-18), and `reviews.md` (follow-up round) updated in place. Functional
+  code change (idempotency matching logic), not doc-only - re-ran the existing four-lens findings'
+  reasoning rather than a full new review round, since no lens's original verdict changes (Red
+  Team's round-1 finding 3 already confirmed the matching weakness never affected which content is
+  actually held).
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network

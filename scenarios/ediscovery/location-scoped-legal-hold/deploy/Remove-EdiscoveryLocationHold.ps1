@@ -138,8 +138,16 @@ $userTargets = if ($UserSourceEmail) {
 }
 
 $siteTargets = if ($SiteSourceUrl) {
+    # Match on the nested site.webUrl Microsoft's own worked examples return inline for every
+    # siteSource (Microsoft Learn, re-grounded 2026-10-29 -- README.md section 11), not the
+    # weaker title-parsing heuristic this script previously relied on. Falls back to title
+    # matching only if site.webUrl is ever absent (not expected to occur in practice).
+    $targetUrls = $SiteSourceUrl | ForEach-Object { $_.TrimEnd('/') }
     $siteTitles = $SiteSourceUrl | ForEach-Object { ($_ -split '/')[-1] }
-    $siteSources | Where-Object { $_.displayName -in $siteTitles }
+    $siteSources | Where-Object {
+        ($_.site.webUrl -and $_.site.webUrl.TrimEnd('/') -in $targetUrls) -or
+        (-not $_.site.webUrl -and $_.displayName -in $siteTitles)
+    }
 } elseif (-not $UserSourceEmail) {
     $siteSources
 } else {
