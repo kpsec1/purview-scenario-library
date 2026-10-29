@@ -268,12 +268,22 @@ function Confirm-SiteSource {
     } catch {
         Write-Verbose "Could not list existing siteSources for hold $HoldId (expected under -WhatIf on a not-yet-created hold)."
     }
-    # siteSource list responses key off the SharePoint site's own id/displayName, not the URL --
-    # match on displayName (the site's title) as the closest available client-side key. Sites
-    # without a title cannot be held at all (README.md section 11), so this is not a new gap.
-    $siteTitle = ($SiteSourceDef.site -split '/')[-1]
-    if ($existingSources | Where-Object { $_.displayName -eq $siteTitle }) {
-        Write-Verbose "siteSource for '$($SiteSourceDef.site)' already appears present on hold $HoldId (matched by title '$siteTitle')."
+    # Microsoft's own List/Create siteSource v1.0 worked examples return a nested
+    # 'site.webUrl' alongside 'displayName' without needing $expand (Microsoft Learn,
+    # re-grounded 2026-10-29 -- README.md section 11) -- match on that stable URL
+    # (PowerShell string comparison is case-insensitive by default; trailing slash
+    # normalized) instead of the weaker, ambiguous title-parsing heuristic this script
+    # previously relied on.
+    $targetUrl = $SiteSourceDef.site.TrimEnd('/')
+    $matched = $existingSources | Where-Object { $_.site.webUrl -and $_.site.webUrl.TrimEnd('/') -eq $targetUrl }
+    if (-not $matched) {
+        # Defensive fallback only -- every worked example found populates site.webUrl inline,
+        # so this path is not expected to be exercised (README.md section 11).
+        $siteTitle = ($SiteSourceDef.site -split '/')[-1]
+        $matched = $existingSources | Where-Object { -not $_.site.webUrl -and $_.displayName -eq $siteTitle }
+    }
+    if ($matched) {
+        Write-Verbose "siteSource for '$($SiteSourceDef.site)' already appears present on hold $HoldId."
         return
     }
 

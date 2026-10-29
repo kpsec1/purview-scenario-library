@@ -215,3 +215,39 @@ required no correction, only a re-verification timestamp and the two new support
 (`design.md` R9/R9b). No code changed - there is still no v1.0 path to a reversible pause. Re-open
 this item again only if a future grounding pass finds either action listed under
 `?view=graph-rest-1.0`.
+
+---
+
+## Follow-up round - 2026-10-29: closing the `siteSource` URL-matching VERIFY (maintenance pass)
+
+**Trigger:** a `PROGRESS.md` VERIFY item asking whether the `siteSource` list/create v1.0 response
+ever exposes a stable, directly comparable URL rather than only `displayName` (the site's title) -
+open since this scenario's original build, when neither the `List siteSources` nor `Create
+siteSource` reference's *property table* documented a `webUrl` field on the response.
+
+**🔴 Red Team / 🎩 CISO / 🟦 Microsoft Product Owner - Pass, no Fix/Fail.** This closure only
+strengthens an idempotency comparison the Red Team's original round 1 finding 3 already confirmed
+never affects *which content is actually held* (the add call always sends the real `webUrl` from
+the definition file) - so there is no new bypass, cost, or correctness surface introduced.
+
+**🔵 Blue Team - Fix (resolved).** Re-fetching the current **List siteSources** and **Create
+siteSource** v1.0 reference pages (Microsoft Learn MCP) found that, while the `siteSource`
+resource's own property table still lists only `displayName`/`id`/`holdStatus`/etc. with `site` as
+a navigation relationship, both pages' **worked request/response examples** return that `site`
+relationship **inline, without `$expand`**, populated with `webUrl` - a direct, stable URL for
+every siteSource, not just its title. The `@odata.id` on both examples
+(`https://graph.microsoft.com/v1.0/sites/{id}`) further confirms the siteSource's `id` is directly
+the SharePoint site's own Graph ID. This resolves the detectability concern the original weak-point
+disclosure raised: a "siteSource not found" `FAIL` from `validate/Test-EdiscoveryLocationHold.ps1`
+is no longer ambiguous between "title diverged from URL slug" and "genuinely not present," because
+matching is now a direct URL comparison.
+- **Resolution:** `deploy/New-EdiscoveryLocationHold.ps1`'s `Confirm-SiteSource`, `deploy/
+  Remove-EdiscoveryLocationHold.ps1`, and `validate/Test-EdiscoveryLocationHold.ps1` now match on
+  `site.webUrl` (case-insensitive, trailing-slash-normalized) against the definition file's URL,
+  falling back to the previous title-parsing heuristic only if `site.webUrl` is ever absent (not
+  expected to occur - every worked example found populates it). `design.md` §5/§6, `README.md`
+  §11/§12 (references 17-18 added), and this file updated in place rather than left standing next
+  to a scenario that now does better than its own disclosure described.
+
+**PROGRESS.md:** VERIFY item under "Follow-ups discovered while building the eDiscovery
+location-scoped-legal-hold scenario" closed, commit hash recorded.
