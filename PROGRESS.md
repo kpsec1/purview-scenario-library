@@ -3702,7 +3702,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `location-scoped-legal-hold` `siteSource` URL-matching VERIFY** - commit
-  `PENDING` - 2026-10-29. Maintenance pass: re-fetched the current **List siteSources** and
+  `5487b81` - 2026-10-29. Maintenance pass: re-fetched the current **List siteSources** and
   **Create siteSource** v1.0 Microsoft Graph reference pages (Microsoft Learn MCP) and found their
   worked request/response examples return the `site` navigation relationship inline, without
   `$expand`, populated with `webUrl` - a stable, directly comparable URL the original build
