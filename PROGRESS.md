@@ -285,14 +285,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the exact shape Microsoft's own `deny_all_bluetooth_devices_except_samsung.json` sample
   demonstrates, fetched directly during this build), closing the "Bluetooth is always default-deny,
   no exceptions" scope boundary - **built** (see DONE below).
-- [ ] VERIFY (pilot tenant or a future Microsoft Learn/GitHub-samples pass): a directly-confirmed
-  worked example pairing the `serialNumber` clause with a `portable_devices`-scoped group -
-  `defender-device-control-usb-allowlist-macos-portable-device-coverage`'s grounding pass confirmed
-  this pattern only for `apple_devices` (via `audit_all_apple_devices_except_serial_numbers.json`);
-  Microsoft's Clause reference table is unscoped by device family (a stronger starting position than
-  the Windows WPD-coverage sibling's own equivalent VERIFY), but this is not the same as a worked
-  example. `validate/Test-MacPortableDeviceCoverage.ps1` checks this as `[WARN]`, not `[PASS]`,
-  pending confirmation - see that scenario's `README.md` §11.
+- [ ] VERIFY narrowed 2026-10-30 (maintenance pass, WebFetch of the `microsoft/mdatp-devicecontrol`
+  GitHub repo): a directly-confirmed worked example pairing the `serialNumber` clause with a
+  `portable_devices`-scoped group - still not found. This pass individually fetched every sample
+  filename `macOS/policy/samples/README.md` tables (10 files) plus `scenarios.json`;
+  `deny_debug_on_android.json` matches `portable_devices` alone (no `serialNumber`),
+  `audit_mobile_devices.json` OR's `portable_devices` with `apple_devices` (also no `serialNumber`),
+  and no other sample references `portable_devices` at all. This closes off the "GitHub-samples"
+  half of the original VERIFY as exhausted - only Microsoft publishing a new sample, or a
+  pilot-tenant check, can resolve it now. Microsoft's Clause reference table remains unscoped by
+  device family (a stronger starting position than the Windows WPD-coverage sibling's own
+  equivalent VERIFY), but this is not the same as a worked example.
+  `validate/Test-MacPortableDeviceCoverage.ps1` still checks this as `[WARN]`, not `[PASS]` - see
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage/README.md` §11 and
+  `design.md` §6 for the full file-by-file trail.
 - [x] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
   just Bluetooth, above) once the per-device, dynamic-sub-group `groupId`-clause-nesting idempotency
   model is independently verified against a pilot tenant - same deferred complexity already tracked
