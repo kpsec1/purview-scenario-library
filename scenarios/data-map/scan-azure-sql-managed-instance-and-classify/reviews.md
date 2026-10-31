@@ -150,3 +150,14 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/New-AzureSqlManagedInstanceDataMapScan.ps1`, and
 `validate/Test-AzureSqlManagedInstanceDataMapScan.ps1`. No Fail items were raised. This fragment
 meets the definition of done in `AGENTS.md` §9.
+
+**Maintenance addendum (2026-10-31):** the §11 VERIFY on the default public-endpoint port (`-Port
+3342`) is now closed, not just narrowed. A direct fetch of Microsoft's connectivity architecture
+page for Azure SQL Managed Instance (`README.md` §11/§12, `#18` reference) states explicitly that
+the public endpoint "accepts connections on port 3342" and "always uses the Proxy connection type,
+regardless of the connection type setting"; the public endpoint configuration guide separately
+confirms "Port 3342 is used for public endpoint connections to SQL managed instance, and can't be
+changed currently." This settles the premise the original VERIFY rested on (that the registration
+port varies with the instance's Redirect/Proxy connection-policy setting) - it does not. The
+distinct NSG firewall-rule-port question (§3/§6), which genuinely does depend on that setting per
+Microsoft's own Purview readiness checklist (`#5` reference), is unaffected and was not reopened.

@@ -93,9 +93,12 @@
     Name for the scan object. Defaults to "<DataSourceName>-scan".
 
 .PARAMETER Port
-    TCP port on the public endpoint. Defaults to 3342 (the managed instance public-endpoint port
-    Microsoft's own worked registration example uses). Confirm against the instance's actual
-    connection-policy configuration - see README.md Section 6.
+    TCP port on the public endpoint. Defaults to 3342. Microsoft's connectivity architecture
+    documentation confirms this is invariant and cannot be changed: the public endpoint always
+    accepts connections on port 3342 and always uses the Proxy connection type, regardless of the
+    instance's configured connection type (Redirect/Proxy) setting - that setting instead governs
+    the ports the instance's Network Security Group must allow (see README.md Section 3/Section 6,
+    a separate, still-configuration-dependent firewall question).
 
 .PARAMETER ScanRulesetName
     Scan rule set to use. Defaults to 'AzureSqlDatabaseManagedInstance' (Microsoft's system default
