@@ -3691,7 +3691,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `scan-azure-sql-managed-instance-and-classify` default public-endpoint-port
-  VERIFY** - commit PENDING - 2026-10-31.
+  VERIFY** - commit `a2c48d6` - 2026-10-31.
   Maintenance pass: the open VERIFY assumed the TCP port a managed instance's public endpoint
   listens on (this scenario's `-Port` default of `3342`) depends on the instance's connection-policy
   (Redirect/Proxy) configuration. Fetched Microsoft's connectivity architecture page for Azure SQL
