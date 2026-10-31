@@ -2897,10 +2897,9 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scales to every instance in one run, plus drift detection (any *other* current Directory Readers
   member not in the inventory, reported as non-fatal `WARN`) - closing the Blue Team finding this
   item originally tracked, generalized beyond the single instance that finding was raised against.
-- [ ] VERIFY (pilot tenant): the exact TCP port a newly registered managed instance's public endpoint
-  listens on. This scenario defaults `-Port` to `3342` (Microsoft's own worked *registration*
-  example), but the actual port depends on the instance's connection-policy configuration
-  (Redirect vs. Proxy) - flagged inline in `README.md` §11 and the deploy script's parameter help.
+- [x] VERIFY closed 2026-10-31 (Microsoft Learn MCP, maintenance pass): the exact TCP port a newly
+  registered managed instance's public endpoint listens on - **confirmed invariant at `3342`,
+  not dependent on connection-policy configuration** as this item had assumed. See DONE below.
 - [ ] Consider scripting `Set-AzSqlInstanceActiveDirectoryAdministrator` and the Directory Readers
   Microsoft Graph role-assignment step (the PowerShell pattern Microsoft publishes for it) instead
   of leaving both as manual portal/PowerShell prerequisites (`README.md` §5 steps 2-3) - deferred in
@@ -3691,6 +3690,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `scan-azure-sql-managed-instance-and-classify` default public-endpoint-port
+  VERIFY** - commit `a2c48d6` - 2026-10-31.
+  Maintenance pass: the open VERIFY assumed the TCP port a managed instance's public endpoint
+  listens on (this scenario's `-Port` default of `3342`) depends on the instance's connection-policy
+  (Redirect/Proxy) configuration. Fetched Microsoft's connectivity architecture page for Azure SQL
+  Managed Instance directly via the Microsoft Learn MCP tool: "Public endpoint accepts connections on
+  port 3342... Public endpoint always uses the Proxy connection type regardless of the connection
+  type setting." Cross-checked against the public endpoint configuration guide's own note: "Port 3342
+  is used for public endpoint connections to SQL managed instance, and can't be changed currently."
+  Both sources are unambiguous and consistent: the premise was wrong - the registration/client-
+  connection port is fixed, never configuration-dependent. This is a distinct question from the NSG
+  firewall-rule ports in §3/§6 (which genuinely do vary with the connection-type setting, per
+  Microsoft's own Purview readiness checklist, already correctly documented and left untouched).
+  Updated `README.md` §6 (config table) and §11 (VERIFY → RESOLVED, new reference 18) and the closing
+  re-verify note in §12, `deploy/New-AzureSqlManagedInstanceDataMapScan.ps1`'s `.PARAMETER Port` help,
+  and `reviews.md` (maintenance addendum). Doc/comment-only correction - no code behavior change (the
+  default value itself, `3342`, was already correct), no new four-lens review round.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
