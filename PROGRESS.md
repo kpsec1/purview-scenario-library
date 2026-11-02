@@ -884,6 +884,14 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   re-open for a fresh pass only if Microsoft publishes an expiry statement specific to
   `ediscoveryPurgeDataOperation`/`reportFileMetadata`. `search-and-purge-data-spillage/README.md`
   §11 (note expanded in place) and §12 (reference 15 added).
+  **Re-grounded again 2026-11-02** (maintenance pass, Microsoft Learn MCP): re-fetched both
+  resource-type reference pages directly - no TTL/expiry added since September. Also checked "Use
+  Process reports in eDiscovery" for a purge-specific row in its Download report capability table;
+  it lists Add to review, Apply hold/rerun policy, Export (review set), Export (search), Generate
+  sample, Generate statistics, Redact, and Tag, but no "Purge data" row, so it doesn't bear on this
+  question either way. Still no Microsoft Learn source states or implies an expiry for this
+  `downloadUrl`. Remains open; `search-and-purge-data-spillage/README.md` §11 note expanded again
+  in place.
 - [x] `scenarios/ediscovery/search-and-purge-teams-messages/` - **built** (see DONE below): the
   `purgeAreas: teamsMessages` half of the same `purgeData` Graph action. Re-grounding this item found
   the original follow-up's own premise was **backwards**: current Microsoft Learn states that for

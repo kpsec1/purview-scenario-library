@@ -237,6 +237,14 @@ search/operation records but never reverses a completed purge.
   fact. Treated as still-undocumented; download and archive the report promptly with the case
   record rather than relying on it staying reachable indefinitely. Re-open only if Microsoft
   publishes an expiry statement specific to `ediscoveryPurgeDataOperation`/`reportFileMetadata`.
+  **Re-grounded 2026-11-02** (Microsoft Learn MCP, maintenance pass): re-fetched both the
+  `ediscoveryPurgeDataOperation` and `reportFileMetadata` resource-type reference pages directly -
+  neither has added a TTL/expiry statement since the 2026-09-27 pass. Also checked "Use Process
+  reports in eDiscovery" (the general process-report-capability page) for a purge-specific row;
+  its Download report table covers Add to review, Apply hold/rerun policy, Export (review set),
+  Export (search), Generate sample, Generate statistics, Redact, and Tag - it has no "Purge data"
+  row at all, so it doesn't speak to this question either way. Still no Microsoft Learn source
+  states or implies an expiry for this specific `downloadUrl`. Remains open.
 - **The classic "Data spillage scenario: Search and purge" walkthrough is retired** (2025-08-31,
   21Vianet-only now) [[3]](#references) - this scenario's workflow shape (search → validate → purge →
   verify) is re-derived from it for concept only; every cmdlet/API call is grounded in current,
