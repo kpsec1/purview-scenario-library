@@ -130,6 +130,15 @@ scenario's own Apple-device precedent) but flags it as an open `VERIFY` in `READ
 checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather than asserting it as
 confirmed.
 
+**Re-grounded 2026-11-03** (maintenance pass): this build's original grounding pass searched for a
+worked example without enumerating Microsoft's full sample set. This pass fetched all 15 files in
+`microsoft/mdatp-devicecontrol`'s `macOS/policy/samples` directory by name and inspected the three
+whose device type involves portable/mobile devices (`audit_mobile_devices.json`,
+`deny_mobile_devices.json`, `deny_debug_on_android.json`) directly - all three match on a bare
+`primaryId: portable_devices` clause with no `serialNumber` clause anywhere. The gap is now
+confirmed exhaustively against Microsoft's own repository rather than suspected from an
+unscoped search; it remains open pending a pilot-tenant test, per `README.md` §11.
+
 ## 7. Key decisions
 
 | Decision | Choice | Rationale |

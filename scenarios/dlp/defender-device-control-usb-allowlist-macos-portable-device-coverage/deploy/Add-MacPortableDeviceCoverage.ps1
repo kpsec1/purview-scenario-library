@@ -106,6 +106,17 @@
     validate/Test-MacPortableDeviceCoverage.ps1 checks approvedPortableDevices serial numbers as
     [WARN], not [PASS]/[FAIL], pending pilot-tenant confirmation.
 
+    Re-grounded 2026-11-03 (maintenance pass, Microsoft Learn MCP + direct fetch of every file in
+    microsoft/mdatp-devicecontrol's macOS/policy/samples directory): still genuinely undocumented,
+    now on an exhaustive rather than partial search. All 15 of Microsoft's published macOS sample
+    policies were enumerated by name; the three whose device type involves portable/mobile devices
+    (audit_mobile_devices.json, deny_mobile_devices.json, deny_debug_on_android.json) were fetched
+    and inspected directly - none contains a serialNumber clause, only bare primaryId: portable_devices
+    matching. The repo's only serialNumber-clause sample remains audit_all_apple_devices_except_
+    serial_numbers.json, scoped to apple_devices. No other Microsoft-owned source (Learn Clause
+    reference, scenarios.json) pairs the two. Confirms, rather than overturns, the existing [WARN]
+    posture - still pilot-tenant-only to close.
+
     Entry $type capitalization: this script uses the lowercase-first-letter forms appleDevice/
     portableDevice/bluetoothDevice for entry.$type, confirmed directly against three of Microsoft's
     own published GitHub sample policy JSON files (audit_all_apple_devices.json,
