@@ -292,7 +292,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Microsoft's Clause reference table is unscoped by device family (a stronger starting position than
   the Windows WPD-coverage sibling's own equivalent VERIFY), but this is not the same as a worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks this as `[WARN]`, not `[PASS]`,
-  pending confirmation - see that scenario's `README.md` §11.
+  pending confirmation - see that scenario's `README.md` §11. **Narrowed 2026-11-03** (maintenance
+  pass, Microsoft Learn MCP + direct GitHub fetch): all 15 sample policies in
+  `microsoft/mdatp-devicecontrol`'s `macOS/policy/samples` directory enumerated by name; the three
+  portable/mobile-device samples (`audit_mobile_devices.json`, `deny_mobile_devices.json`,
+  `deny_debug_on_android.json`) fetched and inspected directly - each uses a bare `primaryId:
+  portable_devices` clause, none adds `serialNumber`. Confirms exhaustively (not just "none found")
+  that no Microsoft-published sample pairs the two; remains a pilot-tenant-only VERIFY, kept open per
+  `AGENTS.md` §4 (no guessing). Scenario's `README.md` §11, `design.md` §6, and
+  `deploy/Add-MacPortableDeviceCoverage.ps1`'s `.NOTES` updated in place with this finding.
 - [x] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
   just Bluetooth, above) once the per-device, dynamic-sub-group `groupId`-clause-nesting idempotency
   model is independently verified against a pilot tenant - same deferred complexity already tracked
