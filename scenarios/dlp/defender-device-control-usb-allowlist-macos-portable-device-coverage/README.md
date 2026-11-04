@@ -281,8 +281,17 @@ is operational: reviewing and maintaining up to two additional approved-device l
   published sample. Microsoft's Clause reference table is presented as one flat, family-unscoped
   list (a materially stronger starting position than the ambiguity the Windows WPD-coverage
   sibling had to flag for `SerialNumberId`/`VID_PID`), but this is not the same as a direct worked
-  example. `validate/Test-MacPortableDeviceCoverage.ps1` checks `approvedPortableDevices` entries
-  as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation.
+  example. **Re-grounded 2026-11-04** (maintenance pass): re-checked every sample currently
+  published in Microsoft's `mdatp-devicecontrol` macOS samples directory [[2]](#references),
+  including the two that scope to `portable_devices` (`audit_mobile_devices.json`/
+  `deny_mobile_devices.json`, which group it with `apple_devices` under an "All Mobile Devices"/
+  "All Portable Devices" OR'd `primaryId` match, no `serialNumber` clause) and the one with a
+  "Portable Device" device type in the samples README (`deny_debug_on_android.json`, a single
+  bare `primaryId: portable_devices` clause, also no `serialNumber`). None pairs `serialNumber`
+  with a `portable_devices`-scoped group. The premise holds and remains open; re-open for a fresh
+  pass only if Microsoft publishes a new sample or worked example that does. `validate/Test-
+  MacPortableDeviceCoverage.ps1` checks `approvedPortableDevices` entries as `[WARN]`, not
+  `[PASS]`/`[FAIL]`, pending confirmation.
 - **A device without a readable serial number cannot be allowlisted for the Apple or Portable
   families** - same scope boundary the parent scenario already carries for removable media
   (`README.md` §11 there), and the same reason this fragment doesn't attempt `vendorId`/`productId`
