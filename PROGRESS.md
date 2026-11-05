@@ -2897,10 +2897,6 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scales to every instance in one run, plus drift detection (any *other* current Directory Readers
   member not in the inventory, reported as non-fatal `WARN`) - closing the Blue Team finding this
   item originally tracked, generalized beyond the single instance that finding was raised against.
-- [ ] VERIFY (pilot tenant): the exact TCP port a newly registered managed instance's public endpoint
-  listens on. This scenario defaults `-Port` to `3342` (Microsoft's own worked *registration*
-  example), but the actual port depends on the instance's connection-policy configuration
-  (Redirect vs. Proxy) - flagged inline in `README.md` §11 and the deploy script's parameter help.
 - [ ] Consider scripting `Set-AzSqlInstanceActiveDirectoryAdministrator` and the Directory Readers
   Microsoft Graph role-assignment step (the PowerShell pattern Microsoft publishes for it) instead
   of leaving both as manual portal/PowerShell prerequisites (`README.md` §5 steps 2-3) - deferred in
@@ -8954,6 +8950,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `Confirm-CustodianUserSource` comment, which pointed at reference 11 (an unrelated review-set
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
+- [x] **Maintenance pass — closed `scan-azure-sql-managed-instance-and-classify`'s default
+  public-endpoint-port VERIFY** — commit `pending` — 2026-11-05. This item flagged `-Port 3342` as
+  dependent on the instance's connection-policy configuration. Microsoft Learn's Connectivity
+  architecture for Azure SQL Managed Instance page states the public endpoint "always uses the
+  Proxy connection type regardless of the connection type setting" and "accepts connections on
+  port 3342"; the public-endpoint configuration guide adds the port "can't be changed currently" -
+  confirming `3342` as a fixed, non-configurable value for the public endpoint, not an unconfirmed
+  registration-example default. The Redirect-vs-Proxy branching Microsoft's own readiness-checklist
+  tool documents (NSG needs `1433`+`11000`-`11999` for Redirect, `3342` for Proxy) governs only the
+  separate VNet-local endpoint, which this scenario does not use. Corrected `README.md` §3 (NSG
+  prerequisite row), §5 (step 5), §6 (port table row), §11 (VERIFY → RESOLVED), and §12 (new
+  reference 18 + trailing note); `design.md` §4 (Network reachability row); and the deploy script's
+  `-Port` comment-based help and prerequisite note. No script behavior change (the default was
+  already correct) and no new four-lens review round (a grounding/doc correction, not new coverage).
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,
