@@ -8951,7 +8951,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
 - [x] **Maintenance pass — closed `scan-azure-sql-managed-instance-and-classify`'s default
-  public-endpoint-port VERIFY** — commit `pending` — 2026-11-05. This item flagged `-Port 3342` as
+  public-endpoint-port VERIFY** — commit `ba5e8f7` — 2026-11-05. This item flagged `-Port 3342` as
   dependent on the instance's connection-policy configuration. Microsoft Learn's Connectivity
   architecture for Azure SQL Managed Instance page states the public endpoint "always uses the
   Proxy connection type regardless of the connection type setting" and "accepts connections on
