@@ -180,3 +180,14 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Export-ContentSafetyAuditTrail.ps1`, `validate/Test-ContentSafetyAuditTrail.ps1`, and
 `deploy/policy/content-safety-policy-manifest.json`. No Fail items were raised. This fragment meets
 the definition of done in `AGENTS.md` §9.
+
+### Maintenance addendum - 2026-11-06 (PROGRESS.md VERIFY re-check)
+
+Re-fetched `https://learn.microsoft.com/purview/communication-compliance-policies` directly via
+the Microsoft Learn MCP tool to re-check the §11 "three or more words" vs. "five or more words"
+source inconsistency this build originally disclosed. **Still unreconciled**: the "Content safety
+classifiers based on large language models" section still states "three or more words," and the
+"Considerations when using classifiers" section still states "five or more words," on the same
+live page. `README.md` §11's decision to disclose both figures rather than pick one remains
+correct - no content change required. See `PROGRESS.md`'s re-checked VERIFY entry for this
+scenario.
