@@ -2371,6 +2371,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   ("three or more words" vs. "five or more words," both present verbatim on the same current page as
   of this build) have since been reconciled to a single figure -
   `teams-viva-engage-content-safety/README.md` §6/§11 currently documents both rather than guessing.
+  **Re-checked 2026-11-06** (Microsoft Learn MCP, direct fetch of
+  `https://learn.microsoft.com/purview/communication-compliance-policies`): still **not**
+  reconciled. The "Content safety classifiers based on large language models" section still reads
+  "They evaluate messages containing three or more words," while the "Considerations when using
+  classifiers" section still reads "The solution evaluates only messages containing five or more
+  words" - same two figures, same two sections, verbatim, as originally recorded. Remains open; the
+  scenario's §6/§11 disclosure of both figures stays correct and should not be collapsed to one
+  number. Re-check only on a future pass or a pilot-tenant observation of the actual enforced
+  minimum.
 - [ ] VERIFY (jurisdiction-specific, employment counsel): the applicable duty-of-care/psychosocial-
   hazard obligations for employer self-harm-risk-signal handling that
   `teams-viva-engage-content-safety/README.md` §2 flags as needing confirmation before a
@@ -3691,6 +3700,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Re-checked the `teams-viva-engage-content-safety` minimum-word-count source-inconsistency
+  VERIFY** - commit `PENDING` - 2026-11-06. Maintenance pass: re-fetched
+  `https://learn.microsoft.com/purview/communication-compliance-policies` directly via the
+  Microsoft Learn MCP tool to see whether Microsoft had since reconciled its own two conflicting
+  figures for the content-safety classifiers' minimum evaluated message length. **Still not
+  reconciled** - the "Content safety classifiers based on large language models" section still
+  reads "three or more words," and the "Considerations when using classifiers" section still reads
+  "five or more words," on the same live page, exactly as originally recorded. The VERIFY stays
+  open (cannot be guessed away per `AGENTS.md` §4) but now carries a dated 2026-11-06
+  re-confirmation rather than an undated, build-time-only observation. Updated this file's own
+  VERIFY entry in place and added a maintenance addendum to
+  `scenarios/communication-compliance/teams-viva-engage-content-safety/reviews.md`; no change
+  needed to `README.md` §11, which already correctly discloses both figures instead of picking one.
+  Doc-only - no code change.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
