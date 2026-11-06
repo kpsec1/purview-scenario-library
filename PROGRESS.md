@@ -3701,7 +3701,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Re-checked the `teams-viva-engage-content-safety` minimum-word-count source-inconsistency
-  VERIFY** - commit `PENDING` - 2026-11-06. Maintenance pass: re-fetched
+  VERIFY** - commit `49ccc09` - 2026-11-06. Maintenance pass: re-fetched
   `https://learn.microsoft.com/purview/communication-compliance-policies` directly via the
   Microsoft Learn MCP tool to see whether Microsoft had since reconciled its own two conflicting
   figures for the content-safety classifiers' minimum evaluated message length. **Still not
