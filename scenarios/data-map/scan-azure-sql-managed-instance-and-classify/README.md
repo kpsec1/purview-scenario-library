@@ -182,7 +182,7 @@ perform - see `design.md` §8.
 | Scan `kind` (default) | `AzureSqlDatabaseManagedInstanceMsi` | SAMI-authenticated - no credential object to create or rotate [[7]](#references) |
 | Scan `kind` (alternative) | `AzureSqlDatabaseManagedInstanceCredential` | SQL authentication or service principal (Key Vault-backed, via `scenarios/data-map/scan-credential-key-vault-backed/` - the "portal-only" claim this row originally carried was incorrect, corrected 2026-09-25), **or** a user-assigned managed identity (UAMI) for per-source identity separation, scripted end-to-end by `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-managed-identity-credential/`; see §11 |
 | `serverEndpoint` format | `tcp:<PublicEndpointFqdn>,<Port>` (e.g. `tcp:mi-contoso-prod.public.ac1b2c3d4e5f.database.windows.net,3342`) | Distinct from the sibling scenario's bare hostname - confirmed via Microsoft's own worked PowerShell example [[8]](#references) |
-| Default public-endpoint port | `3342` | Microsoft's own worked *registration* example uses this port. **Distinct from the NSG *network-path* ports** in §3's table: since October 2025, Redirect is Microsoft's default connection type for connections originating inside Azure (Proxy remains default for connections originating outside Azure), which determines whether the NSG needs `1433`+`11000`-`11999` (Redirect) or just `3342` (Proxy) - confirm both the registration port and the connection type independently against the instance's actual configuration before relying on either default [[5]](#references) |
+| Default public-endpoint port | `3342` | **Fixed, not connection-type-dependent** - Microsoft's Managed Instance connectivity architecture reference states the public endpoint "accepts connections on port 3342" and "always uses the Proxy connection type regardless of the connection type setting," and that this port "can't be changed currently" [[18]](#references). This is distinct from the NSG *network-path* ports in §3's table, which the separate Purview-specific readiness checklist [[5]](#references) still ties to the instance's Redirect/Proxy connection-type setting for the inbound NSG rule itself - the registration port (this row) and the NSG rule's allowed port range are two different configuration surfaces |
 | Collection reference | `{ "referenceName": "<5-char collection ID>", "type": "CollectionReference" }` | Same shape as the sibling scenario - read the ID from the collection's URL in the portal, not its friendly name |
 | Scan rule set (this scenario's default) | `scanRulesetName: "AzureSqlDatabaseManagedInstance"`, `scanRulesetType: "System"` | A **different system rule set name** from the sibling scenario's `AzureSqlDatabase` - confirmed via Microsoft's own worked PowerShell example; includes the same SSN + Credit Card Number pair [[9]](#references) |
 | Scan level | `Full` (first run) → `Incremental` (subsequent scheduled runs) | Same pattern as the sibling scenario [[10]](#references) |
@@ -283,11 +283,18 @@ same way regardless of the underlying Azure SQL source type.
   behavior as the sibling scenario.
 - **U.S.-centric SIT starter set** - same caveat as every other scenario in this repo using the
   SSN + Credit Card Number pair; not GDPR-complete for a non-U.S. tenant.
-- **VERIFY - default public-endpoint port.** This scenario defaults `-Port` to `3342`, matching
-  Microsoft's own worked registration example, but the actual port a given instance's public
-  endpoint listens on depends on its connection-policy configuration. Confirm the real port (Azure
-  portal → the instance → **Networking** → **Public endpoint**) before relying on the default in a
-  script running unattended.
+- **RESOLVED (2026-11-07) - default public-endpoint port.** This row previously flagged the
+  `-Port 3342` default as dependent on the instance's connection-policy (Redirect/Proxy) setting
+  and asked a reader to confirm the real port per-instance before unattended use. **It is not
+  connection-type-dependent.** A direct fetch of Microsoft's Azure SQL Managed Instance
+  connectivity-architecture reference confirms the public endpoint "accepts connections on port
+  3342," "always uses the Proxy connection type regardless of the connection type setting," and
+  that "port 3342 is used for public endpoint connections to SQL managed instance, and can't be
+  changed currently" [[18]](#references). `-Port 3342` is therefore a safe, universal default for
+  the public endpoint, not merely Microsoft's worked example. This is unrelated to the separate,
+  still-accurate NSG *network-path* ports in §3/§6's table, which govern the inbound security-group
+  rule rather than the endpoint's own listening port - see §6's config-reference row for the
+  distinction.
 - **RESOLVED (2026-09-25) - credential-object REST creation.** This row originally claimed no
   documented REST endpoint existed for creating the Key Vault-backed credential object needed for
   `AzureSqlDatabaseManagedInstanceCredential` scanning, describing it as portal-only. **It is not.**
@@ -340,8 +347,7 @@ same way regardless of the underlying Azure SQL source type.
 15. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary) - <https://learn.microsoft.com/purview/data-gov-classic-permissions>
 16. `scenarios/data-map/scan-azure-sql-and-classify/` - the sibling scenario this fragment extends; see its README.md and design.md for the shared reasoning not repeated here.
 17. Microsoft Purview (formerly Azure Purview) deployment checklist - item 16, "Grant Azure RBAC Reader role to Microsoft Purview MSI at data sources' Subscriptions" (lists Azure SQL Managed Instance among the applicable source types, scoped to the subscription) - <https://learn.microsoft.com/purview/legacy/tutorial-azure-purview-checklist>; cross-checked against Check Azure data source readiness to register and scan in Microsoft Purview, whose Managed-Instance-specific check list has no RBAC/Reader item - <https://learn.microsoft.com/purview/data-map-data-sources-check-azure-readiness#more-information>
+18. Connectivity architecture for Azure SQL Managed Instance - "Public endpoint" (confirms the public endpoint always uses the Proxy connection type and listens on a fixed, non-configurable port 3342, regardless of the instance's own Redirect/Proxy connection-type setting) - <https://learn.microsoft.com/azure/azure-sql/managed-instance/connectivity-architecture-overview#communication-overview>
 
-> Re-verify all links, API versions, and the default public-endpoint port against current Microsoft
-> Learn before a customer-facing deployment - the Data Map REST surface is explicitly called out by
-> Microsoft as evolving, and the remaining VERIFY item in §11 should be closed against a pilot tenant
-> first.
+> Re-verify all links and API versions against current Microsoft Learn before a customer-facing
+> deployment - the Data Map REST surface is explicitly called out by Microsoft as evolving.
