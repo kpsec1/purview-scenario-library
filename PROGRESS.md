@@ -3701,7 +3701,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `scan-azure-sql-managed-instance-and-classify` default public-endpoint-port
-  VERIFY** - commit (pending at write time, see this run's own final commit) - 2026-11-07.
+  VERIFY** - commit `f66cf5c` - 2026-11-07.
   Maintenance pass: this item claimed the `-Port 3342` registration default's correctness depended
   on the instance's Redirect-vs-Proxy connection-policy setting. A direct Microsoft Learn MCP fetch
   of the Azure SQL Managed Instance connectivity-architecture reference settles it the other way -
