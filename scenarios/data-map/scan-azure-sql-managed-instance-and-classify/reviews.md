@@ -115,9 +115,17 @@ No remaining Fix/Fail after resolution.
    itself, but the original draft's default `-Port 3342` (Microsoft's own worked *registration*
    example) could be read as implying Proxy is still the universal default.
    - **Resolution:** `README.md` §6 and §11 now separate the two concerns explicitly - the
-     registration `-Port` parameter (confirm against the instance's actual public-endpoint
-     configuration, flagged as an explicit VERIFY) versus the NSG/network-path port requirement
-     (which does depend on Redirect-vs-Proxy, already correctly split out in §3's table).
+     registration `-Port` parameter versus the NSG/network-path port requirement (which does
+     depend on Redirect-vs-Proxy, already correctly split out in §3's table).
+   - **Re-grounded and closed 2026-11-07 (maintenance pass, Microsoft Learn MCP):** the
+     registration-port side of this split was carried as an open VERIFY rather than a confirmed
+     fact. A direct fetch of Microsoft's Azure SQL Managed Instance connectivity-architecture
+     reference settles it: the public endpoint "always uses the Proxy connection type regardless
+     of the connection type setting" and listens on a fixed port 3342 that "can't be changed
+     currently." `-Port 3342` is therefore correct unconditionally for the public endpoint, not
+     merely Microsoft's worked example - `README.md` §6/§11/§12 (reference 18 added) and the
+     deploy script's comment-based help updated in place; no further pilot-tenant confirmation
+     needed for this specific question.
 2. **SAMI as the default authentication method is correct, current best practice for this source
    type too** - confirmed against the same "System or user assigned managed identity" section of
    Microsoft's Managed Instance-specific documentation, not just carried over by assumption from the

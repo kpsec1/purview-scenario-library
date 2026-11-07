@@ -2897,10 +2897,19 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scales to every instance in one run, plus drift detection (any *other* current Directory Readers
   member not in the inventory, reported as non-fatal `WARN`) - closing the Blue Team finding this
   item originally tracked, generalized beyond the single instance that finding was raised against.
-- [ ] VERIFY (pilot tenant): the exact TCP port a newly registered managed instance's public endpoint
-  listens on. This scenario defaults `-Port` to `3342` (Microsoft's own worked *registration*
-  example), but the actual port depends on the instance's connection-policy configuration
-  (Redirect vs. Proxy) - flagged inline in `README.md` §11 and the deploy script's parameter help.
+- [x] VERIFY closed 2026-11-07 (maintenance pass, Microsoft Learn MCP): the exact TCP port a newly
+  registered managed instance's public endpoint listens on. Previously flagged as dependent on the
+  instance's connection-policy configuration (Redirect vs. Proxy). **It is not** - a direct fetch of
+  Microsoft's Azure SQL Managed Instance connectivity-architecture reference confirms the public
+  endpoint "always uses the Proxy connection type regardless of the connection type setting" and
+  listens on a fixed port 3342 that "can't be changed currently"
+  (<https://learn.microsoft.com/azure/azure-sql/managed-instance/connectivity-architecture-overview#communication-overview>).
+  This scenario's `-Port 3342` default is therefore correct unconditionally, not merely Microsoft's
+  worked registration example. Distinct from the separate, still-accurate NSG network-path port
+  table in §3/§6 (which genuinely does depend on Redirect/Proxy, per the Purview-specific readiness
+  checklist) - that claim is untouched. `scan-azure-sql-managed-instance-and-classify/README.md`
+  §6/§11/§12 (reference 18 added), `reviews.md`, and the deploy script's comment-based help updated
+  in place.
 - [ ] Consider scripting `Set-AzSqlInstanceActiveDirectoryAdministrator` and the Directory Readers
   Microsoft Graph role-assignment step (the PowerShell pattern Microsoft publishes for it) instead
   of leaving both as manual portal/PowerShell prerequisites (`README.md` §5 steps 2-3) - deferred in
@@ -3691,6 +3700,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `scan-azure-sql-managed-instance-and-classify` default public-endpoint-port
+  VERIFY** - commit `f66cf5c` - 2026-11-07.
+  Maintenance pass: this item claimed the `-Port 3342` registration default's correctness depended
+  on the instance's Redirect-vs-Proxy connection-policy setting. A direct Microsoft Learn MCP fetch
+  of the Azure SQL Managed Instance connectivity-architecture reference settles it the other way -
+  the public endpoint "always uses the Proxy connection type regardless of the connection type
+  setting" and listens on a fixed, non-configurable port 3342
+  (<https://learn.microsoft.com/azure/azure-sql/managed-instance/connectivity-architecture-overview#communication-overview>).
+  `-Port 3342` is therefore correct unconditionally, not merely Microsoft's worked registration
+  example. Left untouched: the separate, still-accurate NSG network-path port table in §3/§6
+  (reference 5, the Purview-specific readiness checklist), which genuinely does tie the inbound NSG
+  rule's required port range to the Redirect/Proxy setting - a different configuration surface from
+  the registration port this VERIFY was about. Updated `scenarios/data-map/
+  scan-azure-sql-managed-instance-and-classify/README.md` §6/§11/§12 (reference 18 added),
+  `reviews.md` (closure addendum under finding 1), and the deploy script's comment-based help for
+  `-Port`. Doc-only correction - no code behavior change (the default was already 3342), no new
+  four-lens review round.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
