@@ -3693,6 +3693,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `scan-credential-remaining-kinds` Microsoft account ID `AmazonARN` VERIFY** -
+  commit `bdde612` - 2026-11-08. Maintenance pass: a targeted Microsoft Learn MCP search for an
+  `awsAccountId`-named property surfaced one candidate, `AmazonAccountDataSource.AwsAccountId`, but
+  ruled it out as a decoy - it belongs to a different Scanning data-plane object (the Amazon account
+  **data source**) and holds the customer's own AWS account ID, not Microsoft's, and is not a sibling
+  of `awsExternalId` in the `cloudConnectors` schema. No REST reference, SDK, or Microsoft Learn
+  article exposes the portal-displayed Microsoft account ID anywhere. Closed as confirmed-negative:
+  portal-only by design, not an undocumented gap. Updated `README.md` §3/§11/§12 (reference 13
+  added), `design.md` §4/§8, and `reviews.md` (second correction addendum). No script behavior
+  change.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
