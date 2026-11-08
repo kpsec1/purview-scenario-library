@@ -77,7 +77,10 @@ otherwise scripts, but as a read-only property on the Purview account's own cont
 `Microsoft.Purview/accounts` `properties.cloudConnectors.awsExternalId` (confirmed across the
 `Az.Purview` PowerShell module and three other independent SDK surfaces - `README.md` §11,
 §12 reference 12). The **Microsoft account ID** has no sibling property anywhere in that same
-schema and remains confirmed portal-only. Two honest choices were available for the account ID:
+schema and is now confirmed, closed portal-only (2026-11-08 maintenance pass - `README.md` §11,
+§12 reference 13 - a superficially similar `awsAccountId` property exists, but belongs to a
+different Scanning data-plane object, the Amazon account **data source**, and holds the
+customer's own AWS account ID, not Microsoft's). Two honest choices were available for the account ID:
 guess that it's derivable from the tenant/account ID Purview is already configured with
 (unconfirmed, and getting it wrong would produce an AWS trust policy that silently never grants
 access), or state plainly that at least one portal visit is required upstream of this script for
@@ -149,7 +152,8 @@ unit for an organization that takes only one folder.
     with any credential kind
 - **Confirming the `AmazonARN` account ID/external ID's source.** §4 - the external ID's source is
   now confirmed (a control-plane property this script doesn't call); the Microsoft account ID's
-  remains an open `PROGRESS.md` VERIFY rather than resolved by inference.
+  is now closed as confirmed, portal-only (2026-11-08 maintenance pass), not resolved by inference -
+  see `README.md` §11.
 - **Re-litigating the parent scenario's open VERIFYs.** The two `KeyVaultSecret` discriminator
   literals, omitted-`secretVersion` semantics, and the credential re-point detection gap are
   inherited, not rediscovered - see parent `design.md` §5 and `reviews.md`.

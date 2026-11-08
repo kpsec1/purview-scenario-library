@@ -46,7 +46,7 @@ Vault access model, same automation identity - with two kind-specific additions:
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Everything in `scan-credential-key-vault-backed/README.md` §3 | - | Data Source Administrator to create, Data Reader to validate, Purview MSI Get+List (or Key Vault Secrets User) on the vault, a dedicated scan-credential Key Vault. Unchanged by this fragment |
-| (`AmazonARN` only) An AWS IAM role trusting Microsoft's account | Role created in the AWS console, trusting the **Microsoft account ID** and **external ID** Purview's portal displays when you start creating a Role ARN credential | These two values are **not** properties of the credential object (§6) - Microsoft's own worked walkthrough shows them appearing only in the **portal's** "New credential" pane, and this build found no REST endpoint that returns them [[6]](#references). **VERIFY (pilot tenant):** confirm no such endpoint exists before assuming a fully portal-free Role ARN onboarding is possible - see §11 |
+| (`AmazonARN` only) An AWS IAM role trusting Microsoft's account | Role created in the AWS console, trusting the **Microsoft account ID** and **external ID** Purview's portal displays when you start creating a Role ARN credential | These two values are **not** properties of the credential object (§6) - Microsoft's own worked walkthrough shows them appearing only in the **portal's** "New credential" pane. The **external ID** is scriptable via a different, control-plane API (§11); the **Microsoft account ID** has no documented API surface anywhere on Microsoft Learn and is **confirmed portal-only** (closed 2026-11-08, Microsoft Learn MCP maintenance pass) - see §11 |
 | (`ManagedIdentity` only) A user-assigned managed identity already added to the Purview account | Created via the Purview account's **Managed identities** blade in the Azure portal (a separate Azure-side step, not a Scanning-API call) | [[8]](#references). This fragment's script references that UAMI's `principalId`/`resourceId`/`tenantId` by value - it does not create the UAMI itself, the same "credential is downstream of an out-of-band identity" pattern the parent scenario established for the Key Vault and its secret |
 | (`ManagedIdentity` only) Feature stage | **Preview** | Microsoft's own documentation labels "User-assigned managed identity" as "(preview)" as of this writing [[8]](#references) - see §11 before committing to it in a production design |
 
@@ -353,13 +353,13 @@ licensing. Two additions:
   documentation periodically, since preview features can reach GA (or be retired) without a
   corresponding REST reference change.
 - **The `AmazonARN` kind's external ID is confirmed scriptable after all - via a different plane
-  than expected; the Microsoft account ID is not, and remains a portal-only VERIFY.** Re-grounded
-  2026-09-28 (Microsoft Learn MCP): the two values are not exposed by the Scanning **data-plane**
-  Credential API (`RoleARNCredential`'s `typeProperties` genuinely contains only `roleARN`, as
-  already noted below), but the **external ID** is exposed as a read-only property on the Purview
-  account's own **management/control-plane** resource instead - `Microsoft.Purview/accounts`'
-  `properties.cloudConnectors.awsExternalId` - confirmed consistently across four independent SDK
-  surfaces: the `Az.Purview` PowerShell module (`Get-AzPurviewAccount`'s
+  than expected; the Microsoft account ID is not, and is now confirmed, closed portal-only.**
+  Re-grounded 2026-09-28 (Microsoft Learn MCP): the two values are not exposed by the Scanning
+  **data-plane** Credential API (`RoleARNCredential`'s `typeProperties` genuinely contains only
+  `roleARN`, as already noted below), but the **external ID** is exposed as a read-only property on
+  the Purview account's own **management/control-plane** resource instead - `Microsoft.Purview/
+  accounts`' `properties.cloudConnectors.awsExternalId` - confirmed consistently across four
+  independent SDK surfaces: the `Az.Purview` PowerShell module (`Get-AzPurviewAccount`'s
   `CloudConnectorAwsExternalId`, explicitly `ReadOnly`), the legacy `Microsoft.Azure.Management.Purview`
   .NET SDK, the current `Azure.ResourceManager.Purview` .NET SDK, and the `@azure-rest/purview-
   administration` JS SDK [[12]](#references). A fully scripted flow can therefore call
@@ -368,9 +368,22 @@ licensing. Two additions:
   something `New-PurviewScanCredentialExtended.ps1` was extended to do in this maintenance pass. The
   **Microsoft account ID**, by contrast, has **no** sibling property anywhere in that same
   `cloudConnectors` schema (no `awsAccountId` or equivalent was found alongside `awsExternalId` in
-  any of the four SDKs), nor anywhere else this re-grounding pass checked - it remains confirmed
-  portal-only. **VERIFY (pilot tenant or a future Microsoft Learn pass) now narrows to just the
-  Microsoft account ID half**; the external ID half is resolved.
+  any of the four SDKs). **Closed 2026-11-08** (Microsoft Learn MCP, maintenance pass): a fresh,
+  targeted search for an `awsAccountId`-named property surfaced one candidate -
+  `AmazonAccountDataSource.AwsAccountId` / `AmazonAccountProperties.AwsAccountId` - but this is a
+  **different Scanning-data-plane object for a different purpose**: it's the field on the *Amazon
+  account **data source*** (registering the customer's own AWS account as a Purview source, per
+  the "Add an AWS account as a Microsoft Purview account" portal walkthrough's "AWS account ID"
+  field [[6]](#references)), populated with the **customer's own** AWS account ID, not Microsoft's.
+  It has no relationship to the Role ARN **credential**'s Microsoft-side trust value and is not a
+  sibling of `awsExternalId` in the `cloudConnectors` schema. No Microsoft Learn page, REST
+  reference, or SDK (checked again across all four `cloudConnectors` SDK surfaces plus the Scanning
+  data-plane's `DataSource`/`Credential` object families) exposes the portal-displayed **Microsoft
+  account ID** anywhere. This VERIFY is now closed as confirmed-negative: the Microsoft account ID
+  is portal-only by design (it is a Microsoft-side value for configuring the AWS-side trust policy,
+  not a property Purview stores against the customer's account), not an undocumented gap likely to
+  be closed by a future Microsoft Learn update. Re-open only if Microsoft Learn ever publishes a
+  `cloudConnectors`-schema property for it. The external ID half remains resolved as above.
 - **`RoleARNCredential`'s own description overstates its `typeProperties`.** Microsoft's REST
   reference describes the `RoleARNCredential` **object** as "Credential type that uses Account ID,
   External ID and Role ARN for authentication," but `RoleARNCredentialTypeProperties` - the actual
@@ -413,13 +426,14 @@ licensing. Two additions:
 3. [Connect to and manage Azure Files in Microsoft Purview](https://learn.microsoft.com/purview/register-scan-azure-files-storage-source#register) - Account Key as the only registration auth method for Azure Files.
 4. [Connect to Azure Cosmos DB for SQL API in Microsoft Purview](https://learn.microsoft.com/purview/register-scan-azure-cosmos-database#scan) - Account Key as the only scan auth method for Cosmos DB.
 5. [Connect to Azure Blob storage in Microsoft Purview](https://learn.microsoft.com/purview/register-scan-azure-blob-storage-source#scan) - Account Key alongside managed identity/service principal for Blob Storage.
-6. [Amazon S3 Multicloud Scanning Connector for Microsoft Purview](https://learn.microsoft.com/purview/register-scan-amazon-s3) - Role ARN as the only auth method for S3; the portal-displayed Microsoft account ID/external ID (§3, §11 - external ID now also confirmed scriptable per [[12]](#references)); the AWS IAM role trust setup.
+6. [Amazon S3 Multicloud Scanning Connector for Microsoft Purview](https://learn.microsoft.com/purview/register-scan-amazon-s3) - Role ARN as the only auth method for S3; the portal-displayed Microsoft account ID/external ID (§3, §11 - external ID now also confirmed scriptable per [[12]](#references)); the AWS IAM role trust setup; the separate "Add an AWS account as a Microsoft Purview account" data-source registration flow and its own, customer-owned "AWS account ID" field (§11, distinguished from the Microsoft account ID).
 7. [Credentials for source authentication in Microsoft Purview Data Map](https://learn.microsoft.com/purview/data-map-data-scan-credentials) - the enumerated credential-type list including Consumer Key ("For Salesforce data sources"), Account Key, Role ARN, and User-assigned managed identity (preview); the UAMI creation/deletion procedure and its six supported source types (§6, §11).
 8. [Data governance best practices for security - Credential management](https://learn.microsoft.com/purview/data-gov-classic-security-best-practices) - Microsoft's explicit credential priority order (Purview managed identity → user-assigned managed identity → service principal → account key/SQL auth/other), cited in §2.
 9. [Connect to your Microsoft Fabric tenant in the same tenant as Microsoft Purview](https://learn.microsoft.com/purview/register-scan-fabric-tenant#authentication-to-scan) - the Delegated Auth credential fields (Client ID, User name, Password) worked example and the Access-vs-Assets test-connection failure distinction (§8).
 10. [Connect to and manage a Power BI tenant in Microsoft Purview (cross-tenant)](https://learn.microsoft.com/purview/register-scan-power-bi-tenant-cross-tenant#scan-cross-tenant-power-bi) - the cross-tenant Delegated Auth worked example.
 11. [Get-AzKeyVaultSecret](https://learn.microsoft.com/powershell/module/az.keyvault/get-azkeyvaultsecret) - metadata-only read used by `-CheckKeyVaultSecret`, same as the parent scenario.
 12. [Account.CloudConnectorAwsExternalId Property (Az.Purview)](https://learn.microsoft.com/dotnet/api/microsoft.azure.powershell.cmdlets.purview.models.account.cloudconnectorawsexternalid) - the read-only `Microsoft.Purview/accounts` control-plane property confirming the `AmazonARN` external ID (but not the Microsoft account ID) is scriptable via `Get-AzPurviewAccount`, cited in §11.
+13. [AmazonAccountProperties interface (@azure-rest/purview-scanning)](https://learn.microsoft.com/javascript/api/@azure-rest/purview-scanning/amazonaccountproperties) - the Scanning data-plane **data source** object's `awsAccountId` property, confirmed to be the customer's own AWS account ID (ruled out as a sibling of the credential-level `awsExternalId`), cited in §11's VERIFY closure.
 
 Related scenarios in this library:
 - `scenarios/data-map/scan-credential-key-vault-backed/` - the parent scenario (`SqlAuth`,

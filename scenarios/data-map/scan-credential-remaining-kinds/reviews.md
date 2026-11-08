@@ -222,3 +222,19 @@ undocumented via any REST/SDK surface found. This is a documentation correction 
 doesn't reopen the Product Owner lens's overall verdict; it tightens the finding from "neither value
 has a documented source" to "one of the two now does." `README.md` §11/§12, `design.md` §4/§6/§8,
 and the script's comment-based help updated in place to match.
+
+## Correction addendum (2026-11-08, maintenance pass - no new four-lens round per `AGENTS.md` §6)
+
+The carried-forward `PROGRESS.md` VERIFY for the **Microsoft account ID** half is now **closed** as
+confirmed-negative. A fresh, targeted Microsoft Learn search specifically for an `awsAccountId`-named
+property found one candidate - `AmazonAccountDataSource.AwsAccountId` (`AmazonAccountProperties.
+AwsAccountId` in the underlying Scanning data-plane schema) - but ruled it out: it belongs to a
+different data-plane object entirely (the Amazon account **data source**, used to register the
+customer's own AWS account as a Purview source) and holds the **customer's own** AWS account ID, not
+Microsoft's. It is not a sibling of `awsExternalId` in the `cloudConnectors` schema and has no
+relationship to the Role ARN credential's trust-policy values. No REST reference, SDK, or Microsoft
+Learn article was found that exposes the portal-displayed Microsoft account ID anywhere. This is a
+genuine resolution, not a guess: the Product Owner lens's finding 5 and this scenario's own §4 design
+rationale both hold up unchanged (declining to derive or fabricate the value remains correct), and
+the verdict in the round summary table above is unaffected. `README.md` §3/§11/§12 (reference 13
+added), `design.md` §4/§8, and `PROGRESS.md` updated in place.

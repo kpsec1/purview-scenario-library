@@ -1331,20 +1331,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   VERIFYs recorded below rather than guessed at.
 
 ### Follow-ups discovered while building the scan-credential-remaining-kinds scenario
-- [ ] VERIFY narrowed 2026-09-28 (Microsoft Learn MCP) - now covers only the **Microsoft account ID**
-  half, not both values: the **external ID** half of the Role ARN trust pair IS exposed by a
-  documented REST-backed property after all - not `RoleARNCredentialTypeProperties` (Scanning
-  data-plane, still only `roleARN`), but `Microsoft.Purview/accounts`' own control-plane
-  `properties.cloudConnectors.awsExternalId` (read-only), confirmed consistently across the
-  `Az.Purview` PowerShell module (`Get-AzPurviewAccount`'s `CloudConnectorAwsExternalId`) and three
-  other independent SDK surfaces. No sibling property for the **Microsoft account ID** exists in that
-  same schema, or anywhere else this pass checked - it remains confirmed portal-only. A fully
-  scripted Amazon S3 onboarding can now script the external-ID half (via a second, control-plane API
-  call `New-PurviewScanCredentialExtended.ps1` does not currently make) but still requires a portal
-  visit for the Microsoft account ID.
-  `scenarios/data-map/scan-credential-remaining-kinds/README.md` §11/§12, `design.md` §4/§6/§8,
-  `deploy/New-PurviewScanCredentialExtended.ps1` comment-based help, and `reviews.md` (correction
-  addendum) updated in place. No script behavior change.
+- [x] VERIFY closed 2026-11-08 (Microsoft Learn MCP, maintenance pass): narrowed 2026-09-28 to cover
+  only the **Microsoft account ID** half of the `AmazonARN` Role ARN trust pair (the **external ID**
+  half was already resolved scriptable via `Microsoft.Purview/accounts`'
+  `properties.cloudConnectors.awsExternalId`). A fresh, targeted search for an `awsAccountId`-named
+  property found one candidate - `AmazonAccountDataSource.AwsAccountId` /
+  `AmazonAccountProperties.AwsAccountId` - but ruled it out as a decoy: it is a different Scanning
+  data-plane object (the Amazon account **data source**, for registering the customer's own AWS
+  account as a Purview source) holding the **customer's own** AWS account ID, not Microsoft's, and
+  is not a sibling of `awsExternalId` in the `cloudConnectors` schema. No REST reference, SDK, or
+  Microsoft Learn article exposes the portal-displayed Microsoft account ID anywhere. Closed as
+  confirmed-negative: the value is portal-only by design (a Microsoft-side value for the AWS trust
+  policy, not a property Purview stores against the customer's account), not an undocumented gap.
+  `scenarios/data-map/scan-credential-remaining-kinds/README.md` §3/§11/§12 (reference 13 added),
+  `design.md` §4/§8, and `reviews.md` (second correction addendum) updated in place. No script
+  behavior change. Re-open only if Microsoft Learn ever publishes a `cloudConnectors`-schema
+  property for it.
 - [ ] Periodically re-check the GA/preview status of the `ManagedIdentity` (user-assigned) credential
   kind. Microsoft's "Credentials for source authentication" page currently labels it "(preview)";
   the Scanning-data-plane REST reference carries no preview annotation of its own for the same kind.
