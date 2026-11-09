@@ -2371,6 +2371,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   ("three or more words" vs. "five or more words," both present verbatim on the same current page as
   of this build) have since been reconciled to a single figure -
   `teams-viva-engage-content-safety/README.md` §6/§11 currently documents both rather than guessing.
+  **Re-grounded 2026-11-09** (Microsoft Learn MCP, maintenance pass): fetched/searched the current
+  live page again - both figures are still present verbatim and still unreconciled ("three or more
+  words" under "Content safety classifiers based on large language models"; "five or more words"
+  under "Considerations when using classifiers," same page). Not a stale-cache artifact; this is
+  Microsoft's own documentation still disagreeing with itself. Remains open - re-close only once
+  Microsoft unifies the two figures or a pilot-tenant test confirms which one actually governs.
+  `teams-viva-engage-content-safety/README.md` §11 note expanded in place.
 - [ ] VERIFY (jurisdiction-specific, employment counsel): the applicable duty-of-care/psychosocial-
   hazard obligations for employer self-harm-risk-signal handling that
   `teams-viva-engage-content-safety/README.md` §2 flags as needing confirmation before a
@@ -8954,6 +8961,16 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `Confirm-CustodianUserSource` comment, which pointed at reference 11 (an unrelated review-set
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
+- [x] **Maintenance pass — re-grounded `teams-viva-engage-content-safety`'s content-safety-classifier
+  minimum-word-count VERIFY** — commit `6dc7b63` — 2026-11-09. Re-searched Microsoft Learn via the
+  Microsoft Learn MCP tool for the current `communication-compliance-policies#policy-settings` page.
+  The two conflicting figures this scenario already disclosed — "three or more words" (under
+  "Content safety classifiers based on large language models") and "five or more words" (under
+  "Considerations when using classifiers") — are both still present verbatim on the same live page,
+  unreconciled. This rules out the possibility that Microsoft quietly fixed the inconsistency since
+  the original build; the item stays open per `AGENTS.md` §4 rather than guessed at, with a dated
+  note confirming the re-check. `teams-viva-engage-content-safety/README.md` §11 updated in place
+  (no other files changed; no code change).
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,
