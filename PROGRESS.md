@@ -8962,7 +8962,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
 - [x] **Maintenance pass — re-grounded `teams-viva-engage-content-safety`'s content-safety-classifier
-  minimum-word-count VERIFY** — commit (pending) — 2026-11-09. Re-searched Microsoft Learn via the
+  minimum-word-count VERIFY** — commit `6dc7b63` — 2026-11-09. Re-searched Microsoft Learn via the
   Microsoft Learn MCP tool for the current `communication-compliance-policies#policy-settings` page.
   The two conflicting figures this scenario already disclosed — "three or more words" (under
   "Content safety classifiers based on large language models") and "five or more words" (under
