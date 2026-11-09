@@ -416,8 +416,14 @@ different risk calculus than a general conduct-monitoring policy's.
   `communication-compliance-policies` and "five or more words" in a different section of the
   *same* live page** [[4]](#references). This build's grounding pass confirmed both figures appear
   verbatim on the current page - not a stale-cache artifact from comparing two different page
-  versions. This scenario does not silently pick one; **VERIFY the actual behavior against a test
-  message in the tenant at deploy time** rather than relying on either published figure.
+  versions. **Re-checked 2026-11-09** (Microsoft Learn MCP, maintenance pass): both figures are
+  still present verbatim, unreconciled, in the same two subsections of the same live page -
+  "They evaluate messages containing three or more words" under "Content safety classifiers based
+  on large language models," and "The solution evaluates only messages containing five or more
+  words" under "Considerations when using classifiers." This scenario does not silently pick one;
+  **VERIFY the actual behavior against a test message in the tenant at deploy time** rather than
+  relying on either published figure. Re-close only once Microsoft unifies the two figures or a
+  pilot-tenant test confirms which one governs.
 - **Preview status.** These are explicitly "content safety classifiers (preview)" - subject to
   change, and evaluated as a materially newer, less broadly production-hardened capability than the
   trainable-classifier family `harassment-and-code-of-conduct` uses [[3]](#references).
