@@ -130,6 +130,16 @@ scenario's own Apple-device precedent) but flags it as an open `VERIFY` in `READ
 checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather than asserting it as
 confirmed.
 
+**Re-grounded 2026-11-10** (maintenance pass): directly fetched both `portable_devices`-touching
+samples in the GitHub path (`deny_debug_on_android.json`, `deny_mobile_devices.json`) - both scope
+`portable_devices` by a bare `primaryId` clause only, with no `serialNumber` clause present in
+either file - and probed the two file names Microsoft's own naming convention would predict for a
+Portable-device equivalent of the confirmed Apple-device sample
+(`audit_all_portable_devices_except_serial_numbers.json`,
+`deny_all_portable_devices_except_serial_numbers.json`); both returned `404`. No GitHub API access
+was available this run to confirm the samples directory's file list is exhaustive, so this
+strengthens but does not close the VERIFY - see `README.md` §11 for the full citation trail.
+
 ## 7. Key decisions
 
 | Decision | Choice | Rationale |

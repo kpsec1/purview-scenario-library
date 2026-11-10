@@ -282,7 +282,23 @@ is operational: reviewing and maintaining up to two additional approved-device l
   list (a materially stronger starting position than the ambiguity the Windows WPD-coverage
   sibling had to flag for `SerialNumberId`/`VID_PID`), but this is not the same as a direct worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks `approvedPortableDevices` entries
-  as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation.
+  as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation. **Re-grounded 2026-11-10** (maintenance
+  pass, direct fetch of `microsoft/mdatp-devicecontrol`'s `macOS/policy/samples/` content via
+  `raw.githubusercontent.com` - this run had no GitHub API access to list the directory
+  programmatically, so coverage rests on the ten samples the repo's own
+  `macOS/policy/samples/README.md` index table lists plus `audit_all_apple_devices_except_
+  serial_numbers.json`, already cited as [[2]](#references) and confirmed present by direct URL
+  even though the index table omits it): fetched every `portable_devices`-touching sample's JSON
+  directly - `deny_debug_on_android.json` and `deny_mobile_devices.json` both scope
+  `portable_devices` only by a bare `primaryId` clause, with no `serialNumber` clause anywhere in
+  either file. A direct URL probe for the naming pattern Microsoft used for the confirmed
+  Apple-device sample - `audit_all_portable_devices_except_serial_numbers.json` and
+  `deny_all_portable_devices_except_serial_numbers.json` - returned `404` for both, so no
+  similarly-named sample exists either. Because the index table is already known to be
+  incomplete (it omits the Apple-device sample this scenario itself cites), this is a thorough
+  negative check, not a provably exhaustive one - the VERIFY stays open; re-open for a fresh pass
+  only if Microsoft publishes a new sample in that directory, GitHub API access becomes available
+  for a true directory listing, or a pilot tenant check confirms the behavior directly.
 - **A device without a readable serial number cannot be allowlisted for the Apple or Portable
   families** - same scope boundary the parent scenario already carries for removable media
   (`README.md` §11 there), and the same reason this fragment doesn't attempt `vendorId`/`productId`
