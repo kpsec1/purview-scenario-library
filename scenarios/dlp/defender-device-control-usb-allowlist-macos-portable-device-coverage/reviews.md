@@ -173,3 +173,14 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Add-MacPortableDeviceCoverage.ps1` - including a genuine fabricated-field grounding defect
 (Blue Team finding 1) caught and fixed during this review, not merely documented. No Fail items
 were raised. This fragment meets the definition of done in `AGENTS.md` §9.
+
+**Maintenance addendum (2026-11-10):** the `portable_devices`/`serialNumber` VERIFY (`README.md`
+§11, `design.md` §6) was re-grounded, not closed. A direct fetch of both `portable_devices`-
+touching samples in the GitHub reference path (`deny_debug_on_android.json`,
+`deny_mobile_devices.json`) confirmed neither uses a `serialNumber` clause, and a probe for the
+naming pattern Microsoft used for the confirmed Apple-device sample
+(`audit_all_portable_devices_except_serial_numbers.json`,
+`deny_all_portable_devices_except_serial_numbers.json`) returned `404` for both - a thorough but
+not provably exhaustive negative check, since no GitHub API access was available this run to list
+the samples directory directly. Still open; re-close only on a Microsoft-published worked example,
+a true directory listing, or a pilot-tenant confirmation.
