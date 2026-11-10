@@ -3699,6 +3699,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Narrowed the `defender-device-control-usb-allowlist-macos-portable-device-coverage`
+  `portable_devices`/`serialNumber` worked-example VERIFY** - commit `4522e94` - 2026-11-10.
+  Maintenance pass: directly fetched both `portable_devices`-touching samples in the
+  `microsoft/mdatp-devicecontrol` GitHub reference path (`deny_debug_on_android.json`,
+  `deny_mobile_devices.json`) and confirmed neither uses a `serialNumber` clause (both scope
+  `portable_devices` by a bare `primaryId` clause only). Probed the naming pattern Microsoft used
+  for the confirmed `apple_devices` sample
+  (`audit_all_portable_devices_except_serial_numbers.json`,
+  `deny_all_portable_devices_except_serial_numbers.json`) - both `404`, so no similarly-named
+  sample exists either. This run had no GitHub API access to confirm the samples directory
+  listing is exhaustive (the repo's own `macOS/policy/samples/README.md` index table is already
+  known to omit at least one file this scenario cites), so the check is thorough but not provably
+  exhaustive - the VERIFY stays open, narrowed rather than closed. Updated
+  `defender-device-control-usb-allowlist-macos-portable-device-coverage/README.md` §11,
+  `design.md` §6, and `reviews.md` (maintenance addendum). Doc-only correction - no code change,
+  no new four-lens review round.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
