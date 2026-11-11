@@ -3132,12 +3132,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   operational guidance neither sibling scenario needed.
 
 ### Follow-ups discovered while building the Compliance Manager SOC 2 assessment scenario
-- [ ] VERIFY (pilot tenant): whether Compliance Manager's Controls/Improvement actions views let you
+- [x] VERIFY (pilot tenant): whether Compliance Manager's Controls/Improvement actions views let you
   filter or tag improvement actions by AICPA Trust Services Criteria category (Security/
   Availability/Processing Integrity/Confidentiality/Privacy) after assessment creation - no
   documented wizard step or worked example surfaced during this build's WebSearch/Microsoft Learn
   MCP grounding pass. `soc2-assessment/README.md` §11 flags this as an open item rather than
-  assuming the capability exists or doesn't.
+  assuming the capability exists or doesn't. **Closed 2026-11-11** (Microsoft Learn MCP,
+  maintenance pass): fetched "Working with improvement actions in Compliance Manager" and "Build
+  and manage assessments in Compliance Manager" in full. The Improvement actions page's only
+  filterable columns are Points achieved, Service, Group (assessment group), Solutions, a fixed set
+  of 10 general Categories, and Action type; the exported "Action Update" Excel report carries
+  exactly that same column set; the Controls tab filters only by control family/status/service; an
+  improvement action's Related controls tab filters only by regulation. No TSC-category filter or
+  tag exists anywhere in these views - confirmed absent by exhaustive enumeration, not merely
+  unconfirmed. `soc2-assessment/README.md` §11 and `design.md` §3/§7 updated in place - commit
+  `42a20c0`.
 - [ ] Once a live tenant is available: run the "Group-sharing functional test" across all three
   Compliance Manager scenarios now sharing the `Security & Compliance Assessments` group
   (`assess-against-iso27001`, `pci-dss-assessment`, `soc2-assessment`) simultaneously, not just
