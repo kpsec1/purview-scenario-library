@@ -3145,8 +3145,8 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   exactly that same column set; the Controls tab filters only by control family/status/service; an
   improvement action's Related controls tab filters only by regulation. No TSC-category filter or
   tag exists anywhere in these views - confirmed absent by exhaustive enumeration, not merely
-  unconfirmed. `soc2-assessment/README.md` §11 and `design.md` §3/§7 updated in place; see commit
-  for hash.
+  unconfirmed. `soc2-assessment/README.md` §11 and `design.md` §3/§7 updated in place - commit
+  `42a20c0`.
 - [ ] Once a live tenant is available: run the "Group-sharing functional test" across all three
   Compliance Manager scenarios now sharing the `Security & Compliance Assessments` group
   (`assess-against-iso27001`, `pci-dss-assessment`, `soc2-assessment`) simultaneously, not just
