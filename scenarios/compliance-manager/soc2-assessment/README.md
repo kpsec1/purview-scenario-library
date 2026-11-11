@@ -324,10 +324,23 @@ affect the shared group or the other assessment(s) in it.
   per-category (Security/Availability/Processing Integrity/Confidentiality/Privacy) selection step
   in the assessment-creation flow - the template appears to map the full published SOC 2 control set
   once selected, the same all-or-nothing pattern `pci-dss-assessment` documents for PCI DSS's 6
-  goals. **VERIFY (pilot tenant):** whether Compliance Manager's Controls/Improvement actions views
-  let you filter or tag improvement actions by TSC category after creation - this would materially
-  help a Contributor/Assessor scope their work to only the categories the org's actual SOC 2 report
-  will cover.
+  goals. **Resolved 2026-11-11 (Microsoft Learn MCP, maintenance pass):** Compliance Manager's
+  Controls and Improvement actions views do **not** let you filter or tag improvement actions by
+  TSC category after creation. The official "Working with improvement actions in Compliance
+  Manager" reference exhaustively documents every column/filter the Improvement actions page
+  offers - Points achieved, Service, Group (assessment group, not TSC category), Solutions, a fixed
+  set of 10 general Categories (Control Access, Discover and Respond, Govern Information,
+  Infrastructure Cloud, Manage Compliance, Manage Devices, Manage Internal Risks, Privacy
+  Management, Protect Against Threats, Protect Information), and Action type - plus confirms the
+  exported "Action Update" Excel report contains exactly "the filter categories shown on the
+  improvement actions page," i.e. the same list, nothing more
+  [[9]](#references). The companion "Build and manage assessments" reference confirms the
+  **Controls** tab filters only by control family, status, and service, and an improvement action's
+  **Related controls** tab filters only by regulation [[8]](#references). None of
+  these dimensions is AICPA Trust Services Criteria category. A Contributor/Assessor who needs to
+  scope work to only the categories an org's actual SOC 2 report will cover must do so manually
+  (e.g. cross-referencing each control's published TSC mapping against this scenario's own
+  `controlCrosswalk`), not via a native Compliance Manager filter or tag.
 - **A high compliance score is not proof of compliance, and is even less a proxy for a favorable SOC
   2 opinion.** Microsoft's own FAQ states this explicitly for Compliance Manager generally
   [[13]](#references) - a CPA firm's SOC 2 opinion depends on evidence and testing methodology this

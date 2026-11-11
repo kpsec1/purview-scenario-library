@@ -77,7 +77,8 @@ done in full:
    reuse it explicitly rather than re-shipping it (§2 above).
 5. Never fabricate what isn't documented - same standard as every other scenario in this library,
    including where the Compliance Manager wizard does **not** expose a documented TSC-category
-   selection step (§11's VERIFY item).
+   selection step, and where (confirmed 2026-11-11, see `README.md` §11) its Controls/Improvement
+   actions views do not expose a native TSC-category filter or tag after creation either.
 
 ## 4. What Compliance Manager's audit log actually documents (identical grounding to both sibling scenarios)
 
@@ -173,7 +174,7 @@ crosswalk states explicitly rather than treating all five categories as equally 
 - **Re-implementing the audit-trail export as a third, independent script.** Deliberately reused
   from `assess-against-iso27001`/`pci-dss-assessment` instead - see §2 above.
 - **Scripting Trust Services Criteria category selection within the assessment.** No documented
-  wizard step or API for this was found during this build (§11's VERIFY item) - not fabricated.
+  wizard step or API for this was found during this build (`README.md` §11) - not fabricated.
 
 ## 9. Key decisions
 
