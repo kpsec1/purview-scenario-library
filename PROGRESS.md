@@ -3703,7 +3703,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Narrowed the `endpoint-dlp-usb-block` `-ITExceptionAction Warn`/"Block with override"
-  VERIFY** - commit `PENDING` - 2026-11-12. Maintenance pass: directly re-searched
+  VERIFY** - commit `94ebce0` - 2026-11-12. Maintenance pass: directly re-searched
   `dlp-policy-reference`, `dlp-configure-endpoint-settings`, and `endpoint-dlp-learn-about` via the
   Microsoft Learn MCP tool for a literal statement tying the `EndpointDlpRestrictions` `Warn` enum
   value to the portal's "Block with override" label for the `RemovableMedia` setting. None exists
