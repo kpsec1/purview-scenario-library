@@ -290,7 +290,21 @@ permanently delete the policy and its rules.
   out that exact portal-name mapping. `deploy/New-EndpointDlpUsbBlockPolicy.ps1` now accepts
   `-ITExceptionAction Audit|Warn` (default `Audit`, unchanged prior behavior); choosing `Warn`
   justification-gates the IT Data Custodians path instead of silently logging it, at the cost of
-  interrupting that team's legitimate workflow with a prompt on every matching copy. VERIFY (pilot
+  interrupting that team's legitimate workflow with a prompt on every matching copy. **Re-grounded
+  2026-11-12** (Microsoft Learn MCP, maintenance pass): a fresh search across the full
+  `dlp-policy-reference`, `dlp-configure-endpoint-settings`, and `endpoint-dlp-learn-about` pages
+  found no page that states the literal enum-to-portal-name equivalence for the `RemovableMedia`
+  setting specifically - this remains genuinely undocumented, not merely undiscovered. Two
+  corroborating (not conclusive) data points surfaced this pass, added for a future reviewer's
+  benefit: (1) `endpoint-dlp-learn-about`'s own activities table uses the literal word "warn" as a
+  portal-facing synonym for this behavior on a sibling endpoint activity - "You can block, warn, or
+  audit when protected files can be uploaded or ... to cloud services" (the cloud-upload/browser
+  activity, not `RemovableMedia`) - showing Microsoft itself sometimes names the override-prompt
+  action "warn" in prose, not just "Block with override"; (2) `dlp-configure-endpoint-settings`
+  describes the override prompt itself with the same word family - "the upload is blocked, a
+  **warning** displays, giving the user the option to override the block." Neither page ties either
+  statement to the `RemovableMedia` `EndpointDlpRestrictions` enum value, so the mapping this
+  scenario relies on is still an inference, now a somewhat better-corroborated one. VERIFY (pilot
   tenant) the actual on-screen prompt behavior before describing it to a customer as "Block with
   override" by name.
 - **Switching `-ITExceptionAction` from `Warn` back to `Audit` with `-Force` may leave stale
@@ -366,7 +380,7 @@ permanently delete the policy and its rules.
 11. Set-DlpCompliancePolicy reference (Mode: Enable/Disable/TestWithNotifications/TestWithoutNotifications) - <https://learn.microsoft.com/powershell/module/exchangepowershell/set-dlpcompliancepolicy>
 12. Remove-DlpCompliancePolicy reference - <https://learn.microsoft.com/powershell/module/exchangepowershell/remove-dlpcompliancepolicy>
 13. Get started with Endpoint data loss prevention - <https://learn.microsoft.com/purview/endpoint-dlp-getting-started>
-14. Learn about Endpoint data loss prevention (local evaluation, file classification triggers) - <https://learn.microsoft.com/purview/endpoint-dlp-learn-about>
+14. Learn about Endpoint data loss prevention (local evaluation, file classification triggers; also the activities table's "block, warn, or audit" phrasing for the cloud-upload/browser activity, cited in §11 as corroborating, non-conclusive evidence for the `Warn`/"Block with override" question) - <https://learn.microsoft.com/purview/endpoint-dlp-learn-about>
 15. Device control in Microsoft Defender for Endpoint (content-blind device-level USB control, complementary to Endpoint DLP) - <https://learn.microsoft.com/defender-endpoint/device-control-overview>
 16. Creating Endpoint DLP Rules using PowerShell - Part 1 (Microsoft Security Blog, Tech Community - secondary/corroborating EndpointDlpRestrictions Setting/Value hashtable example for RemovableMedia and Print, superseded as primary citation by items 9-10) - <https://techcommunity.microsoft.com/blog/microsoft-security-blog/creating-endpoint-dlp-rules-using-powershell---part-1/4286999>
 17. Connect-IPPSSession reference (app-only certificate auth) - <https://learn.microsoft.com/powershell/module/exchangepowershell/connect-ippssession>
@@ -380,5 +394,7 @@ permanently delete the policy and its rules.
 > items 9-10 (official Microsoft Learn cmdlet reference pages, fetched and confirmed directly);
 > item 16's community walkthrough is kept only as a secondary, corroborating source. The `Warn`
 > value's mapping to the portal's "Block with override" option remains a well-corroborated
-> inference, not a literal Microsoft citation - confirm the on-screen behavior in a pilot tenant
-> before relying on that framing with a customer (§11).
+> inference, not a literal Microsoft citation - re-checked directly against `dlp-policy-reference`,
+> `dlp-configure-endpoint-settings`, and item 14 on 2026-11-12 (Microsoft Learn MCP, maintenance
+> pass) with no page found stating the mapping outright for `RemovableMedia` - confirm the
+> on-screen behavior in a pilot tenant before relying on that framing with a customer (§11).
