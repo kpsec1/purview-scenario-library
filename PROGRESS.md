@@ -2563,6 +2563,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `Set-DlpComplianceRule` reference confirms `Warn` exists and groups it with `Block` via a shared
   `-NotifyUser` requirement, but never states the portal-name mapping explicitly - flagged inline
   in `endpoint-dlp-usb-block/README.md` §11 and the deploy script's `.NOTES` rather than asserted.
+  **Re-grounded 2026-11-12** (Microsoft Learn MCP, maintenance pass): directly re-searched
+  `dlp-policy-reference`, `dlp-configure-endpoint-settings`, and `endpoint-dlp-learn-about` for a
+  literal `Warn`-to-"Block with override" statement tied to the `RemovableMedia` setting - none
+  exists on any of the three pages. Two corroborating, non-conclusive data points added to
+  `README.md` §11/§12/closing note: `endpoint-dlp-learn-about`'s activities table uses the literal
+  word "warn" as a portal-facing synonym for the override-prompt behavior on the cloud-upload/
+  browser activity ("You can block, warn, or audit..."), and `dlp-configure-endpoint-settings`
+  describes that same override prompt as "a warning displays, giving the user the option to
+  override the block." Neither ties the word to the `RemovableMedia` enum specifically, so this
+  remains open; re-close only on a pilot-tenant check or a future Microsoft Learn page that states
+  the mapping outright. `reviews.md` carries a matching maintenance addendum.
 - [ ] VERIFY (pilot tenant, before relying on `-Force` to switch `endpoint-dlp-usb-block`'s
   `-ITExceptionAction` from `Warn` back to `Audit`): whether `Set-DlpComplianceRule` clears a
   previously-set `NotifyUser`/`NotifyPolicyTipCustomText` value when a later call omits it, or
@@ -3691,6 +3702,22 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Narrowed the `endpoint-dlp-usb-block` `-ITExceptionAction Warn`/"Block with override"
+  VERIFY** - commit `PENDING` - 2026-11-12. Maintenance pass: directly re-searched
+  `dlp-policy-reference`, `dlp-configure-endpoint-settings`, and `endpoint-dlp-learn-about` via the
+  Microsoft Learn MCP tool for a literal statement tying the `EndpointDlpRestrictions` `Warn` enum
+  value to the portal's "Block with override" label for the `RemovableMedia` setting. None exists
+  on any of the three pages - the mapping stays genuinely undocumented, confirming (not
+  overturning) the prior build's conclusion. Added two corroborating, non-conclusive citations
+  found this pass: `endpoint-dlp-learn-about`'s activities table uses the literal word "warn" for
+  the override-prompt behavior on the cloud-upload/browser activity ("You can block, warn, or
+  audit..."), and `dlp-configure-endpoint-settings` describes that same override prompt as "a
+  warning displays, giving the user the option to override the block." Updated
+  `endpoint-dlp-usb-block/README.md` §11 (VERIFY bullet re-grounded in place, reference 14's
+  annotation extended, closing re-verify note updated) and `reviews.md` (new dated maintenance
+  addendum). VERIFY remains open in the TODO section above (re-close only on a pilot-tenant check
+  or a future Microsoft Learn page stating the mapping outright) - doc-only correction, no code
+  change, no new four-lens review round.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network

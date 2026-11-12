@@ -177,3 +177,23 @@ reachable this time; the original build could only reach a Tech Community blog f
 No remaining Fix/Fail. This addendum does not reopen the original four-lens verdicts above; it
 records a grounding upgrade and one additive, opt-in, non-default capability reviewed against the
 same bar.
+
+---
+
+## Addendum (2026-11-12) - maintenance pass, `Warn`/"Block with override" VERIFY re-grounded
+
+Routine maintenance re-check of the open `-ITExceptionAction Warn` VERIFY (`PROGRESS.md`, §11
+above). Re-searched `dlp-policy-reference`, `dlp-configure-endpoint-settings`, and
+`endpoint-dlp-learn-about` directly via the Microsoft Learn MCP tool for a literal statement tying
+the `EndpointDlpRestrictions` `Warn` enum value to the portal's "Block with override" label for the
+`RemovableMedia` setting specifically. None found - the VERIFY stays open, now with two additional
+corroborating (not conclusive) citations recorded in `README.md` §11/§12/closing note rather than
+left un-re-checked indefinitely.
+
+- 🟦 **Microsoft Product Owner** - re-confirms the prior addendum's framing is still accurate: this
+  is Microsoft's own documentation gap (inconsistent "Block with override" vs. "warn"/"warning"
+  terminology across pages), not a research shortfall this repo can close by searching harder.
+  **Verdict: Pass, no change required beyond the added citations.**
+
+No remaining Fix/Fail. This addendum does not reopen the original four-lens verdicts; it records a
+maintenance-pass re-grounding attempt that narrowed, but did not close, the existing VERIFY.
