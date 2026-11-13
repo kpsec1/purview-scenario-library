@@ -301,27 +301,35 @@ same consumption-based billing applies regardless of where the SHIR runs.
   same mechanism the on-premises SQL Server system scan ruleset is `{"kind": "SqlServerDatabase",
   "scanRulesetType": "System", "id": "systemscanrulesets/SqlServerDatabase", "name":
   "SqlServerDatabase"}`. This scenario's default is correct as shipped [[14]](#references).
-- **VERIFY (narrowed 2026-09-28, Microsoft Learn MCP) - Windows Authentication's `CredentialType`
-  value.** Microsoft's portal documents both "SQL Authentication" and "Windows Authentication" as
-  supported methods for this source type. This pass fetched the **Credential - Create Or Replace**
-  REST reference directly (the dedicated, canonical `CredentialType` schema page - not previously
-  cited by this scenario, which had only sourced the enum's member list from the Data Sources
-  reference) and confirmed it publishes the *complete* enum with no additional or hidden members:
-  `AccountKey` / `ServicePrincipal` / `BasicAuth` / `SqlAuth` / `AmazonARN` / `ConsumerKeyAuth` /
-  `DelegatedAuth` / `ManagedIdentity` - exactly eight values, each with its own one-line description,
-  none named or described as Windows-specific [[18]](#references). By elimination, `BasicAuth` remains
-  the only structurally-compatible candidate for Windows Authentication (`AccountKey` is a single
-  secret, not user+password; `ServicePrincipal`/`DelegatedAuth` are app-ID-based; `AmazonARN` is AWS
-  role assumption; `ConsumerKeyAuth` is Salesforce-specific; `ManagedIdentity` has no stored secret at
-  all; `SqlAuth` is already Microsoft's own confirmed value for SQL Authentication on this exact scan
-  kind) - both `BasicAuth` and `SqlAuth` share the identical `UserPassCredentialProperties` (user +
-  password) shape, so this elimination narrows the field to one candidate but does not amount to a
-  Microsoft-published statement of the mapping. This script's `-CredentialType` parameter still
-  accepts `'SqlAuth'` (default, and the value Microsoft's own worked example for this scan kind uses)
-  or `'BasicAuth'` (elimination-grounded, still not Microsoft-confirmed) - do not rely on `'BasicAuth'`
-  for a Windows Authentication deployment without confirming against a pilot tenant first. Remains
-  open; re-close only if Microsoft publishes a worked example or an explicit statement naming the
-  `CredentialType` value for Windows Authentication specifically.
+- **VERIFY (narrowed further 2026-11-13, Microsoft Learn MCP, maintenance pass) - Windows
+  Authentication's `CredentialType` value.** Microsoft's portal documents both "SQL Authentication"
+  and "Windows Authentication" as supported methods for this source type. The 2026-09-28 pass
+  confirmed the REST `CredentialType` enum is exhaustive at exactly eight values (`AccountKey` /
+  `ServicePrincipal` / `BasicAuth` / `SqlAuth` / `AmazonARN` / `ConsumerKeyAuth` / `DelegatedAuth` /
+  `ManagedIdentity`), none named or described as Windows-specific [[18]](#references), but that pass's
+  own elimination argument contained an inaccuracy: it grouped `DelegatedAuth` with `ServicePrincipal`
+  as "app-ID-based" to exclude it as not user+password-shaped. Re-reading reference [[18]](#references)'s
+  own `KeyVaultSecretDelegatedAuthCredentialTypeProperties` definition this pass shows `DelegatedAuth`
+  actually carries `clientId` **and** `user` **and** `password` - it is user+password-shaped too, so
+  structure alone cannot exclude it, and `BasicAuth` was not in fact the only structurally-compatible
+  remaining candidate as previously stated. This pass closes that two-way ambiguity on a different,
+  correct basis: Microsoft's documented use of `DelegatedAuth` is exclusively Microsoft Fabric
+  (same-tenant and cross-tenant) and Power BI tenant scanning, where the `user`/`password` pair belongs
+  to an account assigned the Microsoft Entra **Fabric Administrator** role for a cross-tenant
+  delegated-access pattern [[19]](#references)[[20]](#references) - a documented use case with no
+  stated relationship to on-premises SQL Server or Windows-domain (NTLM/Kerberos) authentication.
+  `scenarios/data-map/scan-credential-remaining-kinds/` (this repo's own `DelegatedAuth`-scripting
+  sibling) independently confirms the same Fabric/Power BI-only scope [[21]](#references). With
+  `DelegatedAuth` now excluded on documented-use grounds rather than a (corrected) structural claim,
+  `BasicAuth` is the only remaining candidate across the complete, confirmed-exhaustive eight-value
+  enum - a complete-elimination argument, stronger than the prior partial one, but still not a single
+  Microsoft-published sentence stating "Windows Authentication = BasicAuth," so it stays flagged
+  VERIFY rather than closed, per `AGENTS.md` §4. This script's `-CredentialType` parameter is
+  unchanged: it still accepts `'SqlAuth'` (default, and the value Microsoft's own worked example for
+  this scan kind uses) or `'BasicAuth'` (elimination-grounded, still not Microsoft-confirmed) - do not
+  rely on `'BasicAuth'` for a Windows Authentication deployment without confirming against a pilot
+  tenant first. Remains open; re-close only if Microsoft publishes a worked example or an explicit
+  statement naming the `CredentialType` value for Windows Authentication specifically.
 - **~~The credential object and~~ the SHIR software install remain portal-only. CORRECTED
   2026-09-16 - the credential half of this claim was wrong.** This build concluded that no
   documented REST endpoint existed for creating a Purview credential object. It does: **Credential**
@@ -376,10 +384,15 @@ same consumption-based billing applies regardless of where the SHIR runs.
 15. Kubernetes supported self-hosted data integration runtime for on-premises data sources (preview) - the distinct, containerized alternative this scenario does not cover - <https://learn.microsoft.com/purview/unified-catalog-data-integration-runtime-kubernetes>
 16. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary) - <https://learn.microsoft.com/purview/data-gov-classic-permissions>
 17. `scenarios/data-map/scan-azure-sql-and-classify/`, `scan-azure-sql-managed-instance-and-classify/`, `scan-azure-synapse-and-classify/` - the three sibling scenarios this fragment extends; see their README.md/design.md for shared reasoning not repeated here.
-18. Credential - Create Or Replace (REST reference, API version 2023-09-01 - publishes the complete, authoritative `CredentialType` enum with a one-line description per value: `AccountKey`, `ServicePrincipal`, `BasicAuth`, `SqlAuth`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, `ManagedIdentity`; no Windows-specific value exists) - <https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace>
+18. Credential - Create Or Replace (REST reference, API version 2023-09-01 - publishes the complete, authoritative `CredentialType` enum with a one-line description per value: `AccountKey`, `ServicePrincipal`, `BasicAuth`, `SqlAuth`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, `ManagedIdentity`; no Windows-specific value exists; also publishes `KeyVaultSecretDelegatedAuthCredentialTypeProperties` - `clientId`/`user`/`password` - cited in §11 to correct the prior "app-ID-based" structural claim about `DelegatedAuth`) - <https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace>
+19. Connect to your Microsoft Fabric tenant in the same tenant as Microsoft Purview - "Authentication to scan" (the Delegated authentication subsection: Microsoft Entra **Fabric Administrator** role requirement, Client ID/user name/password fields) - <https://learn.microsoft.com/purview/register-scan-fabric-tenant#authentication-to-scan>
+20. Connect to and manage a Power BI tenant in Microsoft Purview (cross-tenant) - the cross-tenant Delegated Auth worked example, same Fabric/Power BI-only scope - <https://learn.microsoft.com/purview/register-scan-power-bi-tenant-cross-tenant#scan-cross-tenant-power-bi>
+21. `scenarios/data-map/scan-credential-remaining-kinds/README.md` §5/§7 - this repo's own `DelegatedAuth`-scripting sibling scenario, independently grounding `DelegatedAuth` as Fabric/Power BI-only with no on-premises SQL Server relationship.
 
 > Re-verify all links and the one remaining VERIFY item in §11 (Windows Authentication's
 > `CredentialType` value) against current Microsoft Learn before a customer-facing deployment - the
 > Data Map REST surface is explicitly called out by Microsoft as evolving. The system scan rule set
 > name VERIFY was closed 2026-09-26; the Windows Authentication `CredentialType` VERIFY was narrowed
-> (elimination against the complete enum) but remains open as of 2026-09-28.
+> (elimination against the complete enum) on 2026-09-28, then narrowed further (the two-candidate
+> ambiguity between `BasicAuth` and `DelegatedAuth` resolved to `BasicAuth` as the sole remaining
+> candidate, on documented-use grounds) on 2026-11-13, and remains open as of that date.

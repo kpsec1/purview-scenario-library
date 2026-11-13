@@ -110,12 +110,13 @@
     Replace REST reference publishes the complete CredentialType enum (AccountKey / ServicePrincipal /
     BasicAuth / SqlAuth / AmazonARN / ConsumerKeyAuth / DelegatedAuth / ManagedIdentity - confirmed
     exhaustive, re-grounded 2026-09-28) with no value named or described as Windows-specific.
-    'BasicAuth' is this script's elimination-grounded best-effort mapping (every other value is
-    structurally incompatible with username+password auth except 'SqlAuth', which Microsoft's own
-    worked example already confirms is used for SQL Authentication) - not a Microsoft-published
-    mapping, still flagged as an explicit VERIFY. 'SqlAuth' is the default because it is the
-    credential type Microsoft's own worked PowerShell example for this exact scan kind uses. See
-    README.md Section 11.
+    'BasicAuth' is this script's elimination-grounded best-effort mapping, now the sole remaining
+    candidate across the complete enum: DelegatedAuth was separately excluded (narrowed 2026-11-13)
+    on documented-use grounds - it is Microsoft Fabric/Power BI tenant-scanning-only, unrelated to
+    on-premises SQL Server - not merely structural incompatibility as previously (inaccurately)
+    stated. Still not a Microsoft-published mapping, still flagged as an explicit VERIFY. 'SqlAuth' is
+    the default because it is the credential type Microsoft's own worked PowerShell example for this
+    exact scan kind uses. See README.md Section 11.
 
 .PARAMETER DataSourceName
     Name for the registered data source object. Defaults to a sanitized form of -ServerEndpoint.
@@ -239,8 +240,10 @@
     Section 11 for the full writeup):
     - Which CredentialType enum value corresponds to "Windows Authentication" in the portal - this
       script's -CredentialType 'BasicAuth' default-alternative is now grounded by elimination against
-      the complete, confirmed-exhaustive CredentialType enum (re-grounded 2026-09-28), but remains an
-      elimination argument, not a Microsoft-published mapping statement.
+      the complete, confirmed-exhaustive CredentialType enum (re-grounded 2026-09-28; narrowed further
+      2026-11-13 after DelegatedAuth was excluded on documented Fabric/Power BI-only use grounds,
+      leaving BasicAuth the sole remaining candidate), but remains an elimination argument, not a
+      Microsoft-published mapping statement.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(
