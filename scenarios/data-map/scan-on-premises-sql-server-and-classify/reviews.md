@@ -178,3 +178,18 @@ re-grounded, not closed. A direct fetch of the Credential - Create Or Replace RE
 none Windows-specific, narrowing the script's `'BasicAuth'` default-alternative to an
 elimination-grounded (not Microsoft-published) mapping. Still open; re-close only on a Microsoft
 worked example or explicit statement.
+
+**Maintenance addendum (2026-11-13):** narrowed further, still not closed. The 2026-09-28 pass's own
+elimination argument was inaccurate on one point - it called `DelegatedAuth` "app-ID-based" to exclude
+it as not user+password-shaped, but reference [[18]](#references)'s own
+`KeyVaultSecretDelegatedAuthCredentialTypeProperties` definition shows `DelegatedAuth` carries
+`clientId` **and** `user` **and** `password`, so it is user+password-shaped too and structure alone
+cannot rule it out. Re-grounded the exclusion on documented use instead: `DelegatedAuth` is
+Microsoft-documented as exclusively a Microsoft Fabric/Power BI tenant-scanning credential, requiring
+the delegated account to hold the Microsoft Entra Fabric Administrator role (`README.md` §11/§12 new
+refs `#19`/`#20`/`#21`), with no stated relationship to on-premises SQL Server or Windows-domain
+authentication - independently corroborated by this repo's own `scan-credential-remaining-kinds`
+sibling scenario. `BasicAuth` is now the sole remaining candidate across the complete eight-value
+enum (a complete-elimination argument, not a partial one), but this is still elimination, not a
+Microsoft-published mapping statement, so the VERIFY stays open. `README.md` §11/§12, `design.md` §7
+updated in place; no script behavior change (`-CredentialType` ValidateSet and default unchanged).

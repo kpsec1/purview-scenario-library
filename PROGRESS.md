@@ -2942,21 +2942,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   §12 ref [14]), `design.md` (§4, §5, §7), and the deploy script's `.PARAMETER`/`.NOTES` blocks;
   `reviews.md` carries a maintenance addendum. The sibling `CredentialType`/Windows Authentication
   VERIFY (next item below) remains open and untouched by this pass.
-- [ ] VERIFY narrowed 2026-09-28 (Microsoft Learn MCP): which `CredentialType` REST enum value
-  corresponds to "Windows Authentication" in the portal for the `SqlServerDatabaseCredential` scan
-  kind - Microsoft's portal documents Windows Authentication as a supported method for this source
-  type. This pass fetched the **Credential - Create Or Replace** REST reference directly (a more
-  authoritative source than the Data Sources reference this scenario had previously cited the enum
-  from) and confirmed the `CredentialType` enum is exhaustive at exactly eight values
-  (`AccountKey`/`ServicePrincipal`/`BasicAuth`/`SqlAuth`/`AmazonARN`/`ConsumerKeyAuth`/
-  `DelegatedAuth`/`ManagedIdentity`), each with its own Microsoft-published description, none naming
-  or describing a Windows-specific credential type. By elimination `BasicAuth` is the only
-  structurally-compatible remaining candidate (every other value is either not username/password-shaped,
-  or - for `SqlAuth` - already Microsoft-confirmed as the value for SQL Authentication on this exact
-  scan kind), but this is this repo's elimination argument, not a Microsoft-published mapping
-  statement, so it remains open. `scan-on-premises-sql-server-and-classify`'s deploy script continues
-  to offer `'BasicAuth'` as its elimination-grounded (not Microsoft-confirmed) alternative to the
-  confirmed `'SqlAuth'` default - see that scenario's `README.md` §11/§12 ref [18], `design.md` §7,
+- [ ] VERIFY narrowed further 2026-11-13 (Microsoft Learn MCP, maintenance pass): which
+  `CredentialType` REST enum value corresponds to "Windows Authentication" in the portal for the
+  `SqlServerDatabaseCredential` scan kind - Microsoft's portal documents Windows Authentication as a
+  supported method for this source type. The 2026-09-28 pass confirmed the `CredentialType` enum is
+  exhaustive at exactly eight values, none Windows-specific, but its own elimination argument
+  inaccurately called `DelegatedAuth` "app-ID-based" to exclude it as not user+password-shaped - the
+  Credential - Create Or Replace REST reference's own `KeyVaultSecretDelegatedAuthCredentialTypeProperties`
+  definition shows `DelegatedAuth` carries `clientId` **and** `user` **and** `password`, so structure
+  alone cannot rule it out. This pass re-grounds the exclusion correctly: `DelegatedAuth` is
+  Microsoft-documented as exclusively a Microsoft Fabric/Power BI tenant-scanning credential
+  (requiring the delegated account to hold the Microsoft Entra Fabric Administrator role), with no
+  stated relationship to on-premises SQL Server or Windows-domain authentication - independently
+  corroborated by this repo's own `scan-credential-remaining-kinds` sibling scenario. `BasicAuth` is
+  now the sole remaining candidate across the complete eight-value enum (a complete-elimination
+  argument, stronger than the prior partial one), but this is still elimination, not a
+  Microsoft-published mapping statement, so it remains open.
+  `scan-on-premises-sql-server-and-classify`'s deploy script continues to offer `'BasicAuth'` as its
+  elimination-grounded (not Microsoft-confirmed) alternative to the confirmed `'SqlAuth'` default - no
+  script behavior change. See that scenario's `README.md` §11/§12 refs [18]-[21], `design.md` §7,
   `reviews.md` maintenance addendum, and the deploy script's `.PARAMETER`/`.NOTES` blocks. Re-close
   only on a Microsoft worked example or explicit statement naming the value for Windows Authentication.
 - [ ] `scenarios/data-map/scan-on-premises-sql-server-and-classify-kubernetes-shir/` (or fold into a
@@ -3691,6 +3695,31 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Narrowed further the `scan-on-premises-sql-server-and-classify` Windows Authentication
+  `CredentialType` VERIFY and corrected an inaccuracy in its own prior elimination argument** -
+  commit `56443eb` - 2026-11-13. Maintenance pass (Microsoft Learn MCP): the 2026-09-28 narrowing
+  had called `DelegatedAuth` "app-ID-based" to exclude it as not user+password-shaped, but a closer
+  read of the already-cited Credential - Create Or Replace REST reference's own
+  `KeyVaultSecretDelegatedAuthCredentialTypeProperties` definition shows `DelegatedAuth` actually
+  carries `clientId` **and** `user` **and** `password` - it is user+password-shaped too, so that
+  structural exclusion was wrong. Re-grounded the exclusion correctly instead: fetched Microsoft's
+  Fabric/Power BI tenant-connect pages directly, confirming `DelegatedAuth`'s documented use is
+  exclusively Microsoft Fabric (same-tenant/cross-tenant) and Power BI tenant scanning, with the
+  `user`/`password` pair belonging to an account holding the Microsoft Entra Fabric Administrator
+  role - a cross-tenant delegated-access pattern with no documented relationship to on-premises SQL
+  Server or Windows-domain (NTLM/Kerberos) authentication. Cross-checked against this repo's own
+  `scan-credential-remaining-kinds` sibling scenario, which independently grounds the same
+  Fabric/Power BI-only scope for `DelegatedAuth`. With `DelegatedAuth` now excluded on documented-use
+  grounds, `BasicAuth` is the sole remaining candidate across the complete, confirmed-exhaustive
+  eight-value `CredentialType` enum - a complete-elimination argument, stronger than the prior
+  partial one, but still not a single Microsoft-published sentence stating "Windows Authentication =
+  BasicAuth," so the VERIFY stays open rather than closed, per `AGENTS.md` §4. Updated
+  `scan-on-premises-sql-server-and-classify/README.md` (§11 corrected in place, §12 new refs
+  [19]-[21], closing footnote), `design.md` (§7), `reviews.md` (new maintenance addendum), and the
+  deploy script's `.PARAMETER CredentialType`/`.NOTES` blocks to match. No script behavior change
+  (`-CredentialType` ValidateSet and default unchanged: `'SqlAuth'` default, `'BasicAuth'` the
+  documented, still-unconfirmed alternative) and no new four-lens review round needed per `AGENTS.md`
+  §6 - doc/citation-only correction.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
