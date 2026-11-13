@@ -3697,7 +3697,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 ## DONE
 - [x] **Narrowed further the `scan-on-premises-sql-server-and-classify` Windows Authentication
   `CredentialType` VERIFY and corrected an inaccuracy in its own prior elimination argument** -
-  commit `PENDING` - 2026-11-13. Maintenance pass (Microsoft Learn MCP): the 2026-09-28 narrowing
+  commit `56443eb` - 2026-11-13. Maintenance pass (Microsoft Learn MCP): the 2026-09-28 narrowing
   had called `DelegatedAuth` "app-ID-based" to exclude it as not user+password-shaped, but a closer
   read of the already-cited Credential - Create Or Replace REST reference's own
   `KeyVaultSecretDelegatedAuthCredentialTypeProperties` definition shows `DelegatedAuth` actually
