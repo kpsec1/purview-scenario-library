@@ -3691,6 +3691,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Disclosed Microsoft's Data Governance retirement announcement in the root `README.md`
+  coverage section** - commit `1cd3608` - 2026-11-14.
+  Maintenance pass: while researching the still-open `scan-on-premises-sql-server-and-classify`
+  Windows Authentication `CredentialType` VERIFY (unchanged, still open - see below), a Microsoft
+  Learn search surfaced an **Important** banner now present on every Purview Data Map/Unified
+  Catalog page (e.g. `data-map-data-scan-credentials`, `data-map`, `data-governance-overview`,
+  `data-governance-plan`): Microsoft announced on **2026-11-12** that Purview Data Governance
+  (Unified Catalog, Data Map, and Workflows) is retiring, consolidating into Microsoft Fabric and
+  the OneLake catalog - no new accounts can be created, and existing capabilities stay in
+  maintenance mode through **2027-11-12** (`https://aka.ms/DG-Deprecation`; corroborated by
+  `learn.microsoft.com/partner-center/announcements/2026-november`, which also confirms Purview
+  Data Security and Compliance offerings - DLP, IRM, Information Protection, eDiscovery, Audit,
+  Compliance Manager, Records Management, Communication Compliance - are explicitly unaffected). A
+  repo-wide search (`DG-Deprecation`, "November 12, 2027", "consolidating its data governance")
+  found this disclosure nowhere in the build - a genuine, dated accuracy gap in already-shipped
+  content, not a guess. Added a dated platform-note callout to `README.md`'s "What's covered"
+  section naming the five affected modules (Data Map, Unified Catalog, Data Estate Insights, Data
+  Quality, Data Lineage) with a link to the official announcement. Scoped to this one cross-cutting
+  fix per this run's one-item-per-run discipline; rolling the same disclosure into each affected
+  scenario's own docs is flagged below (`Blocked / needs user`) for a dedicated future pass rather
+  than filed as a new backlog `TODO` here.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
@@ -8956,6 +8977,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   updated in place; no script behavior change.
 
 ## Blocked / needs user
+- **Platform note (2026-11-14, not a question needing a user decision - informational, worth
+  prioritizing for a future dedicated pass):** Microsoft announced the retirement of Purview Data
+  Governance (Unified Catalog, Data Map, Workflows) on 2026-11-12, maintenance mode through
+  2027-11-12, consolidating into Microsoft Fabric/the OneLake catalog
+  (`https://aka.ms/DG-Deprecation`). This run disclosed it once, at the repo's root `README.md`
+  (see DONE above), but the same dated disclosure is not yet present in the affected modules' own
+  scenario folders - `scenarios/data-map/*`, `scenarios/unified-catalog/*`,
+  `scenarios/data-estate-insights/*`, `scenarios/data-quality/*`, `scenarios/data-lineage/*` (9+6+
+  3+2+2 = 22 scenario folders per `README.md`'s own counts). Purview Data Security and Compliance
+  modules (DLP, Insider Risk Management, Information Protection, eDiscovery, Audit, Compliance
+  Manager, Records Management, Communication Compliance, Adaptive Protection, DSPM for AI, Data
+  Security Investigations, Information Barriers) are explicitly confirmed unaffected by this
+  announcement and need no change. Recommend a dedicated maintenance pass (or several, respecting
+  the one-fragment-per-turn rule) to add the same dated disclosure - with a link to the official
+  announcement - to each affected scenario's `README.md` §11 ("Known limitations & gotchas") and
+  `design.md`. Not filed as a backlog `TODO` per this run's scope limits (maintenance-only, no new
+  coverage, no new TODOs); surfacing here for a human decision on priority and scope instead.
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,
   recorded so the next run doesn't misread it as real divergence):** this session also started on a
   **detached HEAD** with a stale local `main` (49 commits behind). Following the 2026-09-16 fix's own
