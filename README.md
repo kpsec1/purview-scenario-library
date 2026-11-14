@@ -49,6 +49,16 @@ Eighteen Purview modules, organized the way Microsoft organizes them:
 **Risk & Compliance** - Data Lifecycle Management (9) · eDiscovery (8) · Compliance Manager (6) · Records Management (5) · Communication Compliance (4) · Audit (4) · Information Barriers (3)
 **Cross-cutting** - Licensing matrix · RBAC model · Graph/PowerShell automation surface · Migration
 
+> **⚠ Platform note (2026-11-12):** Microsoft has announced the retirement of Microsoft Purview
+> Data Governance - Unified Catalog, Data Map, and Workflows - consolidating that capability into
+> Microsoft Fabric and the OneLake catalog. No new accounts can be created; existing capabilities
+> stay in maintenance mode through **November 12, 2027**. This affects the **Data Map, Unified
+> Catalog, Data Estate Insights, Data Quality, and Data Lineage** scenarios in this repo - Purview
+> Data Security and Compliance (DLP, Insider Risk Management, Information Protection, eDiscovery,
+> Audit, Compliance Manager, Records Management, Communication Compliance) are unaffected. See the
+> [official retirement announcement](https://aka.ms/DG-Deprecation) for transition timelines and
+> guidance before building new work on the affected modules.
+
 See the live coverage matrix in [`PROGRESS.md`](PROGRESS.md).
 
 ## How every scenario ships
