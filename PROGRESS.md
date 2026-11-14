@@ -3692,7 +3692,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Disclosed Microsoft's Data Governance retirement announcement in the root `README.md`
-  coverage section** - commit `PENDING` - 2026-11-14.
+  coverage section** - commit `1cd3608` - 2026-11-14.
   Maintenance pass: while researching the still-open `scan-on-premises-sql-server-and-classify`
   Windows Authentication `CredentialType` VERIFY (unchanged, still open - see below), a Microsoft
   Learn search surfaced an **Important** banner now present on every Purview Data Map/Unified
