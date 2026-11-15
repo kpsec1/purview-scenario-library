@@ -124,7 +124,15 @@ also unscoped by device family but the *page's structure itself* left open wheth
 suggests `serialNumber` is *excluded* for `portable_devices`. However, this build's grounding pass
 found a directly-confirmed worked example only for `apple_devices`
 (`audit_all_apple_devices_except_serial_numbers.json`) - none was found pairing `serialNumber` with
-a `portable_devices`-scoped group specifically. Per `AGENTS.md` §4, this fragment uses
+a `portable_devices`-scoped group specifically. **Re-grounded 2026-11-15** (maintenance pass,
+GitHub-samples): fetched the full current contents of all 14 sample policies plus `scenarios.json`
+in `microsoft/mdatp-devicecontrol`'s `macOS/policy/samples` directory, not just the subset this
+fragment originally cited. The three files that reference `portable_devices`
+(`deny_debug_on_android.json`, `audit_mobile_devices.json`, `deny_mobile_devices.json`) each scope
+the group by a bare `primaryId` clause only (optionally OR'd with `apple_devices`); none adds a
+`serialNumber` clause to that group. The directly-confirmed worked example therefore remains
+`apple_devices`-only - this pass found no new evidence either way and the VERIFY stays open, now on
+an exhaustively-checked rather than partially-checked sample set. Per `AGENTS.md` §4, this fragment uses
 `serialNumber` for Portable devices (consistent with the flat, unscoped clause table and with this
 scenario's own Apple-device precedent) but flags it as an open `VERIFY` in `README.md` §11 and
 checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather than asserting it as

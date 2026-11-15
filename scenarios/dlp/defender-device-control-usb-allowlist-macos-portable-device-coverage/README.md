@@ -281,7 +281,12 @@ is operational: reviewing and maintaining up to two additional approved-device l
   published sample. Microsoft's Clause reference table is presented as one flat, family-unscoped
   list (a materially stronger starting position than the ambiguity the Windows WPD-coverage
   sibling had to flag for `SerialNumberId`/`VID_PID`), but this is not the same as a direct worked
-  example. `validate/Test-MacPortableDeviceCoverage.ps1` checks `approvedPortableDevices` entries
+  example. **Re-grounded 2026-11-15** (maintenance pass): fetched all 14 current sample policies in
+  the GitHub samples directory, not just the subset originally cited - the three that reference
+  `portable_devices` (`deny_debug_on_android.json`, `audit_mobile_devices.json`,
+  `deny_mobile_devices.json`) scope that group by `primaryId` alone, none adding `serialNumber`.
+  Still genuinely unconfirmed either way; re-open only if Microsoft publishes a new sample pairing
+  the two. `validate/Test-MacPortableDeviceCoverage.ps1` checks `approvedPortableDevices` entries
   as `[WARN]`, not `[PASS]`/`[FAIL]`, pending confirmation.
 - **A device without a readable serial number cannot be allowlisted for the Apple or Portable
   families** - same scope boundary the parent scenario already carries for removable media
@@ -340,6 +345,9 @@ is operational: reviewing and maintaining up to two additional approved-device l
    <https://github.com/microsoft/mdatp-devicecontrol/tree/main/macOS/policy/samples>
    - `audit_all_apple_devices.json`, `audit_all_apple_devices_except_serial_numbers.json`,
      `deny_mobile_devices.json`, `deny_all_bluetooth_devices_except_samsung.json`
+   - 2026-11-15 maintenance pass also fetched `deny_debug_on_android.json` and
+     `audit_mobile_devices.json` (the directory's other `portable_devices`-referencing samples) for
+     the §11 `serialNumber`/`portable_devices` VERIFY - see that note for the result.
 3. Device control policies in Microsoft Defender for Endpoint (shared Groups/Rules/Entries concepts
    across Windows and macOS) - <https://learn.microsoft.com/defender-endpoint/device-control-policies>
 4. Device control in Microsoft Defender for Endpoint (Windows-side worked Advanced Hunting example
