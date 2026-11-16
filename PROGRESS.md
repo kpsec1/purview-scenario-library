@@ -2316,13 +2316,15 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   only for the `Data leaks by priority users` sibling, and does not name an equivalent control for
   this template. `README.md` §5 Step 3 and §6 flag this rather than assuming the sibling's label
   carries over.
-- [ ] VERIFY (live policy-creation workflow, at deploy time): whether the "Risk score boosters"
+- [x] VERIFY (live policy-creation workflow, at deploy time): whether the "Risk score boosters"
   section - specifically "User is a member of a priority user group" - is offered at all for a
   `security-policy-violations-by-priority-users` policy, whose only selectable indicator category
   is Microsoft Defender for Endpoint indicators (preview). Microsoft's "Get started" guide ties
   Risk score booster availability to selecting "at least one Office or Device indicator," neither
   of which this template's indicator category is. `README.md` §5 Step 5 and §6 flag this as open
-  rather than assuming the priority-group scoring boost (§6) is automatically active.
+  rather than assuming the priority-group scoring boost (§6) is automatically active. **Closed
+  2026-11-16** (see DONE below): a direct Microsoft Learn fetch of the "Get started" Step 6
+  workflow page confirms the gating condition and that it can never be met by this template.
 - [ ] VERIFY (pilot tenant): what happens when a priority user group larger than 1,000 members is
   assigned to a policy built from the `Data leaks by priority users` template specifically - not
   documented either way by Microsoft. `data-leaks-by-priority-users/design.md` §3 and `README.md`
@@ -3691,6 +3693,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `security-policy-violations-by-priority-users` Risk score boosters VERIFY** -
+  commit `PENDING` - 2026-11-16. Maintenance pass: had direct Microsoft Learn MCP fetch access and
+  used it to fetch `insider-risk-management-configure` (Step 6, item 16) in full, which states
+  verbatim: "If you select at least one *Office* or *Device* indicator, select the **Risk score
+  boosters** as appropriate. Risk score boosters only apply for selected indicators." This
+  scenario's only selectable indicator category is Microsoft Defender for Endpoint indicators
+  (preview) - a third, separately-documented category, distinct from both "Office" and "Device" -
+  so the gating condition can never be met, confirming the "User is a member of a priority user
+  group" risk score booster is **not** offered when building a policy from this template. Updated
+  `security-policy-violations-by-priority-users/README.md` §5 Step 5, §6 (table row), and §12 (new
+  reference 15 added, closing note amended), plus `reviews.md` (new maintenance addendum). No
+  script behavior change (no script referenced this booster). The sibling "Users and groups"
+  control-name VERIFY for the same scenario (`PROGRESS.md`, "Follow-ups discovered while building
+  the Insider Risk Management security-policy-violations-by-priority-users scenario") remains open
+  and untouched by this pass.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
