@@ -3694,7 +3694,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `security-policy-violations-by-priority-users` Risk score boosters VERIFY** -
-  commit `PENDING` - 2026-11-16. Maintenance pass: had direct Microsoft Learn MCP fetch access and
+  commit `730b3f1` - 2026-11-16. Maintenance pass: had direct Microsoft Learn MCP fetch access and
   used it to fetch `insider-risk-management-configure` (Step 6, item 16) in full, which states
   verbatim: "If you select at least one *Office* or *Device* indicator, select the **Risk score
   boosters** as appropriate. Risk score boosters only apply for selected indicators." This
