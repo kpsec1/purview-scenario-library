@@ -209,3 +209,19 @@ No new Red Team, Blue Team, or CISO findings resulted from this pass - the corre
 Microsoft Product Owner-lens accuracy fixes (stating a fact the original build got wrong, or was
 less precise than it could have been, about product behavior), not new operability, attack-surface,
 or cost/risk findings. Verdict for this addendum: **Fix (resolved)** - no remaining Fix/Fail.
+
+## Addendum - maintenance pass, 2026-11-16 (VERIFY closure)
+
+This pass had direct Microsoft Learn fetch access (via the Microsoft Learn MCP tools) and used it
+to close the "Risk score boosters" availability VERIFY that the previous addendum (above) opened.
+A full fetch of `insider-risk-management-configure` (Step 6, item 16) confirms Microsoft's workflow
+guide gates the Risk score boosters step on selecting "at least one *Office* or *Device* indicator."
+Since this template's only selectable indicator category is Microsoft Defender for Endpoint
+indicators (preview) - neither Office nor Device - the Risk score boosters section, and therefore
+the "User is a member of a priority user group" booster, is confirmed **not** offered when building
+a policy from this template. `README.md` §5 Step 5 and §6 updated in place (VERIFY → closed, new
+reference 15 citing the verbatim quote); `design.md` was not affected (it never asserted the
+booster applies). This is a Microsoft Product Owner-lens accuracy fix, matching the previous
+addendum's pattern - no new Red Team, Blue Team, or CISO findings. The sibling "Users and groups"
+control-name VERIFY (§5 Step 3) remains open; it was not in scope for this pass. Verdict: **Fix
+(resolved)** - no remaining Fix/Fail from this addendum.

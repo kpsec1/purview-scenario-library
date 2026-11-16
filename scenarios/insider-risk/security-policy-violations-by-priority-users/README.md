@@ -187,17 +187,20 @@ Purview portal → **Insider Risk Management** → **Policies** → **Create pol
    individual indicator names under this category - **VERIFY against the live policy-creation
    workflow at deploy time** which specific indicator toggles appear, and whether any other
    indicator categories are also selectable for this specific template; not confirmed by Microsoft
-   Learn during this build. **Separately, VERIFY whether "Risk score boosters" - specifically
-   "User is a member of a priority user group," a booster Microsoft's Configure policy indicators
-   reference documents generically, not scoped to any one template [[14]](#references) - is
-   actually offered for a policy built from this template.** Microsoft's own "Get started" workflow
-   guide ties Risk score booster availability to selecting "at least one Office or Device
-   indicator" [[13]](#references), and this template's only selectable indicator category is
-   **Microsoft Defender for Endpoint indicators (preview)** - a third, separately-documented
-   category, distinct from both "Office" and "Device" indicators. No worked example was found
-   either confirming or excluding booster availability for a Defender-for-Endpoint-only indicator
-   selection; do not assume the priority-group scoring boost described in §6 is automatically
-   applied without confirming this checkbox is actually visible and selected at deploy time.
+   Learn during this build. **VERIFY closed 2026-11-16** (Microsoft Learn MCP, maintenance pass):
+   "Risk score boosters" - specifically "User is a member of a priority user group," a booster
+   Microsoft's Configure policy indicators reference documents generically, not scoped to any one
+   template [[14]](#references) - is **not** offered for a policy built from this template.
+   Microsoft's own "Get started" workflow guide, Step 6 item 16, states verbatim: "If you select
+   at least one *Office* or *Device* indicator, select the **Risk score boosters** as appropriate.
+   Risk score boosters only apply for selected indicators" [[15]](#references) - a direct fetch of
+   the full page (this scenario's original build could only reach it via WebSearch) confirms the
+   Risk score boosters step is conditioned on selecting at least one Office or Device indicator.
+   This template's only selectable indicator category is **Microsoft Defender for Endpoint
+   indicators (preview)** - a third, separately-documented category, distinct from both "Office"
+   and "Device" indicators - so the gating condition can never be met here. Do not assume the
+   priority-group scoring boost described in §6 applies to this template; it does not surface in
+   the policy-creation workflow at all for a Defender-for-Endpoint-only indicator selection.
 6. **Review and submit.**
 
 Use `deploy/policy/security-policy-violations-priority-users-policy-manifest.json` as the
@@ -239,7 +242,7 @@ produced a given alert - `alertPolicyId` is exported as raw, unmapped data (base
 | Maximum members in a priority user group | **10,000** (Microsoft-fixed limit per group) | [[2]](#references) |
 | Maximum actively-scored users for this template | **1,000**, cumulative tenant-wide across all policies built from this exact template - **its own, independently-tracked pool, not shared with the base "Security policy violations" template** | [[6]](#references)[[13]](#references) - Microsoft's Policy template limits reference states the cap applies "across all policies using a given policy template" and lists each template as its own row; the base template happens to document the identical number (1,000), which is a coincidence of the two caps' size, not evidence of a shared pool - smaller than the departing-users (15,000) and risky-users (7,500) siblings' own, separately-tracked caps - do not conflate any of the four |
 | Interaction between the two caps above | **Undocumented - VERIFY (pilot tenant)** | `design.md` §3; treated as an open question, not assumed either way. This is a *different* open question from the (now-confirmed) fact that the 1,000-user cap itself is not shared with the base template - see the row above |
-| Priority-group effect on scoring | Increases both **likelihood** and **severity** of resulting alerts for the same underlying activity, versus a non-priority user | [[2]](#references) - the functional reason to choose this template over the base one, beyond population mechanism. Whether the separate "Risk score boosters" → "User is a member of a priority user group" checkbox (§5 Step 5) is additionally required, and whether it's even offered for this template's Defender-for-Endpoint-only indicator category, is a separate, unresolved **VERIFY** - do not conflate the two |
+| Priority-group effect on scoring | Increases both **likelihood** and **severity** of resulting alerts for the same underlying activity, versus a non-priority user | [[2]](#references) - the functional reason to choose this template over the base one, beyond population mechanism. The separate "Risk score boosters" → "User is a member of a priority user group" checkbox (§5 Step 5) is **confirmed not offered** for this template's Defender-for-Endpoint-only indicator category - **VERIFY closed 2026-11-16** [[15]](#references) - do not conflate the two mechanisms |
 | Reviewer-permission scoping | Optional, per-priority-group restriction of who can review that group's alerts/cases/reports to specific role groups or individuals | [[2]](#references) - a capability the base template's plain-group mechanism does not offer; §8 |
 | Defender for Endpoint alert-sharing dependency | "Share endpoint alerts with Microsoft Compliance Center" advanced feature (tenant-wide) | Same portal-only mechanism as every sibling - §5 Step 2 |
 | User-identity privacy | Pseudonymized (Microsoft default) | Not disabled by this scenario |
@@ -416,6 +419,7 @@ candidate-resolution app registration's certificate, is not.
 12. `security-policy-violations/README.md` and `security-policy-violations-by-departing-users/README.md` - this template family's base and departing-users siblings, whose already-grounded facts (1,000-user cap citation, alert-export script, Defender for Endpoint advanced-feature toggle) this scenario reuses and cross-references rather than re-verifying independently.
 13. Get started with Insider Risk Management - Step 4 ("A priority user group is required when using the following policy templates: Security policy violations by priority users, Data leaks by priority users") and Step 6 ("**Add or edit priority user groups**. This option appears only if you choose the *Data leaks by priority users* template"; Risk score boosters instruction tied to selecting "at least one Office or Device indicator") - <https://learn.microsoft.com/purview/insider-risk-management-configure#step-4-recommended-configure-prerequisites-for-policies>, <https://learn.microsoft.com/purview/insider-risk-management-configure#step-6-required-create-an-insider-risk-management-policy>
 14. Learn about Insider Risk Management policy templates - Policy template limits ("These maximum limits apply to users across all policies using a given policy template") and Configure policy indicators - Risk score boosters ("User is a member of a priority user group: Scores are boosted if the user is a member of a priority user group," documented generically, not scoped to one template) - <https://learn.microsoft.com/purview/insider-risk-management-policy-templates#policy-template-limits>, <https://learn.microsoft.com/purview/insider-risk-management-settings-policy-indicators#built-in-indicators-vs-custom-indicators>
+15. Get started with Insider Risk Management - Step 6 ("Create policy"), item 16 ("On the **Policy indicators** page... If you select at least one *Office* or *Device* indicator, select the **Risk score boosters** as appropriate. Risk score boosters only apply for selected indicators.") - direct fetch, 2026-11-16 maintenance pass - <https://learn.microsoft.com/purview/insider-risk-management-configure#step-6-required-create-an-insider-risk-management-policy>
 
 > Re-verify all links, cmdlet/API behavior, and licensing terms against current Microsoft Learn
 > before a customer-facing assessment or sale - this template family is explicitly Microsoft-
@@ -427,5 +431,8 @@ candidate-resolution app registration's certificate, is not.
 > direct Microsoft Learn fetch access and used it to add references 13-14 above, which corrected
 > this file's earlier, inaccurate claim that the 1,000-actively-scored cap is shared with the base
 > template (it is not - §6/§10) and sharpened two open VERIFY items (§5 Steps 3 and 5) with
-> verbatim-quoted Microsoft text rather than resolving them by assumption. Re-verify directly
-> against the live pages before a customer-facing commitment regardless of citation source.
+> verbatim-quoted Microsoft text rather than resolving them by assumption. A further maintenance
+> pass on 2026-11-16 (see `PROGRESS.md` "DONE") directly fetched the full "Get started" Step 6 page
+> and closed the Risk score boosters VERIFY (§5 Step 5, §6) with reference 15 above; the "Users and
+> groups" control-name VERIFY (§5 Step 3) remains open. Re-verify directly against the live pages
+> before a customer-facing commitment regardless of citation source.
