@@ -3698,6 +3698,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Narrowed further the `scan-on-premises-sql-server-and-classify` Windows Authentication
+  `CredentialType` VERIFY** - commit `bd02348` - 2026-11-17.
+  Maintenance pass: re-fetched the Microsoft Learn "Credentials for source authentication in
+  Microsoft Purview Data Map" portal page and found it independently describes "Windows
+  authentication" with wording identical to "Basic authentication" ("You add the password as a
+  secret in key vault"), corroborating the existing `BasicAuth` elimination at the portal-
+  documentation level rather than only the REST-enum level this scenario had previously cited.
+  Also located a worked example (Microsoft's Fabric-tenant connection guide's "Delegated auth"
+  method) confirming `DelegatedAuth` requires a Client ID in addition to username/secret, ruling it
+  out as a Windows Authentication candidate by worked example rather than description alone.
+  Neither finding is a Microsoft statement that `BasicAuth` represents Windows Authentication, so
+  the VERIFY remains open (consistent with this repo's no-guessing grounding standard) - updated in
+  place across `README.md` §11/§12 (refs [4]/[18]/[19]), `design.md` §7, `reviews.md` maintenance
+  addendum, and the deploy script's `.PARAMETER`/`.NOTES` blocks.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
