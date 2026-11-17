@@ -2942,23 +2942,30 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   §12 ref [14]), `design.md` (§4, §5, §7), and the deploy script's `.PARAMETER`/`.NOTES` blocks;
   `reviews.md` carries a maintenance addendum. The sibling `CredentialType`/Windows Authentication
   VERIFY (next item below) remains open and untouched by this pass.
-- [ ] VERIFY narrowed 2026-09-28 (Microsoft Learn MCP): which `CredentialType` REST enum value
-  corresponds to "Windows Authentication" in the portal for the `SqlServerDatabaseCredential` scan
-  kind - Microsoft's portal documents Windows Authentication as a supported method for this source
-  type. This pass fetched the **Credential - Create Or Replace** REST reference directly (a more
-  authoritative source than the Data Sources reference this scenario had previously cited the enum
-  from) and confirmed the `CredentialType` enum is exhaustive at exactly eight values
+- [ ] VERIFY narrowed 2026-09-28, narrowed further 2026-11-17 (Microsoft Learn MCP, maintenance
+  pass): which `CredentialType` REST enum value corresponds to "Windows Authentication" in the
+  portal for the `SqlServerDatabaseCredential` scan kind - Microsoft's portal documents Windows
+  Authentication as a supported method for this source type. The 2026-09-28 pass fetched the
+  **Credential - Create Or Replace** REST reference directly and confirmed the `CredentialType`
+  enum is exhaustive at exactly eight values
   (`AccountKey`/`ServicePrincipal`/`BasicAuth`/`SqlAuth`/`AmazonARN`/`ConsumerKeyAuth`/
   `DelegatedAuth`/`ManagedIdentity`), each with its own Microsoft-published description, none naming
-  or describing a Windows-specific credential type. By elimination `BasicAuth` is the only
-  structurally-compatible remaining candidate (every other value is either not username/password-shaped,
-  or - for `SqlAuth` - already Microsoft-confirmed as the value for SQL Authentication on this exact
-  scan kind), but this is this repo's elimination argument, not a Microsoft-published mapping
-  statement, so it remains open. `scan-on-premises-sql-server-and-classify`'s deploy script continues
+  or describing a Windows-specific credential type, leaving `BasicAuth` as the only
+  structurally-compatible candidate by elimination. The 2026-11-17 pass re-fetched the **Credentials
+  for source authentication in Microsoft Purview Data Map** portal page and found it independently
+  describes "Windows authentication" with wording identical to "Basic authentication" ("You add the
+  password as a secret in key vault"), corroborating the elimination at the portal-documentation
+  level rather than only the REST-enum level, and separately found a worked example (Microsoft's
+  Fabric-tenant connection guide's "Delegated auth" method) confirming `DelegatedAuth` requires a
+  Client ID in addition to username/secret - ruling it out as a candidate by worked example, not
+  description alone. Neither finding is a Microsoft statement that `BasicAuth` represents Windows
+  Authentication, so this remains an elimination argument, not a Microsoft-published mapping
+  statement, and stays open. `scan-on-premises-sql-server-and-classify`'s deploy script continues
   to offer `'BasicAuth'` as its elimination-grounded (not Microsoft-confirmed) alternative to the
-  confirmed `'SqlAuth'` default - see that scenario's `README.md` §11/§12 ref [18], `design.md` §7,
-  `reviews.md` maintenance addendum, and the deploy script's `.PARAMETER`/`.NOTES` blocks. Re-close
-  only on a Microsoft worked example or explicit statement naming the value for Windows Authentication.
+  confirmed `'SqlAuth'` default - see that scenario's `README.md` §11/§12 refs [4]/[18]/[19],
+  `design.md` §7, `reviews.md` maintenance addenda, and the deploy script's `.PARAMETER`/`.NOTES`
+  blocks. Re-close only on a Microsoft worked example or explicit statement naming the value for
+  Windows Authentication.
 - [ ] `scenarios/data-map/scan-on-premises-sql-server-and-classify-kubernetes-shir/` (or fold into a
   future Data Map hardening pass) - the Kubernetes-based, containerized self-hosted *data* integration
   runtime Microsoft documents as a separate, newer capability (SQL Server and Oracle only,
@@ -3691,6 +3698,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Narrowed further the `scan-on-premises-sql-server-and-classify` Windows Authentication
+  `CredentialType` VERIFY** - commit `bd02348` - 2026-11-17.
+  Maintenance pass: re-fetched the Microsoft Learn "Credentials for source authentication in
+  Microsoft Purview Data Map" portal page and found it independently describes "Windows
+  authentication" with wording identical to "Basic authentication" ("You add the password as a
+  secret in key vault"), corroborating the existing `BasicAuth` elimination at the portal-
+  documentation level rather than only the REST-enum level this scenario had previously cited.
+  Also located a worked example (Microsoft's Fabric-tenant connection guide's "Delegated auth"
+  method) confirming `DelegatedAuth` requires a Client ID in addition to username/secret, ruling it
+  out as a Windows Authentication candidate by worked example rather than description alone.
+  Neither finding is a Microsoft statement that `BasicAuth` represents Windows Authentication, so
+  the VERIFY remains open (consistent with this repo's no-guessing grounding standard) - updated in
+  place across `README.md` §11/§12 (refs [4]/[18]/[19]), `design.md` §7, `reviews.md` maintenance
+  addendum, and the deploy script's `.PARAMETER`/`.NOTES` blocks.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
