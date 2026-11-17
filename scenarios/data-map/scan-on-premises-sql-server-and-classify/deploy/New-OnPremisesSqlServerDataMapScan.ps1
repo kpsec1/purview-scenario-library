@@ -230,6 +230,10 @@
     - Credential - Create Or Replace (publishes the complete, authoritative CredentialType enum -
       confirmed exhaustive at eight values, none Windows-specific; re-grounded 2026-09-28):
       https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace
+    - Connect to your Microsoft Fabric tenant in the same tenant as Microsoft Purview (worked
+      example of "Delegated auth" requiring a Client ID in addition to username/secret - rules out
+      DelegatedAuth as a Windows Authentication candidate; added 2026-11-17):
+      https://learn.microsoft.com/purview/register-scan-fabric-tenant#authentication-to-scan
 
     CONFIRMED 2026-09-26 - the -ScanRulesetName default ('SqlServerDatabase') was previously
     flagged VERIFY here; it is now grounded by the System Scan Rulesets - Get worked example
@@ -239,8 +243,10 @@
     Section 11 for the full writeup):
     - Which CredentialType enum value corresponds to "Windows Authentication" in the portal - this
       script's -CredentialType 'BasicAuth' default-alternative is now grounded by elimination against
-      the complete, confirmed-exhaustive CredentialType enum (re-grounded 2026-09-28), but remains an
-      elimination argument, not a Microsoft-published mapping statement.
+      the complete, confirmed-exhaustive CredentialType enum (re-grounded 2026-09-28), independently
+      corroborated 2026-11-17 by matching portal-page wording for Basic vs. Windows authentication and
+      a worked-example rule-out of DelegatedAuth, but remains an elimination argument, not a
+      Microsoft-published mapping statement.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(

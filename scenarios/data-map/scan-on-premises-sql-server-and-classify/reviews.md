@@ -178,3 +178,14 @@ re-grounded, not closed. A direct fetch of the Credential - Create Or Replace RE
 none Windows-specific, narrowing the script's `'BasicAuth'` default-alternative to an
 elimination-grounded (not Microsoft-published) mapping. Still open; re-close only on a Microsoft
 worked example or explicit statement.
+
+**Maintenance addendum (2026-11-17):** the Windows Authentication `CredentialType` VERIFY was
+narrowed further, still not closed. Re-fetching the Credentials for source authentication portal page
+(`README.md` §11, `#4` reference) found Microsoft describes "Windows authentication" with wording
+identical to "Basic authentication" ("You add the password as a secret in key vault"), an independent
+portal-level corroboration of the existing elimination-grounded `BasicAuth` mapping. Separately, a
+worked example from Microsoft's Fabric-tenant connection guide (`README.md` §11, `#19` reference)
+confirmed `DelegatedAuth` requires a Client ID in addition to a username/secret, ruling it out as a
+Windows Authentication candidate by worked example rather than by description alone. Neither finding
+is a Microsoft statement that `BasicAuth` represents Windows Authentication, so the item stays open;
+re-close only on a Microsoft worked example or explicit statement naming the value directly.
