@@ -3699,7 +3699,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Re-grounded the `teams-viva-engage-content-safety` content-safety-classifier word-count
-  VERIFY** - commit (pending at write time, see this run's own final commit) - 2026-11-18.
+  VERIFY** - commit `45b2ac7` - 2026-11-18.
   Maintenance pass: re-fetched `communication-compliance-policies#policy-settings` directly via the
   Microsoft Learn MCP tool. Both previously-disclosed conflicting figures are still present verbatim
   and unreconciled on the current live page: "They evaluate messages containing three or more
