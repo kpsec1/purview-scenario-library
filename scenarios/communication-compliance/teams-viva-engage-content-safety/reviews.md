@@ -180,3 +180,14 @@ All Fix items from this round are resolved in the current state of `README.md`, 
 `deploy/Export-ContentSafetyAuditTrail.ps1`, `validate/Test-ContentSafetyAuditTrail.ps1`, and
 `deploy/policy/content-safety-policy-manifest.json`. No Fail items were raised. This fragment meets
 the definition of done in `AGENTS.md` §9.
+
+### Maintenance addendum - 2026-11-18
+
+Re-grounded Product Owner finding 2's word-count inconsistency (Microsoft Learn MCP, maintenance
+pass): re-fetched `communication-compliance-policies#policy-settings` directly. Both figures are
+still present verbatim and unreconciled - "three or more words" under "Content safety classifiers
+based on large language models," "five or more words" under "Considerations when using
+classifiers" (item 2) - on the same current live page. No change to the finding's verdict;
+`README.md` §11's disclosed-inconsistency note is updated in place with this re-confirmation
+rather than left stale. `PROGRESS.md`'s corresponding VERIFY item remains open with the same
+re-check condition (only Microsoft editing either subsection closes it).
