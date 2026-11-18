@@ -2371,6 +2371,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   ("three or more words" vs. "five or more words," both present verbatim on the same current page as
   of this build) have since been reconciled to a single figure -
   `teams-viva-engage-content-safety/README.md` §6/§11 currently documents both rather than guessing.
+  **Re-grounded 2026-11-18** (Microsoft Learn MCP, maintenance pass): re-fetched
+  `communication-compliance-policies#policy-settings` directly - both figures are still present,
+  verbatim and unreconciled, in the same two subsections ("Content safety classifiers based on
+  large language models": "three or more words"; "Considerations when using classifiers" item 2:
+  "five or more words"). Remains open; still only a live-tenant test message or a future Microsoft
+  edit to either subsection can close it. `teams-viva-engage-content-safety/README.md` §11 and
+  `reviews.md` (maintenance addendum) updated in place.
 - [ ] VERIFY (jurisdiction-specific, employment counsel): the applicable duty-of-care/psychosocial-
   hazard obligations for employer self-harm-risk-signal handling that
   `teams-viva-engage-content-safety/README.md` §2 flags as needing confirmation before a
@@ -3691,6 +3698,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Re-grounded the `teams-viva-engage-content-safety` content-safety-classifier word-count
+  VERIFY** - commit `45b2ac7` - 2026-11-18.
+  Maintenance pass: re-fetched `communication-compliance-policies#policy-settings` directly via the
+  Microsoft Learn MCP tool. Both previously-disclosed conflicting figures are still present verbatim
+  and unreconciled on the current live page: "They evaluate messages containing three or more
+  words" under "Content safety classifiers based on large language models," and "The solution
+  evaluates only messages containing five or more words" under "Considerations when using
+  classifiers" (item 2). Microsoft has not unified the two figures since the original build.
+  VERIFY stays open, narrowed rather than closed - only a live-tenant test message or a future
+  Microsoft documentation edit can resolve it. Updated `teams-viva-engage-content-safety/README.md`
+  §11 and `reviews.md` (new maintenance addendum under Microsoft Product Owner finding 2) in place.
+  No code change, no new four-lens review round needed - doc/citation-only re-confirmation.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
