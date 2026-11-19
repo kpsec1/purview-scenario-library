@@ -135,6 +135,15 @@ No remaining Fix/Fail after resolution.
 
 No remaining Fail after resolution.
 
+**Maintenance addendum (2026-11-19):** finding 1's flagged VERIFY (the registration `-Port`
+parameter's dependence on the instance's connection-policy configuration) is now closed. A direct
+fetch of Microsoft's connectivity-architecture reference confirms the public endpoint always uses
+the Proxy connection type and port `3342`, regardless of the instance's Redirect/Proxy
+connection-type setting - the dependency this finding anticipated does not exist for the
+registration port. `README.md` §6/§11 and `design.md` §4 updated in place with the direct citation;
+see §11's reconciling note for how this sits alongside the still-accurate, checklist-sourced NSG
+guidance in §3/§5. Doc-only correction - no code change, no new review round.
+
 ---
 
 ## Summary
