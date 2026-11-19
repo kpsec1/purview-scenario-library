@@ -2897,10 +2897,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   scales to every instance in one run, plus drift detection (any *other* current Directory Readers
   member not in the inventory, reported as non-fatal `WARN`) - closing the Blue Team finding this
   item originally tracked, generalized beyond the single instance that finding was raised against.
-- [ ] VERIFY (pilot tenant): the exact TCP port a newly registered managed instance's public endpoint
-  listens on. This scenario defaults `-Port` to `3342` (Microsoft's own worked *registration*
-  example), but the actual port depends on the instance's connection-policy configuration
-  (Redirect vs. Proxy) - flagged inline in `README.md` §11 and the deploy script's parameter help.
+- [x] VERIFY closed 2026-11-19 (maintenance pass, Microsoft Learn MCP direct fetch): the exact TCP
+  port a newly registered managed instance's public endpoint listens on. This scenario defaults
+  `-Port` to `3342` (Microsoft's own worked *registration* example); the original item assumed the
+  actual port might depend on the instance's connection-policy configuration (Redirect vs. Proxy).
+  **That assumption was wrong.** Microsoft's connectivity-architecture reference states, with no
+  conditional, that the public endpoint always accepts connections on port `3342` and always uses
+  the Proxy connection type regardless of the instance's connection-type setting - a direct fetch
+  (not just WebSearch) of `https://learn.microsoft.com/azure/azure-sql/managed-instance/
+  connectivity-architecture-overview` confirms both statements verbatim. The port is deterministic;
+  no pilot-tenant check is needed. `README.md` §6/§11 (new reference 18) and `design.md` §4 updated
+  in place with a reconciling note explaining how this sits alongside the still-accurate,
+  checklist-sourced, connection-type-conditional NSG port guidance already correctly documented in
+  §3/§5 (that guidance is about the VNet-local endpoint, not the public endpoint this scenario's
+  scan traffic uses) - see `reviews.md`'s maintenance addendum under the Microsoft Product Owner
+  finding this VERIFY originally gated.
 - [ ] Consider scripting `Set-AzSqlInstanceActiveDirectoryAdministrator` and the Directory Readers
   Microsoft Graph role-assignment step (the PowerShell pattern Microsoft publishes for it) instead
   of leaving both as manual portal/PowerShell prerequisites (`README.md` §5 steps 2-3) - deferred in
@@ -3691,6 +3702,21 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `scan-azure-sql-managed-instance-and-classify` default public-endpoint-port
+  VERIFY** - commit (pending at write time, see this run's own final commit) - 2026-11-19.
+  Maintenance pass: direct-fetched Microsoft's connectivity-architecture-overview reference for
+  Azure SQL Managed Instance via the Microsoft Learn MCP tool (`microsoft_docs_fetch`), which states
+  without conditional that "Public endpoint accepts connections on port 3342" and "Public endpoint
+  always uses the Proxy connection type regardless of the connection type setting." This disproves
+  the original VERIFY's premise that the registration port might vary with the instance's
+  Redirect/Proxy connection-type setting - the port is deterministic. Updated
+  `scan-azure-sql-managed-instance-and-classify/README.md` §6 (table row), §11 (VERIFY → closed,
+  plus a new reconciling note explaining how this sits alongside the still-accurate,
+  checklist-sourced NSG port guidance in §3/§5, which is about the VNet-local endpoint rather than
+  the public endpoint this scenario's scan actually uses), and new reference 18; `design.md` §4
+  (table cell addendum); `reviews.md` (maintenance addendum under the Microsoft Product Owner
+  finding this VERIFY originally gated). Doc-only correction - no code change (the `-Port 3342`
+  default was already correct), no new four-lens review round.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network

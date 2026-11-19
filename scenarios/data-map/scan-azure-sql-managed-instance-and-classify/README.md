@@ -46,7 +46,7 @@ from the sibling scenario's table are called out explicitly):
 | **Microsoft Entra admin set on the instance itself** | `Set-AzSqlInstanceActiveDirectoryAdministrator` (not `Set-AzSqlServerActiveDirectoryAdministrator`) | A different cmdlet/resource type from the logical-server sibling scenario - see §5 step 2 [[3]](#references) |
 | **Directory Readers Microsoft Entra role** for the instance's managed identity | Granted by a **Privileged Role Administrator** | **New prerequisite not present in the sibling scenario** - Managed Instance requires this broader role (or equivalent fine-grained Graph permissions) before Microsoft Entra authentication works at all; Azure SQL Database does not [[3]](#references) |
 | Database-level access for the scan identity | `db_datareader` granted to the Purview account's SAMI as a Microsoft Entra external-provider database user (`CREATE USER [<PurviewAccountName>] FROM EXTERNAL PROVIDER;`) | T-SQL step in §5 - this scenario cites the exact statement directly rather than a generic cross-reference [[4]](#references). **Corrected 2026-09-27:** an earlier revision of this table also listed an Azure IAM **Reader** role on the managed instance resource itself as a scan-authentication prerequisite, copied from the logical-server sibling scenario. Microsoft's own Managed Instance registration/authentication walkthrough documents no such Azure RBAC step for either SAMI or UAMI - only this T-SQL grant [[2]](#references). A subscription-scoped (not resource-scoped) Azure RBAC **Reader** role for the Purview MSI is separately documented, but only as an aid to the portal's "Select From Azure subscription" *registration-time* browse experience, not as part of scan authentication itself [[17]](#references) - removed from this table, see §11 |
-| Network path to the instance (NSG) | Inbound rule allowing the `AzureCloud` service tag over the ports the instance's connection type requires (Redirect: `1433` + `11000`-`11999`; Proxy: `3342`) | Managed-Instance-specific - a logical server's simpler "Allow Azure services" firewall toggle has no equivalent here; see §6 and §11 [[5]](#references) |
+| Network path to the instance (NSG) | Inbound rule allowing the `AzureCloud` service tag over the ports the instance's connection type requires (Redirect: `1433` + `11000`-`11999`; Proxy: `3342`) | Managed-Instance-specific - a logical server's simpler "Allow Azure services" firewall toggle has no equivalent here; see §6 and §11 [[5]](#references) - §11 reconciles this checklist-sourced guidance against the public endpoint's own fixed Proxy/`3342` behavior [[18]](#references) |
 | Automation identity for the REST calls themselves | App registration with **Data Source Administrator** (and, for the validate script, **Data Reader**) Purview role on the collection | Client-secret app-only OAuth2 - see `docs/automation-surface.md` §3 and §5 below |
 
 > Verify current entitlement names and the PAYG meter against `docs/licensing-matrix.md` before a
@@ -122,7 +122,11 @@ design rationale and the complete Managed-Instance-vs-Database diff: `design.md`
    Instance; see §11 for a prior revision of this step that assumed otherwise.
 5. **Confirm the network path.** If the instance uses the public endpoint, confirm its Network
    Security Group has an inbound rule allowing the `AzureCloud` service tag over the ports its
-   connection type requires (Redirect: `1433` + `11000`-`11999`; Proxy: `3342`) [[5]](#references).
+   connection type requires (Redirect: `1433` + `11000`-`11999`; Proxy: `3342`) [[5]](#references) -
+   in practice, since the public endpoint itself always behaves as Proxy on port `3342` regardless of
+   the instance's connection-type setting [[18]](#references), a `3342`-only rule is sufficient unless
+   some other client also reaches the instance over its VNet-local endpoint (see §11's reconciling
+   note).
 6. Back in the Purview portal, select **New scan** under the registered source, choose the Azure
    integration runtime (public endpoint) or a self-hosted IR (private endpoint - see §11), select the
    SAMI credential, **Test connection**, then **Continue** [[2]](#references).
@@ -182,7 +186,7 @@ perform - see `design.md` §8.
 | Scan `kind` (default) | `AzureSqlDatabaseManagedInstanceMsi` | SAMI-authenticated - no credential object to create or rotate [[7]](#references) |
 | Scan `kind` (alternative) | `AzureSqlDatabaseManagedInstanceCredential` | SQL authentication or service principal (Key Vault-backed, via `scenarios/data-map/scan-credential-key-vault-backed/` - the "portal-only" claim this row originally carried was incorrect, corrected 2026-09-25), **or** a user-assigned managed identity (UAMI) for per-source identity separation, scripted end-to-end by `scenarios/data-map/scan-azure-sql-managed-instance-and-classify-managed-identity-credential/`; see §11 |
 | `serverEndpoint` format | `tcp:<PublicEndpointFqdn>,<Port>` (e.g. `tcp:mi-contoso-prod.public.ac1b2c3d4e5f.database.windows.net,3342`) | Distinct from the sibling scenario's bare hostname - confirmed via Microsoft's own worked PowerShell example [[8]](#references) |
-| Default public-endpoint port | `3342` | Microsoft's own worked *registration* example uses this port. **Distinct from the NSG *network-path* ports** in §3's table: since October 2025, Redirect is Microsoft's default connection type for connections originating inside Azure (Proxy remains default for connections originating outside Azure), which determines whether the NSG needs `1433`+`11000`-`11999` (Redirect) or just `3342` (Proxy) - confirm both the registration port and the connection type independently against the instance's actual configuration before relying on either default [[5]](#references) |
+| Default public-endpoint port | `3342` | **Resolved 2026-11-19** (see §11): this registration port is fixed, not instance-configuration-dependent. Microsoft's connectivity architecture reference states the public endpoint always uses the Proxy connection type and accepts connections on port `3342`, regardless of the instance's Redirect/Proxy connection-type setting [[18]](#references) - distinct from the NSG *network-path* ports in §3's table, which govern the VNet-local endpoint's connection-type-dependent reachability, not this registration port |
 | Collection reference | `{ "referenceName": "<5-char collection ID>", "type": "CollectionReference" }` | Same shape as the sibling scenario - read the ID from the collection's URL in the portal, not its friendly name |
 | Scan rule set (this scenario's default) | `scanRulesetName: "AzureSqlDatabaseManagedInstance"`, `scanRulesetType: "System"` | A **different system rule set name** from the sibling scenario's `AzureSqlDatabase` - confirmed via Microsoft's own worked PowerShell example; includes the same SSN + Credit Card Number pair [[9]](#references) |
 | Scan level | `Full` (first run) → `Incremental` (subsequent scheduled runs) | Same pattern as the sibling scenario [[10]](#references) |
@@ -283,11 +287,33 @@ same way regardless of the underlying Azure SQL source type.
   behavior as the sibling scenario.
 - **U.S.-centric SIT starter set** - same caveat as every other scenario in this repo using the
   SSN + Credit Card Number pair; not GDPR-complete for a non-U.S. tenant.
-- **VERIFY - default public-endpoint port.** This scenario defaults `-Port` to `3342`, matching
-  Microsoft's own worked registration example, but the actual port a given instance's public
-  endpoint listens on depends on its connection-policy configuration. Confirm the real port (Azure
-  portal → the instance → **Networking** → **Public endpoint**) before relying on the default in a
-  script running unattended.
+- **RESOLVED (2026-11-19, maintenance pass, Microsoft Learn MCP direct fetch) - default
+  public-endpoint port.** This scenario defaults `-Port` to `3342`. The original draft left this as
+  an open VERIFY on the premise that the actual port a given instance's public endpoint listens on
+  might depend on its connection-policy (Redirect vs. Proxy) configuration. **That premise is
+  incorrect.** A direct fetch of Microsoft's connectivity-architecture reference states, with no
+  conditional: "Public endpoint accepts connections on port 3342" and "Public endpoint always uses
+  the Proxy connection type regardless of the connection type setting" [[18]](#references). The port
+  is therefore deterministic, not instance-configuration-dependent - `3342` is always correct for a
+  public-endpoint connection, and this default needs no pilot-tenant confirmation. See the
+  reconciling note immediately below for how this interacts with the readiness checklist's own
+  Redirect/Proxy-conditional NSG port guidance in §3/§5, which is not contradicted by this closure.
+- **Reconciling note (2026-11-19) - §3/§5's NSG port guidance is about the VNet-local endpoint's
+  connection-type setting, not the public endpoint this scenario's scan traffic actually uses.**
+  Microsoft's data-source readiness checklist [[5]](#references) frames the required NSG ports as
+  conditional on the instance's "ProxyOverride" (connection-type) setting - `Redirect: 1433 and
+  11000-11999` or `Proxy: 3342` - without naming which endpoint that check is for. The connectivity
+  architecture reference [[18]](#references) resolves the ambiguity: that conditional behavior
+  belongs to the **VNet-local endpoint** ("supports Proxy and redirect connection types"); the
+  **public endpoint** - the one this scenario's Azure-integration-runtime scan actually connects
+  through - "always uses the Proxy connection type regardless of the connection type setting" and is
+  fixed to port `3342`. Practical takeaway for an operator following §3/§5: if the instance's public
+  endpoint is enabled and no other client needs to reach it over its VNet-local endpoint, the NSG
+  only needs the `3342` inbound rule, regardless of what the portal shows for the instance's
+  connection type; the `1433`/`11000-11999` Redirect ports only matter if some other client also
+  connects over the VNet-local endpoint. §3/§5's table text is left exactly as Microsoft's own
+  checklist phrases it (not rewritten, to avoid misrepresenting that source), with this note added
+  as the resolving cross-reference between the two Microsoft-authored sources.
 - **RESOLVED (2026-09-25) - credential-object REST creation.** This row originally claimed no
   documented REST endpoint existed for creating the Key Vault-backed credential object needed for
   `AzureSqlDatabaseManagedInstanceCredential` scanning, describing it as portal-only. **It is not.**
@@ -340,8 +366,9 @@ same way regardless of the underlying Azure SQL source type.
 15. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary) - <https://learn.microsoft.com/purview/data-gov-classic-permissions>
 16. `scenarios/data-map/scan-azure-sql-and-classify/` - the sibling scenario this fragment extends; see its README.md and design.md for the shared reasoning not repeated here.
 17. Microsoft Purview (formerly Azure Purview) deployment checklist - item 16, "Grant Azure RBAC Reader role to Microsoft Purview MSI at data sources' Subscriptions" (lists Azure SQL Managed Instance among the applicable source types, scoped to the subscription) - <https://learn.microsoft.com/purview/legacy/tutorial-azure-purview-checklist>; cross-checked against Check Azure data source readiness to register and scan in Microsoft Purview, whose Managed-Instance-specific check list has no RBAC/Reader item - <https://learn.microsoft.com/purview/data-map-data-sources-check-azure-readiness#more-information>
+18. Connectivity architecture for Azure SQL Managed Instance - "Public endpoint accepts connections on port 3342" and "Public endpoint always uses the Proxy connection type regardless of the connection type setting" (closes §11's public-endpoint-port VERIFY and reconciles it with reference 5's checklist-sourced, connection-type-conditional NSG guidance) - <https://learn.microsoft.com/azure/azure-sql/managed-instance/connectivity-architecture-overview>
 
-> Re-verify all links, API versions, and the default public-endpoint port against current Microsoft
-> Learn before a customer-facing deployment - the Data Map REST surface is explicitly called out by
-> Microsoft as evolving, and the remaining VERIFY item in §11 should be closed against a pilot tenant
-> first.
+> Re-verify all links and API versions against current Microsoft Learn before a customer-facing
+> deployment - the Data Map REST surface is explicitly called out by Microsoft as evolving. §11's
+> public-endpoint-port VERIFY is now closed via direct Microsoft Learn grounding and needs no
+> pilot-tenant check.
