@@ -3703,7 +3703,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Closed the `scan-azure-sql-managed-instance-and-classify` default public-endpoint-port
-  VERIFY** - commit (pending at write time, see this run's own final commit) - 2026-11-19.
+  VERIFY** - commit `388df70` - 2026-11-19.
   Maintenance pass: direct-fetched Microsoft's connectivity-architecture-overview reference for
   Azure SQL Managed Instance via the Microsoft Learn MCP tool (`microsoft_docs_fetch`), which states
   without conditional that "Public endpoint accepts connections on port 3342" and "Public endpoint
