@@ -142,23 +142,28 @@ Connect-IPPSSession -AppId $AppId -Certificate $Cert -Organization $TenantDomain
 The deploy script uses `New-DlpComplianceRule` with `-FromScope NotInOrganization` as the condition
 and `-RestrictAccess @(@{setting='ExcludeContentProcessing'; value='Block'})` as the action.
 
-**VERIFY - read before relying on this script in production.** Microsoft's `New-DlpComplianceRule`
-reference confirms `-FromScope` exists as a parameter (type
-`Microsoft.Office.CompliancePolicy.PolicyEvaluation.FromScope`) and confirms its two allowed values
-(`InOrganization`, `NotInOrganization`) via a separate reference page - but no Microsoft-published
-worked example combines `-FromScope` with the Microsoft 365 Copilot and Copilot Chat location
-(`CopilotExperiences` enforcement plane) specifically. This scenario's choice is a documented,
-reasoned inference from independently-converging sources (see `design.md` §4), not a fabricated
-parameter - the parameter itself, its type, and its two allowed literal values are all individually
-confirmed to exist; what's unconfirmed is that this specific location honors it as a condition.
-`-RestrictAccess`'s `ExcludeContentProcessing`/`Block` pair is, by contrast, the **one** combination
-Microsoft's own `New-DlpCompliancePolicy` reference publishes a full worked example for on this
-location (paired there with a label condition, `design.md` §5) - the strongest-grounded action this
-repo has used for any Copilot-location rule. **Before enforcing in production:** create the rule once
-through the portal (step 5 above), then run
+**VERIFY closed 2026-11-20, resolved negative - do not rely on this script's condition in
+production.** A direct fetch of Microsoft's "Data loss prevention Exchange conditions and actions
+reference" (reference [[4]](#references) below) states, for the **Sender scope** condition
+(`-FromScope`/`-ExceptIfFromScope`): *"You can use this condition in DLP policies that are scoped
+only to Exchange."* The parent policy this scenario extends is scoped to the **Microsoft Copilot,
+Copilot Chat, and Copilot Cowork** location, not Exchange - so this condition is documented as
+**unsupported for this rule**, not merely unconfirmed. This repo's earlier grounding pass read only
+a search-result excerpt of that same reference page and missed this restriction clause; see
+`design.md` §4 for the full correction. Expect `New-DlpComplianceRule -FromScope NotInOrganization`
+to be rejected or to silently not take effect against this Copilot-location policy. **Until
+Microsoft publishes a working PowerShell mechanism for the portal's "Email is received from >
+External users" condition on this location, use the portal path (step above) to create this rule**
+- the script is kept only as a best-effort, explicitly-unverified reference, not a production deploy
+path. `-RestrictAccess`'s `ExcludeContentProcessing`/`Block` pair is unaffected by this finding: it
+remains the **one** combination Microsoft's own `New-DlpCompliancePolicy` reference publishes a full
+worked example for on this location (paired there with a label condition, `design.md` §5).
+**Before relying on the script at all:** create the rule once through the portal (step 5 above),
+then run
 `Get-DlpComplianceRule -Identity 'Copilot-Exclude-ExternalEmail-Processing' | Format-List FromScope, RestrictAccess`
-and compare against this script's output - `validate/Test-CopilotExternalEmailBlockRule.ps1`
-automates this comparison as a `[WARN]`-level (not `[FAIL]`-level) check for exactly this reason.
+to see what the portal actually persisted (it may not be `FromScope` at all) and compare against
+this script's output - `validate/Test-CopilotExternalEmailBlockRule.ps1` automates this comparison
+as a `[WARN]`-level (not `[FAIL]`-level) check for exactly this reason.
 
 ## 6. Configuration reference
 
@@ -166,7 +171,7 @@ automates this comparison as a `[WARN]`-level (not `[FAIL]`-level) check for exa
 |---|---|
 | Priority | 3 (evaluated after Rules 0-2 from the parent and `copilot-prompt-full-block` scenarios) |
 | Policy | `Copilot DLP - Sensitive Data Exposure Protection` (parent scenario's policy - parameterizable via `-PolicyName`) |
-| Condition | `FromScope = NotInOrganization` - **VERIFY**, see §5 |
+| Condition | `FromScope = NotInOrganization` - **documented as unsupported for this location via this parameter; portal path only, see §5** |
 | Action | `RestrictAccess = @{setting='ExcludeContentProcessing'; value='Block'}` - same confirmed pair as Rule 0, see `design.md` §5 |
 | What it stops | An externally-sent email from being used by Copilot for grounding, summarization, or citation - sender-domain metadata only, the email body is never inspected [[1]](#references) |
 | What it does **not** stop | Sensitive content *within* an internal email (Rules 0-2's job, not this rule's); a prompt-injection payload delivered through an internal-domain account that has been compromised (this rule only evaluates sender domain, not sender trustworthiness within the domain); external content reaching Copilot through a channel other than email (e.g. an external SharePoint guest share, or a Rule-1-uncovered web search) - see `design.md` §7 |
@@ -181,9 +186,11 @@ its `.NOTES` block.
 
 1. **Automated config check** - `./validate/Test-CopilotExternalEmailBlockRule.ps1` confirms the rule
    exists with the expected priority, `FromScope` condition, and `RestrictAccess` setting; exits
-   non-zero on any hard failure. The `FromScope` condition check is `[WARN]`, not `[FAIL]`, per the
-   §5 VERIFY note - re-run it after creating the rule once through the portal to confirm the two
-   match.
+   non-zero on any hard failure. The `FromScope` condition check is `[WARN]`, not `[FAIL]`, because
+   §5 now documents that `FromScope` is restricted by Microsoft to Exchange-scoped policies and is
+   not expected to be what a portal-created rule on this Copilot-location policy actually persists -
+   re-run it after creating the rule once through the portal to see what property the portal used
+   instead.
 2. **Functional test** - from a test mailbox, send a test email from a genuinely external domain
    (e.g. a personal/test account you control, never a real third party's address) to a test user's
    internal mailbox. Ask Copilot to summarize that user's inbox or reason over the received message.
@@ -218,8 +225,8 @@ this family - no independent simulation window of its own. If the parent policy 
   legitimate users trying to get their work done, not evasion).
 
 **Review cadence:** monthly during the first quarter after deployment (given the preview status and
-the FromScope-on-Copilot-location VERIFY carried in §5), dropping to quarterly once the feature
-reaches GA and the VERIFY is closed.
+this rule's portal-only deploy path per §5), dropping to quarterly once the feature reaches GA and
+Microsoft publishes a confirmed PowerShell mechanism for this condition.
 
 **Incident-response runbook (Rule 3 alert):**
 1. **Triage** - this is, by design, a lower-severity signal than Rules 0-2 (see `design.md` §6).
@@ -254,10 +261,13 @@ policy intact.
 
 ## 11. Known limitations & gotchas
 
-- **The `-FromScope` condition is not independently confirmed for the Microsoft 365 Copilot
-  location** - see the detailed VERIFY in §5. This is the single most important caveat in this
-  scenario; confirm via `Get-DlpComplianceRule` against a portal-created rule before production
-  reliance.
+- **The `-FromScope` condition is documented by Microsoft as restricted to DLP policies scoped only
+  to Exchange** - see §5. This policy is scoped to the Microsoft Copilot, Copilot Chat, and Copilot
+  Cowork location, not Exchange, so the deploy script's condition is expected to be rejected or to
+  silently not take effect. This is the single most important caveat in this scenario: **use the
+  portal path (§5) to create this rule**, and treat the script as an unverified reference only,
+  until Microsoft publishes a confirmed PowerShell mechanism for this exact condition/location
+  pairing.
 - **Preview feature, tenant rollout not guaranteed on any fixed date.** Confirm the condition is
   selectable in the portal for your tenant before assuming the script will succeed.
 - **Metadata-only: this rule never inspects email body content.** A prompt-injection payload
@@ -294,10 +304,12 @@ policy intact.
 3. New-DlpComplianceRule reference - full parameter syntax confirming `-FromScope` (type
    `Microsoft.Office.CompliancePolicy.PolicyEvaluation.FromScope`) and `-RestrictAccess` both exist
    as parameters of this cmdlet (does not publish a worked example for this specific
-   condition/action/location combination - see `design.md` §4/§5 VERIFY) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule>
+   condition/action/location combination) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule>
 4. Data loss prevention Exchange conditions and actions reference - confirms the portal condition
    "Sender scope" maps to the PowerShell condition `FromScope`/`ExceptIfFromScope`, property type
-   `UserScopeFrom` - <https://learn.microsoft.com/purview/dlp-exchange-conditions-and-actions>
+   `UserScopeFrom`, **and states this condition "can [be used] in DLP policies that are scoped only
+   to Exchange"** - the basis for closing the §5 VERIFY negative, since this scenario's policy is
+   scoped to the Copilot location, not Exchange - <https://learn.microsoft.com/purview/dlp-exchange-conditions-and-actions>
 5. New-DlpCompliancePolicy reference, Example 4 (the `ExcludeContentProcessing`/`Block`
    `-RestrictAccess` pair, worked for a label condition on the Microsoft 365 Copilot location, reused
    by the parent scenario's Rule 0 and by this rule's action) - <https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancepolicy>
@@ -310,7 +322,7 @@ policy intact.
 10. `scenarios/dspm-for-ai/copilot-prompt-full-block/` - the sibling scenario establishing the
     "extends the shared policy" pattern this fragment follows.
 
-> Re-verify the preview/GA status of this specific action and the `-FromScope`-on-Copilot-location
-> VERIFY in §5 against current Microsoft Learn before a customer-facing deployment - this is the
-> newest and least-mature of the four Copilot-location DLP actions this repo documents, and the only
-> one whose condition type has no Microsoft-published worked example on this location at all.
+> Re-verify the preview/GA status of this specific action against current Microsoft Learn before a
+> customer-facing deployment, and watch for a future Microsoft-published PowerShell/AdvancedRule
+> mechanism for the "Email is received from > External users" condition on this location - until
+> one appears, deploy this rule through the portal (§5), not the script.

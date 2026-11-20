@@ -3691,6 +3691,25 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Closed the `copilot-external-email-block` `-FromScope` VERIFY, resolved negative** - commit
+  `ace72d1` - 2026-11-20. Maintenance pass: re-fetched the full text of this scenario's own already-
+  cited reference, "Data loss prevention Exchange conditions and actions reference"
+  (<https://learn.microsoft.com/purview/dlp-exchange-conditions-and-actions>), via the Microsoft
+  Learn MCP tool rather than the search-snippet excerpt the original build relied on. The full page
+  states the **Sender scope** condition (`-FromScope`/`-ExceptIfFromScope`) is usable "in DLP
+  policies that are scoped only to Exchange." The parent policy this scenario extends is scoped to
+  the Microsoft Copilot, Copilot Chat, and Copilot Cowork location, not Exchange - so this
+  condition is documented as **unsupported for this rule**, not merely unconfirmed as the original
+  VERIFY framed it. Updated `design.md` §4 (closure paragraph replacing the "genuinely unconfirmed"
+  framing), `README.md` (§5's VERIFY note, §6 config table, §7 validation note, §8 review cadence,
+  §11 limitations, §12 reference [4] annotation, closing re-verify note), both
+  `deploy/Add-CopilotExternalEmailBlockRule.ps1` (comment-based help + inline comment + a new
+  runtime `Write-Warning`) and `validate/Test-CopilotExternalEmailBlockRule.ps1` (check description
+  + closing reminder), `rollback.md`, and `reviews.md` (maintenance correction addendum). All now
+  direct deployment through the portal path rather than the script until Microsoft publishes a
+  confirmed PowerShell/AdvancedRule mechanism for this condition on this location. Doc/comment-only
+  correction - the script's behavior is unchanged (still attempts `-FromScope`, now with a runtime
+  warning), so no new four-lens review round was run.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network

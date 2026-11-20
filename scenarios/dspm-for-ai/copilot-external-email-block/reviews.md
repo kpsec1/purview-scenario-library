@@ -192,3 +192,23 @@ exercise - it matters only for a hybrid tenant, whose on-premises `ExternalRelay
 scenario's Exchange-Online-only tooling can't see regardless. This is a doc-only correction (backport
 tracked in `PROGRESS.md`); no code changed, so no new four-lens review round was run. Full grounding
 lives in `scenarios/dlp/accepted-domains-hygiene-check/design.md` §2.
+
+---
+
+## Correction addendum (2026-11-20) - closing the `-FromScope` VERIFY, resolved negative
+
+A scheduled maintenance pass re-fetched the full text (via the Microsoft Learn MCP tool, not a
+search-result excerpt) of this scenario's own reference [[4]](#references) - "Data loss prevention
+Exchange conditions and actions reference." That page states the **Sender scope** condition
+(`-FromScope`/`-ExceptIfFromScope`) is usable "in DLP policies that are scoped only to Exchange."
+The parent policy this scenario extends is scoped to the Microsoft Copilot, Copilot Chat, and
+Copilot Cowork location, not Exchange. The open VERIFY this round's reviews left standing - "the
+`-FromScope` condition is not independently confirmed for the Microsoft 365 Copilot location" - is
+therefore now **closed, resolved negative**: the condition is documented as unsupported for this
+rule, not merely unconfirmed. `design.md` §4, `README.md` §5/§6/§7/§11/§12, and both
+`deploy/Add-CopilotExternalEmailBlockRule.ps1` and
+`validate/Test-CopilotExternalEmailBlockRule.ps1` have been updated in place to say so and to
+direct deployment through the portal path instead of this script until Microsoft publishes a
+confirmed PowerShell mechanism. This is a doc/comment correction only - the script's behavior is
+unchanged (it still attempts `-FromScope`, now with a runtime warning), so no new four-lens review
+round was run.
