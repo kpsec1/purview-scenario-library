@@ -8,9 +8,10 @@
       1. The parent policy exists.
       2. The rule exists, is not Disabled, and has the expected priority.
       3. The rule's FromScope condition is set to NotInOrganization - checked as [WARN], not
-         [FAIL], because Microsoft has not published a worked example confirming this condition is
-         honored for the Microsoft 365 Copilot location specifically. See README.md Sec 5 and
-         design.md Sec 4.
+         [FAIL], because Microsoft documents FromScope as usable only in DLP policies scoped only
+         to Exchange, and this policy is scoped to the Microsoft Copilot location - so a
+         portal-created rule is unlikely to actually persist FromScope at all. See README.md Sec 5
+         and design.md Sec 4.
       4. The rule's RestrictAccess setting/value pair matches this repo's deployed configuration
          (ExcludeContentProcessing/Block).
       5. The rule generates an alert (not silent).
@@ -99,7 +100,7 @@ Test-Check -Description 'Rule is not Disabled' -Condition ($rule.Disabled -ne $t
 Test-Check -Description "Rule priority is $Priority (evaluated after Rules 0-2 from the sibling scenarios)" `
     -Condition ($rule.Priority -eq $Priority) -Warn
 
-Test-Check -Description 'Rule sets FromScope to NotInOrganization (this repo''s best-grounded inference - VERIFY against a portal-created rule, see README.md Sec 5)' `
+Test-Check -Description 'Rule sets FromScope to NotInOrganization (documented by Microsoft as Exchange-scoped-policies-only; not expected to be what a Copilot-location rule actually persists - see README.md Sec 5)' `
     -Condition ($rule.FromScope -eq 'NotInOrganization') -Warn
 
 Test-Check -Description 'Rule sets RestrictAccess ExcludeContentProcessing/Block' `
@@ -116,6 +117,6 @@ Test-Check -Description "Rule ReportSeverityLevel is $ReportSeverityLevel (delib
 
 Write-Host "`n$(if ($script:failures -eq 0) { 'All hard checks passed.' } else { "$script:failures hard check(s) failed." })" `
     -ForegroundColor $(if ($script:failures -eq 0) { 'Green' } else { 'Red' })
-Write-Host 'Reminder: any [WARN] above on the FromScope check means this repo''s scripted condition has not been independently confirmed for the Microsoft 365 Copilot location - see README.md Sec 5 before production reliance.' -ForegroundColor Cyan
+Write-Host 'Reminder: Microsoft documents FromScope as restricted to DLP policies scoped only to Exchange - a [WARN] above likely means the portal-created rule does not use FromScope at all. See README.md Sec 5 before production reliance; use the portal path to deploy this rule.' -ForegroundColor Cyan
 
 if ($script:failures -gt 0) { exit 1 }

@@ -23,15 +23,17 @@
     Author-only reference code. This script never establishes its own connection to a tenant. Run
     Connect-IPPSSession yourself first (see docs/automation-surface.md Sec 3), then call this script.
 
-    VERIFY before production reliance: the -FromScope condition parameter this script uses is
-    confirmed to exist in New-DlpComplianceRule's parameter set (shared across every DLP location),
-    and its two allowed values (InOrganization/NotInOrganization) are independently confirmed - but
-    no Microsoft-published worked example combines -FromScope with the Microsoft 365 Copilot and
-    Copilot Chat location specifically. See design.md Sec 4 for the full reasoning and README.md
-    Sec 5 for the recommended portal-vs-script comparison step before production use. The
-    -RestrictAccess action, by contrast, is the one combination Microsoft's own reference publishes
-    a full worked example for on this location (design.md Sec 5) - the better-grounded half of this
-    rule.
+    NOT CONFIRMED TO WORK (closed 2026-11-20): Microsoft's "Data loss prevention Exchange conditions
+    and actions reference" documents the -FromScope/-ExceptIfFromScope condition as usable only in
+    "DLP policies that are scoped only to Exchange." The target policy here is scoped to the
+    Microsoft Copilot, Copilot Chat, and Copilot Cowork location, not Exchange, so this condition is
+    documented as unsupported for this rule - expect New-DlpComplianceRule to reject it or to
+    silently not take effect. See design.md Sec 4 for the full correction and README.md Sec 5 for
+    why the portal path, not this script, is the recommended way to create this rule until
+    Microsoft publishes a working PowerShell/AdvancedRule mechanism for this exact condition/
+    location pairing. The -RestrictAccess action is unaffected by this finding: it remains the one
+    combination Microsoft's own reference publishes a full worked example for on this location
+    (design.md Sec 5).
 
 .PARAMETER PolicyName
     Name of the existing Copilot-location DLP policy to add this rule to. Must already exist -
@@ -78,16 +80,16 @@
     Adds (or reconciles, if already present) the rule with a raised default severity.
 
 .NOTES
-    VERIFY (production reliance): see the .DESCRIPTION VERIFY block above and design.md Sec 4.
-    Compare this script's output against a rule created once through the portal using
+    NOT CONFIRMED TO WORK: -FromScope is documented by Microsoft as restricted to DLP policies
+    scoped only to Exchange (see .DESCRIPTION above and design.md Sec 4) - this policy is scoped to
+    the Copilot location, not Exchange. Use the portal path (README.md Sec 5) to create this rule.
+    If you still run this script, compare its output against a portal-created rule using
     Get-DlpComplianceRule -Identity 'Copilot-Exclude-ExternalEmail-Processing' | Format-List FromScope, RestrictAccess
-    before enforcing in production.
+    to see what property the portal actually persisted - it is unlikely to be FromScope.
 
-    VERIFY (tenant rollout): the "Block external email from being processed" action is in preview
-    with no documented fixed rollout date - if the underlying service hasn't received the feature
-    yet, this script's New-DlpComplianceRule call may be rejected or silently no-op the FromScope
-    condition rather than erroring clearly. Confirm the condition is selectable in the portal first
-    (README.md Sec 5).
+    VERIFY (tenant rollout, still open): the "Block external email from being processed" action is
+    in preview with no documented fixed rollout date - confirm the condition is selectable in the
+    portal first (README.md Sec 5).
 
     Sources (Microsoft Learn, verify before production use):
     - Learn about using Microsoft Purview DLP to protect interactions with Microsoft 365 Copilot
@@ -95,8 +97,9 @@
       https://learn.microsoft.com/purview/dlp-microsoft365-copilot-location-learn-about#block-external-email-from-being-processed-preview
     - New-DlpComplianceRule reference (-FromScope, -RestrictAccess parameters and shape):
       https://learn.microsoft.com/powershell/module/exchangepowershell/new-dlpcompliancerule
-    - Data loss prevention Exchange conditions and actions reference (-FromScope/-ExceptIfFromScope,
-      property type UserScopeFrom):
+    - Data loss prevention Exchange conditions and actions reference: -FromScope/-ExceptIfFromScope,
+      property type UserScopeFrom, documented as usable only in DLP policies scoped only to
+      Exchange - the basis for the correction above:
       https://learn.microsoft.com/purview/dlp-exchange-conditions-and-actions
     - New-DlpCompliancePolicy reference, Example 4 (ExcludeContentProcessing/Block RestrictAccess
       pair, confirmed for a label condition on this same location):
@@ -143,11 +146,14 @@ if (-not $policy) {
 }
 
 Write-Host "Target policy '$PolicyName' found (Mode: $($policy.Mode)). This rule will inherit that Mode - see README.md Sec 8." -ForegroundColor Cyan
+Write-Warning "Microsoft documents -FromScope as usable only in DLP policies scoped only to Exchange (see .NOTES / README.md Sec 5). This policy is scoped to the Copilot location, not Exchange, so this call is expected to be rejected or to silently not take effect. Prefer creating this rule through the portal."
 
 # --- Build the FromScope condition and RestrictAccess action ---
-# VERIFY: -FromScope is a confirmed New-DlpComplianceRule parameter with confirmed allowed values
-# (InOrganization/NotInOrganization), but no Microsoft-published example combines it with the
-# Microsoft 365 Copilot location specifically. See design.md Sec 4.
+# NOT CONFIRMED TO WORK (closed 2026-11-20): Microsoft documents -FromScope/-ExceptIfFromScope as
+# usable only in DLP policies scoped only to Exchange (dlp-exchange-conditions-and-actions
+# reference). This policy is scoped to the Microsoft Copilot, Copilot Chat, and Copilot Cowork
+# location, not Exchange - so this condition is documented as unsupported here, not merely
+# unconfirmed. See design.md Sec 4 and README.md Sec 5/11.
 $ruleParams = @{
     Name           = $ruleName
     Policy         = $PolicyName

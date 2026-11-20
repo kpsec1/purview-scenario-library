@@ -26,7 +26,8 @@ Set-DlpComplianceRule -Identity "Copilot-Exclude-ExternalEmail-Processing" -Disa
 Use this stage for: a legitimate partner domain being unexpectedly excluded (check the tenant's
 accepted-domains list first - README.md §8/§11 - before assuming this rule itself is at fault),
 while comparing this script's `FromScope`/`RestrictAccess` output against a portal-created rule per
-`README.md` §5's VERIFY guidance, or a change freeze.
+`README.md` §5 (Microsoft documents `FromScope` as Exchange-scoped-policies-only, so expect the
+comparison to show the portal did not persist it), or a change freeze.
 
 ### Stage 2 - Permanent removal (not reversible)
 
