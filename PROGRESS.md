@@ -3692,8 +3692,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
 
 ## DONE
 - [x] **Fixed a stale/missing disclosure in `docs/licensing-matrix.md`'s Data Map/Unified
-  Catalog/Data Quality/Data Estate Insights/Data Lineage rows** - commit (pending at write time,
-  see this run's own final commit) - 2026-11-21. Maintenance pass (Microsoft Learn MCP): every
+  Catalog/Data Quality/Data Estate Insights/Data Lineage rows** - commit `91bd6d5` - 2026-11-21. Maintenance pass (Microsoft Learn MCP): every
   current Data Map and Unified Catalog page on Microsoft Learn (`data-map`, `data-map-scan-ingestion`,
   `data-map-data-sources`, `data-map-disaster-recovery`, `data-governance-plan`,
   `data-map-domains`, `unified-catalog-data-quality-supported-sources-connection`, and others)
