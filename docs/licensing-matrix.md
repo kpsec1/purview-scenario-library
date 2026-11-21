@@ -59,11 +59,28 @@ equivalents unless noted - always confirm against Product Terms for GCC/GCC-High
 | **DSPM for AI** | Copilot & GenAI data-security posture | See `ai-microsoft-purview-considerations` | Audit of Copilot activity included in **E5**; broader protections may bill **PAYG** |
 | DSPM for AI | DLP for Microsoft Copilot - restrict **files & emails** (label-exclusion rule) | **E5** - Microsoft 365/Office 365 E5/A5, **Microsoft Purview Suite/EDU/FLW**, or **Microsoft 365/A5/F5 Information Protection and Governance** | Listed **No** on Business Basic/Standard/Premium and the E3/A3/A1/G3/F3/F1 tiers [[14]](#sources-microsoft-learn--re-verify-before-quoting) |
 | DSPM for AI | DLP for Microsoft Copilot - safeguard **prompts** (SIT-based web-grounding / full-block rule) | **All Microsoft 365 Copilot and Copilot Chat licenses**, any underlying M365 tier | Listed **Yes*** for every Copilot-licensed tier - do not over-quote E5 for this half of the policy [[14]](#sources-microsoft-learn--re-verify-before-quoting) |
-| **Data Map** | Scan & classify into Data Map | Azure subscription | No scan charge once on Unified Catalog PAYG or Enterprise tier |
-| **Unified Catalog** | Curate/govern technical assets | **PAYG only** | Metered: **unique governed assets/day** |
-| **Data Quality / Health** | DQ rules, scorecards, health mgmt | **PAYG only** | Metered: **Data Governance Processing Units (DGPU)**; Basic/Standard/Advanced SKUs |
-| **Data Estate Insights** | Classification/coverage reporting | Per governance tier | Classic pricing vs Unified Catalog - confirm tier |
-| **Data Lineage** | Lineage capture & validation | Part of Data Map/Catalog | Follows Data Map / Unified Catalog billing |
+| **Data Map** | Scan & classify into Data Map | Azure subscription | No scan charge once on Unified Catalog PAYG or Enterprise tier. **Retirement notice** - see callout below. |
+| **Unified Catalog** | Curate/govern technical assets | **PAYG only** | Metered: **unique governed assets/day**. **Retirement notice** - see callout below. |
+| **Data Quality / Health** | DQ rules, scorecards, health mgmt | **PAYG only** | Metered: **Data Governance Processing Units (DGPU)**; Basic/Standard/Advanced SKUs. **Retirement notice** - see callout below. |
+| **Data Estate Insights** | Classification/coverage reporting | Per governance tier | Classic pricing vs Unified Catalog - confirm tier. **Retirement notice** - see callout below. |
+| **Data Lineage** | Lineage capture & validation | Part of Data Map/Catalog | Follows Data Map / Unified Catalog billing. **Retirement notice** - see callout below. |
+
+> **⚠ Retirement notice - Data Governance capabilities only (added 2026-11-21).** Microsoft Learn
+> now carries this "Important" banner on every Data Map and Unified Catalog page: **Microsoft
+> Purview Unified Catalog and classic Microsoft Purview data governance capabilities (formerly
+> Azure Purview) are being retired. Microsoft is consolidating its data governance capabilities in
+> Microsoft Fabric.** New Microsoft Purview data governance accounts can no longer be created, and
+> existing data governance capabilities (Data Map, Unified Catalog, Data Quality/Health, Data
+> Estate Insights, Data Lineage - the five rows above) remain in maintenance mode through
+> **November 12, 2027**. Microsoft states explicitly that **Microsoft Purview as a whole is not
+> being retired** and that **data *security* and *compliance* capabilities are unaffected** - every
+> other module in this matrix (Information Protection, DLP, IRM, Adaptive Protection, DSPM for AI,
+> Compliance Manager, Communication Compliance, eDiscovery, Audit, DLM, Records Management,
+> Information Barriers, Data Security Investigations) is out of scope for this announcement. See
+> the [Microsoft Purview data governance retirement announcement](https://aka.ms/DG-Deprecation)
+> for timelines and transition guidance before pricing or deploying new Data Governance work for a
+> customer. `scenarios/data-map/` and `scenarios/data-catalog/` (if present) should link here rather
+> than restate this.
 | **Compliance Manager** | Assessments & improvement actions | **E3** (base) / **E5** (premium templates) | Premium assessment templates need E5/Suite |
 | **Communication Compliance** | Policy detection & review | **E5**, Suite, or E5 add-on | Non-M365 indicators → **PAYG** |
 | **eDiscovery (Standard)** | Holds, search, export | **E3** | |
