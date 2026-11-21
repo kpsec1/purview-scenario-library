@@ -3691,6 +3691,27 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   continuous trigger source available once this scenario's pipeline is deployed.
 
 ## DONE
+- [x] **Fixed a stale/missing disclosure in `docs/licensing-matrix.md`'s Data Map/Unified
+  Catalog/Data Quality/Data Estate Insights/Data Lineage rows** - commit `91bd6d5` - 2026-11-21. Maintenance pass (Microsoft Learn MCP): every
+  current Data Map and Unified Catalog page on Microsoft Learn (`data-map`, `data-map-scan-ingestion`,
+  `data-map-data-sources`, `data-map-disaster-recovery`, `data-governance-plan`,
+  `data-map-domains`, `unified-catalog-data-quality-supported-sources-connection`, and others)
+  now carries a dated "Important" retirement banner that this matrix did not reflect: **Microsoft
+  Purview Unified Catalog and classic Microsoft Purview data governance capabilities (formerly
+  Azure Purview) are being retired**, consolidating into **Microsoft Fabric**; new Microsoft
+  Purview data governance accounts can no longer be created, and existing capabilities remain in
+  maintenance mode through **November 12, 2027** (`https://aka.ms/DG-Deprecation`). Microsoft's own
+  banner explicitly scopes this to **data governance only** - "Microsoft Purview as a whole is not
+  being retired. Microsoft Purview data security and compliance capabilities are not affected" -
+  so only the five Data Governance rows (Data Map, Unified Catalog, Data Quality/Health, Data
+  Estate Insights, Data Lineage) needed the correction; Data Security and Risk & Compliance module
+  rows are unaffected and untouched. Added a dated callout immediately after those five rows in
+  `docs/licensing-matrix.md` §2 rather than silently editing the rows, and left every other section
+  of the matrix as-is. This is a cross-cutting doc fix, not a scenario-level VERIFY; propagating a
+  pointer to this callout into each individual `scenarios/data-map/*` and
+  `scenarios/data-quality/*` README (where AGENTS.md §4 has each scenario link the cross-cutting
+  matrix rather than restate it) is a large, multi-fragment undertaking intentionally **not**
+  started in this run - see **Blocked / needs user** below for the resulting scope question.
 - [x] **Closed the `defender-device-control-usb-allowlist-macos-jamf` Custom-Schema JAMF Pro API
   VERIFY** - commit `def17eb` - 2026-10-19.
   Maintenance pass: `developer.jamf.com` was still directly unreachable from this build's network
@@ -8956,6 +8977,23 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   updated in place; no script behavior change.
 
 ## Blocked / needs user
+- **Scope question for Krunal (2026-11-21, raised by this maintenance run - needs a decision, not a
+  blocker on the next fragment):** Microsoft Learn now carries an "Important" retirement banner on
+  every Data Map / Unified Catalog page: those **Data Governance** capabilities (Data Map, Unified
+  Catalog, Data Quality/Health, Data Estate Insights, Data Lineage - explicitly **not** Data
+  Security or Risk & Compliance, per Microsoft's own banner) are being retired/consolidated into
+  Microsoft Fabric, with new accounts no longer creatable and existing ones in maintenance mode
+  through November 12, 2027 (`https://aka.ms/DG-Deprecation`). This run added a single dated
+  callout to `docs/licensing-matrix.md` §2 (the cross-cutting reference every scenario is supposed
+  to link to) so the fact is grounded and discoverable, but did **not** touch any individual
+  `scenarios/data-map/*`, `scenarios/data-catalog/*`, `scenarios/data-quality/*`, or
+  `scenarios/data-lineage/*` scenario file - that is dozens of scenarios and clearly more than one
+  maintenance fragment. Needs a decision before further Data Governance work: (a) add a short
+  pointer-to-the-matrix-callout line to each existing Data Governance scenario's README (a bounded,
+  mechanical multi-fragment cleanup), (b) leave the cross-cutting matrix as the single source of
+  truth and do nothing further, or (c) given the retirement, deprioritize/freeze any *new* Data
+  Governance scenario work for the remaining breadth backlog in favor of Data Security / Risk &
+  Compliance modules, which are unaffected. Flagging rather than choosing, per `AGENTS.md` §7.
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,
   recorded so the next run doesn't misread it as real divergence):** this session also started on a
   **detached HEAD** with a stale local `main` (49 commits behind). Following the 2026-09-16 fix's own
