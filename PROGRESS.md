@@ -8961,7 +8961,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
 - [x] **Maintenance pass — narrowed `auto-label-eu-personal-data-sharepoint`'s default-SIT-name
-  byte-exact-casing VERIFY** — commit `PENDING` — 2026-11-22. Re-grounded via the Microsoft Learn
+  byte-exact-casing VERIFY** — commit `6ff42f7` — 2026-11-22. Re-grounded via the Microsoft Learn
   MCP tool: the "Sensitive information type entity definitions" index page's own titles for
   `EU national identification number` and `EU debit card number` both match this scenario's
   defaults exactly, and for the former that's independently corroborated by the "Create custom
