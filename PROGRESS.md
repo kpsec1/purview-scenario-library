@@ -432,14 +432,20 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   into `auto-label-confidential-sharepoint/README.md` §2.
 
 ### Follow-ups discovered while building the EU/UK personal data auto-labeling scenario
-- [ ] VERIFY (pilot tenant, before production reliance): the exact, byte-precise capitalization of
-  the three default SIT names (`EU national identification number`, `EU Social Security Number
-  (SSN) or Equivalent ID`, `EU debit card number`) as required by `Get-DlpSensitiveInformationType`/
-  the portal SIT picker - Microsoft's own Learn pages render the same SIT with inconsistent casing
-  across pages, and this build found no single byte-exact authoritative source. Mitigated at
-  runtime (the deploy script resolves every name against the tenant's live SIT catalog and fails
-  clearly on a mismatch rather than silently deploying a zero-match rule) but not resolved with
-  certainty - see `auto-label-eu-personal-data-sharepoint/design.md` §4 and `README.md` §11.
+- [ ] VERIFY narrowed 2026-11-22 (Microsoft Learn MCP, maintenance pass): the exact, byte-precise
+  capitalization of the three default SIT names as required by `Get-DlpSensitiveInformationType`/
+  the portal SIT picker. **Two of three closed:** `EU national identification number` and `EU
+  debit card number` are each confirmed by two independent, mutually corroborating Microsoft Learn
+  sources (the "Sensitive information type entity definitions" index page's own titles, plus - for
+  the former - the "Create custom sensitive information types" page's "can't be copied" list),
+  both matching this scenario's existing defaults exactly. **One remains open and is now narrower
+  and sharper:** `EU Social Security Number (SSN) or Equivalent ID` - the bundle-index page titles
+  it exactly as this scenario uses it, but the "can't be copied" list spells the same restriction
+  target `EU social security number or equivalent identification` (different casing *and* a
+  different trailing word), which Microsoft Learn alone can't resolve. A pilot-tenant
+  `Get-DlpSensitiveInformationType -Identity 'EU Social Security Number (SSN) or Equivalent ID'`
+  check remains the only way to close it - see `auto-label-eu-personal-data-sharepoint/design.md`
+  §4 and `README.md` §11 (both updated in place with the new, narrower VERIFY).
 - [ ] VERIFY (pilot tenant): `Get-AutoSensitivityLabelRule`'s read-back property casing for
   `ContentContainsSensitiveInformation` (`name` vs. `Name`) - the documented *write* shape uses
   lowercase `name`/`mincount` (confirmed against `New-DlpComplianceRule`'s own reference examples),
@@ -8954,6 +8960,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `Confirm-CustodianUserSource` comment, which pointed at reference 11 (an unrelated review-set
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
+- [x] **Maintenance pass — narrowed `auto-label-eu-personal-data-sharepoint`'s default-SIT-name
+  byte-exact-casing VERIFY** — commit `PENDING` — 2026-11-22. Re-grounded via the Microsoft Learn
+  MCP tool: the "Sensitive information type entity definitions" index page's own titles for
+  `EU national identification number` and `EU debit card number` both match this scenario's
+  defaults exactly, and for the former that's independently corroborated by the "Create custom
+  sensitive information types" page's "These SITs can't be copied" list, which renders it
+  identically — **two of three default SIT names closed**. The third, `EU Social Security Number
+  (SSN) or Equivalent ID`, stays open and is now sharper: that same "can't be copied" list spells
+  the same restriction target `EU social security number or equivalent identification` — different
+  casing *and* a different trailing word than this scenario's default — so a pilot-tenant
+  `Get-DlpSensitiveInformationType` check remains the only way to settle it. `design.md` §4 and
+  `README.md` §11 updated in place; no code change, no new four-lens review round.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,

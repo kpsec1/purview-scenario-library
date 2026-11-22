@@ -392,6 +392,45 @@ No Fix/Fail items from this lens.
 |---|---|---|---|
 | 🟦 Microsoft Product Owner | Pass | 0 (1 VERIFY sub-question closed via grounding) | - |
 
+## Review round 5 - 2026-11-22 - narrowing the default-SIT byte-exact-casing VERIFY
+
+Scope: a maintenance-only pass (per `AGENTS.md`, post-build-phase) re-grounding the broader
+byte-exact-casing VERIFY round 4 deliberately left open. No tenant access; grounded entirely
+against Microsoft Learn via the Microsoft Learn MCP tool.
+
+### 🟦 Microsoft Product Owner
+
+**Verdict: Pass**
+
+- Re-fetched the "Sensitive information type entity definitions" index page: its own listed
+  titles for `EU national identification number` and `EU debit card number` both match this
+  scenario's defaults exactly, with no inconsistency found across the pages checked this round.
+- For `EU national identification number`, that's independently corroborated by the "Create
+  custom sensitive information types" page's "These SITs can't be copied" list (already cited as
+  [[1]](design.md#references)/[[6]](README.md#references)), which renders the same name
+  identically - two independent sources now agree, so this name is closed.
+- `EU debit card number` doesn't appear on that "can't be copied" list at all, consistent with
+  `design.md` §4's own observation that it's a single region-wide pattern rather than a composite
+  per-country bundle like the other two - no new concern, just corroboration.
+- `EU Social Security Number (SSN) or Equivalent ID` is **not** closed, and the grounding pass
+  found a new, concrete reason not to guess: the same "can't be copied" list spells the identical
+  restriction target `"EU social security number or equivalent identification"` - different
+  casing *and* a different trailing word (`identification` vs. this scenario's `Equivalent ID`).
+  Unlike the driver's-license case in round 4 (where the title-vs-body split had an obvious
+  explanation - URL-slug-derived titles strip punctuation), this discrepancy isn't obviously
+  explained by a slug artifact, so it would be dishonest to resolve it by analogy. Left open with
+  a pilot-tenant `Get-DlpSensitiveInformationType` check as the stated next step.
+- No code or default-parameter change required for any of the three names - only the VERIFY's
+  status and supporting docs (`README.md` §11, `design.md` §4, `PROGRESS.md`).
+
+No Fix/Fail items from this lens.
+
+### Summary - round 5
+
+| Lens | Verdict | Findings | Resolution |
+|---|---|---|---|
+| 🟦 Microsoft Product Owner | Pass | 0 (2 of 3 VERIFY sub-questions closed via grounding) | - |
+
 Only the Microsoft Product Owner lens applies to this round (a documentation-grounding fix with
 no behavioral, security, or operability surface). This fragment - closing the apostrophe-spelling
 VERIFY - meets the definition of done in `AGENTS.md` §9.

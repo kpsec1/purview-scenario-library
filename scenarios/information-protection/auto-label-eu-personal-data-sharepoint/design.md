@@ -246,20 +246,31 @@ the *default* national-ID bundle, but only 8% (passport) and 11% (driver's licen
 false-positive profile as the default condition set; §5's per-country `-SensitiveInfoTypeName`
 narrowing is proportionally more valuable for these two bundles than for the default one.
 
-**VERIFY (pilot tenant, before production reliance):** the exact, byte-precise capitalization of
-these three SIT names as they must be passed to `-ContentContainsSensitiveInformation` /
-`New-DlpComplianceRule`. Microsoft's own Learn pages render the same SIT with inconsistent casing
-across pages (the bundle index page titles it lowercase, "EU national identification number"; the
-canonical numbered entity-definitions list titles it the same way; other pages sentence-case only
-the leading word) - this build could not find a single authoritative, byte-exact string to cite
-with certainty, the same class of gap already flagged for the sibling scenario's own SIT names
-(`auto-label-confidential-sharepoint/README.md` did not need this VERIFY because "U.S. Social
-Security Number (SSN)" and "Credit Card Number" both matched their citation exactly, but this
-scenario's EU SIT names carry that risk and it would be dishonest to imply otherwise). The deploy
-script (`deploy/New-EuPersonalDataAutoLabelPolicy.ps1`) resolves each configured name via
-`Get-DlpSensitiveInformationType` before referencing it in a rule and fails clearly, listing the
-closest available matches, rather than silently creating a rule with zero real matches if a name is
-off by case or punctuation - see `README.md` §11.
+**VERIFY narrowed 2026-11-22 (Microsoft Learn MCP, maintenance pass):** two of the three default SIT
+names are now closed. "EU national identification number" is independently confirmed by two
+mutually corroborating Microsoft Learn sources with identical casing - the canonical "Sensitive
+information type entity definitions" index page (its own page title) and the "Create custom
+sensitive information types" page's "These SITs can't be copied" list [[1]](#references) - both
+render it exactly as this scenario's default. "EU debit card number" is likewise confirmed by its
+own entity-definition page title [[4]](#references), rendered identically, and - consistent with
+this scenario's own observation that it's a single-pattern SIT rather than a composite bundle - it
+doesn't appear on the "can't be copied" list at all.
+
+The third name remains open, and the grounding pass sharpened rather than closed it: the bundle-index
+entity-definitions page titles it "EU Social Security Number (SSN) or Equivalent ID" [[3]](#references),
+matching this scenario's default exactly, but the "Create custom sensitive information types"
+page's "can't be copied" list spells the same restriction target "EU social security number or
+equivalent identification" [[1]](#references) - different casing *and* a different trailing word
+("identification" vs. this scenario's "Equivalent ID"). That could be two independent display
+strings for the same SIT (a literal UI/API name vs. the "can't be copied" page's own looser prose),
+or it could mean the byte-exact name differs from what this scenario assumes - Microsoft Learn alone
+cannot settle which. **VERIFY (pilot tenant, before production reliance):** run
+`Get-DlpSensitiveInformationType -Identity 'EU Social Security Number (SSN) or Equivalent ID'`
+against a live tenant and confirm the returned `Name` matches byte-exactly before relying on it in
+production. The deploy script (`deploy/New-EuPersonalDataAutoLabelPolicy.ps1`) resolves each
+configured name via `Get-DlpSensitiveInformationType` before referencing it in a rule and fails
+clearly, listing the closest available matches, rather than silently creating a rule with zero real
+matches if a name is off by case or punctuation - see `README.md` §11.
 
 ## 5. Localization parameter - `-SensitiveInfoTypeName`
 
