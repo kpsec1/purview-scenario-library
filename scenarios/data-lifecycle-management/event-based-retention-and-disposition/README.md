@@ -227,7 +227,10 @@ policy, and a record-labeled item stays locked until disposition, by design.
   the `New-ComplianceTag` reference page; the 7-365 day range and 14-day default cited here come from
   the separate, conceptual disposition-review article, not a confirmed mapping to this exact cmdlet
   parameter. Left disabled (`null`) in the sample config for this reason - VERIFY (pilot tenant)
-  before relying on it.
+  before relying on it. **Re-grounded 2026-11-23** (Microsoft Learn MCP, maintenance pass): both the
+  `New-ComplianceTag`/`Set-ComplianceTag` reference pages and the "Disposition of content" article
+  were re-fetched directly - the parameter description is still an unfilled stub and the 7-365
+  day/14-day-default figures are unchanged. No new information found; remains open.
 - **Read-back of `MultiStageReviewProperty`/`ReviewerEmail` on `Get-ComplianceTag` is undocumented.**
   Neither parameter's exact returned property name/shape is confirmed by Microsoft's reference pages
   (both parameter descriptions are stubs); `validate/Test-EventBasedRetentionAndDisposition.ps1`

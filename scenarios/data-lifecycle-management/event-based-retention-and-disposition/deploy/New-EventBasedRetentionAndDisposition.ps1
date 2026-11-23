@@ -62,7 +62,12 @@
     reference page is an unfilled Microsoft documentation stub ("{{ Fill AutoApprovalPeriod
     Description }}"). The 7-365 day range and 14-day default used here come from the conceptual
     disposition-review article, not a confirmed mapping to this specific cmdlet parameter. Left
-    null (disabled) by default in the sample config for exactly this reason.
+    null (disabled) by default in the sample config for exactly this reason. Re-grounded
+    2026-11-23 (Microsoft Learn MCP, maintenance pass): both the New-ComplianceTag/Set-ComplianceTag
+    -AutoApprovalPeriod parameter reference pages and the Disposition of content article were
+    re-fetched directly. The cmdlet parameter page is still an unfilled stub (type/default/parameter-
+    set metadata only, no description), and the 7-365 day/14-day-default figures are unchanged on the
+    conceptual article. No new information found; remains open.
 #>
 [CmdletBinding()]
 param(
