@@ -2695,11 +2695,18 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   the exact `RecordType`/`Operations` values for retention-event creation, label application, and
   disposition-review decisions are grounded - not found/verified during this build; flagged in
   `event-based-retention-and-disposition/README.md` §11 rather than fabricated.
-- [ ] VERIFY (pilot tenant): `-AutoApprovalPeriod` on `New-ComplianceTag` - the parameter's own
-  description on the official reference page is an unfilled Microsoft documentation stub; the 7-365
-  day range / 14-day default cited in `event-based-retention-and-disposition/README.md` §6/§11 come
-  from the separate conceptual disposition-review article, not a confirmed mapping to this exact
-  cmdlet parameter. Left disabled (`null`) in the sample config for this reason.
+- [ ] VERIFY narrowed 2026-11-23 (Microsoft Learn MCP, maintenance pass): `-AutoApprovalPeriod` on
+  `New-ComplianceTag` - the parameter's own description on the official reference page is an unfilled
+  Microsoft documentation stub; the 7-365 day range / 14-day default cited in `event-based-retention-
+  and-disposition/README.md` §6/§11 come from the separate conceptual disposition-review article, not
+  a confirmed mapping to this exact cmdlet parameter. Left disabled (`null`) in the sample config for
+  this reason. This pass directly re-fetched both the `New-ComplianceTag`/`Set-ComplianceTag`
+  `-AutoApprovalPeriod` parameter reference pages (still an unfilled stub - type/default/parameter-set
+  metadata only, no description text) and the "Disposition of content" conceptual article (7-365
+  day range, 14-day default, unchanged). No Microsoft-published mapping between the two has since
+  appeared; genuinely remains open - re-close only once Microsoft fills in the parameter's own
+  description, or via a pilot-tenant check. `README.md` §11 (note expanded in place) and `deploy/
+  New-EventBasedRetentionAndDisposition.ps1`'s `.NOTES` updated to record this re-grounding.
 - [ ] VERIFY (pilot tenant): the read-back property name/shape for `-MultiStageReviewProperty` and
   `-ReviewerEmail` on `Get-ComplianceTag` - undocumented (no output-property list published for this
   cmdlet); `validate/Test-EventBasedRetentionAndDisposition.ps1` checks for either being non-null and
