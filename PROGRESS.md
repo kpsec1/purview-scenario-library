@@ -8954,6 +8954,29 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `Confirm-CustodianUserSource` comment, which pointed at reference 11 (an unrelated review-set
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
+- [x] **Maintenance pass — fixed a currency gap in `docs/licensing-matrix.md`: the Data Governance
+  retirement was undisclosed** — commit `bfc10bb` — 2026-11-24. While re-grounding an unrelated
+  `CredentialType` VERIFY via the Microsoft Learn MCP tool, several current Data Map pages (e.g.
+  `data-map-data-scan-credentials`, `register-scan-on-premises-sql-server`) surfaced a prominent,
+  dated banner this repo had not yet captured anywhere: **Microsoft Purview Unified Catalog and
+  classic Microsoft Purview data governance capabilities (formerly Azure Purview) are being
+  retired, consolidating into Microsoft Fabric** — new Purview data governance accounts can no
+  longer be created, and existing ones stay in maintenance mode through **November 12, 2027**
+  (full guidance at `https://aka.ms/DG-Deprecation`). Microsoft's banner is explicit that **data
+  security and compliance capabilities (DLP, IRM, Information Protection, eDiscovery, Audit, DLM,
+  Records Management, Communication Compliance, etc.) are unaffected**. This is a concrete,
+  Product-Owner-lens inaccuracy-by-omission in already-shipped content: `docs/licensing-matrix.md`
+  §2 presented the Data Map/Unified Catalog/Data Quality/Data Estate Insights/Data Lineage rows
+  with no hint that the whole Data Governance pillar is in a retirement/maintenance window, and
+  every Data Governance scenario's README links to this matrix as its licensing source of truth
+  per `AGENTS.md` §4. Fixed by adding a dated callout immediately above the master capability
+  table (§2) scoping the notice to exactly those five rows and stating plainly that security/
+  compliance modules are unaffected, plus a new reference [16] citing both the Learn page and the
+  canonical `aka.ms/DG-Deprecation` announcement. Doc-only correction, scoped to this one
+  cross-cutting file per `AGENTS.md` §6 (no scenario files rewritten this pass - propagating the
+  notice into individual Data Governance scenario READMEs is a larger, separate piece of work, not
+  undertaken here per the maintenance scope limiting this run to one fix). No new VERIFY or TODO
+  added, per this run's maintenance-only scope.
 
 ## Blocked / needs user
 - **Git note (2026-09-27, not a blocker - a shallow-clone variant of the 2026-09-16 incident below,
