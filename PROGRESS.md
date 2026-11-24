@@ -8955,7 +8955,7 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   article) instead of reference 23. `README.md` §11/§12 and `reviews.md` (maintenance addendum)
   updated in place; no script behavior change.
 - [x] **Maintenance pass — fixed a currency gap in `docs/licensing-matrix.md`: the Data Governance
-  retirement was undisclosed** — commit TBD — 2026-11-24. While re-grounding an unrelated
+  retirement was undisclosed** — commit `bfc10bb` — 2026-11-24. While re-grounding an unrelated
   `CredentialType` VERIFY via the Microsoft Learn MCP tool, several current Data Map pages (e.g.
   `data-map-data-scan-credentials`, `register-scan-on-premises-sql-server`) surfaced a prominent,
   dated banner this repo had not yet captured anywhere: **Microsoft Purview Unified Catalog and
