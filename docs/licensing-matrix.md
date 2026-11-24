@@ -44,6 +44,19 @@ Purview Suite (ex-"E5 Compliance") · **PAYG** = Azure pay-as-you-go meter also 
 Government (G3/G5), Academic (A3/A5), and Frontline (F5) SKUs generally mirror their E-tier
 equivalents unless noted - always confirm against Product Terms for GCC/GCC-High/DoD.
 
+> **Data Governance retirement notice (added 2026-11-24, maintenance pass).** Microsoft Purview
+> **Unified Catalog** and the **classic Microsoft Purview data governance capabilities** (formerly
+> Azure Purview) are being retired and consolidated into **Microsoft Fabric**. New Microsoft
+> Purview data governance accounts can no longer be created; existing ones stay in maintenance
+> mode through **November 12, 2027**. This affects the **Data Map, Unified Catalog, Data Quality /
+> Health, Data Estate Insights, and Data Lineage** rows below only - **Microsoft Purview data
+> security and compliance capabilities (Information Protection, DLP, IRM, eDiscovery, Audit, Data
+> Lifecycle Management, Records Management, Communication Compliance, etc.) are explicitly
+> unaffected and continue to receive investment.** Any licensing figure below for the five affected
+> rows should be read as "valid for the maintenance-mode window," not as a durable product
+> direction. See the retirement announcement [[16]](#sources-microsoft-learn--re-verify-before-quoting)
+> for transition timelines and guidance.
+
 | Module | Capability | Minimum entitlement | Notes / PAYG |
 |---|---|---|---|
 | **Information Protection** | Manually apply a sensitivity label | **E3** | Also EMS E3/E5, Office 365 E5, AIP P1/P2 |
@@ -286,6 +299,12 @@ before budgeting anything at all.
 - [15] Manage pay-as-you-go and per-user licensing usage (Usage center pausable-features table -
   Data Security Investigations listed as not pausable, unlike Communication Compliance/Audit/
   Information Protection/Data Lifecycle Management) - <https://learn.microsoft.com/purview/purview-billing-usage>
+- [16] Credentials for source authentication in Microsoft Purview Data Map (carries the current
+  retirement banner for Microsoft Purview Unified Catalog / classic data governance capabilities,
+  consolidation into Microsoft Fabric, and the November 12, 2027 maintenance-mode end date; the
+  same banner appears on other Data Map/data-governance Learn pages) -
+  <https://learn.microsoft.com/purview/data-map-data-scan-credentials> - full retirement
+  announcement, timelines, and transition guidance: <https://aka.ms/DG-Deprecation>
 
 > **Disclaimer:** SKU names, tiers, and PAYG meters change. Nothing here is a licensing guarantee.
 > Validate every entitlement against Product Terms and the service description for the customer's
