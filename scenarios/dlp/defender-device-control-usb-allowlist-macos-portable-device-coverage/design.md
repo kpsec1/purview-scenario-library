@@ -130,6 +130,15 @@ scenario's own Apple-device precedent) but flags it as an open `VERIFY` in `READ
 checks it as `[WARN]` in `validate/Test-MacPortableDeviceCoverage.ps1`, rather than asserting it as
 confirmed.
 
+**Re-grounded 2026-11-25** (maintenance pass): re-fetched the current `mac-device-control-overview`
+Clause reference (still the same flat, family-unscoped table) and individually checked all 15
+files in `microsoft/mdatp-devicecontrol`'s `macOS/policy/samples` directory, plus a repository-wide
+GitHub code search for `serialNumber`+`portable_devices`. Two more `portable_devices`-scoped
+samples were found beyond the ones already cited (`audit_mobile_devices.json`,
+`deny_debug_on_android.json`), and neither - nor any other file in the repository - pairs
+`serialNumber` with a `portable_devices` group. The gap is confirmed current, not stale; the
+`VERIFY` stands.
+
 ## 7. Key decisions
 
 | Decision | Choice | Rationale |
