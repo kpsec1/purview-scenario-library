@@ -301,27 +301,35 @@ same consumption-based billing applies regardless of where the SHIR runs.
   same mechanism the on-premises SQL Server system scan ruleset is `{"kind": "SqlServerDatabase",
   "scanRulesetType": "System", "id": "systemscanrulesets/SqlServerDatabase", "name":
   "SqlServerDatabase"}`. This scenario's default is correct as shipped [[14]](#references).
-- **VERIFY (narrowed 2026-09-28, Microsoft Learn MCP) - Windows Authentication's `CredentialType`
-  value.** Microsoft's portal documents both "SQL Authentication" and "Windows Authentication" as
-  supported methods for this source type. This pass fetched the **Credential - Create Or Replace**
-  REST reference directly (the dedicated, canonical `CredentialType` schema page - not previously
-  cited by this scenario, which had only sourced the enum's member list from the Data Sources
-  reference) and confirmed it publishes the *complete* enum with no additional or hidden members:
-  `AccountKey` / `ServicePrincipal` / `BasicAuth` / `SqlAuth` / `AmazonARN` / `ConsumerKeyAuth` /
-  `DelegatedAuth` / `ManagedIdentity` - exactly eight values, each with its own one-line description,
-  none named or described as Windows-specific [[18]](#references). By elimination, `BasicAuth` remains
-  the only structurally-compatible candidate for Windows Authentication (`AccountKey` is a single
-  secret, not user+password; `ServicePrincipal`/`DelegatedAuth` are app-ID-based; `AmazonARN` is AWS
-  role assumption; `ConsumerKeyAuth` is Salesforce-specific; `ManagedIdentity` has no stored secret at
-  all; `SqlAuth` is already Microsoft's own confirmed value for SQL Authentication on this exact scan
-  kind) - both `BasicAuth` and `SqlAuth` share the identical `UserPassCredentialProperties` (user +
-  password) shape, so this elimination narrows the field to one candidate but does not amount to a
-  Microsoft-published statement of the mapping. This script's `-CredentialType` parameter still
-  accepts `'SqlAuth'` (default, and the value Microsoft's own worked example for this scan kind uses)
-  or `'BasicAuth'` (elimination-grounded, still not Microsoft-confirmed) - do not rely on `'BasicAuth'`
-  for a Windows Authentication deployment without confirming against a pilot tenant first. Remains
-  open; re-close only if Microsoft publishes a worked example or an explicit statement naming the
-  `CredentialType` value for Windows Authentication specifically.
+- **VERIFY (narrowed further 2026-11-26, Microsoft Learn MCP, maintenance pass) - Windows
+  Authentication's `CredentialType` value.** Microsoft's portal documents both "SQL Authentication"
+  and "Windows Authentication" as supported methods for this source type. The 2026-09-28 pass had
+  eliminated down to one candidate (`BasicAuth`) against the *generic*, scan-kind-agnostic
+  `CredentialType` enum published on the **Credential - Create Or Replace** REST reference (eight
+  values: `AccountKey` / `ServicePrincipal` / `BasicAuth` / `SqlAuth` / `AmazonARN` /
+  `ConsumerKeyAuth` / `DelegatedAuth` / `ManagedIdentity`, none Windows-specific) [[18]](#references).
+  This pass found a more specific, independent source that corroborates that elimination: the
+  **`ISqlServerDatabaseCredentialScan.CredentialType`** .NET SDK property page publishes a
+  `PSArgumentCompleter` scoped specifically to the `SqlServerDatabaseCredentialScan` object (not the
+  generic `Credential` resource) listing only **five** valid values - `AccountKey`, `ServicePrincipal`,
+  `BasicAuth`, `SqlAuth`, `AmazonARN` - omitting `ConsumerKeyAuth`, `DelegatedAuth`, and
+  `ManagedIdentity` entirely for this scan kind [[19]](#references). Checking `DelegatedAuth`
+  specifically (the one omitted value that might otherwise have looked plausible): its own SDK
+  reference page describes it as "credential type that uses **Client ID** for authentication," which
+  is structurally incompatible with Windows Authentication's username+password shape, and it isn't
+  even a valid `CredentialType` for this scan kind per [[19]](#references) - ruling it out on two
+  independent grounds. Within the scan-kind-specific five-value set, `SqlAuth` remains Microsoft's
+  own confirmed value for SQL Authentication, leaving `BasicAuth` as the **only** candidate that is
+  both structurally compatible (shares `UserPassCredentialProperties`, the user+password shape) and
+  valid for `SqlServerDatabaseCredentialScan` specifically. This is still an elimination argument, not
+  a literal Microsoft statement naming `BasicAuth` as "Windows Authentication," so it remains open per
+  `AGENTS.md` §4 - but the elimination is now scoped to the exact scan kind this scenario uses, not
+  just the generic credential enum. This script's `-CredentialType` parameter still accepts `'SqlAuth'`
+  (default, and the value Microsoft's own worked example for this scan kind uses) or `'BasicAuth'`
+  (elimination-grounded, still not Microsoft-confirmed) - do not rely on `'BasicAuth'` for a Windows
+  Authentication deployment without confirming against a pilot tenant first. Re-close only if
+  Microsoft publishes a worked example or an explicit statement naming the `CredentialType` value for
+  Windows Authentication specifically.
 - **~~The credential object and~~ the SHIR software install remain portal-only. CORRECTED
   2026-09-16 - the credential half of this claim was wrong.** This build concluded that no
   documented REST endpoint existed for creating a Purview credential object. It does: **Credential**
@@ -377,9 +385,11 @@ same consumption-based billing applies regardless of where the SHIR runs.
 16. Data governance roles and permissions in Microsoft Purview (classic Data Map role vocabulary) - <https://learn.microsoft.com/purview/data-gov-classic-permissions>
 17. `scenarios/data-map/scan-azure-sql-and-classify/`, `scan-azure-sql-managed-instance-and-classify/`, `scan-azure-synapse-and-classify/` - the three sibling scenarios this fragment extends; see their README.md/design.md for shared reasoning not repeated here.
 18. Credential - Create Or Replace (REST reference, API version 2023-09-01 - publishes the complete, authoritative `CredentialType` enum with a one-line description per value: `AccountKey`, `ServicePrincipal`, `BasicAuth`, `SqlAuth`, `AmazonARN`, `ConsumerKeyAuth`, `DelegatedAuth`, `ManagedIdentity`; no Windows-specific value exists) - <https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace>
+19. `ISqlServerDatabaseCredentialScan.CredentialType` property (.NET SDK reference, Az.Purview data-plane models - `PSArgumentCompleter` scoped to this exact scan kind restricts `CredentialType` to five values: `AccountKey`, `ServicePrincipal`, `BasicAuth`, `SqlAuth`, `AmazonARN`; `DelegatedAuthAzureKeyVaultCredential` is separately documented as "uses Client ID for authentication") - <https://learn.microsoft.com/dotnet/api/microsoft.azure.powershell.cmdlets.purviewdata.models.isqlserverdatabasecredentialscan.credentialtype> and <https://learn.microsoft.com/javascript/api/@azure-rest/purview-scanning/delegatedauthazurekeyvaultcredential>
 
 > Re-verify all links and the one remaining VERIFY item in §11 (Windows Authentication's
 > `CredentialType` value) against current Microsoft Learn before a customer-facing deployment - the
 > Data Map REST surface is explicitly called out by Microsoft as evolving. The system scan rule set
 > name VERIFY was closed 2026-09-26; the Windows Authentication `CredentialType` VERIFY was narrowed
-> (elimination against the complete enum) but remains open as of 2026-09-28.
+> (elimination against the complete enum) on 2026-09-28, and narrowed further (elimination scoped to
+> the exact `SqlServerDatabaseCredentialScan` kind) on 2026-11-26, but remains open.

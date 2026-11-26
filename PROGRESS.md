@@ -2942,23 +2942,32 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   §12 ref [14]), `design.md` (§4, §5, §7), and the deploy script's `.PARAMETER`/`.NOTES` blocks;
   `reviews.md` carries a maintenance addendum. The sibling `CredentialType`/Windows Authentication
   VERIFY (next item below) remains open and untouched by this pass.
-- [ ] VERIFY narrowed 2026-09-28 (Microsoft Learn MCP): which `CredentialType` REST enum value
-  corresponds to "Windows Authentication" in the portal for the `SqlServerDatabaseCredential` scan
-  kind - Microsoft's portal documents Windows Authentication as a supported method for this source
-  type. This pass fetched the **Credential - Create Or Replace** REST reference directly (a more
-  authoritative source than the Data Sources reference this scenario had previously cited the enum
-  from) and confirmed the `CredentialType` enum is exhaustive at exactly eight values
+- [ ] VERIFY narrowed 2026-09-28, narrowed further 2026-11-26 (Microsoft Learn MCP, maintenance
+  pass): which `CredentialType` REST enum value corresponds to "Windows Authentication" in the
+  portal for the `SqlServerDatabaseCredential` scan kind - Microsoft's portal documents Windows
+  Authentication as a supported method for this source type. The 2026-09-28 pass fetched the
+  **Credential - Create Or Replace** REST reference directly and confirmed the `CredentialType`
+  enum is exhaustive at exactly eight values
   (`AccountKey`/`ServicePrincipal`/`BasicAuth`/`SqlAuth`/`AmazonARN`/`ConsumerKeyAuth`/
-  `DelegatedAuth`/`ManagedIdentity`), each with its own Microsoft-published description, none naming
-  or describing a Windows-specific credential type. By elimination `BasicAuth` is the only
-  structurally-compatible remaining candidate (every other value is either not username/password-shaped,
-  or - for `SqlAuth` - already Microsoft-confirmed as the value for SQL Authentication on this exact
-  scan kind), but this is this repo's elimination argument, not a Microsoft-published mapping
-  statement, so it remains open. `scan-on-premises-sql-server-and-classify`'s deploy script continues
-  to offer `'BasicAuth'` as its elimination-grounded (not Microsoft-confirmed) alternative to the
-  confirmed `'SqlAuth'` default - see that scenario's `README.md` §11/§12 ref [18], `design.md` §7,
-  `reviews.md` maintenance addendum, and the deploy script's `.PARAMETER`/`.NOTES` blocks. Re-close
-  only on a Microsoft worked example or explicit statement naming the value for Windows Authentication.
+  `DelegatedAuth`/`ManagedIdentity`), none Windows-specific, narrowing by elimination to `BasicAuth`.
+  The 2026-11-26 pass found a more specific, independent source that corroborates this: the
+  `ISqlServerDatabaseCredentialScan.CredentialType` .NET SDK property page publishes a
+  `PSArgumentCompleter` scoped specifically to the `SqlServerDatabaseCredentialScan` object (not the
+  generic `Credential` resource) restricting valid values to only five
+  (`AccountKey`/`ServicePrincipal`/`BasicAuth`/`SqlAuth`/`AmazonARN`), excluding `ConsumerKeyAuth`,
+  `DelegatedAuth`, and `ManagedIdentity` for this scan kind. `DelegatedAuth` was checked specifically
+  since it might otherwise have looked plausible: its own SDK page describes it as "uses Client ID
+  for authentication," which is structurally incompatible with Windows Authentication's
+  username+password shape - ruling it out on two independent grounds (not valid for this scan kind,
+  and not the right shape). Within the scan-kind-specific five-value set, `SqlAuth` remains
+  Microsoft's confirmed value for SQL Authentication, leaving `BasicAuth` as the only remaining
+  candidate - a narrower, more specific elimination than before, but still not a literal
+  Microsoft-published statement naming the mapping, so it remains open per `AGENTS.md` §4.
+  `scan-on-premises-sql-server-and-classify`'s deploy script continues to offer `'BasicAuth'` as its
+  elimination-grounded (not Microsoft-confirmed) alternative to the confirmed `'SqlAuth'` default -
+  see that scenario's `README.md` §11/§12 ref [19], `design.md` §7, `reviews.md` maintenance
+  addendum, and the deploy script's `.PARAMETER`/`.NOTES` blocks. Re-close only on a Microsoft
+  worked example or explicit statement naming the value for Windows Authentication.
 - [ ] `scenarios/data-map/scan-on-premises-sql-server-and-classify-kubernetes-shir/` (or fold into a
   future Data Map hardening pass) - the Kubernetes-based, containerized self-hosted *data* integration
   runtime Microsoft documents as a separate, newer capability (SQL Server and Oracle only,

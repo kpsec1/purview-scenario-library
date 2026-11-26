@@ -178,3 +178,13 @@ re-grounded, not closed. A direct fetch of the Credential - Create Or Replace RE
 none Windows-specific, narrowing the script's `'BasicAuth'` default-alternative to an
 elimination-grounded (not Microsoft-published) mapping. Still open; re-close only on a Microsoft
 worked example or explicit statement.
+
+**Maintenance addendum (2026-11-26):** the Windows Authentication `CredentialType` VERIFY was
+narrowed further, still not closed. The `ISqlServerDatabaseCredentialScan.CredentialType` .NET SDK
+property page (`README.md` §11, `#19` reference) restricts valid `CredentialType` values for this
+exact scan kind to five (`AccountKey`, `ServicePrincipal`, `BasicAuth`, `SqlAuth`, `AmazonARN`),
+excluding `DelegatedAuth` both because it isn't valid for this scan kind and because its own
+documentation describes it as Client-ID-based, not username+password-based. This corroborates the
+2026-09-28 elimination with a scan-kind-specific source rather than the generic `Credential` enum,
+but still stops short of a Microsoft statement naming `BasicAuth` as the Windows Authentication
+value. Still open; re-close only on a Microsoft worked example or explicit statement.

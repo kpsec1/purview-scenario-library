@@ -109,13 +109,16 @@
     "Windows Authentication" as supported methods for this source type. The Credential - Create Or
     Replace REST reference publishes the complete CredentialType enum (AccountKey / ServicePrincipal /
     BasicAuth / SqlAuth / AmazonARN / ConsumerKeyAuth / DelegatedAuth / ManagedIdentity - confirmed
-    exhaustive, re-grounded 2026-09-28) with no value named or described as Windows-specific.
-    'BasicAuth' is this script's elimination-grounded best-effort mapping (every other value is
-    structurally incompatible with username+password auth except 'SqlAuth', which Microsoft's own
-    worked example already confirms is used for SQL Authentication) - not a Microsoft-published
-    mapping, still flagged as an explicit VERIFY. 'SqlAuth' is the default because it is the
-    credential type Microsoft's own worked PowerShell example for this exact scan kind uses. See
-    README.md Section 11.
+    exhaustive, re-grounded 2026-09-28) with no value named or described as Windows-specific. The
+    ISqlServerDatabaseCredentialScan.CredentialType SDK reference further restricts valid values for
+    this exact scan kind to five (AccountKey / ServicePrincipal / BasicAuth / SqlAuth / AmazonARN),
+    excluding DelegatedAuth - whose own documentation describes it as Client-ID-based, not
+    username+password-based (re-grounded 2026-11-26). 'BasicAuth' is this script's elimination-grounded
+    best-effort mapping (every other value is structurally incompatible with username+password auth,
+    or invalid for this scan kind, except 'SqlAuth', which Microsoft's own worked example already
+    confirms is used for SQL Authentication) - not a Microsoft-published mapping, still flagged as an
+    explicit VERIFY. 'SqlAuth' is the default because it is the credential type Microsoft's own worked
+    PowerShell example for this exact scan kind uses. See README.md Section 11.
 
 .PARAMETER DataSourceName
     Name for the registered data source object. Defaults to a sanitized form of -ServerEndpoint.
@@ -230,6 +233,10 @@
     - Credential - Create Or Replace (publishes the complete, authoritative CredentialType enum -
       confirmed exhaustive at eight values, none Windows-specific; re-grounded 2026-09-28):
       https://learn.microsoft.com/rest/api/purview/scanningdataplane/credential/create-or-replace
+    - ISqlServerDatabaseCredentialScan.CredentialType (.NET SDK reference - PSArgumentCompleter
+      scoped to this exact scan kind restricts CredentialType to five values, excluding
+      DelegatedAuth; narrows the elimination below, re-grounded 2026-11-26):
+      https://learn.microsoft.com/dotnet/api/microsoft.azure.powershell.cmdlets.purviewdata.models.isqlserverdatabasecredentialscan.credentialtype
 
     CONFIRMED 2026-09-26 - the -ScanRulesetName default ('SqlServerDatabase') was previously
     flagged VERIFY here; it is now grounded by the System Scan Rulesets - Get worked example
@@ -239,8 +246,9 @@
     Section 11 for the full writeup):
     - Which CredentialType enum value corresponds to "Windows Authentication" in the portal - this
       script's -CredentialType 'BasicAuth' default-alternative is now grounded by elimination against
-      the complete, confirmed-exhaustive CredentialType enum (re-grounded 2026-09-28), but remains an
-      elimination argument, not a Microsoft-published mapping statement.
+      the complete, confirmed-exhaustive CredentialType enum (re-grounded 2026-09-28) and narrowed
+      further against the scan-kind-specific five-value SDK completer (re-grounded 2026-11-26), but
+      remains an elimination argument, not a Microsoft-published mapping statement.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(
