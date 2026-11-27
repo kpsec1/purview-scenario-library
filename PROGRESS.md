@@ -883,7 +883,13 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   `purgeData` action), a distinct resource type, so assuming parity would be a guess. Remains open;
   re-open for a fresh pass only if Microsoft publishes an expiry statement specific to
   `ediscoveryPurgeDataOperation`/`reportFileMetadata`. `search-and-purge-data-spillage/README.md`
-  §11 (note expanded in place) and §12 (reference 15 added).
+  §11 (note expanded in place) and §12 (reference 15 added). **Re-grounded again 2026-11-27**
+  (Microsoft Learn MCP, maintenance pass): both resource reference pages re-fetched directly and
+  unchanged; also checked the Graph "what's new" history, which dates `reportFileMetadata` as a
+  January 2026 GA addition to `ediscoveryPurgeDataOperation` but documents only the addition, not a
+  link lifetime. Still no expiry statement published for this resource/action pair anywhere this
+  pass found. Remains open on the same re-open condition. `search-and-purge-data-spillage/
+  README.md` §11/§12 (reference 16 added) and `reviews.md` (new maintenance addendum) updated.
 - [x] `scenarios/ediscovery/search-and-purge-teams-messages/` - **built** (see DONE below): the
   `purgeAreas: teamsMessages` half of the same `purgeData` Graph action. Re-grounding this item found
   the original follow-up's own premise was **backwards**: current Microsoft Learn states that for

@@ -237,6 +237,14 @@ search/operation records but never reverses a completed purge.
   fact. Treated as still-undocumented; download and archive the report promptly with the case
   record rather than relying on it staying reachable indefinitely. Re-open only if Microsoft
   publishes an expiry statement specific to `ediscoveryPurgeDataOperation`/`reportFileMetadata`.
+  **Re-grounded 2026-11-27** (Microsoft Learn MCP, maintenance pass): re-fetched the
+  `ediscoveryPurgeDataOperation` and `reportFileMetadata` resource reference pages directly - both
+  unchanged since the prior pass, still listing only `downloadUrl`/`fileName`/`size` with no TTL.
+  Also checked the Microsoft Graph "what's new" history, which records `reportFileMetadata` as a
+  January 2026 GA addition to `ediscoveryPurgeDataOperation` [[16]](#references) - confirming the
+  property itself is current and GA, not a stale or superseded reference, but that entry documents
+  only the property's addition, not a download-link lifetime. No expiry statement for this specific
+  resource/action pair exists anywhere this pass found. Remains open per `AGENTS.md` §4.
 - **The classic "Data spillage scenario: Search and purge" walkthrough is retired** (2025-08-31,
   21Vianet-only now) [[3]](#references) - this scenario's workflow shape (search → validate → purge →
   verify) is re-derived from it for concept only; every cmdlet/API call is grounded in current,
@@ -261,6 +269,7 @@ search/operation records but never reverses a completed purge.
 13. ediscoveryPurgeDataOperation resource type (`status`, `purgeType`/`purgeAreas` value tables) - <https://learn.microsoft.com/graph/api/resources/security-ediscoverypurgedataoperation>
 14. Message trace in the Security & Compliance Center (complementary "how far did the spillage travel" check, cited by the retired data-spillage walkthrough's own Step 5) - <https://learn.microsoft.com/microsoft-365/security/office-365-security/message-trace-scc>
 15. reportFileMetadata resource type (`downloadUrl`/`fileName`/`size`; no expiry documented) - <https://learn.microsoft.com/graph/api/resources/security-ediscoveryreportfilemetadata>
+16. Microsoft Graph what's new history - January 2026 (confirms `reportFileMetadata` as a GA addition to `ediscoveryPurgeDataOperation`; no expiry/TTL statement) - <https://learn.microsoft.com/graph/whats-new-earlier#january-2026-new-and-generally-available>
 
 > Re-verify all links, Graph SDK cmdlet names, and - especially - the litigation-hold VERIFY (§11)
 > against current Microsoft Learn before a customer-facing deployment. This scenario deliberately

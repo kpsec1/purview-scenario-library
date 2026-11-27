@@ -157,3 +157,14 @@ Learn (no invented cmdlets - the litigation-hold-on-Graph-purgeData gap is discl
 presented as confirmed), and the irreversibility of `PermanentlyDelete` is treated as the scenario's
 central safety constraint throughout, mirrored by the double-flag gate in
 `Invoke-DataSpillagePurge.ps1`.
+
+## Maintenance addendum (2026-11-27)
+
+Re-grounded the open `README.md` §11 VERIFY on the purge job report `downloadUrl`'s expiry window
+(Microsoft Learn MCP, maintenance pass). Re-fetched `ediscoveryPurgeDataOperation` and
+`reportFileMetadata` directly - unchanged since the 2026-09-27 pass, still no TTL documented. Also
+checked the Microsoft Graph "what's new" history, which dates `reportFileMetadata` as a January
+2026 GA addition to `ediscoveryPurgeDataOperation` - confirming the property is current, but that
+entry documents only the addition, not a link lifetime. No expiry statement for this
+resource/action pair exists on Microsoft Learn as of this pass; the finding remains an open VERIFY,
+not guessed closed. `README.md` §11 and §12 (reference 16) updated in place.
