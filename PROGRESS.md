@@ -292,7 +292,17 @@ first → pick the top unblocked `TODO` → do exactly one fragment → update t
   Microsoft's Clause reference table is unscoped by device family (a stronger starting position than
   the Windows WPD-coverage sibling's own equivalent VERIFY), but this is not the same as a worked
   example. `validate/Test-MacPortableDeviceCoverage.ps1` checks this as `[WARN]`, not `[PASS]`,
-  pending confirmation - see that scenario's `README.md` §11.
+  pending confirmation - see that scenario's `README.md` §11. **Re-grounded 2026-11-28**
+  (maintenance pass, direct fetch of every `portable_devices`/mobile-device-relevant file in the
+  `microsoft/mdatp-devicecontrol` macOS samples directory - `scenarios.json`'s own index,
+  `audit_mobile_devices.json`, and `deny_mobile_devices.json`): still genuinely undocumented.
+  Both mobile-device samples scope their `portable_devices` group purely by `primaryId` (OR'd with
+  `apple_devices` in the audit sample); neither pairs it with a `serialNumber` clause anywhere in
+  the file, and no other sample file in the directory's index references `portable_devices` at
+  all. `audit_all_apple_devices_except_serial_numbers.json` (re-fetched in full) confirms the
+  `serialNumber`-exclusion pattern only for `apple_devices`, unchanged from the prior grounding.
+  Remains open; re-open for a fresh pass only if Microsoft publishes a new sample or reference
+  update naming `portable_devices` alongside `serialNumber`.
 - [x] Consider `vendorId`/`productId` compound matching for the Apple and Portable families too (not
   just Bluetooth, above) once the per-device, dynamic-sub-group `groupId`-clause-nesting idempotency
   model is independently verified against a pilot tenant - same deferred complexity already tracked
